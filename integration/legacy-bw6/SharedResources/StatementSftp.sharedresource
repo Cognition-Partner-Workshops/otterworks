@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sftp:Connection xmlns:sftp="http://ns.tibco.com/bw/sharedresource/sftp" name="StatementSftp"><host>sftp</host><port>22</port><userName>${SFTP_USER}</userName><password>${SFTP_PASSWORD}</password><remoteDirectory>/upload/in</remoteDirectory><hostKeyVerification>true</hostKeyVerification></sftp:Connection>

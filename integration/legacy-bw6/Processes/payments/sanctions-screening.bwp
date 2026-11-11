@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpws:process name="halvergate.payments.sanctions-screening" targetNamespace="urn:halvergate:integration:payments" suppressJoinFailure="yes" exitOnStandardFault="no" xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable" xmlns:tibex="http://www.tibco.com/bpel/2007/extensions" xmlns:bwext="http://tns.tibco.com/bw/model/core/bwext">
+  <bpws:import namespace="urn:halvergate:integration:request" location="../../Schemas/request.xsd" importType="http://www.w3.org/2001/XMLSchema"/>
+  <bpws:variables><bpws:variable name="Receive" element="request"/><bpws:variable name="DispatchResponse" element="response"/></bpws:variables>
+  <bpws:faultHandlers><bpws:catchAll><bpws:sequence name="RollbackAndRedeliver">      <bpws:extensionActivity>
+        <tibex:activityExtension name="RejectDelivery"><tibex:config>
+          <bwext:BWActivity activityTypeID="bw.jms.JMSConfirm"><activityConfig><acknowledge>false</acknowledge><maxRedelivery>3</maxRedelivery><undeliveredQueue>HB.UNDLV</undeliveredQueue></activityConfig></bwext:BWActivity>
+        </tibex:config></tibex:activityExtension>
+      </bpws:extensionActivity>
+</bpws:sequence></bpws:catchAll></bpws:faultHandlers>
+  <bpws:sequence name="Execute">
+      <bpws:extensionActivity>
+        <tibex:activityExtension name="Receive"><tibex:config>
+          <bwext:BWActivity activityTypeID="bw.jms.JMSQueueReceiver"><activityConfig><connection>SharedResources/EmsConnection.sharedresource</connection><destination>HB.SANCTIONS.REQUEST</destination><acknowledgeMode>CLIENT_ACKNOWLEDGE</acknowledgeMode><deliveryMode>PERSISTENT</deliveryMode><selector></selector><durableSubscriber></durableSubscriber><sequencingKey>accountId</sequencingKey></activityConfig></bwext:BWActivity>
+        </tibex:config></tibex:activityExtension>
+      </bpws:extensionActivity>
+      <bpws:extensionActivity>
+        <tibex:activityExtension name="MapRecord"><tibex:config>
+          <bwext:BWActivity activityTypeID="bw.xml.TransformXML"><activityConfig><stylesheet>Transforms/sanctions-screening.xsl</stylesheet><inputVariable>Receive</inputVariable></activityConfig></bwext:BWActivity>
+        </tibex:config></tibex:activityExtension>
+      </bpws:extensionActivity>
+      <bpws:extensionActivity>
+        <tibex:activityExtension name="DispatchRequest"><tibex:config>
+          <bwext:BWActivity activityTypeID="bw.http.SendHTTPRequest"><activityConfig><connection>SharedResources/ServiceHttp.sharedresource</connection><method>POST</method><endpoint>${screening.url}</endpoint><timeout>15000</timeout><responseVariable>DispatchResponse</responseVariable></activityConfig></bwext:BWActivity>
+        </tibex:config></tibex:activityExtension>
+      </bpws:extensionActivity>
+      <bpws:extensionActivity>
+        <tibex:activityExtension name="Insertscreeningresults"><tibex:config>
+          <bwext:BWActivity activityTypeID="bw.jdbc.JDBCUpdate"><activityConfig><connection>SharedResources/LedgerJdbc.sharedresource</connection><sql>INSERT INTO screening_results (flow,request_id,account_id,amount,currency,status) VALUES (?,?,?,?,?,?)</sql><commitMode>AUTO_COMMIT</commitMode></activityConfig></bwext:BWActivity>
+        </tibex:config></tibex:activityExtension>
+      </bpws:extensionActivity>
+      <bpws:extensionActivity>
+        <tibex:activityExtension name="Publish"><tibex:config>
+          <bwext:BWActivity activityTypeID="bw.jms.JMSSendMessage"><activityConfig><connection>SharedResources/EmsConnection.sharedresource</connection><destination>HB.SANCTIONS.RESPONSE</destination><destinationType>QUEUE</destinationType><deliveryMode>PERSISTENT</deliveryMode><properties>requestId,accountId,JMSXGroupID,sequence</properties></activityConfig></bwext:BWActivity>
+        </tibex:config></tibex:activityExtension>
+      </bpws:extensionActivity>
+  </bpws:sequence>
+</bpws:process>

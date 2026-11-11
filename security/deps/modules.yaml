@@ -103,6 +103,69 @@ modules:
     test: -B test
     cases: null
 
+  - id: integration-reference
+    path: integration/legacy-bw6/reference
+    build: maven
+    java_home:
+      - $JAVA_HOME_21_X64
+      - /usr/lib/jvm/java-21-openjdk-amd64
+    test: -B test
+    cases: null
+
+  - id: integration-targets
+    path: integration/target
+    build: maven
+    java_home:
+      - $JAVA_HOME_21_X64
+      - /usr/lib/jvm/java-21-openjdk-amd64
+    test: -B test
+    cases: null
+
+  - id: integration-payments
+    path: integration/target/payments
+    build: maven
+    java_home:
+      - $JAVA_HOME_21_X64
+      - /usr/lib/jvm/java-21-openjdk-amd64
+    test: -B test
+    cases: null
+
+  - id: integration-account-events
+    path: integration/target/account-events
+    build: maven
+    java_home:
+      - $JAVA_HOME_21_X64
+      - /usr/lib/jvm/java-21-openjdk-amd64
+    test: -B test
+    cases: null
+
+  - id: integration-fees-billing
+    path: integration/target/fees-billing
+    build: maven
+    java_home:
+      - $JAVA_HOME_21_X64
+      - /usr/lib/jvm/java-21-openjdk-amd64
+    test: -B test
+    cases: null
+
+  - id: integration-statements-documents
+    path: integration/target/statements-documents
+    build: maven
+    java_home:
+      - $JAVA_HOME_21_X64
+      - /usr/lib/jvm/java-21-openjdk-amd64
+    test: -B test
+    cases: null
+
+  - id: integration-customer-alerts
+    path: integration/target/customer-alerts
+    build: maven
+    java_home:
+      - $JAVA_HOME_21_X64
+      - /usr/lib/jvm/java-21-openjdk-amd64
+    test: -B test
+    cases: null
+
 exempt:
   - path: frontend/client-app/mobile/android
     reason: >

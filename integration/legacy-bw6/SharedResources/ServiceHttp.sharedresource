@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<http:Connection xmlns:http="http://ns.tibco.com/bw/sharedresource/http" name="ServiceHttp"><connectionTimeout>15000</connectionTimeout><socketTimeout>30000</socketTimeout><maxConnections>20</maxConnections></http:Connection>

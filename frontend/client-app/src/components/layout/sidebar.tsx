@@ -40,14 +40,14 @@ const navGroups: NavGroup[] = [
     items: [
       { href: "/dashboard", label: "Dashboard", icon: Home },
       { href: "/recent", label: "Recent", icon: Clock },
-      { href: "/files", label: "Files", icon: FolderOpen },
-      { href: "/documents", label: "Documents", icon: FileText },
+      { href: "/files", label: "Account records", icon: FolderOpen },
+      { href: "/documents", label: "Credit memos", icon: FileText },
       { href: "/search", label: "Search", icon: Search },
       { href: "/margins", label: "Margins", icon: TrendingUp },
     ],
   },
   {
-    label: "Collaboration",
+    label: "Shared work",
     items: [
       { href: "/shared", label: "Shared with me", icon: Share2 },
       { href: "/starred", label: "Starred", icon: Star },
@@ -90,7 +90,7 @@ export function Sidebar() {
           {sidebarOpen && (
             <Link to="/dashboard" className="flex items-center gap-2">
               <Logo size={28} className="rounded-sm bg-white" />
-              <span className="font-semibold text-white text-sm">OtterWorks</span>
+              <span className="font-serif font-semibold text-white text-sm">Halvergate</span>
             </Link>
           )}
           <button

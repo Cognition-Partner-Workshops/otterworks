@@ -1,0 +1,36 @@
+<configuration xmlns="urn:activemq" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <core xmlns="urn:activemq:core">
+    <name>halvergate-integration</name>
+    <persistence-enabled>true</persistence-enabled>
+    <journal-type>NIO</journal-type>
+    <paging-directory>data/paging</paging-directory><bindings-directory>data/bindings</bindings-directory>
+    <journal-directory>data/journal</journal-directory><large-messages-directory>data/large-messages</large-messages-directory>
+    <acceptors>
+      <acceptor name="jms">tcp://0.0.0.0:61616?protocols=CORE,AMQP</acceptor>
+      <acceptor name="stomp">tcp://0.0.0.0:61613?protocols=STOMP</acceptor>
+    </acceptors>
+    <security-settings><security-setting match="#">
+      <permission type="createNonDurableQueue" roles="amq"/><permission type="deleteNonDurableQueue" roles="amq"/>
+      <permission type="createDurableQueue" roles="amq"/><permission type="deleteDurableQueue" roles="amq"/>
+      <permission type="createAddress" roles="amq"/><permission type="deleteAddress" roles="amq"/>
+      <permission type="consume" roles="amq"/><permission type="browse" roles="amq"/><permission type="send" roles="amq"/>
+      <permission type="manage" roles="amq"/>
+    </security-setting></security-settings>
+    <address-settings><address-setting match="#">
+      <dead-letter-address>HB.UNDLV</dead-letter-address><expiry-address>HB.EXPIRY</expiry-address>
+      <max-delivery-attempts>4</max-delivery-attempts><redelivery-delay>100</redelivery-delay>
+      <auto-create-queues>true</auto-create-queues><auto-create-addresses>true</auto-create-addresses>
+      <default-address-routing-type>ANYCAST</default-address-routing-type><default-queue-routing-type>ANYCAST</default-queue-routing-type>
+    </address-setting></address-settings>
+    <addresses>
+      <address name="HB.UNDLV"><anycast><queue name="HB.UNDLV"/></anycast></address>
+      <address name="HB.EXPIRY"><anycast><queue name="HB.EXPIRY"/></anycast></address>
+      <address name="HB.ACCOUNT.EVENTS.IN"><multicast><queue name="records-event-fanout"/></multicast></address>
+      <address name="HB.ACCOUNT.EVENTS"><multicast/></address>
+      <address name="HB.ACCOUNT.OPENED"><multicast><queue name="records-account-opened"/></multicast></address>
+      <address name="HB.ADDRESS.CHANGED"><multicast><queue name="records-address-changed"/></multicast></address>
+      <address name="HB.LIMIT.CHANGED"><multicast><queue name="records-limit-changed"/></multicast></address>
+      <address name="HB.ACCOUNT.CLOSED"><multicast><queue name="records-account-closed"/></multicast></address>
+    </addresses>
+  </core>
+</configuration>

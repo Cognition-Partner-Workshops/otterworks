@@ -2,18 +2,18 @@
 
 @include mat.core();
 
-// OtterWorks classic-enterprise theme: navy/steel primary with a muted amber accent.
-$otter-navy-palette: (
-  50: #f4f5f7,
-  100: #e7eaef,
-  200: #c8d1dd,
-  300: #a1b0c4,
-  400: #6d84a4,
-  500: #1f3a5f,
-  600: #1a3252,
-  700: #152a45,
-  800: #102138,
-  900: #0c192b,
+// Halvergate Bank theme: pine green primary with a brass accent.
+$bank-pine-palette: (
+  50: #f3f6f4,
+  100: #e3ebe6,
+  200: #c3d5ca,
+  300: #98b8a5,
+  400: #5f8f74,
+  500: #1d5340,
+  600: #174433,
+  700: #123628,
+  800: #0d281e,
+  900: #081a13,
   contrast: (
     50: rgba(0, 0, 0, 0.87),
     100: rgba(0, 0, 0, 0.87),
@@ -28,8 +28,33 @@ $otter-navy-palette: (
   ),
 );
 
-$admin-primary: mat.define-palette($otter-navy-palette, 500);
-$admin-accent: mat.define-palette(mat.$amber-palette, 700);
+$bank-brass-palette: (
+  50: #faf5e8,
+  100: #f2e6c4,
+  200: #e6d29a,
+  300: #d9bd70,
+  400: #c9a24a,
+  500: #b38a2e,
+  600: #946f1f,
+  700: #765818,
+  800: #594211,
+  900: #3d2d0b,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+  ),
+);
+
+$admin-primary: mat.define-palette($bank-pine-palette, 500);
+$admin-accent: mat.define-palette($bank-brass-palette, 500);
 $admin-warn: mat.define-palette(mat.$red-palette);
 
 $admin-theme: mat.define-light-theme((
@@ -54,7 +79,7 @@ html, body {
   height: 100%;
   font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
   font-size: 13.5px;
-  background: #f4f5f7;
+  background: #f3f6f4;
   color: #212529;
 }
 
@@ -111,12 +136,12 @@ app-sidebar .mat-mdc-list-item:hover .mat-icon {
 app-sidebar .active-link,
 app-sidebar .active-link .mdc-list-item__primary-text,
 app-sidebar .active-link .mat-mdc-list-item-title {
-  color: #d99a3d !important;
-  background: rgba(217, 154, 61, 0.18) !important;
+  color: #c9a24a !important;
+  background: rgba(201, 162, 74, 0.18) !important;
 }
 
 app-sidebar .active-link .mat-icon {
-  color: #d99a3d !important;
+  color: #c9a24a !important;
 }
 
 /* Ripple / focus state should also be light */

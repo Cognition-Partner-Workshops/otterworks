@@ -1,0 +1,102 @@
+{
+  "inputs": {
+    "messages": [
+      {
+        "destination": "HB.SANCTIONS.REQUEST",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"sanctions-screening-01\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"payments.sanctions-screening\" currency=\"USD\" amount=\"125.50\" balance=\"1000.00\" rate=\"0.015\" sequence=\"1\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>sanctions-screening-01</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">125.50</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "sanctions-screening-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      },
+      {
+        "destination": "HB.SANCTIONS.REQUEST",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"sanctions-screening-02\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"payments.sanctions-screening\" currency=\"EUR\" amount=\"84.25\" balance=\"1000.00\" rate=\"0.025\" sequence=\"2\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>sanctions-screening-02</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">84.25</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "sanctions-screening-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      }
+    ],
+    "files": []
+  },
+  "capture": {
+    "messages": [
+      {
+        "id": "out",
+        "destination": "HB.SANCTIONS.RESPONSE",
+        "headers": {}
+      }
+    ],
+    "db": {
+      "screening_results": {
+        "query": "SELECT flow,request_id,account_id,amount,currency,status FROM screening_results WHERE flow = %s ORDER BY request_id",
+        "params": [
+          "payments.sanctions-screening"
+        ]
+      }
+    }
+  },
+  "capture_seconds": 1,
+  "publish_interval": 0.05,
+  "expected": {
+    "messages": [
+      {
+        "destination": "HB.SANCTIONS.RESPONSE",
+        "body": "payments.sanctions-screening|sanctions-screening-01|CHK-1042|SANCTIONS_SCREENING|125.50|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "sanctions-screening-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1"
+        }
+      },
+      {
+        "destination": "HB.SANCTIONS.RESPONSE",
+        "body": "payments.sanctions-screening|sanctions-screening-02|CHK-1042|SANCTIONS_SCREENING|84.25|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "sanctions-screening-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2"
+        }
+      }
+    ],
+    "db": {
+      "screening_results": [
+        {
+          "flow": "payments.sanctions-screening",
+          "request_id": "sanctions-screening-01",
+          "account_id": "CHK-1042",
+          "currency": "USD",
+          "amount": "125.50",
+          "status": "SANCTIONS_SCREENING"
+        },
+        {
+          "flow": "payments.sanctions-screening",
+          "request_id": "sanctions-screening-02",
+          "account_id": "CHK-1042",
+          "currency": "EUR",
+          "amount": "84.25",
+          "status": "SANCTIONS_SCREENING"
+        }
+      ]
+    },
+    "files": {}
+  },
+  "faults": {}
+}

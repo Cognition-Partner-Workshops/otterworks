@@ -1,0 +1,76 @@
+{
+  "inputs": {
+    "messages": [
+      {
+        "destination": "HB.PDF.REQUEST",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"pdf-request-01\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"statements-documents.pdf-request\" currency=\"USD\" amount=\"125.50\" balance=\"1000.00\" rate=\"0.015\" sequence=\"1\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>pdf-request-01</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">125.50</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "pdf-request-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      },
+      {
+        "destination": "HB.PDF.REQUEST",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"pdf-request-02\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"statements-documents.pdf-request\" currency=\"EUR\" amount=\"84.25\" balance=\"1000.00\" rate=\"0.025\" sequence=\"2\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>pdf-request-02</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">84.25</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "pdf-request-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      }
+    ],
+    "files": []
+  },
+  "capture": {
+    "messages": [
+      {
+        "id": "out",
+        "destination": "HB.PDF.REQUESTED",
+        "headers": {}
+      }
+    ],
+    "db": {}
+  },
+  "capture_seconds": 1,
+  "publish_interval": 0.05,
+  "expected": {
+    "messages": [
+      {
+        "destination": "HB.PDF.REQUESTED",
+        "body": "statements-documents.pdf-request|pdf-request-01|CHK-1042|PDF_REQUEST|125.50|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "pdf-request-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1"
+        }
+      },
+      {
+        "destination": "HB.PDF.REQUESTED",
+        "body": "statements-documents.pdf-request|pdf-request-02|CHK-1042|PDF_REQUEST|84.25|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "pdf-request-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2"
+        }
+      }
+    ],
+    "db": {},
+    "files": {}
+  },
+  "faults": {}
+}

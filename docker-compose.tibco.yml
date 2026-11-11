@@ -1,0 +1,185 @@
+services:
+  api-gateway: {profiles: [application]}
+  auth-service: {profiles: [application]}
+  file-service: {profiles: [application]}
+  document-service: {profiles: [application]}
+  collab-service: {profiles: [application]}
+  notification-service: {profiles: [application]}
+  search-service: {profiles: [application]}
+  analytics-service: {profiles: [application]}
+  admin-service: {profiles: [application]}
+  audit-service: {profiles: [application]}
+  report-service: {profiles: [application]}
+  web-app: {profiles: [application]}
+  workbench: {profiles: [application]}
+  admin-dashboard: {profiles: [application]}
+  broker:
+    image: apache/activemq-artemis:2.40.0-alpine
+    container_name: otterworks-tibco-${NS:?NS required}-broker
+    environment:
+      ARTEMIS_USER: replay
+      ARTEMIS_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+      ANONYMOUS_LOGIN: "false"
+      JAVA_ARGS: -Xms128m -Xmx256m
+    volumes:
+      - integration-broker:/var/lib/artemis-instance
+      - ./integration/fixture/broker.xml:/var/lib/artemis-instance/etc-override/broker.xml:ro
+    healthcheck:
+      test: [CMD-SHELL, './bin/artemis check node --url tcp://localhost:61616 --user replay --password "$$ARTEMIS_PASSWORD"']
+      interval: 5s
+      timeout: 15s
+      retries: 20
+    mem_limit: 512m
+    networks: [integration]
+  integration-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: integration
+      POSTGRES_USER: replay
+      POSTGRES_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+    command: [postgres, -c, max_prepared_transactions=100]
+    volumes:
+      - integration-db:/var/lib/postgresql/data
+      - ./integration/legacy-bw6/Database/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U replay -d integration]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    mem_limit: 256m
+    networks: [integration]
+  sftp:
+    image: atmoz/sftp:alpine
+    command: replay:${TIBCO_LOCAL_PASSWORD:-integration-local-only}:1000:1000:upload/in,upload/out
+    volumes:
+      - integration-files:/home/replay/upload
+    mem_limit: 128m
+    networks: [integration]
+  replay-runner:
+    image: otterworks-tibco-runner:${NS:?NS required}
+    build:
+      context: .
+      dockerfile: integration/fixture/Dockerfile
+    environment: &replay-env
+      REPLAY_BROKER_URL: stomp://broker:61613
+      REPLAY_BROKER_USER: replay
+      REPLAY_BROKER_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+      REPLAY_DB_DSN: postgresql://replay:${TIBCO_LOCAL_PASSWORD:-integration-local-only}@integration-db:5432/integration
+      REPLAY_SFTP_USER: replay
+      REPLAY_SFTP_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+      REPLAY_BROKER_CONTAINER: otterworks-tibco-${NS}-broker
+      REPLAY_CONSUMER_CONTAINER: otterworks-tibco-${NS}-account-events
+    volumes:
+      - ./integration:/workspace/integration:ro
+      - ./integration/reports/${NS}:/reports
+      - integration-state:/state
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DOCKER_BIN:-/usr/bin/docker}:/usr/local/bin/docker:ro
+    group_add: ["${DOCKER_GID:-0}"]
+    depends_on:
+      broker: {condition: service_healthy}
+      integration-db: {condition: service_healthy}
+      sftp: {condition: service_started}
+    mem_limit: 256m
+    networks: [integration]
+  echo-consumer:
+    image: otterworks-tibco-runner:${NS}
+    profiles: [fault-smoke]
+    entrypoint: [python, -m, integration.fixture.echo]
+    environment: *replay-env
+    volumes:
+      - ./integration:/workspace/integration:ro
+    depends_on:
+      broker: {condition: service_healthy}
+    mem_limit: 128m
+    networks: [integration]
+
+  payments:
+    profiles: [targets]
+    build:
+      context: integration/target
+      args: {DOMAIN: payments}
+    container_name: otterworks-tibco-${NS}-payments
+    environment:
+      BROKER_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+      DB_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m
+    depends_on:
+      broker: {condition: service_healthy}
+      integration-db: {condition: service_healthy}
+      sftp: {condition: service_started}
+    mem_limit: 512m
+    networks: [integration]
+  account-events:
+    profiles: [targets]
+    build:
+      context: integration/target
+      args: {DOMAIN: account-events}
+    container_name: otterworks-tibco-${NS}-account-events
+    environment:
+      BROKER_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+      DB_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m
+    depends_on:
+      broker: {condition: service_healthy}
+      integration-db: {condition: service_healthy}
+      sftp: {condition: service_started}
+    mem_limit: 512m
+    networks: [integration]
+  fees-billing:
+    profiles: [targets]
+    build:
+      context: integration/target
+      args: {DOMAIN: fees-billing}
+    container_name: otterworks-tibco-${NS}-fees-billing
+    environment:
+      BROKER_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+      DB_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m
+    depends_on:
+      broker: {condition: service_healthy}
+      integration-db: {condition: service_healthy}
+      sftp: {condition: service_started}
+    mem_limit: 512m
+    networks: [integration]
+  statements-documents:
+    profiles: [targets]
+    build:
+      context: integration/target
+      args: {DOMAIN: statements-documents}
+    container_name: otterworks-tibco-${NS}-statements-documents
+    environment:
+      BROKER_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+      DB_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m
+    depends_on:
+      broker: {condition: service_healthy}
+      integration-db: {condition: service_healthy}
+      sftp: {condition: service_started}
+    mem_limit: 512m
+    networks: [integration]
+  customer-alerts:
+    profiles: [targets]
+    build:
+      context: integration/target
+      args: {DOMAIN: customer-alerts}
+    container_name: otterworks-tibco-${NS}-customer-alerts
+    environment:
+      BROKER_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+      DB_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m
+    depends_on:
+      broker: {condition: service_healthy}
+      integration-db: {condition: service_healthy}
+      sftp: {condition: service_started}
+    mem_limit: 512m
+    networks: [integration]
+
+volumes:
+  integration-broker:
+  integration-db:
+  integration-files:
+  integration-state:
+
+networks:
+  integration:

@@ -4,6 +4,8 @@ import subprocess
 import time
 from collections import Counter, defaultdict
 
+from .transports import env_value
+
 TESTS = ("broker-kill", "consumer-restart", "poison", "ordering")
 
 
@@ -15,7 +17,9 @@ def docker(action: str, container: str):
 
 class FaultHook:
     def __init__(self, test, spec, broker, count, control=docker, sleep=time.sleep):
-        self.test, self.spec, self.broker = test, spec, broker
+        self.test, self.spec, self.broker = test, dict(spec), broker
+        if test in ("broker-kill", "consumer-restart"):
+            self.spec["container"] = env_value(spec, "container")
         self.control, self.sleep = control, sleep
         self.events = []
         self.stopped = False

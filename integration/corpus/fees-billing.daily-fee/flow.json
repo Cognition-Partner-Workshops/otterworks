@@ -1,0 +1,135 @@
+{
+  "inputs": {
+    "messages": [
+      {
+        "destination": "HB.DAILY.FEES",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"daily-fee-01\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"fees-billing.daily-fee\" currency=\"USD\" amount=\"125.50\" balance=\"1000.00\" rate=\"0.015\" sequence=\"1\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>daily-fee-01</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">125.50</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "daily-fee-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      },
+      {
+        "destination": "HB.DAILY.FEES",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"daily-fee-02\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"fees-billing.daily-fee\" currency=\"EUR\" amount=\"84.25\" balance=\"1000.00\" rate=\"0.025\" sequence=\"2\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>daily-fee-02</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">84.25</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "daily-fee-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      },
+      {
+        "destination": "HB.DAILY.FEES",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"daily-fee-03\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"fees-billing.daily-fee\" currency=\"USD\" amount=\"84.25\" balance=\"1000.00\" rate=\"0.025\" sequence=\"3\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>daily-fee-03</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">84.25</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "daily-fee-03",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "3",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      }
+    ],
+    "files": []
+  },
+  "capture": {
+    "messages": [
+      {
+        "id": "out",
+        "destination": "HB.FEE.CALCULATED",
+        "headers": {}
+      }
+    ],
+    "db": {
+      "fee_assessments": {
+        "query": "SELECT flow,request_id,account_id,amount,currency,status FROM fee_assessments WHERE flow = %s ORDER BY request_id",
+        "params": [
+          "fees-billing.daily-fee"
+        ]
+      }
+    }
+  },
+  "capture_seconds": 1,
+  "publish_interval": 0.05,
+  "expected": {
+    "messages": [
+      {
+        "destination": "HB.FEE.CALCULATED",
+        "body": "fees-billing.daily-fee|daily-fee-01|CHK-1042|FEE_ASSESSED|15.00|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "daily-fee-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1"
+        }
+      },
+      {
+        "destination": "HB.FEE.CALCULATED",
+        "body": "fees-billing.daily-fee|daily-fee-02|CHK-1042|FEE_ASSESSED|15.00|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "daily-fee-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2"
+        }
+      },
+      {
+        "destination": "HB.FEE.CALCULATED",
+        "body": "fees-billing.daily-fee|daily-fee-03|CHK-1042|FEE_ASSESSED|15.00|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "daily-fee-03",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "3"
+        }
+      }
+    ],
+    "db": {
+      "fee_assessments": [
+        {
+          "flow": "fees-billing.daily-fee",
+          "request_id": "daily-fee-01",
+          "account_id": "CHK-1042",
+          "currency": "USD",
+          "amount": "15.00",
+          "status": "FEE_ASSESSED"
+        },
+        {
+          "flow": "fees-billing.daily-fee",
+          "request_id": "daily-fee-02",
+          "account_id": "CHK-1042",
+          "currency": "EUR",
+          "amount": "15.00",
+          "status": "FEE_ASSESSED"
+        },
+        {
+          "flow": "fees-billing.daily-fee",
+          "request_id": "daily-fee-03",
+          "account_id": "CHK-1042",
+          "currency": "USD",
+          "amount": "15.00",
+          "status": "FEE_ASSESSED"
+        }
+      ]
+    },
+    "files": {}
+  },
+  "faults": {}
+}

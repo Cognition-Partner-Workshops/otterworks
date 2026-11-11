@@ -1,0 +1,102 @@
+{
+  "inputs": {
+    "messages": [
+      {
+        "destination": "HB.ADDRESS.CHANGED",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"address-changed-01\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"account-events.address-changed\" currency=\"USD\" amount=\"125.50\" balance=\"1000.00\" rate=\"0.015\" sequence=\"1\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>address-changed-01</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">125.50</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "address-changed-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "MULTICAST"
+        }
+      },
+      {
+        "destination": "HB.ADDRESS.CHANGED",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"address-changed-02\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"account-events.address-changed\" currency=\"EUR\" amount=\"84.25\" balance=\"1000.00\" rate=\"0.025\" sequence=\"2\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>address-changed-02</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">84.25</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "address-changed-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "MULTICAST"
+        }
+      }
+    ],
+    "files": []
+  },
+  "capture": {
+    "messages": [
+      {
+        "id": "out",
+        "destination": "HB.ADDRESS.UPDATED",
+        "headers": {}
+      }
+    ],
+    "db": {
+      "account_addresses": {
+        "query": "SELECT flow,request_id,account_id,amount,currency,status FROM account_addresses WHERE flow = %s ORDER BY request_id",
+        "params": [
+          "account-events.address-changed"
+        ]
+      }
+    }
+  },
+  "capture_seconds": 1,
+  "publish_interval": 0.05,
+  "expected": {
+    "messages": [
+      {
+        "destination": "HB.ADDRESS.UPDATED",
+        "body": "account-events.address-changed|address-changed-01|CHK-1042|ADDRESS_CHANGED|125.50|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "address-changed-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1"
+        }
+      },
+      {
+        "destination": "HB.ADDRESS.UPDATED",
+        "body": "account-events.address-changed|address-changed-02|CHK-1042|ADDRESS_CHANGED|84.25|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "address-changed-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2"
+        }
+      }
+    ],
+    "db": {
+      "account_addresses": [
+        {
+          "flow": "account-events.address-changed",
+          "request_id": "address-changed-01",
+          "account_id": "CHK-1042",
+          "currency": "USD",
+          "amount": "125.50",
+          "status": "ADDRESS_CHANGED"
+        },
+        {
+          "flow": "account-events.address-changed",
+          "request_id": "address-changed-02",
+          "account_id": "CHK-1042",
+          "currency": "EUR",
+          "amount": "84.25",
+          "status": "ADDRESS_CHANGED"
+        }
+      ]
+    },
+    "files": {}
+  },
+  "faults": {}
+}

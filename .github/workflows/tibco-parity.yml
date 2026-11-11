@@ -1,0 +1,55 @@
+name: Integration migration parity
+
+on:
+  pull_request:
+    branches: [demo-tibco, demo-tibco-after]
+    paths:
+      - 'integration/**'
+      - 'docker-compose.tibco.yml'
+      - 'Makefile'
+      - 'demos/app/complexity-manifest.json'
+      - '.github/workflows/tibco-parity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  replay-and-fault:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - run: uv run --with ruff==0.9.10 ruff check integration
+      - run: uv run --with pyyaml==6.0.2 --with pytest==8.3.5 python -m pytest integration/harness/tests integration/fixture/tests
+      - run: integration/target/mvnw -B -ntp -f integration/target/pom.xml package
+      - run: mvn -B -ntp -f integration/legacy-bw6/reference/pom.xml package
+      - run: python -m integration.harness verify-lock --corpus integration/corpus
+      - run: make tibco-up NS=ci
+      - name: Replay empty baseline or migrated target
+        env:
+          BASE_BRANCH: ${{ github.base_ref }}
+        run: |
+          if [ "$BASE_BRANCH" = demo-tibco ]; then
+            if make tibco-parity NS=ci; then
+              echo 'Empty targets unexpectedly matched' >&2
+              exit 1
+            fi
+            python -m integration.fixture.summary integration/reports/ci/parity.json --expect-empty
+          else
+            NS=ci docker compose -f docker-compose.yml -f docker-compose.tibco.yml -p otterworks-tibco-ci --profile targets up -d payments account-events fees-billing statements-documents customer-alerts
+            make tibco-parity NS=ci
+          fi
+      - run: make tibco-fault-smoke NS=ci
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: integration-parity
+          path: integration/reports/ci/**
+      - if: always()
+        run: make tibco-down NS=ci

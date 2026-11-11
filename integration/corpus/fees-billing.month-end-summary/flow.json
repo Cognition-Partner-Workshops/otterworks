@@ -1,0 +1,135 @@
+{
+  "inputs": {
+    "messages": [
+      {
+        "destination": "HB.MONTH.END.SUMMARY",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"month-end-summary-01\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"fees-billing.month-end-summary\" currency=\"USD\" amount=\"2.345\" balance=\"1000.00\" rate=\"0.015\" sequence=\"1\" customerType=\"RETAIL\" channel=\"XSLT\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>month-end-summary-01</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">2.345</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "month-end-summary-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      },
+      {
+        "destination": "HB.MONTH.END.SUMMARY",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"month-end-summary-02\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"fees-billing.month-end-summary\" currency=\"EUR\" amount=\"2.345\" balance=\"1000.00\" rate=\"0.025\" sequence=\"2\" customerType=\"RETAIL\" channel=\"JAVA\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>month-end-summary-02</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">2.345</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "month-end-summary-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      },
+      {
+        "destination": "HB.MONTH.END.SUMMARY",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"month-end-summary-03\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"fees-billing.month-end-summary\" currency=\"USD\" amount=\"2.345\" balance=\"1000.00\" rate=\"0.025\" sequence=\"3\" customerType=\"RETAIL\" channel=\"XSLT\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>month-end-summary-03</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">2.345</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "month-end-summary-03",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "3",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      }
+    ],
+    "files": []
+  },
+  "capture": {
+    "messages": [
+      {
+        "id": "out",
+        "destination": "HB.FEE.SUMMARY",
+        "headers": {}
+      }
+    ],
+    "db": {
+      "fee_summaries": {
+        "query": "SELECT flow,request_id,account_id,amount,currency,status FROM fee_summaries WHERE flow = %s ORDER BY request_id",
+        "params": [
+          "fees-billing.month-end-summary"
+        ]
+      }
+    }
+  },
+  "capture_seconds": 1,
+  "publish_interval": 0.05,
+  "expected": {
+    "messages": [
+      {
+        "destination": "HB.FEE.SUMMARY",
+        "body": "fees-billing.month-end-summary|month-end-summary-01|CHK-1042|MONTH_END|2.35|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "month-end-summary-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1"
+        }
+      },
+      {
+        "destination": "HB.FEE.SUMMARY",
+        "body": "fees-billing.month-end-summary|month-end-summary-02|CHK-1042|MONTH_END|2.34|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "month-end-summary-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2"
+        }
+      },
+      {
+        "destination": "HB.FEE.SUMMARY",
+        "body": "fees-billing.month-end-summary|month-end-summary-03|CHK-1042|MONTH_END|2.35|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "month-end-summary-03",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "3"
+        }
+      }
+    ],
+    "db": {
+      "fee_summaries": [
+        {
+          "flow": "fees-billing.month-end-summary",
+          "request_id": "month-end-summary-01",
+          "account_id": "CHK-1042",
+          "currency": "USD",
+          "amount": "2.35",
+          "status": "MONTH_END"
+        },
+        {
+          "flow": "fees-billing.month-end-summary",
+          "request_id": "month-end-summary-02",
+          "account_id": "CHK-1042",
+          "currency": "EUR",
+          "amount": "2.34",
+          "status": "MONTH_END"
+        },
+        {
+          "flow": "fees-billing.month-end-summary",
+          "request_id": "month-end-summary-03",
+          "account_id": "CHK-1042",
+          "currency": "USD",
+          "amount": "2.35",
+          "status": "MONTH_END"
+        }
+      ]
+    },
+    "files": {}
+  },
+  "faults": {}
+}

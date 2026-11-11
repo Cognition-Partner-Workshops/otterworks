@@ -1,6 +1,38 @@
 .PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
 
 SHELL := /bin/bash
+.DEFAULT_GOAL := help
+
+TIBCO_COMPOSE = NS=$(NS) DOCKER_GID=$$(stat -c %g /var/run/docker.sock) docker compose -f docker-compose.yml -f docker-compose.tibco.yml -p otterworks-tibco-$(NS)
+
+.PHONY: tibco-validate tibco-up tibco-replay tibco-parity tibco-fault tibco-fault-smoke tibco-down
+tibco-validate:
+	@test -n "$(NS)" && [[ "$(NS)" =~ ^[a-z][a-z0-9-]{0,20}$$ ]] || (echo "NS must be a lowercase namespace" >&2; exit 2)
+
+tibco-up: tibco-validate ## Start the isolated integration fixture (NS=<namespace>)
+	mkdir -p integration/reports/$(NS)
+	$(TIBCO_COMPOSE) build replay-runner
+	$(TIBCO_COMPOSE) up -d --wait broker integration-db sftp
+	$(TIBCO_COMPOSE) run --rm --entrypoint python replay-runner -m integration.fixture.prepare
+
+tibco-replay: tibco-validate ## Replay selected integration flows (NS=<namespace>, FLOW optional)
+	$(TIBCO_COMPOSE) run --rm replay-runner replay --corpus integration/corpus $(if $(FLOW),--flow $(FLOW),) --report-dir /reports
+
+tibco-parity: tibco-replay ## Write integration parity evidence (NS=<namespace>)
+
+tibco-fault: tibco-validate ## Run an integration fault (NS=<namespace>, TEST required)
+	@test -n "$(TEST)" || (echo "TEST is required" >&2; exit 2)
+	@case "$(TEST)" in broker-kill) flow=payments.instruction-intake;; consumer-restart) flow=account-events.event-fanout;; poison) flow=customer-alerts.card-dispute;; ordering) flow=account-events.limit-changed;; *) echo "Unknown fault test" >&2; exit 2;; esac; \
+	$(TIBCO_COMPOSE) run --rm replay-runner fault --corpus integration/corpus --flow $${flow} --test $(TEST) --report-dir /reports/$(TEST)
+
+tibco-fault-smoke: tibco-validate ## Prove broker kill against a transactional echo (NS=<namespace>)
+	@set -e; $(TIBCO_COMPOSE) up -d echo-consumer; \
+	trap '$(TIBCO_COMPOSE) stop echo-consumer' EXIT; \
+	$(TIBCO_COMPOSE) run --rm --entrypoint python replay-runner -m integration.fixture.smoke; \
+	$(TIBCO_COMPOSE) run --rm replay-runner fault --corpus /state/fault-corpus --flow echo --test broker-kill --report-dir /reports/fault-smoke
+
+tibco-down: tibco-validate ## Remove only the local integration fixture (NS=<namespace>)
+	$(TIBCO_COMPOSE) down -v
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

@@ -1,0 +1,5 @@
+reports/
+state/
+legacy-bw6/reference/target/
+target/*/target/
+__pycache__/

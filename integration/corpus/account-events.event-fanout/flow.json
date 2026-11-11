@@ -1,0 +1,114 @@
+{
+  "inputs": {
+    "messages": [
+      {
+        "destination": "HB.ACCOUNT.EVENTS.IN",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"event-fanout-01\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"account-events.event-fanout\" currency=\"USD\" amount=\"125.50\" balance=\"1000.00\" rate=\"0.015\" sequence=\"1\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>event-fanout-01</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">125.50</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "event-fanout-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "MULTICAST"
+        }
+      },
+      {
+        "destination": "HB.ACCOUNT.EVENTS.IN",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"event-fanout-02\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"account-events.event-fanout\" currency=\"EUR\" amount=\"84.25\" balance=\"1000.00\" rate=\"0.025\" sequence=\"2\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>event-fanout-02</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">84.25</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "event-fanout-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "MULTICAST"
+        }
+      }
+    ],
+    "files": []
+  },
+  "capture": {
+    "messages": [
+      {
+        "id": "out",
+        "destination": "HB.ACCOUNT.EVENTS",
+        "headers": {
+          "subscription-type": "MULTICAST",
+          "durable-subscription-name": "replay-account-evidence"
+        }
+      }
+    ],
+    "db": {
+      "account_events": {
+        "query": "SELECT flow,request_id,account_id,amount,currency,status FROM account_events WHERE flow = %s ORDER BY request_id",
+        "params": [
+          "account-events.event-fanout"
+        ]
+      }
+    }
+  },
+  "capture_seconds": 1,
+  "publish_interval": 0.05,
+  "expected": {
+    "messages": [
+      {
+        "destination": "HB.ACCOUNT.EVENTS",
+        "body": "account-events.event-fanout|event-fanout-01|CHK-1042|EVENT_FANOUT|125.50|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "event-fanout-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1"
+        }
+      },
+      {
+        "destination": "HB.ACCOUNT.EVENTS",
+        "body": "account-events.event-fanout|event-fanout-02|CHK-1042|EVENT_FANOUT|84.25|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "event-fanout-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2"
+        }
+      }
+    ],
+    "db": {
+      "account_events": [
+        {
+          "flow": "account-events.event-fanout",
+          "request_id": "event-fanout-01",
+          "account_id": "CHK-1042",
+          "currency": "USD",
+          "amount": "125.50",
+          "status": "EVENT_FANOUT"
+        },
+        {
+          "flow": "account-events.event-fanout",
+          "request_id": "event-fanout-02",
+          "account_id": "CHK-1042",
+          "currency": "EUR",
+          "amount": "84.25",
+          "status": "EVENT_FANOUT"
+        }
+      ]
+    },
+    "files": {}
+  },
+  "faults": {
+    "consumer-restart": {
+      "container_env": "REPLAY_CONSUMER_CONTAINER",
+      "after_message": 1,
+      "restart_after": 2,
+      "identity_header": "requestId",
+      "topic": "HB.ACCOUNT.EVENTS.IN",
+      "durable_subscription": "records-event-fanout"
+    }
+  }
+}

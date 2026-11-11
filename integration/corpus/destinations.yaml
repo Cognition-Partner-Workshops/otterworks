@@ -1,0 +1,24 @@
+broker:
+  url_env: REPLAY_BROKER_URL
+  username_env: REPLAY_BROKER_USER
+  password_env: REPLAY_BROKER_PASSWORD
+  client_id: replay-observer
+sftp:
+  host: sftp
+  port: 22
+  username_env: REPLAY_SFTP_USER
+  password_env: REPLAY_SFTP_PASSWORD
+  known_hosts: /state/known_hosts
+  input_root: /upload/in
+db:
+  dsn_env: REPLAY_DB_DSN
+ignore:
+  - /messages/*/headers/message-id
+  - /messages/*/headers/subscription
+  - /messages/*/headers/timestamp
+  - /messages/*/headers/content-length
+  - /messages/*/headers/destination
+  - /messages/*/headers/priority
+  - /messages/*/headers/persistent
+  - /messages/*/headers/expires
+  - /messages/*/headers/redelivered

@@ -1,0 +1,155 @@
+{
+  "inputs": {
+    "messages": [
+      {
+        "destination": "HB.ALERTS.CARD.DISPUTE",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"card-dispute-01\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"customer-alerts.card-dispute\" currency=\"USD\" amount=\"125.50\" balance=\"1000.00\" rate=\"0.015\" sequence=\"1\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>card-dispute-01</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">125.50</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "card-dispute-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      },
+      {
+        "destination": "HB.ALERTS.CARD.DISPUTE",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"card-dispute-02\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"customer-alerts.card-dispute\" currency=\"EUR\" amount=\"84.25\" balance=\"1000.00\" rate=\"0.025\" sequence=\"2\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"true\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>card-dispute-02</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">84.25</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "card-dispute-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      }
+    ],
+    "files": []
+  },
+  "capture": {
+    "messages": [
+      {
+        "id": "out",
+        "destination": "HB.DISPUTE.RECEIVED",
+        "headers": {}
+      },
+      {
+        "id": "attempts",
+        "destination": "HB.DELIVERY.AUDIT"
+      },
+      {
+        "id": "dlq",
+        "destination": "HB.UNDLV"
+      }
+    ],
+    "db": {
+      "dispute_cases": {
+        "query": "SELECT flow,request_id,account_id,amount,currency,status FROM dispute_cases WHERE flow = %s ORDER BY request_id",
+        "params": [
+          "customer-alerts.card-dispute"
+        ]
+      }
+    }
+  },
+  "capture_seconds": 1,
+  "publish_interval": 0.05,
+  "expected": {
+    "messages": [
+      {
+        "destination": "HB.DISPUTE.RECEIVED",
+        "body": "customer-alerts.card-dispute|card-dispute-01|CHK-1042|CARD_DISPUTE|125.50|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "card-dispute-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1"
+        }
+      },
+      {
+        "destination": "HB.DELIVERY.AUDIT",
+        "body": "customer-alerts.card-dispute|card-dispute-02|CHK-1042|CARD_DISPUTE|84.25|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "card-dispute-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "deliveryCount": "1"
+        }
+      },
+      {
+        "destination": "HB.DELIVERY.AUDIT",
+        "body": "customer-alerts.card-dispute|card-dispute-02|CHK-1042|CARD_DISPUTE|84.25|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "card-dispute-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "deliveryCount": "2"
+        }
+      },
+      {
+        "destination": "HB.DELIVERY.AUDIT",
+        "body": "customer-alerts.card-dispute|card-dispute-02|CHK-1042|CARD_DISPUTE|84.25|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "card-dispute-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "deliveryCount": "3"
+        }
+      },
+      {
+        "destination": "HB.DELIVERY.AUDIT",
+        "body": "customer-alerts.card-dispute|card-dispute-02|CHK-1042|CARD_DISPUTE|84.25|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "card-dispute-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "deliveryCount": "4"
+        }
+      },
+      {
+        "destination": "HB.UNDLV",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"card-dispute-02\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"customer-alerts.card-dispute\" currency=\"EUR\" amount=\"84.25\" balance=\"1000.00\" rate=\"0.025\" sequence=\"2\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"true\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>card-dispute-02</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">84.25</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "headers": {
+          "requestId": "card-dispute-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2"
+        }
+      }
+    ],
+    "db": {
+      "dispute_cases": [
+        {
+          "flow": "customer-alerts.card-dispute",
+          "request_id": "card-dispute-01",
+          "account_id": "CHK-1042",
+          "currency": "USD",
+          "amount": "125.50",
+          "status": "CARD_DISPUTE"
+        }
+      ]
+    },
+    "files": {}
+  },
+  "faults": {
+    "poison": {
+      "identity_header": "requestId",
+      "identity": "card-dispute-02",
+      "audit_destination": "HB.DELIVERY.AUDIT",
+      "delivery_count_header": "deliveryCount",
+      "redeliveries": 3,
+      "dlq": "HB.UNDLV"
+    }
+  }
+}

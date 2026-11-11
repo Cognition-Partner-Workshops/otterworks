@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: account-events
+  artemis:
+    mode: native
+    broker-url: ${BROKER_URL:tcp://broker:61616}
+    user: ${BROKER_USER:replay}
+    password: ${BROKER_PASSWORD}
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://integration-db:5432/integration}
+    username: ${DB_USER:replay}
+    password: ${DB_PASSWORD}
+camel:
+  springboot:
+    main-run-controller: true

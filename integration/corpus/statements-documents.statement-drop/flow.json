@@ -1,0 +1,87 @@
+{
+  "inputs": {
+    "messages": [],
+    "files": [
+      {
+        "path": "statement-drop-01.xml",
+        "base64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHJlcXVlc3QgaWQ9InN0YXRlbWVudC1kcm9wLTAxIiBhY2NvdW50PSJDSEstMTA0MiIgdHlwZT0iQ0hFQ0tJTkciIGZsb3c9InN0YXRlbWVudHMtZG9jdW1lbnRzLnN0YXRlbWVudC1kcm9wIiBjdXJyZW5jeT0iVVNEIiBhbW91bnQ9IjEyNS41MCIgYmFsYW5jZT0iMTAwMC4wMCIgcmF0ZT0iMC4wMTUiIHNlcXVlbmNlPSIxIiBjdXN0b21lclR5cGU9IlJFVEFJTCIgY2hhbm5lbD0iSk1TIiBwb2lzb249ImZhbHNlIiB0aW1lc3RhbXA9IjIwMjYtMDMtMjlUMDE6MzA6MDArMDE6MDAiPjxEb2N1bWVudCB4bWxucz0idXJuOmlzbzpzdGQ6aXNvOjIwMDIyOnRlY2g6eHNkOnBhaW4uMDAxLjAwMS4wMyI+PENzdG1yQ2R0VHJmSW5pdG4+PEdycEhkcj48TXNnSWQ+c3RhdGVtZW50LWRyb3AtMDE8L01zZ0lkPjxOYk9mVHhzPjE8L05iT2ZUeHM+PC9HcnBIZHI+PFBtdEluZj48RGJ0cj48Tm0+SGFsdmVyZ2F0ZSBSZXRhaWwgQ2xlYXJpbmc8L05tPjwvRGJ0cj48Q2R0VHJmVHhJbmY+PEFtdD48SW5zdGRBbXQgQ2N5PSJVU0QiPjEyNS41MDwvSW5zdGRBbXQ+PC9BbXQ+PC9DZHRUcmZUeEluZj48L1BtdEluZj48L0NzdG1yQ2R0VHJmSW5pdG4+PC9Eb2N1bWVudD48L3JlcXVlc3Q+Cg=="
+      },
+      {
+        "path": "statement-drop-02.xml",
+        "base64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHJlcXVlc3QgaWQ9InN0YXRlbWVudC1kcm9wLTAyIiBhY2NvdW50PSJDSEstMTA0MiIgdHlwZT0iQ0hFQ0tJTkciIGZsb3c9InN0YXRlbWVudHMtZG9jdW1lbnRzLnN0YXRlbWVudC1kcm9wIiBjdXJyZW5jeT0iRVVSIiBhbW91bnQ9Ijg0LjI1IiBiYWxhbmNlPSIxMDAwLjAwIiByYXRlPSIwLjAyNSIgc2VxdWVuY2U9IjIiIGN1c3RvbWVyVHlwZT0iUkVUQUlMIiBjaGFubmVsPSJKTVMiIHBvaXNvbj0iZmFsc2UiIHRpbWVzdGFtcD0iMjAyNi0wMy0yOVQwMTozMDowMCswMTowMCI+PERvY3VtZW50IHhtbG5zPSJ1cm46aXNvOnN0ZDppc286MjAwMjI6dGVjaDp4c2Q6cGFpbi4wMDEuMDAxLjAzIj48Q3N0bXJDZHRUcmZJbml0bj48R3JwSGRyPjxNc2dJZD5zdGF0ZW1lbnQtZHJvcC0wMjwvTXNnSWQ+PE5iT2ZUeHM+MTwvTmJPZlR4cz48L0dycEhkcj48UG10SW5mPjxEYnRyPjxObT5IYWx2ZXJnYXRlIFJldGFpbCBDbGVhcmluZzwvTm0+PC9EYnRyPjxDZHRUcmZUeEluZj48QW10PjxJbnN0ZEFtdCBDY3k9IlVTRCI+ODQuMjU8L0luc3RkQW10PjwvQW10PjwvQ2R0VHJmVHhJbmY+PC9QbXRJbmY+PC9Dc3RtckNkdFRyZkluaXRuPjwvRG9jdW1lbnQ+PC9yZXF1ZXN0Pgo="
+      }
+    ]
+  },
+  "capture": {
+    "messages": [
+      {
+        "id": "out",
+        "destination": "HB.STATEMENT.READY",
+        "headers": {}
+      }
+    ],
+    "db": {
+      "statement_jobs": {
+        "query": "SELECT flow,request_id,account_id,amount,currency,status FROM statement_jobs WHERE flow = %s ORDER BY request_id",
+        "params": [
+          "statements-documents.statement-drop"
+        ]
+      }
+    },
+    "files": {
+      "transport": "sftp",
+      "root": "/upload/out/statements-documents.statement-drop"
+    }
+  },
+  "capture_seconds": 1,
+  "publish_interval": 0.05,
+  "expected": {
+    "messages": [
+      {
+        "destination": "HB.STATEMENT.READY",
+        "body": "statements-documents.statement-drop|statement-drop-01|CHK-1042|STATEMENT_READY|125.50|2026-03-29T00:30:00Z",
+        "headers": {
+          "requestId": "statement-drop-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1"
+        }
+      },
+      {
+        "destination": "HB.STATEMENT.READY",
+        "body": "statements-documents.statement-drop|statement-drop-02|CHK-1042|STATEMENT_READY|84.25|2026-03-29T00:30:00Z",
+        "headers": {
+          "requestId": "statement-drop-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2"
+        }
+      }
+    ],
+    "db": {
+      "statement_jobs": [
+        {
+          "flow": "statements-documents.statement-drop",
+          "request_id": "statement-drop-01",
+          "account_id": "CHK-1042",
+          "currency": "USD",
+          "amount": "125.50",
+          "status": "STATEMENT_READY"
+        },
+        {
+          "flow": "statements-documents.statement-drop",
+          "request_id": "statement-drop-02",
+          "account_id": "CHK-1042",
+          "currency": "EUR",
+          "amount": "84.25",
+          "status": "STATEMENT_READY"
+        }
+      ]
+    },
+    "files": {
+      "statement-drop-01.txt": "c3RhdGVtZW50cy1kb2N1bWVudHMuc3RhdGVtZW50LWRyb3B8c3RhdGVtZW50LWRyb3AtMDF8Q0hLLTEwNDJ8U1RBVEVNRU5UX1JFQURZfDEyNS41MHwyMDI2LTAzLTI5VDAwOjMwOjAwWg==",
+      "statement-drop-02.txt": "c3RhdGVtZW50cy1kb2N1bWVudHMuc3RhdGVtZW50LWRyb3B8c3RhdGVtZW50LWRyb3AtMDJ8Q0hLLTEwNDJ8U1RBVEVNRU5UX1JFQURZfDg0LjI1fDIwMjYtMDMtMjlUMDA6MzA6MDBa"
+    }
+  },
+  "faults": {}
+}

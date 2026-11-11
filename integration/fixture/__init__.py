@@ -1,0 +1,1 @@
+"""Local integration fixture wiring."""

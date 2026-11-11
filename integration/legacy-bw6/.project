@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription><name>halvergate.integration.module</name><comment>Retail banking integration application module</comment><projects/><buildSpec><buildCommand><name>org.eclipse.jdt.core.javabuilder</name></buildCommand></buildSpec><natures><nature>com.tibco.bw.core.design.bwModuleNature</nature><nature>org.eclipse.jdt.core.javanature</nature></natures></projectDescription>

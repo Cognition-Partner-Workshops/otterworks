@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Halvergate Integration
+Bundle-SymbolicName: halvergate.integration.module
+Bundle-Version: 6.10.0
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+TIBCO-BW-ModuleType: bw.application.module

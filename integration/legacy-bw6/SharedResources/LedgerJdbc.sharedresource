@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jdbc:Connection xmlns:jdbc="http://ns.tibco.com/bw/sharedresource/jdbc" name="LedgerJdbc"><driver>org.postgresql.xa.PGXADataSource</driver><url>jdbc:postgresql://integration-db:5432/integration</url><userName>${DB_USER}</userName><password>${DB_PASSWORD}</password><transactionType>XA</transactionType></jdbc:Connection>

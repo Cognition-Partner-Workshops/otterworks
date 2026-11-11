@@ -12,7 +12,7 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [CommonModule, MatToolbarModule, MatIconModule, MatButtonModule, MatMenuModule],
   template: `
     <mat-toolbar class="app-toolbar">
-      <span class="toolbar-title">Admin Dashboard</span>
+      <span class="toolbar-title">Operations Console</span>
       <span class="spacer"></span>
       <span class="user-info" *ngIf="authService.currentUser as user">
         <mat-icon>account_circle</mat-icon>

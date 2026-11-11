@@ -2,6 +2,133 @@
     "schema_version": 2,
     "demos": [
         {
+            "demo": "tibco-bw-migration",
+            "spec": "industries/banking/tibco-bw6/README.md",
+            "classes": [
+                {
+                    "id": "TIB-01",
+                    "title": "Hidden Java activity state",
+                    "flow": "fees-billing.daily-fee",
+                    "planted_keys": [
+                        "daily-fee-01",
+                        "daily-fee-02"
+                    ],
+                    "expected_stage": "REPLAY_SESSION_2_OR_3",
+                    "expected_rule": "STATIC_RATE_CACHE",
+                    "source": "integration/legacy-bw6/src/com/halvergate/integration/FeeActivities.java"
+                },
+                {
+                    "id": "TIB-02",
+                    "title": "Nested import precedence",
+                    "flow": "payments.status-update",
+                    "planted_keys": [
+                        "status-update-01",
+                        "status-update-02"
+                    ],
+                    "expected_stage": "REPLAY",
+                    "expected_rule": "XSLT_IMPORT_PRECEDENCE",
+                    "source": "integration/legacy-bw6/Transforms/payment-status.xsl"
+                },
+                {
+                    "id": "TIB-03",
+                    "title": "XA transaction-group atomicity",
+                    "flow": "payments.instruction-intake",
+                    "planted_keys": [
+                        "instruction-intake-01",
+                        "instruction-intake-02"
+                    ],
+                    "expected_stage": "BROKER_KILL_SESSION_4",
+                    "expected_rule": "XA_ACK_AND_TWO_INSERTS",
+                    "source": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp"
+                },
+                {
+                    "id": "TIB-04",
+                    "title": "Named durable topic subscription",
+                    "flow": "account-events.event-fanout",
+                    "planted_keys": [
+                        "event-fanout-01",
+                        "event-fanout-02"
+                    ],
+                    "expected_stage": "CONSUMER_RESTART",
+                    "expected_rule": "DURABLE_SUBSCRIPTION_IDENTITY",
+                    "source": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp"
+                },
+                {
+                    "id": "TIB-05",
+                    "title": "JMS property selector",
+                    "flow": "customer-alerts.low-balance",
+                    "planted_keys": [
+                        "low-balance-01",
+                        "low-balance-02"
+                    ],
+                    "expected_stage": "REPLAY",
+                    "expected_rule": "JMS_PROPERTY_SELECTOR",
+                    "source": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp"
+                },
+                {
+                    "id": "TIB-06",
+                    "title": "Environment profile divergence",
+                    "flow": "payments.sanctions-screening",
+                    "planted_keys": [
+                    "screening.url"
+                    ],
+                    "expected_stage": "DECISION_SESSION_1",
+                    "expected_rule": "PROFILE_VALUE_DIVERGENCE",
+                    "source": "integration/legacy-bw6/Profiles/prod.substvar"
+                },
+                {
+                    "id": "TIB-07",
+                    "title": "Timezone-aware legacy date functions",
+                    "flow": "statements-documents.statement-drop",
+                    "planted_keys": [
+                        "statement-drop-01",
+                        "statement-drop-02"
+                    ],
+                    "expected_stage": "REPLAY",
+                    "expected_rule": "TIMEZONE_DATE_FUNCTIONS",
+                    "source": "integration/legacy-bw6/Transforms/statements/base/timezone.xsl"
+                },
+                {
+                    "id": "TIB-08",
+                    "title": "Per-account sequencing key",
+                    "flow": "account-events.limit-changed",
+                    "planted_keys": [
+                        "CHK-1042",
+                    "CHK-2098"
+                    ],
+                    "expected_stage": "ORDERING_FAULT",
+                    "expected_rule": "ACCOUNT_SEQUENCE_ORDER",
+                    "source": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp"
+                },
+                {
+                    "id": "TIB-09",
+                    "title": "Three redeliveries then undelivered queue",
+                    "flow": "customer-alerts.card-dispute",
+                    "planted_keys": [
+                        "card-dispute-02",
+                        "HB.UNDLV"
+                    ],
+                    "expected_stage": "POISON_FAULT",
+                    "expected_rule": "REDELIVERY_AND_UNDELIVERED_QUEUE",
+                    "source": "integration/legacy-bw6/SharedResources/EmsConnection.sharedresource"
+                },
+                {
+                    "id": "TIB-10",
+                    "title": "Channel-dependent rounding requires a business decision",
+                    "flow": "fees-billing.month-end-summary",
+                    "planted_keys": [
+                        "month-end-summary-01",
+                        "month-end-summary-02"
+                    ],
+                    "expected_stage": "AMBER_BUSINESS_DECISION_SESSION_4",
+                    "expected_rule": "XPATH_ROUND_VERSUS_HALF_EVEN",
+                    "source": "integration/legacy-bw6/Transforms/fee-rounding.xsl",
+                    "expected_status": "amber",
+                    "decision_required": true
+                }
+            ]
+        },
+        {
             "demo": "legacy-data-migration",
             "spec": "migration/source/seed/SEED-SPEC.md",
             "classes": [

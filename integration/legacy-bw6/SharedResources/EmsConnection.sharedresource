@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jms:Connection xmlns:jms="http://ns.tibco.com/bw/sharedresource/jms" name="EmsConnection"><provider>EMS</provider><url>tcp://broker:61616</url><userName>${EMS_USER}</userName><password>${EMS_PASSWORD}</password><clientID>halvergate-records</clientID><xaConnectionFactory>XAConnectionFactory</xaConnectionFactory><deliveryMode>PERSISTENT</deliveryMode><durableSubscription>records-event-fanout</durableSubscription><maxRedelivery>3</maxRedelivery><undeliveredQueue>HB.UNDLV</undeliveredQueue></jms:Connection>

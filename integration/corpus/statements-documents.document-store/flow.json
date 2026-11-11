@@ -1,0 +1,109 @@
+{
+  "inputs": {
+    "messages": [
+      {
+        "destination": "HB.DOCUMENT.STORE",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"document-store-01\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"statements-documents.document-store\" currency=\"USD\" amount=\"125.50\" balance=\"1000.00\" rate=\"0.015\" sequence=\"1\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>document-store-01</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">125.50</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "document-store-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      },
+      {
+        "destination": "HB.DOCUMENT.STORE",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request id=\"document-store-02\" account=\"CHK-1042\" type=\"CHECKING\" flow=\"statements-documents.document-store\" currency=\"EUR\" amount=\"84.25\" balance=\"1000.00\" rate=\"0.025\" sequence=\"2\" customerType=\"RETAIL\" channel=\"JMS\" poison=\"false\" timestamp=\"2026-03-29T01:30:00+01:00\"><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03\"><CstmrCdtTrfInitn><GrpHdr><MsgId>document-store-02</MsgId><NbOfTxs>1</NbOfTxs></GrpHdr><PmtInf><Dbtr><Nm>Halvergate Retail Clearing</Nm></Dbtr><CdtTrfTxInf><Amt><InstdAmt Ccy=\"USD\">84.25</InstdAmt></Amt></CdtTrfTxInf></PmtInf></CstmrCdtTrfInitn></Document></request>\n",
+        "properties": {
+          "requestId": "document-store-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "headers": {
+          "persistent": "true",
+          "destination-type": "ANYCAST"
+        }
+      }
+    ],
+    "files": []
+  },
+  "capture": {
+    "messages": [
+      {
+        "id": "out",
+        "destination": "HB.DOCUMENT.STORED",
+        "headers": {}
+      }
+    ],
+    "db": {
+      "document_registry": {
+        "query": "SELECT flow,request_id,account_id,amount,currency,status FROM document_registry WHERE flow = %s ORDER BY request_id",
+        "params": [
+          "statements-documents.document-store"
+        ]
+      }
+    },
+    "files": {
+      "transport": "sftp",
+      "root": "/upload/out/statements-documents.document-store"
+    }
+  },
+  "capture_seconds": 1,
+  "publish_interval": 0.05,
+  "expected": {
+    "messages": [
+      {
+        "destination": "HB.DOCUMENT.STORED",
+        "body": "statements-documents.document-store|document-store-01|CHK-1042|DOCUMENT_STORE|125.50|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "document-store-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1"
+        }
+      },
+      {
+        "destination": "HB.DOCUMENT.STORED",
+        "body": "statements-documents.document-store|document-store-02|CHK-1042|DOCUMENT_STORE|84.25|2026-03-29T01:30:00+01:00",
+        "headers": {
+          "requestId": "document-store-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2"
+        }
+      }
+    ],
+    "db": {
+      "document_registry": [
+        {
+          "flow": "statements-documents.document-store",
+          "request_id": "document-store-01",
+          "account_id": "CHK-1042",
+          "currency": "USD",
+          "amount": "125.50",
+          "status": "DOCUMENT_STORE"
+        },
+        {
+          "flow": "statements-documents.document-store",
+          "request_id": "document-store-02",
+          "account_id": "CHK-1042",
+          "currency": "EUR",
+          "amount": "84.25",
+          "status": "DOCUMENT_STORE"
+        }
+      ]
+    },
+    "files": {
+      "document-store-01.txt": "c3RhdGVtZW50cy1kb2N1bWVudHMuZG9jdW1lbnQtc3RvcmV8ZG9jdW1lbnQtc3RvcmUtMDF8Q0hLLTEwNDJ8RE9DVU1FTlRfU1RPUkV8MTI1LjUwfDIwMjYtMDMtMjlUMDE6MzA6MDArMDE6MDA=",
+      "document-store-02.txt": "c3RhdGVtZW50cy1kb2N1bWVudHMuZG9jdW1lbnQtc3RvcmV8ZG9jdW1lbnQtc3RvcmUtMDJ8Q0hLLTEwNDJ8RE9DVU1FTlRfU1RPUkV8ODQuMjV8MjAyNi0wMy0yOVQwMTozMDowMCswMTowMA=="
+    }
+  },
+  "faults": {}
+}

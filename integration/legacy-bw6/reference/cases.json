@@ -1,0 +1,953 @@
+[
+  {
+    "id": "payments.instruction-intake",
+    "domain": "payments",
+    "name": "instruction-intake",
+    "process": "Processes/payments/instruction-intake.bwp",
+    "stylesheet": "Transforms/payment-status.xsl",
+    "input": "HB.PAYMENT.INSTRUCTIONS",
+    "output": "HB.PAYMENT.STATUS",
+    "kind": "xa",
+    "tables": [
+      "payment_inbox",
+      "payment_ledger"
+    ],
+    "cases": [
+      {
+        "path": "inputs/payments.instruction-intake/instruction-intake-01.xml",
+        "properties": {
+          "requestId": "instruction-intake-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/payments.instruction-intake/instruction-intake-02.xml",
+        "properties": {
+          "requestId": "instruction-intake-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "payments.validation-enrichment",
+    "domain": "payments",
+    "name": "validation-enrichment",
+    "process": "Processes/payments/validation-enrichment.bwp",
+    "stylesheet": "Transforms/validation-enrichment.xsl",
+    "input": "HB.PAYMENT.VALIDATION",
+    "output": "HB.PAYMENT.ENRICHED",
+    "kind": "",
+    "tables": [
+      "payment_validation"
+    ],
+    "cases": [
+      {
+        "path": "inputs/payments.validation-enrichment/validation-enrichment-01.xml",
+        "properties": {
+          "requestId": "validation-enrichment-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/payments.validation-enrichment/validation-enrichment-02.xml",
+        "properties": {
+          "requestId": "validation-enrichment-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "payments.sanctions-screening",
+    "domain": "payments",
+    "name": "sanctions-screening",
+    "process": "Processes/payments/sanctions-screening.bwp",
+    "stylesheet": "Transforms/sanctions-screening.xsl",
+    "input": "HB.SANCTIONS.REQUEST",
+    "output": "HB.SANCTIONS.RESPONSE",
+    "kind": "http",
+    "tables": [
+      "screening_results"
+    ],
+    "cases": [
+      {
+        "path": "inputs/payments.sanctions-screening/sanctions-screening-01.xml",
+        "properties": {
+          "requestId": "sanctions-screening-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/payments.sanctions-screening/sanctions-screening-02.xml",
+        "properties": {
+          "requestId": "sanctions-screening-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "payments.currency-routing",
+    "domain": "payments",
+    "name": "currency-routing",
+    "process": "Processes/payments/currency-routing.bwp",
+    "stylesheet": "Transforms/currency-routing.xsl",
+    "input": "HB.CURRENCY.ROUTING",
+    "output": "HB.CURRENCY.ROUTED",
+    "kind": "switch",
+    "tables": [],
+    "cases": [
+      {
+        "path": "inputs/payments.currency-routing/currency-routing-01.xml",
+        "properties": {
+          "requestId": "currency-routing-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/payments.currency-routing/currency-routing-02.xml",
+        "properties": {
+          "requestId": "currency-routing-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "payments.status-update",
+    "domain": "payments",
+    "name": "status-update",
+    "process": "Processes/payments/status-update.bwp",
+    "stylesheet": "Transforms/payment-status.xsl",
+    "input": "HB.STATUS.UPDATE",
+    "output": "HB.STATUS.PUBLISHED",
+    "kind": "",
+    "tables": [
+      "payment_status"
+    ],
+    "cases": [
+      {
+        "path": "inputs/payments.status-update/status-update-01.xml",
+        "properties": {
+          "requestId": "status-update-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/payments.status-update/status-update-02.xml",
+        "properties": {
+          "requestId": "status-update-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "payments.payment-returns",
+    "domain": "payments",
+    "name": "payment-returns",
+    "process": "Processes/payments/payment-returns.bwp",
+    "stylesheet": "Transforms/payment-returns.xsl",
+    "input": "HB.PAYMENT.RETURNS",
+    "output": "HB.RETURN.POSTED",
+    "kind": "",
+    "tables": [
+      "payment_returns"
+    ],
+    "cases": [
+      {
+        "path": "inputs/payments.payment-returns/payment-returns-01.xml",
+        "properties": {
+          "requestId": "payment-returns-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/payments.payment-returns/payment-returns-02.xml",
+        "properties": {
+          "requestId": "payment-returns-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "account-events.account-opened",
+    "domain": "account-events",
+    "name": "account-opened",
+    "process": "Processes/account-events/account-opened.bwp",
+    "stylesheet": "Transforms/account-opened.xsl",
+    "input": "HB.ACCOUNT.OPENED",
+    "output": "HB.ACCOUNT.CREATED",
+    "kind": "",
+    "tables": [
+      "account_registry"
+    ],
+    "cases": [
+      {
+        "path": "inputs/account-events.account-opened/account-opened-01.xml",
+        "properties": {
+          "requestId": "account-opened-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/account-events.account-opened/account-opened-02.xml",
+        "properties": {
+          "requestId": "account-opened-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "account-events.address-changed",
+    "domain": "account-events",
+    "name": "address-changed",
+    "process": "Processes/account-events/address-changed.bwp",
+    "stylesheet": "Transforms/address-changed.xsl",
+    "input": "HB.ADDRESS.CHANGED",
+    "output": "HB.ADDRESS.UPDATED",
+    "kind": "",
+    "tables": [
+      "account_addresses"
+    ],
+    "cases": [
+      {
+        "path": "inputs/account-events.address-changed/address-changed-01.xml",
+        "properties": {
+          "requestId": "address-changed-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/account-events.address-changed/address-changed-02.xml",
+        "properties": {
+          "requestId": "address-changed-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "account-events.limit-changed",
+    "domain": "account-events",
+    "name": "limit-changed",
+    "process": "Processes/account-events/limit-changed.bwp",
+    "stylesheet": "Transforms/limit-changed.xsl",
+    "input": "HB.LIMIT.CHANGED",
+    "output": "HB.LIMIT.UPDATED",
+    "kind": "ordering",
+    "tables": [
+      "account_limits"
+    ],
+    "cases": [
+      {
+        "path": "inputs/account-events.limit-changed/limit-changed-01.xml",
+        "properties": {
+          "requestId": "limit-changed-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/account-events.limit-changed/limit-changed-02.xml",
+        "properties": {
+          "requestId": "limit-changed-02",
+          "accountId": "CHK-2098",
+          "JMSXGroupID": "CHK-2098",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/account-events.limit-changed/limit-changed-03.xml",
+        "properties": {
+          "requestId": "limit-changed-03",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/account-events.limit-changed/limit-changed-04.xml",
+        "properties": {
+          "requestId": "limit-changed-04",
+          "accountId": "CHK-2098",
+          "JMSXGroupID": "CHK-2098",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "account-events.account-closed",
+    "domain": "account-events",
+    "name": "account-closed",
+    "process": "Processes/account-events/account-closed.bwp",
+    "stylesheet": "Transforms/account-closed.xsl",
+    "input": "HB.ACCOUNT.CLOSED",
+    "output": "HB.ACCOUNT.ARCHIVED",
+    "kind": "",
+    "tables": [
+      "account_closures"
+    ],
+    "cases": [
+      {
+        "path": "inputs/account-events.account-closed/account-closed-01.xml",
+        "properties": {
+          "requestId": "account-closed-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/account-events.account-closed/account-closed-02.xml",
+        "properties": {
+          "requestId": "account-closed-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "account-events.event-fanout",
+    "domain": "account-events",
+    "name": "event-fanout",
+    "process": "Processes/account-events/event-fanout.bwp",
+    "stylesheet": "Transforms/event-fanout.xsl",
+    "input": "HB.ACCOUNT.EVENTS.IN",
+    "output": "HB.ACCOUNT.EVENTS",
+    "kind": "durable",
+    "tables": [
+      "account_events"
+    ],
+    "cases": [
+      {
+        "path": "inputs/account-events.event-fanout/event-fanout-01.xml",
+        "properties": {
+          "requestId": "event-fanout-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/account-events.event-fanout/event-fanout-02.xml",
+        "properties": {
+          "requestId": "event-fanout-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "fees-billing.daily-fee",
+    "domain": "fees-billing",
+    "name": "daily-fee",
+    "process": "Processes/fees-billing/daily-fee.bwp",
+    "stylesheet": "Transforms/daily-fee.xsl",
+    "input": "HB.DAILY.FEES",
+    "output": "HB.FEE.CALCULATED",
+    "kind": "java-cache",
+    "tables": [
+      "fee_assessments"
+    ],
+    "cases": [
+      {
+        "path": "inputs/fees-billing.daily-fee/daily-fee-01.xml",
+        "properties": {
+          "requestId": "daily-fee-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/fees-billing.daily-fee/daily-fee-02.xml",
+        "properties": {
+          "requestId": "daily-fee-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/fees-billing.daily-fee/daily-fee-03.xml",
+        "properties": {
+          "requestId": "daily-fee-03",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "3",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "fees-billing.fee-posting",
+    "domain": "fees-billing",
+    "name": "fee-posting",
+    "process": "Processes/fees-billing/fee-posting.bwp",
+    "stylesheet": "Transforms/fee-posting.xsl",
+    "input": "HB.FEE.POSTING",
+    "output": "HB.FEE.POSTED",
+    "kind": "billing",
+    "tables": [
+      "fee_postings"
+    ],
+    "cases": [
+      {
+        "path": "inputs/fees-billing.fee-posting/fee-posting-01.xml",
+        "properties": {
+          "requestId": "fee-posting-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/fees-billing.fee-posting/fee-posting-02.xml",
+        "properties": {
+          "requestId": "fee-posting-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "fees-billing.fee-reversal",
+    "domain": "fees-billing",
+    "name": "fee-reversal",
+    "process": "Processes/fees-billing/fee-reversal.bwp",
+    "stylesheet": "Transforms/fee-reversal.xsl",
+    "input": "HB.FEE.REVERSAL",
+    "output": "HB.FEE.REVERSED",
+    "kind": "",
+    "tables": [
+      "fee_reversals"
+    ],
+    "cases": [
+      {
+        "path": "inputs/fees-billing.fee-reversal/fee-reversal-01.xml",
+        "properties": {
+          "requestId": "fee-reversal-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/fees-billing.fee-reversal/fee-reversal-02.xml",
+        "properties": {
+          "requestId": "fee-reversal-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "fees-billing.month-end-summary",
+    "domain": "fees-billing",
+    "name": "month-end-summary",
+    "process": "Processes/fees-billing/month-end-summary.bwp",
+    "stylesheet": "Transforms/fee-rounding.xsl",
+    "input": "HB.MONTH.END.SUMMARY",
+    "output": "HB.FEE.SUMMARY",
+    "kind": "rounding",
+    "tables": [
+      "fee_summaries"
+    ],
+    "cases": [
+      {
+        "path": "inputs/fees-billing.month-end-summary/month-end-summary-01.xml",
+        "properties": {
+          "requestId": "month-end-summary-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "XSLT"
+      },
+      {
+        "path": "inputs/fees-billing.month-end-summary/month-end-summary-02.xml",
+        "properties": {
+          "requestId": "month-end-summary-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JAVA"
+      },
+      {
+        "path": "inputs/fees-billing.month-end-summary/month-end-summary-03.xml",
+        "properties": {
+          "requestId": "month-end-summary-03",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "3",
+          "customerType": "RETAIL"
+        },
+        "channel": "XSLT"
+      }
+    ]
+  },
+  {
+    "id": "statements-documents.statement-drop",
+    "domain": "statements-documents",
+    "name": "statement-drop",
+    "process": "Processes/statements-documents/statement-drop.bwp",
+    "stylesheet": "Transforms/statement.xsl",
+    "input": "HB.STATEMENT.DROP",
+    "output": "HB.STATEMENT.READY",
+    "kind": "date",
+    "tables": [
+      "statement_jobs"
+    ],
+    "cases": [
+      {
+        "path": "inputs/statements-documents.statement-drop/statement-drop-01.xml",
+        "properties": {
+          "requestId": "statement-drop-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/statements-documents.statement-drop/statement-drop-02.xml",
+        "properties": {
+          "requestId": "statement-drop-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "statements-documents.split-enrich",
+    "domain": "statements-documents",
+    "name": "split-enrich",
+    "process": "Processes/statements-documents/split-enrich.bwp",
+    "stylesheet": "Transforms/split-enrich.xsl",
+    "input": "HB.STATEMENT.SPLIT",
+    "output": "HB.STATEMENT.ENRICHED",
+    "kind": "file",
+    "tables": [
+      "statement_items"
+    ],
+    "cases": [
+      {
+        "path": "inputs/statements-documents.split-enrich/split-enrich-01.xml",
+        "properties": {
+          "requestId": "split-enrich-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/statements-documents.split-enrich/split-enrich-02.xml",
+        "properties": {
+          "requestId": "split-enrich-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "statements-documents.pdf-request",
+    "domain": "statements-documents",
+    "name": "pdf-request",
+    "process": "Processes/statements-documents/pdf-request.bwp",
+    "stylesheet": "Transforms/pdf-request.xsl",
+    "input": "HB.PDF.REQUEST",
+    "output": "HB.PDF.REQUESTED",
+    "kind": "http",
+    "tables": [],
+    "cases": [
+      {
+        "path": "inputs/statements-documents.pdf-request/pdf-request-01.xml",
+        "properties": {
+          "requestId": "pdf-request-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/statements-documents.pdf-request/pdf-request-02.xml",
+        "properties": {
+          "requestId": "pdf-request-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "statements-documents.document-store",
+    "domain": "statements-documents",
+    "name": "document-store",
+    "process": "Processes/statements-documents/document-store.bwp",
+    "stylesheet": "Transforms/document-store.xsl",
+    "input": "HB.DOCUMENT.STORE",
+    "output": "HB.DOCUMENT.STORED",
+    "kind": "file-service",
+    "tables": [
+      "document_registry"
+    ],
+    "cases": [
+      {
+        "path": "inputs/statements-documents.document-store/document-store-01.xml",
+        "properties": {
+          "requestId": "document-store-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/statements-documents.document-store/document-store-02.xml",
+        "properties": {
+          "requestId": "document-store-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "statements-documents.delivery-notice",
+    "domain": "statements-documents",
+    "name": "delivery-notice",
+    "process": "Processes/statements-documents/delivery-notice.bwp",
+    "stylesheet": "Transforms/delivery-notice.xsl",
+    "input": "HB.DELIVERY.NOTICE",
+    "output": "HB.DELIVERY.CONFIRMED",
+    "kind": "",
+    "tables": [
+      "statement_deliveries"
+    ],
+    "cases": [
+      {
+        "path": "inputs/statements-documents.delivery-notice/delivery-notice-01.xml",
+        "properties": {
+          "requestId": "delivery-notice-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/statements-documents.delivery-notice/delivery-notice-02.xml",
+        "properties": {
+          "requestId": "delivery-notice-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "customer-alerts.low-balance",
+    "domain": "customer-alerts",
+    "name": "low-balance",
+    "process": "Processes/customer-alerts/low-balance.bwp",
+    "stylesheet": "Transforms/low-balance.xsl",
+    "input": "HB.ALERTS.LOW.BALANCE",
+    "output": "HB.LOW.BALANCE.ALERTED",
+    "kind": "selector",
+    "tables": [
+      "alert_dispatch"
+    ],
+    "cases": [
+      {
+        "path": "inputs/customer-alerts.low-balance/low-balance-01.xml",
+        "properties": {
+          "requestId": "low-balance-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/customer-alerts.low-balance/low-balance-02.xml",
+        "properties": {
+          "requestId": "low-balance-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/customer-alerts.low-balance/low-balance-03.xml",
+        "properties": {
+          "requestId": "low-balance-03",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "3",
+          "customerType": "COMMERCIAL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "customer-alerts.large-transaction",
+    "domain": "customer-alerts",
+    "name": "large-transaction",
+    "process": "Processes/customer-alerts/large-transaction.bwp",
+    "stylesheet": "Transforms/large-transaction.xsl",
+    "input": "HB.ALERTS.LARGE.TRANSACTION",
+    "output": "HB.LARGE.TRANSACTION.ALERTED",
+    "kind": "selector",
+    "tables": [
+      "large_alert_dispatch"
+    ],
+    "cases": [
+      {
+        "path": "inputs/customer-alerts.large-transaction/large-transaction-01.xml",
+        "properties": {
+          "requestId": "large-transaction-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/customer-alerts.large-transaction/large-transaction-02.xml",
+        "properties": {
+          "requestId": "large-transaction-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/customer-alerts.large-transaction/large-transaction-03.xml",
+        "properties": {
+          "requestId": "large-transaction-03",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "3",
+          "customerType": "COMMERCIAL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "customer-alerts.card-dispute",
+    "domain": "customer-alerts",
+    "name": "card-dispute",
+    "process": "Processes/customer-alerts/card-dispute.bwp",
+    "stylesheet": "Transforms/card-dispute.xsl",
+    "input": "HB.ALERTS.CARD.DISPUTE",
+    "output": "HB.DISPUTE.RECEIVED",
+    "kind": "poison",
+    "tables": [
+      "dispute_cases"
+    ],
+    "cases": [
+      {
+        "path": "inputs/customer-alerts.card-dispute/card-dispute-01.xml",
+        "properties": {
+          "requestId": "card-dispute-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/customer-alerts.card-dispute/card-dispute-02.xml",
+        "properties": {
+          "requestId": "card-dispute-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  },
+  {
+    "id": "customer-alerts.preference-sync",
+    "domain": "customer-alerts",
+    "name": "preference-sync",
+    "process": "Processes/customer-alerts/preference-sync.bwp",
+    "stylesheet": "Transforms/preference-sync.xsl",
+    "input": "HB.ALERT.PREFERENCES",
+    "output": "HB.PREFERENCES.SYNCED",
+    "kind": "notification",
+    "tables": [
+      "alert_preferences"
+    ],
+    "cases": [
+      {
+        "path": "inputs/customer-alerts.preference-sync/preference-sync-01.xml",
+        "properties": {
+          "requestId": "preference-sync-01",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "1",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      },
+      {
+        "path": "inputs/customer-alerts.preference-sync/preference-sync-02.xml",
+        "properties": {
+          "requestId": "preference-sync-02",
+          "accountId": "CHK-1042",
+          "JMSXGroupID": "CHK-1042",
+          "sequence": "2",
+          "customerType": "RETAIL"
+        },
+        "channel": "JMS"
+      }
+    ]
+  }
+]
