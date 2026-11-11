@@ -100,6 +100,29 @@ def test_landing_load_error(tmp_path, monkeypatch):
     assert "DROP TABLE IF EXISTS" in sql[-1]
 
 
+@pytest.mark.parametrize("count", [0, 1])
+def test_landing_subset(tmp_path, monkeypatch, count):
+    connection = MagicMock()
+    cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
+    cursor.fetchall.return_value = [(name,) for name, _ in spark_landing.SCHEMAS["PLAN_CATALOG"]]
+    cursor.fetchone.return_value = (count,)
+    monkeypatch.setattr(spark_landing, "connect", lambda *args, **kwargs: connection)
+    inspect = MagicMock(return_value=([], count, "digest"))
+    monkeypatch.setattr(spark_landing, "inspect_files", inspect)
+    assert spark_landing.load(tmp_path, ["billing.PLAN_CATALOG"]) == [
+        ("SPARK_RAW_BILLING.PLAN_CATALOG", count, count)]
+    inspect.assert_called_once_with(tmp_path, "billing", "PLAN_CATALOG")
+
+
+@pytest.mark.parametrize("tables", [[], ["billing.UNKNOWN"], ["unknown.PLAN_CATALOG"], "billing.PLAN_CATALOG"])
+def test_landing_invalid_subset(tmp_path, monkeypatch, tables):
+    connect = MagicMock()
+    monkeypatch.setattr(spark_landing, "connect", connect)
+    with pytest.raises(ValueError):
+        spark_landing.load(tmp_path, tables)
+    connect.assert_not_called()
+
+
 def test_registry_dispatch(tmp_path, monkeypatch):
     registry = tmp_path / "etl/spark/jobs/registry"
     registry.mkdir(parents=True)

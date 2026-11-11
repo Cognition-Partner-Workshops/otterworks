@@ -37,9 +37,15 @@ def inspect_files(landing, area, table):
     return files, count, digest.hexdigest()
 
 
-def load(landing):
+def load(landing, tables=None):
+    available = {f"{area}.{table}": (area, table)
+                 for area, names in TABLES.items() for table in names}
+    if tables is not None and (not isinstance(tables, list) or not tables or
+                               any(not isinstance(name, str) or name not in available for name in tables)):
+        raise ValueError("Invalid ingest tables")
+    selected = available if tables is None else dict.fromkeys(tables)
     manifest = [(area, table, *inspect_files(landing, area, table))
-                for area, tables in TABLES.items() for table in tables]
+                for area, table in (available[name] for name in selected)]
     rows = []
     with connect("load", "spark-landing", job="_landing") as conn:
         with conn.cursor() as cur:
@@ -92,6 +98,7 @@ def load(landing):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--landing-dir", type=Path, default=REPO / "etl/spark/.data/landing")
+    parser.add_argument("--tables", help="Comma-separated area.TABLE names to refresh (default: all)")
     args = parser.parse_args()
     print("| Table | Local PSV records | Snowflake rows |\n|---|---:|---:|")
-    load(args.landing_dir)
+    load(args.landing_dir, args.tables.split(",") if args.tables is not None else None)

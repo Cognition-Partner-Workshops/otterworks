@@ -27,6 +27,7 @@ class DagTest(unittest.TestCase):
             for job, status in (("old", "legacy"), ("retired", "retired"), ("compute", "template"), ("sql", "snowflake")):
                 (Path(directory) / f"{job}.yaml").write_text(json.dumps({
                     "job": job, "status": status, "schedule": "0 1 * * *", "command": "echo sql",
+                    "ingest": ["billing.PLAN_CATALOG"],
                 }))
             dags = build_dags(directory, "/opt/etl/spark")
             self.assertEqual(set(dags), {"sfx_spark_compute", "sfx_spark_sql"})
@@ -48,6 +49,36 @@ class DagTest(unittest.TestCase):
     def test_empty_registry(self):
         with tempfile.TemporaryDirectory() as directory:
             self.assertEqual(build_dags(directory, "/spark"), {})
+
+    def test_scheduled_snowflake_requires_ingest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "sql.yaml"
+            for ingest in (None, [], ["billing.UNKNOWN"], "billing.PLAN_CATALOG"):
+                path.write_text(json.dumps({"job": "sql", "status": "snowflake",
+                                            "schedule": "@daily", "command": "echo sql", "ingest": ingest}))
+                with self.assertRaises(ValueError):
+                    build_dags(directory, "/spark")
+
+    def test_ingest_precedes_run(self):
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / "sql.yaml").write_text(json.dumps({
+                "job": "sql", "status": "snowflake", "schedule": "@daily", "command": "echo sql",
+                "ingest": ["billing.INVOICE_HDR", "billing.PLAN_CATALOG"],
+            }))
+            dag = build_dags(directory, "/spark")["sfx_spark_sql"]
+            ingest, run = dag.get_task("ingest"), dag.get_task("run")
+            self.assertEqual(run.upstream_task_ids, {"ingest"})
+            self.assertEqual(ingest.bash_command, "warehouse/.venv/bin/python warehouse/snowflake/spark_landing.py "
+                             "--tables billing.INVOICE_HDR,billing.PLAN_CATALOG")
+            self.assertEqual((ingest.cwd, ingest.env, ingest.append_env), (run.cwd, run.env, run.append_env))
+
+    def test_real_scheduled_snowflake_ingests(self):
+        registry = ROOT.parent / "spark/jobs/registry"
+        dags = build_dags(registry, "/spark")
+        for path in registry.glob("*.yaml"):
+            entry = json.loads(path.read_text())
+            if entry["status"] == "snowflake" and entry["schedule"] is not None:
+                self.assertIn("ingest", dags[f'sfx_spark_{entry["job"]}'].get_task("run").upstream_task_ids)
 
     def test_repo_working_directory(self):
         with tempfile.TemporaryDirectory() as directory:
