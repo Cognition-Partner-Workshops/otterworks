@@ -32,9 +32,11 @@ def run(job):
             # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             session.sql(f"ALTER TABLE {relation} SET TAG {database}.GOVERNANCE.SFX_RUN = 'sfx-d1110'").collect()
             token = os.environ.get("SNOWFLAKE_RUN_TOKEN", "sfx-d1110")
-            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-            session.sql(f"COMMENT ON TABLE {relation} IS ?",
-                        params=[token + ' Spark output ' + job]).collect()
+            # The shared connector uses pyformat, while Session.sql params require qmark.
+            with connection.cursor() as cursor:
+                # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+                cursor.execute(f"COMMENT ON TABLE {relation} IS %s",
+                               (token + ' Spark output ' + job,))
             return result
 
 
