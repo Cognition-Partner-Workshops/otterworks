@@ -1,0 +1,24 @@
+{
+  "operation": "summary",
+  "contract": "1200411",
+  "request": "GET /pinq/v1/summary/1200411",
+  "status": 200,
+  "rawSha256": "58379d6779c319b3434ece8c856c4effdd505e3771e17ff0d9eb2751b5f9a549",
+  "body": {
+    "RTN_CD": "00",
+    "CNTR_NO": "1200411",
+    "STAT_CD": "TM",
+    "PROD_CD": "ANN-1",
+    "PROD_NM": "Flexible Growth Annuity",
+    "PLAN_CD": "FIXED",
+    "QUAL_CD": "IRA",
+    "ISS_ST": "UT",
+    "OWN_NM": "Synthetic Owner 003",
+    "ANN_NM": "Synthetic Annuitant 003",
+    "CCY_CD": "USD",
+    "GRX_IND": "0",
+    "ISS_DT": "20150221",
+    "EFF_DT": "20150228",
+    "MAT_DT": "20450228"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "operation": "summary",
+  "contract": "24013821",
+  "request": "GET /pinq/v1/summary/24013821",
+  "status": 200,
+  "rawSha256": "4a645a9f1d340f9bf2cc55eb4d55b0118a90061570ba0ebe35179f641689d500",
+  "body": {
+    "RTN_CD": "00",
+    "CNTR_NO": "24013821",
+    "STAT_CD": "LP",
+    "PROD_CD": "ANN-1",
+    "PROD_NM": "Flexible Growth Annuity",
+    "PLAN_CD": "FIXED",
+    "QUAL_CD": "IRA",
+    "ISS_ST": "UT",
+    "OWN_NM": "Synthetic Owner 051",
+    "ANN_NM": "Synthetic Annuitant 051",
+    "CCY_CD": "USD",
+    "GRX_IND": "0",
+    "ISS_DT": "20170517",
+    "EFF_DT": "20170524",
+    "MAT_DT": "20470524"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "operation": "summary",
+  "contract": "360033065",
+  "request": "GET /pinq/v1/summary/360033065",
+  "status": 200,
+  "rawSha256": "d11adb5614b681959a1e1e92561ea0180644486dcccb8bfebc236371e65e39fb",
+  "body": {
+    "RTN_CD": "00",
+    "CNTR_NO": "360033065",
+    "STAT_CD": "IF",
+    "PROD_CD": "ANN-2",
+    "PROD_NM": "Steady Income Annuity",
+    "PLAN_CD": "FIXED",
+    "QUAL_CD": "NQ",
+    "ISS_ST": "AZ",
+    "OWN_NM": "Synthetic Owner 085",
+    "ANN_NM": "Synthetic Annuitant 085",
+    "CCY_CD": "USD",
+    "GRX_IND": "1",
+    "ISS_DT": "20181216",
+    "EFF_DT": "20181223",
+    "MAT_DT": "20481223"
+  }
+}

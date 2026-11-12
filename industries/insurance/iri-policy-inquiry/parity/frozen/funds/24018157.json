@@ -1,0 +1,24 @@
+{
+  "operation": "funds",
+  "contract": "24018157",
+  "request": "GET /pinq/v1/funds/24018157",
+  "status": 200,
+  "rawSha256": "9af5553faf33c6463adbb5aa3832c137ce1c9215e02a934499a5c9d22179c7b7",
+  "body": {
+    "RTN_CD": "00",
+    "CNTR_NO": "24018157",
+    "FUND_CNT": "2",
+    "FUND_CD_01": "FND-01",
+    "FUND_NM_01": "Balanced Growth Fund",
+    "ALLOC_PCT_01": "05000",
+    "FUND_UNITS_01": "000000006687500000",
+    "UNIT_VAL_01": "000000010000000",
+    "FUND_VAL_01": "000000006687500",
+    "FUND_CD_02": "FND-02",
+    "FUND_NM_02": "Stable Income Fund",
+    "ALLOC_PCT_02": "05000",
+    "FUND_UNITS_02": "000000006687500000",
+    "UNIT_VAL_02": "000000010000000",
+    "FUND_VAL_02": "000000006687500"
+  }
+}

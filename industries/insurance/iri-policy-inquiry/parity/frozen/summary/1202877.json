@@ -1,0 +1,24 @@
+{
+  "operation": "summary",
+  "contract": "1202877",
+  "request": "GET /pinq/v1/summary/1202877",
+  "status": 200,
+  "rawSha256": "09412061311567aaef2444c890d1c5012fd8b2d3068e6340acc0979c71b3e553",
+  "body": {
+    "RTN_CD": "00",
+    "CNTR_NO": "1202877",
+    "STAT_CD": "LP",
+    "PROD_CD": "ANN-1",
+    "PROD_NM": "Flexible Growth Annuity",
+    "PLAN_CD": "FIXED",
+    "QUAL_CD": "IRA",
+    "ISS_ST": "AZ",
+    "OWN_NM": "Synthetic Owner 021",
+    "ANN_NM": "Synthetic Annuitant 021",
+    "CCY_CD": "USD",
+    "GRX_IND": "0",
+    "ISS_DT": "20151224",
+    "EFF_DT": "20151231",
+    "MAT_DT": "20451231"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "operation": "summary",
+  "contract": "24014363",
+  "request": "GET /pinq/v1/summary/24014363",
+  "status": 200,
+  "rawSha256": "455c2f8e0ba645945117cb5867f4a05be876dc220f5341527aec27ac1db87f5b",
+  "body": {
+    "RTN_CD": "00",
+    "CNTR_NO": "24014363",
+    "STAT_CD": "TM",
+    "PROD_CD": "ANN-3",
+    "PROD_NM": "Deferred Value Annuity",
+    "PLAN_CD": "FIXED",
+    "QUAL_CD": "ROTH",
+    "ISS_ST": "AZ",
+    "OWN_NM": "Synthetic Owner 053",
+    "ANN_NM": "Synthetic Annuitant 053",
+    "CCY_CD": "USD",
+    "GRX_IND": "3",
+    "ISS_DT": "20170620",
+    "EFF_DT": "20170627",
+    "MAT_DT": "20470627"
+  }
+}

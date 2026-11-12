@@ -1,0 +1,11 @@
+server:
+  address: 127.0.0.1
+  port: ${API_PORT:19765}
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:oracle:thin:@localhost:52206/FREEPDB1}
+    username: ${DB_USER:annuity_inq}
+    password: ${DB_PASSWORD:annuity_inq} # gitleaks:allow
+    hikari:
+      connection-timeout: 2000
+      initialization-fail-timeout: -1

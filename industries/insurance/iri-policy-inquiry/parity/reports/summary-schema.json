@@ -1,0 +1,1521 @@
+{
+  "summary": {
+    "fail": 100,
+    "pass": 1,
+    "responses": 101
+  },
+  "responses": [
+    {
+      "contract": "1200137",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1200274",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1200411",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1200548",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1200685",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1200822",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1200959",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1201096",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1201233",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1201370",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1201507",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1201644",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1201781",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1201918",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1202055",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1202192",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1202329",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1202466",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1202603",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1202740",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1202877",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1203014",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1203151",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1203288",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1203425",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1203562",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1203699",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1203836",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1203973",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1204110",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1204247",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1204384",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1204521",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1204658",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "1204795",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24009756",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24010027",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24010298",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24010569",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24010840",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24011111",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24011382",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24011653",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24011924",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24012195",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24012466",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24012737",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24013008",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24013279",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24013550",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24013821",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24014092",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24014363",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24014634",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24014905",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24015176",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24015447",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24015718",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24015989",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24016260",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24016531",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24016802",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24017073",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24017344",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24017615",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24017886",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24018157",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24018428",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24018699",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "24018970",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360027619",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360028008",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360028397",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360028786",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360029175",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360029564",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360029953",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360030342",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360030731",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360031120",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360031509",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360031898",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360032287",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360032676",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360033065",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360033454",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360033843",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360034232",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360034621",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360035010",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360035399",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360035788",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360036177",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360036566",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "360036955",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "4700048288",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['policyStatus']: 'DP' is not one of ['PENDINGISSUED', 'ACTIVE', 'LAPSED', 'SURRENDERED', 'TERMINATED']",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "4700048791",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['policyStatus']: 'DP' is not one of ['PENDINGISSUED', 'ACTIVE', 'LAPSED', 'SURRENDERED', 'TERMINATED']",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "4700049294",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['policyStatus']: 'DP' is not one of ['PENDINGISSUED', 'ACTIVE', 'LAPSED', 'SURRENDERED', 'TERMINATED']",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "4700049797",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['policyStatus']: 'DP' is not one of ['PENDINGISSUED', 'ACTIVE', 'LAPSED', 'SURRENDERED', 'TERMINATED']",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "4700050300",
+      "counts": {
+        "fail": 1
+      },
+      "errors": [
+        "['carrierId']: None is not of type 'string'",
+        "['carrierName']: None is not of type 'string'",
+        "['issueType']: None is not of type 'string'",
+        "['issueType']: None is not one of ['FULLUNDERWRITING', 'SIMPLIFIED', 'GUARANTEED']",
+        "['policyLastRefreshDateTime']: None is not of type 'string'",
+        "['policyStatus']: 'DP' is not one of ['PENDINGISSUED', 'ACTIVE', 'LAPSED', 'SURRENDERED', 'TERMINATED']",
+        "['product', 'productType']: None is not of type 'string'",
+        "['product', 'productType']: None is not one of ['FIXED', 'VARIABLE', 'INDEXED', 'IMMEDIATE', 'DEFERRED']"
+      ]
+    },
+    {
+      "contract": "9999999999",
+      "counts": {
+        "pass": 1
+      },
+      "errors": []
+    }
+  ]
+}
