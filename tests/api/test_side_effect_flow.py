@@ -102,10 +102,22 @@ def test_file_share_eventually_creates_notification_and_audit_signal(api_client)
         description="file share notification for collaborator",
     )
 
+    # The audit log is ADMIN/AUDITOR-only; the file owner's USER token is refused.
+    forbidden = api_client.client.get(
+        "/api/v1/audit/events",
+        headers=owner.auth_headers,
+        params={"resource": file_id, "page": 1, "size": 20},
+    )
+    assert forbidden.status_code == 403, forbidden.text
+
+    admin = api_client.login_admin()
+    if admin is None:
+        pytest.skip("seeded admin unavailable; set OTTERWORKS_ADMIN_EMAIL/OTTERWORKS_ADMIN_PASSWORD to verify the audit side effect")
+
     def file_audit_events():
         response = api_client.client.get(
             "/api/v1/audit/events",
-            headers=owner.auth_headers,
+            headers=admin.auth_headers,
             params={"resource": file_id, "page": 1, "size": 20},
         )
         if response.status_code != 200:

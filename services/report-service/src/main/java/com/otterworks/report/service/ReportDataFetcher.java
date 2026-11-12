@@ -4,10 +4,14 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.otterworks.report.config.AppConfig;
+import com.otterworks.report.security.ServiceTokenProvider;
 import com.otterworks.report.util.ReportDateUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -40,13 +44,15 @@ public class ReportDataFetcher {
 
     private final RestTemplate restTemplate;
     private final AppConfig appConfig;
+    private final ServiceTokenProvider serviceTokenProvider;
 
     // LEGACY: Guava 28 LoadingCache. Upgrade target: Caffeine (Spring Boot default) or Spring @Cacheable
     private final LoadingCache<String, List<Map<String, Object>>> dataCache;
 
-    public ReportDataFetcher(RestTemplate restTemplate, AppConfig appConfig) {
+    public ReportDataFetcher(RestTemplate restTemplate, AppConfig appConfig, ServiceTokenProvider serviceTokenProvider) {
         this.restTemplate = restTemplate;
         this.appConfig = appConfig;
+        this.serviceTokenProvider = serviceTokenProvider;
 
         this.dataCache = CacheBuilder.newBuilder()
                 .maximumSize(100)
@@ -113,8 +119,10 @@ public class ReportDataFetcher {
 
                 logger.info("Fetching audit data from: {}", url);
 
-                // Let RestClientException propagate so fallback data is NOT cached.
-                ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+                // audit-service only serves ADMIN/AUDITOR/SERVICE callers, so present a
+                // short-lived SERVICE token. Let RestClientException propagate so fallback
+                // data is NOT cached.
+                ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, serviceAuthorization(), Map.class);
                 if (response.getBody() != null && response.getBody().containsKey("events")) {
                     return (List<Map<String, Object>>) response.getBody().get("events");
                 }
@@ -124,6 +132,15 @@ public class ReportDataFetcher {
             logger.error("Failed to fetch audit data, using sample data: {}", e.getMessage());
             return generateSampleAuditData(dateFrom, dateTo);
         }
+    }
+
+    private HttpEntity<Void> serviceAuthorization() {
+        HttpHeaders headers = new HttpHeaders();
+        String token = serviceTokenProvider.mint();
+        if (token != null) {
+            headers.setBearerAuth(token);
+        }
+        return new HttpEntity<>(headers);
     }
 
     /**

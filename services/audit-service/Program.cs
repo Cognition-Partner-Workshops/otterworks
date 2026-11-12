@@ -29,6 +29,7 @@ builder.Host.UseSerilog();
 var awsSection = builder.Configuration.GetSection("Aws");
 builder.Services.Configure<AwsSettings>(awsSection);
 var awsSettings = awsSection.Get<AwsSettings>() ?? new AwsSettings();
+var jwtSettings = JwtSettings.FromConfiguration(builder.Configuration);
 
 // AWS SDK clients
 builder.Services.AddSingleton<IAmazonDynamoDB>(_ =>
@@ -75,6 +76,10 @@ builder.Services.AddSingleton<IAuditService, OtterWorks.AuditService.Services.Au
 builder.Services.AddSingleton(ArchiveStoreOptions.FromEnvironment(Environment.GetEnvironmentVariable));
 builder.Services.AddSingleton<ArchiveStoreRegistry>();
 
+// Callers must present the auth-service JWT; only ADMIN/AUDITOR (or an internal SERVICE
+// token) may read the audit log, only ADMIN may archive it.
+builder.Services.AddAuditAuthorization(jwtSettings);
+
 // SNS/SQS Consumer background service
 builder.Services.AddHostedService<SnsConsumer>();
 
@@ -103,6 +108,9 @@ app.UseMiddleware<RequestLoggingMiddleware>();
 
 // Prometheus metrics endpoint
 app.UseHttpMetrics();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Health check
 app.MapGet("/health", async (IAmazonDynamoDB dynamoDb) =>
