@@ -4,6 +4,7 @@ import com.otterworks.report.model.Report;
 import com.otterworks.report.model.ReportRequest;
 import com.otterworks.report.model.ReportResponse;
 import com.otterworks.report.model.ReportStatus;
+import com.otterworks.report.security.CallerIdentity;
 import com.otterworks.report.service.ReportService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,6 +50,11 @@ import java.util.stream.Collectors;
  * - ByteArrayResource loads entire file into memory (target: InputStreamResource for streaming)
  * - No pagination on list endpoint
  * - Manual response mapping without MapStruct or similar
+ *
+ * AUTHORIZATION: every action is scoped to the authenticated caller (resolved by
+ * JwtAuthFilter). A report may only be read, downloaded or deleted by the user who
+ * requested it or by an admin; the list endpoint only returns the caller's own reports
+ * unless the caller is an admin.
  */
 @RestController
 @RequestMapping("/api/v1/reports")
@@ -66,10 +73,20 @@ public class ReportController {
     @ApiOperation(value = "Create a new report", notes = "Submits a report generation request. The report is generated asynchronously.")
     @ApiResponses({
             @ApiResponse(code = 202, message = "Report request accepted"),
-            @ApiResponse(code = 400, message = "Invalid request")
+            @ApiResponse(code = 400, message = "Invalid request"),
+            @ApiResponse(code = 403, message = "Caller may not request reports on behalf of another user")
     })
     public ResponseEntity<ReportResponse> createReport(
-            @Valid @RequestBody ReportRequest request) {
+            @Valid @RequestBody ReportRequest request,
+            Authentication authentication) {
+
+        CallerIdentity caller = CallerIdentity.from(authentication);
+        if (request.getRequestedBy() == null || request.getRequestedBy().trim().isEmpty()) {
+            request.setRequestedBy(caller.getUserId());
+        } else if (!caller.canAccess(request.getRequestedBy())) {
+            logger.warn("Caller tried to request a report on behalf of another user");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         logger.info("Report request: name={}, category={}, type={}, by={}",
                 request.getReportName(), request.getCategory(),
@@ -84,29 +101,52 @@ public class ReportController {
     @ApiOperation(value = "Get report by ID", notes = "Returns the report metadata and status")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Report found"),
+            @ApiResponse(code = 403, message = "Report belongs to another user"),
             @ApiResponse(code = 404, message = "Report not found")
     })
     public ResponseEntity<ReportResponse> getReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
 
         Optional<Report> report = reportService.getReport(id);
         if (!report.isPresent()) { // LEGACY: !isPresent() instead of isEmpty()
             return ResponseEntity.notFound().build();
         }
+        if (!isOwnerOrAdmin(authentication, report.get(), "read")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return ResponseEntity.ok(ReportResponse.fromEntity(report.get()));
     }
 
     @GetMapping
-    @ApiOperation(value = "List reports", notes = "List reports filtered by user ID or status")
+    @ApiOperation(value = "List reports",
+            notes = "Lists the caller's reports, optionally filtered by status. Admins may filter by any user ID "
+                    + "or list across users.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Reports"),
+            @ApiResponse(code = 403, message = "Caller may not list another user's reports")
+    })
     public ResponseEntity<Map<String, Object>> listReports(
-            @ApiParam(value = "Filter by user ID")
+            @ApiParam(value = "Filter by user ID (admins only, unless it is the caller's own ID)")
             @RequestParam(required = false) String userId,
             @ApiParam(value = "Filter by status")
-            @RequestParam(required = false) ReportStatus status) {
+            @RequestParam(required = false) ReportStatus status,
+            Authentication authentication) {
+
+        CallerIdentity caller = CallerIdentity.from(authentication);
+        if (userId != null && !caller.canAccess(userId)) {
+            logger.warn("Caller tried to list another user's reports");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (userId == null && !caller.isAdmin()) {
+            userId = caller.getUserId();
+        }
 
         List<Report> reports;
-        if (userId != null) {
+        if (userId != null && status != null) {
+            reports = reportService.getReportsByUserAndStatus(userId, status);
+        } else if (userId != null) {
             reports = reportService.getReportsByUser(userId);
         } else if (status != null) {
             reports = reportService.getReportsByStatus(status);
@@ -130,12 +170,14 @@ public class ReportController {
     @ApiOperation(value = "Download a generated report", notes = "Returns the report file for download")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Report file"),
+            @ApiResponse(code = 403, message = "Report belongs to another user"),
             @ApiResponse(code = 404, message = "Report not found or not yet completed"),
             @ApiResponse(code = 409, message = "Report is still generating")
     })
     public ResponseEntity<Resource> downloadReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
 
         Optional<Report> optReport = reportService.getReport(id);
         if (!optReport.isPresent()) {
@@ -143,6 +185,9 @@ public class ReportController {
         }
 
         Report report = optReport.get();
+        if (!isOwnerOrAdmin(authentication, report, "download")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         if (report.getStatus() == ReportStatus.GENERATING || report.getStatus() == ReportStatus.PENDING) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -183,11 +228,21 @@ public class ReportController {
     @ApiOperation(value = "Delete a report", notes = "Deletes the report record and its generated file")
     @ApiResponses({
             @ApiResponse(code = 204, message = "Report deleted"),
+            @ApiResponse(code = 403, message = "Report belongs to another user"),
             @ApiResponse(code = 404, message = "Report not found")
     })
     public ResponseEntity<Void> deleteReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        Optional<Report> existing = reportService.getReport(id);
+        if (!existing.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!isOwnerOrAdmin(authentication, existing.get(), "delete")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         boolean deleted = reportService.deleteReport(id);
         if (!deleted) {
@@ -197,6 +252,15 @@ public class ReportController {
     }
 
     // ----- Private helpers -----
+
+    private boolean isOwnerOrAdmin(Authentication authentication, Report report, String action) {
+        CallerIdentity caller = CallerIdentity.from(authentication);
+        if (caller.canAccess(report.getRequestedBy())) {
+            return true;
+        }
+        logger.warn("Caller is not the owner or an admin; refused {} of report {}", action, report.getId());
+        return false;
+    }
 
     private String getContentType(com.otterworks.report.model.ReportType reportType) {
         // LEGACY: switch without enhanced syntax
