@@ -1,5 +1,4 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { createHash } from 'crypto';
 import rateLimit from 'express-rate-limit';
 import type { Logger } from 'pino';
 import { verifyBearerToken, type VerifiedToken } from '../middleware/auth';
@@ -22,8 +21,14 @@ export function createCollabApiRouter(deps: CollabApiDeps): Router {
   const { jwtSecret, presenceHandler, documentAccess, logger } = deps;
   const router = Router();
 
-  // Each request can fan out to document-service, so cap it per caller. Requests
-  // arrive through the gateway, so the token identifies the caller better than the IP.
+  function callerOf(req: Request): VerifiedToken | null {
+    const header = req.headers.authorization;
+    const token = header?.startsWith('Bearer ') ? header.slice('Bearer '.length) : null;
+    return verifyBearerToken(token, jwtSecret);
+  }
+
+  // Each request can fan out to document-service, so cap it per user. Keyed on the
+  // verified subject so a fresh token for the same user does not reset the budget.
   router.use(
     rateLimit({
       windowMs: 60_000,
@@ -31,19 +36,15 @@ export function createCollabApiRouter(deps: CollabApiDeps): Router {
       standardHeaders: true,
       legacyHeaders: false,
       keyGenerator: (req) => {
-        const header = req.headers.authorization;
-        return header
-          ? createHash('sha256').update(header).digest('hex')
-          : (req.ip ?? 'unknown');
+        const caller = callerOf(req);
+        return caller ? `user:${caller.userId}` : `ip:${req.ip ?? 'unknown'}`;
       },
       message: { error: 'Too many requests' },
     }),
   );
 
   router.use((req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    const header = req.headers.authorization;
-    const token = header?.startsWith('Bearer ') ? header.slice('Bearer '.length) : null;
-    const caller = verifyBearerToken(token, jwtSecret);
+    const caller = callerOf(req);
     if (!caller) {
       res.status(401).json({ error: 'Authentication required' });
       return;

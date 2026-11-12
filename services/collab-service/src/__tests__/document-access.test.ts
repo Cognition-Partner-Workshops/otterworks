@@ -260,7 +260,7 @@ describe('collab REST API', () => {
     expect(body.users[0].userId).toBe(OWNER);
   });
 
-  it('limits how often one caller can query', async () => {
+  it('limits how often one user can query, across tokens', async () => {
     const app = express();
     app.use(
       createCollabApiRouter({
@@ -277,8 +277,12 @@ describe('collab REST API', () => {
     const limited = createServer(app);
     await new Promise<void>((resolve) => limited.listen(0, resolve));
     const url = `http://localhost:${(limited.address() as AddressInfo).port}/documents`;
-    const call = (userId: string) =>
-      fetch(url, { headers: { Authorization: `Bearer ${tokenFor(userId)}` } });
+    let issued = 0;
+    // A different token on every call, as after a fresh login.
+    const call = (userId: string) => {
+      const token = jwt.sign({ sub: userId, n: issued++ }, JWT_SECRET); // nosemgrep: javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret
+      return fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    };
     try {
       expect((await call(OWNER)).status).toBe(200);
       expect((await call(OWNER)).status).toBe(200);
