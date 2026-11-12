@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "purpose": "Descriptive extraction of legacy behavior; NOT an approved deployable payment configuration",
+  "approval": "pending",
+  "currency": null,
+  "currency_note": "CP-114 uses dollars; database does not store a currency code",
+  "source_catalog": "rules.json",
+  "products": [
+    {"code": "AUTO-STD", "name": "Standard Auto", "line": "AUTO", "basis": "flat", "default_rate_pct": 8, "effective_from": "2024-01-01", "rules": ["CP-001", "CP-015", "CP-024"]},
+    {"code": "HOME-PLUS", "name": "HomeOwners Plus", "line": "HOME", "basis": "flat", "default_rate_pct": 10, "effective_from": "2024-01-01", "rules": ["CP-001", "CP-015", "CP-024"]},
+    {"code": "TERM-20", "name": "20-Year Term Life", "line": "LIFE", "basis": "flat", "default_rate_pct": 15, "effective_from": "2024-01-01", "rules": ["CP-001", "CP-015", "CP-024"]},
+    {"code": "WL-PAR", "name": "Participating Whole Life", "line": "LIFE", "basis": "tiered", "flat_reference_rate_pct": 45, "flat_reference_from": "2020-01-01", "rules": ["CP-001", "CP-017", "CP-020", "CP-021", "CP-022"]},
+    {"code": "FIA-7", "name": "7-Year Fixed Indexed Annuity", "line": "ANNUITY", "basis": "tiered", "flat_reference_rate_pct": 6, "flat_reference_from": "2020-01-01", "rules": ["CP-001", "CP-017", "CP-020", "CP-021", "CP-022", "CP-053"]}
+  ],
+  "agent_overrides": [
+    {"product": "AUTO-STD", "agent_id": 1, "rate_pct": 9.5, "effective_from": "2024-06-01", "rule": "CP-015"}
+  ],
+  "tier_schedule": {
+    "rules": ["CP-020", "CP-021", "CP-022", "CP-040", "CP-052"],
+    "activation_operator_observed": "issue_date > change_date",
+    "activation_operator_spec": "issue_date >= change_date",
+    "on_missing_coverage": "error -20007",
+    "selection": "latest qualifying change_date for product and tier",
+    "rows": [
+      {"product": "WL-PAR", "tier": "T1", "rate_pct": 45, "change_date": "2020-01-01"},
+      {"product": "WL-PAR", "tier": "T1", "rate_pct": 40, "change_date": "2025-07-01"},
+      {"product": "WL-PAR", "tier": "T2", "rate_pct": 30, "change_date": "2020-01-01"},
+      {"product": "FIA-7", "tier": "T1", "rate_pct": 6, "change_date": "2020-01-01"},
+      {"product": "FIA-7", "tier": "T2", "rate_pct": 4.5, "change_date": "2020-01-01"}
+    ]
+  },
+  "premium_tier": {
+    "rules": ["CP-018", "CP-019", "CP-045", "CP-046"],
+    "payment": {"T1": "current annual_premium < 50000", "T2": "current annual_premium >= 50000"},
+    "warehouse": {"T1": "current annual_premium between 0 and 50000 inclusive", "T2": "otherwise"},
+    "spec": {"T1": "issue annualized premium < 50000", "T2": "issue annualized premium >= 50000", "immutable": true},
+    "marginal_bands": false,
+    "decisions": ["D1", "D2"]
+  },
+  "monthly_payment": {
+    "rules": ["CP-016", "CP-022", "CP-023", "CP-024", "CP-025", "CP-026", "CP-027", "CP-028", "CP-059", "CP-061", "CP-062"],
+    "formula": "ROUND(annual_premium / 12 * selected_rate_pct / 100 * saved_split_pct / 100, 2)",
+    "rounding": "Oracle NUMBER round per agent; no residual balancing",
+    "flat_rate_date": "LAST_DAY(TO_DATE(supplied_period, 'YYYY-MM'))",
+    "tier_rate_date": "policy.issued_date",
+    "flat_rate_required_for_tiered": true,
+    "policy_status_required": "IN_FORCE",
+    "revalidate_saved_agent_status": false,
+    "revalidate_saved_split_total": false,
+    "enforce_issue_date_or_first_year": false,
+    "replace_on_rerun": "only COMMISSION rows for policy/supplied period",
+    "annual_premium_semantics": "upstream mapping unverified; D9"
+  },
+  "monthly_cap": {
+    "rules": ["CP-029", "CP-030", "CP-031", "CP-065"],
+    "amount": 2500,
+    "scope": ["agent", "period_month"],
+    "canonical_month_key_enforced": false,
+    "noncanonical_month_effect": "2028-8 and 2028-08 are separate cap buckets (CP-061)",
+    "count_entry_type": "COMMISSION",
+    "exclude_current_policy": true,
+    "enforced_on": "BEFORE INSERT only",
+    "overflow_carry_forward": false,
+    "allocation_order": "first policy calculated consumes allowance first",
+    "bulk_insert_select": "mutating-table error -4091",
+    "decision": "D4"
+  },
+  "chargeback": {
+    "rules": ["CP-032", "CP-033", "CP-034", "CP-035", "CP-036", "CP-058"],
+    "event_supported": "lapse only from IN_FORCE",
+    "observed_bands": [
+      {"condition": "MONTHS_BETWEEN(lapse_date, issued_date) < 12", "paid_commission_reversal_pct": 100},
+      {"condition": "MONTHS_BETWEEN(lapse_date, issued_date) >= 12", "paid_commission_reversal_pct": 0}
+    ],
+    "spec_bands": [
+      {"policy_months": "1-6", "paid_commission_reversal_pct": 100},
+      {"policy_months": "7-12", "paid_commission_reversal_pct": 50},
+      {"policy_months": "13+", "paid_commission_reversal_pct": 0}
+    ],
+    "base": "sum of all COMMISSION rows per paid agent, with no period cutoff",
+    "booking_month": "TO_CHAR(supplied lapse_date,'YYYY-MM')",
+    "enforce_chronology": false,
+    "decisions": ["D5", "D6", "D7"]
+  },
+  "validation": {
+    "rules": ["CP-002", "CP-003", "CP-004", "CP-005", "CP-006", "CP-007", "CP-008", "CP-009", "CP-010", "CP-011", "CP-012", "CP-013", "CP-014", "CP-054", "CP-055", "CP-056", "CP-057", "CP-060", "CP-064"],
+    "rate_history_index": "at most one open AND one closed row per product/agent scope",
+    "rate_pct": {"exclusive_min": 0, "inclusive_max": 50},
+    "split_pct": {"exclusive_min": 0, "inclusive_max": 100, "input_total": 100, "storage_decimal_places": 2, "validate_total_after_rounding": false},
+    "agent_statuses": ["ACTIVE", "SUSPENDED", "TERMINATED"],
+    "policy_statuses": ["IN_FORCE", "LAPSED", "CANCELLED"],
+    "entry_types": ["COMMISSION", "CHARGEBACK"],
+    "product_lines": ["AUTO", "HOME", "LIFE", "ANNUITY", "COMMERCIAL"],
+    "new_allocation_and_rate_agent_status": "ACTIVE"
+  },
+  "audit_and_transactions": {
+    "rules": ["CP-037", "CP-038", "CP-039"],
+    "actor_required": true,
+    "actions": ["RATE_UPSERT", "RATE_END", "SPLIT_SET", "COMMISSION_CALC", "POLICY_LAPSE"],
+    "success": "commit entire session transaction",
+    "failure": "rollback entire session transaction"
+  },
+  "warehouse": {
+    "rules": ["CP-041", "CP-042", "CP-043", "CP-044", "CP-045", "CP-046", "CP-047", "CP-048", "CP-049", "CP-050", "CP-051", "CP-063"],
+    "fact_key": ["policy_id", "agent_key", "period_key", "entry_type"],
+    "amount_source": "ledger; not independently recalculated",
+    "tier_source": "current policy premium and schedule existence",
+    "delete_missing_source_rows": false,
+    "update_existing_product_key": false,
+    "dimension_history": "current values overwritten (type 1)",
+    "summary_group": ["agent_code", "full_name", "period_month", "line_of_business"],
+    "summary_measure": "signed SUM(commission_amt), COUNT(fact rows)",
+    "summary_refresh": "complete on demand; not in ETL",
+    "decision": "D8"
+  },
+  "unresolved_decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12"]
+}

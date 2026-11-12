@@ -1,0 +1,1287 @@
+[
+  {
+    "id": "CP-001",
+    "sentence": "AUTO-STD and HOME-PLUS use flat rates; TERM-20 uses a 15% flat default; WL-PAR and FIA-7 use tier schedules.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/02_seed.sql",
+        "start": 17,
+        "end": 51
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 343,
+        "end": 393
+      }
+    ],
+    "spec": "p1 §2 and p2 §4: product names, lines and flat/tiered bases match; AUTO/HOME are outside scan scope",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-001"
+  },
+  {
+    "id": "CP-002",
+    "sentence": "Agents have ACTIVE, SUSPENDED, or TERMINATED status, with ACTIVE as the default.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 6,
+        "end": 14
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-002"
+  },
+  {
+    "id": "CP-003",
+    "sentence": "Agent codes and licences and policy numbers are unique, and policy, rate, split, and ledger references must identify existing records.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 6,
+        "end": 43
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 59,
+        "end": 98
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-003"
+  },
+  {
+    "id": "CP-004",
+    "sentence": "Policy premium must be positive and is stored to cents; policies default to IN_FORCE and may also be LAPSED or CANCELLED.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 59,
+        "end": 68
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-004"
+  },
+  {
+    "id": "CP-005",
+    "sentence": "Commission rates must be non-null, greater than zero, and at most 50%.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 156,
+        "end": 159
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 30,
+        "end": 31
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 52,
+        "end": 53
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-005"
+  },
+  {
+    "id": "CP-006",
+    "sentence": "A new rate requires a known product; a named agent must exist and be ACTIVE, while a null agent sets the product default.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 124,
+        "end": 163
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-006"
+  },
+  {
+    "id": "CP-007",
+    "sentence": "Correcting an open rate on its original start date keeps its ID and replaces its percentage and author.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 165,
+        "end": 176
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-007"
+  },
+  {
+    "id": "CP-008",
+    "sentence": "A later new rate closes the earlier open rate for the same product and agent one day before the new start, preserving history and other scopes.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 178,
+        "end": 193
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-008"
+  },
+  {
+    "id": "CP-009",
+    "sentence": "Each product and agent scope has at most one open rate; an end date cannot precede its start, and backdating before the open start is rejected rather than rewriting history.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 32,
+        "end": 43
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 178,
+        "end": 193
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-009"
+  },
+  {
+    "id": "CP-010",
+    "sentence": "Ending a rate closes its open scope without deleting history; no open rate raises -20007, and an explicit end date is inclusive.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 203,
+        "end": 226
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 291,
+        "end": 300
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-010"
+  },
+  {
+    "id": "CP-011",
+    "sentence": "Splits require a known policy and at least one allocation; replacing splits is permitted even on a lapsed or cancelled policy.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 237,
+        "end": 246
+      }
+    ],
+    "spec": "p2 §4.3: every sharing agent must have a split; policy-state restriction not specified",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-011"
+  },
+  {
+    "id": "CP-012",
+    "sentence": "An agent may appear only once in a policy allocation; null or duplicate agents are rejected.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 248,
+        "end": 251
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 73,
+        "end": 80
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-012"
+  },
+  {
+    "id": "CP-013",
+    "sentence": "Each split must be greater than zero and at most 100%, and every allocated agent must exist and be ACTIVE.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 253,
+        "end": 262
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-013"
+  },
+  {
+    "id": "CP-014",
+    "sentence": "Split percentages must sum to exactly 100, with no tolerance; valid allocations replace all prior allocations atomically.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 264,
+        "end": 281
+      }
+    ],
+    "spec": "p2 §4.3: matches exact 100% total",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-014"
+  },
+  {
+    "id": "CP-015",
+    "sentence": "An agent-specific in-force rate wins over the product default; otherwise the default applies, with both date endpoints included.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 291,
+        "end": 300
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-015"
+  },
+  {
+    "id": "CP-016",
+    "sentence": "If several historical rates qualify, the latest start wins within the agent-specific or default scope; absence of a rate raises -20007.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 291,
+        "end": 307
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-016"
+  },
+  {
+    "id": "CP-017",
+    "sentence": "A product is treated as tiered whenever any tier-schedule row exists, not because of its line of business.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 343,
+        "end": 349
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-017"
+  },
+  {
+    "id": "CP-018",
+    "sentence": "For payment, annual premium below $50,000 is T1 and premium of $50,000 or more is T2.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 108,
+        "end": 108
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 310,
+        "end": 318
+      }
+    ],
+    "spec": "p1 §3 agrees with OLTP; warehouse disagrees at exactly 50000 (CP-045)",
+    "decision": "D1: Approve T2 at exactly 50000 and align reporting, or choose another shared boundary. OLTP matches the scan; DW labels T1.",
+    "approval": "pending",
+    "test": "T-CP-018"
+  },
+  {
+    "id": "CP-019",
+    "sentence": "Payment recalculates the tier from the policy’s current premium on every run rather than freezing the issue-time tier.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 375,
+        "end": 378
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 395,
+        "end": 404
+      }
+    ],
+    "spec": "p1 §3: tier fixed at issue and does not change on premium adjustment",
+    "decision": "D2: Choose immutable issue premium/tier or approve current-premium repricing; decide how historical recalculation should work.",
+    "approval": "pending",
+    "test": "T-CP-019"
+  },
+  {
+    "id": "CP-020",
+    "sentence": "WL-PAR T1 uses 45% before the July 2025 change and 40% afterward; WL-PAR T2 uses 30%, FIA-7 T1 6%, and FIA-7 T2 4.5%.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/02_seed.sql",
+        "start": 42,
+        "end": 51
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 320,
+        "end": 335
+      }
+    ],
+    "spec": "p2 §4 schedule: all numeric rates match; activation date discrepancy is CP-021",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-020"
+  },
+  {
+    "id": "CP-021",
+    "sentence": "A tier-rate change applies only after its change date, so a policy issued on the change date uses the previous rate or fails if no earlier rate exists.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 327,
+        "end": 340
+      }
+    ],
+    "spec": "p2 §4.1: new rate applies on its effective date",
+    "decision": "D3: Choose inclusive activation from the scan or approve strictly-after-date legacy behavior, including the initial-date no-rate error.",
+    "approval": "pending",
+    "test": "T-CP-021"
+  },
+  {
+    "id": "CP-022",
+    "sentence": "Tiered payments use the schedule rate selected by policy issue date, overriding any agent-specific flat percentage, but still require a flat rate to exist at period end.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 375,
+        "end": 393
+      }
+    ],
+    "spec": "p2 §4.1: issue-date tier-rate basis matches; extra flat-rate dependency not described",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-022"
+  },
+  {
+    "id": "CP-023",
+    "sentence": "Commission calculation requires an existing IN_FORCE policy and at least one saved split allocation.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 364,
+        "end": 373
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 408,
+        "end": 411
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-023"
+  },
+  {
+    "id": "CP-024",
+    "sentence": "Flat-rate commission uses the rate in force on the last day of the requested payment month.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 375,
+        "end": 375
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 388,
+        "end": 393
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-024"
+  },
+  {
+    "id": "CP-025",
+    "sentence": "Each monthly agent amount is annual premium divided by 12, times the rate and split percentages, rounded to cents separately for that agent.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 395,
+        "end": 404
+      }
+    ],
+    "spec": "p2 §4.2 matches monthly formula and rounding",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-025"
+  },
+  {
+    "id": "CP-026",
+    "sentence": "A period rerun replaces only that policy’s COMMISSION rows, keeps CHARGEBACK rows, and writes one row per agent, policy, month, and entry type.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 380,
+        "end": 382
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 84,
+        "end": 98
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-026"
+  },
+  {
+    "id": "CP-027",
+    "sentence": "Payment uses saved splits without revalidating their totals or the agents’ current status; later suspension does not stop an already allocated agent’s payment.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 384,
+        "end": 404
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-027"
+  },
+  {
+    "id": "CP-028",
+    "sentence": "The requested commission month is not checked against the policy issue date; an in-force policy can receive commission for an earlier month.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 364,
+        "end": 395
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-028"
+  },
+  {
+    "id": "CP-029",
+    "sentence": "A commission insert is reduced to the remaining $2,500 monthly allowance for that agent across other policies, with a floor of zero.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/04_ledger_triggers.sql",
+        "start": 4,
+        "end": 23
+      }
+    ],
+    "spec": "p2 §5: 2500 per agent/calendar month matches initial inserts; lifecycle weaknesses are CP-031",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-029"
+  },
+  {
+    "id": "CP-030",
+    "sentence": "Chargebacks neither consume nor restore the monthly commission allowance, and unpaid excess is not carried into the next month.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/04_ledger_triggers.sql",
+        "start": 7,
+        "end": 18
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 395,
+        "end": 404
+      }
+    ],
+    "spec": "p2 §5: no carry-forward matches; treatment of chargebacks against the cap is not explicit",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-030"
+  },
+  {
+    "id": "CP-031",
+    "sentence": "The cap is applied in calculation order and only on inserts; lowering a prior policy does not top up other policies, and direct ledger updates can exceed $2,500.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/04_ledger_triggers.sql",
+        "start": 4,
+        "end": 23
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 380,
+        "end": 404
+      }
+    ],
+    "spec": "p2 §5: absolute monthly limit across all policies",
+    "decision": "D4: Decide allocation/recalculation order and whether all write paths must enforce the cap. Current insert-only cap leaves underpayments after repricing and permits over-cap updates; concurrent sessions are not serialized (not load-tested). INSERT SELECT also fails with -4091; choose whether bulk writes must be supported (CP-065).",
+    "approval": "pending",
+    "test": "T-CP-031"
+  },
+  {
+    "id": "CP-032",
+    "sentence": "Lapse requires a known IN_FORCE policy, changes its status to LAPSED, and rejects a second lapse.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 430,
+        "end": 442
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-032"
+  },
+  {
+    "id": "CP-033",
+    "sentence": "A lapse with fewer than 12 Oracle MONTHS_BETWEEN issue and lapse reverses 100% of all stored commission; at 12 months or later it reverses nothing.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 109,
+        "end": 109
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 444,
+        "end": 459
+      }
+    ],
+    "spec": "p3 §6.1: months 1–6 =100%, 7–12 =50%, 13 onward =none",
+    "decision": "D5: Choose the spec’s 100%/50%/0% bands or legacy 100% before 12 elapsed months, then define policy-month numbering and the anniversary boundary.",
+    "approval": "pending",
+    "test": "T-CP-033"
+  },
+  {
+    "id": "CP-034",
+    "sentence": "Chargeback is booked in the supplied lapse month per original paid agent, using the negative sum of that agent’s paid commissions and maximum historical rate ID and split percentage.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 428,
+        "end": 428
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 445,
+        "end": 459
+      }
+    ],
+    "spec": "p3 §6.2: lapse-month booking and paid-agent proportions match if supplied date is processing month",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-034"
+  },
+  {
+    "id": "CP-035",
+    "sentence": "Lapse chargebacks sum every COMMISSION period on the policy, including periods after the supplied lapse date, and do not validate lapse-date chronology.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 444,
+        "end": 459
+      }
+    ],
+    "spec": "p3 §6.1 describes months policy was in force; p3 §6.2 says month lapse is processed",
+    "decision": "D6: Define chronology, paid-as-of cutoff, and processing-date versus effective-date booking; legacy accepts pre-issue dates and includes future-period ledger amounts.",
+    "approval": "pending",
+    "test": "T-CP-035"
+  },
+  {
+    "id": "CP-036",
+    "sentence": "There is no surrender operation or SURRENDERED policy state; cancelling a policy does not automatically produce a chargeback.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 66,
+        "end": 67
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 94,
+        "end": 103
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 422,
+        "end": 471
+      }
+    ],
+    "spec": "p3 §6.1 explicitly includes lapse OR surrender",
+    "decision": "D7: Define surrender representation and whether it must share lapse chargeback behavior. Do not assume CANCELLED means surrendered.",
+    "approval": "pending",
+    "test": "T-CP-036"
+  },
+  {
+    "id": "CP-037",
+    "sentence": "Successful rate, split, calculation, and lapse operations record the action, actor, detail, and timestamp in the audit log.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 111,
+        "end": 122
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 193,
+        "end": 195
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 219,
+        "end": 220
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 275,
+        "end": 276
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 413,
+        "end": 414
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 464,
+        "end": 465
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 101,
+        "end": 110
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-037"
+  },
+  {
+    "id": "CP-038",
+    "sentence": "Management operations commit on success and roll back the whole current transaction on failure, including changes made by the caller before the call.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 196,
+        "end": 200
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 221,
+        "end": 225
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 277,
+        "end": 281
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 415,
+        "end": 419
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 466,
+        "end": 470
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-038"
+  },
+  {
+    "id": "CP-039",
+    "sentence": "A failed commission rerun restores the deleted prior rows and leaves no new calculation audit event.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 380,
+        "end": 382
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 413,
+        "end": 419
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-039"
+  },
+  {
+    "id": "CP-040",
+    "sentence": "Tier codes are restricted to T1/T2, and each product/tier/change-date combination may occur only once with a rate in (0,50].",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 48,
+        "end": 57
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-040"
+  },
+  {
+    "id": "CP-041",
+    "sentence": "The warehouse refreshes existing agent and product descriptions and inserts missing dimensions from all source records, including inactive agents.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 22,
+        "end": 43
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-041"
+  },
+  {
+    "id": "CP-042",
+    "sentence": "The warehouse creates distinct year, month, and ceiling(month/3) quarter dimensions from ledger months; a null period loads all periods.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 45,
+        "end": 56
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 80,
+        "end": 80
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-042"
+  },
+  {
+    "id": "CP-043",
+    "sentence": "Warehouse facts copy the paid ledger amounts, splits, premium, and entry type; ETL does not recompute monetary commission or apply the cap again.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 58,
+        "end": 66
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 85,
+        "end": 95
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-043"
+  },
+  {
+    "id": "CP-044",
+    "sentence": "An ETL rerun updates facts by policy, agent, period, and entry type without duplicating them; the returned row count includes matched rows.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 81,
+        "end": 98
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/olap/01_star_schema.sql",
+        "start": 29,
+        "end": 43
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-044"
+  },
+  {
+    "id": "CP-045",
+    "sentence": "The warehouse labels current premiums from zero through $50,000 inclusive as T1, so exactly $50,000 disagrees with the payment package’s T2.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 67,
+        "end": 74
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 310,
+        "end": 318
+      }
+    ],
+    "spec": "p1 §3: 50000 belongs to T2, agreeing with OLTP not DW",
+    "decision": "D1: Same boundary decision as CP-018; do not approve the reporting tier just because monetary totals reconcile.",
+    "approval": "pending",
+    "test": "T-CP-045"
+  },
+  {
+    "id": "CP-046",
+    "sentence": "The warehouse reconstructs tiers from current policy data instead of copying ledger tiers, including assigning tiers to chargebacks whose ledger tier is null.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 67,
+        "end": 79
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 454,
+        "end": 459
+      }
+    ],
+    "spec": "p1 §3: immutable issue tier; DW derives current tier independently of ledger",
+    "decision": "D2: Same issue-time snapshot decision as CP-019; decide whether reporting tiers should copy paid-event history, including chargebacks.",
+    "approval": "pending",
+    "test": "T-CP-046"
+  },
+  {
+    "id": "CP-047",
+    "sentence": "Warehouse loads do not delete facts or dimensions that disappear from the source, so removed allocations can leave stale facts and overstated totals.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 22,
+        "end": 98
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "D8: Decide whether warehouse is a paid-event archive or a current-ledger mirror; MERGE-only loads retain removed rows. The paired CP-048/049 tests demonstrate the divergence. Also decide how corrected product keys propagate: an existing fact keeps its original product attribution (CP-063).",
+    "approval": "pending",
+    "test": "T-CP-047"
+  },
+  {
+    "id": "CP-048",
+    "sentence": "A policy’s saved allocation can be removed and the next successful calculation replaces its old-agent ledger rows, leaving no old-agent source row.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 269,
+        "end": 273
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 380,
+        "end": 404
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-048"
+  },
+  {
+    "id": "CP-049",
+    "sentence": "After an agent allocation changes, ETL adds the new fact but keeps the deleted agent’s old fact, making reporting differ from the payment ledger.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 81,
+        "end": 95
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "D8: Same mirror-versus-archive decision as CP-047; monetary reconciliation fails after allocation removal.",
+    "approval": "pending",
+    "test": "T-CP-049"
+  },
+  {
+    "id": "CP-050",
+    "sentence": "The reporting summary counts fact rows, not distinct policies, and sums signed commission amounts by agent, month, and line of business.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 108,
+        "end": 123
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-050"
+  },
+  {
+    "id": "CP-051",
+    "sentence": "The summary is refreshed only on demand; loading facts alone does not refresh it.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 97,
+        "end": 98
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 109,
+        "end": 112
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-051"
+  },
+  {
+    "id": "CP-052",
+    "sentence": "A new tier change dated in the future still makes a product tiered today, but missing earlier schedule coverage stops calculation with -20007.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 327,
+        "end": 340
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 343,
+        "end": 349
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-052"
+  },
+  {
+    "id": "CP-053",
+    "sentence": "Premium is taken directly from the annual_premium field for every product; no separate planned-premium or FIA single-premium conversion exists in the database.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 59,
+        "end": 65
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 395,
+        "end": 404
+      }
+    ],
+    "spec": "p1 §2: planned annual premium, with FIA single premium treated as annualized; database consumes annual_premium only, upstream meaning not verifiable",
+    "decision": "D9: Confirm career-agency scope and that upstream annual_premium represents planned annualized premium and FIA single premium. The fixture has no channel field or ingestion mapping to prove those assumptions.",
+    "approval": "pending",
+    "test": "T-CP-053"
+  },
+  {
+    "id": "CP-054",
+    "sentence": "Product lines are restricted to AUTO, HOME, LIFE, ANNUITY, and COMMERCIAL.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 16,
+        "end": 22
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-054"
+  },
+  {
+    "id": "CP-055",
+    "sentence": "Ledger entries permit only COMMISSION or CHARGEBACK and default to COMMISSION; each is unique per policy, agent, and month.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 84,
+        "end": 98
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-055"
+  },
+  {
+    "id": "CP-056",
+    "sentence": "A non-null actor is required by rate-author and audit fields; missing actor causes failure and rolls back the management action.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 101,
+        "end": 109
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 120,
+        "end": 121
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 196,
+        "end": 200
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 34,
+        "end": 34
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 167,
+        "end": 174
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-056"
+  },
+  {
+    "id": "CP-057",
+    "sentence": "An explicitly null rate end date leaves the rate open but still records a successful RATE_END audit action.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 210,
+        "end": 221
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-057"
+  },
+  {
+    "id": "CP-058",
+    "sentence": "A lapse with no commission paid still changes status and logs the action but creates no chargeback rows.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 442,
+        "end": 466
+      }
+    ],
+    "spec": "p3 §6: only commission already paid is charged back",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-058"
+  },
+  {
+    "id": "CP-059",
+    "sentence": "Tiered commissions have no first-year or renewal eligibility cutoff; an in-force policy can still be paid the issue-date schedule percentage in later years.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 364,
+        "end": 397
+      }
+    ],
+    "spec": "p1 §3 calls these first-year rates; no later-year schedule or payment eligibility is defined",
+    "decision": "D10: Confirm whether the first-year rate may be paid beyond the first year, or provide renewal eligibility/rates. Code has no duration cutoff; the scan is incomplete for later years.",
+    "approval": "pending",
+    "test": "T-CP-059"
+  },
+  {
+    "id": "CP-060",
+    "sentence": "Split totals are checked before storage rounding, so three accepted high-precision percentages can persist as a total of 100.01%.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 261,
+        "end": 281
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 77,
+        "end": 78
+      }
+    ],
+    "spec": "p2 §4.3 requires exactly 100% recorded splits",
+    "decision": "D11: Choose allowed input precision and whether totals must be validated after cent-percentage rounding. Legacy accepts exact input totals that round to a stored total above 100%.",
+    "approval": "pending",
+    "test": "T-CP-060"
+  },
+  {
+    "id": "CP-061",
+    "sentence": "The commission month is parsed using Oracle’s permissive YYYY-MM conversion and stored as supplied rather than normalized to a canonical month string. Different accepted spellings of the same calendar month use separate cap buckets.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 375,
+        "end": 382
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 88,
+        "end": 88
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/04_ledger_triggers.sql",
+        "start": 12,
+        "end": 18
+      }
+    ],
+    "spec": "p2 §5: calendar-month agent limit of 2500, regardless of month-string spelling",
+    "decision": "D4: Same monthly-limit decision as CP-031; require a canonical month key or approve separate legacy string buckets. Tests demonstrate 3000 for the same calendar month.",
+    "approval": "pending",
+    "test": "T-CP-061"
+  },
+  {
+    "id": "CP-062",
+    "sentence": "Recalculation uses the policy’s current product as well as current premium and allocation, rather than an immutable issue snapshot.",
+    "status": "green",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 365,
+        "end": 365
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 376,
+        "end": 404
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "",
+    "approval": "pending",
+    "test": "T-CP-062"
+  },
+  {
+    "id": "CP-063",
+    "sentence": "An existing warehouse fact’s product key is not updated when the policy product changes, even though its money is updated from the new product calculation.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+        "start": 81,
+        "end": 95
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "D8: Same mirror-versus-archive decision as CP-047; define whether corrected product attribution must propagate to existing facts.",
+    "approval": "pending",
+    "test": "T-CP-063"
+  },
+  {
+    "id": "CP-064",
+    "sentence": "The rate index permits at most one closed rate per product/agent scope as well as one open rate, so a second supersession or ending after supersession fails and rolls back.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 39,
+        "end": 43
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 179,
+        "end": 190
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 210,
+        "end": 225
+      }
+    ],
+    "spec": "Not addressed by scan for flat-rate history; package documentation promises effective-dated history without deletion",
+    "decision": "D12: Decide whether arbitrary rate history must be supported. The conditional unique index also restricts closed history, preventing a second historical closure. Do not weaken or replace it without approval.",
+    "approval": "pending",
+    "test": "T-CP-064"
+  },
+  {
+    "id": "CP-065",
+    "sentence": "Bulk INSERT…SELECT ledger writes fail with Oracle mutating-table error -4091 because the row-level cap trigger queries the same ledger table.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/04_ledger_triggers.sql",
+        "start": 4,
+        "end": 18
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "D4: Same cap/write-path decision as CP-031; approve supported write paths and whether bulk ledger operations must be possible.",
+    "approval": "pending",
+    "test": "T-CP-065"
+  }
+]
