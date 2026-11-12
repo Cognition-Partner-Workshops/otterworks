@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 
 import app.main as main
 from app.domain import SubscriptionRow
+from tests.conftest import bearer
 
 TENANT = UUID("00000000-0000-0000-0000-000000000001")
 PLAN = UUID("10000000-0000-0000-0000-000000000002")
@@ -45,8 +46,9 @@ def test_repeated_plan_change_returns_conflict(monkeypatch) -> None:
     monkeypatch.setattr(main, "change_plan", fake_change_plan)
     with TestClient(main.app) as client:
         payload = {"plan_id": str(PLAN), "effective_on": "2026-03-01"}
-        first = client.post(f"/api/tenants/{TENANT}/plan-change", json=payload)
-        second = client.post(f"/api/tenants/{TENANT}/plan-change", json=payload)
+        headers = bearer(tenant=TENANT)
+        first = client.post(f"/api/tenants/{TENANT}/plan-change", json=payload, headers=headers)
+        second = client.post(f"/api/tenants/{TENANT}/plan-change", json=payload, headers=headers)
 
     assert first.status_code == 200
     assert second.status_code == 409

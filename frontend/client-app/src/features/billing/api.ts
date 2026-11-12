@@ -43,8 +43,24 @@ export type PlanChangeResult = {
   subscriptions: Subscription[];
 };
 
+const DENIED: Record<number, string> = {
+  401: "Billing needs a valid access token. Start the client with VITE_BILLING_TOKEN set.",
+  403: "This access token is not allowed to act for this tenant.",
+};
+
+export function billingErrorMessage(error: unknown, fallback: string): string {
+  return (error instanceof BillingApiError && DENIED[error.status]) || fallback;
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${BILLING_BASE_URL}${path}`, options);
+  const token = import.meta.env.VITE_BILLING_TOKEN;
+  const response = await fetch(`${BILLING_BASE_URL}${path}`, {
+    ...options,
+    headers: {
+      ...options?.headers,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
   if (!response.ok) {
     throw new BillingApiError(
       `Billing service returned ${response.status}`,

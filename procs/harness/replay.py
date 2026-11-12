@@ -16,9 +16,11 @@ from urllib.parse import urlsplit
 
 import yaml
 try:
+    from procs.harness.auth_token import SECRET_ENV, AuthConfigError, mint
     from procs.harness.fingerprints import fixture_sha, source_sha
     from procs.harness.status import EXTRACTED, PENDING, VALID_STATUSES, status_for
 except ModuleNotFoundError:
+    from auth_token import SECRET_ENV, AuthConfigError, mint
     from fingerprints import fixture_sha, source_sha
     from status import EXTRACTED, PENDING, VALID_STATUSES, status_for
 
@@ -33,6 +35,7 @@ CONTRACT_MISSING = 6
 SOURCE_MISMATCH = 7
 RESET_FAILED = 8
 SELECTION_EMPTY = 9
+AUTH_MISSING = 10
 
 
 @dataclass(frozen=True)
@@ -121,7 +124,10 @@ def request_json(
             method,
             f"{parsed.path.rstrip('/')}{path}",
             body=data,
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {mint(os.getenv(SECRET_ENV, ''), service=True)}",
+            },
         )
         response = connection.getresponse()
         raw = response.read()
@@ -230,7 +236,12 @@ def reset_target(base_url: str) -> tuple[bool, str]:
     except (http.client.HTTPException, OSError) as error:
         return False, f"target unreachable during reset: {error}"
     if status != 204:
-        if status in {403, 404}:
+        if status in {401, 403}:
+            return False, (
+                f"target reset refused the service token with HTTP {status}: {payload}; "
+                f"{SECRET_ENV} must be the secret the stack was started with"
+            )
+        if status == 404:
             return False, (
                 f"target reset refused with HTTP {status}: {payload}; "
                 "enable BILLING_SVC_ALLOW_INTERNAL_RESET for disposable stacks"
@@ -271,6 +282,11 @@ def main() -> int:
     parser.add_argument("--scenario")
     parser.add_argument("--base-url", default=os.getenv("BILLING_SVC_URL", "http://localhost:8097"))
     args = parser.parse_args()
+    try:
+        mint(os.getenv(SECRET_ENV, ""), service=True)
+    except AuthConfigError as error:
+        print(error, file=sys.stderr)
+        return AUTH_MISSING
     routes = yaml.safe_load(ROUTES.read_text())["modules"]
     expected_sha = (TRANSCRIPTS / "SOURCE_SHA").read_text().strip()
     expected_fixture_sha = (TRANSCRIPTS / "FIXTURE_SHA").read_text().strip()

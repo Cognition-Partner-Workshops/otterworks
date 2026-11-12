@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { billingApi, type Plan } from "./api";
+import { billingApi, billingErrorMessage, type Plan } from "./api";
 import { BillingAlert } from "./alert";
 
 const DEFAULT_TENANT = "00000000-0000-0000-0000-000000000001";
@@ -21,8 +21,8 @@ export default function BillingPlansPage() {
       .then((items) => {
         if (isCurrent()) setPlans(items);
       })
-      .catch(() => {
-        if (isCurrent()) setError("Plans could not be loaded.");
+      .catch((error: unknown) => {
+        if (isCurrent()) setError(billingErrorMessage(error, "Plans could not be loaded."));
       })
       .finally(() => {
         if (isCurrent()) setIsLoading(false);

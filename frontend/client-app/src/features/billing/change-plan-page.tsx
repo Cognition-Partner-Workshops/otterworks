@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   billingApi,
   BillingApiError,
+  billingErrorMessage,
   type Plan,
   type PlanChangeResult,
 } from "./api";
@@ -47,8 +48,8 @@ export default function BillingChangePlanPage() {
           setPlanId((current) => current || items[0]?.plan_id || "");
         }
       })
-      .catch(() => {
-        if (mounted) setError("Plans could not be loaded.");
+      .catch((error: unknown) => {
+        if (mounted) setError(billingErrorMessage(error, "Plans could not be loaded."));
       })
       .finally(() => {
         if (mounted) setIsLoading(false);
@@ -79,7 +80,7 @@ export default function BillingChangePlanPage() {
           setError(
             error instanceof BillingApiError && error.status === 409
               ? "This plan change was already submitted."
-              : "The plan change could not be saved.",
+              : billingErrorMessage(error, "The plan change could not be saved."),
           );
         }
       })

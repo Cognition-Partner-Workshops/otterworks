@@ -22,6 +22,23 @@ The Flask layer intentionally binds request values, calls a database
 entrypoint, and renders the returned values. It does not reproduce domain
 decisions in Python.
 
+## Authentication
+
+Every route except `/health` requires `Authorization: Bearer <JWT>`, checked in
+`app/auth.py` before any procedure runs. Tokens are HS256, signed with
+`BILLING_AUTH_SECRET` (required, at least 32 characters), and must carry `sub`,
+`exp` and `aud: otterworks-billing`.
+
+- A `tenant_id` claim lets the caller act for that tenant only: the tenant in
+  the URL or JSON body must match (`403` otherwise), and
+  `/api/invoices/<invoice>/lines` answers `404` unless the invoice belongs to
+  the caller's tenant.
+- `scope: billing:service` lets the caller act for any tenant. The dunning
+  routes span every tenant and require it.
+
+`make procs-up NS=<ns>` generates the secret and `make procs-token` mints
+tokens; see `procs/README.md`.
+
 ## Why it is an extraction candidate
 
 - The domain boundaries are already grouped into database procedure modules.

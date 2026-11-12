@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { billingApi, type Entitlement } from "./api";
+import { billingApi, billingErrorMessage, type Entitlement } from "./api";
 import { BillingAlert } from "./alert";
 
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -31,8 +31,8 @@ export default function BillingEntitlementPage() {
       .then((value) => {
         if (mounted) setEntitlement(value);
       })
-      .catch(() => {
-        if (mounted) setError("The entitlement could not be loaded.");
+      .catch((error: unknown) => {
+        if (mounted) setError(billingErrorMessage(error, "The entitlement could not be loaded."));
       })
       .finally(() => {
         if (mounted) setIsLoading(false);

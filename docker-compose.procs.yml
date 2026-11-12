@@ -36,6 +36,7 @@ services:
       DB_NAME: billing_${NS:-dev}
       DB_USER: billing
       DB_PASSWORD: ${DB_PASSWORD:-billing}
+      BILLING_AUTH_SECRET: ${PROCS_AUTH_SECRET:?start the stack with make procs-up NS=<ns>, which generates the signing secret}
     ports:
       - "127.0.0.1:${PROCS_APP_PORT:-8096}:8096"
     healthcheck:
@@ -54,6 +55,7 @@ services:
     environment:
       BILLING_SVC_DATABASE_URL: postgresql://billing_svc:billing_svc@billing-service-db:5432/billing_svc_${NS:-dev}
       BILLING_SVC_ALLOW_INTERNAL_RESET: "true"
+      BILLING_SVC_AUTH_SECRET: ${PROCS_AUTH_SECRET:?start the stack with make procs-up NS=<ns>, which generates the signing secret}
     ports:
       - "127.0.0.1:${PROCS_TARGET_PORT:-8097}:8097"
     healthcheck:

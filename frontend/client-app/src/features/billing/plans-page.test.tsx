@@ -1,7 +1,7 @@
 import { http, HttpResponse, delay } from "msw";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import BillingPlansPage from "./plans-page";
 import { billingServer } from "../../test-setup";
 
@@ -14,6 +14,46 @@ function renderPage() {
 }
 
 describe("Billing plans", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("sends the configured billing token as a bearer credential", async () => {
+    let authorization: string | null = "unset";
+    vi.stubEnv("VITE_BILLING_TOKEN", "tenant-token");
+    billingServer.use(
+      http.get("http://localhost:3000/billing-api/api/plans", ({ request }) => {
+        authorization = request.headers.get("Authorization");
+        return HttpResponse.json([]);
+      })
+    );
+    renderPage();
+    await waitFor(() => expect(authorization).toBe("Bearer tenant-token"));
+  });
+
+  it("sends no credential when no billing token is configured", async () => {
+    let authorization: string | null = "unset";
+    billingServer.use(
+      http.get("http://localhost:3000/billing-api/api/plans", ({ request }) => {
+        authorization = request.headers.get("Authorization");
+        return HttpResponse.json([]);
+      })
+    );
+    renderPage();
+    await waitFor(() => expect(authorization).toBeNull());
+  });
+
+  it.each([
+    [401, /needs a valid access token/],
+    [403, /not allowed to act for this tenant/],
+  ])("explains a %i from the billing service", async (status, message) => {
+    billingServer.use(
+      http.get("http://localhost:3000/billing-api/api/plans", () =>
+        HttpResponse.json({ detail: "denied" }, { status })
+      )
+    );
+    renderPage();
+    expect(await screen.findByText(message)).toBeInTheDocument();
+  });
+
   it("renders plans from the billing service", async () => {
     billingServer.use(
       http.get("http://localhost:3000/billing-api/api/plans", () =>

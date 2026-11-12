@@ -29,9 +29,22 @@ The reset endpoint is disabled by default. Disposable local/CI Compose stacks
 enable it with `BILLING_SVC_ALLOW_INTERNAL_RESET=true`; published deployments
 should leave the setting disabled.
 
-The HTTP endpoints are intentionally unauthenticated in this parity fixture.
-Authentication and tenant scoping are out of scope here; an extraction that
-ships for real must add both at the edge before exposing these endpoints.
+## Authentication
+
+Every endpoint except `/health` requires `Authorization: Bearer <JWT>`. Tokens
+are HS256, signed with `BILLING_SVC_AUTH_SECRET` (required, at least 32
+characters; the service refuses to start without it), and must carry `sub`,
+`exp` and `aud: otterworks-billing`.
+
+| Claim | Caller may |
+|---|---|
+| `tenant_id: <uuid>` | read the plan catalogue and act for that one tenant |
+| `scope: billing:service` | act for any tenant and call `/internal/reset` |
+
+A missing or invalid token is `401`; a valid token for another tenant is
+`403`. The legacy Flask app enforces the same contract with the same secret,
+so one token works against both sides of the parity pair. Mint local tokens
+with `make procs-token NS=<ns> TENANT=<uuid>` or `SERVICE=1`.
 
 For the extracted target, a plan change with an already-scheduled later
 subscription preserves that later row. The response's `latest_*` fields always
