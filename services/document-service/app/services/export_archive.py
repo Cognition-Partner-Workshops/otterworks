@@ -6,6 +6,7 @@ Exports are rendered to disk by the export worker under ``EXPORT_ARCHIVE_DIR``
 
 from __future__ import annotations
 
+import errno
 import os
 
 import structlog
@@ -26,10 +27,29 @@ class ExportArchive:
     def read_export(self, name: str) -> str:
         """Return the contents of the named export.
 
-        ``name`` may include a subdirectory (``"reports/q3.md"``). Raises
+        ``name`` may include a subdirectory (``"reports/q3.md"``) but must stay
+        inside the archive: absolute names, ``..`` segments and symlinks that
+        resolve outside the archive root are treated as missing exports. Raises
         ``FileNotFoundError`` when the export does not exist.
         """
-        path = os.path.join(self.base_dir, name)
+        path = self._contained_path(name)
         logger.debug("export_read", name=name)
         with open(path, encoding="utf-8") as handle:
             return handle.read()
+
+    def _contained_path(self, name: str) -> str:
+        """Join ``name`` onto the archive root, refusing anything that escapes it."""
+        if not name or os.path.isabs(name) or "\x00" in name:
+            raise self._not_found(name)
+        path = os.path.join(self.base_dir, name)
+        root = os.path.realpath(self.base_dir)
+        resolved = os.path.realpath(path)
+        if os.path.commonpath([root, resolved]) != root:
+            logger.warning("export_read_rejected", name=name)
+            raise self._not_found(name)
+        return path
+
+    def _not_found(self, name: str) -> FileNotFoundError:
+        return FileNotFoundError(
+            errno.ENOENT, os.strerror(errno.ENOENT), os.path.join(self.base_dir, name)
+        )
