@@ -64,21 +64,33 @@ variable "aurora_engine_version" {
 }
 
 variable "aurora_min_acu" {
-  description = "Aurora Serverless v2 minimum capacity in ACUs. 0 lets the cluster pause when idle."
+  description = "Aurora Serverless v2 minimum capacity in ACUs. 0.5 keeps the cluster awake; 0 lets it pause when idle, and the first request after a pause waits for it to resume."
   type        = number
-  default     = 0
+  default     = 0.5
 }
 
 variable "aurora_max_acu" {
   description = "Aurora Serverless v2 maximum capacity in ACUs."
   type        = number
-  default     = 1
+  default     = 4
 }
 
 variable "aurora_seconds_until_auto_pause" {
   description = "Idle seconds before a 0 ACU cluster pauses."
   type        = number
   default     = 600
+}
+
+variable "api_throttling_rate_limit" {
+  description = "Steady-state requests per second allowed on every route of the HTTP API stage."
+  type        = number
+  default     = 100
+}
+
+variable "api_throttling_burst_limit" {
+  description = "Burst of requests allowed on every route of the HTTP API stage."
+  type        = number
+  default     = 200
 }
 
 variable "lambda_memory_mb" {
