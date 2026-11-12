@@ -4,10 +4,152 @@
 import csv
 import io
 import json
+import re
+from collections import Counter
+from datetime import date
+from decimal import Decimal
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
+SEED = ROOT / "services/industry-solutions/insurance/db/oltp/02_seed.sql"
+
+SQL_STRING = r"'(?:''|[^'])*'"
+SEED_TABLES = r"products|commission_rates|tier_rate_schedule"
+SQL_SCHEMA = r'(?:\w+\s*\.\s*|"[^"]+"\s*\.\s*)?'
+INSERT_START = re.compile(
+    rf'\bINSERT\s+INTO\s+{SQL_SCHEMA}("?(?:{SEED_TABLES})"?)(?=\s|\()', re.IGNORECASE
+)
+INSERT_ROW = re.compile(
+    rf"INSERT\s+INTO\s+{SQL_SCHEMA}(?P<table>{SEED_TABLES})\s*"
+    rf"\((?P<columns>[^()]*)\)\s*VALUES\s*"
+    rf"\((?P<values>(?:{SQL_STRING}|[^';])*)\)\s*;",
+    re.IGNORECASE,
+)
+
+
+def seed_rows(sql: str) -> dict[str, list[dict]]:
+    """Read literal INSERT VALUES rows, not arbitrary Oracle expressions."""
+    sql = re.sub(
+        rf"{SQL_STRING}|--[^\n]*|/\*.*?\*/",
+        lambda m: m[0] if m[0].startswith("'") else " ",
+        sql,
+        flags=re.DOTALL,
+    )
+    masked = re.sub(SQL_STRING, lambda m: " " * len(m[0]), sql)
+    if re.search(
+        rf'\b(?:UPDATE|DELETE\s+FROM|MERGE\s+INTO|TRUNCATE\s+TABLE)\s+{SQL_SCHEMA}"?(?:{SEED_TABLES})"?(?=\s|;|$)',
+        masked,
+        re.IGNORECASE,
+    ) or re.search(r"\bINSERT\s+(?:ALL|FIRST)\b", masked, re.IGNORECASE):
+        raise ValueError("Seed validation supports only literal INSERT INTO ... VALUES")
+    rows: dict[str, list[dict]] = {
+        "products": [],
+        "commission_rates": [],
+        "tier_rate_schedule": [],
+    }
+    for start in INSERT_START.finditer(masked):
+        match = INSERT_ROW.match(sql, start.start())
+        if not match:
+            raise ValueError(f"Unsupported seed INSERT for {start[1]}")
+        columns = [c.strip().lower() for c in match["columns"].split(",")]
+        if len(set(columns)) != len(columns) or not all(
+            re.fullmatch(r"[a-z_][a-z_0-9]*", c) for c in columns
+        ):
+            raise ValueError(f"Invalid seed columns for {match['table']}")
+        tokens = re.findall(rf"(?:{SQL_STRING}|[^,'])+", match["values"])
+        if ",".join(tokens) != match["values"]:
+            raise ValueError(f"Malformed seed values for {match['table']}")
+        values: list[str | Decimal | None] = []
+        for token in tokens:
+            token = token.strip()
+            if re.fullmatch(rf"DATE\s+{SQL_STRING}", token, re.IGNORECASE):
+                values.append(
+                    date.fromisoformat(token[token.index("'") + 1 : -1]).isoformat()
+                )
+            elif re.fullmatch(SQL_STRING, token):
+                values.append(token[1:-1].replace("''", "'"))
+            elif token.upper() == "NULL":
+                values.append(None)
+            elif re.fullmatch(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?", token):
+                values.append(Decimal(token))
+            else:
+                raise ValueError(f"Unsupported seed literal: {token}")
+        if len(columns) != len(values):
+            raise ValueError(f"Seed column/value count differs for {match['table']}")
+        rows[match["table"].lower()].append(dict(zip(columns, values)))
+    return rows
+
+
+def validate_seed_config(config: dict, sql: str) -> None:
+    rows = seed_rows(sql)
+    products = [
+        (r["product_code"], r["product_name"], r["line_of_business"])
+        for r in rows["products"]
+    ]
+    configured_products = [
+        (p["code"], p["name"], p["line"]) for p in config["products"]
+    ]
+    rates = [
+        (
+            r["product_code"],
+            r["agent_id"],
+            r["rate_pct"],
+            r["effective_from"],
+            r["effective_to"],
+        )
+        for r in rows["commission_rates"]
+    ]
+    configured_rates: list[tuple[str, Decimal | None, Decimal, str, str | None]] = []
+    tiered = {r["product_code"] for r in rows["tier_rate_schedule"]}
+    for p in config["products"]:
+        basis = "tiered" if p["code"] in tiered else "flat"
+        if p["basis"] != basis:
+            raise ValueError(f"Seed/config drift in product basis: {p['code']}")
+        rate_key, date_key = (
+            ("flat_reference_rate_pct", "flat_reference_from")
+            if basis == "tiered"
+            else ("default_rate_pct", "effective_from")
+        )
+        configured_rates.append(
+            (
+                p["code"],
+                None,
+                Decimal(str(p[rate_key])),
+                p[date_key],
+                p.get("effective_to"),
+            )
+        )
+    configured_rates.extend(
+        (
+            r["product"],
+            Decimal(str(r["agent_id"])),
+            Decimal(str(r["rate_pct"])),
+            r["effective_from"],
+            r.get("effective_to"),
+        )
+        for r in config["agent_overrides"]
+    )
+    tiers = [
+        (r["product_code"], r["tier_code"], r["rate_pct"], r["change_date"])
+        for r in rows["tier_rate_schedule"]
+    ]
+    configured_tiers = [
+        (r["product"], r["tier"], Decimal(str(r["rate_pct"])), r["change_date"])
+        for r in config["tier_schedule"]["rows"]
+    ]
+    for table, actual, configured in (
+        ("products", products, configured_products),
+        ("commission_rates", rates, configured_rates),
+        ("tier_rate_schedule", tiers, configured_tiers),
+    ):
+        missing = Counter(actual) - Counter(configured)
+        extra = Counter(configured) - Counter(actual)
+        if missing or extra:
+            raise ValueError(
+                f"Seed/config drift in {table}: missing from config={dict(missing)!r}; "
+                f"extra in config={dict(extra)!r}"
+            )
 
 
 def rule_refs(value) -> set[str]:
@@ -31,7 +173,8 @@ def main():
     cases = json.loads((HERE / "cases.json").read_text())
     assert len({r["id"] for r in rules}) == len(rules)
     assert [r["test"] for r in rules] == [c["id"] for c in cases]
-    config = json.loads((HERE / "product-config.json").read_text())
+    config = json.loads((HERE / "product-config.json").read_text(), parse_float=Decimal)
+    validate_seed_config(config, SEED.read_text())
     referenced = rule_refs(config)
     assert referenced == {r["id"] for r in rules}, "config must trace all catalog rules"
     for rule in rules:

@@ -10,6 +10,19 @@ Start with [catalog.md](catalog.md) or [catalog.csv](catalog.csv). Both are gene
 
 No earning SQL has changed. All rules, including green ones, await owner approval. A passing amber test documents disagreement; it does not resolve it.
 
+## Seed/configuration drift guard
+
+Before writing any catalogs, `render.py` compares the observed configuration with `db/oltp/02_seed.sql`: product codes/names/lines, flat/reference rates, agent overrides, effective dates (including nullable end dates), tier codes/rates/change dates, and tiered versus flat basis. Missing, extra, duplicate or changed rows fail with the table and differing rows. Paper-spec alternatives and fixture actor/identity metadata are not compared.
+
+This is an offline, standard-library literal `INSERT INTO ... VALUES` reader, not an Oracle emulator. It tolerates row/column order, whitespace, comments, escaped strings and equivalent decimal scales; unsupported expressions or write forms require extending the reader rather than silently accepting them. It never executes SQL. Drift fails before output writes, including under `python -O`.
+
+```sh
+python3 services/industry-solutions/insurance/extraction/render.py
+python3 -m unittest discover -s services/industry-solutions/insurance/extraction -p 'test_*.py' -v
+```
+
+These guard tests run without starting Oracle; they do not replace the live earning-rule characterizations below.
+
 ## Reproduce on disposable Oracle
 
 Python 3.10+ standard library, Docker Compose, and the Oracle Free image are required. No Python Oracle emulator/driver is used; every assertion runs in SQL*Plus inside the real container.
