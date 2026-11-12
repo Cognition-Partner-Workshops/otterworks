@@ -1,5 +1,4 @@
--- Commission Pay business logic. All rules live here, in the database, on
--- purpose: this schema is the legacy before-state a modernization extracts from.
+-- Commission Pay business logic.
 WHENEVER SQLERROR EXIT SQL.SQLCODE
 
 CREATE OR REPLACE TYPE split_alloc_t AS OBJECT (
