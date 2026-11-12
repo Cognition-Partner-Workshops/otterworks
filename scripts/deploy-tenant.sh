@@ -20,7 +20,8 @@
 #       [--ttl 72h] [--host-suffix demo.example.com] [--skip-db] \
 #       [--profile core|full]
 #
-# Required env: AWS creds (exported), DB_PASSWORD. JWT_SECRET / SECRET_KEY_BASE
+# Required env: AWS creds (exported), DB_PASSWORD. JWT_SECRET / SECRET_KEY_BASE /
+#   SHARE_LINK_SECRET
 #   are taken from the environment, else carried over from the tenant's existing
 #   Kubernetes Secrets on a redeploy, else generated for a brand-new tenant.
 # ------------------------------------------------------------------------------
@@ -162,6 +163,11 @@ if [ -z "${SECRET_KEY_BASE:-}" ]; then
   SECRET_KEY_BASE="$(existing_tenant_secret admin-service-secrets SECRET_KEY_BASE)" ||
     { err "Refusing to rotate SECRET_KEY_BASE; set it explicitly or retry"; exit 1; }
   [ -n "${SECRET_KEY_BASE}" ] || SECRET_KEY_BASE="$(openssl rand -hex 64)"
+fi
+if [ -z "${SHARE_LINK_SECRET:-}" ]; then
+  SHARE_LINK_SECRET="$(existing_tenant_secret document-service-secrets SHARE_LINK_SECRET)" ||
+    { err "Refusing to rotate SHARE_LINK_SECRET; set it explicitly or retry"; exit 1; }
+  [ -n "${SHARE_LINK_SECRET}" ] || SHARE_LINK_SECRET="$(openssl rand -hex 32)"
 fi
 
 # ---------- Namespace + isolation guardrails ----------

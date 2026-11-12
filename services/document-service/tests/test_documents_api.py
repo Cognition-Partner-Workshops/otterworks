@@ -7,7 +7,8 @@ import jwt
 import pytest
 from httpx import AsyncClient
 
-TEST_JWT_SECRET = "test-jwt-secret-for-unit-tests-pad32"  # noqa: S105
+from tests.conftest import TEST_JWT_SECRET, auth_headers
+
 os.environ.setdefault("JWT_SECRET", TEST_JWT_SECRET)
 
 
@@ -60,11 +61,66 @@ async def test_list_documents(client: AsyncClient, owner_id: uuid.UUID):
             "/api/v1/documents/",
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
-    resp = await client.get("/api/v1/documents/", params={"owner_id": str(owner_id)})
+    resp = await client.get("/api/v1/documents/", headers=auth_headers(owner_id))
     assert resp.status_code == 200
     data = resp.json()
     assert data["total"] == 3
     assert len(data["items"]) == 3
+
+
+@pytest.mark.asyncio
+async def test_list_documents_requires_auth(client: AsyncClient, owner_id: uuid.UUID):
+    resp = await client.get("/api/v1/documents/", params={"owner_id": str(owner_id)})
+    assert resp.status_code == 401
+    resp = await client.get("/api/v1/documents", params={"owner_id": str(owner_id)})
+    assert resp.status_code == 401
+
+
+@pytest.mark.parametrize("path", ["/api/v1/documents/", "/api/v1/documents"])
+@pytest.mark.asyncio
+async def test_list_documents_ignores_foreign_owner_id(
+    client: AsyncClient, owner_id: uuid.UUID, path: str
+):
+    """A non-admin asking for another user's owner_id only ever sees their own documents."""
+    victim = uuid.uuid4()
+    await client.post(
+        "/api/v1/documents/",
+        json={"title": "Victim secret", "content": "", "owner_id": str(victim)},
+    )
+    await client.post(
+        "/api/v1/documents/",
+        json={"title": "Mine", "content": "", "owner_id": str(owner_id)},
+    )
+
+    resp = await client.get(path, params={"owner_id": str(victim)}, headers=auth_headers(owner_id))
+    assert resp.status_code == 200
+    assert [d["title"] for d in resp.json()["items"]] == ["Mine"]
+    assert all(d["owner_id"] == str(owner_id) for d in resp.json()["items"])
+
+    filtered = await client.get(
+        path,
+        params={"owner_id": str(victim), "title": "secret"},
+        headers=auth_headers(owner_id),
+    )
+    assert filtered.status_code == 200
+    assert filtered.json()["total"] == 0
+
+
+@pytest.mark.asyncio
+async def test_list_documents_admin_may_select_owner(client: AsyncClient, owner_id: uuid.UUID):
+    victim = uuid.uuid4()
+    await client.post(
+        "/api/v1/documents/",
+        json={"title": "Victim doc", "content": "", "owner_id": str(victim)},
+    )
+    admin = uuid.uuid4()
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"owner_id": str(victim)},
+        headers=auth_headers(admin, roles=["ADMIN"]),
+    )
+    assert resp.status_code == 200
+    assert [d["title"] for d in resp.json()["items"]] == ["Victim doc"]
 
 
 @pytest.mark.asyncio
@@ -75,7 +131,7 @@ async def test_list_documents_pagination(client: AsyncClient, owner_id: uuid.UUI
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
     resp = await client.get(
-        "/api/v1/documents/", params={"owner_id": str(owner_id), "page": 1, "size": 2}
+        "/api/v1/documents/", params={"page": 1, "size": 2}, headers=auth_headers(owner_id)
     )
     data = resp.json()
     assert data["total"] == 5
@@ -192,11 +248,48 @@ async def test_search_documents(client: AsyncClient, owner_id: uuid.UUID):
         json={"title": "Rust Guide", "content": "Learn Rust", "owner_id": str(owner_id)},
     )
 
-    resp = await client.get("/api/v1/documents/search", params={"q": "Python"})
+    resp = await client.get(
+        "/api/v1/documents/search", params={"q": "Python"}, headers=auth_headers(owner_id)
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["total"] == 1
     assert data["items"][0]["title"] == "Python Guide"
+
+
+@pytest.mark.asyncio
+async def test_search_documents_requires_auth(client: AsyncClient):
+    resp = await client.get("/api/v1/documents/search", params={"q": "Python"})
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_search_documents_scoped_to_caller(client: AsyncClient, owner_id: uuid.UUID):
+    """Another user's document never shows up in search, even on an exact match."""
+    victim = uuid.uuid4()
+    await client.post(
+        "/api/v1/documents/",
+        json={"title": "Roadmap", "content": "zebra-confidential", "owner_id": str(victim)},
+    )
+    await client.post(
+        "/api/v1/documents/",
+        json={"title": "Mine", "content": "zebra-public", "owner_id": str(owner_id)},
+    )
+
+    resp = await client.get(
+        "/api/v1/documents/search", params={"q": "zebra"}, headers=auth_headers(owner_id)
+    )
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 1
+    assert resp.json()["items"][0]["owner_id"] == str(owner_id)
+
+    leak = await client.get(
+        "/api/v1/documents/search",
+        params={"q": "zebra-confidential"},
+        headers=auth_headers(owner_id),
+    )
+    assert leak.status_code == 200
+    assert leak.json()["total"] == 0
 
 
 @pytest.mark.asyncio

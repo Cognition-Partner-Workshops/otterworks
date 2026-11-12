@@ -7,7 +7,9 @@
   "policy=attack: the observation must change, and only in the security direction:",
   "the detector must fire before the refactor and must not fire after it.",
   "Ordering is a business rule here (newest first, caller-chosen sort), so the",
-  "row lists are compared in order and never canonicalised."
+  "row lists are compared in order and never canonicalised.",
+  "HTTP cases authenticate as the owner they list (X-User-ID fallback, no",
+  "JWT_SECRET in the fixture): the list route scopes results to the caller."
  ],
  "interface": [
   "app.services.document_query_repository:DocumentQueryRepository.count_documents",
@@ -124,6 +126,10 @@
     "params": {
      "owner_id": "aaaaaaaa-0000-4000-8000-00000000000a",
      "title": "report"
+    },
+    "headers": {
+     "Authorization": "Bearer fixture",
+     "X-User-ID": "aaaaaaaa-0000-4000-8000-00000000000a"
     }
    }
   },
@@ -139,6 +145,10 @@
      "title": "report",
      "size": 1,
      "page": 2
+    },
+    "headers": {
+     "Authorization": "Bearer fixture",
+     "X-User-ID": "aaaaaaaa-0000-4000-8000-00000000000a"
     }
    }
   },
@@ -151,6 +161,10 @@
     "path": "/api/v1/documents/",
     "params": {
      "owner_id": "aaaaaaaa-0000-4000-8000-00000000000a"
+    },
+    "headers": {
+     "Authorization": "Bearer fixture",
+     "X-User-ID": "aaaaaaaa-0000-4000-8000-00000000000a"
     }
    }
   },
@@ -228,6 +242,10 @@
     "params": {
      "owner_id": "aaaaaaaa-0000-4000-8000-00000000000a",
      "title": "report'"
+    },
+    "headers": {
+     "Authorization": "Bearer fixture",
+     "X-User-ID": "aaaaaaaa-0000-4000-8000-00000000000a"
     }
    },
    "detect": {

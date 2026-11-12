@@ -1,17 +1,18 @@
 """Tests for read-only share-link tokens."""
 
+import hashlib
 import uuid
 
 import pytest
 
-from app.services.share_link import ShareLinkService
+from app.services.share_link import ShareLinkConfigurationError, ShareLinkService
 
 DOC_ID = "11111111-1111-4111-8111-111111111111"
 
 
 @pytest.fixture
 def service():
-    return ShareLinkService(salt="test-salt")
+    return ShareLinkService(secret="test-secret")
 
 
 def test_minted_token_verifies(service):
@@ -29,6 +30,33 @@ def test_token_of_another_document_is_rejected(service):
 
 def test_garbage_token_is_rejected(service):
     assert service.verify_token(DOC_ID, "not-a-token") is False
+
+
+def test_legacy_unkeyed_md5_token_is_rejected(service):
+    """The token can no longer be derived from the document id alone."""
+    for salt in ("otterworks-share", "test-secret", ""):
+        forged = hashlib.md5(f"{DOC_ID}:{salt}".encode()).hexdigest()[:16]  # noqa: S324
+        assert service.verify_token(DOC_ID, forged) is False
+
+
+def test_token_depends_on_secret():
+    a = ShareLinkService(secret="secret-a").mint_token(DOC_ID)
+    b = ShareLinkService(secret="secret-b").mint_token(DOC_ID)
+    assert a != b
+    assert ShareLinkService(secret="secret-b").verify_token(DOC_ID, a) is False
+
+
+def test_missing_secret_is_a_configuration_error(monkeypatch):
+    monkeypatch.delenv("SHARE_LINK_SECRET", raising=False)
+    with pytest.raises(ShareLinkConfigurationError):
+        ShareLinkService()
+
+
+def test_secret_read_from_environment(monkeypatch):
+    monkeypatch.setenv("SHARE_LINK_SECRET", "env-secret")
+    assert ShareLinkService().mint_token(DOC_ID) == ShareLinkService(
+        secret="env-secret"
+    ).mint_token(DOC_ID)
 
 
 @pytest.mark.asyncio
@@ -58,3 +86,28 @@ async def test_share_endpoint_round_trip(client, owner_id: uuid.UUID, monkeypatc
         "/api/v1/documents/shared", params={"document_id": doc_id, "token": "wrong"}
     )
     assert denied.status_code == 403
+
+    forged = hashlib.md5(f"{doc_id}:otterworks-share".encode()).hexdigest()[:16]  # noqa: S324
+    forged_resp = await client.get(
+        "/api/v1/documents/shared", params={"document_id": doc_id, "token": forged}
+    )
+    assert forged_resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_share_endpoints_unavailable_without_secret(client, owner_id: uuid.UUID, monkeypatch):
+    monkeypatch.delenv("JWT_SECRET", raising=False)
+    created = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Shared", "content": "body", "owner_id": str(owner_id)},
+    )
+    doc_id = created.json()["id"]
+    monkeypatch.delenv("SHARE_LINK_SECRET", raising=False)
+    headers = {"Authorization": "Bearer token", "X-User-ID": str(owner_id)}
+
+    minted = await client.post(f"/api/v1/documents/{doc_id}/share", headers=headers)
+    assert minted.status_code == 503
+    shared = await client.get(
+        "/api/v1/documents/shared", params={"document_id": doc_id, "token": "anything"}
+    )
+    assert shared.status_code == 503
