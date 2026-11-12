@@ -46,7 +46,7 @@ export class AuthService {
 
   /**
    * Signs in against the tenant gateway so the stored bearer token is one the backends accept;
-   * falls back to the offline mock user when no gateway is reachable (local dev, static demos).
+   * falls back to the offline mock user (placeholder token) when no gateway is reachable.
    */
   login(email: string, password: string): Observable<AuthUser> {
     return this.gatewayLogin(email, password).pipe(
@@ -90,6 +90,10 @@ export class AuthService {
     );
   }
 
+  /**
+   * Offline fallback for local dev and static demos. The token is a placeholder, not a signed
+   * JWT: a credential the backends accept must never be embedded in the client bundle.
+   */
   private mockLogin(email: string, password: string): Observable<AuthUser> {
     if (password.length < 1) {
       return throwError(() => new Error('Invalid credentials'));
@@ -99,7 +103,7 @@ export class AuthService {
       email,
       displayName: 'Admin User',
       role: 'admin',
-      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJ1c2VyX2lkIjoiYTAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxIiwiZW1haWwiOiJhZG1pbkBvdHRlcndvcmtzLmRldiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcwNDA2NzIwMCwiZXhwIjoxOTI0OTA1NjAwfQ.hD5dwgrPNRTzbXa6lbA83Aru7BvQVIQc0rGVySkF1fA',
+      token: 'mock-jwt-token-' + Date.now(),
     };
     return of(user).pipe(delay(800));
   }
