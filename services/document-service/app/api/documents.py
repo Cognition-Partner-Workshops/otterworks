@@ -27,7 +27,7 @@ from app.services.document_query_repository import DocumentQueryRepository
 from app.services.document_service import DocumentService
 from app.services.export_archive import ExportArchive
 from app.services.render_cache import render_cache
-from app.services.share_link import ShareLinkService
+from app.services.share_link import ShareLinkSecretMissingError, ShareLinkService
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -78,6 +78,17 @@ def _require_user_id(request: Request) -> UUID:
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
     return user_id
+
+
+def _share_links() -> ShareLinkService:
+    """Share links fail closed when the service has no signing secret."""
+    try:
+        return ShareLinkService()
+    except ShareLinkSecretMissingError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Share links are not configured",
+        ) from exc
 
 
 def _ensure_owner(document: object, user_id: UUID) -> None:
@@ -169,7 +180,7 @@ async def get_shared_document(
     db: AsyncSession = Depends(get_db),
 ):
     """Return a document through its read-only share link."""
-    if not ShareLinkService().verify_token(str(document_id), token):
+    if not _share_links().verify_token(str(document_id), token):
         raise HTTPException(status_code=403, detail="Invalid share token")
     document = await DocumentService(db).get(document_id)
     if not document:
@@ -452,7 +463,7 @@ async def create_share_link(
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
     _ensure_owner(document, user_id)
-    token = ShareLinkService().mint_token(str(document_id))
+    token = _share_links().mint_token(str(document_id))
     logger.info("share_link_created", document_id=str(document_id))
     return {"document_id": str(document_id), "token": token}
 
