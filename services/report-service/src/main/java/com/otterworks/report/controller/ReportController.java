@@ -6,6 +6,7 @@ import com.otterworks.report.model.ReportResponse;
 import com.otterworks.report.model.ReportStatus;
 import com.otterworks.report.security.Caller;
 import com.otterworks.report.service.ReportService;
+import com.otterworks.report.util.LogSanitizer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -79,8 +80,8 @@ public class ReportController {
         Caller caller = Caller.from(authentication);
         request.setRequestedBy(caller.getUserId());
         logger.info("Report request: name={}, category={}, type={}, by={}",
-                request.getReportName(), request.getCategory(),
-                request.getReportType(), caller.getUserId());
+                LogSanitizer.clean(request.getReportName()), request.getCategory(),
+                request.getReportType(), LogSanitizer.clean(caller.getUserId()));
 
         Report report = reportService.createReport(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -248,7 +249,8 @@ public class ReportController {
         Optional<Report> report = reportService.getReport(id);
         if (report.isPresent() && !caller.owns(report.get().getRequestedBy())) {
             logger.warn("User {} denied access to report {} owned by {}",
-                    caller.getUserId(), id, report.get().getRequestedBy());
+                    LogSanitizer.clean(caller.getUserId()), id,
+                    LogSanitizer.clean(report.get().getRequestedBy()));
             return Optional.empty();
         }
         return report;

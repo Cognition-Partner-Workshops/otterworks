@@ -8,6 +8,7 @@ import com.otterworks.report.model.ReportRequest;
 import com.otterworks.report.model.ReportStatus;
 import com.otterworks.report.repository.ReportRepository;
 import com.otterworks.report.util.ReportDateUtils;
+import com.otterworks.report.util.LogSanitizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -80,7 +81,7 @@ public class ReportService {
 
         Report saved = reportRepository.save(report);
         logger.info("Created report request: id={}, name={}, type={}",
-                saved.getId(), saved.getReportName(), saved.getReportType());
+                saved.getId(), LogSanitizer.clean(saved.getReportName()), saved.getReportType());
 
         // Defer async generation until after @Transactional commit so the worker thread
         // can see the persisted report (avoids race where findById returns empty).
