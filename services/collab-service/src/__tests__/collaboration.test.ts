@@ -10,6 +10,7 @@ import { PresenceHandler } from '../handlers/presence';
 import { MetricsCollector } from '../metrics';
 import { createAuthMiddleware } from '../middleware/auth';
 import { RedisAdapter } from '../services/redis-adapter';
+import type { DocumentAccessChecker } from '../services/document-access';
 
 const JWT_SECRET = 'test-secret-key-for-unit-tests';
 let PORT: number;
@@ -50,6 +51,16 @@ const mockLogger = {
   level: 'info',
 } as never;
 
+// Documents listed here belong to one user; any other document is open to every test user.
+const documentOwners = new Map<string, string>([['doc-private', 'owner-1']]);
+const documentAccess: DocumentAccessChecker = {
+  getAccess: jest.fn(async (documentId: string, userId: string) => {
+    const owner = documentOwners.get(documentId);
+    const allowed = !owner || owner === userId;
+    return { canRead: allowed, canEdit: allowed };
+  }),
+};
+
 describe('CollaborationManager', () => {
   let io: SocketIOServer;
   let httpServer: ReturnType<typeof createServer>;
@@ -79,6 +90,7 @@ describe('CollaborationManager', () => {
       presenceHandler,
       metrics,
       logger: mockLogger,
+      documentAccess,
       persistIntervalMs: 600000, // long interval so it doesn't fire during tests
       snapshotIntervalMs: 600000,
     });
@@ -371,6 +383,174 @@ describe('CollaborationManager', () => {
 
       client1.disconnect();
       client2.disconnect();
+    });
+  });
+
+  describe('Document Authorization', () => {
+    const DOC = 'doc-private';
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    function join(client: ClientSocket, documentId: string) {
+      return new Promise<{ success: boolean; error?: string }>((resolve) => {
+        client.emit('join-document', { documentId }, resolve);
+      });
+    }
+
+    function encodedUpdate(text: string): string {
+      const doc = new Y.Doc();
+      doc.getText('content').insert(0, text);
+      return Buffer.from(Y.encodeStateAsUpdate(doc)).toString('base64');
+    }
+
+    it('should refuse a join from a user who cannot open the document', async () => {
+      const owner = await connectClient('owner-1', 'Owner');
+      const intruder = await connectClient('intruder-1', 'Intruder');
+      const received: string[] = [];
+      intruder.on('sync-document', () => received.push('sync-document'));
+      intruder.on('presence-update', () => received.push('presence-update'));
+      const ownerSawJoin = jest.fn();
+      owner.on('user-joined', ownerSawJoin);
+
+      expect(await join(owner, DOC)).toEqual({ success: true });
+      const res = await join(intruder, DOC);
+      await wait(150);
+
+      expect(res).toEqual({ success: false, error: 'Access denied' });
+      expect(received).toEqual([]);
+      expect(ownerSawJoin).not.toHaveBeenCalled();
+      expect(presenceHandler.getDocumentPresence(DOC).count).toBe(1);
+
+      owner.disconnect();
+      intruder.disconnect();
+    });
+
+    it('should ignore updates, comments and history requests from a socket that was refused', async () => {
+      const owner = await connectClient('owner-1', 'Owner');
+      const intruder = await connectClient('intruder-1', 'Intruder');
+      await join(owner, DOC);
+      owner.emit('document-update', { documentId: DOC, update: encodedUpdate('secret') });
+      await wait(100);
+      await join(intruder, DOC);
+
+      const ownerEvents: string[] = [];
+      for (const event of [
+        'document-update',
+        'comment-added',
+        'comment-updated',
+        'comment-deleted',
+        'cursor-update',
+        'typing-indicator',
+      ]) {
+        owner.on(event, () => ownerEvents.push(event));
+      }
+      const intruderEvents: string[] = [];
+      for (const event of [
+        'document-history',
+        'snapshot-created',
+        'document-update-error',
+      ]) {
+        intruder.on(event, () => intruderEvents.push(event));
+      }
+
+      intruder.emit('document-update', {
+        documentId: DOC,
+        update: encodedUpdate('tampered'),
+      });
+      intruder.emit('comment-add', {
+        documentId: DOC,
+        comment: { id: 'c1', threadId: 't1', content: 'x', rangeStart: 0, rangeEnd: 1 },
+      });
+      intruder.emit('comment-update', { documentId: DOC, commentId: 'c1', content: 'y' });
+      intruder.emit('comment-delete', { documentId: DOC, commentId: 'c1' });
+      intruder.emit('cursor-update', {
+        documentId: DOC,
+        cursor: { index: 1, length: 0 },
+      });
+      intruder.emit('typing-indicator', { documentId: DOC, isTyping: true });
+      intruder.emit('request-history', { documentId: DOC });
+      intruder.emit('request-snapshot', { documentId: DOC });
+      await wait(300);
+
+      expect(ownerEvents).toEqual([]);
+      expect(intruderEvents).toEqual(['document-update-error']);
+      const state = await new Promise<{ state: string }>((resolve) => {
+        const second = connectClient('owner-1', 'Owner again');
+        void second.then((client) => {
+          client.on('sync-document', (data) => {
+            client.disconnect();
+            resolve(data);
+          });
+          client.emit('join-document', { documentId: DOC });
+        });
+      });
+      const doc = new Y.Doc();
+      Y.applyUpdate(doc, new Uint8Array(Buffer.from(state.state, 'base64')));
+      expect(doc.getText('content').toString()).toBe('secret');
+
+      owner.disconnect();
+      intruder.disconnect();
+    });
+
+    it('should not let a socket act on a document other than the one it joined', async () => {
+      const owner = await connectClient('owner-1', 'Owner');
+      const intruder = await connectClient('intruder-1', 'Intruder');
+      await join(owner, DOC);
+      expect(await join(intruder, 'doc-open-to-all')).toEqual({ success: true });
+
+      const ownerEvents: string[] = [];
+      owner.on('document-update', () => ownerEvents.push('document-update'));
+      owner.on('comment-added', () => ownerEvents.push('comment-added'));
+
+      intruder.emit('document-update', {
+        documentId: DOC,
+        update: encodedUpdate('tampered'),
+      });
+      intruder.emit('comment-add', {
+        documentId: DOC,
+        comment: { id: 'c2', threadId: 't2', content: 'x', rangeStart: 0, rangeEnd: 1 },
+      });
+      await wait(300);
+
+      expect(ownerEvents).toEqual([]);
+
+      owner.disconnect();
+      intruder.disconnect();
+    });
+
+    it('should drop the stored permission when the socket leaves the document', async () => {
+      const owner = await connectClient('owner-1', 'Owner');
+      const other = await connectClient('owner-1', 'Owner second tab');
+      await join(owner, DOC);
+      await join(other, DOC);
+      other.emit('leave-document', { documentId: DOC });
+      await wait(100);
+
+      const ownerSawUpdate = jest.fn();
+      owner.on('document-update', ownerSawUpdate);
+      other.emit('document-update', { documentId: DOC, update: encodedUpdate('late') });
+      await wait(200);
+
+      expect(ownerSawUpdate).not.toHaveBeenCalled();
+
+      owner.disconnect();
+      other.disconnect();
+    });
+
+    it('should still let two sessions of an allowed user edit together', async () => {
+      const first = await connectClient('owner-1', 'Owner');
+      const second = await connectClient('owner-1', 'Owner second tab');
+      await join(first, DOC);
+      await join(second, DOC);
+
+      const received = new Promise<{ documentId: string }>((resolve) => {
+        second.on('document-update', resolve);
+      });
+      first.emit('document-update', { documentId: DOC, update: encodedUpdate('hello') });
+
+      expect((await received).documentId).toBe(DOC);
+
+      first.disconnect();
+      second.disconnect();
     });
   });
 });

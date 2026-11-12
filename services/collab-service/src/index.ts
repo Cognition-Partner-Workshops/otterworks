@@ -2,7 +2,6 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { WebSocketServer } from 'ws';
-import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import helmet from 'helmet';
 import pino from 'pino';
@@ -14,6 +13,9 @@ import { DocumentStore } from './services/document-store';
 import { AwarenessService } from './services/awareness';
 import { PresenceHandler } from './handlers/presence';
 import { setupCollaborationHandlers } from './handlers/collaboration';
+import { authorizeYjsUpgrade } from './handlers/yjs-upgrade';
+import { DocumentAccessService } from './services/document-access';
+import { createCollabApiRouter } from './routes/collab-api';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { setupWSConnection } = require('y-websocket/bin/utils');
@@ -68,19 +70,6 @@ app.get('/metrics', async (_req, res) => {
   }
 });
 
-// Presence endpoint
-app.get('/api/v1/collab/documents/:id/presence', (req, res) => {
-  const documentId = req.params.id;
-  const presence = presenceHandler.getDocumentPresence(documentId);
-  res.json(presence);
-});
-
-// Active documents listing
-app.get('/api/v1/collab/documents', (_req, res) => {
-  const activeDocuments = presenceHandler.getActiveDocuments();
-  res.json({ documents: activeDocuments, count: activeDocuments.length });
-});
-
 // Socket.IO server
 const io = new SocketIOServer(httpServer, {
   cors: {
@@ -114,6 +103,18 @@ const documentStore = new DocumentStore(redisAdapter, logger, {
 
 const awareness = new AwarenessService(logger);
 const presenceHandler = new PresenceHandler(awareness, logger);
+const documentAccess = new DocumentAccessService(config.documentAccess, logger);
+
+// Presence and active-document endpoints, limited to documents the caller can open
+app.use(
+  '/api/v1/collab',
+  createCollabApiRouter({
+    jwtSecret: config.jwt.secret,
+    presenceHandler,
+    documentAccess,
+    logger,
+  }),
+);
 
 // Setup collaboration handlers
 const collabManager = setupCollaborationHandlers(
@@ -123,6 +124,7 @@ const collabManager = setupCollaborationHandlers(
   presenceHandler,
   metrics,
   logger,
+  documentAccess,
   config.persistence.intervalMs,
   config.persistence.snapshotIntervalMs,
 );
@@ -141,31 +143,28 @@ httpServer.on('upgrade', (request, socket, head) => {
     return;
   }
 
-  // JWT authentication for y-websocket connections
-  const url = new URL(request.url || '', `http://${request.headers.host}`);
-  const token =
-    url.searchParams.get('token') ||
-    request.headers.authorization?.replace('Bearer ', '');
+  // The token must be valid and its subject must be allowed to edit the document
+  authorizeYjsUpgrade(request, config.jwt.secret, documentAccess)
+    .then((decision) => {
+      if (!decision.allowed) {
+        logger.warn(
+          { reason: decision.reason, userId: decision.userId },
+          'y-websocket_connection_rejected',
+        );
+        const statusText = decision.status === 401 ? 'Unauthorized' : 'Forbidden';
+        socket.write(`HTTP/1.1 ${decision.status} ${statusText}\r\n\r\n`);
+        socket.destroy();
+        return;
+      }
 
-  if (!token) {
-    logger.warn('y-websocket_connection_rejected: no token');
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.destroy();
-    return;
-  }
-
-  try {
-    jwt.verify(token, config.jwt.secret);
-  } catch {
-    logger.warn('y-websocket_connection_rejected: invalid token');
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.destroy();
-    return;
-  }
-
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
-  });
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    })
+    .catch((err) => {
+      logger.error({ err }, 'y-websocket_upgrade_failed');
+      socket.destroy();
+    });
 });
 
 // Start presence cleanup with document eviction callback
