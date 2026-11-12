@@ -27,7 +27,7 @@ from app.services.document_query_repository import DocumentQueryRepository
 from app.services.document_service import DocumentService
 from app.services.export_archive import ExportArchive
 from app.services.render_cache import render_cache
-from app.services.share_link import ShareLinkService
+from app.services.share_link import ShareLinkConfigurationError, ShareLinkService
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -48,20 +48,36 @@ def _get_jwt_secret() -> str:
     return os.environ.get("JWT_SECRET", "")
 
 
+ADMIN_ROLE = "ADMIN"
+
+
+def _decode_jwt_claims(request: Request) -> dict | None:
+    """Return the verified claims of the Authorization JWT, if any."""
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None
+    secret = _get_jwt_secret()
+    if not secret:
+        return None
+    token = auth_header[len("Bearer "):]
+    try:
+        return jwt.decode(token, secret, algorithms=["HS256", "HS384"])
+    except jwt.PyJWTError:
+        return None
+
+
 def _extract_user_id(request: Request) -> UUID | None:
     """Extract user ID from the Authorization JWT."""
     auth_header = request.headers.get("Authorization")
     if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header[len("Bearer "):]
-        secret = _get_jwt_secret()
-        if secret:
-            try:
-                payload = jwt.decode(token, secret, algorithms=["HS256", "HS384"])
-                user_id_str = payload.get("user_id") or payload.get("sub")
-                if user_id_str:
+        if _get_jwt_secret():
+            payload = _decode_jwt_claims(request) or {}
+            user_id_str = payload.get("user_id") or payload.get("sub")
+            if user_id_str:
+                try:
                     return UUID(str(user_id_str))
-            except (jwt.PyJWTError, ValueError):
-                pass
+                except ValueError:
+                    pass
         else:
             forwarded_user_id = request.headers.get("X-User-ID")
             if forwarded_user_id:
@@ -73,11 +89,50 @@ def _extract_user_id(request: Request) -> UUID | None:
     return None
 
 
+def _is_admin(request: Request) -> bool:
+    """True only when a verified JWT carries the ADMIN role."""
+    payload = _decode_jwt_claims(request)
+    if not payload:
+        return False
+    roles = payload.get("roles") or []
+    if isinstance(roles, str):
+        roles = [roles]
+    return ADMIN_ROLE in {str(r).upper() for r in roles}
+
+
+def _resolve_list_owner(request: Request, requested_owner_id: UUID | None) -> UUID:
+    """Scope list/filter queries to the caller.
+
+    The ``owner_id`` query parameter is only honoured for admins; everyone else
+    is pinned to the identity in their token, whatever they asked for.
+    """
+    user_id = _require_user_id(request)
+    if requested_owner_id and requested_owner_id != user_id:
+        if _is_admin(request):
+            return requested_owner_id
+        logger.info(
+            "document_list_owner_override_ignored",
+            user_id=str(user_id),
+            requested_owner_id=str(requested_owner_id),
+        )
+    return user_id
+
+
 def _require_user_id(request: Request) -> UUID:
     user_id = _extract_user_id(request)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
     return user_id
+
+
+def _share_link_service() -> ShareLinkService:
+    try:
+        return ShareLinkService()
+    except ShareLinkConfigurationError as exc:
+        logger.error("share_link_secret_missing")
+        raise HTTPException(
+            status_code=503, detail="Share links are not configured"
+        ) from exc
 
 
 def _ensure_owner(document: object, user_id: UUID) -> None:
@@ -134,15 +189,17 @@ async def create_document_no_slash(
 
 @router.get("/search", response_model=DocumentListResponse)
 async def search_documents(
+    request: Request,
     q: str = Query(..., min_length=1),
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    """Search documents by title or content."""
+    """Search the caller's documents by title or content."""
     await _maybe_inject_latency()
+    user_id = _require_user_id(request)
     service = DocumentService(db)
-    items, total = await service.search(q, page=page, size=size)
+    items, total = await service.search(q, owner_id=user_id, page=page, size=size)
     return DocumentListResponse(
         items=items,
         total=total,
@@ -169,7 +226,7 @@ async def get_shared_document(
     db: AsyncSession = Depends(get_db),
 ):
     """Return a document through its read-only share link."""
-    if not ShareLinkService().verify_token(str(document_id), token):
+    if not _share_link_service().verify_token(str(document_id), token):
         raise HTTPException(status_code=403, detail="Invalid share token")
     document = await DocumentService(db).get(document_id)
     if not document:
@@ -178,7 +235,7 @@ async def get_shared_document(
 
 
 async def _do_list_documents(
-    owner_id: UUID | None,
+    owner_id: UUID,
     folder_id: UUID | None,
     page: int,
     size: int,
@@ -199,7 +256,7 @@ async def _do_list_documents(
 
 
 async def _do_filter_documents(
-    owner_id: UUID | None,
+    owner_id: UUID,
     folder_id: UUID | None,
     title: str | None,
     content_type: str | None,
@@ -212,7 +269,7 @@ async def _do_filter_documents(
     await _maybe_inject_latency()
     repo = DocumentQueryRepository(db)
     filters = {
-        "owner_id": str(owner_id) if owner_id else None,
+        "owner_id": str(owner_id),
         "title_contains": title,
         "content_type": content_type,
         "folder_id": str(folder_id) if folder_id else None,
@@ -267,7 +324,7 @@ async def list_documents(
     db: AsyncSession = Depends(get_db),
 ):
     """List documents with optional filtering and pagination."""
-    effective_owner = owner_id or _extract_user_id(request)
+    effective_owner = _resolve_list_owner(request, owner_id)
     if _is_filtered(title, content_type, sort, direction):
         return await _do_filter_documents(
             effective_owner,
@@ -301,7 +358,7 @@ async def list_documents_no_slash(
     db: AsyncSession = Depends(get_db),
 ):
     """List documents (no trailing slash)."""
-    effective_owner = owner_id or _extract_user_id(request)
+    effective_owner = _resolve_list_owner(request, owner_id)
     if _is_filtered(title, content_type, sort, direction):
         return await _do_filter_documents(
             effective_owner,
@@ -452,7 +509,7 @@ async def create_share_link(
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
     _ensure_owner(document, user_id)
-    token = ShareLinkService().mint_token(str(document_id))
+    token = _share_link_service().mint_token(str(document_id))
     logger.info("share_link_created", document_id=str(document_id))
     return {"document_id": str(document_id), "token": token}
 
