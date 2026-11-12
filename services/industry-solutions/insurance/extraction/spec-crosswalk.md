@@ -19,7 +19,7 @@ Source: `../spec/cp114-commission-spec-scan.pdf`, three image-only pages, visual
 | p2 §4.1 | Tier percentage based on issue date; new rate applies on effective date | CP-021, CP-022 | Issue-date selection matches; amber D3 on equality |
 | p2 §4.2 | Paid monthly, one twelfth annualized premium × rate × agent split, rounded to cent | CP-025 | Matches per-agent formula; no residual-cent balancing |
 | p2 §4.3 | Every sharing agent has a recorded split; total exactly 100% | CP-011/012/013/014/027 | Package validates replacement; direct table changes can bypass aggregate validation |
-| p2 §5 | Agent/calendar month total across policies limited to 2,500 | CP-029, CP-031 | Initial inserts capped; amber D4 for update/recalculation lifecycle |
+| p2 §5 | Agent/calendar month total across policies limited to 2,500 | CP-029, CP-031, CP-061, CP-065 | Initial inserts capped; amber D4 for update/recalculation lifecycle, noncanonical month buckets, and supported write paths |
 | p2 §5 | Above-limit amounts not carried forward | CP-030 | Matches; no carry balance |
 | p3 §6.1 event | Lapse OR surrender in first policy year | CP-032, CP-036 | Lapse supported; surrender absent, amber D7 |
 | p3 §6.1 table row 1 | Months 1–6: 100% of paid commission | CP-033, CP-034 | Full reversal agrees inside early window |

@@ -71,5 +71,22 @@ Let P = sum of COMMISSION rows for the same agent/month on **other** policies, A
 | P >= 2,500 and A >= 0 | 0 |
 | CHARGEBACK insert | Unchanged; not counted in P |
 | Direct UPDATE of a commission | Trigger does not run |
+| Same calendar month supplied as 2028-8 versus 2028-08 | Separate allowance buckets; total can exceed calendar-month limit (CP-061, amber D4) |
+| Bulk INSERT SELECT on the ledger | Mutating-table error -4091; statement rolled back (CP-065, amber D4) |
 
 The code excludes this policy from P; it does not implement a monthly batch allocation. Earlier calculations consume allowance first. Reruns can redistribute allowance but do not top up other rows automatically; excess is not carried forward. Concurrent writers are not serialized by the source; concurrency is not characterized by this suite.
+
+## Rate-history lifecycle — CP-007/008/009/010/064 (amber D12)
+
+| Prior open rate | Prior closed rate for same scope | Action | Observed result |
+|---|---|---|---|
+| None | None | Create new rate | Open row inserted |
+| Same start date | Either | Correct percentage | Existing open row amended |
+| Earlier start date | None | Supersede with later start | Existing row closed at new start minus one day; new open row inserted |
+| Earlier start date | One exists | Supersede again | Unique-index error -1; entire operation rolls back |
+| Exists | None | End with non-null valid date | Open row becomes closed |
+| Exists | One exists | End with non-null date | Unique-index error -1; entire operation rolls back |
+| None | Either | End rate | -20007 |
+| Exists | Either | End with null date | Still open, RATE_END audit recorded |
+
+The index’s conditional third column does not remove closed rows from the index because product/agent columns are non-null. The fixture consequently permits only one closed history row per scope, not unlimited history.

@@ -47,7 +47,7 @@
   {
     "id": "T-CP-010",
     "schema": "commission_pay",
-    "sql": "commission_pkg.end_commission_rate('CHAR-RATE',NULL,DATE '2025-12-31','characterizer');\n    rid:=commission_pkg.resolve_rate('CHAR-RATE',2,DATE '2025-12-31');\n    SELECT rate_pct INTO v FROM commission_rates WHERE rate_id=rid; ok(v=9,'end date inclusive');\n    err(q'[BEGIN commission_pkg.end_commission_rate('CHAR-RATE',NULL,DATE '2026-01-01','characterizer'); END;]',-20007);"
+    "sql": "\n    INSERT INTO products VALUES('CHAR-END','Test','LIFE'); COMMIT;\n    commission_pkg.upsert_commission_rate('CHAR-END',NULL,9,DATE '2025-01-01','characterizer',rid);\n    commission_pkg.end_commission_rate('CHAR-END',NULL,DATE '2025-12-31','characterizer');\n    rid:=commission_pkg.resolve_rate('CHAR-END',2,DATE '2025-12-31');\n    SELECT rate_pct INTO v FROM commission_rates WHERE rate_id=rid; ok(v=9,'end date inclusive');\n    err(q'[BEGIN commission_pkg.end_commission_rate('CHAR-END',NULL,DATE '2026-01-01','characterizer'); END;]',-20007);\n"
   },
   {
     "id": "T-CP-011",
@@ -77,7 +77,7 @@
   {
     "id": "T-CP-016",
     "schema": "commission_pay",
-    "sql": "INSERT INTO commission_rates(product_code,rate_pct,effective_from,effective_to,created_by) VALUES('CHAR-RATE',11,DATE '2025-06-01',DATE '2025-10-01','characterizer'); COMMIT;\n    rid:=commission_pkg.resolve_rate('CHAR-RATE',2,DATE '2025-07-01');\n    SELECT rate_pct INTO v FROM commission_rates WHERE rate_id=rid; ok(v=11,'latest overlapping closed history wins');\n    err(q'[DECLARE x NUMBER; BEGIN x:=commission_pkg.resolve_rate('AUTO-STD',1,DATE '2019-01-01'); END;]',-20007);"
+    "sql": "\n    INSERT INTO products VALUES('CHAR-HIST','Test','LIFE');\n    INSERT INTO commission_rates(product_code,rate_pct,effective_from,created_by) VALUES('CHAR-HIST',9,DATE '2025-01-01','characterizer');\n    INSERT INTO commission_rates(product_code,rate_pct,effective_from,effective_to,created_by) VALUES('CHAR-HIST',11,DATE '2025-06-01',DATE '2025-10-01','characterizer'); COMMIT;\n    rid:=commission_pkg.resolve_rate('CHAR-HIST',2,DATE '2025-07-01');\n    SELECT rate_pct INTO v FROM commission_rates WHERE rate_id=rid; ok(v=11,'latest overlapping closed history wins');\n    err(q'[DECLARE x NUMBER; BEGIN x:=commission_pkg.resolve_rate('AUTO-STD',1,DATE '2019-01-01'); END;]',-20007);\n"
   },
   {
     "id": "T-CP-017",
@@ -202,7 +202,7 @@
   {
     "id": "T-CP-041",
     "schema": "commission_dw",
-    "sql": "dw_etl_pkg.load_commission_facts('2025-08',rid);\n    SELECT COUNT(*) INTO v FROM dim_agent WHERE agent_id=4 AND status='SUSPENDED'; ok(v=1,'suspended agent loaded');\n    SELECT COUNT(*) INTO v FROM dim_product WHERE product_code='CHAR-TIER' AND product_name='committed by package'; ok(v=1,'current product description loaded');"
+    "sql": "\n    UPDATE dim_agent SET status='ACTIVE' WHERE agent_id=4;\n    UPDATE dim_product SET product_name='stale reporting name' WHERE product_code='TERM-20'; COMMIT;\ndw_etl_pkg.load_commission_facts('2025-08',rid);\n    SELECT COUNT(*) INTO v FROM dim_agent WHERE agent_id=4 AND status='SUSPENDED'; ok(v=1,'suspended agent loaded');\n    SELECT COUNT(*) INTO v FROM dim_product WHERE product_code='CHAR-TIER' AND product_name='committed by package'; ok(v=1,'current product description loaded');\n    SELECT product_name INTO txt FROM dim_product WHERE product_code='TERM-20'; ok(txt='20-Year Term Life','existing dimension description refreshed');\n"
   },
   {
     "id": "T-CP-042",
@@ -272,12 +272,12 @@
   {
     "id": "T-CP-055",
     "schema": "commission_pay",
-    "sql": "SELECT rate_id INTO rid FROM commission_rates WHERE product_code='TERM-20' AND agent_id IS NULL;\n    INSERT INTO commission_ledger(policy_id,agent_id,period_month,rate_id,split_pct,base_premium,commission_amt) VALUES(1024,1,'2028-01',rid,100,1200,15);\n    SELECT entry_type INTO txt FROM commission_ledger WHERE policy_id=1024; ok(txt='COMMISSION','default entry type');\n    err(q'[UPDATE commission_ledger SET entry_type='OTHER' WHERE policy_id=1024]',-2290);\n    err('INSERT INTO commission_ledger(policy_id,agent_id,period_month,rate_id,split_pct,base_premium,commission_amt) SELECT policy_id,agent_id,period_month,rate_id,split_pct,base_premium,commission_amt FROM commission_ledger WHERE policy_id=1024',-1); COMMIT;"
+    "sql": "SELECT rate_id INTO rid FROM commission_rates WHERE product_code='TERM-20' AND agent_id IS NULL;\n    INSERT INTO commission_ledger(policy_id,agent_id,period_month,rate_id,split_pct,base_premium,commission_amt) VALUES(1024,1,'2028-01',rid,100,1200,15);\n    SELECT entry_type INTO txt FROM commission_ledger WHERE policy_id=1024; ok(txt='COMMISSION','default entry type');\n    err(q'[UPDATE commission_ledger SET entry_type='OTHER' WHERE policy_id=1024]',-2290);\n    err('INSERT INTO commission_ledger(policy_id,agent_id,period_month,rate_id,split_pct,base_premium,commission_amt) VALUES(1024,1,''2028-01'','||rid||',100,1200,15)',-1); COMMIT;"
   },
   {
     "id": "T-CP-056",
     "schema": "commission_pay",
-    "sql": "SELECT rate_pct INTO v FROM commission_rates WHERE product_code='CHAR-RATE' AND agent_id=1 AND effective_to IS NULL;\n    err(q'[DECLARE x NUMBER; BEGIN commission_pkg.upsert_commission_rate('CHAR-RATE',1,20,DATE '2024-01-01',NULL,x); END;]',-1400);\n    SELECT rate_pct INTO w FROM commission_rates WHERE product_code='CHAR-RATE' AND agent_id=1 AND effective_to IS NULL; ok(v=w,'null actor failure preserved prior rate');"
+    "sql": "INSERT INTO policies(policy_id,policy_no,product_code,holder_name,annual_premium,issued_date)\n    VALUES(1056,'CHAR-1056','TERM-20','Characterization',1200,DATE '2025-02-14');\n    INSERT INTO commission_splits(policy_id,agent_id,split_pct) VALUES(1056,3,100);\n    COMMIT;\n    \n    err(q'[BEGIN commission_pkg.calculate_policy_commission(1056,'2025-08',NULL); END;]',-1400);\n    SELECT COUNT(*) INTO v FROM commission_ledger WHERE policy_id=1056; ok(v=0,'missing audit actor rolls back new ledger rows');\n    SELECT rate_pct INTO v FROM commission_rates WHERE product_code='CHAR-RATE' AND agent_id=1 AND effective_to IS NULL;\n    err(q'[DECLARE x NUMBER; BEGIN commission_pkg.upsert_commission_rate('CHAR-RATE',1,20,DATE '2024-01-01',NULL,x); END;]',-1407);\n    SELECT rate_pct INTO w FROM commission_rates WHERE product_code='CHAR-RATE' AND agent_id=1 AND effective_to IS NULL; ok(v=w,'null created_by update preserved prior rate');\n"
   },
   {
     "id": "T-CP-057",
@@ -302,7 +302,7 @@
   {
     "id": "T-CP-061",
     "schema": "commission_pay",
-    "sql": "INSERT INTO policies(policy_id,policy_no,product_code,holder_name,annual_premium,issued_date)\n    VALUES(1061,'CHAR-1061','TERM-20','Characterization',1200,DATE '2025-02-14');\n    INSERT INTO commission_splits(policy_id,agent_id,split_pct) VALUES(1061,3,100);\n    COMMIT;\n    commission_pkg.calculate_policy_commission(1061,'2025-8','characterizer');\nSELECT SUM(commission_amt) INTO v FROM commission_ledger WHERE policy_id=1061 AND period_month='2025-8' AND entry_type='COMMISSION'; ok(v=15,'commission='||v);"
+    "sql": "INSERT INTO policies(policy_id,policy_no,product_code,holder_name,annual_premium,issued_date)\n    VALUES(1061,'CHAR-1061','TERM-20','Characterization',1200,DATE '2025-02-14');\n    INSERT INTO commission_splits(policy_id,agent_id,split_pct) VALUES(1061,3,100);\n    COMMIT;\n    commission_pkg.calculate_policy_commission(1061,'2025-8','characterizer');\nSELECT SUM(commission_amt) INTO v FROM commission_ledger WHERE policy_id=1061 AND period_month='2025-8' AND entry_type='COMMISSION'; ok(v=15,'commission='||v);INSERT INTO policies(policy_id,policy_no,product_code,holder_name,annual_premium,issued_date)\n    VALUES(1063,'CHAR-1063','TERM-20','Characterization',120000,DATE '2025-02-14');\n    INSERT INTO commission_splits(policy_id,agent_id,split_pct) VALUES(1063,2,100);\n    COMMIT;\n    INSERT INTO policies(policy_id,policy_no,product_code,holder_name,annual_premium,issued_date)\n    VALUES(1064,'CHAR-1064','TERM-20','Characterization',120000,DATE '2025-02-14');\n    INSERT INTO commission_splits(policy_id,agent_id,split_pct) VALUES(1064,2,100);\n    COMMIT;\n    commission_pkg.calculate_policy_commission(1063,'2028-08','characterizer');\ncommission_pkg.calculate_policy_commission(1064,'2028-8','characterizer');\n\n    SELECT SUM(commission_amt) INTO v FROM commission_ledger WHERE agent_id=2 AND period_month IN ('2028-08','2028-8');\n    ok(v=3000,'two accepted August spellings pay3000 across separate cap buckets');\n"
   },
   {
     "id": "T-CP-062",
@@ -313,5 +313,15 @@
     "id": "T-CP-063",
     "schema": "commission_dw",
     "sql": "dw_etl_pkg.load_commission_facts('2025-08',rid);\n    SELECT p.product_code,f.commission_amt INTO txt,v FROM fact_commission f JOIN dim_agent a ON a.agent_key=f.agent_key JOIN dim_product p ON p.product_key=f.product_key WHERE f.policy_id=1040 AND a.agent_id=2;\n    ok(txt='TERM-20' AND v=10,'DW still TERM-20 but updated to HOME amount10');\n    SELECT product_code INTO txt FROM commission_pay.policies WHERE policy_id=1040; ok(txt='HOME-PLUS','source product HOME-PLUS');"
+  },
+  {
+    "id": "T-CP-064",
+    "schema": "commission_pay",
+    "sql": "err(q'[BEGIN commission_pkg.end_commission_rate('CHAR-RATE',NULL,DATE '2025-12-31','characterizer'); END;]',-1);\n    err(q'[DECLARE x NUMBER; BEGIN commission_pkg.upsert_commission_rate('CHAR-RATE',NULL,10,DATE '2026-01-01','characterizer',x); END;]',-1);\n    SELECT COUNT(*) INTO v FROM commission_rates WHERE product_code='CHAR-RATE' AND agent_id IS NULL AND effective_to IS NULL AND effective_from=DATE '2025-01-01';\n    ok(v=1,'second historical closure fails; current rate preserved');"
+  },
+  {
+    "id": "T-CP-065",
+    "schema": "commission_pay",
+    "sql": "err(q'[INSERT INTO commission_ledger(policy_id,agent_id,period_month,rate_id,split_pct,base_premium,commission_amt) SELECT policy_id,agent_id,'2028-02',rate_id,split_pct,base_premium,commission_amt FROM commission_ledger WHERE policy_id=1024]',-4091);\n    SELECT COUNT(*) INTO v FROM commission_ledger WHERE policy_id=1024 AND period_month='2028-02'; ok(v=0,'bulk statement rolled back');"
   }
 ]

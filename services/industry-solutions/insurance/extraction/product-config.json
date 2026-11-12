@@ -16,7 +16,7 @@
     {"product": "AUTO-STD", "agent_id": 1, "rate_pct": 9.5, "effective_from": "2024-06-01", "rule": "CP-015"}
   ],
   "tier_schedule": {
-    "rules": ["CP-020", "CP-021", "CP-022", "CP-040"],
+    "rules": ["CP-020", "CP-021", "CP-022", "CP-040", "CP-052"],
     "activation_operator_observed": "issue_date > change_date",
     "activation_operator_spec": "issue_date >= change_date",
     "on_missing_coverage": "error -20007",
@@ -38,7 +38,7 @@
     "decisions": ["D1", "D2"]
   },
   "monthly_payment": {
-    "rules": ["CP-022", "CP-023", "CP-024", "CP-025", "CP-026", "CP-027", "CP-028", "CP-059", "CP-061", "CP-062"],
+    "rules": ["CP-016", "CP-022", "CP-023", "CP-024", "CP-025", "CP-026", "CP-027", "CP-028", "CP-059", "CP-061", "CP-062"],
     "formula": "ROUND(annual_premium / 12 * selected_rate_pct / 100 * saved_split_pct / 100, 2)",
     "rounding": "Oracle NUMBER round per agent; no residual balancing",
     "flat_rate_date": "LAST_DAY(TO_DATE(supplied_period, 'YYYY-MM'))",
@@ -52,14 +52,17 @@
     "annual_premium_semantics": "upstream mapping unverified; D9"
   },
   "monthly_cap": {
-    "rules": ["CP-029", "CP-030", "CP-031"],
+    "rules": ["CP-029", "CP-030", "CP-031", "CP-065"],
     "amount": 2500,
     "scope": ["agent", "period_month"],
+    "canonical_month_key_enforced": false,
+    "noncanonical_month_effect": "2028-8 and 2028-08 are separate cap buckets (CP-061)",
     "count_entry_type": "COMMISSION",
     "exclude_current_policy": true,
     "enforced_on": "BEFORE INSERT only",
     "overflow_carry_forward": false,
     "allocation_order": "first policy calculated consumes allowance first",
+    "bulk_insert_select": "mutating-table error -4091",
     "decision": "D4"
   },
   "chargeback": {
@@ -80,7 +83,8 @@
     "decisions": ["D5", "D6", "D7"]
   },
   "validation": {
-    "rules": ["CP-002", "CP-003", "CP-004", "CP-005", "CP-006", "CP-007", "CP-008", "CP-009", "CP-010", "CP-011", "CP-012", "CP-013", "CP-014", "CP-054", "CP-055", "CP-056", "CP-057", "CP-060"],
+    "rules": ["CP-002", "CP-003", "CP-004", "CP-005", "CP-006", "CP-007", "CP-008", "CP-009", "CP-010", "CP-011", "CP-012", "CP-013", "CP-014", "CP-054", "CP-055", "CP-056", "CP-057", "CP-060", "CP-064"],
+    "rate_history_index": "at most one open AND one closed row per product/agent scope",
     "rate_pct": {"exclusive_min": 0, "inclusive_max": 50},
     "split_pct": {"exclusive_min": 0, "inclusive_max": 100, "input_total": 100, "storage_decimal_places": 2, "validate_total_after_rounding": false},
     "agent_statuses": ["ACTIVE", "SUSPENDED", "TERMINATED"],
@@ -109,5 +113,5 @@
     "summary_refresh": "complete on demand; not in ETL",
     "decision": "D8"
   },
-  "unresolved_decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11"]
+  "unresolved_decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12"]
 }

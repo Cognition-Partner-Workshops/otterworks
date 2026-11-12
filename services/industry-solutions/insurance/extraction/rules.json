@@ -566,7 +566,7 @@
       }
     ],
     "spec": "p2 §5: absolute monthly limit across all policies",
-    "decision": "D4: Decide allocation/recalculation order and whether all write paths must enforce the cap. Current insert-only cap leaves underpayments after repricing and permits over-cap updates; concurrent sessions are not serialized (not load-tested).",
+    "decision": "D4: Decide allocation/recalculation order and whether all write paths must enforce the cap. Current insert-only cap leaves underpayments after repricing and permits over-cap updates; concurrent sessions are not serialized (not load-tested). INSERT SELECT also fails with -4091; choose whether bulk writes must be supported (CP-065).",
     "approval": "pending",
     "test": "T-CP-031"
   },
@@ -922,7 +922,7 @@
       }
     ],
     "spec": "Not addressed by CP-114",
-    "decision": "D8: Decide whether warehouse is a paid-event archive or a current-ledger mirror; MERGE-only loads retain removed rows. The paired CP-048/049 tests demonstrate the divergence.",
+    "decision": "D8: Decide whether warehouse is a paid-event archive or a current-ledger mirror; MERGE-only loads retain removed rows. The paired CP-048/049 tests demonstrate the divergence. Also decide how corrected product keys propagate: an existing fact keeps its original product attribution (CP-063).",
     "approval": "pending",
     "test": "T-CP-047"
   },
@@ -1076,7 +1076,7 @@
   },
   {
     "id": "CP-056",
-    "sentence": "Without a supplied non-null actor, a management action fails at the mandatory audit field and its data changes are rolled back.",
+    "sentence": "A non-null actor is required by rate-author and audit fields; missing actor causes failure and rolls back the management action.",
     "status": "green",
     "sources": [
       {
@@ -1093,6 +1093,16 @@
         "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
         "start": 196,
         "end": 200
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 34,
+        "end": 34
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 167,
+        "end": 174
       }
     ],
     "spec": "Not addressed by CP-114",
@@ -1171,8 +1181,8 @@
   },
   {
     "id": "CP-061",
-    "sentence": "The commission month is parsed using Oracle’s permissive YYYY-MM conversion and stored as supplied rather than normalized to a canonical month string.",
-    "status": "green",
+    "sentence": "The commission month is parsed using Oracle’s permissive YYYY-MM conversion and stored as supplied rather than normalized to a canonical month string. Different accepted spellings of the same calendar month use separate cap buckets.",
+    "status": "amber",
     "sources": [
       {
         "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
@@ -1183,10 +1193,15 @@
         "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
         "start": 88,
         "end": 88
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/04_ledger_triggers.sql",
+        "start": 12,
+        "end": 18
       }
     ],
-    "spec": "Not addressed by CP-114",
-    "decision": "",
+    "spec": "p2 §5: calendar-month agent limit of 2500, regardless of month-string spelling",
+    "decision": "D4: Same monthly-limit decision as CP-031; require a canonical month key or approve separate legacy string buckets. Tests demonstrate 3000 for the same calendar month.",
     "approval": "pending",
     "test": "T-CP-061"
   },
@@ -1226,5 +1241,47 @@
     "decision": "D8: Same mirror-versus-archive decision as CP-047; define whether corrected product attribution must propagate to existing facts.",
     "approval": "pending",
     "test": "T-CP-063"
+  },
+  {
+    "id": "CP-064",
+    "sentence": "The rate index permits at most one closed rate per product/agent scope as well as one open rate, so a second supersession or ending after supersession fails and rolls back.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/01_tables.sql",
+        "start": 39,
+        "end": 43
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 179,
+        "end": 190
+      },
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+        "start": 210,
+        "end": 225
+      }
+    ],
+    "spec": "Not addressed by scan for flat-rate history; package documentation promises effective-dated history without deletion",
+    "decision": "D12: Decide whether arbitrary rate history must be supported. The conditional unique index also restricts closed history, preventing a second historical closure. Do not weaken or replace it without approval.",
+    "approval": "pending",
+    "test": "T-CP-064"
+  },
+  {
+    "id": "CP-065",
+    "sentence": "Bulk INSERT…SELECT ledger writes fail with Oracle mutating-table error -4091 because the row-level cap trigger queries the same ledger table.",
+    "status": "amber",
+    "sources": [
+      {
+        "file": "services/industry-solutions/insurance/db/oltp/04_ledger_triggers.sql",
+        "start": 4,
+        "end": 18
+      }
+    ],
+    "spec": "Not addressed by CP-114",
+    "decision": "D4: Same cap/write-path decision as CP-031; approve supported write paths and whether bulk ledger operations must be possible.",
+    "approval": "pending",
+    "test": "T-CP-065"
   }
 ]
