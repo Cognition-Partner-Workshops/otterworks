@@ -6,10 +6,11 @@ from typing import Annotated
 from uuid import UUID
 
 import psycopg
-from fastapi import FastAPI, HTTPException, Path, Query, Response
+from fastapi import Depends, FastAPI, HTTPException, Path, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from app.auth import authenticate, authorize_tenant, require_service
 from app.config import settings
 from app.db import connect, migrate, reset
 from app.domain import catalog, change_plan, entitlement
@@ -47,7 +48,7 @@ def health() -> dict[str, str]:
     return {"status": "healthy", "service": settings.app_name}
 
 
-@app.post("/internal/reset", status_code=204)
+@app.post("/internal/reset", status_code=204, dependencies=[Depends(require_service)])
 def internal_reset() -> Response:
     if not settings.allow_internal_reset:
         raise HTTPException(status_code=404, detail="internal reset is disabled")
@@ -55,7 +56,7 @@ def internal_reset() -> Response:
     return Response(status_code=204)
 
 
-@app.get("/api/plans")
+@app.get("/api/plans", dependencies=[Depends(authenticate)])
 def list_plans() -> list[dict]:
     with connect() as connection:
         plans = catalog(PostgresPlansRepository(connection).list_plans())
@@ -72,7 +73,7 @@ def list_plans() -> list[dict]:
     ]
 
 
-@app.get("/api/tenants/{tenant_id}/entitlement")
+@app.get("/api/tenants/{tenant_id}/entitlement", dependencies=[Depends(authorize_tenant)])
 def get_entitlement(
     tenant_id: Annotated[UUID, Path()],
     on: Annotated[date, Query()],
@@ -96,7 +97,7 @@ def get_entitlement(
     }
 
 
-@app.post("/api/tenants/{tenant_id}/plan-change")
+@app.post("/api/tenants/{tenant_id}/plan-change", dependencies=[Depends(authorize_tenant)])
 def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) -> dict:
     try:
         with connect() as connection:

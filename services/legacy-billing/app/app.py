@@ -4,9 +4,12 @@ from datetime import date
 from decimal import Decimal
 
 import psycopg
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask import Flask, abort, g, jsonify, redirect, render_template, request, url_for
+
+from auth import authorize_tenant, init_auth, service_only
 
 app = Flask(__name__)
+init_auth(app)
 
 
 def db_connect():
@@ -81,6 +84,7 @@ def change_plan(tenant_id):
 @app.post("/api/rating/preview")
 def rating_preview():
     payload = request.get_json(force=True)
+    authorize_tenant(payload["tenant_id"])
     return jsonify(select(
         "SELECT * FROM billing.fn_usage_rating(%s, %s, %s)",
         (payload["tenant_id"], payload["period_start"], payload["period_end"]),
@@ -90,6 +94,7 @@ def rating_preview():
 @app.post("/api/rating/finalize")
 def rating_finalize():
     payload = request.get_json(force=True)
+    authorize_tenant(payload["tenant_id"])
     execute(
         "CALL billing.sp_finalize_rating(%s, %s, %s)",
         (payload["tenant_id"], payload["period_start"], payload["period_end"]),
@@ -124,10 +129,15 @@ def invoice_issue(tenant_id):
 
 @app.get("/api/invoices/<invoice_id>/lines")
 def invoice_lines(invoice_id):
+    if not g.principal.is_service:
+        owner = select("SELECT tenant_id FROM billing.invoices WHERE id = %s", (invoice_id,))
+        if not owner or not g.principal.may_act_for(owner[0]["tenant_id"]):
+            abort(404)
     return jsonify(select("SELECT * FROM billing.fn_invoice_lines(%s)", (invoice_id,)))
 
 
 @app.get("/api/dunning/overdue")
+@service_only
 def overdue():
     return jsonify(select(
         "SELECT * FROM billing.fn_overdue_accounts(%s)",
@@ -136,12 +146,14 @@ def overdue():
 
 
 @app.post("/api/dunning/schedule")
+@service_only
 def schedule_dunning():
     execute("CALL billing.sp_schedule_dunning(%s)", (request.form["as_of"],))
     return jsonify(status="scheduled")
 
 
 @app.post("/api/dunning/suspend")
+@service_only
 def suspend_overdue():
     execute("CALL billing.sp_suspend_overdue(%s)", (request.form["as_of"],))
     return jsonify(status="suspended")

@@ -129,7 +129,9 @@ Replay exit codes are:
 - `6`: contract missing, unmapped, or failed rules gate;
 - `7`: procedure/transcript source mismatch;
 - `8`: target reset refused or failed;
-- `9`: module/scenario selection matched no transcripts.
+- `9`: module/scenario selection matched no transcripts;
+- `10`: no signing secret for the bearer token (`PROCS_AUTH_SECRET`, or
+  `procs/.auth/<NS>.secret` written by `make procs-up`).
 
 Reset refusals identify `BILLING_SVC_ALLOW_INTERNAL_RESET` as the disposable
 stack setting required by the harness.
@@ -146,6 +148,17 @@ stack setting required by the harness.
 All Compose publications bind to `127.0.0.1`. The Make targets derive the same
 ports for recorder and replay URLs. Separate namespace projects and volumes
 can run concurrently without sharing host ports or databases.
+
+## Authentication
+
+Both billing apps require a bearer JWT on every route except `/health`: a
+`tenant_id` claim scopes the caller to one tenant, `scope: billing:service`
+allows any tenant and `/internal/reset`. `make procs-up` generates the
+per-namespace signing secret, replay authenticates with a service token, and
+`make procs-token NS=<ns> TENANT=<uuid>|SERVICE=1` mints one for curl or the
+client fixture (`VITE_BILLING_TOKEN`). An extracted route must keep the same
+check as its legacy counterpart; a reset refused with 401/403 means the
+harness and the stack disagree on the secret.
 
 ## Client fixture boundary
 

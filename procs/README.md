@@ -20,10 +20,34 @@ The Makefile derives the Postgres and HTTP host ports from `NS`, so separate
 namespaces can run concurrently. Use `OUTPUT_DIR` when recording isolated
 fixtures for a namespace-specific verification run.
 
+## Bearer tokens
+
+Both billing apps require a bearer JWT on every route except `/health`.
+`make procs-up` writes a random per-namespace signing secret to
+`procs/.auth/<NS>.secret` (git-ignored, mode 600, deleted by `make procs-down`)
+and passes it to both containers. `procs-parity` reads the
+same file; replay mints a short-lived service token per request and exits `10`
+before touching the target when the secret is missing. Set `PROCS_AUTH_SECRET`
+to use a secret from somewhere else.
+
+```bash
+make procs-token NS=dev TENANT=00000000-0000-0000-0000-000000000001  # one tenant
+make procs-token NS=dev SERVICE=1                                    # any tenant
+```
+
+Tokens last an hour unless `TTL=<seconds>` is given.
+
 The client Vite server proxies `/billing-api/*` to the extracted service. With
-the default `NS=dev` stack, run the client command above and open
+the default `NS=dev` stack, start the client with a tenant token and open
 `http://localhost:3000/billing/plans`; no billing URL environment variable is
-required. Vite dev enables the billing routes by default. A preview build
+required:
+
+```bash
+VITE_BILLING_TOKEN=$(make -s procs-token NS=dev TENANT=<uuid>) npm run dev
+```
+
+Vite inlines `VITE_BILLING_TOKEN` into the bundle it serves, so use it only
+for this local fixture and only with a tenant token. Vite dev enables the billing routes by default. A preview build
 requires the explicit fixture flag:
 
 ```bash
