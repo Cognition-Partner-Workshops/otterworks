@@ -62,6 +62,30 @@
       "file": "demos/app/complexity-manifest.json",
       "line": 140,
       "original_text": "  \"iri_policy_inquiry\": {\n    \"demo\": \"iri-policy-inquiry\",\n    \"spec\": \"industries/insurance/iri-policy-inquiry/vendor/iri-policy-inquiry-v1.1.5/PolicyInquiry_v1.1.5.yml\",\n    \"classes\": [\n      {\n        \"id\": \"IRI-01\",\n        \"class\": \"contract-number widening\",\n        \"causing_condition\": \"IRI policyNumber is a string with maxLength 30; the legacy contract field holds 10 digits and only values zero-pads it. Naive conversion breaks parity on values only.\",\n        \"file\": \"industries/insurance/iri-policy-inquiry/legacy-api/src/main/java/app/synthetic/insurance/LegacyMapper.java\",\n        \"line\": 52,\n        \"surfaces\": [\"values response parity\", \"IRI policyNumber mapping\"],\n        \"brief\": \"A\"\n      },\n      {\n        \"id\": \"IRI-02\",\n        \"class\": \"status code with no IRI value\",\n        \"causing_condition\": \"Seeded DP has no value in PolicySummary.policyStatus: PENDINGISSUED, ACTIVE, LAPSED, SURRENDERED, TERMINATED.\",\n        \"file\": \"services/industry-solutions/insurance/db/annuity/02_seed.sql\",\n        \"line\": 20,\n        \"surfaces\": [\"summary status mapping\", \"IRI schema validation failure\"],\n        \"brief\": \"A\"\n      },\n      {\n        \"id\": \"IRI-03\",\n        \"class\": \"date/amount formats\",\n        \"causing_condition\": \"Legacy dates use YYYYMMDD rather than IRI format: date, and amounts are implied-decimal strings rather than decimal numbers. The date formatter is LegacyMapper.java:26.\",\n        \"file\": \"industries/insurance/iri-policy-inquiry/legacy-api/src/main/java/app/synthetic/insurance/LegacyMapper.java\",\n        \"line\": 16,\n        \"surfaces\": [\"values parity samples\", \"IRI date and amount mapping\"],\n        \"brief\": \"A\"\n      },\n      {\n        \"id\": \"IRI-04\",\n        \"class\": \"unexplained field GRX_IND\",\n        \"causing_condition\": \"The summary emits GRX_IND with no IRI element; disposition requires business-owner sign-off.\",\n        \"file\": \"industries/insurance/iri-policy-inquiry/legacy-api/src/main/java/app/synthetic/insurance/LegacyMapper.java\",\n        \"line\": 40,\n        \"surfaces\": [\"summary response\", \"business-owner sign-off list\"],\n        \"brief\": \"A\"\n      }\n    ]\n  }"
+    },
+    {
+      "file": "services/industry-solutions/insurance/README.md",
+      "line": 6,
+      "original_text": "the database-centric *before state* that stored-procedure modernization demos\nextract from.",
+      "replacement": "a local database fixture."
+    },
+    {
+      "file": "services/industry-solutions/insurance/README.md",
+      "line": 37,
+      "original_text": "business rules are in `COMMISSION_PKG`; there is deliberately no application\n  tier duplicating them.",
+      "replacement": "business rules run in `COMMISSION_PKG`."
+    },
+    {
+      "file": "services/industry-solutions/insurance/README.md",
+      "line": 91,
+      "original_text": "This is a local, disposable fixture: loopback-only port bindings, per-namespace\nCompose projects and volumes, and fixed well-known fixture credentials. It is\nintentionally **not** deployed to Helm/EKS or any shared environment. A real\nmodernization target must add authentication, authorization, tenant scoping,\nand secret management at the service edge — none of which exist in the legacy\ndatabase-centric design, which is part of the point.",
+      "replacement": "The local fixture uses loopback-only port bindings, per-namespace Compose\nprojects and volumes, and fixed fixture credentials."
+    },
+    {
+      "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+      "line": 1,
+      "original_text": "-- Commission Pay business logic. All rules live here, in the database, on\n-- purpose: this schema is the legacy before-state a modernization extracts from.\n",
+      "replacement": "-- Commission Pay business logic.\n"
     }
   ]
 }
