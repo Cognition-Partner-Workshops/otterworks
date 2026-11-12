@@ -1,40 +1,50 @@
 """Share-link tokens for read-only document links.
 
-A share link is stateless: the token is derived from the document id so any
-replica can validate a link without a shared lookup table.
+A share link is stateless: the token is a keyed MAC over the document id, so
+any replica holding the same ``SHARE_LINK_SECRET`` can validate a link without
+a shared lookup table, while nobody without the secret can derive one.
 """
 
 from __future__ import annotations
 
 import hashlib
+import hmac
 import os
 
 import structlog
 
 logger = structlog.get_logger()
 
-TOKEN_LENGTH = 16
+SECRET_ENV = "SHARE_LINK_SECRET"
+MIN_SECRET_LENGTH = 16
+_MESSAGE_PREFIX = b"otterworks-share-link:v1:"
+
+
+class ShareLinkSecretMissingError(RuntimeError):
+    """Raised when no usable share-link secret is configured."""
 
 
 class ShareLinkService:
     """Mints and validates read-only share tokens for documents."""
 
-    def __init__(self, salt: str | None = None):
-        self.salt = salt or os.environ.get("SHARE_LINK_SALT", "otterworks-share")
+    def __init__(self, secret: str | None = None):
+        secret = secret if secret is not None else os.environ.get(SECRET_ENV, "")
+        if len(secret) < MIN_SECRET_LENGTH:
+            logger.error("share_link_secret_missing", env=SECRET_ENV)
+            raise ShareLinkSecretMissingError(
+                f"{SECRET_ENV} must be set to at least {MIN_SECRET_LENGTH} characters"
+            )
+        self._key = secret.encode()
 
     def mint_token(self, document_id: str) -> str:
         """Return the share token for a document."""
-        # Unkeyed MD5 is the OW-SEC-403 lab fixture (see
-        # security/equivalence/findings.yaml); the refactor replaces it with a
-        # keyed MAC and removes this suppression.
-        # nosemgrep: python.lang.security.insecure-hash-algorithms-md5.insecure-hash-algorithm-md5
-        digest = hashlib.md5(f"{document_id}:{self.salt}".encode()).hexdigest()
-        return digest[:TOKEN_LENGTH]
+        message = _MESSAGE_PREFIX + document_id.encode()
+        return hmac.new(self._key, message, hashlib.sha256).hexdigest()
 
     def verify_token(self, document_id: str, token: str) -> bool:
         """Return True when the token is a valid share token for the document."""
         expected = self.mint_token(document_id)
-        ok = expected == token
+        ok = hmac.compare_digest(expected.encode(), token.encode())
         if not ok:
             logger.info("share_token_rejected", document_id=document_id)
         return ok

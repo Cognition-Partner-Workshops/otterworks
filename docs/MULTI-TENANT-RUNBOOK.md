@@ -27,8 +27,8 @@ cluster, one per attendee/demo run (`ATTENDEE_ID` → namespace
 export AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=... AWS_DEFAULT_REGION=us-east-1
 # aws sts get-caller-identity  -> expect the workshop account (<AWS_ACCOUNT_ID>) and a Devin-PartnerWorkshops-Internal IAM identity
 export DB_PASSWORD='<shared RDS master password>'
-# Stable across redeploys so issued JWTs / Rails sessions stay valid:
-export JWT_SECRET='<hex>' SECRET_KEY_BASE='<hex>'
+# Stable across redeploys so issued JWTs / Rails sessions / document share links stay valid:
+export JWT_SECRET='<hex>' SECRET_KEY_BASE='<hex>' SHARE_LINK_SECRET='<hex>'
 ```
 
 Env vars do not persist between separate shell commands in some runners —
@@ -182,7 +182,7 @@ the same host suffix as CD, otherwise external-dns drops the tenant's records:
 git push origin <before-sha>:demo-incident
 # fallback, from a checkout of demo-incident:
 export AWS_DEFAULT_REGION=us-east-1 DB_PASSWORD='<shared RDS master password>'
-export JWT_SECRET="$(openssl rand -hex 32)" SECRET_KEY_BASE="$(openssl rand -hex 64)"
+export JWT_SECRET="$(openssl rand -hex 32)" SECRET_KEY_BASE="$(openssl rand -hex 64)" SHARE_LINK_SECRET="$(openssl rand -hex 32)"
 scripts/deploy-tenant.sh incident --profile core --host-suffix demo.otterworks.app --ttl 72h --branch demo-incident
 ```
 
