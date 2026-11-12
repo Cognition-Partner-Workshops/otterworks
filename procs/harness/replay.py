@@ -239,7 +239,7 @@ def reset_target(base_url: str) -> tuple[bool, str]:
         if status in {401, 403}:
             return False, (
                 f"target reset refused the service token with HTTP {status}: {payload}; "
-                f"{SECRET_ENV} must be the secret the stack was started with"
+                "PROCS_AUTH_SECRET must be the secret the stack was started with"
             )
         if status == 404:
             return False, (
