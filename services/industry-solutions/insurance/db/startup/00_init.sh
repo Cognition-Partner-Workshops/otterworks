@@ -8,7 +8,7 @@
 #
 # Idempotent and self-repairing: the skip is gated on the FIXTURE_META
 # completion marker, written only after every script has run and all objects
-# in both schemas compiled VALID. A boot that failed part-way leaves no
+# in all schemas compiled VALID. A boot that failed part-way leaves no
 # marker, so the next boot re-runs the initialization.
 #
 # The image *sources* startup scripts, so all work happens in a subshell to
@@ -29,7 +29,7 @@ SQL
   marker=$(echo "${marker}" | tr -d '[:space:]')
   case "${marker}" in
     0) ;;
-    1) echo "== insurance fixture already initialized, skipping"; exit 0 ;;
+    1) echo "== base insurance fixture already initialized" ;;
     *) echo "== could not determine fixture state: ${marker}" >&2; exit 1 ;;
   esac
 
@@ -39,6 +39,7 @@ SQL
     sqlplus -s "${conn}@localhost:1521/FREEPDB1" @"${file}"
   }
 
+  if [ "${marker}" = "0" ]; then
   user_exists=$(sqlplus -s "system/${ORACLE_PWD}@localhost:1521/FREEPDB1" <<'SQL'
 WHENEVER SQLERROR EXIT SQL.SQLCODE
 SET HEADING OFF FEEDBACK OFF PAGESIZE 0
@@ -52,6 +53,12 @@ SQL
     echo "== users exist without completion marker: repairing a partial init"
     sqlplus -s "system/${ORACLE_PWD}@localhost:1521/FREEPDB1" <<'SQL'
 WHENEVER SQLERROR EXIT SQL.SQLCODE
+BEGIN
+  FOR u IN (SELECT username FROM all_users WHERE username = 'ANNUITY_INQ') LOOP
+    EXECUTE IMMEDIATE 'DROP USER ' || u.username || ' CASCADE';
+  END LOOP;
+END;
+/
 DROP USER commission_dw CASCADE;
 DROP USER commission_pay CASCADE;
 EXIT;
@@ -64,14 +71,42 @@ SQL
   run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/03_commission_pkg.sql"
   run_sql "commission_dw/commission_dw"   "${SQL_DIR}/olap/01_star_schema.sql"
   run_sql "commission_dw/commission_dw"   "${SQL_DIR}/olap/02_etl_pkg.sql"
+  fi
+
+  annuity_ready=$(sqlplus -s "system/${ORACLE_PWD}@localhost:1521/FREEPDB1" <<'SQL'
+WHENEVER SQLERROR EXIT SQL.SQLCODE
+SET HEADING OFF FEEDBACK OFF PAGESIZE 0
+SELECT COUNT(*) FROM all_tables WHERE owner = 'ANNUITY_INQ' AND table_name = 'FIXTURE_META';
+EXIT;
+SQL
+  )
+  case "$(echo "${annuity_ready}" | tr -d '[:space:]')" in
+    1) echo "== annuity fixture already initialized" ;;
+    0)
+  sqlplus -s "system/${ORACLE_PWD}@localhost:1521/FREEPDB1" <<'SQL'
+WHENEVER SQLERROR EXIT SQL.SQLCODE
+BEGIN
+  FOR u IN (SELECT username FROM all_users WHERE username = 'ANNUITY_INQ') LOOP
+    EXECUTE IMMEDIATE 'DROP USER ' || u.username || ' CASCADE';
+  END LOOP;
+END;
+/
+EXIT;
+SQL
+  run_sql "system/${ORACLE_PWD}" "${SQL_DIR}/setup/02_annuity_user.sql"
+  run_sql "annuity_inq/annuity_inq"       "${SQL_DIR}/annuity/01_tables.sql"
+  run_sql "annuity_inq/annuity_inq"       "${SQL_DIR}/annuity/02_seed.sql"
+    ;;
+    *) echo "== could not determine annuity fixture state" >&2; exit 1 ;;
+  esac
 
   # PL/SQL compilation errors do not trip WHENEVER SQLERROR, so assert every
-  # object in both schemas is VALID before declaring success.
+  # object in all schemas is VALID before declaring success.
   invalid=$(sqlplus -s "system/${ORACLE_PWD}@localhost:1521/FREEPDB1" <<'SQL'
 WHENEVER SQLERROR EXIT SQL.SQLCODE
 SET HEADING OFF FEEDBACK OFF PAGESIZE 0
 SELECT COUNT(*) FROM all_objects
- WHERE owner IN ('COMMISSION_PAY', 'COMMISSION_DW') AND status <> 'VALID';
+ WHERE owner IN ('COMMISSION_PAY', 'COMMISSION_DW', 'ANNUITY_INQ') AND status <> 'VALID';
 EXIT;
 SQL
   )
@@ -82,14 +117,31 @@ SQL
 SET HEADING OFF FEEDBACK OFF PAGESIZE 0
 SELECT owner || '.' || object_name || ' (' || object_type || ')'
   FROM all_objects
- WHERE owner IN ('COMMISSION_PAY', 'COMMISSION_DW') AND status <> 'VALID';
+ WHERE owner IN ('COMMISSION_PAY', 'COMMISSION_DW', 'ANNUITY_INQ') AND status <> 'VALID';
 EXIT;
 SQL
     exit 1
   fi
 
+  if [ "$(echo "${annuity_ready}" | tr -d '[:space:]')" = "0" ]; then
+    sqlplus -s "annuity_inq/annuity_inq@localhost:1521/FREEPDB1" <<'SQL'
+WHENEVER SQLERROR EXIT SQL.SQLCODE
+CREATE TABLE fixture_meta (initialized_at TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL);
+INSERT INTO fixture_meta (initialized_at) VALUES (SYSTIMESTAMP);
+COMMIT;
+EXIT;
+SQL
+  fi
+
+  sqlplus -s "annuity_inq/annuity_inq@localhost:1521/FREEPDB1" <<'SQL'
+WHENEVER SQLERROR EXIT SQL.SQLCODE
+GRANT SELECT ON fixture_meta TO commission_pay;
+EXIT;
+SQL
+
   # Completion marker: written last; the health check and the skip guard
   # both key off it.
+  if [ "${marker}" = "0" ]; then
   sqlplus -s "commission_pay/commission_pay@localhost:1521/FREEPDB1" <<'SQL'
 WHENEVER SQLERROR EXIT SQL.SQLCODE
 CREATE TABLE fixture_meta (initialized_at TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL);
@@ -97,6 +149,7 @@ INSERT INTO fixture_meta (initialized_at) VALUES (SYSTIMESTAMP);
 COMMIT;
 EXIT;
 SQL
+  fi
 
   echo "== insurance fixture ready"
 ) || echo "== insurance fixture initialization FAILED (will retry on next boot; see errors above)"

@@ -28,9 +28,10 @@ services/industry-solutions/insurance/
                02_etl_pkg.sql             — DW_ETL_PKG.LOAD_COMMISSION_FACTS + summary MV
   db/tests/    run_tests.sql              — OLTP suite (12+ cases, PASS/FAIL, non-zero exit on failure)
                run_olap_tests.sql         — ETL/star-schema suite (run after the OLTP suite)
+  db/annuity/  01_tables.sql, 02_seed.sql  — ANNUITY_INQ policies, policy values, and fund allocations
 ```
 
-Two schemas inside the `FREEPDB1` pluggable database:
+Commission schemas inside the `FREEPDB1` pluggable database:
 
 - **`COMMISSION_PAY`** (OLTP) — the transactional system of record. All
   business rules are in `COMMISSION_PKG`; there is deliberately no application

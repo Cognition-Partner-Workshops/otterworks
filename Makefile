@@ -2,6 +2,18 @@
 
 SHELL := /bin/bash
 
+.PHONY: iri-legacy-up iri-legacy-down iri-legacy-test
+IRI_LEGACY_DIR = industries/insurance/iri-policy-inquiry
+
+iri-legacy-up: procs-validate ## Build and start the legacy inquiry API (NS=<namespace>)
+	python3 $(IRI_LEGACY_DIR)/lifecycle.py up "$(NS)" --settings $(IRI_LEGACY_DIR)/legacy-api/.mvn/settings.xml
+
+iri-legacy-down: procs-validate ## Stop the legacy inquiry API (NS=<namespace>)
+	python3 $(IRI_LEGACY_DIR)/lifecycle.py down "$(NS)"
+
+iri-legacy-test: ## Run legacy inquiry API unit tests without Oracle
+	cd $(IRI_LEGACY_DIR)/legacy-api && ./mvnw -s .mvn/settings.xml -B test
+
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
