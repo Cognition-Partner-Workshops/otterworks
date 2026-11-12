@@ -59,6 +59,7 @@ routes:
     auth: bearer JWT + admin role
     expect:
       - unauthenticated callers receive 401
+      - authenticated callers whose `roles` claim lacks ADMIN receive 403
   - prefix: /api/v1/audit
     service: audit-service
     auth: bearer JWT

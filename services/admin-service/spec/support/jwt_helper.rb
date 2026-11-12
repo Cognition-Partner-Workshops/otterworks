@@ -1,9 +1,11 @@
 module JwtHelper
-  def jwt_token(user_id: SecureRandom.uuid, email: 'admin@otterworks.com', role: 'super_admin')
+  ADMIN_ROLES = %w[ADMIN USER].freeze
+
+  def jwt_token(user_id: SecureRandom.uuid, email: 'admin@otterworks.com', roles: ADMIN_ROLES)
     payload = {
       sub: user_id,
       email: email,
-      role: role,
+      roles: roles,
       exp: 24.hours.from_now.to_i,
       iat: Time.current.to_i
     }
@@ -11,15 +13,15 @@ module JwtHelper
     JWT.encode(payload, secret, 'HS256')
   end
 
-  def auth_headers(user_id: SecureRandom.uuid, email: 'admin@otterworks.com', role: 'super_admin')
-    token = jwt_token(user_id: user_id, email: email, role: role)
+  def auth_headers(user_id: SecureRandom.uuid, email: 'admin@otterworks.com', roles: ADMIN_ROLES)
+    token = jwt_token(user_id: user_id, email: email, roles: roles)
     { 'Authorization' => "Bearer #{token}" }
   end
 
-  def set_jwt_env(request, user_id: SecureRandom.uuid, email: 'admin@otterworks.com', role: 'super_admin')
+  def set_jwt_env(request, user_id: SecureRandom.uuid, email: 'admin@otterworks.com', roles: ADMIN_ROLES)
     request.env['jwt.user_id'] = user_id
     request.env['jwt.user_email'] = email
-    request.env['jwt.user_role'] = role
+    request.env['jwt.roles'] = roles
   end
 end
 
