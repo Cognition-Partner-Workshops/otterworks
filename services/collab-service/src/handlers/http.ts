@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import type { IncomingMessage } from 'http';
 import type { Logger } from 'pino';
 import {
@@ -20,6 +21,8 @@ export interface CollabHttpDeps {
   awareness: AwarenessService;
   presenceHandler: PresenceHandler;
   logger: Logger;
+  /** Per-client ceiling on the REST routes; each presence call costs a document-service round trip. */
+  rateLimit?: { windowMs: number; limit: number };
 }
 
 /**
@@ -29,8 +32,18 @@ export interface CollabHttpDeps {
  */
 export function createCollabRouter(deps: CollabHttpDeps): Router {
   const { jwtSecret, documentAccess, awareness, presenceHandler, logger } = deps;
+  const { windowMs, limit } = deps.rateLimit ?? { windowMs: 60_000, limit: 300 };
   const router = Router();
 
+  router.use(
+    rateLimit({
+      windowMs,
+      limit,
+      standardHeaders: 'draft-7',
+      legacyHeaders: false,
+      message: { error: 'Too many requests' },
+    }),
+  );
   router.use(createHttpAuthMiddleware(jwtSecret, logger));
 
   router.get('/documents', (_req, res) => {
