@@ -155,7 +155,7 @@
         "class": "status code with no IRI value",
         "causing_condition": "Seeded DP has no value in PolicySummary.policyStatus: PENDINGISSUED, ACTIVE, LAPSED, SURRENDERED, TERMINATED.",
         "file": "services/industry-solutions/insurance/db/annuity/02_seed.sql",
-        "line": 19,
+        "line": 20,
         "surfaces": ["summary status mapping", "IRI schema validation failure"],
         "brief": "A"
       },

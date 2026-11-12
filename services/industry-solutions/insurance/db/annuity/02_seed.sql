@@ -7,6 +7,7 @@ DECLARE
     v_pct NUMBER(5,2);
     v_account NUMBER(15,2);
     v_fund_value NUMBER(15,2);
+    v_remaining NUMBER(15,2);
 BEGIN
     FOR i IN 1..100 LOOP
         v_contract := CASE
@@ -47,10 +48,12 @@ BEGIN
         );
 
         v_funds := MOD(i - 1, 5) + 1;
+        v_remaining := v_account;
         FOR j IN 1..v_funds LOOP
             v_pct := CASE WHEN j = v_funds THEN 100 - TRUNC(100 / v_funds, 2) * (v_funds - 1)
                           ELSE TRUNC(100 / v_funds, 2) END;
-            v_fund_value := ROUND(v_account * v_pct / 100, 2);
+            v_fund_value := CASE WHEN j = v_funds THEN v_remaining
+                                ELSE ROUND(v_account * v_pct / 100, 2) END;
             INSERT INTO fund_allocation VALUES (
                 v_contract, 'FND-' || TO_CHAR(j, 'FM00'),
                 CASE j WHEN 1 THEN 'Balanced Growth Fund'
@@ -58,6 +61,7 @@ BEGIN
                     WHEN 4 THEN 'Short Duration Fund' ELSE 'Diversified Reserve Fund' END,
                 v_pct, v_fund_value / 10, 10, v_fund_value
             );
+            v_remaining := v_remaining - v_fund_value;
         END LOOP;
     END LOOP;
     COMMIT;

@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import re
 import signal
+import socket
 import subprocess
 import time
 import urllib.request
@@ -31,7 +32,9 @@ def main():
     url = f"http://127.0.0.1:{port}"
     pid = int(pid_file.read_text()) if pid_file.exists() else None
     running = pid is not None and Path(f"/proc/{pid}/cmdline").exists() and str(jar).encode() in Path(f"/proc/{pid}/cmdline").read_bytes().split(b"\0")
-    if args.action == "down":
+    sources = [app / "pom.xml", *list((app / "src" / "main").rglob("*"))]
+    stale = not jar.exists() or any(p.is_file() and p.stat().st_mtime > jar.stat().st_mtime for p in sources)
+    if args.action == "down" or (running and stale):
         if running:
             os.kill(pid, signal.SIGTERM)
             for _ in range(100):
@@ -41,11 +44,18 @@ def main():
             else:
                 raise SystemExit("API did not stop; PID retained")
         pid_file.unlink(missing_ok=True)
+        running = False
         print(f"Legacy API stopped ({args.namespace})")
-        return
+        if args.action == "down":
+            return
     if not running:
-        sources = [app / "pom.xml", *list((app / "src" / "main").rglob("*"))]
-        if not jar.exists() or any(p.is_file() and p.stat().st_mtime > jar.stat().st_mtime for p in sources):
+        with socket.socket() as listener:
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                listener.bind(("127.0.0.1", port))
+            except OSError as error:
+                raise SystemExit(f"API port {port} unavailable for namespace {args.namespace}: {error}")
+        if stale:
             subprocess.run([os.environ.get("MAVEN", str(app / "mvnw")),
                             "-s", str(settings), "-B", "-DskipTests", "package"], cwd=app, check=True)
         env = dict(os.environ, API_PORT=str(port), DB_URL=f"jdbc:oracle:thin:@localhost:{51521 + offset}/FREEPDB1")
