@@ -2,7 +2,7 @@
 
 SHELL := /bin/bash
 
-.PHONY: iri-legacy-up iri-legacy-down iri-legacy-test
+.PHONY: iri-legacy-up iri-legacy-down iri-legacy-test iri-parity-replay
 IRI_LEGACY_DIR = industries/insurance/iri-policy-inquiry
 
 .PHONY: iri-api-up iri-api-down iri-api-test iri-lineage iri-lineage-check iri-compare iri-schema
@@ -28,7 +28,10 @@ iri-schema: ## Validate IRI responses against the pinned schema (OP=... NS=iri)
 	python3 $(IRI_LEGACY_DIR)/parity/schema_check.py --op "$(OP)" --ns "$(or $(NS),iri)"
 
 iri-legacy-up: procs-validate ## Build and start the legacy inquiry API (NS=<namespace>)
-	python3 $(IRI_LEGACY_DIR)/lifecycle.py up "$(NS)" --settings $(IRI_LEGACY_DIR)/legacy-api/.mvn/settings.xml
+	JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 python3 $(IRI_LEGACY_DIR)/lifecycle.py up "$(NS)" --settings $(IRI_LEGACY_DIR)/legacy-api/.mvn/settings.xml
+
+iri-parity-replay: ## Replay legacy responses against frozen evidence without modifying it (NS=iri)
+	python3 $(IRI_LEGACY_DIR)/parity/replay.py --ns "$(or $(NS),iri)"
 
 iri-legacy-down: procs-validate ## Stop the legacy inquiry API (NS=<namespace>)
 	python3 $(IRI_LEGACY_DIR)/lifecycle.py down "$(NS)"

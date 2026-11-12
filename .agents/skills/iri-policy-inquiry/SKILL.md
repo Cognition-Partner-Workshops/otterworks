@@ -104,6 +104,18 @@ checking, all frozen contracts plus a required 404 case.
 Repo-root equivalents: make iri-lineage-check, iri-compare OP=summary NS=iri,
 iri-schema OP=summary NS=iri.
 
+## Legacy drift replay
+
+Use `make iri-parity-replay NS=iri` (default NS iri) to re-fetch the legacy book
+and all three operations against frozen evidence without modifying it. Reports
+in parity/reports/drift-<timestamp>.json/.md compare HTTP status, raw SHA256 and
+decoded body, with field-level diffs and manifest contract additions/removals.
+Direct CLI: `python3 parity/replay.py --ns iri --frozen-dir /baseline/copy --out /report/stem`.
+Use an alternate copy to simulate drift; never mutate canonical frozen.
+Exit 0 means complete/no drift, 1 means drift or invalid response, 2 means a
+transport failure (or CLI usage error). Partial reports are marked incomplete.
+Bring up the fixture/API only when authorized; leave another session's processes alone.
+
 ## Parallel ownership
 
 iri-api is the shared Spring Boot 3/JDK17 scaffold; read its README.

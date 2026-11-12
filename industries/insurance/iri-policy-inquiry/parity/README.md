@@ -37,3 +37,33 @@ to return 404. Override --not-found if that contract is added to the fixture.
 A difference is a failure until explained from data. Business-only decisions
 go on the sign-off list and the field stays in the payload. A clean mapped-field
 report does not imply completeness while sign-off entries remain.
+
+## Legacy drift replay
+
+With Oracle and the legacy API running, use `make iri-parity-replay NS=iri`
+from repo root (NS defaults to iri), or from this directory:
+
+```sh
+python3 parity/replay.py --ns iri
+python3 parity/replay.py --ns iri --frozen-dir /path/to/baseline-copy --out /path/to/drift-report
+```
+
+Replay reuses capture.py's raw HTTP fetcher, re-enumerates contracts, and fetches
+all three operations for every live contract. It compares HTTP status, raw body
+SHA256 (including serialization/whitespace), and decoded JSON body independently.
+It never updates frozen evidence. Added/removed contracts are compared against
+manifest.json and counted as drift for each operation. Removed contracts are not
+fetched because they no longer appear in the live list.
+
+Default output is parity/reports/drift-<UTC timestamp>.json and .md; `--out`
+accepts a report stem or a .json/.md path. Outputs inside either the selected
+baseline or the canonical frozen directory are rejected. Reports contain
+per-operation checked/unchanged/drifted counts, added/removed contracts and
+field-level differences for every drifted record, including status/hash changes.
+
+Exit codes: **0** complete replay with no drift, **1** drift or an invalid legacy
+response, **2** legacy transport failure (also normal argparse usage errors).
+On a transport failure, the partial report has complete=false and records the
+failed URL; it must not be interpreted as a clean replay.
+To demonstrate drift safely, copy frozen elsewhere and alter the copy, then use
+`--frozen-dir`. Never edit canonical frozen records to test or eliminate drift.

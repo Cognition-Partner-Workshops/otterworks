@@ -60,7 +60,7 @@ def main():
             subprocess.run([os.environ.get("MAVEN", str(app / "mvnw")),
                             "-s", str(settings), "-B", "-DskipTests", "package"], cwd=app, check=True)
         env = dict(os.environ, API_PORT=str(port), DB_URL=f"jdbc:oracle:thin:@localhost:{51521 + offset}/FREEPDB1")
-        java = str(Path(env["JAVA_HOME"]) / "bin/java") if args.iri and env.get("JAVA_HOME") else "java"
+        java = str(Path(env["JAVA_HOME"]) / "bin/java") if env.get("JAVA_HOME") else "java"
         with log_file.open("ab") as log:
             process = subprocess.Popen([java, "-jar", str(jar)], env=env, stdout=log,
                                        stderr=subprocess.STDOUT, start_new_session=True)
