@@ -162,6 +162,20 @@ class SeedConfigTests(unittest.TestCase):
         )
         validate_seed_config(config, sql)
 
+    def test_delete_with_or_without_from_fails_closed(self):
+        for table in ("products", "commission_rates", "tier_rate_schedule"):
+            for target in (table, f'"{table.upper()}"', f"commission_pay.{table}"):
+                for from_clause in ("", "FROM "):
+                    statement = f"DELETE {from_clause}{target} WHERE 1=1;"
+                    with (
+                        self.subTest(statement=statement),
+                        self.assertRaisesRegex(ValueError, "only literal INSERT"),
+                    ):
+                        validate_seed_config(
+                            self.config,
+                            self.sql.replace("COMMIT;", statement + "\nCOMMIT;"),
+                        )
+
     def test_unsupported_sql_fails_closed(self):
         for extra in (
             "UPDATE products SET product_name='Changed';",

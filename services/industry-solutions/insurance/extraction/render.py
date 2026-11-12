@@ -38,7 +38,7 @@ def seed_rows(sql: str) -> dict[str, list[dict]]:
     )
     masked = re.sub(SQL_STRING, lambda m: " " * len(m[0]), sql)
     if re.search(
-        rf'\b(?:UPDATE|DELETE\s+FROM|MERGE\s+INTO|TRUNCATE\s+TABLE)\s+{SQL_SCHEMA}"?(?:{SEED_TABLES})"?(?=\s|;|$)',
+        rf'\b(?:UPDATE|DELETE(?:\s+FROM)?|MERGE\s+INTO|TRUNCATE\s+TABLE)\s+{SQL_SCHEMA}"?(?:{SEED_TABLES})"?(?=\s|;|$)',
         masked,
         re.IGNORECASE,
     ) or re.search(r"\bINSERT\s+(?:ALL|FIRST)\b", masked, re.IGNORECASE):

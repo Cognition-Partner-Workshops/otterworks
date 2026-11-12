@@ -14,3 +14,5 @@ The session handoff contains the final shell video, replayable `script` transcri
 ## Offline drift-guard follow-up
 
 At 2026-11-12 16:26 UTC, all 10 `test_render.py` unit/integration tests passed, including seed/config mutations, missing/extra/duplicate rows, exact decimal handling, formatting tolerance, and optimized-Python CLI rejection before catalog writes. Ruff lint/format, mypy, compileall and diff checks passed. The supplementary shell transcript/timing includes the tested renderer/test/seed/config fingerprints. Oracle was not started; the owned-container query remained empty. The 65-rule live report above is preserved unchanged, not presented as a new Oracle run.
+
+The DELETE-syntax follow-up passes all **11 tests**, including 18 rejection cases covering both `DELETE table` and `DELETE FROM table` across all three tracked tables with bare, quoted and schema-qualified names. Before the fix, that regression reproduced nine missing-FROM bypasses; afterward all variants are rejected. The latest supplementary shell transcript/timing records the final files and passing checks. Oracle was not started.
