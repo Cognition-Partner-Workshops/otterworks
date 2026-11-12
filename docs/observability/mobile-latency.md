@@ -62,15 +62,11 @@ aws logs start-query --region us-east-1 \
 aws logs get-query-results --region us-east-1 --query-id <id>
 ```
 
-## The mobile-latency scenario
+## Native-only latency on the file list
 
-`scripts/inject-bug.sh <tenant> mobile-latency` sets
-`chaos:api-gateway:mobile_latency_ms` to 3000 in the tenant's Redis for
-20 minutes (`MOBILE_LATENCY_MS` overrides the value). While it is set,
-api-gateway sleeps that long before proxying `GET /api/v1/files` when the
-User-Agent contains `OtterWorksApp`. Browsers, writes and every other route are
-untouched, so the first query shows `ios` and `android` far above `web` and the
-second shows the gap only on `/api/v1/files`.
-
-`scripts/inject-bug.sh <tenant> reset` deletes every `chaos:*` key in that
-tenant. Nothing is stored in git or in the golden app.
+api-gateway used to sleep in front of `GET /api/v1/files` whenever the
+User-Agent carried `OtterWorksApp` and the tenant Redis held
+`chaos:api-gateway:mobile_latency_ms`, which made the iOS and Android Files
+screen wait about 3 s while browsers were unaffected. That hook has been
+removed; the first query above should show `ios`, `android` and `web` within
+the same range on `/api/v1/files`.
