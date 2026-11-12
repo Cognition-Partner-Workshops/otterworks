@@ -68,20 +68,45 @@ CREATE OR REPLACE PACKAGE commission_pkg AS
         p_as_of        IN DATE
     ) RETURN commission_rates.rate_id%TYPE;
 
+    -- Premium tier for tiered (life and annuity) products.
+    FUNCTION premium_tier (
+        p_annual_premium IN policies.annual_premium%TYPE
+    ) RETURN VARCHAR2;
+
+    -- Tier rate in force for a tiered product on a given date.
+    FUNCTION resolve_tier_rate (
+        p_product_code IN tier_rate_schedule.product_code%TYPE,
+        p_tier_code    IN tier_rate_schedule.tier_code%TYPE,
+        p_as_of        IN DATE
+    ) RETURN tier_rate_schedule.rate_pct%TYPE;
+
     -- Compute the commission ledger rows for a policy for a period (YYYY-MM).
     -- Commission per agent = annual_premium / 12 * rate_pct / 100 * split_pct
     -- / 100, rounded half-up to cents per agent row. Re-running a period for
-    -- a policy replaces its rows.
+    -- a policy replaces its rows. Tiered products pay the tier rate in effect
+    -- on the policy issue date.
     PROCEDURE calculate_policy_commission (
         p_policy_id    IN policies.policy_id%TYPE,
         p_period_month IN VARCHAR2,
         p_actor        IN VARCHAR2
     );
 
+    -- Lapse an in-force policy. A lapse inside the chargeback window reverses
+    -- the commission already paid on the policy as CHARGEBACK ledger rows in
+    -- the lapse month.
+    PROCEDURE lapse_policy (
+        p_policy_id  IN policies.policy_id%TYPE,
+        p_lapse_date IN DATE,
+        p_actor      IN VARCHAR2
+    );
+
 END commission_pkg;
 /
 
 CREATE OR REPLACE PACKAGE BODY commission_pkg AS
+
+    c_tier2_floor      CONSTANT NUMBER := 50000;
+    c_chargeback_months CONSTANT NUMBER := 12;
 
     PROCEDURE log_action (
         p_action       IN VARCHAR2,
@@ -282,12 +307,54 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
                 || TO_CHAR(p_as_of, 'YYYY-MM-DD'));
     END resolve_rate;
 
+    FUNCTION premium_tier (
+        p_annual_premium IN policies.annual_premium%TYPE
+    ) RETURN VARCHAR2 IS
+    BEGIN
+        IF p_annual_premium < c_tier2_floor THEN
+            RETURN 'T1';
+        END IF;
+        RETURN 'T2';
+    END premium_tier;
+
+    FUNCTION resolve_tier_rate (
+        p_product_code IN tier_rate_schedule.product_code%TYPE,
+        p_tier_code    IN tier_rate_schedule.tier_code%TYPE,
+        p_as_of        IN DATE
+    ) RETURN tier_rate_schedule.rate_pct%TYPE IS
+        l_pct tier_rate_schedule.rate_pct%TYPE;
+    BEGIN
+        SELECT rate_pct INTO l_pct
+          FROM (SELECT rate_pct
+                  FROM tier_rate_schedule
+                 WHERE product_code = p_product_code
+                   AND tier_code = p_tier_code
+                   AND p_as_of > change_date
+                 ORDER BY change_date DESC)
+         WHERE ROWNUM = 1;
+        RETURN l_pct;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(-20007,
+                'No tier rate for ' || p_product_code || '/' || p_tier_code || ' on '
+                || TO_CHAR(p_as_of, 'YYYY-MM-DD'));
+    END resolve_tier_rate;
+
+    FUNCTION is_tiered (p_product_code IN VARCHAR2) RETURN BOOLEAN IS
+        l_count PLS_INTEGER;
+    BEGIN
+        SELECT COUNT(*) INTO l_count
+          FROM tier_rate_schedule WHERE product_code = p_product_code;
+        RETURN l_count > 0;
+    END is_tiered;
+
     PROCEDURE calculate_policy_commission (
         p_policy_id    IN policies.policy_id%TYPE,
         p_period_month IN VARCHAR2,
         p_actor        IN VARCHAR2
     ) IS
         l_policy  policies%ROWTYPE;
+        l_tier    commission_ledger.tier_code%TYPE;
         l_as_of   DATE;
         l_rate_id commission_rates.rate_id%TYPE;
         l_pct     commission_rates.rate_pct%TYPE;
@@ -306,16 +373,24 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         END IF;
 
         l_as_of := LAST_DAY(TO_DATE(p_period_month, 'YYYY-MM'));
+        IF is_tiered(l_policy.product_code) THEN
+            l_tier := premium_tier(l_policy.annual_premium);
+        END IF;
 
         DELETE FROM commission_ledger
-         WHERE policy_id = p_policy_id AND period_month = p_period_month;
+         WHERE policy_id = p_policy_id AND period_month = p_period_month
+           AND entry_type = 'COMMISSION';
 
         FOR split IN (SELECT agent_id, split_pct
                         FROM commission_splits
                        WHERE policy_id = p_policy_id
                        ORDER BY split_pct DESC, agent_id) LOOP
             l_rate_id := resolve_rate(l_policy.product_code, split.agent_id, l_as_of);
-            SELECT rate_pct INTO l_pct FROM commission_rates WHERE rate_id = l_rate_id;
+            IF l_tier IS NOT NULL THEN
+                l_pct := resolve_tier_rate(l_policy.product_code, l_tier, l_policy.issued_date);
+            ELSE
+                SELECT rate_pct INTO l_pct FROM commission_rates WHERE rate_id = l_rate_id;
+            END IF;
 
             l_amount := ROUND(l_policy.annual_premium / 12
                               * l_pct / 100
@@ -323,10 +398,10 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
 
             INSERT INTO commission_ledger
                 (policy_id, agent_id, period_month, rate_id, split_pct,
-                 base_premium, commission_amt)
+                 base_premium, commission_amt, tier_code)
             VALUES
                 (p_policy_id, split.agent_id, p_period_month, l_rate_id,
-                 split.split_pct, l_policy.annual_premium, l_amount);
+                 split.split_pct, l_policy.annual_premium, l_amount, l_tier);
             l_rows := l_rows + 1;
         END LOOP;
 
@@ -343,6 +418,57 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
             ROLLBACK;
             RAISE;
     END calculate_policy_commission;
+
+    PROCEDURE lapse_policy (
+        p_policy_id  IN policies.policy_id%TYPE,
+        p_lapse_date IN DATE,
+        p_actor      IN VARCHAR2
+    ) IS
+        l_policy policies%ROWTYPE;
+        l_period commission_ledger.period_month%TYPE := TO_CHAR(p_lapse_date, 'YYYY-MM');
+        l_rows   PLS_INTEGER := 0;
+    BEGIN
+        BEGIN
+            SELECT * INTO l_policy FROM policies WHERE policy_id = p_policy_id;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                RAISE_APPLICATION_ERROR(-20005, 'Unknown policy: ' || p_policy_id);
+        END;
+        IF l_policy.status <> 'IN_FORCE' THEN
+            RAISE_APPLICATION_ERROR(-20008,
+                'Policy ' || p_policy_id || ' is ' || l_policy.status);
+        END IF;
+
+        UPDATE policies SET status = 'LAPSED' WHERE policy_id = p_policy_id;
+
+        IF MONTHS_BETWEEN(p_lapse_date, l_policy.issued_date) < c_chargeback_months THEN
+            FOR paid IN (SELECT agent_id,
+                                MAX(rate_id)        AS rate_id,
+                                MAX(split_pct)      AS split_pct,
+                                SUM(commission_amt) AS paid_amt
+                           FROM commission_ledger
+                          WHERE policy_id = p_policy_id
+                            AND entry_type = 'COMMISSION'
+                          GROUP BY agent_id
+                          ORDER BY agent_id) LOOP
+                INSERT INTO commission_ledger
+                    (policy_id, agent_id, period_month, rate_id, split_pct,
+                     base_premium, commission_amt, entry_type)
+                VALUES
+                    (p_policy_id, paid.agent_id, l_period, paid.rate_id, paid.split_pct,
+                     l_policy.annual_premium, -paid.paid_amt, 'CHARGEBACK');
+                l_rows := l_rows + 1;
+            END LOOP;
+        END IF;
+
+        log_action('POLICY_LAPSE', l_policy.product_code, NULL, p_policy_id,
+                   TO_CHAR(p_lapse_date, 'YYYY-MM-DD') || ' chargebacks=' || l_rows, p_actor);
+        COMMIT;
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            RAISE;
+    END lapse_policy;
 
 END commission_pkg;
 /

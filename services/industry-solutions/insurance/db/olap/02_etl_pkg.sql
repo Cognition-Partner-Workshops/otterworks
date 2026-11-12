@@ -62,7 +62,16 @@ CREATE OR REPLACE PACKAGE BODY dw_etl_pkg AS
                       cl.policy_id,
                       cl.split_pct,
                       cl.base_premium,
-                      cl.commission_amt
+                      cl.commission_amt,
+                      cl.entry_type,
+                      CASE
+                          WHEN EXISTS (SELECT 1
+                                         FROM commission_pay.tier_rate_schedule t
+                                        WHERE t.product_code = po.product_code) THEN
+                              CASE WHEN po.annual_premium BETWEEN 0 AND 50000 THEN 'T1'
+                                   ELSE 'T2'
+                              END
+                      END AS tier_code
                  FROM commission_pay.commission_ledger cl
                  JOIN commission_pay.policies po ON po.policy_id = cl.policy_id
                  JOIN dim_agent   da ON da.agent_id     = cl.agent_id
@@ -71,17 +80,19 @@ CREATE OR REPLACE PACKAGE BODY dw_etl_pkg AS
                 WHERE p_period_month IS NULL OR cl.period_month = p_period_month) s
            ON (f.policy_id = s.policy_id
                AND f.agent_key = s.agent_key
-               AND f.period_key = s.period_key)
+               AND f.period_key = s.period_key
+               AND f.entry_type = s.entry_type)
          WHEN MATCHED THEN UPDATE SET
               f.split_pct      = s.split_pct,
               f.base_premium   = s.base_premium,
               f.commission_amt = s.commission_amt,
+              f.tier_code      = s.tier_code,
               f.loaded_at      = SYSTIMESTAMP
          WHEN NOT MATCHED THEN
               INSERT (agent_key, product_key, period_key, policy_id,
-                      split_pct, base_premium, commission_amt)
+                      split_pct, base_premium, commission_amt, tier_code, entry_type)
               VALUES (s.agent_key, s.product_key, s.period_key, s.policy_id,
-                      s.split_pct, s.base_premium, s.commission_amt);
+                      s.split_pct, s.base_premium, s.commission_amt, s.tier_code, s.entry_type);
 
         o_rows_merged := SQL%ROWCOUNT;
         COMMIT;

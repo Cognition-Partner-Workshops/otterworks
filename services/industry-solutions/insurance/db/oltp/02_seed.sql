@@ -9,6 +9,10 @@ INSERT INTO agents (agent_id, agent_code, full_name, license_no, status, hired_d
     (3, 'AG-102', 'Priya Natarajan','LIC-TX-55003', 'ACTIVE',     DATE '2020-01-15');
 INSERT INTO agents (agent_id, agent_code, full_name, license_no, status, hired_date) VALUES
     (4, 'AG-103', 'Dale Whitfield', 'LIC-TX-55004', 'SUSPENDED',  DATE '2017-11-30');
+INSERT INTO agents (agent_id, agent_code, full_name, license_no, status, hired_date) VALUES
+    (5, 'AG-104', 'Renata Silva',   'LIC-TX-55005', 'ACTIVE',     DATE '2009-04-06');
+INSERT INTO agents (agent_id, agent_code, full_name, license_no, status, hired_date) VALUES
+    (6, 'AG-105', 'Owen Pritchard', 'LIC-TX-55006', 'ACTIVE',     DATE '2014-09-22');
 
 INSERT INTO products (product_code, product_name, line_of_business) VALUES
     ('AUTO-STD',  'Standard Auto',        'AUTO');
@@ -16,6 +20,10 @@ INSERT INTO products (product_code, product_name, line_of_business) VALUES
     ('HOME-PLUS', 'HomeOwners Plus',      'HOME');
 INSERT INTO products (product_code, product_name, line_of_business) VALUES
     ('TERM-20',   '20-Year Term Life',    'LIFE');
+INSERT INTO products (product_code, product_name, line_of_business) VALUES
+    ('WL-PAR',    'Participating Whole Life', 'LIFE');
+INSERT INTO products (product_code, product_name, line_of_business) VALUES
+    ('FIA-7',     '7-Year Fixed Indexed Annuity', 'ANNUITY');
 
 -- Product default rates (agent_id NULL) plus one agent-specific override.
 INSERT INTO commission_rates (rate_id, product_code, agent_id, rate_pct, effective_from, effective_to, created_by) VALUES
@@ -26,6 +34,21 @@ INSERT INTO commission_rates (rate_id, product_code, agent_id, rate_pct, effecti
     (3, 'TERM-20',   NULL, 15.00, DATE '2024-01-01', NULL, 'seed');
 INSERT INTO commission_rates (rate_id, product_code, agent_id, rate_pct, effective_from, effective_to, created_by) VALUES
     (4, 'AUTO-STD',  1,    9.50,  DATE '2024-06-01', NULL, 'seed');
+INSERT INTO commission_rates (rate_id, product_code, agent_id, rate_pct, effective_from, effective_to, created_by) VALUES
+    (5, 'WL-PAR',    NULL, 45.00, DATE '2020-01-01', NULL, 'conv2011');
+INSERT INTO commission_rates (rate_id, product_code, agent_id, rate_pct, effective_from, effective_to, created_by) VALUES
+    (6, 'FIA-7',     NULL, 6.00,  DATE '2020-01-01', NULL, 'conv2011');
+
+INSERT INTO tier_rate_schedule (product_code, tier_code, rate_pct, change_date, created_by) VALUES
+    ('WL-PAR', 'T1', 45.00, DATE '2020-01-01', 'conv2011');
+INSERT INTO tier_rate_schedule (product_code, tier_code, rate_pct, change_date, created_by) VALUES
+    ('WL-PAR', 'T2', 30.00, DATE '2020-01-01', 'conv2011');
+INSERT INTO tier_rate_schedule (product_code, tier_code, rate_pct, change_date, created_by) VALUES
+    ('WL-PAR', 'T1', 40.00, DATE '2025-07-01', 'rmendes');
+INSERT INTO tier_rate_schedule (product_code, tier_code, rate_pct, change_date, created_by) VALUES
+    ('FIA-7',  'T1', 6.00,  DATE '2020-01-01', 'conv2011');
+INSERT INTO tier_rate_schedule (product_code, tier_code, rate_pct, change_date, created_by) VALUES
+    ('FIA-7',  'T2', 4.50,  DATE '2020-01-01', 'conv2011');
 
 INSERT INTO policies (policy_id, policy_no, product_code, holder_name, annual_premium, issued_date, status) VALUES
     (1, 'POL-2025-0001', 'AUTO-STD',  'Chen Household',    1800.00, DATE '2025-02-10', 'IN_FORCE');
@@ -37,6 +60,16 @@ INSERT INTO policies (policy_id, policy_no, product_code, holder_name, annual_pr
     (4, 'POL-2025-0004', 'AUTO-STD',  'Kowalski LLC Fleet',9600.00, DATE '2025-05-01', 'IN_FORCE');
 INSERT INTO policies (policy_id, policy_no, product_code, holder_name, annual_premium, issued_date, status) VALUES
     (5, 'POL-2025-0005', 'HOME-PLUS', 'Ncube Residence',   2000.00, DATE '2025-05-15', 'LAPSED');
+INSERT INTO policies (policy_id, policy_no, product_code, holder_name, annual_premium, issued_date, status) VALUES
+    (6, 'POL-2025-0006', 'WL-PAR',    'A. Lindqvist',     50000.00, DATE '2025-02-14', 'IN_FORCE');
+INSERT INTO policies (policy_id, policy_no, product_code, holder_name, annual_premium, issued_date, status) VALUES
+    (7, 'POL-2025-0007', 'WL-PAR',    'Kettle Creek Trust',120000.00, DATE '2025-01-15', 'IN_FORCE');
+INSERT INTO policies (policy_id, policy_no, product_code, holder_name, annual_premium, issued_date, status) VALUES
+    (8, 'POL-2025-0008', 'WL-PAR',    'T. Adeyemi',       30000.00, DATE '2025-07-01', 'IN_FORCE');
+INSERT INTO policies (policy_id, policy_no, product_code, holder_name, annual_premium, issued_date, status) VALUES
+    (9, 'POL-2025-0009', 'WL-PAR',    'J. Halvorsen',     30000.00, DATE '2025-07-02', 'IN_FORCE');
+INSERT INTO policies (policy_id, policy_no, product_code, holder_name, annual_premium, issued_date, status) VALUES
+    (10, 'POL-2024-0010', 'FIA-7',    'P. Castellano',    24000.00, DATE '2024-10-01', 'IN_FORCE');
 
 -- Policy 1: sole agent. Policy 2: two-way split. Policy 4: three-way split.
 INSERT INTO commission_splits (policy_id, agent_id, split_pct) VALUES (1, 1, 100.00);
@@ -45,6 +78,11 @@ INSERT INTO commission_splits (policy_id, agent_id, split_pct) VALUES (2, 2, 40.
 INSERT INTO commission_splits (policy_id, agent_id, split_pct) VALUES (4, 1, 50.00);
 INSERT INTO commission_splits (policy_id, agent_id, split_pct) VALUES (4, 2, 30.00);
 INSERT INTO commission_splits (policy_id, agent_id, split_pct) VALUES (4, 3, 20.00);
+INSERT INTO commission_splits (policy_id, agent_id, split_pct) VALUES (6, 5, 100.00);
+INSERT INTO commission_splits (policy_id, agent_id, split_pct) VALUES (7, 5, 100.00);
+INSERT INTO commission_splits (policy_id, agent_id, split_pct) VALUES (8, 6, 100.00);
+INSERT INTO commission_splits (policy_id, agent_id, split_pct) VALUES (9, 6, 100.00);
+INSERT INTO commission_splits (policy_id, agent_id, split_pct) VALUES (10, 6, 100.00);
 
 -- The seed inserts explicit IDs, which BY DEFAULT identity columns do not
 -- consume; realign each identity sequence past the seeded values.

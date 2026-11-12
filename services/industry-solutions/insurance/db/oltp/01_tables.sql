@@ -17,7 +17,7 @@ CREATE TABLE products (
     product_code  VARCHAR2(16)  PRIMARY KEY,
     product_name  VARCHAR2(120) NOT NULL,
     line_of_business VARCHAR2(24) NOT NULL
-                  CONSTRAINT ck_products_lob CHECK (line_of_business IN ('AUTO', 'HOME', 'LIFE', 'COMMERCIAL'))
+                  CONSTRAINT ck_products_lob CHECK (line_of_business IN ('AUTO', 'HOME', 'LIFE', 'ANNUITY', 'COMMERCIAL'))
 );
 
 -- Commission rates: agent_id NULL means the product default rate. Rates are
@@ -40,6 +40,20 @@ CREATE UNIQUE INDEX ux_rates_open ON commission_rates (
     product_code,
     NVL(agent_id, -1),
     CASE WHEN effective_to IS NULL THEN 0 END
+);
+
+-- Tier rate changes for life and annuity products, keyed by the date the
+-- change takes effect. A row stays in force until the next row for the same
+-- product and tier.
+CREATE TABLE tier_rate_schedule (
+    product_code  VARCHAR2(16)  NOT NULL REFERENCES products (product_code),
+    tier_code     VARCHAR2(2)   NOT NULL
+                  CONSTRAINT ck_tier_code CHECK (tier_code IN ('T1', 'T2')),
+    rate_pct      NUMBER(5, 2)  NOT NULL
+                  CONSTRAINT ck_tier_rate_range CHECK (rate_pct > 0 AND rate_pct <= 50),
+    change_date   DATE          NOT NULL,
+    created_by    VARCHAR2(64)  NOT NULL,
+    CONSTRAINT pk_tier_rate_schedule PRIMARY KEY (product_code, tier_code, change_date)
 );
 
 CREATE TABLE policies (
@@ -76,8 +90,11 @@ CREATE TABLE commission_ledger (
     split_pct     NUMBER(5, 2)  NOT NULL,
     base_premium  NUMBER(12, 2) NOT NULL,
     commission_amt NUMBER(12, 2) NOT NULL,
+    tier_code     VARCHAR2(2),
+    entry_type    VARCHAR2(12)  DEFAULT 'COMMISSION' NOT NULL
+                  CONSTRAINT ck_ledger_entry_type CHECK (entry_type IN ('COMMISSION', 'CHARGEBACK')),
     calculated_at TIMESTAMP     DEFAULT SYSTIMESTAMP NOT NULL,
-    CONSTRAINT ux_ledger_row UNIQUE (policy_id, agent_id, period_month)
+    CONSTRAINT ux_ledger_row UNIQUE (policy_id, agent_id, period_month, entry_type)
 );
 
 -- Audit trail every management procedure writes to.

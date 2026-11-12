@@ -62,6 +62,7 @@ SQL
   run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/01_tables.sql"
   run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/02_seed.sql"
   run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/03_commission_pkg.sql"
+  run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/04_ledger_triggers.sql"
   run_sql "commission_dw/commission_dw"   "${SQL_DIR}/olap/01_star_schema.sql"
   run_sql "commission_dw/commission_dw"   "${SQL_DIR}/olap/02_etl_pkg.sql"
 
