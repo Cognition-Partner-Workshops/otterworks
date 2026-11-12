@@ -1,0 +1,737 @@
+version: 1
+status_codes:
+  '00': 200
+  '04': 404
+  08: 400
+  '96': 503
+rules:
+  identity:
+    kind: identity
+  status:
+    kind: status
+  policy-number:
+    kind: integer
+  date:
+    kind: date
+    input: YYYYMMDD
+    output: YYYY-MM-DD
+  decimal-2:
+    kind: decimal
+    scale: 2
+  decimal-6:
+    kind: decimal
+    scale: 6
+  integer:
+    kind: integer
+  policy-status:
+    kind: enum
+    values:
+      IF: ACTIVE
+      LP: LAPSED
+      SR: SURRENDERED
+      TM: TERMINATED
+      PI: PENDINGISSUED
+  qualification:
+    kind: enum
+    values:
+      NQ: Non-Qualified
+      IRA: IRA
+      ROTH: Roth IRA
+  page-count:
+    kind: page-count
+  page-start:
+    kind: page-start
+  config:
+    kind: config
+  container:
+    kind: container
+  unresolved:
+    kind: unresolved
+rows:
+- operation: summary
+  db: none
+  legacy: RTN_CD
+  legacy_format: two digit code
+  iri: $status
+  rule: status
+  status: mapped
+  note: ''
+- operation: summary
+  db: ANNUITY_POLICY.CONTRACT_NO
+  legacy: CNTR_NO
+  legacy_format: unpadded digits
+  iri: $request.policyNumber
+  rule: policy-number
+  status: derived
+  note: Path parameter, not a response property; compare numerically.
+- operation: values
+  db: none
+  legacy: RTN_CD
+  legacy_format: two digit code
+  iri: $status
+  rule: status
+  status: mapped
+  note: ''
+- operation: values
+  db: POLICY_VALUES.CONTRACT_NO
+  legacy: CNTR_NO
+  legacy_format: 10 zero-padded digits
+  iri: $request.policyNumber
+  rule: policy-number
+  status: derived
+  note: Path parameter, not a response property; compare numerically.
+- operation: funds
+  db: none
+  legacy: RTN_CD
+  legacy_format: two digit code
+  iri: $status
+  rule: status
+  status: mapped
+  note: ''
+- operation: funds
+  db: FUND_ALLOCATION.CONTRACT_NO
+  legacy: CNTR_NO
+  legacy_format: unpadded digits
+  iri: $request.policyNumber
+  rule: policy-number
+  status: derived
+  note: Path parameter, not a response property; compare numerically.
+- operation: summary
+  db: ANNUITY_POLICY.STATUS_CODE
+  legacy: STAT_CD
+  legacy_format: string code/text
+  iri: policyStatus
+  rule: policy-status
+  status: mapped
+  note: PI is inferred and DP has no enum; conditional sign-off rows below.
+- operation: summary
+  db: ANNUITY_POLICY.PRODUCT_NAME
+  legacy: PROD_NM
+  legacy_format: string code/text
+  iri: product.planName
+  rule: identity
+  status: mapped
+  note: ''
+- operation: summary
+  db: ANNUITY_POLICY.PLAN_CODE
+  legacy: PLAN_CD
+  legacy_format: string code/text
+  iri: product.planCode
+  rule: identity
+  status: mapped
+  note: FIXED/FLEX is not productType.
+- operation: summary
+  db: ANNUITY_POLICY.PRODUCT_CODE
+  legacy: PROD_CD
+  legacy_format: string code/text
+  iri: product.shortName
+  rule: identity
+  status: sign-off
+  note: Proposed shortName; confirm business semantics.
+- operation: summary
+  db: ANNUITY_POLICY.QUALIFICATION_CODE
+  legacy: QUAL_CD
+  legacy_format: string code/text
+  iri: qualificationType
+  rule: qualification
+  status: mapped
+  note: ''
+- operation: summary
+  db: ANNUITY_POLICY.EFFECTIVE_DATE
+  legacy: EFF_DT
+  legacy_format: YYYYMMDD
+  iri: effectiveDate
+  rule: date
+  status: mapped
+  note: ''
+- operation: summary
+  db: ANNUITY_POLICY.ISSUE_STATE
+  legacy: ISS_ST
+  legacy_format: string code/text
+  iri: issueState
+  rule: identity
+  status: mapped
+  note: ''
+- operation: summary
+  db: ANNUITY_POLICY.CURRENCY_CODE
+  legacy: CCY_CD
+  legacy_format: string code/text
+  iri: currency
+  rule: identity
+  status: mapped
+  note: ''
+- operation: summary
+  db: ANNUITY_POLICY.ISSUE_DATE
+  legacy: ISS_DT
+  legacy_format: YYYYMMDD
+  iri: none
+  rule: date
+  status: not-in-operation
+  note: Belongs to /dates.
+- operation: summary
+  db: ANNUITY_POLICY.MATURITY_DATE
+  legacy: MAT_DT
+  legacy_format: YYYYMMDD
+  iri: none
+  rule: date
+  status: not-in-operation
+  note: Belongs to /dates.
+- operation: summary
+  db: ANNUITY_POLICY.OWNER_NAME
+  legacy: OWN_NM
+  legacy_format: string code/text
+  iri: none
+  rule: identity
+  status: not-in-operation
+  note: Belongs to /parties.
+- operation: summary
+  db: ANNUITY_POLICY.ANNUITANT_NAME
+  legacy: ANN_NM
+  legacy_format: string code/text
+  iri: none
+  rule: identity
+  status: not-in-operation
+  note: Belongs to /parties.
+- operation: summary
+  db: ANNUITY_POLICY.GRX_IND
+  legacy: GRX_IND
+  legacy_format: string code/text
+  iri: none
+  rule: identity
+  status: sign-off
+  note: Undocumented codes 0/1/3; retain field pending decision.
+- operation: summary
+  db: ANNUITY_POLICY.STATUS_CODE
+  legacy: STAT_CD
+  legacy_format: two character code
+  iri: policyStatus
+  rule: policy-status
+  status: sign-off
+  note: PI -> PENDINGISSUED inferred; confirm.
+  when:
+    equals: PI
+- operation: summary
+  db: ANNUITY_POLICY.STATUS_CODE
+  legacy: STAT_CD
+  legacy_format: two character code
+  iri: policyStatus
+  rule: policy-status
+  status: sign-off
+  note: No IRI enum; do not silently drop or invent an enum.
+  when:
+    equals: DP
+- operation: summary
+  db: none
+  legacy: none
+  legacy_format: config string
+  iri: carrierId
+  rule: config
+  status: sign-off
+  note: Constant from IRI_CARRIER_ID; value requires sign-off.
+  config: IRI_CARRIER_ID
+- operation: summary
+  db: none
+  legacy: none
+  legacy_format: config string
+  iri: carrierName
+  rule: config
+  status: sign-off
+  note: Constant from IRI_CARRIER_NAME; value requires sign-off.
+  config: IRI_CARRIER_NAME
+- operation: values
+  db: POLICY_VALUES.VALUATION_DATE
+  legacy: VAL_DT
+  legacy_format: YYYYMMDD
+  iri: valuesAsOfDate
+  rule: date
+  status: mapped
+  note: ''
+- operation: values
+  db: POLICY_VALUES.ACCOUNT_VALUE
+  legacy: ACCT_VAL
+  legacy_format: 15 digits implied scale 2
+  iri: accountValues.endingAccountValue
+  rule: decimal-2
+  status: mapped
+  note: ''
+- operation: values
+  db: POLICY_VALUES.SURRENDER_VALUE
+  legacy: SURR_VAL
+  legacy_format: 15 digits implied scale 2
+  iri: accountValues.surrenderValue
+  rule: decimal-2
+  status: mapped
+  note: ''
+- operation: values
+  db: POLICY_VALUES.PREMIUMS_TO_DATE
+  legacy: PREM_TD
+  legacy_format: 15 digits implied scale 2
+  iri: totalDepositITD
+  rule: decimal-2
+  status: mapped
+  note: ''
+- operation: values
+  db: POLICY_VALUES.WITHDRAWALS_TO_DATE
+  legacy: WDR_TD
+  legacy_format: 15 digits implied scale 2
+  iri: accountValues.totalNetWithdrawalSinceIssue
+  rule: decimal-2
+  status: sign-off
+  note: Confirm net versus gross.
+- operation: values
+  db: POLICY_VALUES.CASH_VALUE
+  legacy: CASH_VAL
+  legacy_format: 15 digits implied scale 2
+  iri: none
+  rule: decimal-2
+  status: sign-off
+  note: No PolicyValue element.
+- operation: values
+  db: POLICY_VALUES.DEATH_BENEFIT
+  legacy: DTH_BEN
+  legacy_format: 15 digits implied scale 2
+  iri: none
+  rule: decimal-2
+  status: sign-off
+  note: No PolicyValue element.
+- operation: values
+  db: POLICY_VALUES.SURRENDER_CHARGE
+  legacy: SURR_CHG
+  legacy_format: 15 digits implied scale 2
+  iri: none
+  rule: decimal-2
+  status: sign-off
+  note: No PolicyValue element.
+- operation: values
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: withdrawalValues.yearToDateFreeWithdrawalAmount
+  rule: unresolved
+  status: omitted-optional
+  note: Required if withdrawalValues present; omit optional parent, not fabricate a value.
+- operation: funds
+  db: none
+  legacy: FUND_CNT
+  legacy_format: unpadded integer
+  iri: totalItemsCount
+  rule: integer
+  status: derived
+  note: Count before paging.
+- operation: funds
+  db: none
+  legacy: FUND_CNT
+  legacy_format: unpadded integer
+  iri: itemsCount
+  rule: page-count
+  status: derived
+  note: Count after startIndex/limit; default 50, max 200.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: request integer
+  iri: startIndex
+  rule: page-start
+  status: derived
+  note: Default 0; preserve ORDER BY fund_code.
+- operation: funds
+  db: FUND_ALLOCATION.FUND_CODE
+  legacy: FUND_CD_NN
+  legacy_format: string
+  iri: funds[].fundId
+  rule: identity
+  status: mapped
+  note: ''
+- operation: funds
+  db: FUND_ALLOCATION.FUND_NAME
+  legacy: FUND_NM_NN
+  legacy_format: string
+  iri: funds[].fundName
+  rule: identity
+  status: mapped
+  note: ''
+- operation: funds
+  db: FUND_ALLOCATION.UNIT_VALUE
+  legacy: UNIT_VAL_NN
+  legacy_format: 15 digits implied scale 6
+  iri: funds[].fundPrice
+  rule: decimal-6
+  status: mapped
+  note: ''
+- operation: funds
+  db: FUND_ALLOCATION.FUND_VALUE
+  legacy: FUND_VAL_NN
+  legacy_format: 15 digits implied scale 2
+  iri: funds[].totalFundValue
+  rule: decimal-2
+  status: mapped
+  note: ''
+- operation: funds
+  db: FUND_ALLOCATION.FUND_UNITS
+  legacy: FUND_UNITS_NN
+  legacy_format: 18 digits implied scale 6
+  iri: funds[].fundSegments[0].numberOfUnits
+  rule: decimal-6
+  status: sign-off
+  note: Proposed segment; creating it also requires segmentId, fundId, originalDepositAmount, originalDepositDate,
+    depositDate, depositAmount, currentAmount, renewalDate, sweepAccountId, startDate and endDate.
+- operation: funds
+  db: FUND_ALLOCATION.ALLOCATION_PCT
+  legacy: ALLOC_PCT_NN
+  legacy_format: 5 digits implied scale 2
+  iri: none
+  rule: decimal-2
+  status: sign-off
+  note: No PolicyFunds element.
+- operation: funds
+  db: POLICY_VALUES.VALUATION_DATE
+  legacy: none
+  legacy_format: Oracle DATE
+  iri: funds[].fundValuationDate
+  rule: date
+  status: sign-off
+  note: Cross-table source absent from flat legacy funds response; query by contract.
+- operation: summary
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: policyLastRefreshDateTime
+  rule: unresolved
+  status: sign-off
+  note: Required by schema; no direct legacy source.
+- operation: summary
+  db: none
+  legacy: none
+  legacy_format: object
+  iri: product
+  rule: container
+  status: derived
+  note: Assemble child fields; required when parent is present.
+- operation: summary
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: product.productType
+  rule: unresolved
+  status: sign-off
+  note: Required by schema; no direct legacy source.
+- operation: summary
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: restrictions[].category
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: summary
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: restrictions[].subCategory
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: summary
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: restrictions[].reason
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: summary
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: restrictions[].definition
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: summary
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: issueType
+  rule: unresolved
+  status: sign-off
+  note: Required by schema; no direct legacy source.
+- operation: values
+  db: none
+  legacy: none
+  legacy_format: object
+  iri: accountValues
+  rule: container
+  status: derived
+  note: Assemble child fields; required when parent is present.
+- operation: values
+  db: none
+  legacy: none
+  legacy_format: object
+  iri: authorization.businessMethods
+  rule: container
+  status: omitted-optional
+  note: Required only when optional parent is present; no source, omit optional parent.
+- operation: values
+  db: none
+  legacy: none
+  legacy_format: object
+  iri: authorization.authorizationEntities
+  rule: container
+  status: omitted-optional
+  note: Required only when optional parent is present; no source, omit optional parent.
+- operation: values
+  db: none
+  legacy: none
+  legacy_format: object
+  iri: authorization.authorizationTransaction
+  rule: container
+  status: omitted-optional
+  note: Required only when optional parent is present; no source, omit optional parent.
+- operation: values
+  db: none
+  legacy: none
+  legacy_format: object
+  iri: authorization.authorizationTransaction.administrativeTransactions
+  rule: container
+  status: omitted-optional
+  note: Required only when optional parent is present; no source, omit optional parent.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].fundAccountType
+  rule: unresolved
+  status: sign-off
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].transferSendRestrictInfo.fundRestrictReason
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].transferSendRestrictInfo.startDate
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].transferSendRestrictInfo.endDate
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].transferDestRestrictInfo.fundRestrictReason
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].transferDestRestrictInfo.startDate
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].transferDestRestrictInfo.endDate
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].rateTier.indexReturnPercent
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].rateTier.tieredRate
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].rateTier.rateType
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].fundSegments[].segmentId
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].fundSegments[].fundId
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].fundSegments[].originalDepositAmount
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].fundSegments[].originalDepositDate
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].fundSegments[].depositDate
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].fundSegments[].depositAmount
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].fundSegments[].currentAmount
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].fundSegments[].renewalDate
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].fundSegments[].numberOfUnits
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].fundSegments[].sweepAccountId
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].fundSegments[].startDate
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].fundSegments[].endDate
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].rateLockInfo.rateType
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].rateLockInfo.lockStartDate
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: funds[].rateLockInfo.lockEndDate
+  rule: unresolved
+  status: omitted-optional
+  note: Required by schema; no direct legacy source.
+- operation: summary
+  db: none
+  legacy: none
+  legacy_format: object
+  iri: restrictions
+  rule: unresolved
+  status: omitted-optional
+  note: Required with at least one item when hasRestriction=true; no source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: object
+  iri: funds[].transferSendRestrictInfo
+  rule: unresolved
+  status: omitted-optional
+  note: Required when isTransferSendAllowed=false; no source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: object
+  iri: funds[].transferDestRestrictInfo
+  rule: unresolved
+  status: omitted-optional
+  note: Required when isTransferDestAllowed=false; no source.
+- operation: funds
+  db: none
+  legacy: none
+  legacy_format: object
+  iri: funds[].rateLockInfo
+  rule: unresolved
+  status: omitted-optional
+  note: Required when isLockFeatureEnabled=true; no source.
+- operation: summary
+  db: none
+  legacy: none
+  legacy_format: none
+  iri: hasRestriction
+  rule: unresolved
+  status: omitted-optional
+  note: Optional restriction indicator has no source; omit it and restrictions.
