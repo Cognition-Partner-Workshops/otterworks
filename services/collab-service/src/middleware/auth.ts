@@ -12,6 +12,7 @@ export interface AuthenticatedUser {
 
 export interface AuthenticatedSocket extends Socket {
   user?: AuthenticatedUser;
+  token?: string;
 }
 
 interface JwtPayload {
@@ -45,6 +46,7 @@ export function createAuthMiddleware(jwtSecret: string, logger: Logger) {
         displayName: decoded.name || decoded.display_name || 'Anonymous',
         roles: decoded.roles || [],
       };
+      (socket as AuthenticatedSocket).token = token;
 
       logger.debug(
         { socketId: socket.id, userId: decoded.sub },
@@ -59,6 +61,30 @@ export function createAuthMiddleware(jwtSecret: string, logger: Logger) {
       next(new Error('Invalid or expired token'));
     }
   };
+}
+
+export function extractTokenFromSocket(socket: Socket): string {
+  return (socket as AuthenticatedSocket).token || '';
+}
+
+export interface VerifiedToken {
+  userId: string;
+  token: string;
+}
+
+/** Verifies a bearer token and returns its subject, or null if it is missing or invalid. */
+export function verifyBearerToken(
+  token: string | undefined | null,
+  jwtSecret: string,
+): VerifiedToken | null {
+  if (!token) return null;
+  try {
+    const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
+    if (typeof decoded !== 'object' || !decoded.sub) return null;
+    return { userId: String(decoded.sub), token };
+  } catch {
+    return null;
+  }
 }
 
 export function extractUserFromSocket(socket: Socket): AuthenticatedUser {

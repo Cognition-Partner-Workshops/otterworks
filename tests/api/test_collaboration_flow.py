@@ -38,3 +38,8 @@ def test_collaboration_invalid_document_presence_is_stable(api_client):
         headers=user.auth_headers,
     )
     assert presence_response.status_code in {200, 400, 404}, presence_response.text
+
+
+def test_collaboration_endpoints_require_authentication(api_client):
+    response = api_client.client.get("/api/v1/collab/documents")
+    assert response.status_code == 401, response.text
