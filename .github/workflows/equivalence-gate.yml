@@ -3,11 +3,13 @@ name: Functional-equivalence gate
 on:
   push:
     paths:
+      - ".github/workflows/equivalence-gate.yml"
       - "security/equivalence/**"
       - "services/document-service/**"
       - "Makefile"
   pull_request:
     paths:
+      - ".github/workflows/equivalence-gate.yml"
       - "security/equivalence/**"
       - "services/document-service/**"
       - "Makefile"
