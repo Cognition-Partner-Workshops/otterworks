@@ -36,7 +36,7 @@ script --return --log-out shell.typescript --log-timing shell.timing \
 scriptreplay --log-out shell.typescript --log-timing shell.timing
 ```
 
-The runner emits per-rule source SQL and SQL*Plus logs, Markdown/CSV rows, and JSON with exact UTC/image/version/source/test fingerprints. Preserve these with the shell recording. The compact final reports will be under `evidence/`; raw logs and recordings are session artifacts to avoid checking large media into git.
+The runner emits per-rule source SQL and SQL*Plus logs, Markdown/CSV rows, and JSON with exact UTC/image/version/source/test fingerprints. Preserve these with the shell recording. The [compact final reports](evidence/README.md) are under `evidence/`; raw logs and recordings are session artifacts to avoid checking large media into git.
 
 ## Coverage boundary
 

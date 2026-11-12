@@ -1,0 +1,480 @@
+{
+  "time_utc": "2026-11-12T16:04:40.126842+00:00",
+  "container": "otterworks-insurance-rules-insurance-oracle-1",
+  "image_id": "sha256:f988b0c04c4c386cd306a2a914c0d7a9702d83acc31b064a28ad8eb6278a8fba",
+  "oracle_version_query": "Oracle AI Database 26ai Free 23.26.3.0.0",
+  "source_sha256": {
+    "services/industry-solutions/insurance/db/olap/01_star_schema.sql": "867bc422aa2bd855d2b8ce675095ad6fc870ba07fb0c877fff439eafd8352c61",
+    "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql": "32605b3b942b237c8479916d5c51b0f380a88fe31f44fcce3688adcb8cbbbf18",
+    "services/industry-solutions/insurance/db/oltp/01_tables.sql": "654115fa6b956457d81521d6fb1fda6a1a8200eaab9801f7dcd912ed5c8c082c",
+    "services/industry-solutions/insurance/db/oltp/02_seed.sql": "ae742239d7e26b182783b0a1949537ddb7a4fbb333c9d2ad9b3f320d74746787",
+    "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql": "01577cce24e43df402bfdf38bf7e8a378e63d560485a94ddeca5e1f06b0e95cf",
+    "services/industry-solutions/insurance/db/oltp/04_ledger_triggers.sql": "cd705db2fd29ee4b1a8f9f91bcd7dfed59c13bd9896d9673fc27d7ae1faa096d",
+    "services/industry-solutions/insurance/db/setup/01_users.sql": "ff12f28adc17bbebfbdb4d04f066a7dfc4880082eee1b5185ee5fe02cb44c80c",
+    "services/industry-solutions/insurance/db/tests/run_olap_tests.sql": "cfe5287e6e19be85fcffc68a55426451f80b2a8e0191187dd015abfbd16bb9b3",
+    "services/industry-solutions/insurance/db/tests/run_tests.sql": "77fdb569cd27f43e4a9a863291b28e6742a29bb7a84dc16556891e84db43dc77",
+    "services/industry-solutions/insurance/spec/cp114-commission-spec-scan.pdf": "65f0e3b49009d58f33f3a29193d6d470068ccad6e988671821261651ac9f5020",
+    "services/industry-solutions/insurance/extraction/rules.json": "a0774a718061a03c70b53314acddeb2ec1279b7119ec1b3fde1e6035d6eb048f",
+    "services/industry-solutions/insurance/extraction/cases.json": "be859962b909a6efb2e03249789e3c8db282550aaea30997e3588c3e444c2489",
+    "services/industry-solutions/insurance/extraction/product-config.json": "2c539a05616374212a89227f4f18a8bc7598bdad27620b1609b9f0c92a3de4a8",
+    "services/industry-solutions/insurance/extraction/render.py": "1d38a47fad3ec35c0327012efca501fd0cbf9f4472dde389e903ff6a2f8512b3",
+    "services/industry-solutions/insurance/extraction/characterize.py": "df6ea98c94f75e86b4b4a437f627928a75f9b9d5d099addad155a0d2ce307d2b"
+  },
+  "rows": [
+    {
+      "id": "CP-001",
+      "classification": "green",
+      "test": "T-CP-001",
+      "result": "PASS",
+      "observations": "all five product/line mappings; only WL-PAR and FIA-7 tiered in fixture; TERM-20 default=15; at least one assertion executed"
+    },
+    {
+      "id": "CP-002",
+      "classification": "green",
+      "test": "T-CP-002",
+      "result": "PASS",
+      "observations": "default ACTIVE; expected error -2290; actual -2290; at least one assertion executed"
+    },
+    {
+      "id": "CP-003",
+      "classification": "green",
+      "test": "T-CP-003",
+      "result": "PASS",
+      "observations": "expected error -1; actual -1; expected error -1; actual -1; expected error -1; actual -1; expected error -2291; actual -2291; expected error -2291; actual -2291; expected error -2291; actual -2291; expected error -2291; actual -2291; expected error -2291; actual -2291; at least one assertion executed"
+    },
+    {
+      "id": "CP-004",
+      "classification": "green",
+      "test": "T-CP-004",
+      "result": "PASS",
+      "observations": "premium stored=100.13; default IN_FORCE; expected error -2290; actual -2290; expected error -2290; actual -2290; at least one assertion executed"
+    },
+    {
+      "id": "CP-005",
+      "classification": "green",
+      "test": "T-CP-005",
+      "result": "PASS",
+      "observations": "expected error -20001; actual -20001; expected error -20001; actual -20001; expected error -20001; actual -20001; expected error -20001; actual -20001; upper bound 50 accepted; at least one assertion executed"
+    },
+    {
+      "id": "CP-006",
+      "classification": "green",
+      "test": "T-CP-006",
+      "result": "PASS",
+      "observations": "expected error -20004; actual -20004; expected error -20002; actual -20002; expected error -20003; actual -20003; expected error -20003; actual -20003; active named agent accepted; at least one assertion executed"
+    },
+    {
+      "id": "CP-007",
+      "classification": "green",
+      "test": "T-CP-007",
+      "result": "PASS",
+      "observations": "same-day rate ID preserved; same-day percentage and author replaced; at least one assertion executed"
+    },
+    {
+      "id": "CP-008",
+      "classification": "green",
+      "test": "T-CP-008",
+      "result": "PASS",
+      "observations": "old default retained and closed 2024-12-31; agent scope unchanged; at least one assertion executed"
+    },
+    {
+      "id": "CP-009",
+      "classification": "green",
+      "test": "T-CP-009",
+      "result": "PASS",
+      "observations": "expected error -1; actual -1; expected error -2290; actual -2290; failed backdates preserve open rate; at least one assertion executed"
+    },
+    {
+      "id": "CP-010",
+      "classification": "green",
+      "test": "T-CP-010",
+      "result": "PASS",
+      "observations": "end date inclusive; expected error -20007; actual -20007; at least one assertion executed"
+    },
+    {
+      "id": "CP-011",
+      "classification": "green",
+      "test": "T-CP-011",
+      "result": "PASS",
+      "observations": "expected error -20005; actual -20005; expected error -20006; actual -20006; expected error -20006; actual -20006; lapsed policy split update accepted; at least one assertion executed"
+    },
+    {
+      "id": "CP-012",
+      "classification": "green",
+      "test": "T-CP-012",
+      "result": "PASS",
+      "observations": "expected error -20006; actual -20006; expected error -20006; actual -20006; at least one assertion executed"
+    },
+    {
+      "id": "CP-013",
+      "classification": "green",
+      "test": "T-CP-013",
+      "result": "PASS",
+      "observations": "expected error -20006; actual -20006; expected error -20006; actual -20006; expected error -20006; actual -20006; expected error -20003; actual -20003; expected error -20002; actual -20002; at least one assertion executed"
+    },
+    {
+      "id": "CP-014",
+      "classification": "green",
+      "test": "T-CP-014",
+      "result": "PASS",
+      "observations": "expected error -20006; actual -20006; expected error -20006; actual -20006; invalid replacement left two splits totaling 100; at least one assertion executed"
+    },
+    {
+      "id": "CP-015",
+      "classification": "green",
+      "test": "T-CP-015",
+      "result": "PASS",
+      "observations": "override applies at start; default before override start; default without override; at least one assertion executed"
+    },
+    {
+      "id": "CP-016",
+      "classification": "green",
+      "test": "T-CP-016",
+      "result": "PASS",
+      "observations": "latest overlapping closed history wins; expected error -20007; actual -20007; at least one assertion executed"
+    },
+    {
+      "id": "CP-017",
+      "classification": "green",
+      "test": "T-CP-017",
+      "result": "PASS",
+      "observations": "commission=12; at least one assertion executed"
+    },
+    {
+      "id": "CP-018",
+      "classification": "amber",
+      "test": "T-CP-018",
+      "result": "PASS",
+      "observations": "49999.99 => T1; 50000 => T2; 50000.01 => T2; at least one assertion executed"
+    },
+    {
+      "id": "CP-019",
+      "classification": "amber",
+      "test": "T-CP-019",
+      "result": "PASS",
+      "observations": "initial T1; premium adjustment changes tier to T2; at least one assertion executed"
+    },
+    {
+      "id": "CP-020",
+      "classification": "green",
+      "test": "T-CP-020",
+      "result": "PASS",
+      "observations": "WL T1 old=45; WL T1 new=40; WL T2=30; FIA T1=6; FIA T2=4.5; at least one assertion executed"
+    },
+    {
+      "id": "CP-021",
+      "classification": "amber",
+      "test": "T-CP-021",
+      "result": "PASS",
+      "observations": "July 1 uses OLD 45 not spec 40; expected error -20007; actual -20007; at least one assertion executed"
+    },
+    {
+      "id": "CP-022",
+      "classification": "green",
+      "test": "T-CP-022",
+      "result": "PASS",
+      "observations": "commission=45; ledger rate ID references 49% flat override, paid schedule=45%; expected error -20007; actual -20007; at least one assertion executed"
+    },
+    {
+      "id": "CP-023",
+      "classification": "green",
+      "test": "T-CP-023",
+      "result": "PASS",
+      "observations": "expected error -20005; actual -20005; expected error -20008; actual -20008; expected error -20008; actual -20008; expected error -20006; actual -20006; at least one assertion executed"
+    },
+    {
+      "id": "CP-024",
+      "classification": "green",
+      "test": "T-CP-024",
+      "result": "PASS",
+      "observations": "commission=20; at least one assertion executed"
+    },
+    {
+      "id": "CP-025",
+      "classification": "green",
+      "test": "T-CP-025",
+      "result": "PASS",
+      "observations": "two independently rounded 7.50 rows; no residual-cent allocation; positive half-cent rounds up; at least one assertion executed"
+    },
+    {
+      "id": "CP-026",
+      "classification": "green",
+      "test": "T-CP-026",
+      "result": "PASS",
+      "observations": "one commission 15 plus preserved chargeback -2; at least one assertion executed"
+    },
+    {
+      "id": "CP-027",
+      "classification": "green",
+      "test": "T-CP-027",
+      "result": "PASS",
+      "observations": "commission=15; commission=7.5; at least one assertion executed"
+    },
+    {
+      "id": "CP-028",
+      "classification": "green",
+      "test": "T-CP-028",
+      "result": "PASS",
+      "observations": "commission=15; at least one assertion executed"
+    },
+    {
+      "id": "CP-029",
+      "classification": "green",
+      "test": "T-CP-029",
+      "result": "PASS",
+      "observations": "commission=1500; commission=1000; commission=0; at least one assertion executed"
+    },
+    {
+      "id": "CP-030",
+      "classification": "green",
+      "test": "T-CP-030",
+      "result": "PASS",
+      "observations": "commission=0; commission=1500; at least one assertion executed"
+    },
+    {
+      "id": "CP-031",
+      "classification": "amber",
+      "test": "T-CP-031",
+      "result": "PASS",
+      "observations": "commission=150; commission=1000; commission=0; direct update permits aggregate 4000 above cap; at least one assertion executed"
+    },
+    {
+      "id": "CP-032",
+      "classification": "green",
+      "test": "T-CP-032",
+      "result": "PASS",
+      "observations": "expected error -20005; actual -20005; lapse persisted; expected error -20008; actual -20008; at least one assertion executed"
+    },
+    {
+      "id": "CP-033",
+      "classification": "amber",
+      "test": "T-CP-033",
+      "result": "PASS",
+      "observations": "month 7 reverses full 120; spec would reverse 60; exactly 12 months no chargeback; month 5 reverses full 120; at least one assertion executed"
+    },
+    {
+      "id": "CP-034",
+      "classification": "green",
+      "test": "T-CP-034",
+      "result": "PASS",
+      "observations": "agent1 paid 18 reversed in supplied May; agent2 paid 12 reversed; at least one assertion executed"
+    },
+    {
+      "id": "CP-035",
+      "classification": "amber",
+      "test": "T-CP-035",
+      "result": "PASS",
+      "observations": "pre-issue lapse reverses future August commission; at least one assertion executed"
+    },
+    {
+      "id": "CP-036",
+      "classification": "amber",
+      "test": "T-CP-036",
+      "result": "PASS",
+      "observations": "expected error -2290; actual -2290; cancel generated no chargeback; no surrender entrypoint; at least one assertion executed"
+    },
+    {
+      "id": "CP-037",
+      "classification": "green",
+      "test": "T-CP-037",
+      "result": "PASS",
+      "observations": "RATE_UPSERT/RATE_END/SPLIT_SET/COMMISSION_CALC/POLICY_LAPSE audited; at least one assertion executed"
+    },
+    {
+      "id": "CP-038",
+      "classification": "green",
+      "test": "T-CP-038",
+      "result": "PASS",
+      "observations": "expected error -20006; actual -20006; failed package call rolled back caller update; success committed caller update; at least one assertion executed"
+    },
+    {
+      "id": "CP-039",
+      "classification": "green",
+      "test": "T-CP-039",
+      "result": "PASS",
+      "observations": "expected error -20006; actual -20006; commission=15; no failed calculation audit; at least one assertion executed"
+    },
+    {
+      "id": "CP-040",
+      "classification": "green",
+      "test": "T-CP-040",
+      "result": "PASS",
+      "observations": "expected error -2290; actual -2290; expected error -2290; actual -2290; expected error -1; actual -1; at least one assertion executed"
+    },
+    {
+      "id": "CP-041",
+      "classification": "green",
+      "test": "T-CP-041",
+      "result": "PASS",
+      "observations": "suspended agent loaded; current product description loaded; existing dimension description refreshed; at least one assertion executed"
+    },
+    {
+      "id": "CP-042",
+      "classification": "green",
+      "test": "T-CP-042",
+      "result": "PASS",
+      "observations": "August 2025 => year2025 quarter3; NULL period loaded both January and February; at least one assertion executed"
+    },
+    {
+      "id": "CP-043",
+      "classification": "green",
+      "test": "T-CP-043",
+      "result": "PASS",
+      "observations": "all copied money/premium/splits reconcile, including chargebacks and capped amounts; chargebacks loaded separately; at least one assertion executed"
+    },
+    {
+      "id": "CP-044",
+      "classification": "green",
+      "test": "T-CP-044",
+      "result": "PASS",
+      "observations": "rerun count unchanged; merged count includes matches=33; at least one assertion executed"
+    },
+    {
+      "id": "CP-045",
+      "classification": "amber",
+      "test": "T-CP-045",
+      "result": "PASS",
+      "observations": "DW 50000=T1; OLTP 50000=T2; at least one assertion executed"
+    },
+    {
+      "id": "CP-046",
+      "classification": "amber",
+      "test": "T-CP-046",
+      "result": "PASS",
+      "observations": "DW T1 versus null OLTP tier on chargeback; at least one assertion executed"
+    },
+    {
+      "id": "CP-047",
+      "classification": "amber",
+      "test": "T-CP-047",
+      "result": "PASS",
+      "observations": "initial source fact present; at least one assertion executed"
+    },
+    {
+      "id": "CP-048",
+      "classification": "green",
+      "test": "T-CP-048",
+      "result": "PASS",
+      "observations": "old agent3 source row deleted; at least one assertion executed"
+    },
+    {
+      "id": "CP-049",
+      "classification": "amber",
+      "test": "T-CP-049",
+      "result": "PASS",
+      "observations": "warehouse keeps old 15 plus new 15; ledger has only new-agent 15; at least one assertion executed"
+    },
+    {
+      "id": "CP-050",
+      "classification": "green",
+      "test": "T-CP-050",
+      "result": "PASS",
+      "observations": "summary signed totals and fact-row counts match aggregation; at least one assertion executed"
+    },
+    {
+      "id": "CP-051",
+      "classification": "green",
+      "test": "T-CP-051",
+      "result": "PASS",
+      "observations": "summary refresh mode DEMAND; explicit refresh was recorded; at least one assertion executed"
+    },
+    {
+      "id": "CP-052",
+      "classification": "green",
+      "test": "T-CP-052",
+      "result": "PASS",
+      "observations": "expected error -20007; actual -20007; at least one assertion executed"
+    },
+    {
+      "id": "CP-053",
+      "classification": "amber",
+      "test": "T-CP-053",
+      "result": "PASS",
+      "observations": "commission=120; no separate premium basis fields; at least one assertion executed"
+    },
+    {
+      "id": "CP-054",
+      "classification": "green",
+      "test": "T-CP-054",
+      "result": "PASS",
+      "observations": "expected error -2290; actual -2290; COMMERCIAL allowed without commissioned schedule; at least one assertion executed"
+    },
+    {
+      "id": "CP-055",
+      "classification": "green",
+      "test": "T-CP-055",
+      "result": "PASS",
+      "observations": "default entry type; expected error -2290; actual -2290; expected error -1; actual -1; at least one assertion executed"
+    },
+    {
+      "id": "CP-056",
+      "classification": "green",
+      "test": "T-CP-056",
+      "result": "PASS",
+      "observations": "expected error -1400; actual -1400; missing audit actor rolls back new ledger rows; expected error -1407; actual -1407; null created_by update preserved prior rate; at least one assertion executed"
+    },
+    {
+      "id": "CP-057",
+      "classification": "green",
+      "test": "T-CP-057",
+      "result": "PASS",
+      "observations": "NULL end date leaves rate open; RATE_END audited despite still-open rate; at least one assertion executed"
+    },
+    {
+      "id": "CP-058",
+      "classification": "green",
+      "test": "T-CP-058",
+      "result": "PASS",
+      "observations": "no paid rows, no reversal; unpaid policy lapsed; at least one assertion executed"
+    },
+    {
+      "id": "CP-059",
+      "classification": "amber",
+      "test": "T-CP-059",
+      "result": "PASS",
+      "observations": "commission=900; at least one assertion executed"
+    },
+    {
+      "id": "CP-060",
+      "classification": "amber",
+      "test": "T-CP-060",
+      "result": "PASS",
+      "observations": "accepted input total100 persisted100.01; at least one assertion executed"
+    },
+    {
+      "id": "CP-061",
+      "classification": "amber",
+      "test": "T-CP-061",
+      "result": "PASS",
+      "observations": "commission=15; two accepted August spellings pay3000 across separate cap buckets; at least one assertion executed"
+    },
+    {
+      "id": "CP-062",
+      "classification": "green",
+      "test": "T-CP-062",
+      "result": "PASS",
+      "observations": "commission=10; at least one assertion executed"
+    },
+    {
+      "id": "CP-063",
+      "classification": "amber",
+      "test": "T-CP-063",
+      "result": "PASS",
+      "observations": "DW still TERM-20 but updated to HOME amount10; source product HOME-PLUS; at least one assertion executed"
+    },
+    {
+      "id": "CP-064",
+      "classification": "amber",
+      "test": "T-CP-064",
+      "result": "PASS",
+      "observations": "expected error -1; actual -1; expected error -1; actual -1; second historical closure fails; current rate preserved; at least one assertion executed"
+    },
+    {
+      "id": "CP-065",
+      "classification": "amber",
+      "test": "T-CP-065",
+      "result": "PASS",
+      "observations": "expected error -4091; actual -4091; bulk statement rolled back; at least one assertion executed"
+    }
+  ]
+}
