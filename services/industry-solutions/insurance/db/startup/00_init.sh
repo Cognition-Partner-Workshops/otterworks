@@ -133,6 +133,12 @@ EXIT;
 SQL
   fi
 
+  sqlplus -s "annuity_inq/annuity_inq@localhost:1521/FREEPDB1" <<'SQL'
+WHENEVER SQLERROR EXIT SQL.SQLCODE
+GRANT SELECT ON fixture_meta TO commission_pay;
+EXIT;
+SQL
+
   # Completion marker: written last; the health check and the skip guard
   # both key off it.
   if [ "${marker}" = "0" ]; then

@@ -16,9 +16,9 @@ services:
       - ./services/industry-solutions/insurance/db:/opt/oracle/scripts/insurance:ro
       - insurance-oracle-data:/opt/oracle/oradata
     healthcheck:
-      # Healthy only once the FIXTURE_META completion marker (written after
-      # every init script succeeded and all objects compiled VALID) exists.
-      test: ["CMD-SHELL", "echo \"SELECT 'FIXTURE_READY' FROM fixture_meta;\" | sqlplus -s commission_pay/commission_pay@localhost:1521/FREEPDB1 | grep -q FIXTURE_READY"]
+      # Healthy only once both completion markers exist, after initialization
+      # and object validation for the base and annuity fixtures.
+      test: ["CMD-SHELL", "echo \"SELECT 'FIXTURE_READY' FROM fixture_meta WHERE EXISTS (SELECT 1 FROM all_tables WHERE owner = 'ANNUITY_INQ' AND table_name = 'FIXTURE_META');\" | sqlplus -s commission_pay/commission_pay@localhost:1521/FREEPDB1 | grep -q FIXTURE_READY"]
       interval: 15s
       timeout: 10s
       retries: 60
