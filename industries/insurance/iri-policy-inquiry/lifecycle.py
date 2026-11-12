@@ -14,11 +14,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("action", choices=["up", "down"])
     parser.add_argument("namespace")
+    parser.add_argument("--settings", type=Path)
     args = parser.parse_args()
     if not re.fullmatch(r"[A-Za-z0-9_-]+", args.namespace):
         parser.error("namespace must contain only letters, digits, underscores or hyphens")
     root = Path(__file__).resolve().parent
     app = root / "legacy-api"
+    settings = args.settings.resolve() if args.settings else app / ".mvn" / "settings.xml"
     state = root / ".state" / args.namespace
     state.mkdir(parents=True, exist_ok=True)
     pid_file = state / "api.pid"
@@ -44,8 +46,8 @@ def main():
     if not running:
         sources = [app / "pom.xml", *list((app / "src" / "main").rglob("*"))]
         if not jar.exists() or any(p.is_file() and p.stat().st_mtime > jar.stat().st_mtime for p in sources):
-            subprocess.run([os.environ.get("MAVEN", str(Path.home() / "tools/apache-maven-3.9.9/bin/mvn")),
-                            "-B", "-DskipTests", "package"], cwd=app, check=True)
+            subprocess.run([os.environ.get("MAVEN", str(app / "mvnw")),
+                            "-s", str(settings), "-B", "-DskipTests", "package"], cwd=app, check=True)
         env = dict(os.environ, API_PORT=str(port), DB_URL=f"jdbc:oracle:thin:@localhost:{51521 + offset}/FREEPDB1")
         with log_file.open("ab") as log:
             process = subprocess.Popen(["java", "-jar", str(jar)], env=env, stdout=log,

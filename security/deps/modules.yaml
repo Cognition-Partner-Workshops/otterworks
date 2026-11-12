@@ -22,6 +22,7 @@ modules:
       - $JAVA_HOME_17_X64
       - /usr/lib/jvm/java-17-openjdk-amd64
     tool:
+      - ./mvnw
       - mvn
     test: -B test
     cases: null

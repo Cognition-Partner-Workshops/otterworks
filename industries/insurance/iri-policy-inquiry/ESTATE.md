@@ -10,6 +10,7 @@ Start the database with `make insurance-up NS=iri`, then start the API with
 `http://127.0.0.1:18765/health` for that namespace; startup prints the API URL
 for other namespaces. Stop the API with `make iri-legacy-down NS=iri`.
 Run DB-independent API tests with `make iri-legacy-test`.
+The Maven wrapper downloads Maven and dependencies through the configured GCS mirror.
 
 The pinned IRI Policy Inquiry v1.1.5 specification and its source attribution
 are in `vendor/iri-policy-inquiry-v1.1.5/`.
