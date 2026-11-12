@@ -1,0 +1,149 @@
+{
+  "framework": "secure-software-controls",
+  "name": "Secure Software Control Standard",
+  "version": 1,
+  "controls": [
+    {
+      "id": "SSC-01",
+      "title": "Authentication on every non-public endpoint",
+      "text": "Every non-public endpoint must require a validated caller identity before executing its handler; public endpoints must be explicitly designated. Any unguarded non-public route or authentication bypass is a gap.",
+      "references": [
+        "SOC 2 CC6.1",
+        "PCI DSS v4.0 8.2",
+        "PCI DSS v4.0 8.3"
+      ],
+      "evidence": [
+        "Authentication middleware, filter or annotation covering every controller route; explicit public-route allowlist and unauthenticated-request rejection tests."
+      ]
+    },
+    {
+      "id": "SSC-02",
+      "title": "Object-level authorization",
+      "text": "A caller must be able to read records or move money only on records it owns, with ownership enforced using the authenticated identity. Missing ownership checks, client-supplied ownership trusted without verification, or cross-owner access is a gap.",
+      "references": [
+        "SOC 2 CC6.1",
+        "PCI DSS v4.0 7.2"
+      ],
+      "evidence": [
+        "Owner-scoped repository queries and authorization checks on read and money-movement paths; tests denying access to another caller's records."
+      ]
+    },
+    {
+      "id": "SSC-03",
+      "title": "No committed credentials, keys or tokens",
+      "text": "Source and configuration must not contain usable credentials, private keys or authentication tokens; runtime secrets must be supplied through external secret references. Any embedded usable secret, including in fixtures or tracked configuration, is a gap.",
+      "references": [
+        "SOC 2 CC6.1",
+        "PCI DSS v4.0 8.6.2"
+      ],
+      "evidence": [
+        "Secret-manager or environment-variable lookups, configuration placeholders and source-secret scanning rules and results."
+      ]
+    },
+    {
+      "id": "SSC-04",
+      "title": "No sensitive data in logs or error bodies",
+      "text": "Card numbers, national identifiers, passwords and tokens must never be written to logs or error response bodies. Raw sensitive fields in request logging, exception serialization or diagnostic output are a gap.",
+      "references": [
+        "PCI DSS v4.0 3.3",
+        "PCI DSS v4.0 3.4.1",
+        "PCI DSS v4.0 10.3"
+      ],
+      "evidence": [
+        "Logging field allowlists or redaction filters and error serializers; tests exercising sensitive inputs and asserting their absence from logs and error bodies."
+      ]
+    },
+    {
+      "id": "SSC-05",
+      "title": "Adaptive one-way password hashing",
+      "text": "Stored passwords must use bcrypt, scrypt, Argon2 or PBKDF2 with per-password salts and explicitly configured work factors. Plaintext, reversible encryption or non-adaptive hashing of stored passwords is a gap.",
+      "references": [
+        "PCI DSS v4.0 8.3.2"
+      ],
+      "evidence": [
+        "Password encoder configuration and password creation, reset and verification code; persistence tests showing salted adaptive hashes rather than plaintext."
+      ]
+    },
+    {
+      "id": "SSC-06",
+      "title": "Audit trail for money movements and account changes",
+      "text": "Every money movement and account change must produce a durable audit record with actor, action, target, amount and timestamp; non-monetary changes must explicitly record amount as not applicable. Missing events or any required field is a gap.",
+      "references": [
+        "SOC 2 CC7.2",
+        "PCI DSS v4.0 10.2"
+      ],
+      "evidence": [
+        "Audit event schema, emission and persistence on each mutation path; tests asserting required fields for money movements and non-monetary account changes."
+      ]
+    },
+    {
+      "id": "SSC-07",
+      "title": "API-boundary input validation",
+      "text": "Amounts, account identifiers and quantities must be validated at the API boundary for type, format and allowed ranges before business logic executes. Missing validation or acceptance of malformed identifiers, invalid amounts or out-of-range quantities is a gap.",
+      "references": [
+        "PCI DSS v4.0 6.2.4"
+      ],
+      "evidence": [
+        "Request schemas, validation annotations or boundary validators and tests rejecting invalid types, malformed identifiers and out-of-range values."
+      ]
+    },
+    {
+      "id": "SSC-08",
+      "title": "Parameterized database access",
+      "text": "Database operations must use parameterized queries or an ORM that binds values rather than building SQL strings from input. Concatenation or interpolation of untrusted values into executable SQL is a gap.",
+      "references": [
+        "PCI DSS v4.0 6.2.4"
+      ],
+      "evidence": [
+        "Repository and raw-query call sites using bound parameters or ORM query APIs; allowlists for any dynamic SQL identifiers."
+      ]
+    },
+    {
+      "id": "SSC-09",
+      "title": "Safe error responses",
+      "text": "API error responses must expose only safe messages and must not include stack traces, SQL statements or internal class names. Returning exception internals or enabling detailed framework error pages on deployed API routes is a gap.",
+      "references": [
+        "SOC 2 CC7.1",
+        "PCI DSS v4.0 6.2.4"
+      ],
+      "evidence": [
+        "Central exception handlers, production error-detail configuration and response tests for unexpected exceptions and database errors."
+      ]
+    },
+    {
+      "id": "SSC-10",
+      "title": "Exact decimal monetary values",
+      "text": "Monetary values must use exact decimal types throughout parsing, calculation, storage and serialization, with explicit precision and rounding rules. Float or double representations or conversions in a money-handling path are a gap.",
+      "references": [
+        "SOC 2 PI1.4"
+      ],
+      "evidence": [
+        "Decimal domain and request types, decimal database columns and explicit rounding code; precision tests covering fractional amounts and repeated calculations."
+      ]
+    },
+    {
+      "id": "SSC-11",
+      "title": "Pinned dependencies without known critical vulnerabilities",
+      "text": "Third-party dependencies must resolve to pinned versions with no known critical vulnerabilities in those resolved versions. Unpinned dependencies or a resolved version with an applicable known critical advisory is a gap.",
+      "references": [
+        "PCI DSS v4.0 6.3.3",
+        "SOC 2 CC7.1"
+      ],
+      "evidence": [
+        "Dependency manifests and lockfiles with exact resolved versions; vulnerability-scanning configuration and current advisory results for those versions."
+      ]
+    },
+    {
+      "id": "SSC-12",
+      "title": "Customer record retention or deletion",
+      "text": "Customer records must have a defined retention policy or deletion path implemented for primary records and related stored copies. Missing retention enforcement or deletion logic, or orphaned related records with neither mechanism, is a gap.",
+      "references": [
+        "SOC 2 C1.2",
+        "PCI DSS v4.0 3.2.1"
+      ],
+      "evidence": [
+        "Retention configuration with scheduled expiry jobs or deletion handlers; cascade and object-store cleanup code and tests for associated records."
+      ]
+    }
+  ]
+}
