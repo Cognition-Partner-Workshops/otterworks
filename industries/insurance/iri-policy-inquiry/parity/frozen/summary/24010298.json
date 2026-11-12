@@ -1,0 +1,24 @@
+{
+  "operation": "summary",
+  "contract": "24010298",
+  "request": "GET /pinq/v1/summary/24010298",
+  "status": 200,
+  "rawSha256": "bb046b49bc678b2321f19b7b0cb5c4075cae46afba648f0b707522ed2d4d8927",
+  "body": {
+    "RTN_CD": "00",
+    "CNTR_NO": "24010298",
+    "STAT_CD": "IF",
+    "PROD_CD": "ANN-3",
+    "PROD_NM": "Deferred Value Annuity",
+    "PLAN_CD": "FLEX",
+    "QUAL_CD": "ROTH",
+    "ISS_ST": "OR",
+    "OWN_NM": "Synthetic Owner 038",
+    "ANN_NM": "Synthetic Annuitant 038",
+    "CCY_CD": "USD",
+    "GRX_IND": "3",
+    "ISS_DT": "20161008",
+    "EFF_DT": "20161015",
+    "MAT_DT": "20461015"
+  }
+}

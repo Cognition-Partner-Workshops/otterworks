@@ -1,0 +1,24 @@
+{
+  "operation": "summary",
+  "contract": "360027619",
+  "request": "GET /pinq/v1/summary/360027619",
+  "status": 200,
+  "rawSha256": "37814426ec3ae744537b60295fde335397fd9dc8845e993f89f564236b1d1c44",
+  "body": {
+    "RTN_CD": "00",
+    "CNTR_NO": "360027619",
+    "STAT_CD": "LP",
+    "PROD_CD": "ANN-3",
+    "PROD_NM": "Deferred Value Annuity",
+    "PLAN_CD": "FIXED",
+    "QUAL_CD": "ROTH",
+    "ISS_ST": "UT",
+    "OWN_NM": "Synthetic Owner 071",
+    "ANN_NM": "Synthetic Annuitant 071",
+    "CCY_CD": "USD",
+    "GRX_IND": "3",
+    "ISS_DT": "20180422",
+    "EFF_DT": "20180429",
+    "MAT_DT": "20480429"
+  }
+}

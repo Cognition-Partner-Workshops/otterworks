@@ -5,6 +5,28 @@ SHELL := /bin/bash
 .PHONY: iri-legacy-up iri-legacy-down iri-legacy-test
 IRI_LEGACY_DIR = industries/insurance/iri-policy-inquiry
 
+.PHONY: iri-api-up iri-api-down iri-api-test iri-lineage iri-lineage-check iri-compare iri-schema
+iri-api-up: procs-validate ## Build and start the IRI API (NS=<namespace>)
+	JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 python3 $(IRI_LEGACY_DIR)/lifecycle.py up "$(NS)" --iri
+
+iri-api-down: procs-validate ## Stop the IRI API (NS=<namespace>)
+	python3 $(IRI_LEGACY_DIR)/lifecycle.py down "$(NS)" --iri
+
+iri-api-test: ## Run IRI shared and operation tests without Oracle
+	cd $(IRI_LEGACY_DIR)/iri-api && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./mvnw -s .mvn/settings.xml -B test
+
+iri-lineage: ## Render lineage documentation
+	python3 $(IRI_LEGACY_DIR)/lineage/render.py
+
+iri-lineage-check: ## Fail if lineage documentation is stale
+	python3 $(IRI_LEGACY_DIR)/lineage/render.py --check
+
+iri-compare: ## Compare frozen legacy responses (OP=summary|values|funds NS=iri)
+	python3 $(IRI_LEGACY_DIR)/parity/compare.py --op "$(OP)" --ns "$(or $(NS),iri)"
+
+iri-schema: ## Validate IRI responses against the pinned schema (OP=... NS=iri)
+	python3 $(IRI_LEGACY_DIR)/parity/schema_check.py --op "$(OP)" --ns "$(or $(NS),iri)"
+
 iri-legacy-up: procs-validate ## Build and start the legacy inquiry API (NS=<namespace>)
 	python3 $(IRI_LEGACY_DIR)/lifecycle.py up "$(NS)" --settings $(IRI_LEGACY_DIR)/legacy-api/.mvn/settings.xml
 
