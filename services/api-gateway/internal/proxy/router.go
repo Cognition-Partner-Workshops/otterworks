@@ -60,15 +60,17 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 		cfg.Logger.Fatal().Err(err).Str("target", route.TargetURL).Msg("invalid proxy target URL")
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(target)
-
-	// Wrap the default director to forward authenticated user identity.
-	// The auth-service issues JWTs with the user ID in the standard "sub" claim
-	// (claims.Subject). Fall back to the custom "user_id" claim for compatibility.
-	defaultDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		defaultDirector(req)
-		setIdentityHeaders(req, middleware.GetJWTClaims(req.Context()))
+	// Rewrite (not Director) so the identity headers set here cannot be stripped by
+	// client-controlled hop-by-hop headers. The auth-service issues JWTs with the user
+	// ID in the standard "sub" claim (claims.Subject); setIdentityHeaders falls back to
+	// the custom "user_id" claim for compatibility.
+	proxy := &httputil.ReverseProxy{
+		Rewrite: func(pr *httputil.ProxyRequest) {
+			pr.SetURL(target)
+			pr.Out.Host = pr.In.Host
+			pr.SetXForwarded()
+			setIdentityHeaders(pr.Out, middleware.GetJWTClaims(pr.In.Context()))
+		},
 	}
 
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
