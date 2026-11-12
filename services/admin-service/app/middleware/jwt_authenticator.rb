@@ -20,6 +20,7 @@ class JwtAuthenticator
     env['jwt.user_id'] = payload['sub']
     env['jwt.user_email'] = payload['email']
     env['jwt.user_role'] = payload['role']
+    env['jwt.user_roles'] = extract_roles(payload)
 
     @app.call(env)
   end
@@ -35,6 +36,12 @@ class JwtAuthenticator
     return nil unless header&.start_with?('Bearer ')
 
     header.split.last
+  end
+
+  # auth-service issues `roles` as a list of role names; anything else grants nothing.
+  def extract_roles(payload)
+    roles = payload['roles']
+    roles.is_a?(Array) ? roles.grep(String) : []
   end
 
   def decode_token(token)

@@ -18,6 +18,8 @@ module Api
       #     ]
       #   }
       class AlertsController < ApplicationController
+        # No JWT on this endpoint; verify_alert_secret is its access check.
+        skip_before_action :require_admin!
         before_action :verify_alert_secret
 
         SEVERITY_MAP = {

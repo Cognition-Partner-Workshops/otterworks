@@ -1,4 +1,7 @@
 class ApplicationController < ActionController::API
+  ADMIN_ROLE = 'ADMIN'.freeze
+
+  before_action :require_admin!
   before_action :set_request_metadata
 
   rescue_from StandardError do |e|
@@ -30,6 +33,16 @@ class ApplicationController < ActionController::API
 
   def current_user_role
     request.env['jwt.user_role']
+  end
+
+  def current_user_roles
+    Array(request.env['jwt.user_roles'])
+  end
+
+  def require_admin!
+    return if current_user_roles.include?(ADMIN_ROLE)
+
+    render json: { error: 'Admin role required' }, status: :forbidden
   end
 
   def set_request_metadata
