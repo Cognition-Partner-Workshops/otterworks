@@ -1,0 +1,18 @@
+{
+  "operation": "funds",
+  "contract": "4700048288",
+  "request": "GET /pinq/v1/funds/4700048288",
+  "status": 200,
+  "rawSha256": "bd8cd50bc55ed65d75a24c3d6da6534aac651d09ee4a56e250ded5c7345d4eb9",
+  "body": {
+    "RTN_CD": "00",
+    "CNTR_NO": "4700048288",
+    "FUND_CNT": "1",
+    "FUND_CD_01": "FND-01",
+    "FUND_NM_01": "Balanced Growth Fund",
+    "ALLOC_PCT_01": "10000",
+    "FUND_UNITS_01": "000000017000000000",
+    "UNIT_VAL_01": "000000010000000",
+    "FUND_VAL_01": "000000017000000"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "operation": "summary",
+  "contract": "360034232",
+  "request": "GET /pinq/v1/summary/360034232",
+  "status": 200,
+  "rawSha256": "6c438c7e5afd28906e51ff8fdfaba39fd2d28613eefe2b46d9f626fc355de2aa",
+  "body": {
+    "RTN_CD": "00",
+    "CNTR_NO": "360034232",
+    "STAT_CD": "IF",
+    "PROD_CD": "ANN-2",
+    "PROD_NM": "Steady Income Annuity",
+    "PLAN_CD": "FLEX",
+    "QUAL_CD": "NQ",
+    "ISS_ST": "CO",
+    "OWN_NM": "Synthetic Owner 088",
+    "ANN_NM": "Synthetic Annuitant 088",
+    "CCY_CD": "USD",
+    "GRX_IND": "1",
+    "ISS_DT": "20190205",
+    "EFF_DT": "20190212",
+    "MAT_DT": "20490212"
+  }
+}

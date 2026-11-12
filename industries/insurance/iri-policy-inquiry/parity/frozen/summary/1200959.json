@@ -1,0 +1,24 @@
+{
+  "operation": "summary",
+  "contract": "1200959",
+  "request": "GET /pinq/v1/summary/1200959",
+  "status": 200,
+  "rawSha256": "6d36b9fdab5dfeef7d4721efa2c5e8cbb6a9c799d486745e4bb000943dbdc0f4",
+  "body": {
+    "RTN_CD": "00",
+    "CNTR_NO": "1200959",
+    "STAT_CD": "IF",
+    "PROD_CD": "ANN-2",
+    "PROD_NM": "Steady Income Annuity",
+    "PLAN_CD": "FIXED",
+    "QUAL_CD": "NQ",
+    "ISS_ST": "UT",
+    "OWN_NM": "Synthetic Owner 007",
+    "ANN_NM": "Synthetic Annuitant 007",
+    "CCY_CD": "USD",
+    "GRX_IND": "1",
+    "ISS_DT": "20150430",
+    "EFF_DT": "20150507",
+    "MAT_DT": "20450507"
+  }
+}
