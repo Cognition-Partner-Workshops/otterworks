@@ -34,8 +34,10 @@ CREATE TABLE fact_commission (
     split_pct      NUMBER(5, 2)  NOT NULL,
     base_premium   NUMBER(12, 2) NOT NULL,
     commission_amt NUMBER(12, 2) NOT NULL,
+    tier_code      VARCHAR2(2),
+    entry_type     VARCHAR2(12) DEFAULT 'COMMISSION' NOT NULL,
     loaded_at      TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL,
-    CONSTRAINT ux_fact_row UNIQUE (policy_id, agent_key, period_key)
+    CONSTRAINT ux_fact_row UNIQUE (policy_id, agent_key, period_key, entry_type)
 );
 
 EXIT;
