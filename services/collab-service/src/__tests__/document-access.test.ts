@@ -259,4 +259,33 @@ describe('collab REST API', () => {
     expect(res.status).toBe(200);
     expect(body.users[0].userId).toBe(OWNER);
   });
+
+  it('limits how often one caller can query', async () => {
+    const app = express();
+    app.use(
+      createCollabApiRouter({
+        jwtSecret: JWT_SECRET,
+        presenceHandler: new PresenceHandler(
+          new AwarenessService(mockLogger),
+          mockLogger,
+        ),
+        documentAccess: ownerOnlyAccess,
+        logger: mockLogger,
+        rateLimitPerMinute: 2,
+      }),
+    );
+    const limited = createServer(app);
+    await new Promise<void>((resolve) => limited.listen(0, resolve));
+    const url = `http://localhost:${(limited.address() as AddressInfo).port}/documents`;
+    const call = (userId: string) =>
+      fetch(url, { headers: { Authorization: `Bearer ${tokenFor(userId)}` } });
+    try {
+      expect((await call(OWNER)).status).toBe(200);
+      expect((await call(OWNER)).status).toBe(200);
+      expect((await call(OWNER)).status).toBe(429);
+      expect((await call(INTRUDER)).status).toBe(200);
+    } finally {
+      await new Promise((resolve) => limited.close(resolve));
+    }
+  });
 });
