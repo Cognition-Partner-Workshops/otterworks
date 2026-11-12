@@ -103,6 +103,9 @@ class DocumentQueryRepository:
     ) -> int:
         """Count documents matching the metadata filters."""
         where, params = self._where(owner_id, title_contains, content_type, folder_id)
+        # `where` holds only fixed predicates with :named placeholders; caller values
+        # travel in `params`.
+        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
         stmt = text(f"SELECT count(*) FROM documents WHERE {where}")
         result = await self.db.execute(stmt, params)
         return int(result.scalar_one())
@@ -122,6 +125,9 @@ class DocumentQueryRepository:
         """Return document rows matching the metadata filters, newest first."""
         column, order = resolve_order_by(sort, direction)
         where, params = self._where(owner_id, title_contains, content_type, folder_id)
+        # `column`/`order` come from SORTABLE_COLUMNS/DIRECTIONS, `where` from fixed
+        # predicates; every caller value (filters, limit, offset) is bound in `params`.
+        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
         stmt = text(
             f"SELECT {', '.join(COLUMNS)} FROM documents WHERE {where} "
             f"ORDER BY {column} {order} LIMIT :limit OFFSET :offset"
