@@ -8,7 +8,7 @@
 #
 # Idempotent and self-repairing: the skip is gated on the FIXTURE_META
 # completion marker, written only after every script has run and all objects
-# in both schemas compiled VALID. A boot that failed part-way leaves no
+# in all schemas compiled VALID. A boot that failed part-way leaves no
 # marker, so the next boot re-runs the initialization.
 #
 # The image *sources* startup scripts, so all work happens in a subshell to
@@ -52,6 +52,12 @@ SQL
     echo "== users exist without completion marker: repairing a partial init"
     sqlplus -s "system/${ORACLE_PWD}@localhost:1521/FREEPDB1" <<'SQL'
 WHENEVER SQLERROR EXIT SQL.SQLCODE
+BEGIN
+  FOR u IN (SELECT username FROM all_users WHERE username = 'ANNUITY_INQ') LOOP
+    EXECUTE IMMEDIATE 'DROP USER ' || u.username || ' CASCADE';
+  END LOOP;
+END;
+/
 DROP USER commission_dw CASCADE;
 DROP USER commission_pay CASCADE;
 EXIT;
@@ -64,14 +70,16 @@ SQL
   run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/03_commission_pkg.sql"
   run_sql "commission_dw/commission_dw"   "${SQL_DIR}/olap/01_star_schema.sql"
   run_sql "commission_dw/commission_dw"   "${SQL_DIR}/olap/02_etl_pkg.sql"
+  run_sql "annuity_inq/annuity_inq"       "${SQL_DIR}/annuity/01_tables.sql"
+  run_sql "annuity_inq/annuity_inq"       "${SQL_DIR}/annuity/02_seed.sql"
 
   # PL/SQL compilation errors do not trip WHENEVER SQLERROR, so assert every
-  # object in both schemas is VALID before declaring success.
+  # object in all schemas is VALID before declaring success.
   invalid=$(sqlplus -s "system/${ORACLE_PWD}@localhost:1521/FREEPDB1" <<'SQL'
 WHENEVER SQLERROR EXIT SQL.SQLCODE
 SET HEADING OFF FEEDBACK OFF PAGESIZE 0
 SELECT COUNT(*) FROM all_objects
- WHERE owner IN ('COMMISSION_PAY', 'COMMISSION_DW') AND status <> 'VALID';
+ WHERE owner IN ('COMMISSION_PAY', 'COMMISSION_DW', 'ANNUITY_INQ') AND status <> 'VALID';
 EXIT;
 SQL
   )
@@ -82,7 +90,7 @@ SQL
 SET HEADING OFF FEEDBACK OFF PAGESIZE 0
 SELECT owner || '.' || object_name || ' (' || object_type || ')'
   FROM all_objects
- WHERE owner IN ('COMMISSION_PAY', 'COMMISSION_DW') AND status <> 'VALID';
+ WHERE owner IN ('COMMISSION_PAY', 'COMMISSION_DW', 'ANNUITY_INQ') AND status <> 'VALID';
 EXIT;
 SQL
     exit 1
