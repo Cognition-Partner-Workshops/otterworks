@@ -363,6 +363,64 @@ def unauthenticated_admin(ctx: ScanContext) -> Result:
 
 
 @probe(
+    finding_id="DAST-ADMIN-ROLE-BYPASS",
+    title="Administrative routes accept any authenticated user, not only ADMIN",
+    severity=Severity.HIGH,
+    owasp="API5:2023 Broken Function Level Authorization",
+    cwe="CWE-862",
+    service="admin-service",
+    remediation=(
+        "Reject every /api/v1/admin request whose JWT `roles` claim (the claim auth-service "
+        "issues) does not contain ADMIN; only the health, alert-webhook and chaos routes, "
+        "which carry their own secret checks, may skip that guard."
+    ),
+)
+def admin_role_bypass(ctx: ScanContext) -> Result:
+    """A self-registered USER token tries to read and change admin-only data."""
+    self = admin_role_bypass.probe
+    attempts = [
+        ("GET", "/api/v1/admin/users", None),
+        ("GET", "/api/v1/admin/config", None),
+        ("GET", "/api/v1/admin/features", None),
+        (
+            "POST",
+            "/api/v1/admin/bulk/users",
+            # A well-formed request aimed at an id that does not exist: a vulnerable
+            # service answers 422 ("1 user(s) not found") after running the operation,
+            # a fixed one refuses before touching the database.
+            {"operation": "update_role", "role": "super_admin", "user_ids": [ctx.run_id]},
+        ),
+    ]
+    evidence: list[Evidence] = []
+    exposed: list[str] = []
+    unreached: list[str] = []
+    for method, path, body in attempts:
+        response = ctx.request(method, path, identity=ctx.attacker, json=body)
+        if unavailable(response):
+            unreached.append(f"{method} {path} -> {response.status_code}")
+            continue
+        evidence.append(Evidence.from_response(response, note=f"{method} {path} as USER"))
+        if response.status_code not in (401, 403):
+            exposed.append(f"{method} {path} -> {response.status_code}")
+    if exposed:
+        return self.result(
+            Verdict.VULNERABLE,
+            f"a USER token was served by the admin API: {', '.join(exposed)}",
+            evidence,
+        )
+    if unreached:
+        return self.result(
+            Verdict.INCONCLUSIVE,
+            f"the admin surface was not assessed in full: {', '.join(unreached)} never produced "
+            "an authorization verdict (unavailable or throttled)",
+            evidence,
+        )
+    return self.result(
+        Verdict.SECURE, "every admin route refused the USER token with 401/403", evidence
+    )
+
+
+@probe(
     finding_id="DAST-SEARCH-TENANT-LEAK",
     title="Search results leak documents owned by another tenant",
     severity=Severity.HIGH,
