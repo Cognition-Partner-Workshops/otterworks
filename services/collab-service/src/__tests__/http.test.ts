@@ -38,9 +38,9 @@ class MapAccess implements DocumentAccessChecker {
 }
 
 function token(sub: string): string {
-  return jwt.sign({ sub, name: sub, email: `${sub}@test.com` }, JWT_SECRET, {
-    expiresIn: '1h',
-  }); // nosemgrep: javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret
+  const claims = { sub, name: sub, email: `${sub}@test.com` };
+  // nosemgrep: javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret
+  return jwt.sign(claims, JWT_SECRET, { expiresIn: '1h' });
 }
 
 describe('collab HTTP routes', () => {

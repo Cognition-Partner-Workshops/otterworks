@@ -457,6 +457,7 @@ describe('CollaborationManager', () => {
       expect(last.documentId).toBe(DOC);
       expect(last.user.userId).toBe(OWNER);
       expect(last.shareToken).toBe('share-abc');
+      // nosemgrep: javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret
       expect(jwt.verify(last.token, JWT_SECRET)).toMatchObject({ sub: OWNER });
       client.disconnect();
     });
