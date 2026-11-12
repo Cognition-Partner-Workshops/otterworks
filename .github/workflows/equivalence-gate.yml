@@ -23,6 +23,7 @@ jobs:
       - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
         with:
           version: latest
+          python-version: "3.12"
       # The harness shells into the module and runs its emitter and its suite with
       # the module's own toolchain, so document-service must be installed.
       - run: pipx install poetry==1.8.5
