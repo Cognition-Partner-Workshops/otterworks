@@ -61,6 +61,27 @@ class ApiClient:
             refresh_token=data["refreshToken"],
         )
 
+    def login_admin(self) -> RegisteredUser | None:
+        """The seeded ADMIN (auth-service V1 migration), or None when it cannot log in.
+
+        The audit log is ADMIN/AUDITOR-only, so flows that read it need this identity.
+        Override with OTTERWORKS_ADMIN_EMAIL / OTTERWORKS_ADMIN_PASSWORD on other stacks.
+        """
+        email = os.getenv("OTTERWORKS_ADMIN_EMAIL", "admin@otterworks.dev")
+        password = os.getenv("OTTERWORKS_ADMIN_PASSWORD", "Admin123!")
+        response = self.client.post("/api/v1/auth/login", json={"email": email, "password": password})
+        if response.status_code != 200:
+            return None
+        data = response.json()
+        return RegisteredUser(
+            email=email,
+            password=password,
+            display_name="admin",
+            id=data["user"]["id"],
+            access_token=data["accessToken"],
+            refresh_token=data["refreshToken"],
+        )
+
     def login_user(self, user: RegisteredUser) -> dict:
         response = self.client.post(
             "/api/v1/auth/login",

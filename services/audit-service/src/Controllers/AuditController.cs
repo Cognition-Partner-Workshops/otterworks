@@ -1,3 +1,4 @@
+using OtterWorks.AuditService.Config;
 using OtterWorks.AuditService.Models;
 using OtterWorks.AuditService.Services;
 
@@ -7,12 +8,11 @@ public static class AuditController
 {
     public static void MapAuditEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/api/v1/audit");
-
-        group.MapPost("/events", RecordEvent)
-            .WithName("RecordAuditEvent")
-            .Produces<AuditEventResponse>(StatusCodes.Status201Created)
-            .Produces(StatusCodes.Status400BadRequest);
+        // Audit events are written only by the internal SNS/SQS consumer (SnsConsumer);
+        // there is deliberately no HTTP write route, so a caller cannot forge an event
+        // in another user's name. Every read is restricted to ADMIN/AUDITOR callers.
+        var group = app.MapGroup("/api/v1/audit")
+            .RequireAuthorization(AuditPolicies.Reader);
 
         group.MapGet("/events", QueryEvents)
             .WithName("QueryAuditEvents")
@@ -40,24 +40,9 @@ public static class AuditController
             .Produces<ExportResult>(StatusCodes.Status200OK);
 
         group.MapPost("/archive", ArchiveOldEvents)
+            .RequireAuthorization(AuditPolicies.Admin)
             .WithName("ArchiveOldEvents")
             .Produces<ArchiveResult>(StatusCodes.Status200OK);
-    }
-
-    private static async Task<IResult> RecordEvent(
-        AuditEventRequest request,
-        IAuditService auditService)
-    {
-        if (string.IsNullOrWhiteSpace(request.UserId) ||
-            string.IsNullOrWhiteSpace(request.Action) ||
-            string.IsNullOrWhiteSpace(request.ResourceType) ||
-            string.IsNullOrWhiteSpace(request.ResourceId))
-        {
-            return Results.BadRequest(new { error = "UserId, Action, ResourceType, and ResourceId are required." });
-        }
-
-        var response = await auditService.RecordEventAsync(request);
-        return Results.Created($"/api/v1/audit/events/{response.Id}", response);
     }
 
     private static async Task<IResult> QueryEvents(

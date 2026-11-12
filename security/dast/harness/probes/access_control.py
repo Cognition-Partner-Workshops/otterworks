@@ -363,6 +363,74 @@ def unauthenticated_admin(ctx: ScanContext) -> Result:
 
 
 @probe(
+    finding_id="DAST-AUDIT-LOG-EXPOSURE",
+    title="Audit log readable, exportable and forgeable by any authenticated user",
+    severity=Severity.HIGH,
+    owasp="API5:2023 Broken Function Level Authorization",
+    cwe="CWE-862",
+    service="audit-service",
+    remediation=(
+        "Verify the caller's JWT in audit-service and require an ADMIN/AUDITOR role on every "
+        "query, report, export and archive route; accept audit event writes only from the "
+        "internal SNS/SQS consumer, never from the public HTTP route."
+    ),
+)
+def audit_log_exposure(ctx: ScanContext) -> Result:
+    """An ordinary USER token reads the whole audit log and forges an event in the victim's name."""
+    self = audit_log_exposure.probe
+    victim_id = ctx.victim.user_id or "victim"
+    reads = [
+        ("GET", "/api/v1/audit/events", {"size": "5"}, None),
+        ("GET", "/api/v1/audit/export", {"format": "json"}, None),
+        ("GET", f"/api/v1/audit/reports/user/{victim_id}", {"period": "30d"}, None),
+        ("GET", "/api/v1/audit/reports/compliance", {"period": "30d"}, None),
+        ("GET", "/api/v1/audit/archive/doc-1/events", None, None),
+        ("POST", "/api/v1/audit/archive", None, None),
+    ]
+    forge = (
+        "POST",
+        "/api/v1/audit/events",
+        None,
+        {
+            "userId": victim_id,
+            "action": "delete",
+            "resourceType": "document",
+            "resourceId": f"dast-forged-{ctx.run_id}",
+        },
+    )
+    evidence: list[Evidence] = []
+    exposed: list[str] = []
+    unreached: list[str] = []
+    for method, path, params, body in [*reads, forge]:
+        response = ctx.request(method, path, identity=ctx.attacker, params=params, json=body)
+        label = f"{method} {path}"
+        if unavailable(response):
+            unreached.append(f"{label} -> {response.status_code}")
+            continue
+        evidence.append(Evidence.from_response(response, note=label))
+        if response.status_code < 400:
+            exposed.append(f"{label} -> {response.status_code}")
+    if exposed:
+        return self.result(
+            Verdict.VULNERABLE,
+            "a plain USER token was served the audit log: " + ", ".join(exposed),
+            evidence,
+        )
+    if unreached:
+        return self.result(
+            Verdict.INCONCLUSIVE,
+            "the audit surface was not assessed in full: "
+            f"{', '.join(unreached)} never produced an auth verdict (unavailable or throttled)",
+            evidence,
+        )
+    return self.result(
+        Verdict.SECURE,
+        "every audit read, export, archive and write attempt was refused for a USER token",
+        evidence,
+    )
+
+
+@probe(
     finding_id="DAST-SEARCH-TENANT-LEAK",
     title="Search results leak documents owned by another tenant",
     severity=Severity.HIGH,

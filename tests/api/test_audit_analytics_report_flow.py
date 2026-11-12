@@ -4,71 +4,88 @@ import pytest
 pytestmark = pytest.mark.api_flow
 
 
-def test_audit_event_query_reports_export_and_archive(api_client):
+def test_audit_routes_refuse_ordinary_users(api_client):
+    """The audit log is ADMIN/AUDITOR-only; a freshly registered USER must be refused everywhere.
+
+    Audit events are written by the internal SNS/SQS consumer, so there is no public write
+    route either: a forged event in another user's name must never be stored.
+    """
     user = api_client.register_user("audit-flow")
+    other_user_id = "22222222-2222-2222-2222-222222222222"
     resource_id = f"resource-{api_client.run_id}"
 
-    create_response = api_client.client.post(
+    forge_response = api_client.client.post(
         "/api/v1/audit/events",
         headers=user.auth_headers,
         json={
-            "userId": user.id,
-            "action": "create",
+            "userId": other_user_id,
+            "action": "delete",
             "resourceType": "document",
             "resourceId": resource_id,
-            "details": {"source": "api-flow-test"},
         },
     )
-    assert create_response.status_code == 201, create_response.text
-    event = create_response.json()
-    event_id = event["id"]
+    assert forge_response.status_code in {403, 404, 405}, forge_response.text
 
-    get_response = api_client.client.get(f"/api/v1/audit/events/{event_id}", headers=user.auth_headers)
-    assert get_response.status_code == 200, get_response.text
+    read_routes = [
+        ("GET", "/api/v1/audit/events", {"page": 1, "size": 10}),
+        ("GET", "/api/v1/audit/events/some-event-id", None),
+        ("GET", f"/api/v1/audit/resources/{resource_id}/history", None),
+        ("GET", f"/api/v1/audit/reports/user/{other_user_id}", {"period": "30d"}),
+        ("GET", "/api/v1/audit/reports/compliance", {"period": "30d"}),
+        ("GET", "/api/v1/audit/export", {"format": "json"}),
+        ("POST", "/api/v1/audit/archive", None),
+    ]
+    for method, path, params in read_routes:
+        response = api_client.client.request(method, path, headers=user.auth_headers, params=params)
+        api_client.assert_gateway_route_available(response, path)
+        assert response.status_code == 403, f"{method} {path}: {response.status_code} {response.text}"
+
+    anonymous_response = api_client.client.get("/api/v1/audit/export", params={"format": "json"})
+    assert anonymous_response.status_code == 401, anonymous_response.text
+
+
+def test_audit_query_reports_export_and_archive_as_admin(api_client):
+    admin = api_client.login_admin()
+    if admin is None:
+        pytest.skip("seeded admin unavailable; set OTTERWORKS_ADMIN_EMAIL/OTTERWORKS_ADMIN_PASSWORD")
 
     query_response = api_client.client.get(
         "/api/v1/audit/events",
-        headers=user.auth_headers,
-        params={"user_id": user.id, "action": "create", "page": 1, "size": 10},
+        headers=admin.auth_headers,
+        params={"page": 1, "size": 10},
     )
     assert query_response.status_code == 200, query_response.text
-    assert query_response.json()["total"] >= 1
-
-    history_response = api_client.client.get(
-        f"/api/v1/audit/resources/{resource_id}/history",
-        headers=user.auth_headers,
-    )
-    assert history_response.status_code == 200, history_response.text
+    assert "events" in query_response.json()
 
     user_report_response = api_client.client.get(
-        f"/api/v1/audit/reports/user/{user.id}",
-        headers=user.auth_headers,
+        f"/api/v1/audit/reports/user/{admin.id}",
+        headers=admin.auth_headers,
         params={"period": "30d"},
     )
     assert user_report_response.status_code == 200, user_report_response.text
 
     compliance_response = api_client.client.get(
         "/api/v1/audit/reports/compliance",
-        headers=user.auth_headers,
+        headers=admin.auth_headers,
         params={"period": "30d"},
     )
     assert compliance_response.status_code == 200, compliance_response.text
 
     export_response = api_client.client.get(
         "/api/v1/audit/export",
-        headers=user.auth_headers,
+        headers=admin.auth_headers,
         params={"format": "json"},
     )
     assert export_response.status_code == 200, export_response.text
 
     invalid_export = api_client.client.get(
         "/api/v1/audit/export",
-        headers=user.auth_headers,
+        headers=admin.auth_headers,
         params={"format": "xml"},
     )
     assert invalid_export.status_code == 400
 
-    archive_response = api_client.client.post("/api/v1/audit/archive", headers=user.auth_headers)
+    archive_response = api_client.client.post("/api/v1/audit/archive", headers=admin.auth_headers)
     assert archive_response.status_code == 200, archive_response.text
 
 

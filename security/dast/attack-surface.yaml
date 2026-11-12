@@ -61,9 +61,11 @@ routes:
       - unauthenticated callers receive 401
   - prefix: /api/v1/audit
     service: audit-service
-    auth: bearer JWT
+    auth: bearer JWT + ADMIN/AUDITOR role (verified by audit-service itself)
     expect:
       - unauthenticated callers receive 401
+      - USER-role callers receive 403 on every query, report, export and archive route
+      - there is no HTTP write route; events arrive only via the internal SNS/SQS consumer
 
 # Routes the coverage gate (`make dast-coverage`) is allowed to leave unattacked.
 # The inventory it compares against is read from the services' source, so an entry

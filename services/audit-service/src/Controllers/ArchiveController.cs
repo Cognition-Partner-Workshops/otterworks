@@ -1,4 +1,5 @@
 using OtterWorks.AuditService.Archive;
+using OtterWorks.AuditService.Config;
 
 namespace OtterWorks.AuditService.Controllers;
 
@@ -11,9 +12,16 @@ public static class ArchiveController
 {
     public static void MapArchiveEndpoints(this WebApplication app)
     {
-        app.MapGet("/api/audit/archive/{docId}/events", GetEvents).WithName("GetArchiveEvents");
-        app.MapGet("/api/v1/audit/archive/{docId}", GetDocument).WithName("GetArchiveDocumentV1");
-        app.MapGet("/api/v1/audit/archive/{docId}/events", GetEvents).WithName("GetArchiveEventsV1Events");
+        // Archived retention history is audit data too: same ADMIN/AUDITOR gate as the live log.
+        app.MapGet("/api/audit/archive/{docId}/events", GetEvents)
+            .RequireAuthorization(AuditPolicies.Reader)
+            .WithName("GetArchiveEvents");
+        app.MapGet("/api/v1/audit/archive/{docId}", GetDocument)
+            .RequireAuthorization(AuditPolicies.Reader)
+            .WithName("GetArchiveDocumentV1");
+        app.MapGet("/api/v1/audit/archive/{docId}/events", GetEvents)
+            .RequireAuthorization(AuditPolicies.Reader)
+            .WithName("GetArchiveEventsV1Events");
         app.MapGet("/health/archive", ArchiveHealth).WithName("ArchiveHealth");
     }
 

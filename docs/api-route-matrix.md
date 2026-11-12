@@ -30,7 +30,7 @@ This matrix captures the primary API endpoints used to design and expand the bla
 | Search/discovery | `GET /api/v1/search`, `GET /api/v1/search/suggest`, `POST /api/v1/search/advanced`, `POST /api/v1/search/index/document`, `POST /api/v1/search/index/file`, `DELETE /api/v1/search/index/{type}/{id}`, `POST /api/v1/search/reindex` | Planned next API flow suite. |
 | Collaboration | `GET /api/v1/collab/documents`, `GET /api/v1/collab/documents/{id}/presence`, Socket.IO connection to collab service | Planned WebSocket/API suite. |
 | Notifications/preferences | `GET /api/v1/notifications`, notification lifecycle routes, `/api/v1/preferences` | Gateway prefix gap: preferences are not currently in `ServiceRoutes`. |
-| Audit | `POST /api/v1/audit/events`, `GET /api/v1/audit/events`, `GET /api/v1/audit/events/{id}`, `GET /api/v1/audit/resources/{resourceId}/history`, `GET /api/v1/audit/export`, `POST /api/v1/audit/archive` | Planned side-effect and direct API suite. |
+| Audit | `GET /api/v1/audit/events`, `GET /api/v1/audit/events/{id}`, `GET /api/v1/audit/resources/{resourceId}/history`, `GET /api/v1/audit/export`, `POST /api/v1/audit/archive` (all ADMIN/AUDITOR only; events are written by the internal SNS consumer, not over HTTP) | Planned side-effect and direct API suite. |
 | Reports | `POST /api/v1/reports`, `GET /api/v1/reports`, `GET /api/v1/reports/{id}`, `GET /api/v1/reports/{id}/download`, `DELETE /api/v1/reports/{id}` | Gateway prefix gap: report service is configured in Compose but not in `ServiceRoutes`. |
 
 ## Known route and behavior gaps to verify
