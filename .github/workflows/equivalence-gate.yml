@@ -3,11 +3,13 @@ name: Functional-equivalence gate
 on:
   push:
     paths:
+      - ".github/workflows/equivalence-gate.yml"
       - "security/equivalence/**"
       - "services/document-service/**"
       - "Makefile"
   pull_request:
     paths:
+      - ".github/workflows/equivalence-gate.yml"
       - "security/equivalence/**"
       - "services/document-service/**"
       - "Makefile"
@@ -23,13 +25,11 @@ jobs:
       - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
         with:
           version: latest
+          python-version: "3.12"
       # The harness shells into the module and runs its emitter and its suite with
       # the module's own toolchain, so document-service must be installed.
-      # Pin pipx to the setup-python interpreter: on ubuntu-latest (26.04) pipx
-      # otherwise installs poetry under the system Python 3.14 and poetry builds
-      # the module venv there, where asyncpg 0.29 has no wheel and fails to compile.
       - run: pipx install --python "$(command -v python)" poetry==1.8.5
-      - run: poetry install --no-interaction
+      - run: env -u VIRTUAL_ENV poetry install --no-interaction
         working-directory: services/document-service
       - run: uv run --with ruff==0.9.10 ruff check --config security/equivalence/harness/ruff.toml security/equivalence/harness
       - run: make eq-list
