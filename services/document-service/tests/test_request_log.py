@@ -18,6 +18,7 @@ from app.middleware.request_log import (
     redact_headers,
     redact_query,
 )
+from tests.auth_helpers import auth_headers
 
 
 def test_redact_headers_masks_credentials_only() -> None:
@@ -62,8 +63,7 @@ async def test_logged_request_keeps_body_but_not_bearer_token(
 
     resp = await client.get(
         "/api/v1/documents/",
-        params={"owner_id": str(owner_id)},
-        headers={"Authorization": "Bearer top-secret", "Cookie": "sid=1"},
+        headers={**auth_headers(owner_id), "Cookie": "sid=1"},
     )
     assert resp.status_code == 200
 

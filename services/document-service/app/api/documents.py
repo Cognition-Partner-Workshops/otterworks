@@ -48,29 +48,53 @@ def _get_jwt_secret() -> str:
     return os.environ.get("JWT_SECRET", "")
 
 
+def _extract_claims(request: Request) -> dict | None:
+    """Decode and verify the Authorization JWT; None when absent or invalid."""
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None
+    token = auth_header[len("Bearer "):]
+    secret = _get_jwt_secret()
+    if not secret:
+        forwarded_user_id = request.headers.get("X-User-ID")
+        return {"sub": forwarded_user_id} if forwarded_user_id else None
+    try:
+        return jwt.decode(token, secret, algorithms=["HS256", "HS384"])
+    except jwt.PyJWTError:
+        return None
+
+
 def _extract_user_id(request: Request) -> UUID | None:
     """Extract user ID from the Authorization JWT."""
-    auth_header = request.headers.get("Authorization")
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header[len("Bearer "):]
-        secret = _get_jwt_secret()
-        if secret:
-            try:
-                payload = jwt.decode(token, secret, algorithms=["HS256", "HS384"])
-                user_id_str = payload.get("user_id") or payload.get("sub")
-                if user_id_str:
-                    return UUID(str(user_id_str))
-            except (jwt.PyJWTError, ValueError):
-                pass
-        else:
-            forwarded_user_id = request.headers.get("X-User-ID")
-            if forwarded_user_id:
-                try:
-                    return UUID(str(forwarded_user_id))
-                except ValueError:
-                    pass
+    claims = _extract_claims(request)
+    if not claims:
+        return None
+    user_id_str = claims.get("user_id") or claims.get("sub")
+    if not user_id_str:
+        return None
+    try:
+        return UUID(str(user_id_str))
+    except ValueError:
+        return None
 
-    return None
+
+def _caller_is_admin(request: Request) -> bool:
+    claims = _extract_claims(request) or {}
+    roles = claims.get("roles") or []
+    return isinstance(roles, list) and "ADMIN" in roles
+
+
+def _resolve_list_owner(request: Request, requested_owner_id: UUID | None) -> UUID:
+    """Owner whose documents a list call may return.
+
+    Always the caller. A different ``owner_id`` in the query string is honoured
+    only for callers whose token carries the ADMIN role; everyone else is
+    scoped to their own documents regardless of what they asked for.
+    """
+    user_id = _require_user_id(request)
+    if requested_owner_id and requested_owner_id != user_id and _caller_is_admin(request):
+        return requested_owner_id
+    return user_id
 
 
 def _require_user_id(request: Request) -> UUID:
@@ -134,15 +158,17 @@ async def create_document_no_slash(
 
 @router.get("/search", response_model=DocumentListResponse)
 async def search_documents(
+    request: Request,
     q: str = Query(..., min_length=1),
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    """Search documents by title or content."""
+    """Search the caller's documents by title or content."""
     await _maybe_inject_latency()
+    user_id = _require_user_id(request)
     service = DocumentService(db)
-    items, total = await service.search(q, page=page, size=size)
+    items, total = await service.search(q, owner_id=user_id, page=page, size=size)
     return DocumentListResponse(
         items=items,
         total=total,
@@ -266,8 +292,8 @@ async def list_documents(
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    """List documents with optional filtering and pagination."""
-    effective_owner = owner_id or _extract_user_id(request)
+    """List the caller's documents with optional filtering and pagination."""
+    effective_owner = _resolve_list_owner(request, owner_id)
     if _is_filtered(title, content_type, sort, direction):
         return await _do_filter_documents(
             effective_owner,
@@ -301,7 +327,7 @@ async def list_documents_no_slash(
     db: AsyncSession = Depends(get_db),
 ):
     """List documents (no trailing slash)."""
-    effective_owner = owner_id or _extract_user_id(request)
+    effective_owner = _resolve_list_owner(request, owner_id)
     if _is_filtered(title, content_type, sort, direction):
         return await _do_filter_documents(
             effective_owner,
