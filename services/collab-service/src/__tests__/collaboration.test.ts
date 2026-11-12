@@ -10,6 +10,12 @@ import { PresenceHandler } from '../handlers/presence';
 import { MetricsCollector } from '../metrics';
 import { createAuthMiddleware } from '../middleware/auth';
 import { RedisAdapter } from '../services/redis-adapter';
+import {
+  DocumentAccessError,
+  type AccessRequest,
+  type DocumentAccessChecker,
+  type DocumentPermission,
+} from '../services/document-access';
 
 const JWT_SECRET = 'test-secret-key-for-unit-tests';
 let PORT: number;
@@ -50,6 +56,54 @@ const mockLogger = {
   level: 'info',
 } as never;
 
+/** Grants are keyed `documentId:userId`; anything not granted is denied, as document-service would. */
+class FakeAccessChecker implements DocumentAccessChecker {
+  grants = new Map<string, DocumentPermission>();
+  failNext = false;
+  requests: AccessRequest[] = [];
+
+  allow(
+    documentId: string,
+    userId: string,
+    permission: DocumentPermission = 'edit',
+  ): void {
+    this.grants.set(`${documentId}:${userId}`, permission);
+  }
+
+  async checkAccess(request: AccessRequest): Promise<DocumentPermission | null> {
+    this.requests.push(request);
+    if (this.failNext) {
+      this.failNext = false;
+      throw new DocumentAccessError('document-service unreachable');
+    }
+    return this.grants.get(`${request.documentId}:${request.user.userId}`) ?? null;
+  }
+}
+
+function waitFor(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function joinDocument(
+  client: ClientSocket,
+  documentId: string,
+  shareToken?: string,
+): Promise<{ success: boolean; error?: string }> {
+  return new Promise((resolve) => {
+    client.emit(
+      'join-document',
+      { documentId, shareToken },
+      (res: { success: boolean }) => resolve(res),
+    );
+  });
+}
+
+function validUpdate(text: string): string {
+  const tempDoc = new Y.Doc();
+  tempDoc.getText('content').insert(0, text);
+  return Buffer.from(Y.encodeStateAsUpdate(tempDoc)).toString('base64');
+}
+
 describe('CollaborationManager', () => {
   let io: SocketIOServer;
   let httpServer: ReturnType<typeof createServer>;
@@ -58,6 +112,7 @@ describe('CollaborationManager', () => {
   let awareness: AwarenessService;
   let presenceHandler: PresenceHandler;
   let documentStore: DocumentStore;
+  let access: FakeAccessChecker;
 
   beforeAll((done) => {
     httpServer = createServer();
@@ -71,10 +126,12 @@ describe('CollaborationManager', () => {
     awareness = new AwarenessService(mockLogger);
     presenceHandler = new PresenceHandler(awareness, mockLogger);
     documentStore = new DocumentStore(mockRedis, mockLogger);
+    access = new FakeAccessChecker();
 
     manager = new CollaborationManager({
       io,
       documentStore,
+      documentAccess: access,
       awareness,
       presenceHandler,
       metrics,
@@ -159,6 +216,7 @@ describe('CollaborationManager', () => {
   describe('Document Joining', () => {
     it('should allow a user to join a document room', async () => {
       const client = await connectClient('user-join-1', 'Alice');
+      access.allow('doc-join-test', 'user-join-1');
 
       const response = await new Promise<{ success: boolean }>((resolve) => {
         client.emit(
@@ -174,6 +232,7 @@ describe('CollaborationManager', () => {
 
     it('should sync document state to joining client', async () => {
       const client = await connectClient('user-sync-1', 'Bob');
+      access.allow('doc-sync-test', 'user-sync-1');
 
       const syncPromise = new Promise<{ documentId: string; state: string }>(
         (resolve) => {
@@ -193,6 +252,8 @@ describe('CollaborationManager', () => {
     it('should notify other users when someone joins', async () => {
       const client1 = await connectClient('user-notify-1', 'Alice');
       const client2 = await connectClient('user-notify-2', 'Bob');
+      access.allow('doc-notify-test', 'user-notify-1');
+      access.allow('doc-notify-test', 'user-notify-2');
 
       // Client 1 joins first
       await new Promise<void>((resolve) => {
@@ -222,6 +283,8 @@ describe('CollaborationManager', () => {
     it('should broadcast document updates to other clients', async () => {
       const client1 = await connectClient('user-update-1', 'Alice');
       const client2 = await connectClient('user-update-2', 'Bob');
+      access.allow('doc-update-test', 'user-update-1');
+      access.allow('doc-update-test', 'user-update-2');
 
       // Both join the same document
       await Promise.all([
@@ -273,6 +336,8 @@ describe('CollaborationManager', () => {
     it('should broadcast cursor updates to other clients', async () => {
       const client1 = await connectClient('user-cursor-1', 'Alice');
       const client2 = await connectClient('user-cursor-2', 'Bob');
+      access.allow('doc-cursor-test', 'user-cursor-1');
+      access.allow('doc-cursor-test', 'user-cursor-2');
 
       await Promise.all([
         new Promise<void>((resolve) => {
@@ -315,6 +380,8 @@ describe('CollaborationManager', () => {
     it('should notify others when a user disconnects', async () => {
       const client1 = await connectClient('user-disc-1', 'Alice');
       const client2 = await connectClient('user-disc-2', 'Bob');
+      access.allow('doc-disc-test', 'user-disc-1');
+      access.allow('doc-disc-test', 'user-disc-2');
 
       await Promise.all([
         new Promise<void>((resolve) => {
@@ -344,6 +411,8 @@ describe('CollaborationManager', () => {
     it('should allow a user to leave a document', async () => {
       const client1 = await connectClient('user-leave-1', 'Alice');
       const client2 = await connectClient('user-leave-2', 'Bob');
+      access.allow('doc-leave-test', 'user-leave-1');
+      access.allow('doc-leave-test', 'user-leave-2');
 
       await Promise.all([
         new Promise<void>((resolve) => {
@@ -371,6 +440,175 @@ describe('CollaborationManager', () => {
 
       client1.disconnect();
       client2.disconnect();
+    });
+  });
+
+  describe('Document Authorization', () => {
+    const DOC = 'doc-private';
+    const OWNER = 'user-owner';
+    const INTRUDER = 'user-intruder';
+    const VIEWER = 'user-viewer';
+
+    it('passes the caller identity, token and share token to the access checker', async () => {
+      const client = await connectClient(OWNER, 'Owner');
+      access.allow(DOC, OWNER);
+      await joinDocument(client, DOC, 'share-abc');
+      const last = access.requests[access.requests.length - 1];
+      expect(last.documentId).toBe(DOC);
+      expect(last.user.userId).toBe(OWNER);
+      expect(last.shareToken).toBe('share-abc');
+      // nosemgrep: javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret
+      expect(jwt.verify(last.token, JWT_SECRET)).toMatchObject({ sub: OWNER });
+      client.disconnect();
+    });
+
+    it('refuses join-document for a user without a grant and sends no state', async () => {
+      const owner = await connectClient(OWNER, 'Owner');
+      const intruder = await connectClient(INTRUDER, 'Intruder');
+      access.allow(DOC, OWNER);
+      const intruderEvents: string[] = [];
+      intruder.onAny((event) => intruderEvents.push(event));
+
+      expect(await joinDocument(owner, DOC)).toEqual({ success: true });
+      expect(await joinDocument(intruder, DOC)).toEqual({
+        success: false,
+        error: 'Access denied',
+      });
+      await waitFor(100);
+
+      expect(intruderEvents).not.toContain('sync-document');
+      expect(intruderEvents).not.toContain('presence-update');
+      expect(awareness.getDocumentUsers(DOC).map((u) => u.userId)).toEqual([OWNER]);
+      owner.disconnect();
+      intruder.disconnect();
+    });
+
+    it('ignores updates, history and comments for a document the socket never joined', async () => {
+      const owner = await connectClient(OWNER, 'Owner');
+      const intruder = await connectClient(INTRUDER, 'Intruder');
+      access.allow(DOC, OWNER);
+      const ownerEvents: string[] = [];
+      const intruderEvents: Array<{ event: string; data: unknown }> = [];
+      owner.onAny((event) => ownerEvents.push(event));
+      intruder.onAny((event, data) => intruderEvents.push({ event, data }));
+
+      expect(await joinDocument(owner, DOC)).toEqual({ success: true });
+      await joinDocument(intruder, DOC);
+
+      intruder.emit('document-update', { documentId: DOC, update: validUpdate('pwned') });
+      intruder.emit('request-history', { documentId: DOC });
+      intruder.emit('request-snapshot', { documentId: DOC });
+      intruder.emit('comment-add', {
+        documentId: DOC,
+        comment: { id: 'c1', threadId: 't1', content: 'hi', rangeStart: 0, rangeEnd: 1 },
+      });
+      intruder.emit('cursor-update', {
+        documentId: DOC,
+        cursor: { index: 1, length: 0 },
+        selection: null,
+      });
+      await waitFor(200);
+
+      expect(ownerEvents).not.toContain('document-update');
+      expect(ownerEvents).not.toContain('comment-added');
+      expect(ownerEvents).not.toContain('cursor-update');
+      expect(ownerEvents).not.toContain('snapshot-created');
+      const received = intruderEvents.map((e) => e.event);
+      expect(received).not.toContain('document-history');
+      expect(received).not.toContain('snapshot-created');
+      expect(received).toContain('access-denied');
+      expect(received).toContain('history-error');
+      expect(manager.getDocument(DOC)!.getText('content').toString()).toBe('');
+      owner.disconnect();
+      intruder.disconnect();
+    });
+
+    it('lets a view-only grant read but not write', async () => {
+      const owner = await connectClient(OWNER, 'Owner');
+      const viewer = await connectClient(VIEWER, 'Viewer');
+      access.allow(DOC, OWNER, 'edit');
+      access.allow(DOC, VIEWER, 'view');
+      const ownerEvents: string[] = [];
+      const viewerEvents: Array<{ event: string; data: unknown }> = [];
+      owner.onAny((event) => ownerEvents.push(event));
+      viewer.onAny((event, data) => viewerEvents.push({ event, data }));
+
+      expect(await joinDocument(owner, DOC)).toEqual({ success: true });
+      expect(await joinDocument(viewer, DOC, 'share-token')).toEqual({ success: true });
+      await waitFor(50);
+      expect(viewerEvents.map((e) => e.event)).toContain('sync-document');
+
+      owner.emit('document-update', {
+        documentId: DOC,
+        update: validUpdate('owner text'),
+      });
+      viewer.emit('document-update', {
+        documentId: DOC,
+        update: validUpdate('viewer text'),
+      });
+      viewer.emit('request-history', { documentId: DOC });
+      viewer.emit('request-snapshot', { documentId: DOC });
+      await waitFor(200);
+
+      const viewerReceived = viewerEvents.map((e) => e.event);
+      expect(viewerReceived).toContain('document-update');
+      expect(viewerReceived).toContain('document-history');
+      expect(viewerReceived).toContain('document-update-error');
+      expect(viewerReceived).toContain('snapshot-error');
+      expect(ownerEvents).not.toContain('document-update');
+      expect(manager.getDocument(DOC)!.getText('content').toString()).toBe('owner text');
+      owner.disconnect();
+      viewer.disconnect();
+    });
+
+    it('does not let a granted socket act on a different document id', async () => {
+      const owner = await connectClient(OWNER, 'Owner');
+      const other = await connectClient(INTRUDER, 'Intruder');
+      access.allow(DOC, OWNER);
+      access.allow('doc-intruder-own', INTRUDER);
+      const ownerEvents: string[] = [];
+      owner.onAny((event) => ownerEvents.push(event));
+
+      expect(await joinDocument(owner, DOC)).toEqual({ success: true });
+      expect(await joinDocument(other, 'doc-intruder-own')).toEqual({ success: true });
+      other.emit('document-update', { documentId: DOC, update: validUpdate('cross') });
+      other.emit('cursor-update', {
+        documentId: DOC,
+        cursor: { index: 1, length: 0 },
+        selection: null,
+      });
+      await waitFor(150);
+
+      expect(ownerEvents).not.toContain('document-update');
+      expect(ownerEvents).not.toContain('cursor-update');
+      owner.disconnect();
+      other.disconnect();
+    });
+
+    it('fails closed when the access check itself fails', async () => {
+      const owner = await connectClient(OWNER, 'Owner');
+      access.allow(DOC, OWNER);
+      access.failNext = true;
+      expect(await joinDocument(owner, DOC)).toEqual({
+        success: false,
+        error: 'Failed to join document',
+      });
+      expect(awareness.getDocumentUserCount(DOC)).toBe(0);
+      owner.disconnect();
+    });
+
+    it('rejects a join without a documentId', async () => {
+      const owner = await connectClient(OWNER, 'Owner');
+      const res = await new Promise<{ success: boolean }>((resolve) => {
+        owner.emit('join-document', {}, (r: { success: boolean }) => resolve(r));
+      });
+      expect(res.success).toBe(false);
+      owner.disconnect();
+    });
+
+    afterEach(() => {
+      access.grants.clear();
+      access.requests = [];
     });
   });
 });

@@ -3,7 +3,13 @@ import type { Logger } from 'pino';
 import * as Y from 'yjs';
 import { DocumentStore } from '../services/document-store';
 import { AwarenessService, type CursorPosition } from '../services/awareness';
-import { extractUserFromSocket } from '../middleware/auth';
+import { extractTokenFromSocket, extractUserFromSocket } from '../middleware/auth';
+import {
+  DocumentAccessError,
+  permissionSatisfies,
+  type DocumentAccessChecker,
+  type DocumentPermission,
+} from '../services/document-access';
 import { MetricsCollector } from '../metrics';
 import { PresenceHandler } from './presence';
 
@@ -22,6 +28,7 @@ export interface CommentAnnotation {
 export interface CollaborationDeps {
   io: SocketIOServer;
   documentStore: DocumentStore;
+  documentAccess: DocumentAccessChecker;
   awareness: AwarenessService;
   presenceHandler: PresenceHandler;
   metrics: MetricsCollector;
@@ -34,6 +41,9 @@ export class CollaborationManager {
   private documents: Map<string, Y.Doc> = new Map();
   private documentInitPromises: Map<string, Promise<Y.Doc>> = new Map();
   private cleaningUp: Set<string> = new Set();
+  /** Per-socket permission granted at join time; every later event is checked against it. */
+  private grants: Map<string, { documentId: string; permission: DocumentPermission }> =
+    new Map();
   private deps: CollaborationDeps;
   private persistTimer: NodeJS.Timeout | null = null;
   private snapshotTimer: NodeJS.Timeout | null = null;
@@ -48,6 +58,40 @@ export class CollaborationManager {
 
   getDocumentCount(): number {
     return this.documents.size;
+  }
+
+  getGrantedPermission(
+    socketId: string,
+    documentId: string,
+  ): DocumentPermission | undefined {
+    const grant = this.grants.get(socketId);
+    return grant?.documentId === documentId ? grant.permission : undefined;
+  }
+
+  /**
+   * Returns false (and tells the client) when the socket never joined `documentId`
+   * with at least `required` permission. Keeps a client-supplied id from reaching a
+   * room, the store or history for a document the caller was never granted.
+   */
+  private requireAccess(
+    socket: Socket,
+    documentId: unknown,
+    required: DocumentPermission,
+    event: string,
+  ): documentId is string {
+    const granted =
+      typeof documentId === 'string'
+        ? this.getGrantedPermission(socket.id, documentId)
+        : undefined;
+    if (permissionSatisfies(granted, required)) return true;
+
+    this.deps.logger.warn(
+      { documentId, socketId: socket.id, event, required, granted: granted ?? null },
+      'document_access_denied',
+    );
+    this.deps.metrics.connectionErrors.inc({ reason: 'access_denied' });
+    socket.emit('access-denied', { documentId, event, required });
+    return false;
   }
 
   start(): void {
@@ -103,13 +147,47 @@ export class CollaborationManager {
 
   private async handleJoinDocument(
     socket: Socket,
-    data: { documentId: string },
+    data: { documentId: string; shareToken?: string },
     ack?: (response: { success: boolean; error?: string }) => void,
   ): Promise<void> {
-    const { documentId } = data;
-    const { io, awareness, presenceHandler, metrics, logger } = this.deps;
+    const { io, awareness, presenceHandler, metrics, logger, documentAccess } = this.deps;
     const user = extractUserFromSocket(socket);
+    const documentId = typeof data?.documentId === 'string' ? data.documentId : '';
     const room = `doc:${documentId}`;
+
+    if (!documentId) {
+      if (ack) ack({ success: false, error: 'documentId is required' });
+      return;
+    }
+
+    let permission: DocumentPermission | null;
+    try {
+      permission = await documentAccess.checkAccess({
+        documentId,
+        user,
+        token: extractTokenFromSocket(socket),
+        shareToken: typeof data.shareToken === 'string' ? data.shareToken : undefined,
+      });
+    } catch (err) {
+      const reason = err instanceof DocumentAccessError ? err.message : 'unknown';
+      logger.error(
+        { err, documentId, socketId: socket.id, reason },
+        'join_access_check_failed',
+      );
+      metrics.connectionErrors.inc({ reason: 'access_check_failed' });
+      if (ack) ack({ success: false, error: 'Failed to join document' });
+      return;
+    }
+
+    if (!permission) {
+      logger.warn(
+        { documentId, userId: user.userId, socketId: socket.id },
+        'join_document_denied',
+      );
+      metrics.connectionErrors.inc({ reason: 'access_denied' });
+      if (ack) ack({ success: false, error: 'Access denied' });
+      return;
+    }
 
     try {
       // If socket is already in another document, leave it first
@@ -133,8 +211,9 @@ export class CollaborationManager {
       }
 
       await socket.join(room);
+      this.grants.set(socket.id, { documentId, permission });
       logger.info(
-        { documentId, userId: user.userId, socketId: socket.id },
+        { documentId, userId: user.userId, permission, socketId: socket.id },
         'user_joined_document',
       );
 
@@ -175,20 +254,24 @@ export class CollaborationManager {
     } catch (err) {
       logger.error({ err, documentId, socketId: socket.id }, 'join_document_failed');
       socket.leave(room);
+      this.grants.delete(socket.id);
       metrics.connectionErrors.inc({ reason: 'join_failed' });
       if (ack) ack({ success: false, error: 'Failed to join document' });
     }
   }
 
-  private handleLeaveDocument(socket: Socket, data: { documentId: string }): void {
+  private handleLeaveDocument(socket: Socket, _data: { documentId: string }): void {
     const { io, awareness, presenceHandler, metrics, logger } = this.deps;
 
     const mapping = awareness.removeUser(socket.id);
-    // Use the document the awareness service actually tracked, falling back to client-provided id
-    const trackedDocId = mapping?.documentId ?? data.documentId;
+    // Only the document this socket was actually granted can be left; a client-supplied
+    // id for anything else is ignored.
+    const trackedDocId = mapping?.documentId ?? this.grants.get(socket.id)?.documentId;
+    if (!trackedDocId) return;
     const room = `doc:${trackedDocId}`;
 
     socket.leave(room);
+    this.grants.delete(socket.id);
 
     if (mapping) {
       socket.to(room).emit('user-left', { socketId: socket.id, userId: mapping.userId });
@@ -211,6 +294,10 @@ export class CollaborationManager {
   ): Promise<void> {
     const { documentStore, metrics, logger } = this.deps;
     const { documentId, update } = data;
+    if (!this.requireAccess(socket, documentId, 'edit', 'document-update')) {
+      socket.emit('document-update-error', { documentId, error: 'Forbidden' });
+      return;
+    }
     const room = `doc:${documentId}`;
     const user = extractUserFromSocket(socket);
 
@@ -278,6 +365,7 @@ export class CollaborationManager {
     },
   ): void {
     const { awareness, metrics } = this.deps;
+    if (!this.requireAccess(socket, data.documentId, 'view', 'cursor-update')) return;
     const updatedAwareness = awareness.updateCursor(
       socket.id,
       data.cursor,
@@ -303,6 +391,7 @@ export class CollaborationManager {
     data: { documentId: string; isTyping: boolean },
   ): void {
     const { awareness } = this.deps;
+    if (!this.requireAccess(socket, data.documentId, 'view', 'typing-indicator')) return;
     const updated = awareness.setTyping(socket.id, data.isTyping);
 
     if (updated) {
@@ -324,6 +413,7 @@ export class CollaborationManager {
     },
   ): void {
     const { metrics } = this.deps;
+    if (!this.requireAccess(socket, data.documentId, 'edit', 'comment-add')) return;
     const user = extractUserFromSocket(socket);
     const room = `doc:${data.documentId}`;
 
@@ -349,6 +439,7 @@ export class CollaborationManager {
     },
   ): void {
     const { metrics } = this.deps;
+    if (!this.requireAccess(socket, data.documentId, 'edit', 'comment-update')) return;
     const user = extractUserFromSocket(socket);
     const room = `doc:${data.documentId}`;
 
@@ -369,6 +460,7 @@ export class CollaborationManager {
     data: { documentId: string; commentId: string },
   ): void {
     const { metrics } = this.deps;
+    if (!this.requireAccess(socket, data.documentId, 'edit', 'comment-delete')) return;
     const user = extractUserFromSocket(socket);
     const room = `doc:${data.documentId}`;
 
@@ -387,6 +479,10 @@ export class CollaborationManager {
     const { documentStore, logger } = this.deps;
     const user = extractUserFromSocket(socket);
     const { documentId, label } = data;
+    if (!this.requireAccess(socket, documentId, 'edit', 'request-snapshot')) {
+      socket.emit('snapshot-error', { documentId, error: 'Forbidden' });
+      return;
+    }
 
     const doc = this.documents.get(documentId);
     if (!doc) {
@@ -424,6 +520,10 @@ export class CollaborationManager {
   ): Promise<void> {
     const { documentStore, logger } = this.deps;
     const { documentId, limit } = data;
+    if (!this.requireAccess(socket, documentId, 'view', 'request-history')) {
+      socket.emit('history-error', { documentId, error: 'Forbidden' });
+      return;
+    }
 
     try {
       const snapshots = await documentStore.getSnapshots(documentId, limit || 20);
@@ -442,6 +542,7 @@ export class CollaborationManager {
 
     metrics.activeConnections.dec();
     logger.info({ socketId: socket.id, reason }, 'client_disconnected');
+    this.grants.delete(socket.id);
 
     const mapping = awareness.removeUser(socket.id);
     if (mapping) {
@@ -570,6 +671,7 @@ export class CollaborationManager {
 export function setupCollaborationHandlers(
   io: SocketIOServer,
   documentStore: DocumentStore,
+  documentAccess: DocumentAccessChecker,
   awareness: AwarenessService,
   presenceHandler: PresenceHandler,
   metrics: MetricsCollector,
@@ -580,6 +682,7 @@ export function setupCollaborationHandlers(
   const manager = new CollaborationManager({
     io,
     documentStore,
+    documentAccess,
     awareness,
     presenceHandler,
     metrics,

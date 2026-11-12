@@ -528,3 +528,55 @@ def share_token_forgery(ctx: ScanContext) -> Result:
     return self.result(
         Verdict.SECURE, "offline-derived tokens were rejected by the share route"
     )
+
+
+@probe(
+    finding_id="DAST-BOLA-COLLAB-PRESENCE",
+    title="Collab presence and active-document listing leak documents the caller cannot read",
+    severity=Severity.HIGH,
+    owasp="API1:2023 Broken Object Level Authorization",
+    cwe="CWE-639",
+    service="collab-service",
+    remediation=(
+        "Authorize every collab-service document reference against document-service "
+        "with the caller's own token: refuse presence for documents the caller cannot "
+        "view and list only the caller's own active documents."
+    ),
+)
+def bola_collab_presence(ctx: ScanContext) -> Result:
+    """Attacker reads who is editing the victim's document, with only the attacker's token.
+
+    The same missing check is what let any socket join, read and overwrite any
+    document; the REST presence route is the part of it an HTTP scanner can see.
+    """
+    self = bola_collab_presence.probe
+    victim_doc = ctx.victim_document()
+    if victim_doc is None:
+        return self.result(Verdict.INCONCLUSIVE, "could not seed a victim-owned document")
+
+    path = f"/api/v1/collab/documents/{victim_doc['id']}/presence"
+    response = ctx.get(path, identity=ctx.attacker)
+    if response.status_code == 200:
+        return self.result(
+            Verdict.VULNERABLE,
+            "the attacker's token returned the presence roster of the victim's document",
+            [Evidence.from_response(response, note=f"victim document {victim_doc['id']}")],
+        )
+    if response.status_code in (401, 403, 404):
+        if not ctx.owner_can_read(path, ctx.victim):
+            return self.result(
+                Verdict.INCONCLUSIVE,
+                f"the owner is also refused (attacker got {response.status_code}); the presence "
+                "route rejects every caller, so object-level authorization cannot be assessed",
+                [Evidence.from_response(response)],
+            )
+        return self.result(
+            Verdict.SECURE,
+            f"the owner can read presence but the attacker got {response.status_code}",
+            [Evidence.from_response(response)],
+        )
+    return self.result(
+        Verdict.INCONCLUSIVE,
+        f"unexpected status {response.status_code}",
+        [Evidence.from_response(response)],
+    )

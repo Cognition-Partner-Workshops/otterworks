@@ -2,7 +2,6 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { WebSocketServer } from 'ws';
-import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import helmet from 'helmet';
 import pino from 'pino';
@@ -11,9 +10,11 @@ import { MetricsCollector } from './metrics';
 import { createAuthMiddleware } from './middleware/auth';
 import { RedisAdapter } from './services/redis-adapter';
 import { DocumentStore } from './services/document-store';
+import { HttpDocumentAccessChecker } from './services/document-access';
 import { AwarenessService } from './services/awareness';
 import { PresenceHandler } from './handlers/presence';
 import { setupCollaborationHandlers } from './handlers/collaboration';
+import { authorizeYWebsocketUpgrade, createCollabRouter } from './handlers/http';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { setupWSConnection } = require('y-websocket/bin/utils');
@@ -68,19 +69,6 @@ app.get('/metrics', async (_req, res) => {
   }
 });
 
-// Presence endpoint
-app.get('/api/v1/collab/documents/:id/presence', (req, res) => {
-  const documentId = req.params.id;
-  const presence = presenceHandler.getDocumentPresence(documentId);
-  res.json(presence);
-});
-
-// Active documents listing
-app.get('/api/v1/collab/documents', (_req, res) => {
-  const activeDocuments = presenceHandler.getActiveDocuments();
-  res.json({ documents: activeDocuments, count: activeDocuments.length });
-});
-
 // Socket.IO server
 const io = new SocketIOServer(httpServer, {
   cors: {
@@ -112,13 +100,31 @@ const documentStore = new DocumentStore(redisAdapter, logger, {
   maxSnapshots: config.persistence.maxSnapshotsPerDocument,
 });
 
+const documentAccess = new HttpDocumentAccessChecker(
+  { baseUrl: config.documentService.url, timeoutMs: config.documentService.timeoutMs },
+  logger,
+);
+
 const awareness = new AwarenessService(logger);
 const presenceHandler = new PresenceHandler(awareness, logger);
+
+// Presence and active-document endpoints, scoped to the authenticated caller
+app.use(
+  '/api/v1/collab',
+  createCollabRouter({
+    jwtSecret: config.jwt.secret,
+    documentAccess,
+    awareness,
+    presenceHandler,
+    logger,
+  }),
+);
 
 // Setup collaboration handlers
 const collabManager = setupCollaborationHandlers(
   io,
   documentStore,
+  documentAccess,
   awareness,
   presenceHandler,
   metrics,
@@ -141,31 +147,35 @@ httpServer.on('upgrade', (request, socket, head) => {
     return;
   }
 
-  // JWT authentication for y-websocket connections
-  const url = new URL(request.url || '', `http://${request.headers.host}`);
-  const token =
-    url.searchParams.get('token') ||
-    request.headers.authorization?.replace('Bearer ', '');
-
-  if (!token) {
-    logger.warn('y-websocket_connection_rejected: no token');
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.destroy();
-    return;
-  }
-
-  try {
-    jwt.verify(token, config.jwt.secret);
-  } catch {
-    logger.warn('y-websocket_connection_rejected: invalid token');
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.destroy();
-    return;
-  }
-
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
-  });
+  // JWT authentication plus document-service authorization for y-websocket connections
+  authorizeYWebsocketUpgrade(request, {
+    jwtSecret: config.jwt.secret,
+    documentAccess,
+    logger,
+  })
+    .then((decision) => {
+      if (!decision.allowed) {
+        logger.warn(
+          { status: decision.status, reason: decision.reason, url: request.url },
+          'y-websocket_connection_rejected',
+        );
+        const statusText = {
+          401: 'Unauthorized',
+          403: 'Forbidden',
+          503: 'Service Unavailable',
+        }[decision.status];
+        socket.write(`HTTP/1.1 ${decision.status} ${statusText}\r\n\r\n`);
+        socket.destroy();
+        return;
+      }
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    })
+    .catch((err) => {
+      logger.error({ err, url: request.url }, 'y-websocket_upgrade_failed');
+      socket.destroy();
+    });
 });
 
 // Start presence cleanup with document eviction callback
