@@ -1,0 +1,19 @@
+{
+  "operation": "values",
+  "contract": "24018428",
+  "request": "GET /pinq/v1/values/24018428",
+  "status": 200,
+  "rawSha256": "c1a42d15acd149dc9979d0f3cded13a353e55464f8454182931479b33ab3d2e0",
+  "body": {
+    "RTN_CD": "00",
+    "CNTR_NO": "0024018428",
+    "VAL_DT": "20260630",
+    "ACCT_VAL": "000000013500000",
+    "SURR_VAL": "000000013350000",
+    "CASH_VAL": "000000013350000",
+    "PREM_TD": "000000011980000",
+    "WDR_TD": "000000000340000",
+    "DTH_BEN": "000000014000000",
+    "SURR_CHG": "000000000150000"
+  }
+}

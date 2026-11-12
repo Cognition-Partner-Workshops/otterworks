@@ -1,0 +1,24 @@
+{
+  "operation": "summary",
+  "contract": "1201370",
+  "request": "GET /pinq/v1/summary/1201370",
+  "status": 200,
+  "rawSha256": "91ae1d40218a405f635920ec0127011c41ee0036ce412e9c3debaee874c6d7be",
+  "body": {
+    "RTN_CD": "00",
+    "CNTR_NO": "1201370",
+    "STAT_CD": "PI",
+    "PROD_CD": "ANN-2",
+    "PROD_NM": "Steady Income Annuity",
+    "PLAN_CD": "FLEX",
+    "QUAL_CD": "NQ",
+    "ISS_ST": "OR",
+    "OWN_NM": "Synthetic Owner 010",
+    "ANN_NM": "Synthetic Annuitant 010",
+    "CCY_CD": "USD",
+    "GRX_IND": "1",
+    "ISS_DT": "20150620",
+    "EFF_DT": "20150627",
+    "MAT_DT": "20450627"
+  }
+}

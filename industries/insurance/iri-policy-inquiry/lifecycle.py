@@ -16,19 +16,20 @@ def main():
     parser.add_argument("action", choices=["up", "down"])
     parser.add_argument("namespace")
     parser.add_argument("--settings", type=Path)
+    parser.add_argument("--iri", action="store_true", help="Manage the IRI API instead of the legacy API")
     args = parser.parse_args()
     if not re.fullmatch(r"[A-Za-z0-9_-]+", args.namespace):
         parser.error("namespace must contain only letters, digits, underscores or hyphens")
     root = Path(__file__).resolve().parent
-    app = root / "legacy-api"
+    app = root / ("iri-api" if args.iri else "legacy-api")
     settings = args.settings.resolve() if args.settings else app / ".mvn" / "settings.xml"
     state = root / ".state" / args.namespace
     state.mkdir(parents=True, exist_ok=True)
-    pid_file = state / "api.pid"
-    log_file = state / "api.log"
-    jar = app / "target" / "legacy-api-1.0.0.jar"
+    pid_file = state / ("iri-api.pid" if args.iri else "api.pid")
+    log_file = state / ("iri-api.log" if args.iri else "api.log")
+    jar = app / "target" / (app.name + "-1.0.0.jar")
     offset = zlib.crc32(args.namespace.encode()) % 1000
-    port = 18080 + offset
+    port = (19080 if args.iri else 18080) + offset
     url = f"http://127.0.0.1:{port}"
     pid = int(pid_file.read_text()) if pid_file.exists() else None
     running = pid is not None and Path(f"/proc/{pid}/cmdline").exists() and str(jar).encode() in Path(f"/proc/{pid}/cmdline").read_bytes().split(b"\0")
@@ -45,7 +46,7 @@ def main():
                 raise SystemExit("API did not stop; PID retained")
         pid_file.unlink(missing_ok=True)
         running = False
-        print(f"Legacy API stopped ({args.namespace})")
+        print(f"{app.name} stopped ({args.namespace})")
         if args.action == "down":
             return
     if not running:
@@ -59,8 +60,9 @@ def main():
             subprocess.run([os.environ.get("MAVEN", str(app / "mvnw")),
                             "-s", str(settings), "-B", "-DskipTests", "package"], cwd=app, check=True)
         env = dict(os.environ, API_PORT=str(port), DB_URL=f"jdbc:oracle:thin:@localhost:{51521 + offset}/FREEPDB1")
+        java = str(Path(env["JAVA_HOME"]) / "bin/java") if env.get("JAVA_HOME") else "java"
         with log_file.open("ab") as log:
-            process = subprocess.Popen(["java", "-jar", str(jar)], env=env, stdout=log,
+            process = subprocess.Popen([java, "-jar", str(jar)], env=env, stdout=log,
                                        stderr=subprocess.STDOUT, start_new_session=True)
         pid = process.pid
         pid_file.write_text(str(pid))
@@ -68,7 +70,7 @@ def main():
         try:
             with urllib.request.urlopen(url + "/health", timeout=3) as response:
                 if json.load(response) == {"STATUS": "UP", "DB": "UP"}:
-                    print(f"Legacy API ready: {url} (PID {pid}, log {log_file})")
+                    print(f"{app.name} ready: {url} (PID {pid}, log {log_file})")
                     return
         except (OSError, ValueError):
             pass
