@@ -2,6 +2,7 @@
 import argparse
 from datetime import datetime, timezone
 import hashlib
+from http.client import HTTPException
 import json
 from pathlib import Path
 import zlib
@@ -39,21 +40,36 @@ def field_diff(expected, actual, path="$"):
 
 
 def replay(frozen, base):
-    manifest = json.loads((frozen / "manifest.json").read_text())
-    expected_contracts = {str(contract) for contract in manifest["contracts"]}
-    if len(expected_contracts) != len(manifest["contracts"]):
-        raise ValueError("Duplicate contracts in frozen manifest")
-    baseline = {}
-    for op in OPERATIONS:
-        for contract in sorted(expected_contracts):
-            record = json.loads((frozen / op / f"{contract}.json").read_text())
-            if record["operation"] != op or str(record["contract"]) != contract:
-                raise ValueError(f"Frozen identity mismatch: {op}/{contract}")
-            baseline[op, contract] = record
     report = dict(timestamp=datetime.now(timezone.utc).isoformat(), baseUrl=base,
                   frozen=str(frozen), contractsAdded=[], contractsRemoved=[],
                   operations={op: dict(checked=0, unchanged=0, drifted=0) for op in OPERATIONS},
                   driftedRecords=[], errors=[], complete=False)
+    path = frozen / "manifest.json"
+    try:
+        manifest = json.loads(path.read_text())
+        if not isinstance(manifest, dict) or not isinstance(manifest.get("contracts"), list):
+            raise ValueError("Frozen manifest must contain a contracts array")
+        expected_contracts = {str(contract) for contract in manifest["contracts"]}
+        if not expected_contracts:
+            raise ValueError("Empty contracts in frozen manifest")
+        if len(expected_contracts) != len(manifest["contracts"]):
+            raise ValueError("Duplicate contracts in frozen manifest")
+        if any(not contract.isascii() or not contract.isdigit() for contract in expected_contracts):
+            raise ValueError("Invalid contract number in frozen manifest")
+        baseline = {}
+        for op in OPERATIONS:
+            for contract in sorted(expected_contracts):
+                path = frozen / op / f"{contract}.json"
+                record = json.loads(path.read_text())
+                if not isinstance(record, dict) or record["operation"] != op or str(record["contract"]) != contract:
+                    raise ValueError(f"Frozen identity mismatch: {op}/{contract}")
+                if (type(record["status"]) is not int or not isinstance(record["rawSha256"], str)
+                        or not isinstance(record["body"], dict)):
+                    raise ValueError(f"Malformed frozen response: {op}/{contract}")
+                baseline[op, contract] = record
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        report["errors"].append(dict(kind="invalid-baseline", path=str(path), error=str(error)))
+        return report, 3
     url = base + "/contracts"
     try:
         status, raw = fetch(url)
@@ -92,7 +108,7 @@ def replay(frozen, base):
                 if differences:
                     report["driftedRecords"].append(dict(operation=op, contract=contract, differences=differences))
         report["complete"] = True
-    except OSError as error:
+    except (OSError, HTTPException) as error:
         report["errors"].append(dict(url=url, error=str(error)))
         return report, 2
     except (ValueError, KeyError, TypeError) as error:

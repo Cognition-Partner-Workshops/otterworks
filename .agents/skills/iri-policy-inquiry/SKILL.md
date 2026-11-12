@@ -80,6 +80,9 @@ go on the sign-off list and the field stays in the payload.** Sign-off rows are
 not passes and not permission to silently delete legacy data or invent a target
 enum. Escalate an unresolved payload representation to the coordinating session;
 schema checks may remain red until those decisions are made.
+Live parity still requires a present, non-null target for each sourced sign-off
+field (respecting array paging); missing targets fail rather than count as sign-off.
+Dry-run sign-off handling is unchanged.
 
 ## Frozen evidence and checks
 
@@ -113,7 +116,10 @@ decoded body, with field-level diffs and manifest contract additions/removals.
 Direct CLI: `python3 parity/replay.py --ns iri --frozen-dir /baseline/copy --out /report/stem`.
 Use an alternate copy to simulate drift; never mutate canonical frozen.
 Exit 0 means complete/no drift, 1 means drift or invalid response, 2 means a
-transport failure (or CLI usage error). Partial reports are marked incomplete.
+transport failure including incomplete HTTP reads (or CLI usage error), and 3
+means an invalid baseline (including empty manifests or missing/malformed records).
+Baseline errors write reports without contacting the API; all partial/baseline-error
+reports are marked incomplete.
 Bring up the fixture/API only when authorized; leave another session's processes alone.
 
 ## Parallel ownership

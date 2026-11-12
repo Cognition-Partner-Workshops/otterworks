@@ -1,5 +1,6 @@
 """Offline drift, transport and report contracts."""
 import hashlib
+from http.client import HTTPException, IncompleteRead
 import json
 from pathlib import Path
 import tempfile
@@ -83,12 +84,56 @@ class ReplayTest(unittest.TestCase):
             self.assertEqual(main(), 2)
         self.assertFalse(json.loads(out.with_suffix(".json").read_text())["complete"])
 
-    def test_empty_book(self):
+    def test_empty_baseline_writes_incomplete_report(self):
         (self.frozen / "manifest.json").write_text('{"contracts":[]}')
-        with patch("replay.fetch", return_value=(200, b'{"RTN_CD":"00","CNTR_CNT":"0"}')):
-            report, code = replay(self.frozen, "http://legacy")
-        self.assertEqual(code, 0)
-        self.assertTrue(all(c["checked"] == 0 for c in report["operations"].values()))
+        out = self.root / "empty-baseline"
+        with patch("replay.fetch") as fetch, patch("sys.argv", [
+                "replay.py", "--frozen-dir", str(self.frozen), "--out", str(out)]):
+            self.assertEqual(main(), 3)
+        fetch.assert_not_called()
+        report = json.loads(out.with_suffix(".json").read_text())
+        self.assertFalse(report["complete"])
+        self.assertEqual(report["errors"][0]["kind"], "invalid-baseline")
+        self.assertIn("Empty contracts", out.with_suffix(".md").read_text())
+
+    def test_missing_and_malformed_records_write_incomplete_report(self):
+        path = self.frozen / "summary/42.json"
+        original = path.read_text()
+        for content in (None, "not json", "[]", "{}", original.replace('"status": 200,', "")):
+            with self.subTest(content=content):
+                if content is None:
+                    path.unlink()
+                else:
+                    path.write_text(content)
+                out = self.root / "bad-baseline"
+                with patch("replay.fetch") as fetch, patch("sys.argv", [
+                        "replay.py", "--frozen-dir", str(self.frozen), "--out", str(out)]):
+                    self.assertEqual(main(), 3)
+                fetch.assert_not_called()
+                report = json.loads(out.with_suffix(".json").read_text())
+                self.assertFalse(report["complete"])
+                self.assertEqual(report["errors"][0]["kind"], "invalid-baseline")
+                self.assertEqual(report["errors"][0]["path"], str(path))
+                self.assertIn("invalid-baseline", out.with_suffix(".md").read_text())
+                path.write_text(original)
+
+    def test_http_exceptions_preserve_partial_report(self):
+        for error in (IncompleteRead(b"partial body", 100), HTTPException("broken HTTP")):
+            with self.subTest(error=error):
+                def fetch(url):
+                    if "/values/" in url:
+                        raise error
+                    return self.fake_fetch(url)
+                out = self.root / "partial"
+                with patch("replay.fetch", side_effect=fetch), patch("sys.argv", [
+                        "replay.py", "--frozen-dir", str(self.frozen), "--out", str(out)]):
+                    self.assertEqual(main(), 2)
+                report = json.loads(out.with_suffix(".json").read_text())
+                self.assertFalse(report["complete"])
+                self.assertEqual(report["operations"]["summary"]["unchanged"], 1)
+                self.assertEqual(report["operations"]["values"]["checked"], 0)
+                self.assertTrue(report["errors"][0]["url"].endswith("/values/42"))
+                self.assertIn("Complete: False", out.with_suffix(".md").read_text())
 
     def test_output_cannot_touch_frozen(self):
         with patch("sys.argv", ["replay.py", "--frozen-dir", str(self.frozen),

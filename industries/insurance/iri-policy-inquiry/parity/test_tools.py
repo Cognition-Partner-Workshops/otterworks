@@ -2,6 +2,7 @@
 import copy
 from decimal import Decimal
 import io
+import json
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -48,7 +49,8 @@ class RulesTest(unittest.TestCase):
     def test_array_paging_and_missing_value(self):
         record = self.fund_record()
         actual = {"startIndex": 1, "itemsCount": 1, "totalItemsCount": 2,
-                  "funds": [{"fundId": "F2", "fundName": "Fund 2", "fundPrice": 2.5, "totalFundValue": 12.34}]}
+                  "funds": [{"fundId": "F2", "fundName": "Fund 2", "fundPrice": 2.5, "totalFundValue": 12.34,
+                             "fundSegments": [{"numberOfUnits": 1}]}]}
         result = evaluate(record, self.data, actual, 200, start=1, limit=1)
         self.assertFalse([r for r in result if r["result"] == "fail"])
         self.assertTrue([r for r in result if r["result"] == "sign-off"])
@@ -92,6 +94,32 @@ class RulesTest(unittest.TestCase):
             self.assertEqual(report.call_args.args[2]["summary"]["responses"], 1)
             with patch("sys.argv", ["compare.py", "--op", "funds"]), patch("compare.fetch", side_effect=OSError("offline")):
                 self.assertTrue(compare_main())
+
+    def test_sourced_signoff_requires_live_target(self):
+        record = json.loads((ROOT / "parity/frozen/values/1200137.json").read_text())
+        actual = {"valuesAsOfDate": "2026-06-30", "totalDepositITD": 46100,
+                  "accountValues": {"endingAccountValue": 51250, "surrenderValue": 49750}}
+        def withdrawal(fields):
+            return next(field for field in fields if field["field"] == "WDR_TD")
+        missing = withdrawal(evaluate(record, self.data, actual, 200))
+        self.assertEqual(missing["result"], "fail")
+        self.assertIn("accountValues.totalNetWithdrawalSinceIssue", missing["error"])
+        with patch("compare.records", return_value=[record]), patch("compare.fetch", return_value=(200, actual)), patch(
+                "compare.write_report") as report, patch("sys.argv", ["compare.py", "--op", "values"]):
+            self.assertTrue(compare_main())
+            self.assertEqual(report.call_args.args[2]["summary"]["responsesFailed"], 1)
+        self.assertEqual(withdrawal(evaluate(record, self.data, dry=True))["result"], "sign-off")
+        actual["accountValues"]["totalNetWithdrawalSinceIssue"] = 50
+        self.assertEqual(withdrawal(evaluate(record, self.data, actual, 200))["result"], "sign-off")
+
+    def test_sourced_signoff_array_presence_respects_paging(self):
+        record = self.fund_record()
+        actual = {"startIndex": 1, "itemsCount": 1, "totalItemsCount": 2,
+                  "funds": [{"fundId": "F2", "fundName": "Fund 2", "fundPrice": 2.5, "totalFundValue": 12.34}]}
+        fields = evaluate(record, self.data, actual, 200, start=1, limit=1)
+        units = next(field for field in fields if field["field"] == "FUND_UNITS_NN")
+        self.assertEqual(units["result"], "fail")
+        self.assertIn("funds[0].fundSegments[0].numberOfUnits", units["error"])
 
     def test_required_inventory(self):
         spec = yaml.safe_load((ROOT / "vendor/iri-policy-inquiry-v1.1.5/PolicyInquiry_v1.1.5.yml").read_text())

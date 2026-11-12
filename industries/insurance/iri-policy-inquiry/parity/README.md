@@ -37,6 +37,10 @@ to return 404. Override --not-found if that contract is added to the fixture.
 A difference is a failure until explained from data. Business-only decisions
 go on the sign-off list and the field stays in the payload. A clean mapped-field
 report does not imply completeness while sign-off entries remain.
+In live comparisons, a sign-off row with both a legacy source and an IRI target
+must still have a present, non-null target (including each selected array item).
+Missing targets fail the response; present values remain sign-off pending semantic
+approval. Dry-run behavior is unchanged.
 
 ## Legacy drift replay
 
@@ -62,7 +66,12 @@ per-operation checked/unchanged/drifted counts, added/removed contracts and
 field-level differences for every drifted record, including status/hash changes.
 
 Exit codes: **0** complete replay with no drift, **1** drift or an invalid legacy
-response, **2** legacy transport failure (also normal argparse usage errors).
+response, **2** legacy transport failure including incomplete HTTP reads (also
+normal argparse usage errors), **3** invalid frozen baseline.
+An empty/malformed manifest or missing/malformed record listed in it is a baseline
+error: replay writes JSON/Markdown reports with complete=false and an
+invalid-baseline error without contacting the API. It never reports a clean 0/0
+result for an empty baseline.
 On a transport failure, the partial report has complete=false and records the
 failed URL; it must not be interpreted as a clean replay.
 To demonstrate drift safely, copy frozen elsewhere and alter the copy, then use

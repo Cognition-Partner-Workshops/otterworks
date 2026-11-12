@@ -81,6 +81,19 @@ def evaluate(record, data, actual=None, actual_status=None, dry=False, start=0, 
                         # Unknown enums explicitly on sign-off are not invented.
                         if row["rule"] != "policy-status":
                             error = str(exc)
+            if not dry and row["status"] == "sign-off" and legacy != "none" and path != "none":
+                for key in keys:
+                    target = path
+                    if legacy.endswith("_NN"):
+                        index = int(key[-2:]) - 1
+                        if not start <= index < start + limit:
+                            continue
+                        target = path.replace("[]", f"[{index - start}]")
+                    try:
+                        if read_path(actual, target) is None:
+                            raise ValueError("Null target")
+                    except (KeyError, IndexError, TypeError, ValueError):
+                        error = f"Missing live target: {target}"
             fields.append(dict(field=legacy, iri=path, result="fail" if error else row["status"],
                                note=row["note"], transformed=transformed, **({"error": error} if error else {})))
             continue
