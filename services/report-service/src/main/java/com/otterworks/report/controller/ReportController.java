@@ -84,7 +84,7 @@ public class ReportController {
         if (request.getRequestedBy() == null || request.getRequestedBy().trim().isEmpty()) {
             request.setRequestedBy(caller.getUserId());
         } else if (!caller.canAccess(request.getRequestedBy())) {
-            logger.warn("User {} tried to request a report on behalf of {}", caller.getUserId(), request.getRequestedBy());
+            logger.warn("Caller tried to request a report on behalf of another user");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -136,7 +136,7 @@ public class ReportController {
 
         CallerIdentity caller = CallerIdentity.from(authentication);
         if (userId != null && !caller.canAccess(userId)) {
-            logger.warn("User {} tried to list reports of {}", caller.getUserId(), userId);
+            logger.warn("Caller tried to list another user's reports");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         if (userId == null && !caller.isAdmin()) {
@@ -258,8 +258,7 @@ public class ReportController {
         if (caller.canAccess(report.getRequestedBy())) {
             return true;
         }
-        logger.warn("User {} tried to {} report {} owned by {}",
-                caller.getUserId(), action, report.getId(), report.getRequestedBy());
+        logger.warn("Caller is not the owner or an admin; refused {} of report {}", action, report.getId());
         return false;
     }
 

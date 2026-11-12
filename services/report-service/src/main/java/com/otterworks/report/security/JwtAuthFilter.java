@@ -77,30 +77,42 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return null;
         }
         Claims claims;
+        String userId;
         try {
             claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+            userId = subjectOf(claims);
         } catch (JwtException | IllegalArgumentException e) {
             logger.debug("Rejected bearer token: {}", e.getMessage());
             return null;
         }
+        return new UsernamePasswordAuthenticationToken(userId, null, authoritiesFrom(claims));
+    }
+
+    /** The user the verified access token identifies; throws when it is not a usable access token. */
+    private static String subjectOf(Claims claims) {
         if (!"access".equals(claims.get("type", String.class))) {
-            return null;
+            throw new JwtException("not an access token");
         }
         String userId = claims.getSubject();
         if (!StringUtils.hasText(userId)) {
             userId = claims.get("user_id", String.class);
         }
         if (!StringUtils.hasText(userId)) {
-            return null;
+            throw new JwtException("token has no subject");
         }
-        return new UsernamePasswordAuthenticationToken(userId, null, authoritiesFrom(claims));
+        return sanitize(userId);
+    }
+
+    /** Identity values end up in log lines; strip anything that could forge a log entry. */
+    private static String sanitize(String value) {
+        return value.trim().replaceAll("[\\r\\n]", "");
     }
 
     private UsernamePasswordAuthenticationToken fromGatewayHeader(String userId) {
         if (!StringUtils.hasText(userId)) {
             return null;
         }
-        return new UsernamePasswordAuthenticationToken(userId.trim(), null,
+        return new UsernamePasswordAuthenticationToken(sanitize(userId), null,
                 Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + "USER")));
     }
 
