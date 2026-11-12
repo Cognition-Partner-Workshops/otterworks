@@ -1,12 +1,16 @@
 package com.otterworks.report.config;
 
+import com.otterworks.report.security.GatewayIdentityFilter;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 // LEGACY: WebSecurityConfigurerAdapter removed in Spring Security 6.
 // Upgrade target: SecurityFilterChain @Bean method
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Security configuration using the deprecated WebSecurityConfigurerAdapter pattern.
@@ -33,9 +37,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
                 .antMatchers("/health", "/metrics", "/actuator/**").permitAll()
                 .antMatchers("/swagger-ui/**", "/swagger-resources/**", "/v2/api-docs/**").permitAll()
-                .antMatchers("/api/v1/reports/**").permitAll()  // TODO: Add JWT validation
-                .antMatchers("/api/reports/reconciliation/**", "/api/archive/**", "/api/v1/archive/**").permitAll()
+                .antMatchers("/api/archive/**", "/api/v1/archive/**", "/api/v1/reports/archive/**")
+                    .hasRole(GatewayIdentityFilter.ADMIN_ROLE)
+                .antMatchers("/api/v1/reports/**", "/api/reports/reconciliation/**").authenticated()
+                .anyRequest().authenticated()
             .and()
+            .exceptionHandling()
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+            .and()
+            .addFilterBefore(new GatewayIdentityFilter(), UsernamePasswordAuthenticationFilter.class)
             .headers()
                 .frameOptions().deny()
                 .contentTypeOptions().and()

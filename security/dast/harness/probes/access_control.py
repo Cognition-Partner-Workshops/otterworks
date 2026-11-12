@@ -76,6 +76,103 @@ def bola_documents(ctx: ScanContext) -> Result:
 
 
 @probe(
+    finding_id="DAST-BOLA-REPORTS",
+    title="Broken object-level authorization on /api/v1/reports/{id}",
+    severity=Severity.HIGH,
+    owasp="API1:2023 Broken Object Level Authorization",
+    cwe="CWE-639",
+    service="report-service",
+    remediation=(
+        "Derive the caller from the gateway-forwarded identity, compare it with "
+        "report.requestedBy on get/download/delete, scope the unfiltered list to the "
+        "caller and set requestedBy from the caller on create."
+    ),
+)
+def bola_reports(ctx: ScanContext) -> Result:
+    """Attacker reads, lists and deletes a report the victim requested (IDs are sequential)."""
+    self = bola_reports.probe
+    create = ctx.request(
+        "POST",
+        "/api/v1/reports",
+        identity=ctx.victim,
+        json={
+            "reportName": f"victim-report-{ctx.run_id}",
+            "category": "USAGE_ANALYTICS",
+            "reportType": "CSV",
+            "requestedBy": ctx.victim.user_id,
+            "parameters": {"source": "dast"},
+        },
+    )
+    if create.status_code != 202:
+        return self.result(
+            Verdict.INCONCLUSIVE,
+            f"could not seed a victim-owned report (status {create.status_code})",
+            [Evidence.from_response(create)],
+        )
+    report_id = create.json().get("id")
+    path = f"/api/v1/reports/{report_id}"
+    evidence: list[Evidence] = []
+    leaks: list[str] = []
+
+    read = ctx.get(path, identity=ctx.attacker)
+    if read.status_code == 200 and ctx.victim.user_id in read.text:
+        leaks.append("GET by id")
+        evidence.append(Evidence.from_response(read, note=f"victim report {report_id}"))
+
+    listed = ctx.get(
+        "/api/v1/reports", params={"userId": ctx.victim.user_id}, identity=ctx.attacker
+    )
+    if listed.status_code == 200 and ctx.victim.user_id in listed.text:
+        leaks.append("list ?userId=victim")
+        evidence.append(Evidence.from_response(listed))
+
+    spoof = ctx.request(
+        "POST",
+        "/api/v1/reports",
+        identity=ctx.attacker,
+        json={
+            "reportName": f"spoofed-report-{ctx.run_id}",
+            "category": "USAGE_ANALYTICS",
+            "reportType": "CSV",
+            "requestedBy": ctx.victim.user_id,
+        },
+    )
+    if spoof.status_code == 202 and spoof.json().get("requestedBy") == ctx.victim.user_id:
+        leaks.append("create as victim")
+        evidence.append(Evidence.from_response(spoof))
+        ctx.request("DELETE", f"/api/v1/reports/{spoof.json().get('id')}", identity=ctx.victim)
+
+    deleted = ctx.request("DELETE", path, identity=ctx.attacker)
+    if deleted.status_code == 204:
+        leaks.append("DELETE")
+        evidence.append(Evidence.from_response(deleted))
+
+    if leaks:
+        return self.result(
+            Verdict.VULNERABLE,
+            "the attacker's token could " + ", ".join(leaks) + " on the victim's report",
+            evidence,
+        )
+
+    # Control request: the owner must still be able to read and delete their own report.
+    if not ctx.owner_can_read(path, ctx.victim):
+        return self.result(
+            Verdict.INCONCLUSIVE,
+            f"the owner is also refused (attacker got {read.status_code}); the read path "
+            "rejects every caller, so cross-user access cannot be assessed",
+            [Evidence.from_response(read)],
+        )
+    owner_delete = ctx.request("DELETE", path, identity=ctx.victim)
+    return self.result(
+        Verdict.SECURE,
+        f"the owner can read and delete the report (delete {owner_delete.status_code}) but the "
+        f"attacker got {read.status_code} on read, {deleted.status_code} on delete and "
+        f"{spoof.status_code} creating in the victim's name",
+        [Evidence.from_response(read), Evidence.from_response(deleted)],
+    )
+
+
+@probe(
     finding_id="DAST-IDENTITY-HEADER-SPOOF",
     title="Client-supplied X-User-ID is trusted downstream of the gateway",
     severity=Severity.CRITICAL,

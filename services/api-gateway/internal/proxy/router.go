@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog"
@@ -21,10 +22,10 @@ type Route struct {
 
 // RouterConfig holds configuration for the reverse proxy router.
 type RouterConfig struct {
-	Routes         []Route
-	CBManager      *CircuitBreakerManager
-	Logger         zerolog.Logger
-	EnableTracing  bool
+	Routes        []Route
+	CBManager     *CircuitBreakerManager
+	Logger        zerolog.Logger
+	EnableTracing bool
 }
 
 // NewRouter creates a chi router with all service routes mounted.
@@ -67,15 +68,7 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 	defaultDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		defaultDirector(req)
-		if claims := middleware.GetJWTClaims(req.Context()); claims != nil {
-			userID := claims.Subject
-			if userID == "" {
-				userID = claims.UserID
-			}
-			if userID != "" {
-				req.Header.Set("X-User-ID", userID)
-			}
-		}
+		setIdentityHeaders(req, middleware.GetJWTClaims(req.Context()))
 	}
 
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
@@ -116,5 +109,25 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 				"reason":  "circuit breaker open",
 			})
 		}
+	}
+}
+
+// setIdentityHeaders replaces any client-supplied identity headers with the identity
+// from the validated JWT so backends can trust X-User-ID and X-User-Roles.
+func setIdentityHeaders(req *http.Request, claims *middleware.JWTClaims) {
+	req.Header.Del("X-User-ID")
+	req.Header.Del("X-User-Roles")
+	if claims == nil {
+		return
+	}
+	userID := claims.Subject
+	if userID == "" {
+		userID = claims.UserID
+	}
+	if userID != "" {
+		req.Header.Set("X-User-ID", userID)
+	}
+	if len(claims.Roles) > 0 {
+		req.Header.Set("X-User-Roles", strings.Join(claims.Roles, ","))
 	}
 }

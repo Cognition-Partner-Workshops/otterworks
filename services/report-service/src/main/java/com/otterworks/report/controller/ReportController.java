@@ -4,6 +4,7 @@ import com.otterworks.report.model.Report;
 import com.otterworks.report.model.ReportRequest;
 import com.otterworks.report.model.ReportResponse;
 import com.otterworks.report.model.ReportStatus;
+import com.otterworks.report.security.Caller;
 import com.otterworks.report.service.ReportService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +33,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,11 +73,14 @@ public class ReportController {
             @ApiResponse(code = 400, message = "Invalid request")
     })
     public ResponseEntity<ReportResponse> createReport(
-            @Valid @RequestBody ReportRequest request) {
+            @Valid @RequestBody ReportRequest request,
+            Authentication authentication) {
 
+        Caller caller = Caller.from(authentication);
+        request.setRequestedBy(caller.getUserId());
         logger.info("Report request: name={}, category={}, type={}, by={}",
                 request.getReportName(), request.getCategory(),
-                request.getReportType(), request.getRequestedBy());
+                request.getReportType(), caller.getUserId());
 
         Report report = reportService.createReport(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -88,9 +95,10 @@ public class ReportController {
     })
     public ResponseEntity<ReportResponse> getReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
 
-        Optional<Report> report = reportService.getReport(id);
+        Optional<Report> report = findOwnedReport(id, Caller.from(authentication));
         if (!report.isPresent()) { // LEGACY: !isPresent() instead of isEmpty()
             return ResponseEntity.notFound().build();
         }
@@ -103,15 +111,30 @@ public class ReportController {
             @ApiParam(value = "Filter by user ID")
             @RequestParam(required = false) String userId,
             @ApiParam(value = "Filter by status")
-            @RequestParam(required = false) ReportStatus status) {
+            @RequestParam(required = false) ReportStatus status,
+            Authentication authentication) {
 
+        Caller caller = Caller.from(authentication);
         List<Report> reports;
-        if (userId != null) {
+        if (caller.isAdmin() && userId != null) {
             reports = reportService.getReportsByUser(userId);
-        } else if (status != null) {
-            reports = reportService.getReportsByStatus(status);
+        } else if (caller.isAdmin()) {
+            reports = reportService.getReportsByStatus(
+                    status != null ? status : ReportStatus.COMPLETED);
+        } else if (userId != null && !userId.equals(caller.getUserId())) {
+            // Non-admins may only ask about themselves; another user's id yields nothing.
+            reports = Collections.emptyList();
         } else {
-            reports = reportService.getReportsByStatus(ReportStatus.COMPLETED);
+            reports = reportService.getReportsByUser(caller.getUserId());
+            if (status != null) {
+                List<Report> filtered = new ArrayList<Report>();
+                for (Report report : reports) {
+                    if (report.getStatus() == status) {
+                        filtered.add(report);
+                    }
+                }
+                reports = filtered;
+            }
         }
 
         List<ReportResponse> responses = reports.stream()
@@ -135,9 +158,10 @@ public class ReportController {
     })
     public ResponseEntity<Resource> downloadReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
 
-        Optional<Report> optReport = reportService.getReport(id);
+        Optional<Report> optReport = findOwnedReport(id, Caller.from(authentication));
         if (!optReport.isPresent()) {
             return ResponseEntity.notFound().build();
         }
@@ -187,8 +211,12 @@ public class ReportController {
     })
     public ResponseEntity<Void> deleteReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
 
+        if (!findOwnedReport(id, Caller.from(authentication)).isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
         boolean deleted = reportService.deleteReport(id);
         if (!deleted) {
             return ResponseEntity.notFound().build();
@@ -210,5 +238,19 @@ public class ReportController {
             default:
                 return "application/octet-stream";
         }
+    }
+
+    /**
+     * Resolves a report only if the caller requested it (or is an admin). A report that
+     * exists but belongs to someone else is reported as absent so IDs cannot be enumerated.
+     */
+    private Optional<Report> findOwnedReport(Long id, Caller caller) {
+        Optional<Report> report = reportService.getReport(id);
+        if (report.isPresent() && !caller.owns(report.get().getRequestedBy())) {
+            logger.warn("User {} denied access to report {} owned by {}",
+                    caller.getUserId(), id, report.get().getRequestedBy());
+            return Optional.empty();
+        }
+        return report;
     }
 }
