@@ -69,23 +69,28 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private UsernamePasswordAuthenticationToken fromBearerToken(String authorizationHeader) {
-        if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
-            return null;
-        }
-        String token = authorizationHeader.substring(BEARER_PREFIX.length()).trim();
-        if (token.isEmpty()) {
-            return null;
-        }
         Claims claims;
         String userId;
         try {
+            String token = bearerToken(authorizationHeader);
             claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
             userId = subjectOf(claims);
         } catch (JwtException | IllegalArgumentException e) {
-            logger.debug("Rejected bearer token: {}", e.getMessage());
+            logger.debug("No usable bearer token: {}", e.getMessage());
             return null;
         }
         return new UsernamePasswordAuthenticationToken(userId, null, authoritiesFrom(claims));
+    }
+
+    private static String bearerToken(String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
+            throw new IllegalArgumentException("missing Authorization: Bearer header");
+        }
+        String token = authorizationHeader.substring(BEARER_PREFIX.length()).trim();
+        if (token.isEmpty()) {
+            throw new IllegalArgumentException("empty bearer token");
+        }
+        return token;
     }
 
     /** The user the verified access token identifies; throws when it is not a usable access token. */
@@ -109,11 +114,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private UsernamePasswordAuthenticationToken fromGatewayHeader(String userId) {
-        if (!StringUtils.hasText(userId)) {
+        String callerId;
+        try {
+            callerId = requireText(userId, USER_ID_HEADER);
+        } catch (IllegalArgumentException e) {
             return null;
         }
-        return new UsernamePasswordAuthenticationToken(sanitize(userId), null,
+        return new UsernamePasswordAuthenticationToken(callerId, null,
                 Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + "USER")));
+    }
+
+    private static String requireText(String value, String what) {
+        if (!StringUtils.hasText(value)) {
+            throw new IllegalArgumentException(what + " is missing");
+        }
+        return sanitize(value);
     }
 
     private static List<GrantedAuthority> authoritiesFrom(Claims claims) {
