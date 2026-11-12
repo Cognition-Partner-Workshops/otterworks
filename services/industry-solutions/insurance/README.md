@@ -3,8 +3,7 @@
 The legacy **Commission Pay** application fixture: an insurance commission
 system whose business logic lives entirely in **Oracle stored procedures**
 (PL/SQL), with a companion **OLAP** star schema fed by a PL/SQL ETL. This is
-the database-centric *before state* that stored-procedure modernization demos
-extract from.
+a local database fixture.
 
 ## Why Oracle Database Free
 
@@ -33,8 +32,7 @@ services/industry-solutions/insurance/
 Two schemas inside the `FREEPDB1` pluggable database:
 
 - **`COMMISSION_PAY`** (OLTP) — the transactional system of record. All
-  business rules are in `COMMISSION_PKG`; there is deliberately no application
-  tier duplicating them.
+  business rules run in `COMMISSION_PKG`.
 - **`COMMISSION_DW`** (OLAP) — the analytics warehouse: star schema, idempotent
   `MERGE`-based ETL reading the OLTP schema, and the
   `MV_AGENT_COMMISSION_SUMMARY` materialized view.
@@ -87,9 +85,5 @@ docker exec -it otterworks-insurance-dev-insurance-oracle-1 \
 
 ## Fixture boundary
 
-This is a local, disposable fixture: loopback-only port bindings, per-namespace
-Compose projects and volumes, and fixed well-known fixture credentials. It is
-intentionally **not** deployed to Helm/EKS or any shared environment. A real
-modernization target must add authentication, authorization, tenant scoping,
-and secret management at the service edge — none of which exist in the legacy
-database-centric design, which is part of the point.
+The local fixture uses loopback-only port bindings, per-namespace Compose
+projects and volumes, and fixed fixture credentials.
