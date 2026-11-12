@@ -75,6 +75,8 @@ class ScanContext:
     burner: Identity = field(init=False)
     _victim_document: dict[str, Any] | None = field(default=None, init=False)
     _victim_document_attempted: bool = field(default=False, init=False)
+    _victim_report: dict[str, Any] | None = field(default=None, init=False)
+    _victim_report_attempted: bool = field(default=False, init=False)
 
     def __post_init__(self) -> None:
         self.attacker = Identity(
@@ -253,6 +255,30 @@ class ScanContext:
                 content=f"confidential {self.victim_marker}",
             )
         return self._victim_document
+
+    def victim_report(self) -> dict[str, Any] | None:
+        """A report requested by the victim, created once per scan.
+
+        Report ids are sequential database ids, so an attacker who can read one by
+        id can read them all; the probe only needs a single victim-owned row.
+        """
+        if not self._victim_report_attempted:
+            self._victim_report_attempted = True
+            body = {
+                "reportName": f"victim-private-report-{self.run_id}",
+                "category": "USAGE_ANALYTICS",
+                "reportType": "CSV",
+                "requestedBy": self.victim.user_id,
+            }
+            response = self.request("POST", "/api/v1/reports", identity=self.victim, json=body)
+            if response.status_code in (200, 201, 202):
+                try:
+                    payload = response.json()
+                except ValueError:
+                    payload = None
+                if isinstance(payload, dict) and payload.get("id") is not None:
+                    self._victim_report = payload
+        return self._victim_report
 
     # ── HTTP helpers ─────────────────────────────────────────────────────────
 

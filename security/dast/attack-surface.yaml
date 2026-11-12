@@ -64,6 +64,12 @@ routes:
     auth: bearer JWT
     expect:
       - unauthenticated callers receive 401
+  - prefix: /api/v1/reports
+    service: report-service
+    auth: bearer JWT
+    expect:
+      - unauthenticated callers receive 401
+      - get, list, download and delete are scoped to the report's requestedBy or an admin
 
 # Routes the coverage gate (`make dast-coverage`) is allowed to leave unattacked.
 # The inventory it compares against is read from the services' source, so an entry

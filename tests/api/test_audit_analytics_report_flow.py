@@ -185,3 +185,64 @@ def test_report_generation_lifecycle_and_gateway_route(api_client):
         json={"category": "USAGE_ANALYTICS", "reportType": "CSV", "requestedBy": user.id},
     )
     assert invalid_report.status_code in {400, 422}
+
+
+def test_report_access_is_scoped_to_requester(api_client):
+    owner = api_client.register_user("report-owner")
+    other = api_client.register_user("report-other")
+
+    create_response = api_client.client.post(
+        "/api/v1/reports",
+        headers=owner.auth_headers,
+        json={
+            "reportName": f"Private Report {api_client.run_id}",
+            "category": "USAGE_ANALYTICS",
+            "reportType": "CSV",
+            "requestedBy": owner.id,
+        },
+    )
+    api_client.assert_gateway_route_available(create_response, "/api/v1/reports")
+    assert create_response.status_code == 202, create_response.text
+    report_id = create_response.json()["id"]
+
+    # Another authenticated user may not read, list, download or delete it.
+    assert api_client.client.get(
+        f"/api/v1/reports/{report_id}", headers=other.auth_headers
+    ).status_code == 403
+    assert api_client.client.get(
+        "/api/v1/reports", headers=other.auth_headers, params={"userId": owner.id}
+    ).status_code == 403
+    assert api_client.client.get(
+        f"/api/v1/reports/{report_id}/download", headers=other.auth_headers
+    ).status_code == 403
+    assert api_client.client.delete(
+        f"/api/v1/reports/{report_id}", headers=other.auth_headers
+    ).status_code == 403
+
+    # Nor may they request a report in the owner's name, and the unfiltered list is their own.
+    impersonate = api_client.client.post(
+        "/api/v1/reports",
+        headers=other.auth_headers,
+        json={
+            "reportName": "Impersonated",
+            "category": "USAGE_ANALYTICS",
+            "reportType": "CSV",
+            "requestedBy": owner.id,
+        },
+    )
+    assert impersonate.status_code == 403, impersonate.text
+    own_list = api_client.client.get("/api/v1/reports", headers=other.auth_headers)
+    assert own_list.status_code == 200, own_list.text
+    assert all(r["requestedBy"] == other.id for r in own_list.json()["reports"])
+
+    # Anonymous callers are rejected at the gateway.
+    assert api_client.client.get(f"/api/v1/reports/{report_id}").status_code == 401
+
+    # Control: the owner still has full access and the report survived the attacker's delete.
+    owner_get = api_client.client.get(f"/api/v1/reports/{report_id}", headers=owner.auth_headers)
+    assert owner_get.status_code == 200, owner_get.text
+    assert owner_get.json()["requestedBy"] == owner.id
+    delete_response = api_client.client.delete(
+        f"/api/v1/reports/{report_id}", headers=owner.auth_headers
+    )
+    assert delete_response.status_code == 204

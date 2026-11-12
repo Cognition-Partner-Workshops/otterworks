@@ -76,6 +76,71 @@ def bola_documents(ctx: ScanContext) -> Result:
 
 
 @probe(
+    finding_id="DAST-BOLA-REPORTS",
+    title="Broken object-level authorization on /api/v1/reports/{id} (read, download, delete)",
+    severity=Severity.CRITICAL,
+    owasp="API1:2023 Broken Object Level Authorization",
+    cwe="CWE-639",
+    service="report-service",
+    remediation=(
+        "Require an authenticated caller on /api/v1/reports/** (verify the JWT or the gateway's "
+        "X-User-ID) and compare Report.requestedBy against that caller on get, list, download and "
+        "delete, returning 403 unless the caller is the owner or an admin."
+    ),
+)
+def bola_reports(ctx: ScanContext) -> Result:
+    """Attacker reads, lists, downloads and deletes the victim's report with their own token."""
+    self = bola_reports.probe
+    victim_report = ctx.victim_report()
+    if victim_report is None:
+        return self.result(Verdict.INCONCLUSIVE, "could not seed a victim-owned report")
+
+    report_id = victim_report["id"]
+    path = f"/api/v1/reports/{report_id}"
+    attempts = [
+        ("read", ctx.get(path, identity=ctx.attacker)),
+        ("list", ctx.get("/api/v1/reports", identity=ctx.attacker, params={"userId": ctx.victim.user_id})),
+        ("download", ctx.get(f"{path}/download", identity=ctx.attacker)),
+        ("delete", ctx.request("DELETE", path, identity=ctx.attacker)),
+    ]
+    marker = str(victim_report.get("reportName", ""))
+    leaked = [
+        (action, response)
+        for action, response in attempts
+        if (action in ("read", "list") and response.status_code == 200 and marker in response.text)
+        or (action == "download" and response.status_code in (200, 409))
+        or (action == "delete" and response.status_code == 204)
+    ]
+    if leaked:
+        actions = ", ".join(action for action, _ in leaked)
+        return self.result(
+            Verdict.VULNERABLE,
+            f"the attacker's token could {actions} the victim's report {report_id}",
+            [Evidence.from_response(r, note=f"attacker {a} of victim report {report_id}") for a, r in leaked],
+        )
+    if all(response.status_code in (401, 403, 404) for _, response in attempts):
+        if not ctx.owner_can_read(path, ctx.victim):
+            return self.result(
+                Verdict.INCONCLUSIVE,
+                "the owner is also refused; the report path rejects every caller, so "
+                "cross-user access cannot be assessed",
+                [Evidence.from_response(r, note=f"attacker {a}") for a, r in attempts],
+            )
+        statuses = ", ".join(f"{a}={r.status_code}" for a, r in attempts)
+        return self.result(
+            Verdict.SECURE,
+            f"the owner can read the report but the attacker got {statuses}",
+            [Evidence.from_response(r, note=f"attacker {a}") for a, r in attempts],
+        )
+    statuses = ", ".join(f"{a}={r.status_code}" for a, r in attempts)
+    return self.result(
+        Verdict.INCONCLUSIVE,
+        f"unexpected statuses {statuses}",
+        [Evidence.from_response(r, note=f"attacker {a}") for a, r in attempts],
+    )
+
+
+@probe(
     finding_id="DAST-IDENTITY-HEADER-SPOOF",
     title="Client-supplied X-User-ID is trusted downstream of the gateway",
     severity=Severity.CRITICAL,
