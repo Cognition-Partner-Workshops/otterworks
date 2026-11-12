@@ -1,0 +1,153 @@
+{
+  "source_branch": "demo-insurance",
+  "source_commit": "a882589d2",
+  "manifest_entries": {
+    "brief_b": {
+      "fixture": "services/industry-solutions/insurance",
+      "classes": [
+        {
+          "id": "INS-01",
+          "brief": "B",
+          "title": "Monthly per-agent commission cap applied by a ledger trigger outside COMMISSION_PKG",
+          "causing_condition": "BEFORE INSERT trigger TRG_LEDGER_MONTHLY_CAP reduces commission_amt so an agent's COMMISSION rows for a period never exceed 2500.00; COMMISSION_PKG computes the uncapped amount and has no reference to the cap",
+          "locations": [
+            {
+              "file": "services/industry-solutions/insurance/db/oltp/04_ledger_triggers.sql",
+              "line": 9
+            },
+            {
+              "file": "services/industry-solutions/insurance/db/oltp/04_ledger_triggers.sql",
+              "line": 20
+            },
+            {
+              "file": "services/industry-solutions/insurance/db/oltp/02_seed.sql",
+              "line": 66
+            }
+          ],
+          "surfaces_in": "catalog completeness check"
+        },
+        {
+          "id": "INS-02",
+          "brief": "B",
+          "title": "Tier rate change takes effect one day late (strict greater-than on change_date)",
+          "causing_condition": "RESOLVE_TIER_RATE selects rows with p_as_of > change_date, so a policy issued on the change date is paid the previous rate",
+          "locations": [
+            {
+              "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+              "line": 332
+            },
+            {
+              "file": "services/industry-solutions/insurance/db/oltp/02_seed.sql",
+              "line": 47
+            },
+            {
+              "file": "services/industry-solutions/insurance/db/oltp/02_seed.sql",
+              "line": 68
+            }
+          ],
+          "surfaces_in": "boundary characterization test"
+        },
+        {
+          "id": "INS-03",
+          "brief": "B",
+          "title": "Premium tier boundary drifted between COMMISSION_PKG and DW_ETL_PKG",
+          "causing_condition": "OLTP PREMIUM_TIER puts annual_premium = 50000 in T2 (< 50000 is T1); the ETL uses BETWEEN 0 AND 50000 for T1, so the seeded 50000.00 policy is T2 in the ledger and T1 in fact_commission",
+          "locations": [
+            {
+              "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+              "line": 314
+            },
+            {
+              "file": "services/industry-solutions/insurance/db/olap/02_etl_pkg.sql",
+              "line": 71
+            },
+            {
+              "file": "services/industry-solutions/insurance/db/oltp/02_seed.sql",
+              "line": 64
+            }
+          ],
+          "surfaces_in": "cross-package disagreement"
+        },
+        {
+          "id": "INS-04",
+          "brief": "B",
+          "title": "Early-lapse chargeback: code reverses 100% inside 12 months, spec grades 100%/50%",
+          "causing_condition": "LAPSE_POLICY books a CHARGEBACK of the full commission paid whenever MONTHS_BETWEEN(lapse, issue) < 12; spec CP-114 section 6.1 charges back 100% for months 1-6 and 50% for months 7-12",
+          "locations": [
+            {
+              "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+              "line": 444
+            },
+            {
+              "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+              "line": 459
+            },
+            {
+              "file": "services/industry-solutions/insurance/spec/make_spec_scan.py",
+              "line": 88
+            },
+            {
+              "file": "services/industry-solutions/insurance/db/oltp/02_seed.sql",
+              "line": 72
+            }
+          ],
+          "surfaces_in": "question for the business owner"
+        },
+        {
+          "id": "INS-05",
+          "brief": "B",
+          "title": "Product and commission specification exists only as an image-only scan",
+          "causing_condition": "spec/cp114-commission-spec-scan.pdf is three skewed, noisy JPEG page images with no text layer (no fonts, pdftotext empty); rules must be read with a vision model",
+          "locations": [
+            {
+              "file": "services/industry-solutions/insurance/spec/cp114-commission-spec-scan.pdf",
+              "line": null
+            },
+            {
+              "file": "services/industry-solutions/insurance/spec/make_spec_scan.py",
+              "line": 199
+            }
+          ],
+          "surfaces_in": "spec ingestion: the chargeback rule disagreeing with code is only stated here"
+        }
+      ]
+    }
+  },
+  "removed_hints": [
+    {
+      "file": "demos/app/complexity-manifest.json",
+      "line": 140,
+      "original_text": "  \"brief_b\": {\n    \"fixture\": \"services/industry-solutions/insurance\",\n    \"classes\": [\n      {\n        \"id\": \"INS-01\",\n        \"brief\": \"B\",\n        \"title\": \"Monthly per-agent commission cap applied by a ledger trigger outside COMMISSION_PKG\",\n        \"causing_condition\": \"BEFORE INSERT trigger TRG_LEDGER_MONTHLY_CAP reduces commission_amt so an agent's COMMISSION rows for a period never exceed 2500.00; COMMISSION_PKG computes the uncapped amount and has no reference to the cap\",\n        \"locations\": [\n          {\n            \"file\": \"services/industry-solutions/insurance/db/oltp/04_ledger_triggers.sql\",\n            \"line\": 9\n          },\n          {\n            \"file\": \"services/industry-solutions/insurance/db/oltp/04_ledger_triggers.sql\",\n            \"line\": 20\n          },\n          {\n            \"file\": \"services/industry-solutions/insurance/db/oltp/02_seed.sql\",\n            \"line\": 66\n          }\n        ],\n        \"surfaces_in\": \"catalog completeness check\"\n      },\n      {\n        \"id\": \"INS-02\",\n        \"brief\": \"B\",\n        \"title\": \"Tier rate change takes effect one day late (strict greater-than on change_date)\",\n        \"causing_condition\": \"RESOLVE_TIER_RATE selects rows with p_as_of > change_date, so a policy issued on the change date is paid the previous rate\",\n        \"locations\": [\n          {\n            \"file\": \"services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql\",\n            \"line\": 332\n          },\n          {\n            \"file\": \"services/industry-solutions/insurance/db/oltp/02_seed.sql\",\n            \"line\": 47\n          },\n          {\n            \"file\": \"services/industry-solutions/insurance/db/oltp/02_seed.sql\",\n            \"line\": 68\n          }\n        ],\n        \"surfaces_in\": \"boundary characterization test\"\n      },\n      {\n        \"id\": \"INS-03\",\n        \"brief\": \"B\",\n        \"title\": \"Premium tier boundary drifted between COMMISSION_PKG and DW_ETL_PKG\",\n        \"causing_condition\": \"OLTP PREMIUM_TIER puts annual_premium = 50000 in T2 (< 50000 is T1); the ETL uses BETWEEN 0 AND 50000 for T1, so the seeded 50000.00 policy is T2 in the ledger and T1 in fact_commission\",\n        \"locations\": [\n          {\n            \"file\": \"services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql\",\n            \"line\": 314\n          },\n          {\n            \"file\": \"services/industry-solutions/insurance/db/olap/02_etl_pkg.sql\",\n            \"line\": 71\n          },\n          {\n            \"file\": \"services/industry-solutions/insurance/db/oltp/02_seed.sql\",\n            \"line\": 64\n          }\n        ],\n        \"surfaces_in\": \"cross-package disagreement\"\n      },\n      {\n        \"id\": \"INS-04\",\n        \"brief\": \"B\",\n        \"title\": \"Early-lapse chargeback: code reverses 100% inside 12 months, spec grades 100%/50%\",\n        \"causing_condition\": \"LAPSE_POLICY books a CHARGEBACK of the full commission paid whenever MONTHS_BETWEEN(lapse, issue) < 12; spec CP-114 section 6.1 charges back 100% for months 1-6 and 50% for months 7-12\",\n        \"locations\": [\n          {\n            \"file\": \"services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql\",\n            \"line\": 444\n          },\n          {\n            \"file\": \"services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql\",\n            \"line\": 459\n          },\n          {\n            \"file\": \"services/industry-solutions/insurance/spec/make_spec_scan.py\",\n            \"line\": 88\n          },\n          {\n            \"file\": \"services/industry-solutions/insurance/db/oltp/02_seed.sql\",\n            \"line\": 72\n          }\n        ],\n        \"surfaces_in\": \"question for the business owner\"\n      },\n      {\n        \"id\": \"INS-05\",\n        \"brief\": \"B\",\n        \"title\": \"Product and commission specification exists only as an image-only scan\",\n        \"causing_condition\": \"spec/cp114-commission-spec-scan.pdf is three skewed, noisy JPEG page images with no text layer (no fonts, pdftotext empty); rules must be read with a vision model\",\n        \"locations\": [\n          {\n            \"file\": \"services/industry-solutions/insurance/spec/cp114-commission-spec-scan.pdf\",\n            \"line\": null\n          },\n          {\n            \"file\": \"services/industry-solutions/insurance/spec/make_spec_scan.py\",\n            \"line\": 199\n          }\n        ],\n        \"surfaces_in\": \"spec ingestion: the chargeback rule disagreeing with code is only stated here\"\n      }\n    ]\n  }"
+    },
+    {
+      "file": "services/industry-solutions/insurance/README.md",
+      "line": 6,
+      "original_text": "the database-centric *before state* that stored-procedure modernization demos\nextract from.",
+      "replacement": "a local database fixture."
+    },
+    {
+      "file": "services/industry-solutions/insurance/README.md",
+      "line": 36,
+      "original_text": "business rules are in `COMMISSION_PKG`; there is deliberately no application\n  tier duplicating them.",
+      "replacement": "business rules run in `COMMISSION_PKG`."
+    },
+    {
+      "file": "services/industry-solutions/insurance/README.md",
+      "line": 90,
+      "original_text": "This is a local, disposable fixture: loopback-only port bindings, per-namespace\nCompose projects and volumes, and fixed well-known fixture credentials. It is\nintentionally **not** deployed to Helm/EKS or any shared environment. A real\nmodernization target must add authentication, authorization, tenant scoping,\nand secret management at the service edge — none of which exist in the legacy\ndatabase-centric design, which is part of the point.",
+      "replacement": "The local fixture uses loopback-only port bindings, per-namespace Compose\nprojects and volumes, and fixed fixture credentials."
+    },
+    {
+      "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+      "line": 1,
+      "original_text": "-- Commission Pay business logic. All rules live here, in the database, on\n-- purpose: this schema is the legacy before-state a modernization extracts from.\n",
+      "replacement": "-- Commission Pay business logic.\n"
+    },
+    {
+      "file": "services/industry-solutions/insurance/db/oltp/03_commission_pkg.sql",
+      "line": 94,
+      "original_text": "    -- Lapse an in-force policy. A lapse inside the chargeback window reverses\n    -- the commission already paid on the policy as CHARGEBACK ledger rows in\n    -- the lapse month.\n",
+      "replacement": ""
+    }
+  ]
+}
