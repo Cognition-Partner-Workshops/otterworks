@@ -122,3 +122,5 @@ services/legacy-portal/parity/out/
 services/legacy-portal-lambda/*/target/
 industries/insurance/iri-policy-inquiry/legacy-api/target/
 industries/insurance/iri-policy-inquiry/.state/
+industries/insurance/iri-policy-inquiry/parity/reports/
+industries/insurance/iri-policy-inquiry/iri-api/target/

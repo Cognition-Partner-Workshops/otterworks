@@ -2,7 +2,8 @@
 
 SHELL := /bin/bash
 
-.PHONY: iri-legacy-up iri-legacy-down iri-legacy-test
+.PHONY: iri-legacy-up iri-legacy-down iri-legacy-test iri-legacy-record
+.PHONY: iri-parity iri-parity-selftest iri-api-up iri-api-down iri-api-test
 IRI_LEGACY_DIR = industries/insurance/iri-policy-inquiry
 
 iri-legacy-up: procs-validate ## Build and start the legacy inquiry API (NS=<namespace>)
@@ -13,6 +14,24 @@ iri-legacy-down: procs-validate ## Stop the legacy inquiry API (NS=<namespace>)
 
 iri-legacy-test: ## Run legacy inquiry API unit tests without Oracle
 	cd $(IRI_LEGACY_DIR)/legacy-api && ./mvnw -s .mvn/settings.xml -B test
+
+iri-legacy-record: ## Freeze legacy inquiry responses (NS=<namespace>, optional LEGACY_URL, OUT, FORCE=1)
+	python3 $(IRI_LEGACY_DIR)/parity/record.py "$(NS)" $(if $(LEGACY_URL),--legacy-url "$(LEGACY_URL)") $(if $(OUT),--out "$(OUT)") $(if $(filter 1,$(FORCE)),--force)
+
+iri-parity: ## Compare frozen legacy cases with IRI (NS=<namespace> OP=summary|values|funds)
+	python3 $(IRI_LEGACY_DIR)/parity/parity.py "$(NS)" "$(OP)" $(if $(IRI_URL),--iri-url "$(IRI_URL)")
+
+iri-parity-selftest: ## Run offline transform and comparator tests
+	python3 -m unittest discover -s $(IRI_LEGACY_DIR)/parity -p 'test_*.py' -v
+
+iri-api-up: procs-validate ## Build and start the IRI API skeleton (NS=<namespace>)
+	python3 $(IRI_LEGACY_DIR)/iri_lifecycle.py up "$(NS)" --settings $(IRI_LEGACY_DIR)/iri-api/.mvn/settings.xml
+
+iri-api-down: procs-validate ## Stop the IRI API (NS=<namespace>)
+	python3 $(IRI_LEGACY_DIR)/iri_lifecycle.py down "$(NS)"
+
+iri-api-test: ## Run IRI API unit and schema tests without Oracle (JDK 17)
+	cd $(IRI_LEGACY_DIR)/iri-api && ./mvnw -s .mvn/settings.xml -B test
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

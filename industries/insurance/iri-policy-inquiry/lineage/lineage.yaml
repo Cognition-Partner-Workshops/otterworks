@@ -1,0 +1,448 @@
+entries:
+- operation: summary
+  db: annuity_policy.CONTRACT_NO
+  legacy_field: CNTR_NO
+  legacy_format: digits, no padding
+  iri_element: path:policyNumber
+  iri_type_constraint: string
+  rule: contract_number
+  status: mapped
+  signoff_id: null
+  note: 'C-2: policyNumber is a path parameter only'
+- operation: values
+  db: policy_values.CONTRACT_NO
+  legacy_field: CNTR_NO
+  legacy_format: 10-digit zero padded
+  iri_element: path:policyNumber
+  iri_type_constraint: string
+  rule: contract_number
+  status: mapped
+  signoff_id: null
+  note: 'IRI-01: canonicalize padded values contract number; C-2: never echo policyNumber in body'
+- operation: funds
+  db: fund_allocation.CONTRACT_NO
+  legacy_field: CNTR_NO
+  legacy_format: digits, no padding
+  iri_element: path:policyNumber
+  iri_type_constraint: string
+  rule: contract_number
+  status: mapped
+  signoff_id: null
+  note: 'C-2: policyNumber is a path parameter only'
+- operation: summary
+  db: annuity_policy.STATUS_CODE
+  legacy_field: STAT_CD
+  legacy_format: code
+  iri_element: /policyStatus
+  iri_type_constraint: IRI policyStatus enum
+  rule: enum_map
+  status: signoff
+  signoff_id: S-02
+  note: 'IRI-02: DP has no IRI value; return 422 policy.status.unmapped'
+  map:
+    IF: ACTIVE
+    PI: PENDINGISSUED
+    LP: LAPSED
+    SR: SURRENDERED
+    TM: TERMINATED
+    DP: null
+  signoff_values:
+  - DP
+- operation: summary
+  db: annuity_policy.PRODUCT_NAME
+  legacy_field: PROD_NM
+  legacy_format: string
+  iri_element: /product/planName
+  iri_type_constraint: string
+  rule: identity
+  status: mapped
+  signoff_id: null
+  note: ''
+- operation: summary
+  db: annuity_policy.PLAN_CODE
+  legacy_field: PLAN_CD
+  legacy_format: string
+  iri_element: /product/planCode
+  iri_type_constraint: string ^[A-Za-z0-9]{1,50}$
+  rule: identity
+  status: provisional
+  signoff_id: S-07
+  note: PLAN_CODE passes the constraint; PRODUCT_CODE ANN-1 does not
+- operation: summary
+  db: annuity_policy.PRODUCT_CODE
+  legacy_field: PROD_CD
+  legacy_format: string
+  iri_element: null
+  iri_type_constraint: string
+  rule: dropped
+  status: dropped
+  signoff_id: S-07
+  note: Not a valid IRI planCode
+- operation: summary
+  db: annuity_policy.PLAN_CODE
+  legacy_field: PLAN_CD
+  legacy_format: code
+  iri_element: /product/productType
+  iri_type_constraint: IRI productType enum
+  rule: enum_map
+  status: provisional
+  signoff_id: S-06
+  note: Provisional product type mapping
+  map:
+    FIXED: FIXED
+    FLEX: DEFERRED
+- operation: summary
+  db: annuity_policy.QUALIFICATION_CODE
+  legacy_field: QUAL_CD
+  legacy_format: code
+  iri_element: /qualificationType
+  iri_type_constraint: IRI qualificationType enum
+  rule: enum_map
+  status: mapped
+  signoff_id: S-08
+  note: Confirm qualification mapping
+  map:
+    NQ: Non-Qualified
+    IRA: IRA
+    ROTH: Roth IRA
+- operation: summary
+  db: annuity_policy.ISSUE_STATE
+  legacy_field: ISS_ST
+  legacy_format: string
+  iri_element: /issueState
+  iri_type_constraint: string ^[A-Z]{2}$
+  rule: identity
+  status: mapped
+  signoff_id: null
+  note: ''
+- operation: summary
+  db: annuity_policy.CURRENCY_CODE
+  legacy_field: CCY_CD
+  legacy_format: string
+  iri_element: /currency
+  iri_type_constraint: string ^[A-Z]{3}$
+  rule: identity
+  status: mapped
+  signoff_id: null
+  note: ''
+- operation: summary
+  db: annuity_policy.EFFECTIVE_DATE
+  legacy_field: EFF_DT
+  legacy_format: YYYYMMDD
+  iri_element: /effectiveDate
+  iri_type_constraint: string date
+  rule: yyyymmdd_to_date
+  status: mapped
+  signoff_id: null
+  note: ''
+- operation: summary
+  db: annuity_policy.ISSUE_DATE
+  legacy_field: ISS_DT
+  legacy_format: YYYYMMDD
+  iri_element: null
+  iri_type_constraint: string
+  rule: dropped
+  status: dropped
+  signoff_id: S-09
+  note: Belongs to getPolicyDates, out of scope
+- operation: summary
+  db: annuity_policy.MATURITY_DATE
+  legacy_field: MAT_DT
+  legacy_format: YYYYMMDD
+  iri_element: null
+  iri_type_constraint: string
+  rule: dropped
+  status: dropped
+  signoff_id: S-09
+  note: Belongs to getPolicyDates, out of scope
+- operation: summary
+  db: annuity_policy.OWNER_NAME
+  legacy_field: OWN_NM
+  legacy_format: string
+  iri_element: null
+  iri_type_constraint: string
+  rule: dropped
+  status: dropped
+  signoff_id: S-09
+  note: Belongs to getPolicyParties, out of scope
+- operation: summary
+  db: annuity_policy.ANNUITANT_NAME
+  legacy_field: ANN_NM
+  legacy_format: string
+  iri_element: null
+  iri_type_constraint: string
+  rule: dropped
+  status: dropped
+  signoff_id: S-09
+  note: Belongs to getPolicyParties, out of scope
+- operation: summary
+  db: annuity_policy.GRX_IND
+  legacy_field: GRX_IND
+  legacy_format: string
+  iri_element: null
+  iri_type_constraint: string
+  rule: dropped
+  status: signoff
+  signoff_id: S-01
+  note: 'IRI-04: unexplained field, no IRI element; not emitted until a business owner decides'
+- operation: summary
+  db: null
+  legacy_field: null
+  legacy_format: none
+  iri_element: /carrierId
+  iri_type_constraint: string
+  rule: provisional
+  status: provisional
+  signoff_id: S-03
+  note: Config value SYNANN
+- operation: summary
+  db: null
+  legacy_field: null
+  legacy_format: none
+  iri_element: /issueType
+  iri_type_constraint: string
+  rule: provisional
+  status: provisional
+  signoff_id: S-04
+  note: Config value GUARANTEED
+- operation: summary
+  db: null
+  legacy_field: null
+  legacy_format: none
+  iri_element: /policyLastRefreshDateTime
+  iri_type_constraint: string date-time
+  rule: provisional
+  status: provisional
+  signoff_id: S-05
+  note: Response time, UTC
+- operation: values
+  db: policy_values.VALUATION_DATE
+  legacy_field: VAL_DT
+  legacy_format: YYYYMMDD
+  iri_element: /valuesAsOfDate
+  iri_type_constraint: string date
+  rule: yyyymmdd_to_date
+  status: mapped
+  signoff_id: null
+  note: ''
+- operation: values
+  db: policy_values.ACCOUNT_VALUE
+  legacy_field: ACCT_VAL
+  legacy_format: 15 digits, implied scale 2
+  iri_element: /accountValues/endingAccountValue
+  iri_type_constraint: number
+  rule: implied_decimal
+  status: mapped
+  signoff_id: null
+  note: IRI-03
+  scale: 2
+- operation: values
+  db: policy_values.SURRENDER_VALUE
+  legacy_field: SURR_VAL
+  legacy_format: 15 digits, implied scale 2
+  iri_element: /accountValues/surrenderValue
+  iri_type_constraint: number
+  rule: implied_decimal
+  status: mapped
+  signoff_id: null
+  note: IRI-03
+  scale: 2
+- operation: values
+  db: policy_values.PREMIUMS_TO_DATE
+  legacy_field: PREM_TD
+  legacy_format: 15 digits, implied scale 2
+  iri_element: /totalDepositITD
+  iri_type_constraint: number
+  rule: implied_decimal
+  status: mapped
+  signoff_id: null
+  note: IRI-03
+  scale: 2
+- operation: values
+  db: policy_values.WITHDRAWALS_TO_DATE
+  legacy_field: WDR_TD
+  legacy_format: 15 digits, implied scale 2
+  iri_element: /accountValues/totalNetWithdrawalSinceIssue
+  iri_type_constraint: number
+  rule: implied_decimal
+  status: provisional
+  signoff_id: S-12
+  note: 'provisional-semantics: confirm gross vs net'
+  scale: 2
+- operation: values
+  db: policy_values.CASH_VALUE
+  legacy_field: CASH_VAL
+  legacy_format: 15 digits, implied scale 2
+  iri_element: null
+  iri_type_constraint: string
+  rule: dropped
+  status: dropped
+  signoff_id: S-10
+  note: guaranteedCashSurrenderValue* are guaranteed values, not current cash value
+- operation: values
+  db: policy_values.DEATH_BENEFIT
+  legacy_field: DTH_BEN
+  legacy_format: 15 digits, implied scale 2
+  iri_element: null
+  iri_type_constraint: string
+  rule: dropped
+  status: dropped
+  signoff_id: S-11
+  note: No PolicyValue element
+- operation: values
+  db: policy_values.SURRENDER_CHARGE
+  legacy_field: SURR_CHG
+  legacy_format: 15 digits, implied scale 2
+  iri_element: null
+  iri_type_constraint: string
+  rule: dropped
+  status: dropped
+  signoff_id: S-11
+  note: No PolicyValue element
+- operation: funds
+  db: null
+  legacy_field: FUND_CNT
+  legacy_format: integer digits
+  iri_element: /itemsCount
+  iri_type_constraint: integer
+  rule: count
+  status: mapped
+  signoff_id: null
+  note: Also totalItemsCount; startIndex 0 when no paging parameters
+  targets:
+  - /itemsCount
+  - /totalItemsCount
+- operation: funds
+  db: fund_allocation.FUND_CODE
+  legacy_field: FUND_CD_nn
+  legacy_format: string
+  iri_element: /funds/i/fundId
+  iri_type_constraint: string
+  rule: indexed_list
+  status: mapped
+  signoff_id: null
+  note: Ordered by fund_code; suffix _01.._NN
+  item_rule: identity
+- operation: funds
+  db: fund_allocation.FUND_NAME
+  legacy_field: FUND_NM_nn
+  legacy_format: string
+  iri_element: /funds/i/fundName
+  iri_type_constraint: string
+  rule: indexed_list
+  status: mapped
+  signoff_id: null
+  note: Ordered by fund_code; suffix _01.._NN
+  item_rule: identity
+- operation: funds
+  db: fund_allocation.UNIT_VALUE
+  legacy_field: UNIT_VAL_nn
+  legacy_format: digits, implied scale 6
+  iri_element: /funds/i/fundPrice
+  iri_type_constraint: number
+  rule: indexed_list
+  status: mapped
+  signoff_id: null
+  note: Ordered by fund_code; suffix _01.._NN
+  item_rule: implied_decimal
+  scale: 6
+- operation: funds
+  db: fund_allocation.FUND_VALUE
+  legacy_field: FUND_VAL_nn
+  legacy_format: digits, implied scale 2
+  iri_element: /funds/i/totalFundValue
+  iri_type_constraint: number
+  rule: indexed_list
+  status: mapped
+  signoff_id: null
+  note: Ordered by fund_code; suffix _01.._NN
+  item_rule: implied_decimal
+  scale: 2
+- operation: funds
+  db: fund_allocation.ALLOCATION_PCT
+  legacy_field: ALLOC_PCT_nn
+  legacy_format: indexed implied decimal
+  iri_element: null
+  iri_type_constraint: string
+  rule: dropped
+  status: dropped
+  signoff_id: S-15
+  note: No allocation element in PolicyFunds
+- operation: funds
+  db: fund_allocation.FUND_UNITS
+  legacy_field: FUND_UNITS_nn
+  legacy_format: indexed implied decimal
+  iri_element: null
+  iri_type_constraint: string
+  rule: dropped
+  status: dropped
+  signoff_id: S-16
+  note: Only home is fundSegments[].numberOfUnits whose 12 required siblings have no source
+- operation: funds
+  db: null
+  legacy_field: null
+  legacy_format: none
+  iri_element: /funds/i/fundAccountType
+  iri_type_constraint: IRI fundAccountType enum
+  rule: provisional
+  status: provisional
+  signoff_id: S-13
+  note: Config value OTHER
+- operation: funds
+  db: null
+  legacy_field: null
+  legacy_format: none
+  iri_element: /funds/i/fundValuationDate
+  iri_type_constraint: string date
+  rule: provisional
+  status: provisional
+  signoff_id: S-14
+  note: Source policy_values.valuation_date for the contract
+- operation: summary
+  db: null
+  legacy_field: RTN_CD
+  legacy_format: two digits
+  iri_element: null
+  iri_type_constraint: HTTP status
+  rule: enum_map
+  map:
+    '00': 200
+    '04': 404
+    08: 400
+    '96': 503
+  status: mapped
+  signoff_id: null
+  note: 00->200; 04->404 policy.inquiry.notFound; 08->400 policy.inquiry.invalidPolicyNumber; 96->503
+    policy.inquiry.unavailable
+- operation: values
+  db: null
+  legacy_field: RTN_CD
+  legacy_format: two digits
+  iri_element: null
+  iri_type_constraint: HTTP status
+  rule: enum_map
+  map:
+    '00': 200
+    '04': 404
+    08: 400
+    '96': 503
+  status: mapped
+  signoff_id: null
+  note: 00->200; 04->404 policy.inquiry.notFound; 08->400 policy.inquiry.invalidPolicyNumber; 96->503
+    policy.inquiry.unavailable
+- operation: funds
+  db: null
+  legacy_field: RTN_CD
+  legacy_format: two digits
+  iri_element: null
+  iri_type_constraint: HTTP status
+  rule: enum_map
+  map:
+    '00': 200
+    '04': 404
+    08: 400
+    '96': 503
+  status: mapped
+  signoff_id: null
+  note: 00->200; 04->404 policy.inquiry.notFound; 08->400 policy.inquiry.invalidPolicyNumber; 96->503
+    policy.inquiry.unavailable; legacy 404 when no fund rows

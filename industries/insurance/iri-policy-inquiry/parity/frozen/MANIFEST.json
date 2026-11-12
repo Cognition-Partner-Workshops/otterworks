@@ -1,0 +1,40 @@
+{
+  "recorded_at": "2026-11-12T16:25:01.330188Z",
+  "legacy_source_commit": "9646debc2c807e72edc2fb5d768c1f3b899b09bc",
+  "sha256": {
+    "summary.json": "26b75409354c635e3cdd419f7e797a3b201f486e938bfa98926ce92a011b092d",
+    "values.json": "fe179fcfa3fc67e1335a973e9b59e5d3d4e8c562d42df5a597ada4848e297cb3",
+    "funds.json": "60b4d3e4e24cd1bf049af2516a5d48fab12ed1b1b5bc14e3025b4baf6151c068"
+  },
+  "source_sha256": {
+    "services/industry-solutions/insurance/db/annuity/01_tables.sql": "cd0cefd4a6abdbdf2493e728b840abcd7732ef8416d2547dbe4c27b751c99f1c",
+    "services/industry-solutions/insurance/db/annuity/02_seed.sql": "67cd7ca5e81453136733831350bb850b5534bc86ff5d9f8a2512c37f3ad88bef"
+  },
+  "contract_count": 100,
+  "operations": {
+    "summary": {
+      "cases": 103,
+      "statuses": {
+        "200": 101,
+        "400": 1,
+        "404": 1
+      }
+    },
+    "values": {
+      "cases": 103,
+      "statuses": {
+        "200": 101,
+        "400": 1,
+        "404": 1
+      }
+    },
+    "funds": {
+      "cases": 103,
+      "statuses": {
+        "200": 101,
+        "400": 1,
+        "404": 1
+      }
+    }
+  }
+}
