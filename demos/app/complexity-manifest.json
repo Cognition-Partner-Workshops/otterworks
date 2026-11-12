@@ -136,5 +136,47 @@
       "expected_count": 12,
       "headline": true
     }
-  ]
+  ],
+  "iri_policy_inquiry": {
+    "demo": "iri-policy-inquiry",
+    "spec": "industries/insurance/iri-policy-inquiry/vendor/iri-policy-inquiry-v1.1.5/PolicyInquiry_v1.1.5.yml",
+    "classes": [
+      {
+        "id": "IRI-01",
+        "class": "contract-number widening",
+        "causing_condition": "IRI policyNumber is a string with maxLength 30; the legacy contract field holds 10 digits and only values zero-pads it. Naive conversion breaks parity on values only.",
+        "file": "industries/insurance/iri-policy-inquiry/legacy-api/src/main/java/app/synthetic/insurance/LegacyMapper.java",
+        "line": 52,
+        "surfaces": ["values response parity", "IRI policyNumber mapping"],
+        "brief": "A"
+      },
+      {
+        "id": "IRI-02",
+        "class": "status code with no IRI value",
+        "causing_condition": "Seeded DP has no value in PolicySummary.policyStatus: PENDINGISSUED, ACTIVE, LAPSED, SURRENDERED, TERMINATED.",
+        "file": "services/industry-solutions/insurance/db/annuity/02_seed.sql",
+        "line": 19,
+        "surfaces": ["summary status mapping", "IRI schema validation failure"],
+        "brief": "A"
+      },
+      {
+        "id": "IRI-03",
+        "class": "date/amount formats",
+        "causing_condition": "Legacy dates use YYYYMMDD rather than IRI format: date, and amounts are implied-decimal strings rather than decimal numbers. The date formatter is LegacyMapper.java:26.",
+        "file": "industries/insurance/iri-policy-inquiry/legacy-api/src/main/java/app/synthetic/insurance/LegacyMapper.java",
+        "line": 16,
+        "surfaces": ["values parity samples", "IRI date and amount mapping"],
+        "brief": "A"
+      },
+      {
+        "id": "IRI-04",
+        "class": "unexplained field GRX_IND",
+        "causing_condition": "The summary emits GRX_IND with no IRI element; disposition requires business-owner sign-off.",
+        "file": "industries/insurance/iri-policy-inquiry/legacy-api/src/main/java/app/synthetic/insurance/LegacyMapper.java",
+        "line": 40,
+        "surfaces": ["summary response", "business-owner sign-off list"],
+        "brief": "A"
+      }
+    ]
+  }
 }

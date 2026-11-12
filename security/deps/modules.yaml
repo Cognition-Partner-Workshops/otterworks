@@ -15,6 +15,17 @@
 # dependency tree, and the report names it. A module whose candidates all fail is
 # reported unmeasured. `test` is the arguments appended to the resolved tool.
 modules:
+  - id: iri-policy-inquiry-legacy-api
+    path: industries/insurance/iri-policy-inquiry/legacy-api
+    build: maven
+    java_home:
+      - $JAVA_HOME_17_X64
+      - /usr/lib/jvm/java-17-openjdk-amd64
+    tool:
+      - mvn
+    test: -B test
+    cases: null
+
   # Both Maven modules pin JDK 11: their recorded transcripts include the
   # ${script:javascript:...} lookup, which only resolves while the JVM still ships
   # Nashorn (JDK <= 14). Measured on a newer JDK the script case would report a
