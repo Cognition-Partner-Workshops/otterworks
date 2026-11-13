@@ -9,8 +9,17 @@ from urllib.parse import quote
 import requests
 
 
+def ingest_repository(run):
+    """The GitHub repository holding the run's sources: its provenance, else its repository property."""
+    for provenance in run.get("versionControlProvenance", []):
+        uri = provenance.get("repositoryUri", "")
+        if uri.startswith("https://github.com/"):
+            return uri.removeprefix("https://github.com/").strip("/").removesuffix(".git")
+    return run["properties"]["repository"]
+
+
 def request_body(report, profile, attachment_url):
-    repositories = sorted({run["properties"]["repository"] for run in report["runs"]})
+    repositories = sorted({ingest_repository(run) for run in report["runs"]})
     if report.get("version") != "2.1.0" or not repositories:
         raise ValueError("Expected SARIF 2.1.0 with repository metadata")
     return {"profile_id": profile, "repos": [{"repo_name": repo, "host": "github.com"} for repo in repositories],

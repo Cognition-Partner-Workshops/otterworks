@@ -60,11 +60,18 @@ def test_shared_library_ssrf_clusters_with_consumer_ssrf(report):
     assert ssrf["repos"] == ["uc-vuln-shared-lib-dev-api", "uc-vuln-shared-lib-platform-shared"]
 
 
-def test_ingestion_request_names_all_four_repositories(report):
+def test_ingestion_targets_the_monorepo_where_locations_resolve(report, manifest):
     body = devin_ingestion.request_body(report, "profile", "https://example.org/findings.sarif")
-    assert [repo["repo_name"] for repo in body["repos"]] == [
-        "uc-vuln-shared-lib-android-app", "uc-vuln-shared-lib-dealer-portal",
-        "uc-vuln-shared-lib-dev-api", "uc-vuln-shared-lib-platform-shared"]
+    assert body["repos"] == [{"repo_name": "Cognition-Partner-Workshops/otterworks", "host": "github.com"}]
+    for run in report["runs"]:
+        assert run["versionControlProvenance"] == [
+            {"repositoryUri": manifest["source_repository"], "branch": manifest["branch"]}]
+        assert run["properties"]["repository"].startswith("uc-vuln-shared-lib-")
+        for result in run["results"]:
+            assert result["properties"]["repository"] == run["properties"]["repository"]
+            uri = result["locations"][0]["physicalLocation"]["artifactLocation"]["uri"]
+            assert uri.startswith(run["properties"]["projectPath"] + "/")
+            assert (REPO_ROOT / uri).is_file()
 
 
 def test_csv_exports_cover_every_finding():
