@@ -1,7 +1,13 @@
 import { PortalDatePipe } from './portal-date.pipe';
+import moment from 'moment';
 
 describe('PortalDatePipe', () => {
   const pipe = new PortalDatePipe();
+
+  it('uses moment with the security fixes from 2.29.4 or newer', () => {
+    const [major, minor, patch] = moment.version.split('.').map(Number);
+    expect(major > 2 || (major === 2 && (minor > 29 || (minor === 29 && patch >= 4)))).toBeTrue();
+  });
 
   afterEach(() => jasmine.clock().uninstall());
 

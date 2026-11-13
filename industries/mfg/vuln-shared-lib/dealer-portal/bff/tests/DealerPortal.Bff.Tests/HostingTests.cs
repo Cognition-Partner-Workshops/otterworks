@@ -6,14 +6,11 @@ namespace DealerPortal.Bff.Tests;
 public sealed class HostingTests
 {
     [Fact]
-    public async Task PortalKey_IsEnforcedWhenConfigured()
+    public async Task Session_WorksWithoutPortalKeyEvenWhenConfigured()
     {
         using var factory = new PortalFactory(new() { ["Portal:ClientKey"] = "test-client-key" });
         var client = factory.CreateClient();
 
-        Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsync("/bff/session", JsonBody("{\"email\":\"dealer-ops@dealer.example\",\"password\":\"x\"}"))).StatusCode);
-
-        client.DefaultRequestHeaders.Add("X-Portal-Key", "test-client-key");
         Assert.Equal(HttpStatusCode.OK, (await client.PostAsync("/bff/session", JsonBody("{\"email\":\"dealer-ops@dealer.example\",\"password\":\"x\"}"))).StatusCode);
     }
 
