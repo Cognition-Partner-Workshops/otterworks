@@ -3,6 +3,7 @@
     <RootNamespace>Identity</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../SigningConfiguration.cs" Link="Configuration/SigningConfiguration.cs" />
     <PackageReference Include="Platform.Shared" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
   </ItemGroup>

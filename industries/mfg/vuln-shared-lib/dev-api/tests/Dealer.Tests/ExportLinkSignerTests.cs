@@ -7,7 +7,7 @@ public sealed class ExportLinkSignerTests
     [Fact]
     public void ExportSignatureChecksNameAndExpiry()
     {
-        var signer = new ExportLinkSigner(TimeProvider.System);
+        var signer = new ExportLinkSigner(TimeProvider.System, TestConfiguration.SyntheticSigning.Provider);
         var expires = DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds();
         var signature = signer.Sign("stock.csv", expires);
         Assert.True(signer.Verify("stock.csv", expires, signature));

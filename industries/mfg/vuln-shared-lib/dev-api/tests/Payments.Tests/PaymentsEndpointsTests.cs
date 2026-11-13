@@ -9,6 +9,7 @@ using Payments.Services;
 
 namespace Payments.Tests;
 
+[Collection("Payments transport")]
 public sealed class PaymentsEndpointsTests : IDisposable
 {
     private readonly PaymentsApiFactory factory = new();
@@ -135,7 +136,7 @@ public sealed class PaymentsEndpointsTests : IDisposable
         var rows = await client.GetFromJsonAsync<Settlement[]>("/api/payments/settlements");
         Assert.Equal("paid", rows!.Single().Status);
         var entry = Assert.Single((await client.GetFromJsonAsync<WebhookEvent[]>("/api/payments/webhooks/events"))!);
-        Assert.True(new WebhookSigner().Verify(entry.Body, entry.Signature));
+        Assert.True(new WebhookSigner(TestConfiguration.SyntheticSigning.Provider).Verify(entry.Body, entry.Signature));
     }
 
     [Fact]
@@ -153,7 +154,7 @@ public sealed class PaymentsEndpointsTests : IDisposable
         var response = await client.PostAsJsonAsync("/api/payments/webhooks/test", new WebhookTestRequest("https://subscriber.dealer.example/events"));
         response.EnsureSuccessStatusCode();
         Assert.Equal("subscriber.dealer.example", factory.Transport.Destination!.Host);
-        Assert.True(new WebhookSigner().Verify(factory.Transport.Body!, factory.Transport.Signature!));
+        Assert.True(new WebhookSigner(TestConfiguration.SyntheticSigning.Provider).Verify(factory.Transport.Body!, factory.Transport.Signature!));
     }
 
     [Fact]

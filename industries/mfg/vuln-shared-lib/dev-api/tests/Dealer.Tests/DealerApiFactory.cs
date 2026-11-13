@@ -15,6 +15,7 @@ public sealed class DealerApiFactory : WebApplicationFactory<Dealer.Program>
     private readonly string databaseName = "dealer-" + Guid.NewGuid().ToString("N");
     private readonly SqliteConnection connection;
     public string ExportRoot { get; } = Path.Combine(AppContext.BaseDirectory, "data", Guid.NewGuid().ToString("N"));
+    public string BulletinUrl { get; set; } = "https://bulletins.oem.example/prices.json";
     public TransportStub Transport { get; } = new();
 
     public DealerApiFactory()
@@ -27,10 +28,12 @@ public sealed class DealerApiFactory : WebApplicationFactory<Dealer.Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(TestConfiguration.SyntheticSigning.Settings));
         builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["Dealer:Database"] = $"Data Source={databaseName};Mode=Memory;Cache=Shared",
-            ["Dealer:ExportRoot"] = ExportRoot
+            ["Dealer:ExportRoot"] = ExportRoot,
+            ["Dealer:PriceBulletinUrl"] = BulletinUrl
         }));
         builder.ConfigureServices(services =>
             services.AddHttpClient("images").ConfigurePrimaryHttpMessageHandler(() => Transport));
@@ -64,11 +67,15 @@ public sealed class TransportStub : HttpMessageHandler
 {
     public HttpStatusCode Status { get; set; } = HttpStatusCode.OK;
     public string BulletinBody { get; set; } = """[{"vin":"VIN1001","priceCents":3150000}]""";
+    public Uri? RedirectTo { get; set; }
+    public List<Uri> Requests { get; } = new();
     public Uri? RequestedUri { get; private set; }
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         RequestedUri = request.RequestUri;
+        Requests.Add(request.RequestUri!);
+        if (RedirectTo is not null) return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Found) { Headers = { Location = RedirectTo } });
         var content = request.RequestUri!.Host == "bulletins.oem.example"
             ? new StringContent(BulletinBody) : new StringContent("image-content");
         content.Headers.ContentType = new MediaTypeHeaderValue(

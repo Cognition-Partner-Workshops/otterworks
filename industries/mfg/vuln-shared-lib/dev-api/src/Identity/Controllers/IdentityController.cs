@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using Identity.Models;
 using Identity.Repositories;
 using Identity.Services;
@@ -44,7 +42,7 @@ public sealed class IdentityController(
         var identity = CurrentIdentity();
         if (identity is null)
             return Unauthorized();
-        var fingerprint = Convert.ToHexString(MD5.HashData(Encoding.UTF8.GetBytes(request.UserAgent + request.DeviceId)));
+        var fingerprint = DeviceFingerprint.Compute(request.UserAgent, request.DeviceId);
         var device = new RegisteredDevice
         {
             Email = identity.Email,

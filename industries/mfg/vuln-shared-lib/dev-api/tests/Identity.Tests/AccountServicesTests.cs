@@ -8,7 +8,7 @@ public sealed class AccountServicesTests
     [Fact]
     public void TokenRoundTripPreservesAccount()
     {
-        var service = new AccessTokenService(new AccountClock());
+        var service = new AccessTokenService(new AccountClock(), TestConfiguration.SyntheticSigning.Provider);
         var token = service.Create(new Account { Email = "ops@dealer.example", DealerId = "D-1001", Roles = "dealer,manager" });
         var identity = service.Verify(token.AccessToken);
         Assert.Equal("ops@dealer.example", identity!.Email);

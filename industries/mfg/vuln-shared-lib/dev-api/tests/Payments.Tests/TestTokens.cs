@@ -13,6 +13,6 @@ public static class TestTokens
             sub = "dealer-ops@dealer.example", dealer, roles = roles ?? new[] { "dealer", "payments" },
             iat = issued, exp = expires ?? issued + 3600
         }));
-        return $"v1.{payload}.{TokenSigner.Sign(payload)}";
+        return $"v1.{payload}.{TokenSigner.Sign(payload, TestConfiguration.SyntheticSigning.Provider)}";
     }
 }

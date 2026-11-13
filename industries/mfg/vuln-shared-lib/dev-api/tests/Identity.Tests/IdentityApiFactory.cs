@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Identity.Repositories;
 using Identity.Models;
 using Microsoft.AspNetCore.Hosting;
@@ -18,6 +19,7 @@ public sealed class IdentityApiFactory : WebApplicationFactory<Identity.Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(TestConfiguration.SyntheticSigning.Settings));
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<DbContextOptions<IdentityContext>>();

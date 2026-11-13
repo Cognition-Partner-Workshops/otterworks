@@ -1,3 +1,5 @@
+using Platform.Shared.Crypto;
+using PlatformConfiguration;
 using Dealer.Auth;
 using Dealer.Repositories;
 using Dealer.Services;
@@ -12,6 +14,7 @@ public partial class Program
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddControllersWithViews();
         builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton<ISigningKeyProvider>(services => SigningConfiguration.Load(services.GetRequiredService<IConfiguration>()));
         builder.Services.AddAuthentication("identity").AddScheme<AuthenticationSchemeOptions, IdentityTokenHandler>("identity", _ => { });
         builder.Services.AddAuthorization();
         builder.Services.AddSingleton<InventoryRepository>();
@@ -19,6 +22,7 @@ public partial class Program
         builder.Services.AddSingleton<PriceBulletinService>();
         builder.Services.AddHttpClient("images");
         var app = builder.Build();
+        _ = app.Services.GetRequiredService<ISigningKeyProvider>();
         app.Services.GetRequiredService<InventoryRepository>().Initialize();
         app.UseAuthentication();
         app.UseAuthorization();

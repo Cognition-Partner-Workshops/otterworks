@@ -1,3 +1,4 @@
+using Platform.Shared.Crypto;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -31,7 +32,7 @@ public sealed class IdentityEndpointsTests : IDisposable
     public async Task SignInReturnsOrderedToken()
     {
         var response = await SignIn();
-        Assert.Equal("v1.eyJzdWIiOiJkZWFsZXItb3BzQGRlYWxlci5leGFtcGxlIiwiZGVhbGVyIjoiRC0xMDAxIiwicm9sZXMiOlsiZGVhbGVyIl0sImlhdCI6MTc5ODc2MTYwMCwiZXhwIjoxNzk4NzY1MjAwfQ.aQiSk3ln-G_hMxS28Rm8xvC-7P0", response.AccessToken);
+        Assert.Equal("v1.eyJzdWIiOiJkZWFsZXItb3BzQGRlYWxlci5leGFtcGxlIiwiZGVhbGVyIjoiRC0xMDAxIiwicm9sZXMiOlsiZGVhbGVyIl0sImlhdCI6MTc5ODc2MTYwMCwiZXhwIjoxNzk4NzY1MjAwfQ.tsR_nbfw6TFkFEydowMEG_yXhQQgMO3oYDFVNkxeA1s", response.AccessToken);
         Assert.Equal("Bearer", response.TokenType);
         Assert.Equal(3600, response.ExpiresIn);
         Assert.Equal("D-1001", response.DealerId);
@@ -80,9 +81,26 @@ public sealed class IdentityEndpointsTests : IDisposable
         var response = await client.PostAsJsonAsync("/api/identity/devices", new { deviceId = "tablet-1", userAgent = "DealerTablet/1" });
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var device = await response.Content.ReadFromJsonAsync<RegisteredDevice>();
-        Assert.Equal(32, device!.Fingerprint.Length);
+        Assert.Equal(64, device!.Fingerprint.Length);
         using var scope = factory.Services.CreateScope();
         Assert.Equal(device.Fingerprint, scope.ServiceProvider.GetRequiredService<IdentityContext>().Devices.Single().Fingerprint);
+    }
+
+    [Fact]
+    public async Task FingerprintRegression_IsStableAndSeparatesFields()
+    {
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", (await SignIn()).AccessToken);
+        async Task<string> Register(string agent, string id)
+        {
+            var response = await client.PostAsJsonAsync("/api/identity/devices", new { userAgent = agent, deviceId = id });
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            return (await response.Content.ReadFromJsonAsync<RegisteredDevice>())!.Fingerprint;
+        }
+        var first = await Register("ab", "c");
+        Assert.Equal(first, await Register("ab", "c"));
+        Assert.NotEqual(first, await Register("a", "bc"));
+        Assert.Equal(64, first.Length);
+        Assert.Equal(DeviceFingerprint.Compute("ab", "c"), first);
     }
 
     [Fact]

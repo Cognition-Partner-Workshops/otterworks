@@ -20,7 +20,7 @@ class DealerRepositoryTest {
     private lateinit var tokens: MemoryTokens
     private lateinit var client: DealerClient
     private val apiKey = "vsl-synthetic-test-api-key"
-    private val expectedToken = "v1.eyJzdWIiOiJkZWFsZXItb3BzQGRlYWxlci5leGFtcGxlIiwiZGVhbGVyIjoiRC0xMDAxIiwicm9sZXMiOlsiZGVhbGVyIl0sImlhdCI6MTc5ODc2MTYwMCwiZXhwIjoxNzk4NzY1MjAwfQ.aQiSk3ln-G_hMxS28Rm8xvC-7P0"
+    private val expectedToken = "v1.eyJzdWIiOiJkZWFsZXItb3BzQGRlYWxlci5leGFtcGxlIiwiZGVhbGVyIjoiRC0xMDAxIiwicm9sZXMiOlsiZGVhbGVyIl0sImlhdCI6MTc5ODc2MTYwMCwiZXhwIjoxNzk4NzY1MjAwfQ.tsR_nbfw6TFkFEydowMEG_yXhQQgMO3oYDFVNkxeA1s"
     private val claimJson = """{"id":"CL-1001","vin":"VSL00000000001001","status":"Submitted","description":"Door adjustment","submittedAt":"2027-01-01T12:00:00Z"}"""
 
     @Before

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Payments.Models;
 using Payments.Repositories;
@@ -14,6 +15,7 @@ namespace Payments.Tests;
 public sealed class PaymentsApiFactory : WebApplicationFactory<Payments.Program>
 {
     private readonly SqliteConnection connection = new("Data Source=:memory:");
+    public string RemittanceUrl { get; set; } = "https://processor.example/remittance.json";
     public PaymentTransport Transport { get; } = new();
 
     public PaymentsApiFactory()
@@ -23,6 +25,11 @@ public sealed class PaymentsApiFactory : WebApplicationFactory<Payments.Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(TestConfiguration.SyntheticSigning.Settings));
+        builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Payments:Processor:RemittanceUrl"] = RemittanceUrl
+        }));
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<DbContextOptions<PaymentsContext>>();
@@ -59,11 +66,15 @@ public sealed class PaymentTransport : HttpMessageHandler
     public string Statement { get; set; } = """[{"reference":"REM-1001","amountCents":12000}]""";
     public string? Signature { get; private set; }
     public string? Body { get; private set; }
+    public Uri? RedirectTo { get; set; }
+    public List<Uri> Requests { get; } = new();
     public Uri? Destination { get; private set; }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         Destination = request.RequestUri;
+        Requests.Add(request.RequestUri!);
+        if (RedirectTo is not null) return new HttpResponseMessage(HttpStatusCode.Found) { Headers = { Location = RedirectTo } };
         if (request.Method == HttpMethod.Post)
         {
             Signature = request.Headers.GetValues("X-Payments-Signature").Single();
