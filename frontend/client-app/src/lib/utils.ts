@@ -1,7 +1,19 @@
+import { isAxiosError } from "axios";
 import { clsx, type ClassValue } from "clsx";
 
 export function cn(...inputs: ClassValue[]) {
   return clsx(inputs);
+}
+
+export function getApiErrorMessage(error: unknown, fallback = "Something went wrong"): string {
+  if (isAxiosError(error)) {
+    const body = error.response?.data as { detail?: unknown; message?: unknown; error?: unknown } | undefined;
+    for (const candidate of [body?.detail, body?.message, body?.error]) {
+      if (typeof candidate === "string" && candidate) return candidate;
+    }
+  }
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
 }
 
 export function formatFileSize(bytes: number): string {

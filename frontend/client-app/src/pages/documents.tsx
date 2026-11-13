@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
   Plus,
   LayoutGrid,
@@ -15,8 +16,20 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { documentsApi } from "@/lib/api";
 import { useUIStore } from "@/stores/ui-store";
-import { cn } from "@/lib/utils";
+import { cn, getApiErrorMessage } from "@/lib/utils";
 import type { Document, PaginatedResponse, ViewMode } from "@/types";
+
+type DocumentListData = PaginatedResponse<Document> & { items?: Document[] };
+
+function prependDocument(
+  current: DocumentListData | undefined,
+  doc: Document
+): DocumentListData | undefined {
+  if (!current) return current;
+  const key = current.items ? "items" : "data";
+  const existing = (current[key] ?? []).filter((item) => item.id !== doc.id);
+  return { ...current, [key]: [doc, ...existing], total: (current.total ?? existing.length) + 1 };
+}
 
 export default function DocumentsPage() {
   return (
@@ -56,7 +69,20 @@ function DocumentsContent() {
     },
   });
 
-  const raw = data as PaginatedResponse<Document> & { items?: Document[] } | undefined;
+  const copyMutation = useMutation({
+    mutationFn: documentsApi.copy,
+    onSuccess: (copy) => {
+      queryClient.setQueryData<DocumentListData>(["documents", "list"], (current) =>
+        prependDocument(current, copy)
+      );
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      queryClient.invalidateQueries({ queryKey: ["storage", "usage"] });
+      toast.success("Copy created");
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error, "Could not copy document")),
+  });
+
+  const raw = data as DocumentListData | undefined;
   const documents = raw?.items ?? raw?.data ?? [];
   const filtered = searchQuery
     ? documents.filter((doc) =>
@@ -118,6 +144,7 @@ function DocumentsContent() {
         viewMode={viewMode}
         onCreate={() => createMutation.mutate("Untitled document")}
         onDelete={(id) => deleteMutation.mutate(id)}
+        onCopy={(id) => copyMutation.mutate(id)}
       />
     </div>
   );
@@ -130,6 +157,7 @@ function DocumentListing({
   viewMode,
   onCreate,
   onDelete,
+  onCopy,
 }: Readonly<{
   isLoading: boolean;
   documents: Document[];
@@ -137,6 +165,7 @@ function DocumentListing({
   viewMode: ViewMode;
   onCreate: () => void;
   onDelete: (id: string) => void;
+  onCopy: (id: string) => void;
 }>) {
   if (isLoading) {
     return <PageLoader />;
@@ -178,6 +207,7 @@ function DocumentListing({
           document={doc}
           view={viewMode}
           onDelete={onDelete}
+          onCopy={onCopy}
         />
       ))}
     </div>

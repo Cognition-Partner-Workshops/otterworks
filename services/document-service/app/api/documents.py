@@ -457,6 +457,31 @@ async def create_share_link(
     return {"document_id": str(document_id), "token": token}
 
 
+@router.post(
+    "/{document_id}/copy",
+    response_model=DocumentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def copy_document(
+    document_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """Copy a document the caller can read into a new document the caller owns."""
+    user_id = _require_user_id(request)
+    service = DocumentService(db)
+    source = await service.get(document_id)
+    if not source or source.owner_id != user_id:
+        raise HTTPException(status_code=404, detail="Document not found")
+    document = await service.copy(source, user_id)
+    logger.info(
+        "document_copied",
+        source_document_id=str(document_id),
+        document_id=str(document.id),
+    )
+    return document
+
+
 @router.get("/{document_id}/export")
 async def export_document(
     document_id: UUID,
