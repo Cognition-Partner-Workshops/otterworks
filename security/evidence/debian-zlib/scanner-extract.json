@@ -1,0 +1,920 @@
+{
+  "scanner": "Trivy 0.71.0",
+  "db_updated_at": "2026-11-13T07:00:07Z",
+  "ignorefile": "/dev/null",
+  "counts_are": "package/CVE records, all severities, independent complete-image scans",
+  "services": {
+    "file-service": {
+      "before": {
+        "image": "otterworks-audit/file-service:before",
+        "image_id": "sha256:7be371d65eba776792b84e2c1e72b63c3bb4d020c1330c8970932d121b6b0d74",
+        "total_records": 422,
+        "severity_counts": {
+          "LOW": 157,
+          "HIGH": 122,
+          "MEDIUM": 139,
+          "UNKNOWN": 4
+        },
+        "zlib_records": 3,
+        "zlib_scanner_records": [
+          {
+            "VulnerabilityID": "CVE-2026-76844",
+            "VendorIDs": [
+              "DSA-6613-1"
+            ],
+            "PkgID": "zlib1g@1:1.3.dfsg+really1.3.1-1+b1",
+            "PkgName": "zlib1g",
+            "PkgIdentifier": {
+              "PURL": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
+              "UID": "ec1c0574f56f96a0"
+            },
+            "InstalledVersion": "1:1.3.dfsg+really1.3.1-1+b1",
+            "FixedVersion": "1:1.3.dfsg+really1.3.1-1+deb13u1",
+            "Status": "fixed",
+            "Layer": {
+              "Digest": "sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41",
+              "DiffID": "sha256:dd57f90311a2567b55ff22eeacff1602fd04ad7566e315957731359eab173b90"
+            },
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76844",
+            "DataSource": {
+              "ID": "debian",
+              "Name": "Debian Security Tracker",
+              "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+            },
+            "Fingerprint": "sha256:c5008b7cd6f3412686b28bf205d80a6c26d3022b0e80c9a2185cd27831e7df7c",
+            "Title": "zlib: zlib 1.2.11 through 1.3.2 Heap Buffer Overflow via Stale gzwrite Pointer After Failed Write",
+            "Description": "zlib 1.2.11 through 1.3.2 contains a heap buffer overflow: after an underlying write() fails, gz_write() returns without resetting strm.next_in, leaving it pointed at the caller's buffer. A later gz* write call then derives a position from the stale pointer and writes past a heap allocation; any write() failure reaches it, including EPIPE on a blocking descriptor, and in versions before 1.3.1.2 the failed write must be followed by a gzclearerr() call.",
+            "Severity": "HIGH",
+            "CweIDs": [
+              "CWE-787"
+            ],
+            "VendorSeverity": {
+              "azure": 2,
+              "ghsa": 3,
+              "redhat": 3
+            },
+            "CVSS": {
+              "ghsa": {
+                "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:N/A:N",
+                "V3Score": 7.4
+              },
+              "redhat": {
+                "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "V3Score": 8.1
+              }
+            },
+            "References": [
+              "https://access.redhat.com/security/cve/CVE-2026-76844",
+              "https://gist.github.com/thesmartshadow/e0b9481792afb7c31e86fee1ff084490",
+              "https://github.com/advisories/GHSA-wr3j-pwj9-hqq6",
+              "https://github.com/madler/zlib",
+              "https://github.com/madler/zlib/blob/v1.3.2/gzwrite.c#L393",
+              "https://github.com/madler/zlib/commit/df84af25dc1942490e1d1c899a07619152a46148",
+              "https://github.com/webpack/webpack-dev-middleware",
+              "https://github.com/webpack/webpack-dev-middleware/blob/v8.1.1/src/middleware.js",
+              "https://github.com/webpack/webpack-dev-middleware/commit/13344e78b26d88fe9b7c8381a3860e248a52359b",
+              "https://github.com/webpack/webpack-dev-middleware/commit/cefccbac330c29052fc6dffe85fd292ea2ac782b",
+              "https://github.com/webpack/webpack-dev-middleware/pull/2404",
+              "https://github.com/webpack/webpack-dev-middleware/releases/tag/v7.4.6",
+              "https://github.com/webpack/webpack-dev-middleware/releases/tag/v8.3.0",
+              "https://github.com/webpack/webpack-dev-middleware/security/advisories/GHSA-g84c-rxfj-3j2c",
+              "https://nvd.nist.gov/vuln/detail/CVE-2026-76844",
+              "https://www.cve.org/CVERecord?id=CVE-2026-76844",
+              "https://www.vulncheck.com/advisories/webpack-dev-middleware-path-traversal-via-offset-slice-on-a-non-slash-terminated-publicpath",
+              "https://www.vulncheck.com/advisories/zlib-1.3.1.2-through-1.3.2-heap-buffer-overflow-via-gz-vacate"
+            ],
+            "PublishedDate": "2026-08-24T14:17:02.25Z",
+            "LastModifiedDate": "2026-10-12T17:10:00.163Z"
+          },
+          {
+            "VulnerabilityID": "CVE-2026-85091",
+            "VendorIDs": [
+              "DSA-6613-1"
+            ],
+            "PkgID": "zlib1g@1:1.3.dfsg+really1.3.1-1+b1",
+            "PkgName": "zlib1g",
+            "PkgIdentifier": {
+              "PURL": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
+              "UID": "ec1c0574f56f96a0"
+            },
+            "InstalledVersion": "1:1.3.dfsg+really1.3.1-1+b1",
+            "FixedVersion": "1:1.3.dfsg+really1.3.1-1+deb13u1",
+            "Status": "fixed",
+            "Layer": {
+              "Digest": "sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41",
+              "DiffID": "sha256:dd57f90311a2567b55ff22eeacff1602fd04ad7566e315957731359eab173b90"
+            },
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-85091",
+            "DataSource": {
+              "ID": "debian",
+              "Name": "Debian Security Tracker",
+              "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+            },
+            "Fingerprint": "sha256:91f740586b56f4ea0530f915384b3060e26a3699ac17fd3fe1c26e268d69da1a",
+            "Title": "zlib: zlib: Heap buffer overflow in gz_vacate() allows arbitrary code execution",
+            "Description": "zlib versions 1.3.1.2 through 1.3.2 contain a heap buffer overflow vulnerability in the gz_vacate() function when processing non-blocking gzwrite() operations with stale external buffer pointers. Attackers can trigger the overflow by calling gzprintf() or gzvprintf() after a write stall, causing an unchecked memmove() to write beyond the internal input buffer boundary.",
+            "Severity": "HIGH",
+            "CweIDs": [
+              "CWE-787"
+            ],
+            "VendorSeverity": {
+              "azure": 3,
+              "redhat": 3,
+              "ubuntu": 2
+            },
+            "CVSS": {
+              "redhat": {
+                "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "V3Score": 8.1
+              }
+            },
+            "References": [
+              "https://access.redhat.com/security/cve/CVE-2026-85091",
+              "https://gist.github.com/thesmartshadow/e0b9481792afb7c31e86fee1ff084490",
+              "https://github.com/madler/zlib",
+              "https://github.com/madler/zlib/blob/v1.3.2/gzwrite.c#L393",
+              "https://nvd.nist.gov/vuln/detail/CVE-2026-85091",
+              "https://ubuntu.com/security/notices/USN-8954-1",
+              "https://www.cve.org/CVERecord?id=CVE-2026-85091",
+              "https://www.vulncheck.com/advisories/zlib-1.3.1.2-through-1.3.2-heap-buffer-overflow-via-gz-vacate"
+            ],
+            "PublishedDate": "2026-09-03T13:06:20.573Z",
+            "LastModifiedDate": "2026-09-09T20:41:07.123Z"
+          },
+          {
+            "VulnerabilityID": "CVE-2026-27171",
+            "VendorIDs": [
+              "DSA-6613-1"
+            ],
+            "PkgID": "zlib1g@1:1.3.dfsg+really1.3.1-1+b1",
+            "PkgName": "zlib1g",
+            "PkgIdentifier": {
+              "PURL": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
+              "UID": "ec1c0574f56f96a0"
+            },
+            "InstalledVersion": "1:1.3.dfsg+really1.3.1-1+b1",
+            "FixedVersion": "1:1.3.dfsg+really1.3.1-1+deb13u1",
+            "Status": "fixed",
+            "Layer": {
+              "Digest": "sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41",
+              "DiffID": "sha256:dd57f90311a2567b55ff22eeacff1602fd04ad7566e315957731359eab173b90"
+            },
+            "SeveritySource": "nvd",
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-27171",
+            "DataSource": {
+              "ID": "debian",
+              "Name": "Debian Security Tracker",
+              "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+            },
+            "Fingerprint": "sha256:b001b50e3d540b4a4bcdef0e9a0a87f8c12f274df58b6b3996483816c9221856",
+            "Title": "zlib: zlib: Denial of Service via infinite loop in CRC32 combine functions",
+            "Description": "zlib before 1.3.2 allows CPU consumption via crc32_combine64 and crc32_combine_gen64 because x2nmodp can do right shifts within a loop that has no termination condition.",
+            "Severity": "MEDIUM",
+            "CweIDs": [
+              "CWE-1284"
+            ],
+            "VendorSeverity": {
+              "amazon": 1,
+              "azure": 1,
+              "cbl-mariner": 1,
+              "julia": 2,
+              "nvd": 2,
+              "photon": 2,
+              "redhat": 1,
+              "ubuntu": 1
+            },
+            "CVSS": {
+              "julia": {
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+                "V3Score": 5.5
+              },
+              "nvd": {
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+                "V3Score": 5.5
+              },
+              "redhat": {
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+                "V3Score": 3.3
+              }
+            },
+            "References": [
+              "https://7asecurity.com/blog/2026/02/zlib-7asecurity-audit",
+              "https://7asecurity.com/blog/2026/02/zlib-7asecurity-audit/",
+              "https://7asecurity.com/reports/pentest-report-zlib-RC1.1.pdf",
+              "https://access.redhat.com/security/cve/CVE-2026-27171",
+              "https://github.com/advisories/GHSA-h858-mf2m-8jf4",
+              "https://github.com/madler/zlib/issues/904",
+              "https://github.com/madler/zlib/releases/tag/v1.3.2",
+              "https://nvd.nist.gov/vuln/detail/CVE-2026-27171",
+              "https://ostif.org/zlib-audit-complete",
+              "https://ostif.org/zlib-audit-complete/",
+              "https://ubuntu.com/security/notices/USN-8706-1",
+              "https://www.cve.org/CVERecord?id=CVE-2026-27171"
+            ],
+            "PublishedDate": "2026-02-18T04:16:01.263Z",
+            "LastModifiedDate": "2026-06-17T10:26:47.357Z"
+          }
+        ]
+      },
+      "after": {
+        "image": "otterworks-audit/file-service:zlib-fixed",
+        "image_id": "sha256:b5da9e80854c6635d20b4b1cf6b7f75ef70f008a268c84381557cfa55431b6cc",
+        "total_records": 419,
+        "severity_counts": {
+          "LOW": 157,
+          "HIGH": 120,
+          "MEDIUM": 138,
+          "UNKNOWN": 4
+        },
+        "zlib_records": 0,
+        "zlib_scanner_records": [],
+        "installed_zlib_version": "1:1.3.dfsg+really1.3.1-1+deb13u1"
+      }
+    },
+    "document-service": {
+      "before": {
+        "image": "otterworks-audit/document-service:before",
+        "image_id": "sha256:90ab2767c6a560af37fcd37b23793336461910fa2b7d7e8aaeb933459dc3ed33",
+        "total_records": 469,
+        "severity_counts": {
+          "LOW": 161,
+          "HIGH": 135,
+          "MEDIUM": 166,
+          "UNKNOWN": 4,
+          "CRITICAL": 3
+        },
+        "zlib_records": 3,
+        "zlib_scanner_records": [
+          {
+            "VulnerabilityID": "CVE-2026-76844",
+            "VendorIDs": [
+              "DSA-6613-1"
+            ],
+            "PkgID": "zlib1g@1:1.3.dfsg+really1.3.1-1+b1",
+            "PkgName": "zlib1g",
+            "PkgIdentifier": {
+              "PURL": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
+              "UID": "ec1c0574f56f96a0"
+            },
+            "InstalledVersion": "1:1.3.dfsg+really1.3.1-1+b1",
+            "FixedVersion": "1:1.3.dfsg+really1.3.1-1+deb13u1",
+            "Status": "fixed",
+            "Layer": {
+              "Digest": "sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41",
+              "DiffID": "sha256:dd57f90311a2567b55ff22eeacff1602fd04ad7566e315957731359eab173b90"
+            },
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76844",
+            "DataSource": {
+              "ID": "debian",
+              "Name": "Debian Security Tracker",
+              "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+            },
+            "Fingerprint": "sha256:af5063a219c6e1e5f5ae1b7f409f25af5f5aeefbbcde4060c06301d037dc42b8",
+            "Title": "zlib: zlib 1.2.11 through 1.3.2 Heap Buffer Overflow via Stale gzwrite Pointer After Failed Write",
+            "Description": "zlib 1.2.11 through 1.3.2 contains a heap buffer overflow: after an underlying write() fails, gz_write() returns without resetting strm.next_in, leaving it pointed at the caller's buffer. A later gz* write call then derives a position from the stale pointer and writes past a heap allocation; any write() failure reaches it, including EPIPE on a blocking descriptor, and in versions before 1.3.1.2 the failed write must be followed by a gzclearerr() call.",
+            "Severity": "HIGH",
+            "CweIDs": [
+              "CWE-787"
+            ],
+            "VendorSeverity": {
+              "azure": 2,
+              "ghsa": 3,
+              "redhat": 3
+            },
+            "CVSS": {
+              "ghsa": {
+                "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:N/A:N",
+                "V3Score": 7.4
+              },
+              "redhat": {
+                "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "V3Score": 8.1
+              }
+            },
+            "References": [
+              "https://access.redhat.com/security/cve/CVE-2026-76844",
+              "https://gist.github.com/thesmartshadow/e0b9481792afb7c31e86fee1ff084490",
+              "https://github.com/advisories/GHSA-wr3j-pwj9-hqq6",
+              "https://github.com/madler/zlib",
+              "https://github.com/madler/zlib/blob/v1.3.2/gzwrite.c#L393",
+              "https://github.com/madler/zlib/commit/df84af25dc1942490e1d1c899a07619152a46148",
+              "https://github.com/webpack/webpack-dev-middleware",
+              "https://github.com/webpack/webpack-dev-middleware/blob/v8.1.1/src/middleware.js",
+              "https://github.com/webpack/webpack-dev-middleware/commit/13344e78b26d88fe9b7c8381a3860e248a52359b",
+              "https://github.com/webpack/webpack-dev-middleware/commit/cefccbac330c29052fc6dffe85fd292ea2ac782b",
+              "https://github.com/webpack/webpack-dev-middleware/pull/2404",
+              "https://github.com/webpack/webpack-dev-middleware/releases/tag/v7.4.6",
+              "https://github.com/webpack/webpack-dev-middleware/releases/tag/v8.3.0",
+              "https://github.com/webpack/webpack-dev-middleware/security/advisories/GHSA-g84c-rxfj-3j2c",
+              "https://nvd.nist.gov/vuln/detail/CVE-2026-76844",
+              "https://www.cve.org/CVERecord?id=CVE-2026-76844",
+              "https://www.vulncheck.com/advisories/webpack-dev-middleware-path-traversal-via-offset-slice-on-a-non-slash-terminated-publicpath",
+              "https://www.vulncheck.com/advisories/zlib-1.3.1.2-through-1.3.2-heap-buffer-overflow-via-gz-vacate"
+            ],
+            "PublishedDate": "2026-08-24T14:17:02.25Z",
+            "LastModifiedDate": "2026-10-12T17:10:00.163Z"
+          },
+          {
+            "VulnerabilityID": "CVE-2026-85091",
+            "VendorIDs": [
+              "DSA-6613-1"
+            ],
+            "PkgID": "zlib1g@1:1.3.dfsg+really1.3.1-1+b1",
+            "PkgName": "zlib1g",
+            "PkgIdentifier": {
+              "PURL": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
+              "UID": "ec1c0574f56f96a0"
+            },
+            "InstalledVersion": "1:1.3.dfsg+really1.3.1-1+b1",
+            "FixedVersion": "1:1.3.dfsg+really1.3.1-1+deb13u1",
+            "Status": "fixed",
+            "Layer": {
+              "Digest": "sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41",
+              "DiffID": "sha256:dd57f90311a2567b55ff22eeacff1602fd04ad7566e315957731359eab173b90"
+            },
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-85091",
+            "DataSource": {
+              "ID": "debian",
+              "Name": "Debian Security Tracker",
+              "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+            },
+            "Fingerprint": "sha256:b21c528205f42d4cd1e7c1699ec3d7d2a0459ab7f0ee8b7bee3060ccc30853ec",
+            "Title": "zlib: zlib: Heap buffer overflow in gz_vacate() allows arbitrary code execution",
+            "Description": "zlib versions 1.3.1.2 through 1.3.2 contain a heap buffer overflow vulnerability in the gz_vacate() function when processing non-blocking gzwrite() operations with stale external buffer pointers. Attackers can trigger the overflow by calling gzprintf() or gzvprintf() after a write stall, causing an unchecked memmove() to write beyond the internal input buffer boundary.",
+            "Severity": "HIGH",
+            "CweIDs": [
+              "CWE-787"
+            ],
+            "VendorSeverity": {
+              "azure": 3,
+              "redhat": 3,
+              "ubuntu": 2
+            },
+            "CVSS": {
+              "redhat": {
+                "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "V3Score": 8.1
+              }
+            },
+            "References": [
+              "https://access.redhat.com/security/cve/CVE-2026-85091",
+              "https://gist.github.com/thesmartshadow/e0b9481792afb7c31e86fee1ff084490",
+              "https://github.com/madler/zlib",
+              "https://github.com/madler/zlib/blob/v1.3.2/gzwrite.c#L393",
+              "https://nvd.nist.gov/vuln/detail/CVE-2026-85091",
+              "https://ubuntu.com/security/notices/USN-8954-1",
+              "https://www.cve.org/CVERecord?id=CVE-2026-85091",
+              "https://www.vulncheck.com/advisories/zlib-1.3.1.2-through-1.3.2-heap-buffer-overflow-via-gz-vacate"
+            ],
+            "PublishedDate": "2026-09-03T13:06:20.573Z",
+            "LastModifiedDate": "2026-09-09T20:41:07.123Z"
+          },
+          {
+            "VulnerabilityID": "CVE-2026-27171",
+            "VendorIDs": [
+              "DSA-6613-1"
+            ],
+            "PkgID": "zlib1g@1:1.3.dfsg+really1.3.1-1+b1",
+            "PkgName": "zlib1g",
+            "PkgIdentifier": {
+              "PURL": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
+              "UID": "ec1c0574f56f96a0"
+            },
+            "InstalledVersion": "1:1.3.dfsg+really1.3.1-1+b1",
+            "FixedVersion": "1:1.3.dfsg+really1.3.1-1+deb13u1",
+            "Status": "fixed",
+            "Layer": {
+              "Digest": "sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41",
+              "DiffID": "sha256:dd57f90311a2567b55ff22eeacff1602fd04ad7566e315957731359eab173b90"
+            },
+            "SeveritySource": "nvd",
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-27171",
+            "DataSource": {
+              "ID": "debian",
+              "Name": "Debian Security Tracker",
+              "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+            },
+            "Fingerprint": "sha256:660ce4ebf6d1497d3d85bd9457e8fad1da3327c137ce6c5a6f8204539cb8ee81",
+            "Title": "zlib: zlib: Denial of Service via infinite loop in CRC32 combine functions",
+            "Description": "zlib before 1.3.2 allows CPU consumption via crc32_combine64 and crc32_combine_gen64 because x2nmodp can do right shifts within a loop that has no termination condition.",
+            "Severity": "MEDIUM",
+            "CweIDs": [
+              "CWE-1284"
+            ],
+            "VendorSeverity": {
+              "amazon": 1,
+              "azure": 1,
+              "cbl-mariner": 1,
+              "julia": 2,
+              "nvd": 2,
+              "photon": 2,
+              "redhat": 1,
+              "ubuntu": 1
+            },
+            "CVSS": {
+              "julia": {
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+                "V3Score": 5.5
+              },
+              "nvd": {
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+                "V3Score": 5.5
+              },
+              "redhat": {
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+                "V3Score": 3.3
+              }
+            },
+            "References": [
+              "https://7asecurity.com/blog/2026/02/zlib-7asecurity-audit",
+              "https://7asecurity.com/blog/2026/02/zlib-7asecurity-audit/",
+              "https://7asecurity.com/reports/pentest-report-zlib-RC1.1.pdf",
+              "https://access.redhat.com/security/cve/CVE-2026-27171",
+              "https://github.com/advisories/GHSA-h858-mf2m-8jf4",
+              "https://github.com/madler/zlib/issues/904",
+              "https://github.com/madler/zlib/releases/tag/v1.3.2",
+              "https://nvd.nist.gov/vuln/detail/CVE-2026-27171",
+              "https://ostif.org/zlib-audit-complete",
+              "https://ostif.org/zlib-audit-complete/",
+              "https://ubuntu.com/security/notices/USN-8706-1",
+              "https://www.cve.org/CVERecord?id=CVE-2026-27171"
+            ],
+            "PublishedDate": "2026-02-18T04:16:01.263Z",
+            "LastModifiedDate": "2026-06-17T10:26:47.357Z"
+          }
+        ]
+      },
+      "after": {
+        "image": "otterworks-audit/document-service:zlib-fixed",
+        "image_id": "sha256:d3c6dc6928d4ce43787962f36e5c4909175a8327821f5987ba3a1e146ff31a02",
+        "total_records": 466,
+        "severity_counts": {
+          "LOW": 161,
+          "HIGH": 133,
+          "MEDIUM": 165,
+          "UNKNOWN": 4,
+          "CRITICAL": 3
+        },
+        "zlib_records": 0,
+        "zlib_scanner_records": [],
+        "installed_zlib_version": "1:1.3.dfsg+really1.3.1-1+deb13u1"
+      }
+    },
+    "search-service": {
+      "before": {
+        "image": "otterworks-audit/search-service:before",
+        "image_id": "sha256:9a96483f5baa508c6f17b20c5906cf6f00b27fb684a999590f35052db8ae68ed",
+        "total_records": 444,
+        "severity_counts": {
+          "LOW": 160,
+          "HIGH": 125,
+          "MEDIUM": 155,
+          "UNKNOWN": 4
+        },
+        "zlib_records": 3,
+        "zlib_scanner_records": [
+          {
+            "VulnerabilityID": "CVE-2026-76844",
+            "VendorIDs": [
+              "DSA-6613-1"
+            ],
+            "PkgID": "zlib1g@1:1.3.dfsg+really1.3.1-1+b1",
+            "PkgName": "zlib1g",
+            "PkgIdentifier": {
+              "PURL": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
+              "UID": "ec1c0574f56f96a0"
+            },
+            "InstalledVersion": "1:1.3.dfsg+really1.3.1-1+b1",
+            "FixedVersion": "1:1.3.dfsg+really1.3.1-1+deb13u1",
+            "Status": "fixed",
+            "Layer": {
+              "Digest": "sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41",
+              "DiffID": "sha256:dd57f90311a2567b55ff22eeacff1602fd04ad7566e315957731359eab173b90"
+            },
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76844",
+            "DataSource": {
+              "ID": "debian",
+              "Name": "Debian Security Tracker",
+              "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+            },
+            "Fingerprint": "sha256:3157eb337c794969645ec59c5d620a9445e7c8b547e7d5bb1b1bd31686a62447",
+            "Title": "zlib: zlib 1.2.11 through 1.3.2 Heap Buffer Overflow via Stale gzwrite Pointer After Failed Write",
+            "Description": "zlib 1.2.11 through 1.3.2 contains a heap buffer overflow: after an underlying write() fails, gz_write() returns without resetting strm.next_in, leaving it pointed at the caller's buffer. A later gz* write call then derives a position from the stale pointer and writes past a heap allocation; any write() failure reaches it, including EPIPE on a blocking descriptor, and in versions before 1.3.1.2 the failed write must be followed by a gzclearerr() call.",
+            "Severity": "HIGH",
+            "CweIDs": [
+              "CWE-787"
+            ],
+            "VendorSeverity": {
+              "azure": 2,
+              "ghsa": 3,
+              "redhat": 3
+            },
+            "CVSS": {
+              "ghsa": {
+                "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:N/A:N",
+                "V3Score": 7.4
+              },
+              "redhat": {
+                "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "V3Score": 8.1
+              }
+            },
+            "References": [
+              "https://access.redhat.com/security/cve/CVE-2026-76844",
+              "https://gist.github.com/thesmartshadow/e0b9481792afb7c31e86fee1ff084490",
+              "https://github.com/advisories/GHSA-wr3j-pwj9-hqq6",
+              "https://github.com/madler/zlib",
+              "https://github.com/madler/zlib/blob/v1.3.2/gzwrite.c#L393",
+              "https://github.com/madler/zlib/commit/df84af25dc1942490e1d1c899a07619152a46148",
+              "https://github.com/webpack/webpack-dev-middleware",
+              "https://github.com/webpack/webpack-dev-middleware/blob/v8.1.1/src/middleware.js",
+              "https://github.com/webpack/webpack-dev-middleware/commit/13344e78b26d88fe9b7c8381a3860e248a52359b",
+              "https://github.com/webpack/webpack-dev-middleware/commit/cefccbac330c29052fc6dffe85fd292ea2ac782b",
+              "https://github.com/webpack/webpack-dev-middleware/pull/2404",
+              "https://github.com/webpack/webpack-dev-middleware/releases/tag/v7.4.6",
+              "https://github.com/webpack/webpack-dev-middleware/releases/tag/v8.3.0",
+              "https://github.com/webpack/webpack-dev-middleware/security/advisories/GHSA-g84c-rxfj-3j2c",
+              "https://nvd.nist.gov/vuln/detail/CVE-2026-76844",
+              "https://www.cve.org/CVERecord?id=CVE-2026-76844",
+              "https://www.vulncheck.com/advisories/webpack-dev-middleware-path-traversal-via-offset-slice-on-a-non-slash-terminated-publicpath",
+              "https://www.vulncheck.com/advisories/zlib-1.3.1.2-through-1.3.2-heap-buffer-overflow-via-gz-vacate"
+            ],
+            "PublishedDate": "2026-08-24T14:17:02.25Z",
+            "LastModifiedDate": "2026-10-12T17:10:00.163Z"
+          },
+          {
+            "VulnerabilityID": "CVE-2026-85091",
+            "VendorIDs": [
+              "DSA-6613-1"
+            ],
+            "PkgID": "zlib1g@1:1.3.dfsg+really1.3.1-1+b1",
+            "PkgName": "zlib1g",
+            "PkgIdentifier": {
+              "PURL": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
+              "UID": "ec1c0574f56f96a0"
+            },
+            "InstalledVersion": "1:1.3.dfsg+really1.3.1-1+b1",
+            "FixedVersion": "1:1.3.dfsg+really1.3.1-1+deb13u1",
+            "Status": "fixed",
+            "Layer": {
+              "Digest": "sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41",
+              "DiffID": "sha256:dd57f90311a2567b55ff22eeacff1602fd04ad7566e315957731359eab173b90"
+            },
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-85091",
+            "DataSource": {
+              "ID": "debian",
+              "Name": "Debian Security Tracker",
+              "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+            },
+            "Fingerprint": "sha256:91646439fac160fe61841acb04732bcd29a0bd42fc0371b61bb1dd712d766faf",
+            "Title": "zlib: zlib: Heap buffer overflow in gz_vacate() allows arbitrary code execution",
+            "Description": "zlib versions 1.3.1.2 through 1.3.2 contain a heap buffer overflow vulnerability in the gz_vacate() function when processing non-blocking gzwrite() operations with stale external buffer pointers. Attackers can trigger the overflow by calling gzprintf() or gzvprintf() after a write stall, causing an unchecked memmove() to write beyond the internal input buffer boundary.",
+            "Severity": "HIGH",
+            "CweIDs": [
+              "CWE-787"
+            ],
+            "VendorSeverity": {
+              "azure": 3,
+              "redhat": 3,
+              "ubuntu": 2
+            },
+            "CVSS": {
+              "redhat": {
+                "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "V3Score": 8.1
+              }
+            },
+            "References": [
+              "https://access.redhat.com/security/cve/CVE-2026-85091",
+              "https://gist.github.com/thesmartshadow/e0b9481792afb7c31e86fee1ff084490",
+              "https://github.com/madler/zlib",
+              "https://github.com/madler/zlib/blob/v1.3.2/gzwrite.c#L393",
+              "https://nvd.nist.gov/vuln/detail/CVE-2026-85091",
+              "https://ubuntu.com/security/notices/USN-8954-1",
+              "https://www.cve.org/CVERecord?id=CVE-2026-85091",
+              "https://www.vulncheck.com/advisories/zlib-1.3.1.2-through-1.3.2-heap-buffer-overflow-via-gz-vacate"
+            ],
+            "PublishedDate": "2026-09-03T13:06:20.573Z",
+            "LastModifiedDate": "2026-09-09T20:41:07.123Z"
+          },
+          {
+            "VulnerabilityID": "CVE-2026-27171",
+            "VendorIDs": [
+              "DSA-6613-1"
+            ],
+            "PkgID": "zlib1g@1:1.3.dfsg+really1.3.1-1+b1",
+            "PkgName": "zlib1g",
+            "PkgIdentifier": {
+              "PURL": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
+              "UID": "ec1c0574f56f96a0"
+            },
+            "InstalledVersion": "1:1.3.dfsg+really1.3.1-1+b1",
+            "FixedVersion": "1:1.3.dfsg+really1.3.1-1+deb13u1",
+            "Status": "fixed",
+            "Layer": {
+              "Digest": "sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41",
+              "DiffID": "sha256:dd57f90311a2567b55ff22eeacff1602fd04ad7566e315957731359eab173b90"
+            },
+            "SeveritySource": "nvd",
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-27171",
+            "DataSource": {
+              "ID": "debian",
+              "Name": "Debian Security Tracker",
+              "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+            },
+            "Fingerprint": "sha256:9c9c35fad1a1f64ed53b8154fb18eead1f54b17b175d0dc473713e9516c67fcb",
+            "Title": "zlib: zlib: Denial of Service via infinite loop in CRC32 combine functions",
+            "Description": "zlib before 1.3.2 allows CPU consumption via crc32_combine64 and crc32_combine_gen64 because x2nmodp can do right shifts within a loop that has no termination condition.",
+            "Severity": "MEDIUM",
+            "CweIDs": [
+              "CWE-1284"
+            ],
+            "VendorSeverity": {
+              "amazon": 1,
+              "azure": 1,
+              "cbl-mariner": 1,
+              "julia": 2,
+              "nvd": 2,
+              "photon": 2,
+              "redhat": 1,
+              "ubuntu": 1
+            },
+            "CVSS": {
+              "julia": {
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+                "V3Score": 5.5
+              },
+              "nvd": {
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+                "V3Score": 5.5
+              },
+              "redhat": {
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+                "V3Score": 3.3
+              }
+            },
+            "References": [
+              "https://7asecurity.com/blog/2026/02/zlib-7asecurity-audit",
+              "https://7asecurity.com/blog/2026/02/zlib-7asecurity-audit/",
+              "https://7asecurity.com/reports/pentest-report-zlib-RC1.1.pdf",
+              "https://access.redhat.com/security/cve/CVE-2026-27171",
+              "https://github.com/advisories/GHSA-h858-mf2m-8jf4",
+              "https://github.com/madler/zlib/issues/904",
+              "https://github.com/madler/zlib/releases/tag/v1.3.2",
+              "https://nvd.nist.gov/vuln/detail/CVE-2026-27171",
+              "https://ostif.org/zlib-audit-complete",
+              "https://ostif.org/zlib-audit-complete/",
+              "https://ubuntu.com/security/notices/USN-8706-1",
+              "https://www.cve.org/CVERecord?id=CVE-2026-27171"
+            ],
+            "PublishedDate": "2026-02-18T04:16:01.263Z",
+            "LastModifiedDate": "2026-06-17T10:26:47.357Z"
+          }
+        ]
+      },
+      "after": {
+        "image": "otterworks-audit/search-service:zlib-fixed",
+        "image_id": "sha256:3daa367131c88eecd5159f4ac4f3157c095e561210ecc9446309377dd4d8815d",
+        "total_records": 441,
+        "severity_counts": {
+          "LOW": 160,
+          "HIGH": 123,
+          "MEDIUM": 154,
+          "UNKNOWN": 4
+        },
+        "zlib_records": 0,
+        "zlib_scanner_records": [],
+        "installed_zlib_version": "1:1.3.dfsg+really1.3.1-1+deb13u1"
+      }
+    },
+    "admin-service": {
+      "before": {
+        "image": "otterworks-audit/admin-service:before",
+        "image_id": "sha256:89c6b7a8e6f9995c8db5ff3714c0b523d0b884928989922da2d0d2736d6149d1",
+        "total_records": 579,
+        "severity_counts": {
+          "LOW": 182,
+          "HIGH": 179,
+          "MEDIUM": 206,
+          "UNKNOWN": 8,
+          "CRITICAL": 4
+        },
+        "zlib_records": 3,
+        "zlib_scanner_records": [
+          {
+            "VulnerabilityID": "CVE-2026-76844",
+            "VendorIDs": [
+              "DSA-6613-1"
+            ],
+            "PkgID": "zlib1g@1:1.3.dfsg+really1.3.1-1+b1",
+            "PkgName": "zlib1g",
+            "PkgIdentifier": {
+              "PURL": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
+              "UID": "ec1c0574f56f96a0"
+            },
+            "InstalledVersion": "1:1.3.dfsg+really1.3.1-1+b1",
+            "FixedVersion": "1:1.3.dfsg+really1.3.1-1+deb13u1",
+            "Status": "fixed",
+            "Layer": {
+              "Digest": "sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41",
+              "DiffID": "sha256:dd57f90311a2567b55ff22eeacff1602fd04ad7566e315957731359eab173b90"
+            },
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76844",
+            "DataSource": {
+              "ID": "debian",
+              "Name": "Debian Security Tracker",
+              "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+            },
+            "Fingerprint": "sha256:b9cea73a18d53a239e409f34902db2d16772b6c7ee3ba3c508ab507a4e1f1f82",
+            "Title": "zlib: zlib 1.2.11 through 1.3.2 Heap Buffer Overflow via Stale gzwrite Pointer After Failed Write",
+            "Description": "zlib 1.2.11 through 1.3.2 contains a heap buffer overflow: after an underlying write() fails, gz_write() returns without resetting strm.next_in, leaving it pointed at the caller's buffer. A later gz* write call then derives a position from the stale pointer and writes past a heap allocation; any write() failure reaches it, including EPIPE on a blocking descriptor, and in versions before 1.3.1.2 the failed write must be followed by a gzclearerr() call.",
+            "Severity": "HIGH",
+            "CweIDs": [
+              "CWE-787"
+            ],
+            "VendorSeverity": {
+              "azure": 2,
+              "ghsa": 3,
+              "redhat": 3
+            },
+            "CVSS": {
+              "ghsa": {
+                "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:N/A:N",
+                "V3Score": 7.4
+              },
+              "redhat": {
+                "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "V3Score": 8.1
+              }
+            },
+            "References": [
+              "https://access.redhat.com/security/cve/CVE-2026-76844",
+              "https://gist.github.com/thesmartshadow/e0b9481792afb7c31e86fee1ff084490",
+              "https://github.com/advisories/GHSA-wr3j-pwj9-hqq6",
+              "https://github.com/madler/zlib",
+              "https://github.com/madler/zlib/blob/v1.3.2/gzwrite.c#L393",
+              "https://github.com/madler/zlib/commit/df84af25dc1942490e1d1c899a07619152a46148",
+              "https://github.com/webpack/webpack-dev-middleware",
+              "https://github.com/webpack/webpack-dev-middleware/blob/v8.1.1/src/middleware.js",
+              "https://github.com/webpack/webpack-dev-middleware/commit/13344e78b26d88fe9b7c8381a3860e248a52359b",
+              "https://github.com/webpack/webpack-dev-middleware/commit/cefccbac330c29052fc6dffe85fd292ea2ac782b",
+              "https://github.com/webpack/webpack-dev-middleware/pull/2404",
+              "https://github.com/webpack/webpack-dev-middleware/releases/tag/v7.4.6",
+              "https://github.com/webpack/webpack-dev-middleware/releases/tag/v8.3.0",
+              "https://github.com/webpack/webpack-dev-middleware/security/advisories/GHSA-g84c-rxfj-3j2c",
+              "https://nvd.nist.gov/vuln/detail/CVE-2026-76844",
+              "https://www.cve.org/CVERecord?id=CVE-2026-76844",
+              "https://www.vulncheck.com/advisories/webpack-dev-middleware-path-traversal-via-offset-slice-on-a-non-slash-terminated-publicpath",
+              "https://www.vulncheck.com/advisories/zlib-1.3.1.2-through-1.3.2-heap-buffer-overflow-via-gz-vacate"
+            ],
+            "PublishedDate": "2026-08-24T14:17:02.25Z",
+            "LastModifiedDate": "2026-10-12T17:10:00.163Z"
+          },
+          {
+            "VulnerabilityID": "CVE-2026-85091",
+            "VendorIDs": [
+              "DSA-6613-1"
+            ],
+            "PkgID": "zlib1g@1:1.3.dfsg+really1.3.1-1+b1",
+            "PkgName": "zlib1g",
+            "PkgIdentifier": {
+              "PURL": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
+              "UID": "ec1c0574f56f96a0"
+            },
+            "InstalledVersion": "1:1.3.dfsg+really1.3.1-1+b1",
+            "FixedVersion": "1:1.3.dfsg+really1.3.1-1+deb13u1",
+            "Status": "fixed",
+            "Layer": {
+              "Digest": "sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41",
+              "DiffID": "sha256:dd57f90311a2567b55ff22eeacff1602fd04ad7566e315957731359eab173b90"
+            },
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-85091",
+            "DataSource": {
+              "ID": "debian",
+              "Name": "Debian Security Tracker",
+              "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+            },
+            "Fingerprint": "sha256:33c833770525bc1e43d52161374926351aeeee923d62880a2005589fab96366b",
+            "Title": "zlib: zlib: Heap buffer overflow in gz_vacate() allows arbitrary code execution",
+            "Description": "zlib versions 1.3.1.2 through 1.3.2 contain a heap buffer overflow vulnerability in the gz_vacate() function when processing non-blocking gzwrite() operations with stale external buffer pointers. Attackers can trigger the overflow by calling gzprintf() or gzvprintf() after a write stall, causing an unchecked memmove() to write beyond the internal input buffer boundary.",
+            "Severity": "HIGH",
+            "CweIDs": [
+              "CWE-787"
+            ],
+            "VendorSeverity": {
+              "azure": 3,
+              "redhat": 3,
+              "ubuntu": 2
+            },
+            "CVSS": {
+              "redhat": {
+                "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "V3Score": 8.1
+              }
+            },
+            "References": [
+              "https://access.redhat.com/security/cve/CVE-2026-85091",
+              "https://gist.github.com/thesmartshadow/e0b9481792afb7c31e86fee1ff084490",
+              "https://github.com/madler/zlib",
+              "https://github.com/madler/zlib/blob/v1.3.2/gzwrite.c#L393",
+              "https://nvd.nist.gov/vuln/detail/CVE-2026-85091",
+              "https://ubuntu.com/security/notices/USN-8954-1",
+              "https://www.cve.org/CVERecord?id=CVE-2026-85091",
+              "https://www.vulncheck.com/advisories/zlib-1.3.1.2-through-1.3.2-heap-buffer-overflow-via-gz-vacate"
+            ],
+            "PublishedDate": "2026-09-03T13:06:20.573Z",
+            "LastModifiedDate": "2026-09-09T20:41:07.123Z"
+          },
+          {
+            "VulnerabilityID": "CVE-2026-27171",
+            "VendorIDs": [
+              "DSA-6613-1"
+            ],
+            "PkgID": "zlib1g@1:1.3.dfsg+really1.3.1-1+b1",
+            "PkgName": "zlib1g",
+            "PkgIdentifier": {
+              "PURL": "pkg:deb/debian/zlib1g@1.3.dfsg%2Breally1.3.1-1%2Bb1?arch=amd64&distro=debian-13.7&epoch=1",
+              "UID": "ec1c0574f56f96a0"
+            },
+            "InstalledVersion": "1:1.3.dfsg+really1.3.1-1+b1",
+            "FixedVersion": "1:1.3.dfsg+really1.3.1-1+deb13u1",
+            "Status": "fixed",
+            "Layer": {
+              "Digest": "sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41",
+              "DiffID": "sha256:dd57f90311a2567b55ff22eeacff1602fd04ad7566e315957731359eab173b90"
+            },
+            "SeveritySource": "nvd",
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-27171",
+            "DataSource": {
+              "ID": "debian",
+              "Name": "Debian Security Tracker",
+              "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+            },
+            "Fingerprint": "sha256:dd03f7b32ae3ae633c2abeec3e2a07d676d812c1756d2380b842da20bd6ede2f",
+            "Title": "zlib: zlib: Denial of Service via infinite loop in CRC32 combine functions",
+            "Description": "zlib before 1.3.2 allows CPU consumption via crc32_combine64 and crc32_combine_gen64 because x2nmodp can do right shifts within a loop that has no termination condition.",
+            "Severity": "MEDIUM",
+            "CweIDs": [
+              "CWE-1284"
+            ],
+            "VendorSeverity": {
+              "amazon": 1,
+              "azure": 1,
+              "cbl-mariner": 1,
+              "julia": 2,
+              "nvd": 2,
+              "photon": 2,
+              "redhat": 1,
+              "ubuntu": 1
+            },
+            "CVSS": {
+              "julia": {
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+                "V3Score": 5.5
+              },
+              "nvd": {
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+                "V3Score": 5.5
+              },
+              "redhat": {
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+                "V3Score": 3.3
+              }
+            },
+            "References": [
+              "https://7asecurity.com/blog/2026/02/zlib-7asecurity-audit",
+              "https://7asecurity.com/blog/2026/02/zlib-7asecurity-audit/",
+              "https://7asecurity.com/reports/pentest-report-zlib-RC1.1.pdf",
+              "https://access.redhat.com/security/cve/CVE-2026-27171",
+              "https://github.com/advisories/GHSA-h858-mf2m-8jf4",
+              "https://github.com/madler/zlib/issues/904",
+              "https://github.com/madler/zlib/releases/tag/v1.3.2",
+              "https://nvd.nist.gov/vuln/detail/CVE-2026-27171",
+              "https://ostif.org/zlib-audit-complete",
+              "https://ostif.org/zlib-audit-complete/",
+              "https://ubuntu.com/security/notices/USN-8706-1",
+              "https://www.cve.org/CVERecord?id=CVE-2026-27171"
+            ],
+            "PublishedDate": "2026-02-18T04:16:01.263Z",
+            "LastModifiedDate": "2026-06-17T10:26:47.357Z"
+          }
+        ]
+      },
+      "after": {
+        "image": "otterworks-audit/admin-service:zlib-fixed",
+        "image_id": "sha256:75096958668bbd32b9a4c4cad416a40baf6c6eca481095461992b0c580f8a5da",
+        "total_records": 576,
+        "severity_counts": {
+          "LOW": 182,
+          "HIGH": 177,
+          "MEDIUM": 205,
+          "UNKNOWN": 8,
+          "CRITICAL": 4
+        },
+        "zlib_records": 0,
+        "zlib_scanner_records": [],
+        "installed_zlib_version": "1:1.3.dfsg+really1.3.1-1+deb13u1"
+      }
+    }
+  }
+}
