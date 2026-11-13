@@ -18,8 +18,10 @@ class MobileSecurityInstrumentedTest {
     @Test fun keystoreTokenRoundTripHasNoPlaintext() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val prefs = context.getSharedPreferences("dealer_session", Context.MODE_PRIVATE)
+        prefs.edit().clear().putString("access_token", "legacy").commit()
         val store = PreferenceTokenStore(context)
         try {
+            assertFalse(prefs.contains("access_token"))
             prefs.edit().clear().putString("access_token", "legacy").commit()
             assertNull(store.read())
             assertFalse(prefs.contains("access_token"))

@@ -41,6 +41,13 @@ class MobileSecurityTest {
         }
     }
 
+    @Test fun constructionDeletesLegacyPlaintextWithoutReading() {
+        val prefs = MemoryPreferences()
+        prefs.put("access_token", "legacy")
+        PreferenceTokenStore(prefs, cipher)
+        assertFalse(prefs.values.containsKey("access_token"))
+    }
+
     @Test fun tokensAreEncryptedAndLegacyValuesDiscarded() {
         val prefs = MemoryPreferences()
         val store = PreferenceTokenStore(prefs, cipher)

@@ -18,6 +18,10 @@ class PreferenceTokenStore(
     private val preferences: TokenPreferences,
     private val cipher: TokenCipher,
 ) : TokenStore {
+    init {
+        preferences.remove("access_token")
+    }
+
     constructor(context: Context) : this(object : TokenPreferences {
         private val prefs = context.getSharedPreferences("dealer_session", Context.MODE_PRIVATE)
         override fun get(key: String): String? = prefs.getString(key, null)
