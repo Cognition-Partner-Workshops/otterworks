@@ -42,6 +42,8 @@ async def add_comment(
     service = DocumentService(db)
     await _get_owned_document(service, document_id, user_id)
     comment = await service.add_comment(document_id, user_id, body)
+    if not comment:
+        raise HTTPException(status_code=404, detail="Document not found")
     logger.info("comment_added", document_id=str(document_id), comment_id=str(comment.id))
     return comment
 

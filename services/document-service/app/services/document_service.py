@@ -299,7 +299,11 @@ class DocumentService:
 
     async def add_comment(
         self, document_id: UUID, author_id: UUID, data: CommentCreate
-    ) -> Comment:
+    ) -> Comment | None:
+        document = await self.get(document_id)
+        if not document:
+            return None
+
         comment = Comment(
             document_id=document_id,
             author_id=author_id,
