@@ -5,6 +5,7 @@ from collections.abc import AsyncGenerator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import Uuid
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.api import documents as documents_api
@@ -15,6 +16,18 @@ from app.middleware import request_log
 from app.models.document import Comment, Document, DocumentVersion, Template  # noqa: F401
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+
+def _bind_uuid_as_text(self, dialect):  # noqa: ANN001, ANN202 - SQLAlchemy hook
+    # SQLite would store bare hex, so the filter repository's text comparison on
+    # owner_id would never match; store the hyphenated form Postgres renders.
+    def process(value):  # noqa: ANN001, ANN202
+        return None if value is None else str(value)
+
+    return process
+
+
+Uuid.bind_processor = _bind_uuid_as_text
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 TestingSessionLocal = async_sessionmaker(
