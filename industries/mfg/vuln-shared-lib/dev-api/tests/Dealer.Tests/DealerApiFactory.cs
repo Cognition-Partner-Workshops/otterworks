@@ -16,6 +16,7 @@ public sealed class DealerApiFactory : WebApplicationFactory<Dealer.Program>
     private readonly SqliteConnection connection;
     public string ExportRoot { get; } = Path.Combine(AppContext.BaseDirectory, "data", Guid.NewGuid().ToString("N"));
     public string BulletinUrl { get; set; } = "https://bulletins.oem.example/prices.json";
+    public string? BulletinAllowedHost { get; set; } = "bulletins.oem.example";
     public TransportStub Transport { get; } = new();
 
     public DealerApiFactory()
@@ -33,7 +34,8 @@ public sealed class DealerApiFactory : WebApplicationFactory<Dealer.Program>
         {
             ["Dealer:Database"] = $"Data Source={databaseName};Mode=Memory;Cache=Shared",
             ["Dealer:ExportRoot"] = ExportRoot,
-            ["Dealer:PriceBulletinUrl"] = BulletinUrl
+            ["Dealer:PriceBulletinUrl"] = BulletinUrl,
+            ["Dealer:PriceBulletinAllowedHosts:0"] = BulletinAllowedHost
         }));
         builder.ConfigureServices(services =>
             services.AddHttpClient("images").ConfigurePrimaryHttpMessageHandler(() => Transport));

@@ -52,7 +52,7 @@ public sealed class ProcessorController(
         {
             return Ok(new { imported = await remittance.Pull(User.FindFirst("dealer")!.Value) });
         }
-        catch (Exception exception) when (exception is HttpRequestException or InvalidDataException or System.Text.Json.JsonException)
+        catch (Exception exception) when (exception is ArgumentException or HttpRequestException or InvalidDataException or System.Text.Json.JsonException)
         {
             return Problem("Remittance statement could not be loaded.", statusCode: 502);
         }

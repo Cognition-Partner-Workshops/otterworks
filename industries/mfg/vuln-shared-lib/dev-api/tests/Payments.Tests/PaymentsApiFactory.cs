@@ -20,6 +20,7 @@ public sealed class PaymentsApiFactory : WebApplicationFactory<Payments.Program>
     public IPAddress[] WebhookAddresses { get; set; } = [IPAddress.Parse("93.184.216.34")];
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     public string RemittanceUrl { get; set; } = "https://processor.example/remittance.json";
+    public string? RemittanceAllowedHost { get; set; } = "processor.example";
     public PaymentTransport Transport { get; } = new();
 
     public PaymentsApiFactory()
@@ -32,7 +33,7 @@ public sealed class PaymentsApiFactory : WebApplicationFactory<Payments.Program>
         builder.ConfigureAppConfiguration((_, config) =>
         {
             config.AddInMemoryCollection(TestConfiguration.SyntheticSigning.Settings);
-            config.AddInMemoryCollection(new Dictionary<string, string?> { ["Payments:Processor:RemittanceUrl"] = RemittanceUrl });
+            config.AddInMemoryCollection(new Dictionary<string, string?> { ["Payments:Processor:RemittanceAllowedHosts:0"] = RemittanceAllowedHost, ["Payments:Processor:RemittanceUrl"] = RemittanceUrl });
             if (ProcessorSecret is not null)
                 config.AddInMemoryCollection(new Dictionary<string, string?> { ["Payments:Processor:ApiSecret"] = ProcessorSecret });
         });

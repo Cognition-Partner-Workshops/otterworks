@@ -25,7 +25,7 @@ public sealed class DealerOperationsController(
         {
             return Ok(new { stored = await bulletins.Refresh() });
         }
-        catch (Exception e) when (e is HttpRequestException or InvalidDataException or Newtonsoft.Json.JsonException)
+        catch (Exception e) when (e is ArgumentException or HttpRequestException or InvalidDataException or Newtonsoft.Json.JsonException)
         {
             return Problem("Price bulletin could not be loaded.", statusCode: 502);
         }
