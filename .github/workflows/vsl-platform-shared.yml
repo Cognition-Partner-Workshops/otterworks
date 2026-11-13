@@ -1,0 +1,50 @@
+name: vsl platform-shared
+
+# Platform.Shared NuGet library under industries/mfg/vuln-shared-lib/platform-shared.
+# Builds, tests and packs on every PR into the estate branch that touches the library;
+# ready PRs from this repository also publish the package version to GitHub Packages.
+
+on:
+  pull_request:
+    branches: [demo-vuln-shared-lib]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - industries/mfg/vuln-shared-lib/platform-shared/**
+      - .github/workflows/vsl-platform-shared.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: vsl-platform-shared-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: '1'
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  FEED_URL: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+
+jobs:
+  build-test-pack:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: industries/mfg/vuln-shared-lib/platform-shared
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: make test
+      - run: make pack
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: platform-shared-nupkg
+          path: industries/mfg/vuln-shared-lib/platform-shared/artifacts/feed/*.nupkg
+      - name: Publish to GitHub Packages
+        if: >-
+          github.event_name == 'workflow_dispatch' ||
+          (github.event.pull_request.head.repo.full_name == github.repository && !github.event.pull_request.draft)
+        run: dotnet nuget push "artifacts/feed/*.nupkg" --source "$FEED_URL" --api-key "${{ secrets.GITHUB_TOKEN }}" --skip-duplicate
