@@ -2,7 +2,7 @@
 FEED ?= $(CURDIR)/artifacts/feed
 CONFIG ?= Release
 
-.PHONY: restore build test pack clean
+.PHONY: restore build test pack compat clean
 
 restore:
 	dotnet restore Platform.Shared.sln
@@ -16,6 +16,9 @@ test: build
 pack: build
 	mkdir -p $(FEED)
 	dotnet pack src/Platform.Shared/Platform.Shared.csproj --no-build -c $(CONFIG) -o $(FEED)
+
+compat:
+	./tests/compat/run.sh
 
 clean:
 	rm -rf artifacts src/*/bin src/*/obj tests/*/bin tests/*/obj

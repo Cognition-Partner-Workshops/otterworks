@@ -31,7 +31,7 @@ The transport disables automatic redirects. At most five redirects are followed,
 checked against the same allowlist, with HTTPS-to-HTTP downgrades rejected before sending.
 Policy violations throw `SafeHttpPolicyException`, a subclass of `HttpRequestException`.
 `FinalUri` is the last fetched URI. The existing response size bound remains in force.
-Allowlisting a host trusts its DNS and infrastructure; this is not a DNS rebinding defense.
+The allowlist matches host names and does not pin resolved IP addresses; DNS rebinding of an allowlisted name is out of scope, so allowlist only hosts you control.
 
 The obsolete `Fetch(url)` uses `SafeHttp.ConfigureDefaultAllowedHosts(...)`, otherwise
 `PLATFORM_SHARED_FETCH_ALLOWED_HOSTS` (comma-separated). Without either it denies all hosts.
@@ -64,10 +64,10 @@ The binary compatibility check builds a console consumer against a published-sty
 1.0.0 package made from the seeded commit, swaps only the library DLL, and runs it:
 
 ```bash
-bash tests/compat/run.sh
+make compat
 ```
 
-It keeps build artifacts under `~/act3-logs/binary-compat` and requires .NET 8 and git.
+It keeps build artifacts under `artifacts/compat` and requires .NET 8 and git.
 
 ## Commands
 
