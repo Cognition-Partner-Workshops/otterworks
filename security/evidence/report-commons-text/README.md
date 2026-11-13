@@ -47,7 +47,6 @@ mvn -s ../../security/evidence/report-commons-text/maven-settings.xml test \
   -Dow.deps.cases="$PWD/../../security/deps/cases/report-service.json" \
   -Dow.deps.observed="$PWD/target/text-after-observed.json"
 cd ../..
-make deps-gate MODULE=report-service
 make deps-transcript MODULE=report-service
 ```
 
@@ -55,6 +54,10 @@ The captured run used the Java 8 Maven builder container, matching this service'
 runtime and CI. The harness normally requests JDK 11 for Nashorn availability;
 Java 8 also supplies Nashorn. The unchanged Python grading function was invoked
 on the actual emitted JSON; no golden recordings or attack cases were edited.
+The estate-wide `make deps-gate` does not accept a module filter; other services
+still carry the advisory and are outside this PR's exclusive report-service scope.
+The captured `after-tree.txt` and image scan show that this module resolves 1.10.0
+and no longer contains the vulnerable artifact version.
 
 Use two separate source worktrees (baseline commit above and this PR) and Trivy 0.71.0.
 Preserve the SAME vulnerability and Java DB caches for both scans. Copy the archived
