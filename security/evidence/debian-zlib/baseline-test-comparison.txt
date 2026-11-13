@@ -1,0 +1,31 @@
+Document API test comparison, same test dependencies, Python 3.12 service image runtime.
+Base source e65bd28db3f9fac4b75bd254b875cec393f4eddb.
+No app, tests, pyproject.toml or poetry.lock differences in the zlib PR.
+Native CI fails with the same nine document API authorization expectations (HTTP 401 vs 200/404).
+No unrelated app/auth changes were made.
+
+BASELINE:
+=========================== short test summary info ============================
+FAILED tests/test_documents_api.py::test_get_document - assert 401 == 200
+FAILED tests/test_documents_api.py::test_get_document_not_found - assert 401 ...
+FAILED tests/test_documents_api.py::test_update_document - assert 401 == 200
+FAILED tests/test_documents_api.py::test_patch_document - assert 401 == 200
+FAILED tests/test_documents_api.py::test_delete_document - assert 401 == 204
+FAILED tests/test_documents_api.py::test_document_versions - assert 401 == 200
+FAILED tests/test_documents_api.py::test_restore_version - KeyError: -1
+FAILED tests/test_documents_api.py::test_export_document_html - assert 401 ==...
+FAILED tests/test_documents_api.py::test_export_document_markdown - assert 40...
+9 failed, 8 passed, 3 warnings in 0.71s
+
+AFTER ZLIB FIX:
+=========================== short test summary info ============================
+FAILED tests/test_documents_api.py::test_get_document - assert 401 == 200
+FAILED tests/test_documents_api.py::test_get_document_not_found - assert 401 ...
+FAILED tests/test_documents_api.py::test_update_document - assert 401 == 200
+FAILED tests/test_documents_api.py::test_patch_document - assert 401 == 200
+FAILED tests/test_documents_api.py::test_delete_document - assert 401 == 204
+FAILED tests/test_documents_api.py::test_document_versions - assert 401 == 200
+FAILED tests/test_documents_api.py::test_restore_version - KeyError: -1
+FAILED tests/test_documents_api.py::test_export_document_html - assert 401 ==...
+FAILED tests/test_documents_api.py::test_export_document_markdown - assert 40...
+9 failed, 8 passed, 3 warnings in 0.86s
