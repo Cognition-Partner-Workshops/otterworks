@@ -9,14 +9,15 @@ namespace Platform.Shared.Crypto;
 /// </summary>
 public static class TokenSigner
 {
-    // Synthetic fixture key; it protects nothing outside this demo estate.
-    private static readonly byte[] SigningKey = Encoding.UTF8.GetBytes("vsl-synthetic-platform-signing-key-v1");
+    private static byte[] SigningKey =>
+        Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("PLATFORM_SIGNING_KEY")
+            ?? throw new InvalidOperationException("PLATFORM_SIGNING_KEY is not set."));
 
     /// <summary>Returns the base64url signature of <paramref name="payload"/>.</summary>
     public static string Sign(string payload)
     {
         ArgumentNullException.ThrowIfNull(payload);
-        using var hmac = new HMACSHA1(SigningKey);
+        using var hmac = new HMACSHA256(SigningKey);
         return Base64Url.Encode(hmac.ComputeHash(Encoding.UTF8.GetBytes(payload)));
     }
 
