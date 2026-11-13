@@ -80,9 +80,10 @@ directly. Defaults target local development:
   (`mobile/android/app/src/debug/res/xml/network_security_config.xml`). Release builds
   keep cleartext disabled (`android:usesCleartextTraffic="false"`) and must use an https
   gateway.
+- iOS simulator: `http://localhost:8080/api/v1` (the Simulator shares the Mac's network, so the
+  host is `localhost`; `10.0.2.2` only exists on the Android emulator).
 - Override at build time for other environments, e.g.
   `VITE_API_BASE_URL=https://api.example.com/api/v1 npm run build && npx cap sync`
-- iOS simulator: use `VITE_API_BASE_URL=http://localhost:8080/api/v1`
 
 The API gateway's default CORS config allows the Capacitor WebView origins
 (`https://localhost` on Android, `capacitor://localhost` on iOS).
