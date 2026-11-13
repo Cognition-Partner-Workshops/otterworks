@@ -205,3 +205,72 @@ def test_github_failure_is_not_clean(tmp_path, monkeypatch):
     assert 'HTTP 403' in github.errors[0]
     with pytest.raises(RuntimeError, match='HTTP 403'):
         github.api('alerts', required=True)
+
+
+def test_action_groups_hide_dismissals_and_group_patterns():
+    import build_evidence_pack as builder
+
+    def entry(identifier, kind, flags, live, path='ignore'):
+        return dict(id=identifier, kind=kind, flags=flags, live=live, path=path,
+                    line=1, security=True, severity='high')
+
+    rows = [entry('CVE-1', 'trivy', ['LIVE', 'NO_REVISIT_DATE'], True),
+            entry('CVE-2', 'trivy', ['LIVE', 'NO_REVISIT_DATE'], True),
+            entry('CVE-3', 'Dependabot-auto_dismissed', ['NO_REASON'], 'not checked', ''),
+            entry('CVE-4', 'trivy', ['NO_REASON'], False)]
+    groups = builder.action_groups(rows)
+    assert len(groups) == 1
+    assert 'CVE-1, CVE-2' in groups[0][0]
+    assert groups[0][1] == 'Yes'
+    assert builder.action_groups([]) == []
+    assert [builder.live_label(value) for value in [True, False, 'not checked']] == ['Yes', 'No', 'not checked']
+
+
+def test_weekly_evidence_absent_and_cwe_mapping(tmp_path):
+    import json
+    import build_evidence_pack as builder
+
+    mapping = {'cwe_to_control': {'CWE-89': 'SSC-08'}, 'named_findings': {}, 'rule_patterns': []}
+    advisory, sonar = builder.weekly_evidence(tmp_path, mapping)
+    assert advisory['verdict'] == 'not measured / inconclusive'
+    assert sonar['clusters'] == []
+    (tmp_path / 'weekly-status.json').write_text(json.dumps({'wide_scan': {'download': {'exit_code': 0}}}))
+    (tmp_path / 'wide-scan').mkdir()
+    (tmp_path / 'wide-scan/clusters.json').write_text(json.dumps([
+        {'cluster': 'one', 'rules': ['sql'], 'count': 5, 'cwes': ['CWE-89']}]))
+    _, sonar = builder.weekly_evidence(tmp_path, mapping)
+    assert sonar['clusters'][0]['controls'] == ['SSC-08']
+
+
+def test_exact_line_provenance_uses_oldest_addition(monkeypatch):
+    import build_evidence_pack as builder
+
+    calls = []
+
+    class Source:
+        sha = 'target'
+
+        def read(self, path):
+            return 'CVE-2020-1 exp:2027-01-01'
+
+        def link(self, path, line):
+            return 'source'
+
+    class GitHub:
+        def commit_prs(self, sha):
+            return [{'number': 1, 'url': 'pr'}]
+
+    def command(*args):
+        calls.append(args)
+        if args[1] == 'log':
+            return 'oldest\nnewest'
+        if '--first-parent' in args:
+            return '+CVE-2020-1 exp:2027-01-01'
+        return ''
+
+    monkeypatch.setattr(builder, 'command', command)
+    rows = [dict(id='CVE-2020-1', path='.trivyignore', line=1, provenance_token='CVE-2020-1', flags=[])]
+    builder.add_provenance(rows, Source(), GitHub())
+    assert rows[0]['added_commit'] == 'oldest'
+    assert '--reverse' in calls[0] and '--diff-filter=AM' in calls[0]
+    assert '-SCVE-2020-1 exp:2027-01-01' in calls[0]

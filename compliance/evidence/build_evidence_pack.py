@@ -1,6 +1,7 @@
 """Build linked audit evidence from Git, GitHub and optional live scanner reports."""
 
 import argparse
+from collections import Counter
 import hashlib
 import importlib.util
 import json
@@ -32,9 +33,9 @@ def command(*args):
 
 
 class GitSource:
-    def __init__(self, branch):
+    def __init__(self, branch, ref=None):
         self.branch = branch
-        self.sha = command('git', 'rev-parse', f'origin/{branch}')
+        self.sha = command('git', 'rev-parse', ref or f'origin/{branch}')
         self.files = command('git', 'ls-tree', '-r', '--name-only', self.sha).splitlines()
 
     def read(self, path):
@@ -120,6 +121,8 @@ def collect_exceptions(src, mapping):
                             cwd=ROOT, text=True, capture_output=True)
     for name in result.stdout.splitlines():
         path = name.split(':', 1)[1]
+        if path.startswith('compliance/evidence/tests/'):
+            continue
         for row in parse_nosemgrep(src.read(path), path):
             row.update(kind='nosemgrep', provenance_token=row['id'],
                        controls=controls_for(row['id'] + ' ' + row['comment_block'], mapping,
@@ -185,14 +188,16 @@ def add_provenance(rows, src, github):
     cache = {}
     for row in rows:
         row['file_url'] = src.link(row['path'], row['line'])
-        token = row.pop('provenance_token')
+        row.pop('provenance_token')
+        token = src.read(row['path']).splitlines()[row['line'] - 1]
         key = row['path'], token
         if key not in cache:
-            commits = command('git', 'log', src.sha, '--format=%H', f'-S{token}', '--', row['path']).splitlines()
+            commits = command('git', 'log', '--reverse', '--diff-filter=AM', src.sha,
+                              '--format=%H', f'-S{token}', '--', row['path']).splitlines()
             added = None
             for sha in commits:
                 diff = command('git', 'show', '--format=', '--first-parent', sha, '--', row['path'])
-                if any(token in line for line in diff.splitlines() if line.startswith('+') and not line.startswith('+++')):
+                if any(token == line[1:] for line in diff.splitlines() if line.startswith('+') and not line.startswith('+++')):
                     added = sha
                     break
             if added:
@@ -200,6 +205,8 @@ def add_provenance(rows, src, github):
                 patch = command('git', 'show', '--format=', '--first-parent', added, '--', 'services/*/Dockerfile')
                 changes = [line for line in patch.splitlines() if re.match(r'[-+]FROM\s', line)]
                 cache[key] = {'added_commit': added, 'added_message': message,
+                              'attribution_method': 'oldest exact-line addition via git log --reverse --diff-filter=AM -S',
+                              'attribution_line': token,
                               'prs': github.commit_prs(added), 'runtime_changes_in_commit': changes}
             else:
                 cache[key] = {'added_commit': None, 'prs': [], 'provenance_note': 'addition not resolved'}
@@ -477,28 +484,112 @@ def finding_detail(row):
                      f"({v['Severity']})" for v in row['findings'])
 
 
+def live_label(value):
+    return 'Yes' if value is True else 'No' if value is False else 'not checked'
+
+
+def repo_actions(exceptions):
+    flags = {'LIVE', 'GLOB_INEFFECTIVE', 'STALE_NOT_NEEDED', 'ADDED_WITH_SKIP_CI', 'EXPIRED'}
+    return sorted([e for e in exceptions if e['path'] and e['security'] and
+                   (flags.intersection(e['flags']) or (e['live'] is True and
+                    {'NO_REASON', 'NO_REVISIT_DATE'}.intersection(e['flags'])))], key=priority)
+
+
+def action_groups(exceptions):
+    groups = {}
+    for row in repo_actions(exceptions):
+        key = (row['kind'], tuple(sorted(row['flags'])), live_label(row['live']))
+        groups.setdefault(key, []).append(row)
+    result = []
+    for (kind, flags, live), rows in groups.items():
+        if kind == 'gitleaks':
+            ids = f"{len(rows)} stale fingerprints ([register](#exception-register))"
+        else:
+            ids = ', '.join(row['id'] for row in rows)
+        result.append([f"{len(rows)} {kind}: {ids}", live, ', '.join(flags)])
+    return result
+
+
+def weekly_evidence(directory, mapping):
+    path = directory / 'weekly-status.json'
+    status = json.loads(path.read_text()) if path.exists() else {}
+    gate_path = directory / 'advisory/gate.json'
+    gate = json.loads(gate_path.read_text()) if gate_path.exists() and status else None
+    advisory = {'controls': ['SSC-11'], 'steps': {k: status.get(k) for k in ['deps_inventory', 'deps_gate']},
+                'report': gate, 'verdict': 'not measured / inconclusive',
+                'evidence': ['out/deps-inventory.log', 'out/deps-gate.log', 'out/advisory/gate.json']}
+    if gate:
+        verdict = gate.get('verdict', {})
+        if isinstance(verdict, dict):
+            unmeasured = verdict.get('unmeasured', [])
+            vulnerable = verdict.get('vulnerable', [])
+            advisory['verdict'] = (f'INCONCLUSIVE: {len(unmeasured)} unmeasured modules' if unmeasured else
+                                   f'VULNERABLE: {len(vulnerable)} affected modules' if vulnerable else 'PASS: no vulnerable version reachable')
+        else:
+            advisory['verdict'] = str(verdict)
+    sonar = dict(status.get('wide_scan', {}))
+    cluster_path = directory / 'wide-scan/clusters.json'
+    sonar['clusters'] = []
+    if status and sonar.get('download', {}).get('exit_code') == 0 and cluster_path.exists():
+        for cluster in json.loads(cluster_path.read_text()):
+            sonar['clusters'].append({**cluster, 'controls': controls_for(
+                ' '.join(cluster.get('rules', [])), mapping, cwes=cluster.get('cwes', []))})
+    return advisory, sonar
+
+
+def executive_summary(pack):
+    exceptions = pack['exceptions']
+    repo = [e for e in exceptions if e['path'] and e['security']]
+    absent = sum(all(v.startswith('no ') for v in g['events'].values()) for g in pack['gates'])
+    informational = sum(g['enforcement'].startswith('informational') for g in pack['gates'])
+    critical = next(r for r in pack['metrics']['dependabot'] if r['severity'] == 'critical')
+    commits = []
+    for row in pack['skip_ci_commits']:
+        detail = []
+        if any('publicly_accessible' in line and 'true' in line for line in row['changes']):
+            detail.append('RDS public')
+        if any('storage_encrypted' in line and 'false' in line for line in row['changes']):
+            detail.append('unencrypted')
+        if any(line.startswith('+FROM ') for line in row['changes']):
+            detail.append('runtime base downgrade/change')
+        commits.append(pr_links(row) + (': ' + ', '.join(detail) if detail else ''))
+    gaps = [c['control'] for c in pack['coverage'] if c['gaps']]
+    outside = sum('OUT-OF-CATALOG' in e['controls'] for e in exceptions)
+    return [f"- **Exceptions:** {sum(e['live'] is True for e in repo)} live; "
+            f"{sum('STALE_NOT_NEEDED' in e['flags'] for e in repo)} stale/not needed; {len(repo_actions(exceptions))} repo entries need action.",
+            f"- **Gates on {pack['branch']}:** {absent}/{len(pack['gates'])} have no direct push/PR eligibility; "
+            f"{informational} are informational-only (overlap possible). [Details](#gates).",
+            '- **CI-skip security commits:** ' + '; '.join(commits) + '.',
+            f"- **Remediation:** {critical['past_sla']}/{critical['open']['n']} open criticals past assumed "
+            f"{critical['sla_days']}-day SLA; median age {critical['open']['median_days']} days.",
+            f"- **Catalog gaps:** {outside} OUT-OF-CATALOG exceptions; coverage gaps in {', '.join(gaps)}. "
+            '[Matrix](#control-coverage-matrix).']
+
+
 def render(pack):
     exceptions = pack['exceptions']
-    flagged = sorted([e for e in exceptions if e['flags']], key=priority)
-    lines = ['# CISO auditor evidence pack', '', '## Exceptions needing action', '',
-             f"Target `{pack['branch']}` at `{pack['sha']}`. Generated {pack['generated_at']}.", '',
-             '**LIVE means scanner-observed presence, not exploitability. Not checked is not clean.**', '']
+    flagged = repo_actions(exceptions)
+    lines = ['# CISO auditor evidence pack', '', '## Executive summary', *executive_summary(pack), '',
+             '## Exceptions needing action', '']
     if flagged:
         first = flagged[0]
         lines += [f"**Lead: {first['id']}** — {', '.join(first['flags'])}. "
                   f"[Source]({first['file_url']}); {pr_links(first)}.",
                   finding_detail(first),
-                  'Runtime changes in adding commit: ' + '; '.join(first.get('runtime_changes_in_commit', [])), '']
+                  'Runtime changes in adding commit: ' + '; '.join(first.get('runtime_changes_in_commit', []))]
         if first.get('section_claim'):
-            lines += ['**Header claim:** ' + first['section_claim'], '']
+            lines += ['**Header claim:** ' + first['section_claim']]
         for regression in first.get('runtime_regressions', []):
             lines += [f"**Runtime regression:** {first['id']} was absent in the available "
                       f"`{regression['previous_image']}` scan and is present in "
-                      f"`{regression['new_image']}` after the adding commit's base-image change.", '']
-    lines.append(md_table(['Exception / evidence', 'Control', 'Live', 'Flags', 'Added by PR'],
-                          [[f"[{e['id']}]({e['file_url']})", ', '.join(e['controls']) or 'non-security',
-                            e['live'], ', '.join(e['flags']), pr_links(e)] for e in flagged]))
+                      f"`{regression['new_image']}` after the adding commit's base-image change."]
+    lines += ['', md_table(['Grouped repo exceptions (IDs; full links in register)', 'Live', 'Flags'], action_groups(exceptions))]
+    dismissals = Counter(e['severity'] for e in exceptions if e['kind'].startswith('Dependabot-'))
+    lines += ['', f"**Dependabot dismissed/auto-dismissed:** {sum(dismissals.values())} "
+              f"({', '.join(f'{s}: {dismissals[s]}' for s in SEVERITIES if dismissals[s])}); "
+              '[full rows in register](#dependabot-dismissals).']
     lines += ['', '## Sources, scope and assumptions', '',
+              f"Target `{pack['branch']}` at `{pack['sha']}`. Generated {pack['generated_at']}.",
               'Dependabot and CodeQL track the **default branch (main)**, not demo-ciso. '
               'PR metrics cover all merged PRs whose title/body references a named security finding; '
               'this is not independent proof each finding was closed. Counts are evidence records, not deduplicated vulnerabilities.',
@@ -516,14 +607,18 @@ def render(pack):
               '## Exception register', '',
               'ID globbing in .trivyignore is ineffective (Trivy 0.71.0 matches exact IDs). '
               'A Q4 comment is not a revisit date. Raw inline comments are evidence, not an endorsement.', '']
-    lines.append(md_table(['Kind / ID', 'Location at target SHA', 'Controls', 'Reason?', 'Comment block',
+    repo_entries = [e for e in exceptions if not e['kind'].startswith('Dependabot-')]
+    dismissed_entries = [e for e in exceptions if e['kind'].startswith('Dependabot-')]
+    def register(entries):
+        return md_table(['Kind / ID', 'Location at target SHA', 'Controls', 'Reason?', 'Comment block',
                            'Revisit', 'Live / severity', 'Findings', 'Flags', 'Added commit / PR'],
                           [[e['kind'] + ': ' + e['id'], f"[{e['path'] or 'GitHub alert'}:{e['line']}]({e['file_url']})",
                             ', '.join(e['controls']) or 'non-security', e['has_reason'], e['comment_block'],
-                            e['revisit_date'], f"{e['live']} / {e.get('severity', 'unknown')}", finding_detail(e),
+                            e['revisit_date'], f"{live_label(e['live'])} / {e.get('severity', 'unknown')}", finding_detail(e),
                             ', '.join(e['flags']),
                             (f"[{e['added_commit'][:10]}]({WEB}/commit/{e['added_commit']}) "
-                             if e.get('added_commit') else '') + pr_links(e)] for e in exceptions]))
+                             if e.get('added_commit') else '') + pr_links(e)] for e in entries])
+    lines += [register(repo_entries), '', '### Dependabot dismissals', '', register(dismissed_entries)]
     lines += ['', '### Catalog coverage gaps', '',
               md_table(['Exception', 'Evidence'], [[e['id'], e['file_url']] for e in exceptions
                                                   if 'OUT-OF-CATALOG' in e['controls']]), '',
@@ -571,12 +666,34 @@ def render(pack):
               md_table(['n', 'Median days', 'p90 days', 'Max days'],
                        [[pack['metrics']['merged_security_pr_open_to_merge'][key]
                          for key in ['n', 'median_days', 'p90_days', 'max_days']]])]
+    advisory = pack['advisory_exposure']
+    sonar = pack['wide_scan']
+    lines += ['', '## Advisory exposure check — SSC-11', '',
+              'CVE-2022-42889 / commons-text harness. Make exit 2 is not a pass: Make also wraps '
+              'recipe failures as 2; use the structured gate report for the actual verdict.',
+              '**Verdict:** ' + advisory['verdict'],
+              md_table(['Step', 'Exit code', 'Evidence'],
+                       [[name, (step or {}).get('exit_code', 'not checked'),
+                         f"[log]({(step or {}).get('log', 'out/' + name + '.log') .replace('compliance/evidence/', '')})"]
+                        for name, step in advisory['steps'].items()]),
+              '[Structured gate report](out/advisory/gate.json)', '',
+              '## Wide-scan SonarQube triage', '',
+              'External banking repositories, not an OtterWorks blocking gate. Clusters map through CWE rules; '
+              'unmapped clusters remain OUT-OF-CATALOG.',
+              f"Run: {sonar.get('run_url', 'not checked')}; status: {sonar.get('run', {})}.",
+              'Artifacts: ' + ', '.join(sonar.get('artifact_urls', [])),
+              '[Cluster Markdown](out/wide-scan/clusters.md) · [Cluster JSON](out/wide-scan/clusters.json)',
+              md_table(['Cluster', 'Findings', 'CWE', 'Controls', 'Rules'],
+                       [[c['cluster'], c['count'], ', '.join(c.get('cwes', [])), ', '.join(c['controls']),
+                         ', '.join(c.get('rules', []))] for c in sorted(sonar.get('clusters', []), key=lambda c: -c['count'])]),
+              'Collection notes: ' + json.dumps({k: v for k, v in sonar.items() if k.endswith('error') or k in ['dispatch', 'watch', 'download']})]
     return '\n'.join(lines) + '\n'
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--branch', default='demo-ciso')
+    parser.add_argument('--source-ref', help='Git snapshot to inspect (weekly fresh scans use HEAD)')
     parser.add_argument('--live-dir', type=Path, default=ROOT / 'compliance/evidence/out')
     parser.add_argument('--out', type=Path, default=ROOT / 'compliance/evidence/evidence-pack.md')
     parser.add_argument('--json', type=Path, default=ROOT / 'compliance/evidence/evidence-pack.json')
@@ -589,7 +706,7 @@ def main():
         return
     if command('git', 'rev-parse', '--is-shallow-repository') == 'true':
         raise SystemExit('Full Git history required; run git fetch --unshallow first.')
-    src = GitSource(args.branch)
+    src = GitSource(args.branch, args.source_ref)
     mapping = yaml.safe_load((Path(__file__).with_name('control-map.yaml')).read_text())
     spec = importlib.util.spec_from_file_location('catalog', ROOT / 'compliance/control-catalogs/validate_catalog.py')
     validator = importlib.util.module_from_spec(spec)
@@ -621,6 +738,12 @@ def main():
             'github_sources': github.sources,
             'warnings': warnings + github.errors}
     pack['coverage'] = coverage(catalog, rows, closed, gates)
+    pack['advisory_exposure'], pack['wide_scan'] = weekly_evidence(args.live_dir, mapping)
+    for control in pack['coverage']:
+        if control['control'] == 'SSC-11' and pack['advisory_exposure']['steps'].get('deps_gate'):
+            control['evidence_links'].append('#advisory-exposure-check--ssc-11')
+        if any(control['control'] in c['controls'] for c in pack['wide_scan']['clusters']):
+            control['evidence_links'].append(pack['wide_scan'].get('run_url', '#wide-scan-sonarqube-triage'))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.json.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(render(pack))

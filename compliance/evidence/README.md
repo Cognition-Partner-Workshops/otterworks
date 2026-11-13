@@ -44,3 +44,18 @@ separate from target-branch exceptions. Fixing PR attribution uses the last main
 commit touching a manifest before `fixed_at` and is labelled heuristic. Merged PRs
 mentioning named findings are references, not independently proven fixes. Counts
 are evidence records and can overlap. No scanner suppression is changed by this tool.
+
+## Weekly unattended refresh
+
+`make evidence-weekly` (or `bash compliance/evidence/weekly_refresh.sh --branch demo-ciso`)
+scans the current HEAD, runs `make deps-inventory` and `make deps-gate`, dispatches
+`sonarqube-banking.yml` on the specified remote branch, waits up to 90 minutes and
+downloads its clusters artifact. It then rebuilds the pack with `--source-ref HEAD`
+and writes `out/weekly-summary.md` (at most 40 lines) plus `weekly-status.json`.
+The branch must exist on GitHub and support workflow dispatch. Concurrent ambiguous
+dispatches are reported rather than attributed speculatively. Dispatch, scanner and
+advisory failures are captured and do not prevent the other evidence steps. Dependency
+checks need uv, Maven/Gradle and the JDKs declared in `security/deps/modules.yaml`;
+missing tools/JDKs produce inconclusive evidence, not a pass. Commit code before
+collecting a weekly snapshot. Generated pack changes will naturally be committed
+after the SHA whose sources were scanned; no self-referential SHA is claimed.

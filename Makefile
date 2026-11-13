@@ -634,3 +634,7 @@ lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains
 evidence-pack: ## Generate live scanner and linked GitHub compliance evidence
 	bash compliance/evidence/live_check.sh
 	python3 compliance/evidence/build_evidence_pack.py --branch demo-ciso
+
+.PHONY: evidence-weekly
+evidence-weekly: ## Refresh scans, advisory exposure and wide SonarQube triage
+	bash compliance/evidence/weekly_refresh.sh
