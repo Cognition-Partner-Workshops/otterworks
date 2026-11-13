@@ -43,6 +43,16 @@ public sealed class IdentityApiFactory : WebApplicationFactory<Identity.Program>
         database.SaveChanges();
     }
 
+    public string? ClientSecret { get; init; } = "vsl-synthetic-test-introspection-secret";
+
+    protected override Microsoft.Extensions.Hosting.IHost CreateHost(Microsoft.Extensions.Hosting.IHostBuilder builder)
+    {
+        builder.ConfigureAppConfiguration((_, config) =>
+            Microsoft.Extensions.Configuration.MemoryConfigurationBuilderExtensions.AddInMemoryCollection(config,
+                new Dictionary<string, string?> { ["Identity:ClientSecret"] = ClientSecret }));
+        return base.CreateHost(builder);
+    }
+
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
