@@ -1,0 +1,5 @@
+image=admin-service:combined id=sha256:84b6faadcd7d6284c50a4026a837076c0e4eacdf0dd3f029f15a6cbba0f1d51b
+total=458 by_severity: HIGH=133 LOW=160 MEDIUM=161 UNKNOWN=4
+  admin-service:combined (debian 13.7) [debian]: 427 HIGH=126 LOW=157 MEDIUM=140 UNKNOWN=4
+  Ruby [gemspec]: 31 HIGH=7 LOW=3 MEDIUM=21
+  gem CRITICAL:
