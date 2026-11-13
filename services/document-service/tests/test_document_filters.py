@@ -160,3 +160,16 @@ async def test_unsupported_ordering_is_rejected(
     assert resp.status_code == 400
     detail = resp.json()["detail"]
     assert "SELECT" not in detail and "syntax" not in detail.lower()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("sort", ["id", "owner_id", "folder_id", "created_at", "word_count"])
+async def test_every_listed_column_is_still_sortable(
+    client: AsyncClient, owner_id: uuid.UUID, sort: str
+):
+    await _create(client, owner_id, "Quarterly Report")
+
+    resp = await client.get("/api/v1/documents/", params={"sort": sort, "direction": "asc"})
+
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 1

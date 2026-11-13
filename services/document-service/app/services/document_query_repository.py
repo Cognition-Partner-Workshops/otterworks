@@ -31,9 +31,7 @@ COLUMNS = (
 )
 
 
-SORTABLE_COLUMNS = frozenset(
-    {"title", "content_type", "word_count", "version", "created_at", "updated_at"}
-)
+SORTABLE_COLUMNS = frozenset(COLUMNS)
 SORT_DIRECTIONS = frozenset({"asc", "desc"})
 
 
