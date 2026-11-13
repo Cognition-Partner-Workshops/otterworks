@@ -2,7 +2,7 @@
 FEED ?= $(CURDIR)/artifacts/feed
 CONFIG ?= Release
 
-.PHONY: restore build test pack clean
+.PHONY: restore build test pack compat consumer-compat clean
 
 restore:
 	dotnet restore Platform.Shared.sln
@@ -16,6 +16,15 @@ test: build
 pack: build
 	mkdir -p $(FEED)
 	dotnet pack src/Platform.Shared/Platform.Shared.csproj --no-build -c $(CONFIG) -o $(FEED)
+	bash tests/compat/pack-seeded.sh "$(FEED)"
+
+consumer-compat: pack
+	bash tests/compat/consumers.sh
+
+compat:
+	VSL_SEEDED_REF=vsl-missing-seeded-ref bash tests/compat/pack-seeded.sh "$(CURDIR)/artifacts/compat/fallback-feed"
+	test -f "$(CURDIR)/artifacts/compat/fallback-feed/Platform.Shared.1.0.0.nupkg"
+	./tests/compat/run.sh
 
 clean:
 	rm -rf artifacts src/*/bin src/*/obj tests/*/bin tests/*/obj

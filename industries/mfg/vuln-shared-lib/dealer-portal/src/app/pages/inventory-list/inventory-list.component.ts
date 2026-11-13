@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CurrencyPipe, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -17,7 +17,7 @@ import { PortalApiService } from '../../core/services/portal-api.service';
         <input name="q" type="search" placeholder="Search by VIN or model" [(ngModel)]="searchText">
         <button type="submit">Search</button>
       </form>
-      <p class="summary" data-testid="search-summary" #summary [hidden]="!query"></p>
+      <p class="summary" data-testid="search-summary" [hidden]="!query">{{ vehicles.length }} {{ vehicles.length === 1 ? 'vehicle matches' : 'vehicles match' }} <strong>{{ query }}</strong></p>
       <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
       <table class="grid" *ngIf="vehicles.length; else empty">
         <thead>
@@ -42,8 +42,6 @@ import { PortalApiService } from '../../core/services/portal-api.service';
   `],
 })
 export class InventoryListComponent implements OnInit, OnDestroy {
-  @ViewChild('summary', { static: true }) summary!: ElementRef<HTMLElement>;
-
   vehicles: Vehicle[] = [];
   query = '';
   searchText = '';
@@ -55,7 +53,6 @@ export class InventoryListComponent implements OnInit, OnDestroy {
     private api: PortalApiService,
     private route: ActivatedRoute,
     private router: Router,
-    private renderer: Renderer2,
   ) {}
 
   ngOnInit(): void {
@@ -65,7 +62,6 @@ export class InventoryListComponent implements OnInit, OnDestroy {
         this.query = (params.get('q') ?? '').trim();
         this.searchText = this.query;
         this.vehicles = this.filter(inventory, this.query);
-        this.renderSummary();
       },
       error: () => {
         this.loading = false;
@@ -91,13 +87,4 @@ export class InventoryListComponent implements OnInit, OnDestroy {
     return inventory.filter(v => v.vin.toLowerCase().includes(needle) || v.model.toLowerCase().includes(needle));
   }
 
-  private renderSummary(): void {
-    const count = this.vehicles.length;
-    const label = count === 1 ? 'vehicle matches' : 'vehicles match';
-    this.renderer.setProperty(
-      this.summary.nativeElement,
-      'innerHTML',
-      this.query ? `${count} ${label} <strong>${this.query}</strong>` : '',
-    );
-  }
 }

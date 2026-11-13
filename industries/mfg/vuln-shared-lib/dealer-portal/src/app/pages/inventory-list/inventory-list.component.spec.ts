@@ -45,6 +45,14 @@ describe('InventoryListComponent', () => {
     expect(summary().querySelector('strong')?.textContent).toBe('ranger');
   });
 
+  it('renders search markup as literal text without image elements', () => {
+    const q = '<img src=x onerror=alert(1)>';
+    params.next(convertToParamMap({ q }));
+    fixture.detectChanges();
+    expect(summary().querySelector('img')).toBeNull();
+    expect(summary().querySelector('strong')?.textContent).toBe(q);
+  });
+
   it('filters by VIN', () => {
     params.next(convertToParamMap({ q: '000002' }));
     fixture.detectChanges();
