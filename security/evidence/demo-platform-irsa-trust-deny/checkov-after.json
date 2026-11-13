@@ -1,0 +1,85 @@
+{
+ "root": "demo-platform/infra/terraform",
+ "summary": {
+  "passed": 109,
+  "failed": 8,
+  "skipped": 0,
+  "parsing_errors": 0,
+  "resource_count": 16,
+  "checkov_version": "3.4.5"
+ },
+ "failed": [
+  {
+   "check_id": "CKV_AWS_356",
+   "resource": "aws_iam_policy_document.dns",
+   "file": "/dns.tf",
+   "lines": [
+    54,
+    66
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_356",
+   "resource": "aws_iam_policy_document.dashboard",
+   "file": "/iam_dashboard.tf",
+   "lines": [
+    38,
+    282
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_111",
+   "resource": "aws_iam_policy_document.dashboard",
+   "file": "/iam_dashboard.tf",
+   "lines": [
+    38,
+    282
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_273",
+   "resource": "aws_iam_user.provisioner",
+   "file": "/iam_provisioner.tf",
+   "lines": [
+    58,
+    65
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_40",
+   "resource": "aws_iam_user_policy.provisioner",
+   "file": "/iam_provisioner.tf",
+   "lines": [
+    100,
+    104
+   ]
+  },
+  {
+   "check_id": "CKV2_AWS_57",
+   "resource": "aws_secretsmanager_secret.dashboard_passcode",
+   "file": "/iam_provisioner.tf",
+   "lines": [
+    35,
+    43
+   ]
+  },
+  {
+   "check_id": "CKV2_AWS_64",
+   "resource": "aws_kms_key.control",
+   "file": "/control_table.tf",
+   "lines": [
+    3,
+    10
+   ]
+  },
+  {
+   "check_id": "CKV2_AWS_64",
+   "resource": "aws_kms_key.dashboard_passcode",
+   "file": "/iam_provisioner.tf",
+   "lines": [
+    21,
+    28
+   ]
+  }
+ ]
+}

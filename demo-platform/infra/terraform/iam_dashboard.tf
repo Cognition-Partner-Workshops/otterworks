@@ -210,6 +210,22 @@ data "aws_iam_policy_document" "dashboard" {
     resources = ["arn:aws:iam::${local.account_id}:role/otterworks-*"]
   }
 
+  # role/otterworks-* also matches the control plane's own roles. Rewriting the
+  # trust of any of them would let a compromised runner hand this role (or CD,
+  # DNS, otter-projects) to an arbitrary principal, so those are excluded; only
+  # the per-service otterworks-<svc>-<env> roles need tenant trust edits.
+  statement {
+    sid     = "DenyControlPlaneTrustEdits"
+    effect  = "Deny"
+    actions = ["iam:UpdateAssumeRolePolicy"]
+    resources = [
+      aws_iam_role.dashboard.arn,
+      "arn:aws:iam::${local.account_id}:role/otterworks-demo-*",
+      "arn:aws:iam::${local.account_id}:role/otterworks-github-actions",
+      "arn:aws:iam::${local.account_id}:role/otterworks-otter-projects-*",
+    ]
+  }
+
   # deploy/teardown resolve shared RDS/S3/DynamoDB coordinates by reading the
   # application Terraform state (load_infra_outputs -> `terraform output`).
   # Read-only: TF 1.9 S3 backend without a lock table performs no writes here.
