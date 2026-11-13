@@ -22,6 +22,16 @@ TestingSessionLocal = async_sessionmaker(
 )
 
 
+TEST_SHARE_LINK_SECRET = "unit-test-share-link-key-0000"
+
+
+@pytest.fixture(autouse=True)
+def share_link_secret(monkeypatch: pytest.MonkeyPatch) -> str:
+    """document-service needs a private share-link key; tests use a fixed one."""
+    monkeypatch.setenv("SHARE_LINK_SECRET", TEST_SHARE_LINK_SECRET)
+    return TEST_SHARE_LINK_SECRET
+
+
 @pytest.fixture(autouse=True)
 def chaos_flags_off(monkeypatch: pytest.MonkeyPatch) -> None:
     """Tests must never observe a developer's local Redis: every chaos flag reads as off."""

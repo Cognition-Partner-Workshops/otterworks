@@ -64,6 +64,10 @@ jobs:
 
       - name: Start the application stack
         run: |
+          # document-service will not start without a private share-link key.
+          SHARE_LINK_SECRET="$(openssl rand -hex 32)"
+          echo "::add-mask::${SHARE_LINK_SECRET}"
+          export SHARE_LINK_SECRET
           docker compose -f docker-compose.infra.yml -f docker-compose.yml up -d --build \
             postgres redis localstack meilisearch \
             auth-service api-gateway document-service search-service file-service
