@@ -1,4 +1,4 @@
-# audit-service: Replace inherited Debian exposure with supported Ubuntu .NET 8 runtime
+# audit-service: Replace inherited Debian exposure with official Ubuntu .NET 8 runtime
 
 Baseline source: `origin/demo-ciso` commit `449e5f7ae04f5ce64808fc1618072d77e3e97203`.
 After source: the service source change in this PR, independently based on that commit.
@@ -22,6 +22,16 @@ metadata are preserved in the scanner JSON. `removed-records.json` lists the exa
 removed package/advisory/version records. Residuals remain visible in the after file.
 
 ## Reproduction
+
+Runtime lifecycle limitation, verified against Microsoft's policy on 2026-11-13:
+.NET 8 (latest patch 8.0.34, used here) reached end of support on **2026-11-10**.
+https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core
+Ubuntu 24.04 is the newer OS variant; availability of this official container tag
+does not restore .NET runtime support. This patch reduces inherited OS findings
+while retaining the existing target framework. A separate migration to .NET 10
+LTS with compatible IBM provider/native dependencies and real database integration
+validation is required to close that lifecycle gap. No supported-lifecycle claim
+is made for the retained .NET 8 runtime. That major migration is not attempted here.
 
 The implicit Debian 12 runtime contributes 415 baseline OS records, including
 critical/high findings in inherited native libraries. Debian's lack of a published
