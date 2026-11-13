@@ -101,6 +101,62 @@ def test_file_folder_upload_lifecycle_share_and_download(api_client):
     api_client.created_folders.remove(folder["id"])
 
 
+
+def test_file_actions_reject_non_owner(api_client):
+    owner = api_client.register_user("file-bola-owner")
+    attacker = api_client.register_user("file-bola-attacker")
+
+    upload_response = api_client.client.post(
+        "/api/v1/files/upload",
+        headers=owner.auth_headers,
+        files={"file": ("private.txt", b"owner only", "text/plain")},
+    )
+    assert upload_response.status_code == 201, upload_response.text
+    file_id = upload_response.json()["file"]["id"]
+    api_client.created_files.append(file_id)
+    base = f"/api/v1/files/{file_id}"
+
+    attempts = {
+        "metadata": api_client.client.get(base, headers=attacker.auth_headers),
+        "download": api_client.client.get(f"{base}/download", headers=attacker.auth_headers),
+        "versions": api_client.client.get(f"{base}/versions", headers=attacker.auth_headers),
+        "rename": api_client.client.patch(
+            f"{base}/rename", headers=attacker.auth_headers, json={"name": "taken"}
+        ),
+        "move": api_client.client.put(
+            f"{base}/move", headers=attacker.auth_headers, json={"folder_id": None}
+        ),
+        "trash": api_client.client.post(f"{base}/trash", headers=attacker.auth_headers),
+        "restore": api_client.client.post(f"{base}/restore", headers=attacker.auth_headers),
+        "share": api_client.client.post(
+            f"{base}/share",
+            headers=attacker.auth_headers,
+            json={"shared_with": attacker.id, "permission": "editor", "shared_by": owner.id},
+        ),
+        "delete": api_client.client.delete(base, headers=attacker.auth_headers),
+    }
+    for action, response in attempts.items():
+        assert response.status_code in {403, 404}, f"{action}: {response.status_code} {response.text}"
+
+    owner_view = api_client.client.get(base, headers=owner.auth_headers)
+    assert owner_view.status_code == 200, owner_view.text
+    assert owner_view.json()["name"] == "private.txt"
+    assert owner_view.json()["shared_with"] == []
+
+    share_response = api_client.client.post(
+        f"{base}/share",
+        headers=owner.auth_headers,
+        json={"shared_with": attacker.id, "permission": "viewer", "shared_by": attacker.id},
+    )
+    assert share_response.status_code == 201, share_response.text
+    assert share_response.json()["share"]["shared_by"] == owner.id
+
+    viewer_download = api_client.client.get(f"{base}/download", headers=attacker.auth_headers)
+    assert viewer_download.status_code == 200, viewer_download.text
+    viewer_delete = api_client.client.delete(base, headers=attacker.auth_headers)
+    assert viewer_delete.status_code == 403, viewer_delete.text
+
+
 @pytest.mark.gap_revealer
 def test_file_validation_and_route_gaps(api_client):
     owner = api_client.register_user("file-validation")
