@@ -8,6 +8,7 @@ using Payments.Services;
 namespace Payments.Controllers;
 
 [ApiController]
+[Authorize(Policy = "payments")]
 [Route("api/payments/refunds")]
 public sealed class RefundsController(PaymentRepository repository, SettlementService settlements) : ControllerBase
 {
@@ -21,7 +22,7 @@ public sealed class RefundsController(PaymentRepository repository, SettlementSe
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Detail(int id)
     {
-        var refund = await repository.FindRefund(id);
+        var refund = await repository.FindRefund(User.FindFirst("dealer")!.Value, id);
         return refund is null ? NotFound() : Ok(refund);
     }
 
