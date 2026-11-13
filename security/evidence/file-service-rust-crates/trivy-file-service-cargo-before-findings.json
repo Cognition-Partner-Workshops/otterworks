@@ -1,0 +1,124 @@
+{
+  "ArtifactName": "/home/ubuntu/repos/otterworks/services/file-service/Cargo.lock",
+  "Results": [
+    {
+      "Target": "Cargo.lock",
+      "Class": "lang-pkgs",
+      "Type": "cargo",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "GHSA-xhj4-vrgc-hr34",
+          "PkgName": "actix-http",
+          "InstalledVersion": "3.12.0",
+          "FixedVersion": "3.12.1",
+          "Severity": "MEDIUM",
+          "Status": "fixed"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-18140",
+          "PkgName": "aws-smithy-json",
+          "InstalledVersion": "0.62.5",
+          "FixedVersion": "0.62.7",
+          "Severity": "HIGH",
+          "Status": "fixed"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-48504",
+          "PkgName": "opentelemetry_sdk",
+          "InstalledVersion": "0.21.2",
+          "FixedVersion": "0.32.1",
+          "Severity": "MEDIUM",
+          "Status": "fixed"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-53605",
+          "PkgName": "protobuf",
+          "InstalledVersion": "2.28.0",
+          "FixedVersion": "3.7.2",
+          "Severity": "MEDIUM",
+          "Status": "fixed"
+        },
+        {
+          "VulnerabilityID": "GHSA-c8m5-c952-6cm4",
+          "PkgName": "rustls",
+          "InstalledVersion": "0.21.12",
+          "FixedVersion": "0.23.46, 0.24.0-dev.2",
+          "Severity": "MEDIUM",
+          "Status": "fixed"
+        },
+        {
+          "VulnerabilityID": "GHSA-h2v8-394m-p7vv",
+          "PkgName": "rustls",
+          "InstalledVersion": "0.21.12",
+          "FixedVersion": "0.23.46, 0.24.0-dev.2",
+          "Severity": "LOW",
+          "Status": "fixed"
+        },
+        {
+          "VulnerabilityID": "GHSA-w44r-93j7-qv28",
+          "PkgName": "rustls",
+          "InstalledVersion": "0.21.12",
+          "FixedVersion": "0.23.46, 0.24.0-dev.2",
+          "Severity": "LOW",
+          "Status": "fixed"
+        },
+        {
+          "VulnerabilityID": "GHSA-2mjx-qc3c-rqvc",
+          "PkgName": "rustls",
+          "InstalledVersion": "0.23.38",
+          "FixedVersion": "0.23.45",
+          "Severity": "MEDIUM",
+          "Status": "fixed"
+        },
+        {
+          "VulnerabilityID": "GHSA-c8m5-c952-6cm4",
+          "PkgName": "rustls",
+          "InstalledVersion": "0.23.38",
+          "FixedVersion": "0.23.46, 0.24.0-dev.2",
+          "Severity": "MEDIUM",
+          "Status": "fixed"
+        },
+        {
+          "VulnerabilityID": "GHSA-h2v8-394m-p7vv",
+          "PkgName": "rustls",
+          "InstalledVersion": "0.23.38",
+          "FixedVersion": "0.23.46, 0.24.0-dev.2",
+          "Severity": "LOW",
+          "Status": "fixed"
+        },
+        {
+          "VulnerabilityID": "GHSA-w44r-93j7-qv28",
+          "PkgName": "rustls",
+          "InstalledVersion": "0.23.38",
+          "FixedVersion": "0.23.46, 0.24.0-dev.2",
+          "Severity": "LOW",
+          "Status": "fixed"
+        },
+        {
+          "VulnerabilityID": "GHSA-82j2-j2ch-gfr8",
+          "PkgName": "rustls-webpki",
+          "InstalledVersion": "0.101.7",
+          "FixedVersion": "0.103.13, 0.104.0-alpha.7",
+          "Severity": "HIGH",
+          "Status": "fixed"
+        },
+        {
+          "VulnerabilityID": "GHSA-965h-392x-2mh5",
+          "PkgName": "rustls-webpki",
+          "InstalledVersion": "0.101.7",
+          "FixedVersion": "0.103.12, 0.104.0-alpha.6",
+          "Severity": "LOW",
+          "Status": "fixed"
+        },
+        {
+          "VulnerabilityID": "GHSA-xgp8-3hg3-c2mh",
+          "PkgName": "rustls-webpki",
+          "InstalledVersion": "0.101.7",
+          "FixedVersion": "0.103.12, 0.104.0-alpha.6",
+          "Severity": "LOW",
+          "Status": "fixed"
+        }
+      ]
+    }
+  ]
+}
