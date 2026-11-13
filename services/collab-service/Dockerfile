@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:24-alpine@sha256:116b800c3754b440ee0aa3ed2f20f5bf3d99a554bfd9adeea09ea8017f6e85f5 AS builder
 
 WORKDIR /app
 COPY package.json package-lock.json tsconfig.json ./
@@ -6,8 +6,8 @@ RUN npm ci
 COPY src ./src
 RUN npm run build
 
-FROM node:20-alpine
-RUN apk --no-cache add curl
+FROM node:24-alpine@sha256:116b800c3754b440ee0aa3ed2f20f5bf3d99a554bfd9adeea09ea8017f6e85f5
+RUN apk --no-cache upgrade && apk --no-cache add curl
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
