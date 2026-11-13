@@ -629,3 +629,8 @@ lp-ec2-down: ## Destroy the run's legacy-portal EC2 stack (RUN=)
 
 lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
 	@$(LP_EC2) verify-clean
+
+.PHONY: evidence-pack
+evidence-pack: ## Generate live scanner and linked GitHub compliance evidence
+	bash compliance/evidence/live_check.sh
+	python3 compliance/evidence/build_evidence_pack.py --branch demo-ciso

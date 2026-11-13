@@ -1,0 +1,100 @@
+# Curated mapping for auditor review; a gate mapping is not proof of enforcement.
+version: 1
+review_status: human review required before audit sign-off
+remediation_sla_days:
+  assumption: >-
+    Reporting assumption, not a committed policy: critical 7, high 30, medium 90,
+    low 180 days. docs/labs/security-sprint-guide.md instead says critical
+    immediately and high within the current sprint.
+  critical: 7
+  high: 30
+  medium: 90
+  low: 180
+cwe_to_control:
+  CWE-89: SSC-08
+  CWE-20: SSC-07
+  CWE-22: SSC-07
+  CWE-798: SSC-03
+  CWE-259: SSC-03
+  CWE-321: SSC-03
+  CWE-532: SSC-04
+  CWE-209: SSC-09
+  CWE-287: SSC-01
+  CWE-306: SSC-01
+  CWE-328: SSC-01
+  CWE-639: SSC-02
+  CWE-862: SSC-02
+  CWE-863: SSC-02
+  CWE-916: SSC-05
+  CWE-327: SSC-05
+sources:
+  dependency: [SSC-11]
+  gitleaks: [SSC-03]
+  infrastructure: [OUT-OF-CATALOG]
+named_findings:
+  OW-SEC-401: [SSC-08]
+  OW-SEC-402: [SSC-07]
+  OW-SEC-403: [SSC-01]
+  DAST-SQL-INJECTION: [SSC-08]
+  DAST-PATH-TRAVERSAL: [SSC-07]
+  DAST-CORS-ORIGIN-REFLECTION: [SSC-02]
+  DAST-MISSING-SECURITY-HEADERS: [SSC-07]
+rule_patterns:
+  - {pattern: 'sqlalchemy|sql-injection|sqli', controls: [SSC-08]}
+  - {pattern: 'path.traversal|input.validation|security.headers|10015|10020|10021|10035|10038|10063', controls: [SSC-07]}
+  - {pattern: 'hardcoded|hardcode|secrets|bcrypt-hash', controls: [SSC-03]}
+  - {pattern: 'md5|authentication|csrf', controls: [SSC-01]}
+  - {pattern: 'authorization|cors|10098', controls: [SSC-02]}
+  - {pattern: 'static-initialization-vector|weak.crypto', controls: [SSC-05]}
+  - {pattern: 'disclosure|10096', controls: [SSC-09]}
+gates:
+  - workflow: .github/workflows/security-scan.yml
+    job: dependency-scan
+    enforces: New HIGH/CRITICAL dependency findings relative to merge base; ignores and report-service exclusion apply.
+    controls: [SSC-11]
+  - workflow: .github/workflows/security-scan.yml
+    job: secret-scan
+    enforces: Gitleaks findings in PR commits (not all history).
+    controls: [SSC-03]
+  - workflow: .github/workflows/security-scan.yml
+    job: sast
+    enforces: New Semgrep findings relative to merge base.
+    controls: [SSC-01, SSC-02, SSC-04, SSC-07, SSC-08, SSC-09]
+  - workflow: .github/workflows/security-scan.yml
+    job: full-scan-baseline
+    enforces: Informational full-history/full-tree scan; findings warn rather than fail.
+    controls: [SSC-01, SSC-02, SSC-03, SSC-04, SSC-07, SSC-08, SSC-09, SSC-11]
+  - workflow: .github/workflows/codeql.yml
+    job: analyze
+    enforces: CodeQL security-extended analysis upload; alert upload alone is not a blocking findings gate.
+    controls: [SSC-01, SSC-02, SSC-04, SSC-07, SSC-08, SSC-09]
+  - workflow: .github/workflows/dast-scan.yml
+    job: dast-local
+    enforces: Local authenticated probes are continue-on-error; route coverage can block, with no-usable-report fail-open behavior. Accepted baseline applies.
+    controls: [SSC-01, SSC-02, SSC-07, SSC-08, SSC-09]
+  - workflow: .github/workflows/dast-scan.yml
+    job: dast-deployed
+    enforces: Scheduled/deployed DAST; not a PR gate.
+    controls: [SSC-01, SSC-02, SSC-07, SSC-08, SSC-09]
+  - workflow: .github/workflows/deps-remediation.yml
+    job: deps
+    enforces: JVM dependency inventory, behavior and regression verification.
+    controls: [SSC-11]
+  - workflow: .github/workflows/equivalence-gate.yml
+    job: equivalence
+    enforces: OW-SEC-401 SQL injection, OW-SEC-402 path traversal, OW-SEC-403 share-token forgery equivalence contracts.
+    controls: [SSC-08, SSC-07, SSC-01]
+  - workflow: .github/workflows/platform-app-pipeline.yml
+    job: verify
+    step: Image scan (Trivy, vulnerabilities and secrets)
+    enforces: Reusable platform image scan; fixed CRITICAL vulnerabilities and secrets.
+    controls: [SSC-11]
+  - workflow: .github/workflows/sast-auto-remediate.yml
+    job: sonarcloud-scan
+    enforces: SonarCloud scan/quality status drives remediation; unknown status defaults to pass.
+    controls: [SSC-01, SSC-02, SSC-04, SSC-07, SSC-08, SSC-09]
+  - workflow: .github/workflows/sonarqube-banking.yml
+    job: scan
+    scope: external repositories
+    enforces: SonarQube analysis/export of external banking repositories; not an OtterWorks source findings gate.
+    controls: [SSC-01, SSC-02, SSC-04, SSC-07, SSC-08, SSC-09]
