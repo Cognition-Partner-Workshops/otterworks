@@ -6,33 +6,33 @@ namespace Platform.Shared.Crypto;
 /// <summary>Signs opaque payloads using HMAC-SHA256 and base64url without a key id.</summary>
 public static class TokenSigner
 {
-    private static ISigningKeyProvider? _defaultProvider;
-    private static readonly Lazy<ISigningKeyProvider> EnvironmentProvider = new(() =>
-    {
-        var configured = Environment.GetEnvironmentVariable("PLATFORM_SHARED_SIGNING_KEY");
-        var key = configured is null
-            ? new SigningKey("process", RandomNumberGenerator.GetBytes(32))
-            : SigningKey.FromBase64("environment", configured);
-        return new SigningKeyRing(key, new[] { key });
-    });
+    // Synthetic fixture key; it protects nothing outside this demo estate.
+    private static readonly byte[] LegacyKey = Encoding.UTF8.GetBytes("vsl-synthetic-platform-signing-key-v1");
 
-    public static void ConfigureDefaultKeyProvider(ISigningKeyProvider keyProvider)
-    {
+    /// <summary>Retained for binary compatibility. Legacy signing always uses the seeded fixture key.</summary>
+    public static void ConfigureDefaultKeyProvider(ISigningKeyProvider keyProvider) =>
         ArgumentNullException.ThrowIfNull(keyProvider);
-        _defaultProvider = keyProvider;
+
+    /// <summary>Legacy fixture compatibility: HMAC-SHA1 with a compiled, public synthetic key. Not safe for authentication. Use the explicit provider overload.</summary>
+    [Obsolete("Use Sign(payload, keyProvider) with an explicit signing key provider.")]
+    public static string Sign(string payload)
+    {
+        ArgumentNullException.ThrowIfNull(payload);
+        using var hmac = new HMACSHA1(LegacyKey);
+        return Base64Url.Encode(hmac.ComputeHash(Encoding.UTF8.GetBytes(payload)));
     }
 
-    /// <summary>
-    /// Uses the configured process provider, otherwise PLATFORM_SHARED_SIGNING_KEY (base64, at least 32 bytes),
-    /// otherwise a random 256-bit key generated once per process. Random-key signatures verify only in this process.
-    /// </summary>
-    [Obsolete("Use Sign(payload, keyProvider) with an explicit signing key provider.")]
-    public static string Sign(string payload) => Sign(payload, _defaultProvider ?? EnvironmentProvider.Value);
-
-    /// <summary>Uses the same process default as Sign(string), including its process-local random fallback.</summary>
+    /// <summary>Legacy fixture compatibility: verifies with the compiled synthetic key. Not safe for authentication. Use the explicit provider overload.</summary>
     [Obsolete("Use Verify(payload, signature, keyProvider) with an explicit signing key provider.")]
-    public static bool Verify(string payload, string signature) =>
-        Verify(payload, signature, _defaultProvider ?? EnvironmentProvider.Value);
+    public static bool Verify(string payload, string signature)
+    {
+        ArgumentNullException.ThrowIfNull(payload);
+        if (string.IsNullOrEmpty(signature)) return false;
+#pragma warning disable CS0618
+        var expected = Encoding.ASCII.GetBytes(Sign(payload));
+#pragma warning restore CS0618
+        return CryptographicOperations.FixedTimeEquals(expected, Encoding.ASCII.GetBytes(signature));
+    }
 
     public static string Sign(string payload, ISigningKeyProvider keyProvider)
     {

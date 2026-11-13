@@ -53,19 +53,14 @@ public class SigningAndFingerprintTests
     }
 
     [Fact]
-    public void LegacyConfiguredProvider_MatchesExplicitApi()
+    public void LegacyConfiguredProvider_DoesNotChangeSeededFixture()
     {
 #pragma warning disable CS0618
+        var seeded = TokenSigner.Sign("payload");
         TokenSigner.ConfigureDefaultKeyProvider(Ring(Old));
-        try
-        {
-            Assert.Equal(TokenSigner.Sign("payload", Ring(Old)), TokenSigner.Sign("payload"));
-            Assert.True(TokenSigner.Verify("payload", TokenSigner.Sign("payload", Ring(Old))));
-        }
-        finally
-        {
-            typeof(TokenSigner).GetField("_defaultProvider", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.SetValue(null, null);
-        }
+        Assert.Equal(seeded, TokenSigner.Sign("payload"));
+        Assert.True(TokenSigner.Verify("payload", seeded));
+        Assert.NotEqual(TokenSigner.Sign("payload", Ring(Old)), seeded);
 #pragma warning restore CS0618
     }
 

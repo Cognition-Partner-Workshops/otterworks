@@ -2,7 +2,7 @@
 FEED ?= $(CURDIR)/artifacts/feed
 CONFIG ?= Release
 
-.PHONY: restore build test pack compat clean
+.PHONY: restore build test pack compat consumer-compat clean
 
 restore:
 	dotnet restore Platform.Shared.sln
@@ -16,6 +16,10 @@ test: build
 pack: build
 	mkdir -p $(FEED)
 	dotnet pack src/Platform.Shared/Platform.Shared.csproj --no-build -c $(CONFIG) -o $(FEED)
+	bash tests/compat/pack-seeded.sh "$(FEED)"
+
+consumer-compat: pack
+	bash tests/compat/consumers.sh
 
 compat:
 	./tests/compat/run.sh
