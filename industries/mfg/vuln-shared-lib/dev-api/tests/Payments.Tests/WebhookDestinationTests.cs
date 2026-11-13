@@ -36,6 +36,18 @@ public sealed class WebhookDestinationTests
     [InlineData("192.168.0.1")]
     [InlineData("169.254.169.254")]
     [InlineData("224.0.0.1")]
+    [InlineData("192.0.0.1")]
+    [InlineData("192.0.2.1")]
+    [InlineData("198.18.0.1")]
+    [InlineData("198.19.255.255")]
+    [InlineData("198.51.100.1")]
+    [InlineData("203.0.113.1")]
+    [InlineData("192.88.99.1")]
+    [InlineData("255.255.255.255")]
+    [InlineData("2001:db8::1")]
+    [InlineData("64:ff9b::a00:1")]
+    [InlineData("64:ff9b::c612:1")]
+    [InlineData("::ffff:198.18.0.1")]
     [InlineData("::")]
     [InlineData("fc00::1")]
     [InlineData("fe80::1")]
@@ -49,6 +61,7 @@ public sealed class WebhookDestinationTests
     [Trait("Category","Security")]
     [InlineData("93.184.216.34")]
     [InlineData("2606:4700:4700::1111")]
+    [InlineData("64:ff9b::5db8:d822")]
     public void PublicAddressesAreAccepted(string address) =>
         Assert.True(WebhookDestinationPolicy.IsPublic(IPAddress.Parse(address)));
 }

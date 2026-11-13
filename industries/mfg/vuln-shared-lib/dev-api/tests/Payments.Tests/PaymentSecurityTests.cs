@@ -32,6 +32,7 @@ public sealed class PaymentSecurityTests
     [InlineData("https://127.0.0.1/")]
     [InlineData("https://10.0.0.5/")]
     [InlineData("https://[::1]/")]
+    [InlineData("https://198.18.0.1/")]
     public async Task WebhookRejectsUnsafeDestination(string url)
     {
         using var factory = new PaymentsApiFactory();
