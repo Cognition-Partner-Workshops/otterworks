@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,6 +49,10 @@ import java.util.stream.Collectors;
  * - ByteArrayResource loads entire file into memory (target: InputStreamResource for streaming)
  * - No pagination on list endpoint
  * - Manual response mapping without MapStruct or similar
+ *
+ * AUTHORIZATION: the caller is the user ID the api-gateway forwards in X-User-ID after
+ * validating the JWT. Requests without it are rejected, and a report is only visible to
+ * the user who requested it; other users' reports answer 404 so IDs cannot be probed.
  */
 @RestController
 @RequestMapping("/api/v1/reports")
@@ -55,6 +60,8 @@ import java.util.stream.Collectors;
 public class ReportController {
 
     private static final Logger logger = LoggerFactory.getLogger(ReportController.class);
+
+    static final String USER_ID_HEADER = "X-User-ID";
 
     private final ReportService reportService;
 
@@ -69,7 +76,13 @@ public class ReportController {
             @ApiResponse(code = 400, message = "Invalid request")
     })
     public ResponseEntity<ReportResponse> createReport(
+            @RequestHeader(value = USER_ID_HEADER, required = false) String callerId,
             @Valid @RequestBody ReportRequest request) {
+
+        if (isBlank(callerId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        request.setRequestedBy(callerId);
 
         logger.info("Report request: name={}, category={}, type={}, by={}",
                 request.getReportName(), request.getCategory(),
@@ -87,10 +100,14 @@ public class ReportController {
             @ApiResponse(code = 404, message = "Report not found")
     })
     public ResponseEntity<ReportResponse> getReport(
+            @RequestHeader(value = USER_ID_HEADER, required = false) String callerId,
             @ApiParam(value = "Report ID", required = true)
             @PathVariable Long id) {
 
-        Optional<Report> report = reportService.getReport(id);
+        if (isBlank(callerId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Optional<Report> report = findOwnedReport(id, callerId);
         if (!report.isPresent()) { // LEGACY: !isPresent() instead of isEmpty()
             return ResponseEntity.notFound().build();
         }
@@ -98,23 +115,23 @@ public class ReportController {
     }
 
     @GetMapping
-    @ApiOperation(value = "List reports", notes = "List reports filtered by user ID or status")
+    @ApiOperation(value = "List reports", notes = "List the caller's reports, optionally filtered by status")
     public ResponseEntity<Map<String, Object>> listReports(
-            @ApiParam(value = "Filter by user ID")
+            @RequestHeader(value = USER_ID_HEADER, required = false) String callerId,
+            @ApiParam(value = "Filter by user ID; must be the caller")
             @RequestParam(required = false) String userId,
             @ApiParam(value = "Filter by status")
             @RequestParam(required = false) ReportStatus status) {
 
-        List<Report> reports;
-        if (userId != null) {
-            reports = reportService.getReportsByUser(userId);
-        } else if (status != null) {
-            reports = reportService.getReportsByStatus(status);
-        } else {
-            reports = reportService.getReportsByStatus(ReportStatus.COMPLETED);
+        if (isBlank(callerId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (userId != null && !userId.equals(callerId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        List<ReportResponse> responses = reports.stream()
+        List<ReportResponse> responses = reportService.getReportsByUser(callerId).stream()
+                .filter(report -> status == null || report.getStatus() == status)
                 .map(ReportResponse::fromEntity)
                 .collect(Collectors.toList()); // LEGACY: .toList() available in Java 16+
 
@@ -134,10 +151,14 @@ public class ReportController {
             @ApiResponse(code = 409, message = "Report is still generating")
     })
     public ResponseEntity<Resource> downloadReport(
+            @RequestHeader(value = USER_ID_HEADER, required = false) String callerId,
             @ApiParam(value = "Report ID", required = true)
             @PathVariable Long id) {
 
-        Optional<Report> optReport = reportService.getReport(id);
+        if (isBlank(callerId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Optional<Report> optReport = findOwnedReport(id, callerId);
         if (!optReport.isPresent()) {
             return ResponseEntity.notFound().build();
         }
@@ -186,9 +207,16 @@ public class ReportController {
             @ApiResponse(code = 404, message = "Report not found")
     })
     public ResponseEntity<Void> deleteReport(
+            @RequestHeader(value = USER_ID_HEADER, required = false) String callerId,
             @ApiParam(value = "Report ID", required = true)
             @PathVariable Long id) {
 
+        if (isBlank(callerId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (!findOwnedReport(id, callerId).isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
         boolean deleted = reportService.deleteReport(id);
         if (!deleted) {
             return ResponseEntity.notFound().build();
@@ -197,6 +225,15 @@ public class ReportController {
     }
 
     // ----- Private helpers -----
+
+    private Optional<Report> findOwnedReport(Long id, String callerId) {
+        return reportService.getReport(id)
+                .filter(report -> callerId.equals(report.getRequestedBy()));
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
 
     private String getContentType(com.otterworks.report.model.ReportType reportType) {
         // LEGACY: switch without enhanced syntax
