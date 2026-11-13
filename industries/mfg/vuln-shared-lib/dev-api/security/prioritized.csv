@@ -1,0 +1,28 @@
+asset,finding_id,finding,severity,risk_score,sla_due,owner_team,location
+uc-vuln-shared-lib-dev-api,VSL-01,SQL injection in Dealer inventory search,Critical,92,2026-11-28,dealer-team,industries/mfg/vuln-shared-lib/dev-api/src/Dealer/Repositories/InventoryRepository.cs:46
+uc-vuln-shared-lib-dev-api,VSL-03,SQL injection in Warranty claim search,Critical,91,2026-11-28,warranty-team,industries/mfg/vuln-shared-lib/dev-api/src/Warranty/Repositories/ClaimRepository.cs:17
+uc-vuln-shared-lib-dev-api,VSL-02,SQL injection in Dealer aging report sort,Critical,90,2026-11-28,dealer-team,industries/mfg/vuln-shared-lib/dev-api/src/Dealer/Repositories/InventoryRepository.cs:54
+uc-vuln-shared-lib-dev-api,VSL-08,Unsafe deserialization in Payments settlement import,Critical,89,2026-11-28,payments-team,industries/mfg/vuln-shared-lib/dev-api/src/Payments/Controllers/SettlementsController.cs:52
+uc-vuln-shared-lib-dev-api,VSL-07,Unsafe deserialization in Warranty claim import,Critical,88,2026-11-28,warranty-team,industries/mfg/vuln-shared-lib/dev-api/src/Warranty/Controllers/ClaimImportsController.cs:22
+uc-vuln-shared-lib-platform-shared,VSL-23,TokenSigner uses HMAC-SHA1 with a static key,High,87,2026-12-13,platform-team,industries/mfg/vuln-shared-lib/platform-shared/src/Platform.Shared/Crypto/TokenSigner.cs:19
+uc-vuln-shared-lib-platform-shared,VSL-22,SafeHttp.Fetch follows any host,High,86,2026-12-13,platform-team,industries/mfg/vuln-shared-lib/platform-shared/src/Platform.Shared/Http/SafeHttp.cs:14
+uc-vuln-shared-lib-dev-api,VSL-19,Missing authorization on Payments refund detail,High,84,2026-12-13,payments-team,industries/mfg/vuln-shared-lib/dev-api/src/Payments/Controllers/RefundsController.cs:21
+uc-vuln-shared-lib-dev-api,VSL-16,SSRF in Dealer image proxy,High,82,2026-12-13,dealer-team,industries/mfg/vuln-shared-lib/dev-api/src/Dealer/Controllers/DealerOperationsController.cs:73
+uc-vuln-shared-lib-dev-api,VSL-17,SSRF in Payments webhook test,High,81,2026-12-13,payments-team,industries/mfg/vuln-shared-lib/dev-api/src/Payments/Services/WebhookService.cs:34
+uc-vuln-shared-lib-dev-api,VSL-12,Path traversal in Warranty attachment download,High,80,2026-12-13,warranty-team,industries/mfg/vuln-shared-lib/dev-api/src/Warranty/Controllers/AttachmentsController.cs:50
+uc-vuln-shared-lib-dev-api,VSL-13,Path traversal in Dealer export download,High,79,2026-12-13,dealer-team,industries/mfg/vuln-shared-lib/dev-api/src/Dealer/Controllers/DealerOperationsController.cs:61
+uc-vuln-shared-lib-dealer-portal,VSL-04,Stored XSS in portal claims list,High,78,2026-12-13,portal-team,industries/mfg/vuln-shared-lib/dealer-portal/src/app/pages/claims-list/claims-list.component.ts:70
+uc-vuln-shared-lib-dealer-portal,VSL-05,Reflected XSS in portal inventory search,High,76,2026-12-13,portal-team,industries/mfg/vuln-shared-lib/dealer-portal/src/app/pages/inventory-list/inventory-list.component.ts:99
+uc-vuln-shared-lib-dev-api,VSL-06,Reflected XSS in Dealer window sticker view,High,75,2026-12-13,dealer-team,industries/mfg/vuln-shared-lib/dev-api/src/Dealer/Views/WindowSticker/Index.cshtml:13
+uc-vuln-shared-lib-dev-api,VSL-20,Vulnerable Newtonsoft.Json 12.0.3 in dev-api,High,72,2026-12-13,platform-team,industries/mfg/vuln-shared-lib/dev-api/Directory.Packages.props:7
+uc-vuln-shared-lib-dev-api,VSL-10,Client secret in Identity configuration,High,71,2026-12-13,identity-team,industries/mfg/vuln-shared-lib/dev-api/src/Identity/appsettings.json:3
+uc-vuln-shared-lib-dev-api,VSL-09,Processor API secret in Payments configuration,High,70,2026-12-13,payments-team,industries/mfg/vuln-shared-lib/dev-api/src/Payments/appsettings.json:4
+uc-vuln-shared-lib-dealer-portal,VSL-21,Vulnerable moment 2.29.1 in dealer portal,High,68,2026-12-13,portal-team,industries/mfg/vuln-shared-lib/dealer-portal/package.json:20
+uc-vuln-shared-lib-dealer-portal,VSL-11,Portal API key in Angular environment,High,66,2026-12-13,portal-team,industries/mfg/vuln-shared-lib/dealer-portal/src/environments/environment.ts:4
+uc-vuln-shared-lib-dev-api,VSL-18,Open redirect in Identity sign-out,Medium,58,2027-02-11,identity-team,industries/mfg/vuln-shared-lib/dev-api/src/Identity/Controllers/IdentityController.cs:75
+uc-vuln-shared-lib-dev-api,VSL-15,AES ECB mode in Identity remember-me,Medium,57,2027-02-11,identity-team,industries/mfg/vuln-shared-lib/dev-api/src/Identity/Services/RememberMeService.cs:14
+uc-vuln-shared-lib-dev-api,VSL-14,MD5 device fingerprint in Identity,Medium,55,2027-02-11,identity-team,industries/mfg/vuln-shared-lib/dev-api/src/Identity/Controllers/IdentityController.cs:47
+uc-vuln-shared-lib-android-app,VSL-25,Auth token in plain SharedPreferences,Medium,54,2027-02-11,mobile-team,industries/mfg/vuln-shared-lib/android-app/app/src/main/kotlin/com/vsl/dealer/PreferenceTokenStore.kt:12
+uc-vuln-shared-lib-android-app,VSL-24,Cleartext traffic allowed in Android app,Medium,52,2027-02-11,mobile-team,industries/mfg/vuln-shared-lib/android-app/app/src/main/AndroidManifest.xml:5
+uc-vuln-shared-lib-android-app,VSL-26,API key in Android BuildConfig,Medium,50,2027-02-11,mobile-team,industries/mfg/vuln-shared-lib/android-app/app/build.gradle.kts:17
+uc-vuln-shared-lib-dev-api,VSL-27,Hard-coded password in Identity test fixture,Low,12,2027-05-12,identity-team,industries/mfg/vuln-shared-lib/dev-api/tests/Identity.Tests/IdentityApiFactory.cs:40

@@ -1,0 +1,34 @@
+name: vsl estate harness
+
+# Scanner export and reset script for industries/mfg/vuln-shared-lib. The export's
+# line numbers come from the source, so any change under the estate re-checks it.
+
+on:
+  pull_request:
+    branches: [demo-vuln-shared-lib]
+    paths:
+      - industries/mfg/vuln-shared-lib/**
+      - security/ingest/cluster_sarif.py
+      - security/ingest/devin_ingestion.py
+      - .github/workflows/vsl-estate-harness.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export-and-reset:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pytest requests ruff
+      - name: Scanner export matches the source
+        run: python3 industries/mfg/vuln-shared-lib/dev-api/security/generate_findings.py --check
+      - name: Export tests
+        run: python3 -m pytest industries/mfg/vuln-shared-lib/dev-api/security/tests
+      - run: ruff check industries/mfg/vuln-shared-lib/dev-api/security
+      - name: Reset script against a throwaway remote
+        run: industries/mfg/vuln-shared-lib/tests/reset_test.sh
