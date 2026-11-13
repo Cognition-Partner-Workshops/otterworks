@@ -1,0 +1,6 @@
+image=admin-service:baseline id=sha256:faf793c1a317af41a9fe40bc4463768f7d2cc0f591d7d0e5d15717152992bae3
+total=532 by_severity: CRITICAL=4 HIGH=145 LOW=180 MEDIUM=195 UNKNOWN=8
+  admin-service:baseline (debian 13.7) [debian]: 427 HIGH=126 LOW=157 MEDIUM=140 UNKNOWN=4
+  Node.js [node-pkg]: 0
+  Ruby [gemspec]: 105 CRITICAL=4 HIGH=19 LOW=23 MEDIUM=55 UNKNOWN=4
+  gem CRITICAL: activestorage@7.1.6 CVE-2026-122006, activestorage@7.1.6 CVE-2026-33195, activestorage@7.1.6 CVE-2026-33202, activestorage@7.1.6 GHSA-f3w6-w445-fwh9
