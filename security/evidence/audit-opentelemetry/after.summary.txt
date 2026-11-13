@@ -1,0 +1,5 @@
+SCAN /home/ubuntu/security-work/evidence/audit-service-telemetry.json
+ImageID: sha256:06793f1702dc13f4a0c2d04cecb86b94b5855538986f9c58a312503955378042
+TOTAL: 415 {'LOW': 153, 'HIGH': 107, 'MEDIUM': 149, 'UNKNOWN': 4, 'CRITICAL': 2}
+Without published fix: 415
+local/audit-service:telemetry (debian 12.15) 415 {'LOW': 153, 'HIGH': 107, 'MEDIUM': 149, 'UNKNOWN': 4, 'CRITICAL': 2}

@@ -1,0 +1,18 @@
+[
+  {
+    "VulnerabilityID": "CVE-2024-32028",
+    "PkgName": "OpenTelemetry.Instrumentation.AspNetCore",
+    "InstalledVersion": "1.7.1",
+    "Severity": "MEDIUM",
+    "FixedVersion": "1.8.1",
+    "Title": "Sensitive query parameters logged by default in OpenTelemetry.Instrumentation http and AspNetCore"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-40894",
+    "PkgName": "OpenTelemetry.Api",
+    "InstalledVersion": "1.7.0",
+    "Severity": "MEDIUM",
+    "FixedVersion": "1.15.3",
+    "Title": "OpenTelemetry dotnet: Excessive memory allocation when parsing OpenTelemetry propagation headers"
+  }
+]

@@ -1,0 +1,77 @@
+Unable to find image 'mcr.microsoft.com/dotnet/sdk:8.0' locally
+8.0: Pulling from dotnet/sdk
+Digest: sha256:1b955f179b02df4f0eb5fadedaa898cbe44d620a64aab52eec72c8e91d1355b5
+Status: Downloaded newer image for mcr.microsoft.com/dotnet/sdk:8.0
+  Determining projects to restore...
+  Restored /src/AuditService.csproj (in 5.44 sec).
+  Restored /src/tests/AuditService.Tests/AuditService.Tests.csproj (in 5.47 sec).
+  AuditService -> /src/bin/Release/net8.0/AuditService.dll
+  AuditService.Tests -> /src/tests/AuditService.Tests/bin/Release/net8.0/AuditService.Tests.dll
+Test run for /src/tests/AuditService.Tests/bin/Release/net8.0/AuditService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 8.0.34)
+[xUnit.net 00:00:00.07]   Discovering: AuditService.Tests
+[xUnit.net 00:00:00.11]   Discovered:  AuditService.Tests
+[xUnit.net 00:00:00.11]   Starting:    AuditService.Tests
+  Passed AuditService.Tests.ArchiveControllerTests.IsoDateFromYyyymmdd_ConvertsDigitsOnly(input: "\0\0\0\0\0\0\0\0", expected: "\0\0\0\0\0\0\0\0") [15 ms]
+  Passed AuditService.Tests.ArchiveStoreOptionsTests.UnsetStore_IsOff [26 ms]
+  Passed AuditService.Tests.ArchiveControllerTests.IsoDateFromYyyymmdd_ConvertsDigitsOnly(input: "20230301", expected: "2023-03-01") [< 1 ms]
+  Passed AuditService.Tests.ArchiveControllerTests.IsoDateFromYyyymmdd_ConvertsDigitsOnly(input: "20230301  ", expected: "2023-03-01") [< 1 ms]
+  Passed AuditService.Tests.ArchiveStoreOptionsTests.AzureSql_ManagedIdentity_DoesNotNeedPassword [2 ms]
+  Passed AuditService.Tests.ArchiveStoreOptionsTests.StoreType_IsCaseInsensitive(value: "PostgreSQL", expected: PostgreSql) [< 1 ms]
+  Passed AuditService.Tests.Db2TextTests.Timestamp12_FromDb2CharText_IsUnchanged [17 ms]
+  Passed AuditService.Tests.ArchiveStoreOptionsTests.StoreType_IsCaseInsensitive(value: "db2", expected: Db2) [5 ms]
+  Passed AuditService.Tests.ArchiveStoreOptionsTests.StoreType_IsCaseInsensitive(value: "AzureSQL", expected: AzureSql) [< 1 ms]
+  Passed AuditService.Tests.Db2TextTests.DecodeCp037_DecodesEbcdic [5 ms]
+  Passed AuditService.Tests.ArchiveStoreOptionsTests.StoreType_IsCaseInsensitive(value: "postgres", expected: PostgreSql) [< 1 ms]
+  Passed AuditService.Tests.ArchiveStoreOptionsTests.StoreType_IsCaseInsensitive(value: "oracle", expected: Invalid) [< 1 ms]
+  Passed AuditService.Tests.Db2TextTests.RTrim_RemovesOnlyTrailingSpaces [< 1 ms]
+  Passed AuditService.Tests.ArchiveStoreOptionsTests.Postgres_ConnectionStringAndCompleteness [< 1 ms]
+  Passed AuditService.Tests.ArchiveStoreOptionsTests.Db2_IncompleteWithoutPassword [< 1 ms]
+  Passed AuditService.Tests.Db2TextTests.Timestamp12_FromDateTime2AndNanosTail_ReconstructsExactly [3 ms]
+  Passed AuditService.Tests.ArchiveStoreOptionsTests.Postgres_Timestamp12_RebuildsFromMicrosPlusSixDigitTail [< 1 ms]
+  Passed AuditService.Tests.Db2TextTests.Timestamp12_FromIsoText_PadsFraction [< 1 ms]
+  Passed AuditService.Tests.Db2TextTests.Decimal8_AlwaysHasEightFractionDigits [< 1 ms]
+  Passed AuditService.Tests.ArchiveControllerTests.KnownDocument_ReturnsEventsWithStoreName [211 ms]
+  Passed AuditService.Tests.AuditServiceTests.ArchiveOldEventsAsync_ShouldUseCutoffBasedOnSettings [239 ms]
+  Passed AuditService.Tests.ArchiveControllerTests.IncompleteDb2Config_Returns503 [11 ms]
+  Passed AuditService.Tests.DynamoDbAuditRepositoryTests.QueryEventsAsync_WithFilters_ShouldApplyFilterExpression [253 ms]
+  Passed AuditService.Tests.ArchiveControllerTests.GetDocument_UnknownDocument_Is404 [7 ms]
+  Passed AuditService.Tests.ArchiveControllerTests.Sql_NeverTrimsCharColumnsInSelectList [< 1 ms]
+  Passed AuditService.Tests.ArchiveControllerTests.InvalidStore_Returns503_AndServiceStillConstructs [< 1 ms]
+  Passed AuditService.Tests.AuditServiceTests.RecordEventAsync_ShouldAssignTimestamp [23 ms]
+  Passed AuditService.Tests.DynamoDbAuditRepositoryTests.DeleteEventsAsync_ShouldBatchDeleteInGroupsOf25 [22 ms]
+  Passed AuditService.Tests.AuditServiceTests.ExportAsync_ShouldDelegateToArchiver [14 ms]
+  Passed AuditService.Tests.S3AuditArchiverTests.ExportAsync_WithJsonFormat_ShouldUploadJsonToS3 [279 ms]
+  Passed AuditService.Tests.DynamoDbAuditRepositoryTests.SaveEventAsync_ShouldCallPutItem [8 ms]
+  Passed AuditService.Tests.ArchiveControllerTests.GetDocument_ReturnsContractShape_VersionsWithNestedEvents [24 ms]
+  Passed AuditService.Tests.S3AuditArchiverTests.ArchiveOldEventsAsync_WithNoEvents_ShouldReturnZeroCount [3 ms]
+  Passed AuditService.Tests.DynamoDbAuditRepositoryTests.SaveEventAsync_WithNullOptionalFields_ShouldNotIncludeThem [1 ms]
+  Passed AuditService.Tests.DynamoDbAuditRepositoryTests.GetEventAsync_WhenItemNotFound_ShouldReturnNull [8 ms]
+  Passed AuditService.Tests.S3AuditArchiverTests.ExportAsync_WithCsvFormat_ShouldUploadCsvToS3 [16 ms]
+  Passed AuditService.Tests.ArchiveControllerTests.FeatureOff_Returns404WithHint [18 ms]
+  Passed AuditService.Tests.AuditServiceTests.RecordEventAsync_ShouldSaveAndReturnEvent [22 ms]
+  Passed AuditService.Tests.ArchiveControllerTests.UnknownDocument_Returns404 [1 ms]
+  Passed AuditService.Tests.DynamoDbAuditRepositoryTests.GetEventsByDateRangeAsync_ShouldFilterByTimestamp [12 ms]
+  Passed AuditService.Tests.ArchiveControllerTests.StoreFailure_Returns503 [4 ms]
+  Passed AuditService.Tests.S3AuditArchiverTests.ArchiveOldEventsAsync_WithEvents_ShouldUploadToGlacierAndDelete [8 ms]
+  Passed AuditService.Tests.ArchiveControllerTests.ArchiveHealth_OffIsDisabled_UnreachableIs503 [3 ms]
+  Passed AuditService.Tests.DynamoDbAuditRepositoryTests.GetAllUserEventsAsync_ShouldFilterByUserId [7 ms]
+  Passed AuditService.Tests.DynamoDbAuditRepositoryTests.GetResourceHistoryAsync_ShouldFilterByResourceId [2 ms]
+  Passed AuditService.Tests.AuditServiceTests.GetUserActivityReportAsync_ShouldBuildCorrectReport [14 ms]
+  Passed AuditService.Tests.DynamoDbAuditRepositoryTests.QueryEventsAsync_ShouldReturnPaginatedResults [1 ms]
+  Passed AuditService.Tests.DynamoDbAuditRepositoryTests.GetEventAsync_WhenItemExists_ShouldReturnEvent [5 ms]
+  Passed AuditService.Tests.AuditServiceTests.GetComplianceReportAsync_ShouldBuildCorrectReport [13 ms]
+[xUnit.net 00:00:00.52]   Finished:    AuditService.Tests
+  Passed AuditService.Tests.AuditServiceTests.GetEventAsync_WhenEventNotFound_ShouldReturnNull [1 ms]
+  Passed AuditService.Tests.AuditServiceTests.GetEventAsync_WhenEventExists_ShouldReturnEvent [< 1 ms]
+  Passed AuditService.Tests.AuditServiceTests.GetResourceHistoryAsync_ShouldReturnHistory [2 ms]
+  Passed AuditService.Tests.AuditServiceTests.QueryEventsAsync_ShouldDelegateToRepository [5 ms]
+
+Test Run Successful.
+Total tests: 53
+     Passed: 53
+ Total time: 1.2647 Seconds
