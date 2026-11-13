@@ -1406,17 +1406,6 @@ re2 = ["google-re2 (>=1.1)"]
 tests = ["pytest (>=9)", "typing-extensions (>=4.15)"]
 
 [[package]]
-name = "pip"
-version = "26.3"
-description = "The PyPA recommended tool for installing Python packages."
-optional = false
-python-versions = ">=3.10"
-files = [
-    {file = "pip-26.3-py3-none-any.whl", hash = "sha256:f3b60b20ffaadd4415ed7957212a38ac63fa4c5fa375bd0f4a797777940fad13"},
-    {file = "pip-26.3.tar.gz", hash = "sha256:6c36ae7da8695be67e3cd9f7d87919667ced53f57ce2ede75d89b5912ed2bc4c"},
-]
-
-[[package]]
 name = "pluggy"
 version = "1.6.0"
 description = "plugin and hook calling mechanisms for python"
@@ -2538,4 +2527,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "8600e90060df329f3c3f63d82d9b0a2b3e5dfb2e73c259ab890985d2fbf64cb2"
+content-hash = "5c6a3d7333ca52fa3a6ad712e33abf899f41047b196c22d88eb4ab26d5573c80"
