@@ -55,10 +55,12 @@ jobs:
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
           tree = ET.parse("nuget.config")
-          mapping = ET.SubElement(tree.getroot(), "packageSourceMapping")
-          for source, pattern in [("github-packages", "Platform.Shared"), ("nuget.org", "*")]:
-              entry = ET.SubElement(mapping, "packageSource", key=source)
-              ET.SubElement(entry, "package", pattern=pattern)
+          mapping = tree.getroot().find("packageSourceMapping")
+          for entry in list(mapping):
+              if entry.get("key") in {"vsl-local", "github-packages"}:
+                  mapping.remove(entry)
+          entry = ET.SubElement(mapping, "packageSource", key="github-packages")
+          ET.SubElement(entry, "package", pattern="Platform.Shared")
           tree.write("nuget.config", encoding="utf-8", xml_declaration=True)
           PY
       - run: dotnet restore DevApi.sln
