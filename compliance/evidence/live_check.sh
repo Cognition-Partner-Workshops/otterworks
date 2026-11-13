@@ -14,6 +14,7 @@ if ! command -v gitleaks >/dev/null || [[ "$(gitleaks version)" != 8.21.2 ]]; th
   curl -fsSL https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz -o "$OUT/gitleaks.tar.gz"
   tar -xzf "$OUT/gitleaks.tar.gz" -C "$HOME/bin" gitleaks
 fi
+hash -r
 : > "$OUT/empty.ignore"
 : > "$OUT/status.tsv"
 scan() {
