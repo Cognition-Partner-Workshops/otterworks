@@ -1,0 +1,18 @@
+# Trivy evidence: search-service
+Version: 0.71.0
+Vulnerability DB:
+  Version: 2
+  UpdatedAt: 2026-11-13 12:56:33.451543713 +0000 UTC
+  NextUpdate: 2026-11-14 12:56:33.451543367 +0000 UTC
+  DownloadedAt: 2026-11-13 14:00:24.995666652 +0000 UTC
+
+## baseline image ow-search-service:baseline  ImageID sha256:e4e2fe66c33efda87e00e71e679172869beecc1cb9b85771fa9db89be7b9de9d  scanned 2026-11-13T14:01:17.242139423Z
+total: 444
+by severity: {"HIGH":125,"LOW":160,"MEDIUM":155,"UNKNOWN":4}
+  os-pkgs ow-search-service:baseline (debian 13.7): 424 (fixable 3)
+  lang-pkgs Python: 20 (fixable 20)
+## after image ow-search-service:after  ImageID sha256:34f712ecdff94c3db973fd5599c7ebd64212f2410fa10018a5e47e495c6ea2d1  scanned 2026-11-13T14:04:58.128258029Z
+total: 424
+by severity: {"HIGH":123,"LOW":158,"MEDIUM":139,"UNKNOWN":4}
+  os-pkgs ow-search-service:after (debian 13.7): 424 (fixable 3)
+  lang-pkgs Python: 0 (fixable 0)
