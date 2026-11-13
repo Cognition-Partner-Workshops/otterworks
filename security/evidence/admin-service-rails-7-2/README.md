@@ -1,8 +1,9 @@
-# admin-service: Rails 7.2.3.1
+# admin-service: Rails 7.2.3.2
 
 Independent of the sibling image/meta-gem and gem-patch branches; based on demo-ciso 449e5f7ae.
-The Rails meta-gem is retained and pinned to exactly 7.2.3.1. The unbounded example constraint
-would currently resolve to 7.2.3.2, so the exact requested version is pinned.
+The Rails meta-gem is retained with '~> 7.2.3', '>= 7.2.3.2', resolving to 7.2.3.2.
+The first assessment used 7.2.3.1: 515 total findings, 2 critical, 140 high, 186 medium,
+179 low and 8 unknown (88 Ruby / 427 Debian). This follow-up removes CVE-2026-66066.
 Ruby remains 3.3 and the Dockerfile is unchanged. App defaults remain 7.1.
 No application code, policies, production configuration or schema changed.
 
@@ -12,9 +13,9 @@ This reduces known vulnerable gem findings; it does **not** clear all Rails CVEs
 The retained Rails meta-gem installs Active Storage and Action Mailbox as well as core Rails.
 Trivy reports installed packages, not proof of reachable exploit paths. Some advisories appear
 under both CVE and GHSA identifiers and the counts below do not deduplicate them.
-Rails 7.2.3.1 still has critical Active Storage findings and high findings in core components;
+Rails 7.2.3.2 still has critical Active Storage findings and high findings in core components;
 many fixed versions in this DB require Rails 8.0.5.2 or 8.1.4.1.
-CVE-2026-66066 has a 7.2.3.2 fix. Other gem patch remediation is intentionally independent.
+CVE-2026-66066 is now fixed. Other gem patch remediation is intentionally independent.
 Default Ruby gems are included: net-imap 0.4.25 remains visible to Trivy even though the
 application lockfile selects 0.6.8.
 
@@ -28,7 +29,7 @@ Scans were serialized after an initial concurrent attempt encountered a cache lo
 successful outputs below use the same unchanged DB.
 
 Baseline admin-base:demo-ciso: `sha256:faf793c1a317af41a9fe40bc4463768f7d2cc0f591d7d0e5d15717152992bae3`
-After admin-after:rails72: `sha256:40382dfaf7b950113240ef7777e9383b295c16f19f5b87fc1bed118a037041a7`
+After admin-after:rails72: `sha256:ddd42d73133316b2b9345e2da16004d02781a0b769abc8ff76f5dc0a9b829256`
 
 Reused baseline admin-service:baseline (faf793c1a317); its /app/Gemfile and Gemfile.lock
 SHA256 values match origin/demo-ciso:
@@ -39,7 +40,7 @@ Base ruby:3.3-slim image ID db3ad6dd68a886d51a187fb9bf486052f2976cdbe3b750169c25
 | Image | Total | Critical | High | Medium | Low | Unknown | Ruby | Debian |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | baseline | 532 | 4 | 145 | 195 | 180 | 8 | 105 | 427 |
-| after | 515 | 2 | 140 | 186 | 179 | 8 | 88 | 427 |
+| after | 514 | 2 | 139 | 186 | 179 | 8 | 87 | 427 |
 
 Node package findings: zero in both. JSON is minimized to image identity, OS and every
 finding's identifier, package, installed/fixed version, status, severity and package path.
@@ -77,10 +78,10 @@ done
 
 PostgreSQL 15, Ruby 3.3, same schema-load and RSpec commands as CI:
 ```text
-Finished in 1.92 seconds (files took 1.35 seconds to load)
+Finished in 1.88 seconds (files took 1.4 seconds to load)
 120 examples, 0 failures
-Randomized with seed 43261
-7.2.3.1
+Randomized with seed 31677
+7.2.3.2
 ```
 The test Rails runner exited zero. Both production image runners exited 1 at the
 same intentionally planted error (not an earlier boot error):
@@ -110,6 +111,7 @@ Identifiers absent from the after image (global ID set difference; all are CVEs)
 - CVE-2026-54465
 - CVE-2026-61666
 - CVE-2026-63435
+- CVE-2026-66066
 
 ## Residual Ruby findings
 
@@ -118,43 +120,42 @@ reported verbatim from Trivy, not a claim that an in-constraint fix exists.
 
 | Package | Installed | ID | Severity | Fixed versions |
 |---|---|---|---|---|
-| actionmailbox | 7.2.3.1 | CVE-2026-126068 | LOW | 8.1.4.1, 8.0.5.2 |
-| actionmailbox | 7.2.3.1 | GHSA-5957-c7qm-m469 | LOW | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| actionpack | 7.2.3.1 | CVE-2026-126081 | HIGH | 8.1.4.1, 8.0.5.2 |
-| actionpack | 7.2.3.1 | GHSA-wm3x-v3qw-4jh3 | HIGH | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| actionpack | 7.2.3.1 | CVE-2026-126072 | MEDIUM | 8.1.4.1, 8.0.5.2 |
-| actionpack | 7.2.3.1 | CVE-2026-126073 | MEDIUM | 8.1.4.1, 8.0.5.2 |
-| actionpack | 7.2.3.1 | CVE-2026-126076 | MEDIUM | 8.1.4.1, 8.0.5.2 |
-| actionpack | 7.2.3.1 | CVE-2026-126077 | MEDIUM | 8.1.4.1, 8.0.5.2 |
-| actionpack | 7.2.3.1 | GHSA-2586-8ghr-69fj | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| actionpack | 7.2.3.1 | GHSA-r9jg-fmfx-2gv6 | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| actionpack | 7.2.3.1 | GHSA-rwvh-fw6r-pwvp | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| actionpack | 7.2.3.1 | GHSA-x6mj-8jx9-qhqv | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| actionpack | 7.2.3.1 | CVE-2026-126067 | LOW | 8.1.4.1, 8.0.5.2 |
-| actionpack | 7.2.3.1 | GHSA-gmj8-hvj3-49mw | LOW | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| actionview | 7.2.3.1 | CVE-2026-126069 | MEDIUM | 8.1.4.1, 8.0.5.2 |
-| actionview | 7.2.3.1 | CVE-2026-126070 | MEDIUM | 8.1.4.1, 8.0.5.2 |
-| actionview | 7.2.3.1 | CVE-2026-126078 | MEDIUM | 8.1.4.1, 8.0.5.2 |
-| actionview | 7.2.3.1 | CVE-2026-126079 | MEDIUM | 8.1.4.1, 8.0.5.2 |
-| actionview | 7.2.3.1 | GHSA-2p2f-4rq4-gjwc | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| actionview | 7.2.3.1 | GHSA-68p9-83h6-5wpj | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| actionview | 7.2.3.1 | GHSA-rq8q-p985-fjq7 | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| actionview | 7.2.3.1 | GHSA-v6rj-xm57-3p59 | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| activestorage | 7.2.3.1 | CVE-2026-122006 | CRITICAL | 8.1.4.1, 8.0.5.2 |
-| activestorage | 7.2.3.1 | GHSA-f3w6-w445-fwh9 | CRITICAL | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| activestorage | 7.2.3.1 | CVE-2026-126186 | HIGH | 8.1.4.1, 8.0.5.2 |
-| activestorage | 7.2.3.1 | CVE-2026-66066 | HIGH | ~> 7.2.3, >= 7.2.3.2, ~> 8.0.5, >= 8.0.5.1, >= 8.1.3.1 |
-| activestorage | 7.2.3.1 | GHSA-v924-7rp8-4mxh | HIGH | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| activestorage | 7.2.3.1 | CVE-2026-126074 | MEDIUM | 8.1.4.1, 8.0.5.2 |
-| activestorage | 7.2.3.1 | CVE-2026-126084 | MEDIUM | 8.1.4.1, 8.0.5.2 |
-| activestorage | 7.2.3.1 | CVE-2026-126085 | MEDIUM | 8.1.4.1, 8.0.5.2 |
-| activestorage | 7.2.3.1 | GHSA-3w93-6hmw-whh4 | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| activestorage | 7.2.3.1 | GHSA-hfr4-8rjc-97m2 | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| activestorage | 7.2.3.1 | GHSA-p2pm-g2h6-7j5j | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| activestorage | 7.2.3.1 | CVE-2026-126188 | LOW | 8.1.4.1, 8.0.5.2 |
-| activestorage | 7.2.3.1 | GHSA-3f4q-8x5m-76v8 | LOW | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
-| activesupport | 7.2.3.1 | CVE-2026-126080 | HIGH | 8.1.4.1, 8.0.5.2 |
-| activesupport | 7.2.3.1 | GHSA-8474-xrp6-wh69 | HIGH | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| actionmailbox | 7.2.3.2 | CVE-2026-126068 | LOW | 8.1.4.1, 8.0.5.2 |
+| actionmailbox | 7.2.3.2 | GHSA-5957-c7qm-m469 | LOW | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| actionpack | 7.2.3.2 | CVE-2026-126081 | HIGH | 8.1.4.1, 8.0.5.2 |
+| actionpack | 7.2.3.2 | GHSA-wm3x-v3qw-4jh3 | HIGH | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| actionpack | 7.2.3.2 | CVE-2026-126072 | MEDIUM | 8.1.4.1, 8.0.5.2 |
+| actionpack | 7.2.3.2 | CVE-2026-126073 | MEDIUM | 8.1.4.1, 8.0.5.2 |
+| actionpack | 7.2.3.2 | CVE-2026-126076 | MEDIUM | 8.1.4.1, 8.0.5.2 |
+| actionpack | 7.2.3.2 | CVE-2026-126077 | MEDIUM | 8.1.4.1, 8.0.5.2 |
+| actionpack | 7.2.3.2 | GHSA-2586-8ghr-69fj | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| actionpack | 7.2.3.2 | GHSA-r9jg-fmfx-2gv6 | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| actionpack | 7.2.3.2 | GHSA-rwvh-fw6r-pwvp | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| actionpack | 7.2.3.2 | GHSA-x6mj-8jx9-qhqv | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| actionpack | 7.2.3.2 | CVE-2026-126067 | LOW | 8.1.4.1, 8.0.5.2 |
+| actionpack | 7.2.3.2 | GHSA-gmj8-hvj3-49mw | LOW | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| actionview | 7.2.3.2 | CVE-2026-126069 | MEDIUM | 8.1.4.1, 8.0.5.2 |
+| actionview | 7.2.3.2 | CVE-2026-126070 | MEDIUM | 8.1.4.1, 8.0.5.2 |
+| actionview | 7.2.3.2 | CVE-2026-126078 | MEDIUM | 8.1.4.1, 8.0.5.2 |
+| actionview | 7.2.3.2 | CVE-2026-126079 | MEDIUM | 8.1.4.1, 8.0.5.2 |
+| actionview | 7.2.3.2 | GHSA-2p2f-4rq4-gjwc | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| actionview | 7.2.3.2 | GHSA-68p9-83h6-5wpj | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| actionview | 7.2.3.2 | GHSA-rq8q-p985-fjq7 | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| actionview | 7.2.3.2 | GHSA-v6rj-xm57-3p59 | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| activestorage | 7.2.3.2 | CVE-2026-122006 | CRITICAL | 8.1.4.1, 8.0.5.2 |
+| activestorage | 7.2.3.2 | GHSA-f3w6-w445-fwh9 | CRITICAL | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| activestorage | 7.2.3.2 | CVE-2026-126186 | HIGH | 8.1.4.1, 8.0.5.2 |
+| activestorage | 7.2.3.2 | GHSA-v924-7rp8-4mxh | HIGH | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| activestorage | 7.2.3.2 | CVE-2026-126074 | MEDIUM | 8.1.4.1, 8.0.5.2 |
+| activestorage | 7.2.3.2 | CVE-2026-126084 | MEDIUM | 8.1.4.1, 8.0.5.2 |
+| activestorage | 7.2.3.2 | CVE-2026-126085 | MEDIUM | 8.1.4.1, 8.0.5.2 |
+| activestorage | 7.2.3.2 | GHSA-3w93-6hmw-whh4 | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| activestorage | 7.2.3.2 | GHSA-hfr4-8rjc-97m2 | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| activestorage | 7.2.3.2 | GHSA-p2pm-g2h6-7j5j | MEDIUM | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| activestorage | 7.2.3.2 | CVE-2026-126188 | LOW | 8.1.4.1, 8.0.5.2 |
+| activestorage | 7.2.3.2 | GHSA-3f4q-8x5m-76v8 | LOW | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
+| activesupport | 7.2.3.2 | CVE-2026-126080 | HIGH | 8.1.4.1, 8.0.5.2 |
+| activesupport | 7.2.3.2 | GHSA-8474-xrp6-wh69 | HIGH | ~> 8.0.5, >= 8.0.5.2, >= 8.1.4.1 |
 | crass | 1.0.6 | CVE-2026-61845 | HIGH | >= 1.0.7 |
 | crass | 1.0.6 | CVE-2026-61847 | HIGH | >= 1.0.7 |
 | crass | 1.0.6 | CVE-2026-116695 | MEDIUM | >= 1.0.8 |
