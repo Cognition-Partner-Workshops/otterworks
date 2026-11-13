@@ -43,15 +43,21 @@ public sealed class InventoryRepository(IConfiguration configuration)
     public async Task<IReadOnlyList<Vehicle>> Search(string dealerId, string model)
     {
         using var connection = Open();
-        var sql = "SELECT * FROM Inventory WHERE DealerId = @dealerId AND Model LIKE '%" + model + "%'";
-        return (await connection.QueryAsync<Vehicle>(sql, new { dealerId })).ToList();
+        var sql = "SELECT * FROM Inventory WHERE DealerId = @dealerId AND Model LIKE @model ESCAPE '\\'";
+        return (await connection.QueryAsync<Vehicle>(sql, new { dealerId, model = QueryHelpers.LikeContains(model) })).ToList();
     }
 
     public async Task<IReadOnlyList<Vehicle>> Aging(string dealerId, string sort)
     {
         using var connection = Open();
+        var parts = sort.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var valid = parts.Length == 1 || (parts.Length == 2 &&
+            (parts[1].Equals("ASC", StringComparison.OrdinalIgnoreCase) || parts[1].Equals("DESC", StringComparison.OrdinalIgnoreCase)));
+        var order = QueryHelpers.OrderBy(valid ? parts[0] : null,
+            valid && parts.Length == 2 && parts[1].Equals("DESC", StringComparison.OrdinalIgnoreCase),
+            new[] { "DaysInStock", "Model", "Year", "PriceCents", "Vin", "Status" }, "Vin");
         return (await connection.QueryAsync<Vehicle>(
-            "SELECT * FROM Inventory WHERE DealerId = @dealerId ORDER BY " + sort, new { dealerId })).ToList();
+            "SELECT * FROM Inventory WHERE DealerId = @dealerId " + order, new { dealerId })).ToList();
     }
 
     public async Task<Vehicle?> Find(string dealerId, string vin)
