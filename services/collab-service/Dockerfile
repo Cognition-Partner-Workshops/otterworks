@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package.json package-lock.json tsconfig.json ./
 RUN npm ci
 COPY src ./src
-RUN npm run build
+RUN npm run build && npm prune --omit=dev
 
 FROM node:20-alpine
 RUN apk --no-cache add curl
