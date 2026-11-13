@@ -22,7 +22,7 @@ web-test: install
 
 bff-restore:
 	rm -rf $(NUGET_PACKAGES)/platform.shared
-	dotnet restore $(BFF_SLN) --configfile $(NUGET_CONFIG) --force
+	dotnet restore $(BFF_SLN) --configfile $(NUGET_CONFIG) --force --verbosity normal
 
 bff-build: bff-restore
 	dotnet build $(BFF_SLN) --no-restore -c $(CONFIG)
