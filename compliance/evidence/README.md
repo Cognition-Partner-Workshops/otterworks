@@ -63,8 +63,11 @@ Maven Central dependency resolution for Maven and Gradle without editing modules
 HTTP 429 receives three attempts with 2- and 5-minute backoffs. A rate-limited
 repository preflight records exit 75 without invoking Make; other failures retain
 their actual Make status. Each attempt has its own log. After exhausted rate limits,
-the latest completed dependency workflow on the target branch, or its most recently
-created PR, is linked with conclusion and head SHA. This is **CI run evidence**, not
+the most recently completed dependency workflow across the target branch and the
+head branches of all its open/merged PRs is linked with conclusion and head SHA.
+PR-head evidence lists PR numbers and whether that exact SHA is an ancestor of
+the current target branch (a squash merge does not imply SHA containment).
+Both PR and run discovery paginate. This is **CI run evidence**, not
 a fresh local pass; absence or API failure is explicit. `--deps-only` refreshes this
 evidence and the pack while retaining the original scan SHA and Sonar artifacts.
 Missing tools/JDKs or unresolved dependencies remain inconclusive. Commit code before

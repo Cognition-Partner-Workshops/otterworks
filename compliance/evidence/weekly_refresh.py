@@ -10,6 +10,7 @@ import time
 import shlex
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
+from urllib.parse import quote
 from xml.sax.saxutils import escape
 from datetime import datetime, timezone
 
@@ -82,20 +83,31 @@ def central_block():
 
 
 def dependency_ci(branch):
-    fields = 'databaseId,conclusion,url,headSha,headBranch,event,createdAt'
-    args = ['run', 'list', '-R', REPOSITORY, '-w', 'deps-remediation.yml', '--status', 'completed',
-            '--limit', '100', '--json', fields]
-    runs = gh_json([*args, '--branch', branch])
+    pages = gh_json(['api', '--paginate', '--slurp',
+                     f'repos/{REPOSITORY}/pulls?state=all&base={quote(branch, safe="")}&per_page=100'])
+    heads = {}
+    for page in pages:
+        for pr in page:
+            if pr['state'] == 'open' or pr.get('merged_at'):
+                heads.setdefault(pr['head']['ref'], []).append(pr['number'])
+    pages = gh_json(['api', '--paginate', '--slurp',
+                     f'repos/{REPOSITORY}/actions/workflows/deps-remediation.yml/runs?status=completed&per_page=100'])
+    runs = [run for page in pages for run in page['workflow_runs']
+            if run['head_branch'] == branch or run['head_branch'] in heads]
     if not runs:
-        prs = gh_json(['api', f'repos/{REPOSITORY}/pulls?state=all&base={branch}&sort=created&direction=desc&per_page=1'])
-        if prs:
-            pr = prs[0]
-            candidates = gh_json([*args, '--branch', pr['head']['ref']])
-            for run in candidates:
-                associations = gh_json(['api', f'repos/{REPOSITORY}/actions/runs/{run["databaseId"]}'])
-                if any(p['number'] == pr['number'] for p in associations.get('pull_requests', [])):
-                    runs.append(run)
-    return max(runs, key=lambda r: r['createdAt']) if runs else None
+        return None
+    run = max(runs, key=lambda r: (r['updated_at'], r['id']))
+    result = dict(databaseId=run['id'], conclusion=run['conclusion'], url=run['html_url'],
+                  headSha=run['head_sha'], headBranch=run['head_branch'],
+                  createdAt=run['created_at'], completedAt=run['updated_at'], target_branch=branch,
+                  evidence_scope='target branch' if run['head_branch'] == branch else 'PR-head',
+                  pr_numbers=heads.get(run['head_branch'], []), head_sha_in_target=None)
+    try:
+        comparison = gh_json(['api', f'repos/{REPOSITORY}/compare/{run["head_sha"]}...{quote(branch, safe="")}'])
+        result['head_sha_in_target'] = comparison['status'] in ['ahead', 'identical']
+    except (RuntimeError, subprocess.TimeoutExpired, OSError) as exc:
+        result['ancestry_error'] = str(exc)
+    return result
 
 
 def advisory_steps(status, out, branch):

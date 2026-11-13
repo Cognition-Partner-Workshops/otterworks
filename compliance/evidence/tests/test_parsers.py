@@ -358,29 +358,78 @@ def test_advisory_normal_run_does_not_retry(monkeypatch, tmp_path):
 def test_dependency_ci_selects_latest_branch_run(monkeypatch):
     import weekly_refresh as weekly
 
-    runs = [dict(createdAt='2026-01-01', headSha='old'), dict(createdAt='2026-02-01', headSha='new')]
-    monkeypatch.setattr(weekly, 'gh_json', lambda args: runs)
-    assert weekly.dependency_ci('demo')['headSha'] == 'new'
-
-
-def test_dependency_ci_latest_pr_association(monkeypatch):
-    import weekly_refresh as weekly
-
-    calls = []
+    runs = [dict(id=n, head_branch='demo', head_sha=str(n), conclusion='success',
+                 created_at='2026-01-01', updated_at=f'2026-02-0{n}', html_url='run') for n in [1, 2]]
 
     def gh(args):
-        calls.append(args)
-        if 'demo' in args:
-            return []
-        if args[0] == 'api' and '/pulls?' in args[1]:
-            assert 'base=demo' in args[1]
-            return [dict(number=1, head={'ref': 'feature'})]
-        if args[0] == 'api':
-            return {'pull_requests': [{'number': 1}]}
-        return [dict(databaseId=2, createdAt='now', headSha='pr')]
+        if '/pulls?' in args[-1]:
+            return [[]]
+        if '/compare/' in args[-1]:
+            return {'status': 'ahead'}
+        return [{'workflow_runs': runs}]
 
     monkeypatch.setattr(weekly, 'gh_json', gh)
-    assert weekly.dependency_ci('demo')['headSha'] == 'pr'
+    result = weekly.dependency_ci('demo')
+    assert result['headSha'] == '2'
+    assert result['evidence_scope'] == 'target branch'
+    assert result['head_sha_in_target'] is True
+
+
+def test_dependency_ci_all_pr_heads_paginated(monkeypatch, tmp_path):
+    import json
+    import weekly_refresh as weekly
+    import build_evidence_pack as builder
+
+    def gh(args):
+        if '/compare/' in args[-1]:
+            return {'status': 'diverged'}
+        assert '--paginate' in args and '--slurp' in args
+        if '/pulls?' in args[-1]:
+            assert 'base=demo' in args[-1]
+            return [[dict(number=2901, state='open', head={'ref': 'new-pr'})],
+                    [dict(number=2854, state='closed', merged_at='then', head={'ref': 'older-pr'}),
+                     dict(number=2855, state='closed', merged_at=None, head={'ref': 'abandoned'})]]
+
+        def run(number, branch, completed):
+            return dict(id=number, head_branch=branch, head_sha='pr-sha', conclusion='success',
+                        created_at='2026-11-13T13:39:42Z', updated_at=completed, html_url='https://example/run')
+
+        return [{'workflow_runs': [run(1, 'demo', '2026-11-13T13:40:00Z')]},
+                {'workflow_runs': [run(43435588623, 'older-pr', '2026-11-13T13:44:18Z'),
+                                   run(3, 'unrelated', '2026-11-13T14:00:00Z'),
+                                   run(4, 'abandoned', '2026-11-13T14:01:00Z')]}]
+
+    monkeypatch.setattr(weekly, 'gh_json', gh)
+    result = weekly.dependency_ci('demo')
+    assert result['databaseId'] == 43435588623
+    assert result['pr_numbers'] == [2854]
+    assert result['evidence_scope'] == 'PR-head'
+    assert result['head_sha_in_target'] is False
+    (tmp_path / 'weekly-status.json').write_text(json.dumps(
+        dict(advisory_blocked_reason='HTTP 429', advisory_ci=result)))
+    advisory, _ = builder.weekly_evidence(tmp_path, {})
+    assert 'PR-head evidence (PR #2854)' in advisory['verdict']
+    assert 'head SHA in demo: No' in advisory['verdict']
+
+
+def test_dependency_ci_empty_and_ancestry_unavailable(monkeypatch):
+    import weekly_refresh as weekly
+
+    monkeypatch.setattr(weekly, 'gh_json', lambda args: [[]] if '/pulls?' in args[-1] else [{'workflow_runs': []}])
+    assert weekly.dependency_ci('demo') is None
+
+    def gh(args):
+        if '/pulls?' in args[-1]:
+            return [[]]
+        if '/compare/' in args[-1]:
+            raise RuntimeError('comparison unavailable')
+        return [{'workflow_runs': [dict(id=1, head_branch='demo', head_sha='sha', conclusion='success',
+                                       created_at='then', updated_at='now', html_url='run')]}]
+
+    monkeypatch.setattr(weekly, 'gh_json', gh)
+    result = weekly.dependency_ci('demo')
+    assert result['head_sha_in_target'] is None
+    assert result['ancestry_error'] == 'comparison unavailable'
 
 
 def test_mirror_unset_and_invalid(monkeypatch, tmp_path):

@@ -538,6 +538,12 @@ def weekly_evidence(directory, mapping):
         advisory['verdict'] = ('CI run evidence (local run blocked: ' + advisory['local_blocked_reason'] + ') — '
                                + (f"{ci['conclusion']}; {ci['url']}; head {ci['headSha']}" if ci else
                                   'no matching completed CI run available'))
+        if ci and ci.get('evidence_scope'):
+            advisory['verdict'] += '; ' + ci['evidence_scope'] + ' evidence'
+            if ci.get('pr_numbers'):
+                advisory['verdict'] += ' (' + ', '.join(f'PR #{n}' for n in ci['pr_numbers']) + ')'
+            advisory['verdict'] += (f"; head SHA in {ci['target_branch']}: "
+                                    + live_label(ci.get('head_sha_in_target')))
         advisory['ci_collection_error'] = status.get('advisory_ci_error')
     sonar = dict(status.get('wide_scan', {}))
     cluster_path = directory / 'wide-scan/clusters.json'
