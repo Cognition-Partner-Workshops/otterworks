@@ -39,9 +39,11 @@ class BearerInterceptor(private val tokens: TokenStore) : Interceptor {
     }
 }
 
-class ApiKeyInterceptor(private val apiKey: String) : Interceptor {
+class ApiKeyInterceptor(private val apiKey: String? = null) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response =
-        chain.proceed(chain.request().newBuilder().header("X-Api-Key", apiKey).build())
+        chain.proceed(chain.request().newBuilder().apply {
+            if (!apiKey.isNullOrBlank()) header("X-Api-Key", apiKey)
+        }.build())
 }
 
 class DealerRepository(
@@ -60,7 +62,7 @@ class DealerRepository(
         api.submitClaim(SubmitClaimRequest(vin, description))
 
     companion object {
-        fun create(baseUrl: String, apiKey: String, tokens: TokenStore): DealerRepository {
+        fun create(baseUrl: String, apiKey: String? = null, tokens: TokenStore): DealerRepository {
             val client = OkHttpClient.Builder()
                 .addInterceptor(BearerInterceptor(tokens))
                 .addInterceptor(ApiKeyInterceptor(apiKey))

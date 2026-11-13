@@ -3,16 +3,49 @@ package com.vsl.dealer
 import android.content.Context
 import com.vsl.dealer.api.TokenStore
 
-class PreferenceTokenStore(context: Context) : TokenStore {
-    private val preferences = context.getSharedPreferences("dealer_session", Context.MODE_PRIVATE)
+interface TokenPreferences {
+    fun get(key: String): String?
+    fun put(key: String, value: String)
+    fun remove(key: String)
+}
 
-    override fun read(): String? = preferences.getString("access_token", null)
+interface TokenCipher {
+    fun encrypt(token: String): String
+    fun decrypt(value: String): String
+}
+
+class PreferenceTokenStore(
+    private val preferences: TokenPreferences,
+    private val cipher: TokenCipher,
+) : TokenStore {
+    init {
+        preferences.remove("access_token")
+    }
+
+    constructor(context: Context) : this(object : TokenPreferences {
+        private val prefs = context.getSharedPreferences("dealer_session", Context.MODE_PRIVATE)
+        override fun get(key: String): String? = prefs.getString(key, null)
+        override fun put(key: String, value: String) { prefs.edit().putString(key, value).apply() }
+        override fun remove(key: String) { prefs.edit().remove(key).apply() }
+    }, KeystoreTokenCipher())
+
+    override fun read(): String? {
+        preferences.remove("access_token")
+        return try {
+            preferences.get("encrypted_access_token")?.let(cipher::decrypt)
+        } catch (_: Exception) {
+            clear()
+            null
+        }
+    }
 
     override fun write(token: String) {
-        preferences.edit().putString("access_token", token).apply()
+        clear()
+        preferences.put("encrypted_access_token", cipher.encrypt(token))
     }
 
     override fun clear() {
-        preferences.edit().remove("access_token").apply()
+        preferences.remove("access_token")
+        preferences.remove("encrypted_access_token")
     }
 }

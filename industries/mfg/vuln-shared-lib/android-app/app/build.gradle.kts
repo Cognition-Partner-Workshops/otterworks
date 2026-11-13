@@ -13,8 +13,10 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:5080/\"")
-        buildConfigField("String", "DEALER_API_KEY", "\"vsl-synthetic-mobile-api-key-0001\"")
+    }
+    buildTypes {
+        debug { buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:5080/\"") }
+        release { buildConfigField("String", "API_BASE_URL", "\"https://dealer-api.example/\"") }
     }
     buildFeatures { compose = true; buildConfig = true }
     compileOptions {

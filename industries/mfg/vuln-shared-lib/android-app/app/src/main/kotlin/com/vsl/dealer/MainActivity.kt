@@ -11,8 +11,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val client = DealerRepository.create(
             BuildConfig.API_BASE_URL,
-            BuildConfig.DEALER_API_KEY,
-            PreferenceTokenStore(applicationContext),
+            tokens = PreferenceTokenStore(applicationContext),
         )
         setContent {
             MaterialTheme {
