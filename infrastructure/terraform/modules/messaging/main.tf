@@ -24,6 +24,7 @@ resource "aws_sns_topic" "events" {
 
 resource "aws_sqs_queue" "notifications" {
   name                       = "${var.project}-notifications-${var.environment}"
+  sqs_managed_sse_enabled    = true
   visibility_timeout_seconds = 60
   message_retention_seconds  = 86400
   receive_wait_time_seconds  = 20
@@ -40,6 +41,7 @@ resource "aws_sqs_queue" "notifications" {
 
 resource "aws_sqs_queue" "notifications_dlq" {
   name                      = "${var.project}-notifications-dlq-${var.environment}"
+  sqs_managed_sse_enabled   = true
   message_retention_seconds = 1209600
 
   tags = merge(local.common_tags, {
@@ -51,6 +53,7 @@ resource "aws_sqs_queue" "notifications_dlq" {
 
 resource "aws_sqs_queue" "analytics_events" {
   name                       = "${var.project}-analytics-events-${var.environment}"
+  sqs_managed_sse_enabled    = true
   visibility_timeout_seconds = 120
   message_retention_seconds  = 259200
   receive_wait_time_seconds  = 20
@@ -64,6 +67,7 @@ resource "aws_sqs_queue" "analytics_events" {
 
 resource "aws_sqs_queue" "search_indexing" {
   name                       = "${var.project}-search-indexing-${var.environment}"
+  sqs_managed_sse_enabled    = true
   visibility_timeout_seconds = 60
   message_retention_seconds  = 86400
   receive_wait_time_seconds  = 20
