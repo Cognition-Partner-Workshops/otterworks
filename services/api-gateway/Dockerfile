@@ -8,7 +8,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/server ./cmd/server
 
 FROM alpine:3.24@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf
-RUN apk --no-cache add ca-certificates wget
+RUN apk --no-cache upgrade && apk --no-cache add ca-certificates wget
 WORKDIR /app
 COPY --from=builder /bin/server /app/server
 
