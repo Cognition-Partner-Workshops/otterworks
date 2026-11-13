@@ -36,7 +36,6 @@ def reconcile(paths, tmp_path, **extra):
     ("UPDATE ledger SET agent='' WHERE agent IS NULL", "profiles"),
     ("UPDATE ledger SET posted=DATE_TRUNC('day',posted)", "keyed_row_hash"),
     ("INSERT INTO ledger SELECT * FROM ledger WHERE id=1", "row_count"),
-    ("UPDATE ledger SET amount=amount + CASE WHEN id=1 THEN 0.01 ELSE -0.01 END", "keyed_row_hash"),
 ])
 def test_differences(databases, tmp_path, sql, failed):
     with duckdb.connect(str(databases[1])) as conn:
@@ -46,8 +45,25 @@ def test_differences(databases, tmp_path, sql, failed):
     assert obj["status"] == "red"
     assert not obj["checks"][failed]
     assert not obj["checks"]["samples"]
-    if "CASE" in sql:
-        assert obj["left"]["profiles"]["amount"]["sum"] == obj["right"]["profiles"]["amount"]["sum"]
+
+
+def test_per_row_and_total_rounding_with_equal_totals(databases, tmp_path):
+    for index, path in enumerate(databases):
+        with duckdb.connect(str(path)) as conn:
+            conn.execute("DELETE FROM ledger")
+            conn.execute("""
+                INSERT INTO ledger(id, amount) VALUES
+                (1, ROUND(10.01 * 0.5, 2)), (2, ROUND(10.01 * 0.5, 2)),
+                (3, ROUND(10.00 * 0.3333, 2)), (4, ROUND(10.00 * 0.3333, 2)),
+                (5, ROUND(10.00 * 0.3334, 2))
+            """)
+            if index == 1:
+                conn.execute("UPDATE ledger SET amount=ROUND(10.01,2)-ROUND(10.01*0.5,2) WHERE id=2")
+                conn.execute("UPDATE ledger SET amount=ROUND(10.00,2)-2*ROUND(10.00*0.3333,2) WHERE id=5")
+    code, obj = reconcile(databases, tmp_path)
+    assert code == 1 and obj["status"] == "red"
+    assert not obj["checks"]["keyed_row_hash"] and not obj["checks"]["samples"]
+    assert obj["left"]["profiles"]["amount"]["sum"] == obj["right"]["profiles"]["amount"]["sum"]
 
 
 def test_equal_and_deterministic(databases, tmp_path):
