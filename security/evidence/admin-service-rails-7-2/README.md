@@ -1,5 +1,35 @@
 # admin-service: Rails 7.2.3.2
 
+## Rails 8.0.5.2 assessed, not proposed
+
+Informational scan only of the already-built image
+`sha256:302cbbed8169cc338671508ad88139f845a8981036a833b5ec442743c2980d38`, using the same frozen DB and --skip-db-update.
+Total 447: LOW=160, HIGH=133, MEDIUM=150, UNKNOWN=4.
+os-pkgs/debian=427; lang-pkgs/node-pkg=0; lang-pkgs/gemspec=20.
+The full minimized findings are in rails80-assessed.trivy.min.json.
+
+The existing suite passed 120 examples, 0 failures and the test runner printed 8.0.5.2,
+but this alternative is **not proposed**: TaggedLogging.logger exists at
+activesupport-8.0.5.2/lib/active_support/tagged_logging.rb:117, so the planted bug in
+config/environments/production.rb:8 is neutralized. Production instead fails with
+Missing `secret_key_base` at railties-8.0.5.2/lib/rails/application/configuration.rb:524.
+No application workaround was made; ~/wt-rails80 remains uncommitted and unpushed.
+
+Remaining Ruby findings (including aliases; exact IDs and fixed strings in JSON):
+
+| Package / installed | Findings | Fixed versions reported |
+|---|---:|---|
+| crass 1.0.6 | 5 | >= 1.0.7; >= 1.0.8 |
+| msgpack 1.8.0 | 2 | 1.8.7; >= 1.8.2 |
+| net-imap 0.4.25 | 3 | ~> 0.5.15, >= 0.6.4.1 |
+| puma 6.6.1 | 2 | ~> 7.2.1, >= 8.0.2 |
+| rack 3.2.6 | 8 | 2.2.25, 3.1.23, 3.2.8; ~> 2.2.25, ~> 3.1.23, >= 3.2.8; 3.1.23, 3.2.8; ~> 3.1.23, >= 3.2.8 |
+
+No Rails-family residual findings remain in this assessed image. The observed Rails
+advisories list 8.0.5.2 and 8.1.4.1 as alternative fixed versions; this scan offers no
+residual Rails finding for 8.1.4.1 to remove. Local scans do not prove deployed ECR state.
+
+
 Independent of the sibling image/meta-gem and gem-patch branches; based on demo-ciso 449e5f7ae.
 The Rails meta-gem is retained with '~> 7.2.3', '>= 7.2.3.2', resolving to 7.2.3.2.
 The first assessment used 7.2.3.1: 515 total findings, 2 critical, 140 high, 186 medium,
