@@ -33,6 +33,15 @@ engine or disabled global lookup is restored. Executable, concatenated and prefi
 forms fail closed even for an administrator. This is a deliberately narrow legacy
 configuration compatibility rule, not a general script evaluator.
 
+Related alternative: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2862
+contains the same 1.9→1.10.0 POM bump by another concurrent session. Its current
+POM-only implementation leaves the legacy owner contract test failing. This PR
+adds the narrow non-executing compatibility rule, rejection test, complete-image
+scanner proof and captured transcript evidence. Reviewers should land one coherent
+Commons Text change, incorporating the selected compatibility behavior and evidence;
+these PRs are alternatives for the same version bump, not additive remediations.
+Both PRs remain open; neither was closed or taken over here.
+
 Validation: 105 tests, 0 failures/errors/skips with transcript emission enabled;
 the unchanged repository grader passes all 11 before/after transcript cases.
 The emitted observations and full grades are included. Checkstyle still reports
