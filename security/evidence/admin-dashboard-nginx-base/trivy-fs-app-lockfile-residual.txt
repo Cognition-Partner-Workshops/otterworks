@@ -1,0 +1,120 @@
+
+Report Summary
+
+┌───────────────────┬──────┬─────────────────┐
+│      Target       │ Type │ Vulnerabilities │
+├───────────────────┼──────┼─────────────────┤
+│ package-lock.json │ npm  │       25        │
+└───────────────────┴──────┴─────────────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+
+package-lock.json (npm)
+=======================
+Total: 25 (UNKNOWN: 0, LOW: 0, MEDIUM: 8, HIGH: 17, CRITICAL: 0)
+
+┌───────────────────┬─────────────────┬──────────┬────────┬───────────────────┬─────────────────────────────────────────┬──────────────────────────────────────────────────────────────┐
+│      Library      │  Vulnerability  │ Severity │ Status │ Installed Version │              Fixed Version              │                            Title                             │
+├───────────────────┼─────────────────┼──────────┼────────┼───────────────────┼─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ @angular/common   │ CVE-2025-66035  │ HIGH     │ fixed  │ 17.3.12           │ 21.0.1, 20.3.14, 19.2.16                │ angular: Angular HTTP Client Has XSRF Token Leakage via      │
+│                   │                 │          │        │                   │                                         │ Protocol-Relative URLs                                       │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2025-66035                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-50170  │          │        │                   │ 22.0.0-rc.2, 20.3.22, 19.2.23, 21.2.15  │ @angular/common: Information Leak via Default Caching of     │
+│                   │                 │          │        │                   │                                         │ Credentialed Requests in HttpTransferCache                   │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-50170                   │
+│                   ├─────────────────┤          │        │                   │                                         ├──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-50171  │          │        │                   │                                         │ @angular/common: Angular @angular/common: Denial of Service  │
+│                   │                 │          │        │                   │                                         │ via malformed digitsInfo parameter                           │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-50171                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-54266  │          │        │                   │ 22.0.1, 21.2.17, 20.3.25                │ @angular/common: Weak 32-Bit Cache Key Hashing in            │
+│                   │                 │          │        │                   │                                         │ `HttpTransferCache` Leading to Cross-Request Data...         │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-54266                   │
+│                   ├─────────────────┤          │        │                   │                                         ├──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-54268  │          │        │                   │                                         │ @angular/common: Angular @angular/common: Denial of Service  │
+│                   │                 │          │        │                   │                                         │ via crafted date format string                               │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-54268                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-68945  │          │        │                   │ 22.0.2, 21.2.19, 20.3.27                │ @angular/common: Angular: Cross-Request Response Reuse and   │
+│                   │                 │          │        │                   │                                         │ State Poisoning in HttpTransferCache                         │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-68945                   │
+│                   ├─────────────────┼──────────┤        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-111753 │ MEDIUM   │        │                   │ 21.0.3, 20.3.34                         │ @angular/common: @angular/common: Cross-Site Request Forgery │
+│                   │                 │          │        │                   │                                         │ token leakage via URL parsing discrepancy                    │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-111753                  │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-88059  │          │        │                   │ 22.1.1, 21.2.20, 20.3.28                │ Angular: Angular: Information Leak via HttpTransferCache     │
+│                   │                 │          │        │                   │                                         │ Bypass                                                       │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-88059                   │
+├───────────────────┼─────────────────┼──────────┤        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ @angular/compiler │ CVE-2025-66412  │ HIGH     │        │                   │ 21.0.2, 20.3.15, 19.2.17                │ angular: Angular Stored XSS Vulnerability via SVG Animation, │
+│                   │                 │          │        │                   │                                         │ SVG URL and MathML...                                        │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2025-66412                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-22610  │          │        │                   │ 21.1.0-rc.0, 21.0.7, 20.3.16, 19.2.18   │ angular: Angular: Cross-site scripting vulnerability in      │
+│                   │                 │          │        │                   │                                         │ Template Compiler                                            │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-22610                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-32635  │          │        │                   │ 22.0.0-next.3, 21.2.4, 20.3.18, 19.2.20 │ @angular/core: @angular/compiler: Angular has XSS in i18n    │
+│                   │                 │          │        │                   │                                         │ attribute bindings                                           │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-32635                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-69151  │          │        │                   │ 22.0.1, 21.2.19, 20.3.27                │ @angular/compiler: @angular/core: Angular: Cross-Site        │
+│                   │                 │          │        │                   │                                         │ Scripting via internationalization event handlers            │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-69151                   │
+│                   ├─────────────────┼──────────┤        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-50557  │ MEDIUM   │        │                   │ 21.2.15, 22.0.0-rc.2, 20.3.22, 19.2.22  │ @angular/compiler: @angular/core: Angular: Template and      │
+│                   │                 │          │        │                   │                                         │ Attribute Namespace Sanitization Bypass (XSS)                │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-50557                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-54265  │          │        │                   │ 22.0.1, 21.2.17, 20.3.25                │ @angular/compiler: Angular: Two-Way Property Binding         │
+│                   │                 │          │        │                   │                                         │ Sanitization Bypass (XSS)                                    │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-54265                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-88057  │          │        │                   │ 22.1.0, 21.2.20, 20.3.28                │ @angular/core: @angular/compiler: Angular: Arbitrary code    │
+│                   │                 │          │        │                   │                                         │ execution via sanitization bypass in host bindings...        │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-88057                   │
+├───────────────────┼─────────────────┼──────────┤        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ @angular/core     │ CVE-2026-22610  │ HIGH     │        │                   │ 21.1.0-rc.0, 21.0.7, 20.3.16, 19.2.18   │ angular: Angular: Cross-site scripting vulnerability in      │
+│                   │                 │          │        │                   │                                         │ Template Compiler                                            │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-22610                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-27970  │          │        │                   │ 21.2.0, 21.1.6, 20.3.17, 19.2.19        │ @angular/core: Angular: Cross-site scripting via compromised │
+│                   │                 │          │        │                   │                                         │ translation files                                            │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-27970                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-32635  │          │        │                   │ 22.0.0-next.3, 21.2.4, 20.3.18, 19.2.20 │ @angular/core: @angular/compiler: Angular has XSS in i18n    │
+│                   │                 │          │        │                   │                                         │ attribute bindings                                           │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-32635                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-54267  │          │        │                   │ 22.0.1, 21.2.17, 20.3.25                │ @angular/core: Angular Client Hydration DOM Clobbering &     │
+│                   │                 │          │        │                   │                                         │ Response-Cache Poisoning                                     │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-54267                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-69151  │          │        │                   │ 22.0.1, 21.2.19, 20.3.27                │ @angular/compiler: @angular/core: Angular: Cross-Site        │
+│                   │                 │          │        │                   │                                         │ Scripting via internationalization event handlers            │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-69151                   │
+│                   ├─────────────────┼──────────┤        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-50557  │ MEDIUM   │        │                   │ 21.2.15, 22.0.0-rc.2, 20.3.22, 19.2.22  │ @angular/compiler: @angular/core: Angular: Template and      │
+│                   │                 │          │        │                   │                                         │ Attribute Namespace Sanitization Bypass (XSS)                │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-50557                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-52725  │          │        │                   │ 21.2.15, 22.0.0-rc.2, 19.2.23, 20.3.22  │ @angular/core: @angular/core: Cross-Site Scripting (XSS) via │
+│                   │                 │          │        │                   │                                         │ dynamic component creation bypass                            │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-52725                   │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-88057  │          │        │                   │ 22.1.0, 21.2.20, 20.3.28                │ @angular/core: @angular/compiler: Angular: Arbitrary code    │
+│                   │                 │          │        │                   │                                         │ execution via sanitization bypass in host bindings...        │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-88057                   │
+├───────────────────┼─────────────────┼──────────┤        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ @angular/router   │ CVE-2026-101896 │ HIGH     │        │                   │ 22.2.0, 21.2.24, 20.3.32                │ @angular/router: @angular/router: Denial of Service via      │
+│                   │                 │          │        │                   │                                         │ numeric matrix parameters during Server-Side Rendering...    │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-101896                  │
+│                   ├─────────────────┤          │        │                   ├─────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│                   │ CVE-2026-111752 │          │        │                   │ 22.2.1, 21.2.25, 20.3.33                │ @angular/router: @angular/router: Denial of Service via      │
+│                   │                 │          │        │                   │                                         │ improper route outlet matching in Server-Side...             │
+│                   │                 │          │        │                   │                                         │ https://avd.aquasec.com/nvd/cve-2026-111752                  │
+└───────────────────┴─────────────────┴──────────┴────────┴───────────────────┴─────────────────────────────────────────┴──────────────────────────────────────────────────────────────┘

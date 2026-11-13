@@ -1,0 +1,741 @@
+{
+  "ArtifactName": "ow-fe/admin-dashboard:baseline",
+  "ImageID": "sha256:0b708ae76df9fcbbbd37881a08d901743299b5b77d59a465771fba28c79f8833",
+  "RepoDigests": [
+    "ow-fe/admin-dashboard@sha256:0b708ae76df9fcbbbd37881a08d901743299b5b77d59a465771fba28c79f8833"
+  ],
+  "OS": {
+    "Family": "alpine",
+    "Name": "3.19.1",
+    "EOSL": true
+  },
+  "Results": [
+    {
+      "Target": "ow-fe/admin-dashboard:baseline (alpine 3.19.1)",
+      "Class": "os-pkgs",
+      "Type": "alpine",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-2023-42363",
+          "PkgName": "busybox",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r17",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-42364",
+          "PkgName": "busybox",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r19",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-42365",
+          "PkgName": "busybox",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r19",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-42366",
+          "PkgName": "busybox",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r16",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-58251",
+          "PkgName": "busybox",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r21",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-46394",
+          "PkgName": "busybox",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r21",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-42363",
+          "PkgName": "busybox-binsh",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r17",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-42364",
+          "PkgName": "busybox-binsh",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r19",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-42365",
+          "PkgName": "busybox-binsh",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r19",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-42366",
+          "PkgName": "busybox-binsh",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r16",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-58251",
+          "PkgName": "busybox-binsh",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r21",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-46394",
+          "PkgName": "busybox-binsh",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r21",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-6197",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.9.0-r0",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-0853",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.6.0-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-2398",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.7.1-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-2466",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.7.1-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-6874",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.9.0-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-7264",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.9.1-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-8096",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.10.0-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-9681",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.11.0-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-4947",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.14.0-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-5025",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.14.0-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-5399",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.14.1-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-9086",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.14.1-r2",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-11053",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.11.1-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-2004",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.7.1-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-2379",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.7.1-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-0167",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.12.0-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-0665",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.12.0-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-0725",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.12.0-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-10148",
+          "PkgName": "curl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.14.1-r2",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-6119",
+          "PkgName": "libcrypto3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.7-r0",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-9230",
+          "PkgName": "libcrypto3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.8-r1",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-13176",
+          "PkgName": "libcrypto3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.8-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-4741",
+          "PkgName": "libcrypto3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.6-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-5535",
+          "PkgName": "libcrypto3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.6-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-9143",
+          "PkgName": "libcrypto3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.7-r1",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-9232",
+          "PkgName": "libcrypto3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.8-r1",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-6197",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.9.0-r0",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-0853",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.6.0-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-2398",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.7.1-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-2466",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.7.1-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-6874",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.9.0-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-7264",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.9.1-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-8096",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.10.0-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-9681",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.11.0-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-4947",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.14.0-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-5025",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.14.0-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-5399",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.14.1-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-9086",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.14.1-r2",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-11053",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.11.1-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-2004",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.7.1-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-2379",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.7.1-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-0167",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.12.0-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-0665",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.12.0-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-0725",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.12.0-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-10148",
+          "PkgName": "libcurl",
+          "InstalledVersion": "8.5.0-r0",
+          "FixedVersion": "8.14.1-r2",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-45491",
+          "PkgName": "libexpat",
+          "InstalledVersion": "2.6.2-r0",
+          "FixedVersion": "2.6.3-r0",
+          "Status": "fixed",
+          "Severity": "CRITICAL"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-45492",
+          "PkgName": "libexpat",
+          "InstalledVersion": "2.6.2-r0",
+          "FixedVersion": "2.6.3-r0",
+          "Status": "fixed",
+          "Severity": "CRITICAL"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-45490",
+          "PkgName": "libexpat",
+          "InstalledVersion": "2.6.2-r0",
+          "FixedVersion": "2.6.3-r0",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-59375",
+          "PkgName": "libexpat",
+          "InstalledVersion": "2.6.2-r0",
+          "FixedVersion": "2.7.2-r0",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-50602",
+          "PkgName": "libexpat",
+          "InstalledVersion": "2.6.2-r0",
+          "FixedVersion": "2.6.4-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-8176",
+          "PkgName": "libexpat",
+          "InstalledVersion": "2.6.2-r0",
+          "FixedVersion": "2.7.0-r0",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-6119",
+          "PkgName": "libssl3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.7-r0",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-9230",
+          "PkgName": "libssl3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.8-r1",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-13176",
+          "PkgName": "libssl3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.8-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-4741",
+          "PkgName": "libssl3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.6-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-5535",
+          "PkgName": "libssl3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.6-r0",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-9143",
+          "PkgName": "libssl3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.7-r1",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-9232",
+          "PkgName": "libssl3",
+          "InstalledVersion": "3.1.5-r0",
+          "FixedVersion": "3.1.8-r1",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-56171",
+          "PkgName": "libxml2",
+          "InstalledVersion": "2.11.8-r0",
+          "FixedVersion": "2.11.8-r1",
+          "Status": "fixed",
+          "Severity": "CRITICAL"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-24928",
+          "PkgName": "libxml2",
+          "InstalledVersion": "2.11.8-r0",
+          "FixedVersion": "2.11.8-r1",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-27113",
+          "PkgName": "libxml2",
+          "InstalledVersion": "2.11.8-r0",
+          "FixedVersion": "2.11.8-r2",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-32414",
+          "PkgName": "libxml2",
+          "InstalledVersion": "2.11.8-r0",
+          "FixedVersion": "2.11.8-r3",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-32415",
+          "PkgName": "libxml2",
+          "InstalledVersion": "2.11.8-r0",
+          "FixedVersion": "2.11.8-r3",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-55549",
+          "PkgName": "libxslt",
+          "InstalledVersion": "1.1.39-r0",
+          "FixedVersion": "1.1.39-r1",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-24855",
+          "PkgName": "libxslt",
+          "InstalledVersion": "1.1.39-r0",
+          "FixedVersion": "1.1.39-r1",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-26519",
+          "PkgName": "musl",
+          "InstalledVersion": "1.2.4_git20230717-r4",
+          "FixedVersion": "1.2.4_git20230717-r5",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-40200",
+          "PkgName": "musl",
+          "InstalledVersion": "1.2.4_git20230717-r4",
+          "FixedVersion": "1.2.4_git20230717-r6",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-6042",
+          "PkgName": "musl",
+          "InstalledVersion": "1.2.4_git20230717-r4",
+          "FixedVersion": "1.2.4_git20230717-r6",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-26519",
+          "PkgName": "musl-utils",
+          "InstalledVersion": "1.2.4_git20230717-r4",
+          "FixedVersion": "1.2.4_git20230717-r5",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-40200",
+          "PkgName": "musl-utils",
+          "InstalledVersion": "1.2.4_git20230717-r4",
+          "FixedVersion": "1.2.4_git20230717-r6",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-6042",
+          "PkgName": "musl-utils",
+          "InstalledVersion": "1.2.4_git20230717-r4",
+          "FixedVersion": "1.2.4_git20230717-r6",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-42363",
+          "PkgName": "ssl_client",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r17",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-42364",
+          "PkgName": "ssl_client",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r19",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-42365",
+          "PkgName": "ssl_client",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r19",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-42366",
+          "PkgName": "ssl_client",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r16",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-58251",
+          "PkgName": "ssl_client",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r21",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-46394",
+          "PkgName": "ssl_client",
+          "InstalledVersion": "1.36.1-r15",
+          "FixedVersion": "1.36.1-r21",
+          "Status": "fixed",
+          "Severity": "LOW"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-31115",
+          "PkgName": "xz-libs",
+          "InstalledVersion": "5.4.5-r0",
+          "FixedVersion": "5.4.5-r1",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        }
+      ]
+    }
+  ]
+}
