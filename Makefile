@@ -634,3 +634,7 @@ lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains
 VSL_DIR := industries/mfg/vuln-shared-lib
 vsl-pack: ## Pack Platform.Shared into the repository-local feed the vuln-shared-lib consumers restore from
 	$(MAKE) -C $(VSL_DIR)/platform-shared pack
+
+.PHONY: vsl-dealer-portal-test
+vsl-dealer-portal-test: ## Run the dealer portal unit and BFF tests (run make vsl-pack first)
+	$(MAKE) -C $(VSL_DIR)/dealer-portal test

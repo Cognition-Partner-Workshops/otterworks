@@ -1,0 +1,58 @@
+# Same steps as .github/workflows/vsl-dealer-portal.yml.
+trigger:
+  branches:
+    include: [demo-vuln-shared-lib]
+  paths:
+    include:
+      - industries/mfg/vuln-shared-lib/dealer-portal/*
+      - industries/mfg/vuln-shared-lib/platform-shared/*
+
+pr:
+  branches:
+    include: [demo-vuln-shared-lib]
+  paths:
+    include:
+      - industries/mfg/vuln-shared-lib/dealer-portal/*
+      - industries/mfg/vuln-shared-lib/platform-shared/*
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  projectDir: industries/mfg/vuln-shared-lib/dealer-portal
+  CI: 'true'
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: 20.x
+
+  - task: UseDotNet@2
+    inputs:
+      packageType: sdk
+      version: 8.0.x
+
+  - script: make vsl-pack
+    displayName: Pack Platform.Shared into the local feed
+
+  - script: make web-build web-test
+    workingDirectory: $(projectDir)
+    displayName: Angular build and unit tests
+
+  - script: make bff-test
+    workingDirectory: $(projectDir)
+    displayName: BFF tests against the local feed
+
+  - script: npx playwright install --with-deps chromium
+    workingDirectory: $(projectDir)
+    displayName: Install Playwright browser
+
+  - script: make e2e
+    workingDirectory: $(projectDir)
+    displayName: Playwright smoke suite
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: $(projectDir)/bff/tests/**/TestResults/*.trx
