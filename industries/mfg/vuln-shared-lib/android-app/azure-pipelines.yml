@@ -13,6 +13,10 @@ steps:
       jdkArchitectureOption: x64
       jdkSourceOption: PreInstalled
   - script: |
+      "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
+      echo "##vso[task.prependpath]$ANDROID_HOME/cmdline-tools/latest/bin"
+    displayName: Configure Android command-line tools
+  - script: |
       yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null
       $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" "system-images;android-35;google_apis;x86_64"
     displayName: Android SDK
