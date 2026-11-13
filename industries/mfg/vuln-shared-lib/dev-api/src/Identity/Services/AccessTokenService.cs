@@ -4,7 +4,7 @@ using Platform.Shared.Crypto;
 
 namespace Identity.Services;
 
-public sealed class AccessTokenService(TimeProvider clock)
+public sealed class AccessTokenService(TimeProvider clock, ISigningKeyProvider signingKeys)
 {
     public AccessTokenResponse Create(Account account)
     {
@@ -17,13 +17,13 @@ public sealed class AccessTokenService(TimeProvider clock)
             iat = issued,
             exp = issued + 3600
         }));
-        return new($"v1.{payload}.{TokenSigner.Sign(payload)}", "Bearer", 3600, account.DealerId);
+        return new($"v1.{payload}.{TokenSigner.Sign(payload, signingKeys)}", "Bearer", 3600, account.DealerId);
     }
 
     public TokenIdentity? Verify(string token)
     {
         var parts = token.Split('.');
-        if (parts.Length != 3 || parts[0] != "v1" || !TokenSigner.Verify(parts[1], parts[2]))
+        if (parts.Length != 3 || parts[0] != "v1" || !TokenSigner.Verify(parts[1], parts[2], signingKeys))
             return null;
         try
         {

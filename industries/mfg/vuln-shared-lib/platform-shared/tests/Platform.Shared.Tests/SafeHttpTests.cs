@@ -13,7 +13,7 @@ public class SafeHttpTests
         var stub = new StubHandler(_ => StubHandler.Ok("{\"ok\":true}", "application/json"));
         SafeHttp.UseHandler(stub);
 
-        var result = await SafeHttp.Fetch("https://images.dealer.example/cars/42.json");
+        var result = await SafeHttp.Fetch("https://images.dealer.example/cars/42.json", new[] { "images.dealer.example" });
 
         Assert.True(result.IsSuccess);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -31,7 +31,7 @@ public class SafeHttpTests
     {
         SafeHttp.UseHandler(new StubHandler(_ => StubHandler.Ok("unused")));
 
-        await Assert.ThrowsAsync<ArgumentException>(() => SafeHttp.Fetch(url));
+        await Assert.ThrowsAsync<SafeHttpPolicyException>(() => SafeHttp.Fetch(url, new[] { "files.dealer.example" }));
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public class SafeHttpTests
         var big = new string('x', SafeHttp.MaxResponseBytes + 1);
         SafeHttp.UseHandler(new StubHandler(_ => StubHandler.Ok(big)));
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => SafeHttp.Fetch("https://images.dealer.example/big"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => SafeHttp.Fetch("https://images.dealer.example/big", new[] { "images.dealer.example" }));
     }
 }
 

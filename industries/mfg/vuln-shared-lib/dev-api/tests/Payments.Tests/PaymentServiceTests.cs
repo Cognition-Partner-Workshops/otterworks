@@ -10,7 +10,7 @@ public sealed class PaymentServiceTests
     [Trait("Category","Security")]
     public void SignatureBindsEventBody()
     {
-        var signer = new WebhookSigner();
+        var signer = new WebhookSigner(TestConfiguration.SyntheticSigning.Provider);
         var signature = signer.Sign("event-one");
         Assert.True(signer.Verify("event-one", signature));
         Assert.False(signer.Verify("event-two", signature));

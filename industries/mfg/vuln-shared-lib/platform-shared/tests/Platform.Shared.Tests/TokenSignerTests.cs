@@ -2,6 +2,9 @@ using Platform.Shared.Crypto;
 
 namespace Platform.Shared.Tests;
 
+#pragma warning disable CS0618
+
+[Collection(SafeHttpCollection.Name)]
 public class TokenSignerTests
 {
     [Fact]

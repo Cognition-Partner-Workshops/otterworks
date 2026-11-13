@@ -1,3 +1,5 @@
+using Platform.Shared.Crypto;
+using PlatformConfiguration;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,7 @@ public partial class Program
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddControllers();
         builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton<ISigningKeyProvider>(services => SigningConfiguration.Load(services.GetRequiredService<IConfiguration>()));
         builder.Services.AddAuthentication("identity")
             .AddScheme<AuthenticationSchemeOptions, IdentityTokenHandler>("identity", _ => { });
         builder.Services.AddAuthorization();
@@ -25,6 +28,7 @@ public partial class Program
         builder.Services.AddScoped<ClaimService>();
         builder.Services.AddSingleton<AttachmentService>();
         var app = builder.Build();
+        _ = app.Services.GetRequiredService<ISigningKeyProvider>();
         Directory.CreateDirectory("data");
         using (var scope = app.Services.CreateScope())
         {

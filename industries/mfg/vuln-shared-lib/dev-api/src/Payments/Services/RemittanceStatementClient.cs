@@ -8,7 +8,8 @@ public sealed class RemittanceStatementClient(IConfiguration configuration, Sett
 {
     public async Task<int> Pull(string dealerId)
     {
-        var response = await SafeHttp.Fetch(configuration["Payments:Processor:RemittanceUrl"]!);
+        var response = await SafeHttp.Fetch(configuration["Payments:Processor:RemittanceUrl"]!,
+            configuration.GetSection("Payments:Processor:RemittanceAllowedHosts").Get<string[]>() ?? Array.Empty<string>());
         if (!response.IsSuccess)
         {
             throw new HttpRequestException("Remittance statement was not available.");

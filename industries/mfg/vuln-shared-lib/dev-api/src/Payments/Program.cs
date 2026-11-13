@@ -1,3 +1,5 @@
+using Platform.Shared.Crypto;
+using PlatformConfiguration;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,7 @@ public partial class Program
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddControllers();
         builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton<ISigningKeyProvider>(services => SigningConfiguration.Load(services.GetRequiredService<IConfiguration>()));
         builder.Services.AddAuthentication("identity")
             .AddScheme<AuthenticationSchemeOptions, IdentityTokenHandler>("identity", _ => { });
         builder.Services.AddAuthorization(options =>
@@ -27,8 +30,17 @@ public partial class Program
         builder.Services.AddScoped<WebhookService>();
         builder.Services.AddScoped<RemittanceStatementClient>();
         builder.Services.AddSingleton<WebhookSigner>();
-        builder.Services.AddHttpClient("webhooks");
+        builder.Services.AddSingleton<IWebhookHostResolver, DnsWebhookHostResolver>();
+        builder.Services.AddSingleton<WebhookDestinationPolicy>();
+        builder.Services.AddHttpClient("webhooks").ConfigurePrimaryHttpMessageHandler(services =>
+            new SocketsHttpHandler
+            {
+                AllowAutoRedirect = false,
+                UseProxy = false,
+                ConnectCallback = services.GetRequiredService<WebhookDestinationPolicy>().Connect
+            });
         var app = builder.Build();
+        _ = app.Services.GetRequiredService<ISigningKeyProvider>();
         Directory.CreateDirectory("data");
         using (var scope = app.Services.CreateScope())
         {

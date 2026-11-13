@@ -9,7 +9,8 @@ public sealed class WebhookService(
     PaymentRepository repository,
     WebhookSigner signer,
     IHttpClientFactory clients,
-    TimeProvider clock)
+    TimeProvider clock,
+    WebhookDestinationPolicy destinations)
 {
     public async Task<WebhookEvent> Record(string dealerId, string eventType, int settlementId)
     {
@@ -27,6 +28,7 @@ public sealed class WebhookService(
 
     public async Task<bool> SendSample(string dealerId, string url)
     {
+        await destinations.Validate(url);
         var entry = await Record(dealerId, "settlement.sample", 0);
         using var message = new HttpRequestMessage(HttpMethod.Post, url);
         message.Content = new StringContent(entry.Body, Encoding.UTF8, "application/json");

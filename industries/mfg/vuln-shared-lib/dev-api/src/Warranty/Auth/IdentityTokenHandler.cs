@@ -11,7 +11,8 @@ public sealed class IdentityTokenHandler(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
     ILoggerFactory logger,
     UrlEncoder encoder,
-    TimeProvider clock) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
+    TimeProvider clock,
+    ISigningKeyProvider signingKeys) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
@@ -19,7 +20,7 @@ public sealed class IdentityTokenHandler(
         if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             return Task.FromResult(AuthenticateResult.NoResult());
         var parts = header[7..].Split('.');
-        if (parts.Length != 3 || parts[0] != "v1" || !TokenSigner.Verify(parts[1], parts[2]))
+        if (parts.Length != 3 || parts[0] != "v1" || !TokenSigner.Verify(parts[1], parts[2], signingKeys))
             return Result("Token signature was not accepted.");
         try
         {

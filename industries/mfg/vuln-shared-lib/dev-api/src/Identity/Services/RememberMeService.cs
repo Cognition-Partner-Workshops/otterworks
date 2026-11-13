@@ -1,19 +1,25 @@
 using System.Security.Cryptography;
 using System.Text;
+using Platform.Shared.Crypto;
 
 namespace Identity.Services;
 
 public sealed class RememberMeService
 {
-    private readonly byte[] key = RandomNumberGenerator.GetBytes(32);
+    private readonly DataProtector protector = new(RandomNumberGenerator.GetBytes(32));
 
-    public string Create(string email)
+    public string Create(string email) =>
+        Base64Url.Encode(protector.Protect(Encoding.UTF8.GetBytes(email)));
+
+    public string Read(string cookie)
     {
-        using var aes = Aes.Create();
-        aes.Key = key;
-        aes.Mode = CipherMode.ECB;
-        using var encryptor = aes.CreateEncryptor();
-        var bytes = Encoding.UTF8.GetBytes(email);
-        return Convert.ToBase64String(encryptor.TransformFinalBlock(bytes, 0, bytes.Length));
+        try
+        {
+            return Encoding.UTF8.GetString(protector.Unprotect(Base64Url.Decode(cookie)));
+        }
+        catch (Exception error) when (error is FormatException or CryptographicException)
+        {
+            throw new CryptographicException("Invalid remember-me cookie.", error);
+        }
     }
 }

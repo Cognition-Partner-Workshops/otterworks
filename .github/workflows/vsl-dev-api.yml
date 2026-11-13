@@ -63,6 +63,6 @@ jobs:
           ET.SubElement(entry, "package", pattern="Platform.Shared")
           tree.write("nuget.config", encoding="utf-8", xml_declaration=True)
           PY
-      - run: dotnet restore DevApi.sln
+      - run: dotnet restore DevApi.sln --verbosity normal
       - run: dotnet build DevApi.sln --no-restore -c Release
       - run: dotnet test DevApi.sln --no-build -c Release

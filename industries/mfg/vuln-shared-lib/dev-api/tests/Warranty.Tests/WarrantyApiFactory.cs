@@ -24,6 +24,7 @@ public sealed class WarrantyApiFactory : WebApplicationFactory<Warranty.Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(TestConfiguration.SyntheticSigning.Settings));
         builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(
             new Dictionary<string, string?> { ["Warranty:AttachmentRoot"] = AttachmentRoot }));
         builder.ConfigureServices(services =>
