@@ -1,0 +1,121 @@
+name: vsl dealer-portal
+
+# Angular dealer portal and its .NET 8 BFF under industries/mfg/vuln-shared-lib/dealer-portal.
+# Also runs when Platform.Shared changes, because the BFF consumes it.
+
+on:
+  pull_request:
+    branches: [demo-vuln-shared-lib]
+    paths:
+      - industries/mfg/vuln-shared-lib/dealer-portal/**
+      - industries/mfg/vuln-shared-lib/platform-shared/**
+      - .github/workflows/vsl-dealer-portal.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: vsl-dealer-portal-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: '1'
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  PROJECT_DIR: industries/mfg/vuln-shared-lib/dealer-portal
+
+jobs:
+  web:
+    name: web (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20', '22']
+    defaults:
+      run:
+        working-directory: industries/mfg/vuln-shared-lib/dealer-portal
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: industries/mfg/vuln-shared-lib/dealer-portal/package-lock.json
+      - run: make web-build web-test
+
+  bff-local-feed:
+    name: bff (local Platform.Shared feed)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: make vsl-pack
+      - run: make -C "$PROJECT_DIR" bff-test
+
+  bff-github-packages:
+    name: bff (Platform.Shared from GitHub Packages)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Write NuGet config for GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat > "$RUNNER_TEMP/nuget.github.config" <<XML
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <clear />
+              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+              <add key="github" value="https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" />
+            </packageSources>
+            <packageSourceMapping>
+              <packageSource key="github">
+                <package pattern="Platform.Shared" />
+              </packageSource>
+              <packageSource key="nuget.org">
+                <package pattern="*" />
+              </packageSource>
+            </packageSourceMapping>
+            <packageSourceCredentials>
+              <github>
+                <add key="Username" value="${{ github.actor }}" />
+                <add key="ClearTextPassword" value="$GITHUB_TOKEN" />
+              </github>
+            </packageSourceCredentials>
+          </configuration>
+          XML
+      - run: make -C "$PROJECT_DIR" bff-test NUGET_CONFIG="$RUNNER_TEMP/nuget.github.config"
+
+  e2e:
+    name: playwright smoke
+    runs-on: ubuntu-latest
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: industries/mfg/vuln-shared-lib/dealer-portal/package-lock.json
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: make vsl-pack
+      - run: make -C "$PROJECT_DIR" install
+      - run: npx playwright install --with-deps chromium
+        working-directory: industries/mfg/vuln-shared-lib/dealer-portal
+      - run: make -C "$PROJECT_DIR" e2e
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: failure()
+        with:
+          name: dealer-portal-playwright-report
+          path: industries/mfg/vuln-shared-lib/dealer-portal/playwright-report
