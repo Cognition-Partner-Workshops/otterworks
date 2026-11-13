@@ -1,0 +1,10 @@
+version: 2
+models:
+  - name: example_ledger_clean
+    columns:
+      - name: id
+        data_tests: [unique, not_null]
+      - name: amount
+        data_tests: [not_null]
+      - name: row_hash
+        data_tests: [unique, not_null]
