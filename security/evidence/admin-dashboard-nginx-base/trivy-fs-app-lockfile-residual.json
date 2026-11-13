@@ -1,0 +1,215 @@
+{
+  "ArtifactName": "/home/ubuntu/fe/base/frontend/admin-dashboard/package-lock.json",
+  "ImageID": null,
+  "RepoDigests": null,
+  "OS": null,
+  "Results": [
+    {
+      "Target": "package-lock.json",
+      "Class": "lang-pkgs",
+      "Type": "npm",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-2025-66035",
+          "PkgName": "@angular/common",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "21.0.1, 20.3.14, 19.2.16",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-50170",
+          "PkgName": "@angular/common",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.0.0-rc.2, 20.3.22, 19.2.23, 21.2.15",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-50171",
+          "PkgName": "@angular/common",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.0.0-rc.2, 20.3.22, 19.2.23, 21.2.15",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-54266",
+          "PkgName": "@angular/common",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.0.1, 21.2.17, 20.3.25",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-54268",
+          "PkgName": "@angular/common",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.0.1, 21.2.17, 20.3.25",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-68945",
+          "PkgName": "@angular/common",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.0.2, 21.2.19, 20.3.27",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-111753",
+          "PkgName": "@angular/common",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "21.0.3, 20.3.34",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-88059",
+          "PkgName": "@angular/common",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.1.1, 21.2.20, 20.3.28",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2025-66412",
+          "PkgName": "@angular/compiler",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "21.0.2, 20.3.15, 19.2.17",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-22610",
+          "PkgName": "@angular/compiler",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "21.1.0-rc.0, 21.0.7, 20.3.16, 19.2.18",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-32635",
+          "PkgName": "@angular/compiler",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.0.0-next.3, 21.2.4, 20.3.18, 19.2.20",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-69151",
+          "PkgName": "@angular/compiler",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.0.1, 21.2.19, 20.3.27",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-50557",
+          "PkgName": "@angular/compiler",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "21.2.15, 22.0.0-rc.2, 20.3.22, 19.2.22",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-54265",
+          "PkgName": "@angular/compiler",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.0.1, 21.2.17, 20.3.25",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-88057",
+          "PkgName": "@angular/compiler",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.1.0, 21.2.20, 20.3.28",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-22610",
+          "PkgName": "@angular/core",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "21.1.0-rc.0, 21.0.7, 20.3.16, 19.2.18",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-27970",
+          "PkgName": "@angular/core",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "21.2.0, 21.1.6, 20.3.17, 19.2.19",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-32635",
+          "PkgName": "@angular/core",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.0.0-next.3, 21.2.4, 20.3.18, 19.2.20",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-54267",
+          "PkgName": "@angular/core",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.0.1, 21.2.17, 20.3.25",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-69151",
+          "PkgName": "@angular/core",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.0.1, 21.2.19, 20.3.27",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-50557",
+          "PkgName": "@angular/core",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "21.2.15, 22.0.0-rc.2, 20.3.22, 19.2.22",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-52725",
+          "PkgName": "@angular/core",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "21.2.15, 22.0.0-rc.2, 19.2.23, 20.3.22",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-88057",
+          "PkgName": "@angular/core",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.1.0, 21.2.20, 20.3.28",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-101896",
+          "PkgName": "@angular/router",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.2.0, 21.2.24, 20.3.32",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-111752",
+          "PkgName": "@angular/router",
+          "InstalledVersion": "17.3.12",
+          "FixedVersion": "22.2.1, 21.2.25, 20.3.33",
+          "Status": "fixed",
+          "Severity": "HIGH"
+        }
+      ]
+    }
+  ]
+}

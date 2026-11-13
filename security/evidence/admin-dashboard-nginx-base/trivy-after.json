@@ -1,0 +1,19 @@
+{
+  "ArtifactName": "ow-fe/admin-dashboard:after",
+  "ImageID": "sha256:98bc934adb179934e408c5c3e1e577dda9e78994a2c9d02504062a91df001318",
+  "RepoDigests": [
+    "ow-fe/admin-dashboard@sha256:98bc934adb179934e408c5c3e1e577dda9e78994a2c9d02504062a91df001318"
+  ],
+  "OS": {
+    "Family": "alpine",
+    "Name": "3.24.2"
+  },
+  "Results": [
+    {
+      "Target": "ow-fe/admin-dashboard:after (alpine 3.24.2)",
+      "Class": "os-pkgs",
+      "Type": "alpine",
+      "Vulnerabilities": []
+    }
+  ]
+}
