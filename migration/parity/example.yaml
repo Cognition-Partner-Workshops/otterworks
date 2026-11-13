@@ -1,0 +1,12 @@
+connections:
+  left:
+    path: before.duckdb
+  right:
+    path: after.duckdb
+objects:
+  - name: ledger
+    left_table: ledger
+    right_table: ledger
+    keys: [id]
+    compare: [amount, agent_code, posted_at]
+    sample_size: 20
