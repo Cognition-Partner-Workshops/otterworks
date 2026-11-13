@@ -86,3 +86,72 @@ async def test_unfiltered_list_is_unchanged(client: AsyncClient, owner_id: uuid.
 
     assert resp.status_code == 200
     assert resp.json()["total"] == 1
+
+
+@pytest.mark.asyncio
+async def test_title_injection_does_not_widen_results(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    other_owner = uuid.uuid4()
+    await _create(client, owner_id, "Quarterly Report")
+    await _create(client, other_owner, "Someone else's secret")
+
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id), "title": "x') OR 1=1 --"},
+    )
+
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+    assert resp.json()["items"] == []
+
+
+@pytest.mark.asyncio
+async def test_content_type_injection_does_not_cross_owners(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    other_owner = uuid.uuid4()
+    await _create(client, owner_id, "Mine", content_type="text/markdown")
+    await _create(client, other_owner, "Theirs", content_type="text/markdown")
+
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id), "content_type": "text/markdown' OR '1'='1"},
+    )
+
+    assert resp.status_code == 200
+    assert resp.json()["items"] == []
+
+
+@pytest.mark.asyncio
+async def test_title_like_wildcards_are_literal(client: AsyncClient, owner_id: uuid.UUID):
+    await _create(client, owner_id, "100% done")
+    await _create(client, owner_id, "Meeting Notes")
+
+    resp = await client.get("/api/v1/documents/", params={"title": "%"})
+    assert [item["title"] for item in resp.json()["items"]] == ["100% done"]
+
+    resp = await client.get("/api/v1/documents/", params={"title": "_"})
+    assert resp.json()["items"] == []
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"sort": "(select 1)"},
+        {"sort": "title; DROP TABLE documents"},
+        {"sort": "title", "direction": "asc, (select 1)"},
+    ],
+)
+async def test_unknown_ordering_is_rejected(
+    client: AsyncClient, owner_id: uuid.UUID, params: dict
+):
+    await _create(client, owner_id, "Quarterly Report")
+
+    resp = await client.get("/api/v1/documents/", params=params)
+
+    assert resp.status_code == 400
+    detail = resp.json()["detail"]
+    assert "SELECT" not in detail
+    assert "FROM documents" not in detail
