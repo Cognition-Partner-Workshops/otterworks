@@ -134,6 +134,19 @@ public sealed class DealerEndpointsTests : IDisposable
         Assert.Equal(redirect ? 1 : 0, factory.Upstream.Requests.Count(request => request.RequestUri!.Host == "bulletins.oem.example"));
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("https://malformed.example/")]
+    public async Task Notices_MissingEmptyOrMalformedAllowlistIsBadGateway(string? host)
+    {
+        using var factory = new PortalFactory(new() { ["Portal:NoticeFeedAllowedHosts:0"] = host });
+        using var client = await factory.SignedInClientAsync();
+        factory.Upstream.Requests.Clear();
+        Assert.Equal(HttpStatusCode.BadGateway, (await client.GetAsync("/bff/notices")).StatusCode);
+        Assert.Empty(factory.Upstream.Requests);
+    }
+
     [Fact]
     public async Task Notices_MalformedFeedIsBadGateway()
     {
