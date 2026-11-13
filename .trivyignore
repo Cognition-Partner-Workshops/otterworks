@@ -41,6 +41,14 @@ CVE-2024-53981
 CVE-2026-24486
 CVE-2024-47874
 
+# --- Debian slim runtimes (python, ruby, debian): no fixed package in the distro yet ---
+# Each entry carries its reason and an exp date; Trivy reports it again once the date passes.
+# zlib minizip overflow; no service links minizip. Owner: platform. Revisit by 2027-02-28.
+CVE-2023-45853 exp:2027-02-28
+CVE-2024-6119
+# perl CPAN.pm skips TLS checks; CPAN never runs in a runtime image. Owner: platform. Revisit by 2027-02-28.
+CVE-2023-31484 exp:2027-02-28
+
 # Bulk ignore — revisit in Q4
 CVE-2021-*
 
