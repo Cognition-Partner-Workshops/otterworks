@@ -1,0 +1,375 @@
+[04:58:57] search-service compose smoke test; project=otterworks-search-smoke run=smoke-1791349137-8496
+[04:58:57] git: abc81332
+[04:58:57] docker compose up -d --wait redis meilisearch localstack
+time="2026-10-07T04:58:57Z" level=warning msg="/home/ubuntu/repos/otterworks/docker-compose.infra.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2026-10-07T04:58:57Z" level=warning msg="/home/ubuntu/repos/otterworks/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Image localstack/localstack:3.8 Pulling 
+ 2aee89346c42 Pulling fs layer 0B
+ 6d11cf1d2f17 Pulling fs layer 0B
+ 302e3ee49805 Pulling fs layer 0B
+ ac51991b6ec3 Pulling fs layer 0B
+ 8eb058c22e02 Pulling fs layer 0B
+ c43bfd938242 Pulling fs layer 0B
+ cb75fcedc1b6 Pulling fs layer 0B
+ 4f4fb700ef54 Pulling fs layer 0B
+ d58b8353bb3e Pulling fs layer 0B
+ 0538735e543f Pulling fs layer 0B
+ aba75ff8be37 Pulling fs layer 0B
+ 896fc40067be Pulling fs layer 0B
+ 7aafafe51967 Pulling fs layer 0B
+ 97e5c28b7d13 Pulling fs layer 0B
+ 79f0ae42f335 Pulling fs layer 0B
+ 97aa7a351a51 Pulling fs layer 0B
+ 4b9d540578e5 Pulling fs layer 0B
+ abf7081a9317 Pulling fs layer 0B
+ 864b512dda37 Pulling fs layer 0B
+ 5cf738ecd50b Pulling fs layer 0B
+ ddb6f4689fb4 Pulling fs layer 0B
+ 4aeebc636537 Pulling fs layer 0B
+ 0c247a374bdb Pulling fs layer 0B
+ 9354eae7dcaf Pulling fs layer 0B
+ d2c7c5624026 Pulling fs layer 0B
+ 4f4fb700ef54 Already exists 0B
+ 2aee89346c42 Downloading 14.68MB
+ 6d11cf1d2f17 Download complete 0B
+ 8eb058c22e02 Download complete 0B
+ cb75fcedc1b6 Download complete 0B
+ 2aee89346c42 Download complete 0B
+ c43bfd938242 Download complete 0B
+ 302e3ee49805 Downloading 17.83MB
+ 302e3ee49805 Download complete 0B
+ d58b8353bb3e Downloading 24.12MB
+ 7aafafe51967 Downloading 7.34MB
+ 302e3ee49805 Extracting 1B
+ 0538735e543f Download complete 0B
+ aba75ff8be37 Download complete 0B
+ d58b8353bb3e Downloading 52.43MB
+ 7aafafe51967 Download complete 0B
+ 302e3ee49805 Extracting 1B
+ 896fc40067be Download complete 0B
+ 97e5c28b7d13 Download complete 0B
+ d58b8353bb3e Downloading 78.64MB
+ 79f0ae42f335 Downloading 1.049MB
+ 302e3ee49805 Extracting 1B
+ 4b9d540578e5 Download complete 0B
+ abf7081a9317 Download complete 0B
+ d58b8353bb3e Downloading 109.8MB
+ 97aa7a351a51 Download complete 0B
+ 79f0ae42f335 Download complete 0B
+ 302e3ee49805 Extracting 1B
+ 5cf738ecd50b Downloading 3.243MB
+ d58b8353bb3e Downloading 128.6MB
+ 864b512dda37 Download complete 0B
+ 302e3ee49805 Extracting 1B
+ d58b8353bb3e Download complete 0B
+ ddb6f4689fb4 Downloading 2.097MB
+ 4aeebc636537 Downloading 2.097MB
+ 0c247a374bdb Download complete 0B
+ 5cf738ecd50b Download complete 0B
+ 302e3ee49805 Extracting 1B
+ ddb6f4689fb4 Downloading 5.243MB
+ 4aeebc636537 Download complete 0B
+ d2c7c5624026 Downloading 1.049MB
+ ac51991b6ec3 Download complete 0B
+ 9354eae7dcaf Downloading 1.049MB
+ 302e3ee49805 Extracting 1B
+ ddb6f4689fb4 Downloading 16.78MB
+ d2c7c5624026 Downloading 27.26MB
+ 9354eae7dcaf Downloading 25.17MB
+ 302e3ee49805 Extracting 1B
+ 9354eae7dcaf Downloading 45.7MB
+ ddb6f4689fb4 Downloading 33.55MB
+ d2c7c5624026 Downloading 51.38MB
+ 302e3ee49805 Extracting 1B
+ 9354eae7dcaf Download complete 0B
+ ddb6f4689fb4 Downloading 54.53MB
+ d2c7c5624026 Downloading 76.62MB
+ 302e3ee49805 Pull complete 0B
+ 4aeebc636537 Extracting 1B
+ d2c7c5624026 Download complete 0B
+ ddb6f4689fb4 Downloading 80.74MB
+ 2aee89346c42 Extracting 1B
+ 4aeebc636537 Pull complete 0B
+ ddb6f4689fb4 Downloading 110.1MB
+ 2aee89346c42 Extracting 1B
+ ddb6f4689fb4 Downloading 138.4MB
+ 2aee89346c42 Extracting 1B
+ ddb6f4689fb4 Downloading 167.8MB
+ 2aee89346c42 Extracting 1B
+ ddb6f4689fb4 Downloading 197.1MB
+ 2aee89346c42 Extracting 1B
+ ddb6f4689fb4 Downloading 224.4MB
+ 2aee89346c42 Pull complete 0B
+ 0538735e543f Pull complete 0B
+ d2c7c5624026 Extracting 1B
+ ddb6f4689fb4 Downloading 254.8MB
+ d2c7c5624026 Extracting 1B
+ ddb6f4689fb4 Downloading 283.1MB
+ d2c7c5624026 Extracting 1B
+ ddb6f4689fb4 Downloading 296.4MB
+ d2c7c5624026 Extracting 1B
+ ddb6f4689fb4 Download complete 0B
+ d2c7c5624026 Extracting 1B
+ d2c7c5624026 Extracting 1B
+ d2c7c5624026 Extracting 1B
+ d2c7c5624026 Extracting 1B
+ d2c7c5624026 Extracting 1B
+ d2c7c5624026 Extracting 1B
+ d2c7c5624026 Extracting 1B
+ d2c7c5624026 Extracting 2B
+ d2c7c5624026 Extracting 2B
+ d2c7c5624026 Extracting 2B
+ d2c7c5624026 Extracting 2B
+ d2c7c5624026 Extracting 2B
+ d2c7c5624026 Extracting 2B
+ d2c7c5624026 Extracting 2B
+ 9354eae7dcaf Extracting 1B
+ d2c7c5624026 Pull complete 0B
+ 9354eae7dcaf Extracting 1B
+ 9354eae7dcaf Extracting 1B
+ 9354eae7dcaf Extracting 1B
+ 9354eae7dcaf Extracting 1B
+ 9354eae7dcaf Extracting 1B
+ 9354eae7dcaf Extracting 1B
+ 9354eae7dcaf Extracting 1B
+ 9354eae7dcaf Extracting 1B
+ 9354eae7dcaf Extracting 1B
+ 9354eae7dcaf Extracting 1B
+ 9354eae7dcaf Extracting 2B
+ 9354eae7dcaf Extracting 2B
+ 9354eae7dcaf Extracting 2B
+ 9354eae7dcaf Extracting 2B
+ 9354eae7dcaf Extracting 2B
+ 4f4fb700ef54 Pull complete 0B
+ cb75fcedc1b6 Pull complete 0B
+ c43bfd938242 Extracting 1B
+ 896fc40067be Pull complete 0B
+ 97e5c28b7d13 Pull complete 0B
+ 9354eae7dcaf Pull complete 0B
+ c43bfd938242 Extracting 1B
+ 8eb058c22e02 Pull complete 0B
+ c43bfd938242 Pull complete 0B
+ aba75ff8be37 Pull complete 0B
+ 7aafafe51967 Extracting 1B
+ 7aafafe51967 Extracting 1B
+ 7aafafe51967 Extracting 1B
+ 7aafafe51967 Extracting 1B
+ 7aafafe51967 Extracting 1B
+ 7aafafe51967 Extracting 1B
+ 7aafafe51967 Extracting 1B
+ 7aafafe51967 Extracting 1B
+ 7aafafe51967 Extracting 1B
+ 7aafafe51967 Extracting 1B
+ 7aafafe51967 Pull complete 0B
+ d58b8353bb3e Extracting 1B
+ d58b8353bb3e Extracting 1B
+ d58b8353bb3e Extracting 1B
+ d58b8353bb3e Extracting 1B
+ d58b8353bb3e Extracting 1B
+ d58b8353bb3e Extracting 1B
+ d58b8353bb3e Extracting 1B
+ d58b8353bb3e Extracting 1B
+ d58b8353bb3e Extracting 1B
+ d58b8353bb3e Extracting 1B
+ d58b8353bb3e Extracting 1B
+ d58b8353bb3e Extracting 2B
+ d58b8353bb3e Extracting 2B
+ d58b8353bb3e Extracting 2B
+ d58b8353bb3e Extracting 2B
+ d58b8353bb3e Extracting 2B
+ d58b8353bb3e Extracting 2B
+ d58b8353bb3e Extracting 2B
+ d58b8353bb3e Extracting 2B
+ d58b8353bb3e Extracting 2B
+ d58b8353bb3e Extracting 3B
+ d58b8353bb3e Extracting 3B
+ d58b8353bb3e Extracting 3B
+ d58b8353bb3e Extracting 3B
+ d58b8353bb3e Extracting 3B
+ d58b8353bb3e Extracting 3B
+ d58b8353bb3e Extracting 3B
+ d58b8353bb3e Extracting 3B
+ d58b8353bb3e Extracting 3B
+ d58b8353bb3e Extracting 3B
+ d58b8353bb3e Extracting 3B
+ d58b8353bb3e Extracting 4B
+ d58b8353bb3e Extracting 4B
+ d58b8353bb3e Extracting 4B
+ d58b8353bb3e Extracting 4B
+ d58b8353bb3e Extracting 4B
+ d58b8353bb3e Extracting 4B
+ d58b8353bb3e Extracting 4B
+ d58b8353bb3e Extracting 4B
+ d58b8353bb3e Extracting 4B
+ d58b8353bb3e Extracting 4B
+ d58b8353bb3e Extracting 5B
+ d58b8353bb3e Extracting 5B
+ d58b8353bb3e Extracting 5B
+ d58b8353bb3e Extracting 5B
+ d58b8353bb3e Extracting 5B
+ d58b8353bb3e Extracting 5B
+ d58b8353bb3e Extracting 5B
+ d58b8353bb3e Extracting 5B
+ d58b8353bb3e Extracting 5B
+ d58b8353bb3e Extracting 6B
+ d58b8353bb3e Extracting 6B
+ abf7081a9317 Pull complete 0B
+ 97aa7a351a51 Pull complete 0B
+ d58b8353bb3e Pull complete 0B
+ 5cf738ecd50b Extracting 1B
+ 5cf738ecd50b Extracting 1B
+ 5cf738ecd50b Extracting 1B
+ 79f0ae42f335 Extracting 1B
+ 5cf738ecd50b Pull complete 0B
+ ac51991b6ec3 Pull complete 0B
+ 79f0ae42f335 Extracting 1B
+ 79f0ae42f335 Extracting 1B
+ 79f0ae42f335 Extracting 1B
+ 79f0ae42f335 Pull complete 0B
+ ddb6f4689fb4 Extracting 1B
+ ddb6f4689fb4 Extracting 1B
+ ddb6f4689fb4 Extracting 1B
+ ddb6f4689fb4 Extracting 1B
+ ddb6f4689fb4 Extracting 1B
+ ddb6f4689fb4 Extracting 1B
+ ddb6f4689fb4 Extracting 1B
+ ddb6f4689fb4 Extracting 1B
+ ddb6f4689fb4 Extracting 1B
+ ddb6f4689fb4 Extracting 1B
+ ddb6f4689fb4 Extracting 1B
+ ddb6f4689fb4 Extracting 2B
+ ddb6f4689fb4 Extracting 2B
+ ddb6f4689fb4 Extracting 2B
+ ddb6f4689fb4 Extracting 2B
+ ddb6f4689fb4 Extracting 2B
+ ddb6f4689fb4 Extracting 2B
+ ddb6f4689fb4 Extracting 2B
+ ddb6f4689fb4 Extracting 2B
+ ddb6f4689fb4 Extracting 2B
+ ddb6f4689fb4 Extracting 2B
+ ddb6f4689fb4 Pull complete 0B
+ 6d11cf1d2f17 Pull complete 0B
+ 4b9d540578e5 Pull complete 0B
+ 864b512dda37 Pull complete 0B
+ 0c247a374bdb Pull complete 0B
+ Image localstack/localstack:3.8 Pulled 
+ Network otterworks-network Creating 
+ Volume otterworks-search-smoke_localstack_data Creating 
+ Volume otterworks-search-smoke_localstack_data Creating 
+ Network otterworks-network Creating 
+ Volume otterworks-search-smoke_meilisearch_data Creating 
+ Volume otterworks-search-smoke_meilisearch_data Creating 
+ Volume otterworks-search-smoke_localstack_data Created 
+ Volume otterworks-search-smoke_localstack_data Created 
+ Volume otterworks-search-smoke_meilisearch_data Created 
+ Volume otterworks-search-smoke_meilisearch_data Created 
+ Network otterworks-network Created 
+ Network otterworks-network Created 
+ Container otterworks-redis Creating 
+ Container otterworks-meilisearch Creating 
+ Container otterworks-localstack Creating 
+ Container otterworks-meilisearch Created 
+ Container otterworks-redis Created 
+ Container otterworks-localstack Created 
+ Container otterworks-meilisearch Starting 
+ Container otterworks-redis Starting 
+ Container otterworks-localstack Starting 
+ Container otterworks-meilisearch Started 
+ Container otterworks-localstack Started 
+ Container otterworks-redis Started 
+ Container otterworks-redis Waiting 
+ Container otterworks-localstack Waiting 
+ Container otterworks-meilisearch Waiting 
+ Container otterworks-redis Healthy 
+ Container otterworks-localstack Healthy 
+ Container otterworks-meilisearch Healthy 
+[04:59:27] localstack SQS queue otterworks-search-events exists
+[04:59:27] docker compose up -d --build search-service
+time="2026-10-07T04:59:27Z" level=warning msg="/home/ubuntu/repos/otterworks/docker-compose.infra.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2026-10-07T04:59:27Z" level=warning msg="/home/ubuntu/repos/otterworks/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Image otterworks-search-smoke-search-service Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 622B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 533B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/python:3.12-slim
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [1/7] FROM docker.io/library/python:3.12-slim@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f
+#5 resolve docker.io/library/python:3.12-slim@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 5.58kB done
+#6 DONE 0.0s
+
+#7 [6/7] COPY . .
+#7 CACHED
+
+#8 [3/7] WORKDIR /app
+#8 CACHED
+
+#9 [4/7] COPY requirements.txt .
+#9 CACHED
+
+#10 [2/7] RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+#10 CACHED
+
+#11 [5/7] RUN pip install --no-cache-dir -r requirements.txt
+#11 CACHED
+
+#12 [7/7] RUN useradd -r -u 1001 appuser
+#12 CACHED
+
+#13 exporting to image
+#13 exporting layers done
+#13 exporting manifest sha256:a20ff17f0f170035f613c6591330eaa897adef6cc81551afee9a5eea253e1914 done
+#13 exporting config sha256:4cdd5039265070a775c1ed215294fb7edd6c88f564ece9e06a98fba9d7350fcc done
+#13 exporting attestation manifest sha256:f181244c00971fe3cd25a8ceb6efe395bb396acdd877dec5fa40dd9fd3ad4dc1 done
+#13 exporting manifest list sha256:fbf58238e0a9b6aa6ef6222b8c1a23d9a7b195445d3fb590248743d2b3a68934 done
+#13 naming to docker.io/library/otterworks-search-smoke-search-service:latest done
+#13 unpacking to docker.io/library/otterworks-search-smoke-search-service:latest done
+#13 DONE 0.0s
+
+#14 resolving provenance for metadata file
+#14 DONE 0.0s
+ Image otterworks-search-smoke-search-service Built 
+ Container otterworks-meilisearch Running 
+ Container otterworks-search-service Creating 
+ Container otterworks-search-service Created 
+ Container otterworks-meilisearch Waiting 
+ Container otterworks-meilisearch Healthy 
+ Container otterworks-search-service Starting 
+ Container otterworks-search-service Started 
+[04:59:29] image CMD: ["uvicorn","app.main:create_app","--factory","--host","0.0.0.0","--port","8087","--workers","2","--loop","uvloop","--no-access-log"]
+[04:59:39] PASS  1 container healthcheck: otterworks-search-service healthy
+[04:59:39] PASS  2 GET /health -> 200 {"service":"search-service","status":"alive"}
+
+[04:59:39] PASS  2 GET /health/ready -> 200 {"ready":true}
+
+[04:59:39] PASS  2 GET /metrics -> 200 with all four search_service_* families
+[04:59:39] PASS  3 POST /api/v1/search/index/document -> 201 {"id":"smoke-doc-smoke-1791349137-8496","status":"indexed","type":"document"}
+
+[04:59:39] PASS  3 owner search finds smoke-doc-smoke-1791349137-8496 (total=1)
+[04:59:39] PASS  3 other X-User-ID search -> 200 total=0
+[04:59:39] PASS  3 DELETE /api/v1/search/index/document/smoke-doc-smoke-1791349137-8496 -> 200 {"id":"smoke-doc-smoke-1791349137-8496","status":"deleted","type":"document"}
+
+[04:59:40] PASS  3 owner search after delete -> total=0
+[04:59:40] PASS  4 GET /api/v1/search/ without credentials -> 401 {"error":"unauthorized"}
+
+[04:59:40] PASS  5 chaos:search-service:suggest_500 set -> GET /suggest 500 (x4)
+[04:59:40] PASS  5 chaos:search-service:suggest_500 cleared -> GET /suggest 200 (x4) {"query":"smo","suggestions":[]}
+
+json events: {'api_document_indexed': 1, 'search_executed': 3, 'sqs_consumer_error': 0, 'sqs_consumer_started': 2}
+[04:59:40] PASS  6 container logs have JSON events search_executed and api_document_indexed
+[04:59:40] tearing down project otterworks-search-smoke
+[04:59:51] RESULT: PASS (13 checks)
+[04:59:51] logs: /tmp/search-smoke2/compose_smoke.log, /tmp/search-smoke2/search-service.log

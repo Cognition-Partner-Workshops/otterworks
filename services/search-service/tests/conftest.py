@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+import json
+from collections.abc import Iterator
+from typing import Any
 from unittest.mock import MagicMock, patch
 
+import httpx
 import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 from app.config import AppConfig, AuthConfig, MeiliSearchConfig, SQSConfig
 from app.main import create_app
@@ -57,20 +63,127 @@ def mock_meilisearch_client() -> MagicMock:
     return mock
 
 
+class FlaskStyleResponse:
+    """httpx response exposing the Flask test-response API the tests use."""
+
+    def __init__(self, response: httpx.Response) -> None:
+        self._response = response
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._response, name)
+
+    @property
+    def data(self) -> bytes:
+        return self._response.content
+
+    def get_data(self, as_text: bool = False) -> bytes | str:
+        return self._response.text if as_text else self._response.content
+
+    @property
+    def mimetype(self) -> str:
+        return self._response.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+
+    @property
+    def content_type(self) -> str | None:
+        return self._response.headers.get("content-type")
+
+    @property
+    def is_json(self) -> bool:
+        mt = self.mimetype
+        return mt == "application/json" or (mt.startswith("application/") and mt.endswith("+json"))
+
+    def get_json(self, force: bool = False, silent: bool = False) -> Any:
+        if not (force or self.is_json):
+            return None
+        try:
+            return json.loads(self._response.content)
+        except ValueError:
+            if silent:
+                return None
+            raise
+
+
+class FlaskStyleClient:
+    """TestClient wrapper accepting Flask test-client kwargs (``data=``, ``content_type=``, ...)."""
+
+    def __init__(self, client: TestClient) -> None:
+        self._client = client
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._client, name)
+
+    def open(
+        self,
+        path: str,
+        method: str = "GET",
+        *,
+        data: Any = None,
+        json: Any = None,
+        content_type: str | None = None,
+        headers: dict[str, str] | None = None,
+        query_string: Any = None,
+        follow_redirects: bool = False,
+        **kwargs: Any,
+    ) -> FlaskStyleResponse:
+        request_headers = dict(headers or {})
+        if content_type is not None:
+            request_headers["Content-Type"] = content_type
+        if isinstance(data, (str, bytes)):
+            kwargs["content"] = data
+        elif data is not None:
+            kwargs["data"] = data
+        if json is not None:
+            kwargs["json"] = json
+        if query_string is not None:
+            kwargs["params"] = query_string
+        response = self._client.request(
+            method,
+            path,
+            headers=request_headers,
+            follow_redirects=follow_redirects,
+            **kwargs,
+        )
+        return FlaskStyleResponse(response)
+
+    def get(self, path: str, **kwargs: Any) -> FlaskStyleResponse:
+        return self.open(path, "GET", **kwargs)
+
+    def post(self, path: str, **kwargs: Any) -> FlaskStyleResponse:
+        return self.open(path, "POST", **kwargs)
+
+    def put(self, path: str, **kwargs: Any) -> FlaskStyleResponse:
+        return self.open(path, "PUT", **kwargs)
+
+    def patch(self, path: str, **kwargs: Any) -> FlaskStyleResponse:
+        return self.open(path, "PATCH", **kwargs)
+
+    def delete(self, path: str, **kwargs: Any) -> FlaskStyleResponse:
+        return self.open(path, "DELETE", **kwargs)
+
+    def head(self, path: str, **kwargs: Any) -> FlaskStyleResponse:
+        return self.open(path, "HEAD", **kwargs)
+
+    def options(self, path: str, **kwargs: Any) -> FlaskStyleResponse:
+        return self.open(path, "OPTIONS", **kwargs)
+
+
 @pytest.fixture()
-def app(app_config: AppConfig, mock_meilisearch_client: MagicMock):
-    """Create a Flask test app with mocked MeiliSearch."""
+def app(app_config: AppConfig, mock_meilisearch_client: MagicMock) -> Iterator[FastAPI]:
+    """Create a FastAPI test app with mocked MeiliSearch.
+
+    The patch stays active for the whole test because the lifespan (entered
+    by ``client``) is what constructs the MeiliSearch client.
+    """
     with patch("app.services.meilisearch_client.meilisearch.Client") as mock_cls:
         mock_cls.return_value = mock_meilisearch_client
-        flask_app = create_app(app_config)
-        flask_app.config["TESTING"] = True
-        yield flask_app
+        yield create_app(app_config)
 
 
 @pytest.fixture()
-def client(app):
-    """Create a Flask test client."""
-    return app.test_client()
+def client(app: FastAPI) -> Iterator[FlaskStyleClient]:
+    """Create a FastAPI TestClient (lifespan running) with a Flask-style API."""
+    with TestClient(app, base_url="http://localhost") as test_client:
+        yield FlaskStyleClient(test_client)
 
 
 @pytest.fixture()

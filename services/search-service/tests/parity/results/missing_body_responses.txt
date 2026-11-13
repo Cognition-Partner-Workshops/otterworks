@@ -1,0 +1,54 @@
+=== FastAPI: POST /api/v1/search/index/document (Content-Type: application/json, X-User-ID, no body)
+HTTP/1.1 400 Bad Request
+content-length: 167
+content-type: text/html; charset=utf-8
+access-control-allow-origin: http://localhost:3000
+vary: Origin
+
+<!doctype html>
+<html lang=en>
+<title>400 Bad Request</title>
+<h1>Bad Request</h1>
+<p>The browser (or proxy) sent a request that this server could not understand.</p>
+
+=== FastAPI: POST /api/v1/search/index/file (Content-Type: application/json, X-User-ID, no body)
+HTTP/1.1 400 Bad Request
+content-length: 167
+content-type: text/html; charset=utf-8
+access-control-allow-origin: http://localhost:3000
+vary: Origin
+
+<!doctype html>
+<html lang=en>
+<title>400 Bad Request</title>
+<h1>Bad Request</h1>
+<p>The browser (or proxy) sent a request that this server could not understand.</p>
+
+=== Flask-main: POST /api/v1/search/index/document (Content-Type: application/json, X-User-ID, no body)
+HTTP/1.1 400 BAD REQUEST
+Connection: keep-alive
+Content-Type: text/html; charset=utf-8
+Content-Length: 167
+Access-Control-Allow-Origin: http://localhost:3000
+Vary: Origin
+
+<!doctype html>
+<html lang=en>
+<title>400 Bad Request</title>
+<h1>Bad Request</h1>
+<p>The browser (or proxy) sent a request that this server could not understand.</p>
+
+=== Flask-main: POST /api/v1/search/index/file (Content-Type: application/json, X-User-ID, no body)
+HTTP/1.1 400 BAD REQUEST
+Connection: keep-alive
+Content-Type: text/html; charset=utf-8
+Content-Length: 167
+Access-Control-Allow-Origin: http://localhost:3000
+Vary: Origin
+
+<!doctype html>
+<html lang=en>
+<title>400 Bad Request</title>
+<h1>Bad Request</h1>
+<p>The browser (or proxy) sent a request that this server could not understand.</p>
+

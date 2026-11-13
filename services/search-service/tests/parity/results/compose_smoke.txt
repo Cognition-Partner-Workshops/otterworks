@@ -1,0 +1,132 @@
+[04:42:51] search-service compose smoke test; project=otterworks-search-smoke run=smoke-1791348171-26802
+[04:42:51] git: 846372b3
+time="2026-10-07T04:42:51Z" level=warning msg="/home/ubuntu/repos/otterworks/docker-compose.infra.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2026-10-07T04:42:51Z" level=warning msg="/home/ubuntu/repos/otterworks/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+[04:42:51] pull mirror.gcr.io/library/python:3.12-slim -> python:3.12-slim
+[04:42:52] pull mirror.gcr.io/library/redis:7-alpine -> redis:7-alpine
+[04:42:53] pull mirror.gcr.io/localstack/localstack:3.8 -> localstack/localstack:3.8
+[04:42:54] pull mirror.gcr.io/getmeili/meilisearch:v1.6 -> getmeili/meilisearch:v1.6
+[04:42:54] docker compose up -d --wait redis meilisearch localstack
+time="2026-10-07T04:42:54Z" level=warning msg="/home/ubuntu/repos/otterworks/docker-compose.infra.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2026-10-07T04:42:54Z" level=warning msg="/home/ubuntu/repos/otterworks/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Network otterworks-network Creating 
+ Volume otterworks-search-smoke_meilisearch_data Creating 
+ Network otterworks-network Creating 
+ Volume otterworks-search-smoke_meilisearch_data Creating 
+ Volume otterworks-search-smoke_localstack_data Creating 
+ Volume otterworks-search-smoke_localstack_data Creating 
+ Volume otterworks-search-smoke_meilisearch_data Created 
+ Volume otterworks-search-smoke_meilisearch_data Created 
+ Volume otterworks-search-smoke_localstack_data Created 
+ Volume otterworks-search-smoke_localstack_data Created 
+ Network otterworks-network Created 
+ Network otterworks-network Created 
+ Container otterworks-redis Creating 
+ Container otterworks-meilisearch Creating 
+ Container otterworks-localstack Creating 
+ Container otterworks-meilisearch Created 
+ Container otterworks-redis Created 
+ Container otterworks-localstack Created 
+ Container otterworks-localstack Starting 
+ Container otterworks-redis Starting 
+ Container otterworks-meilisearch Starting 
+ Container otterworks-localstack Started 
+ Container otterworks-meilisearch Started 
+ Container otterworks-redis Started 
+ Container otterworks-meilisearch Waiting 
+ Container otterworks-redis Waiting 
+ Container otterworks-localstack Waiting 
+ Container otterworks-redis Healthy 
+ Container otterworks-localstack Healthy 
+ Container otterworks-meilisearch Healthy 
+[04:43:08] localstack SQS queue otterworks-search-events exists
+[04:43:08] docker compose up -d --build search-service
+time="2026-10-07T04:43:08Z" level=warning msg="/home/ubuntu/repos/otterworks/docker-compose.infra.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2026-10-07T04:43:08Z" level=warning msg="/home/ubuntu/repos/otterworks/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Image otterworks-search-smoke-search-service Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 622B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 533B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/python:3.12-slim
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [1/7] FROM docker.io/library/python:3.12-slim@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f
+#5 resolve docker.io/library/python:3.12-slim@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 47.82kB done
+#6 DONE 0.0s
+
+#7 [2/7] RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+#7 CACHED
+
+#8 [3/7] WORKDIR /app
+#8 CACHED
+
+#9 [4/7] COPY requirements.txt .
+#9 CACHED
+
+#10 [5/7] RUN pip install --no-cache-dir -r requirements.txt
+#10 CACHED
+
+#11 [6/7] COPY . .
+#11 DONE 0.0s
+
+#12 [7/7] RUN useradd -r -u 1001 appuser
+#12 0.109 useradd warning: appuser's uid 1001 is greater than SYS_UID_MAX 999
+#12 DONE 0.1s
+
+#13 exporting to image
+#13 exporting layers 0.0s done
+#13 exporting manifest sha256:0e863023431f98d3897d7d4f14e505b6fe15c201af89e2e8f601d7ac8be02ab0 done
+#13 exporting config sha256:c5c99b917fdde19f5f04925f81dc6807d55f70498babc41c188282e027224675 done
+#13 exporting attestation manifest sha256:cc80809af226c84220c6602f10b7dd2500f23f10af0f4ee371a470802b14e82c done
+#13 exporting manifest list sha256:ab672b8e45fa383b631d0269841bf081d0d80542fdc8237408923cb67d7427ff done
+#13 naming to docker.io/library/otterworks-search-smoke-search-service:latest done
+#13 unpacking to docker.io/library/otterworks-search-smoke-search-service:latest 0.0s done
+#13 DONE 0.1s
+
+#14 resolving provenance for metadata file
+#14 DONE 0.0s
+ Image otterworks-search-smoke-search-service Built 
+ Container otterworks-meilisearch Running 
+ Container otterworks-search-service Creating 
+ Container otterworks-search-service Created 
+ Container otterworks-meilisearch Waiting 
+ Container otterworks-meilisearch Healthy 
+ Container otterworks-search-service Starting 
+ Container otterworks-search-service Started 
+[04:43:09] image CMD: ["uvicorn","app.main:create_app","--factory","--host","0.0.0.0","--port","8087","--workers","2","--loop","uvloop","--no-access-log"]
+[04:43:19] PASS  1 container healthcheck: otterworks-search-service healthy
+[04:43:19] PASS  2 GET /health -> 200 {"service":"search-service","status":"alive"}
+
+[04:43:20] PASS  2 GET /health/ready -> 200 {"ready":true}
+
+[04:43:20] PASS  2 GET /metrics -> 200 with all four search_service_* families
+[04:43:20] PASS  3 POST /api/v1/search/index/document -> 201 {"id":"smoke-doc-smoke-1791348171-26802","status":"indexed","type":"document"}
+
+[04:43:20] PASS  3 owner search finds smoke-doc-smoke-1791348171-26802 (total=1)
+[04:43:20] PASS  3 other X-User-ID search -> 200 total=0
+[04:43:20] PASS  3 DELETE /api/v1/search/index/document/smoke-doc-smoke-1791348171-26802 -> 200 {"id":"smoke-doc-smoke-1791348171-26802","status":"deleted","type":"document"}
+
+[04:43:20] PASS  3 owner search after delete -> total=0
+[04:43:20] PASS  4 GET /api/v1/search/ without credentials -> 401 {"error":"unauthorized"}
+
+[04:43:21] PASS  5 chaos:search-service:suggest_500 set -> GET /suggest 500 (x4)
+[04:43:21] PASS  5 chaos:search-service:suggest_500 cleared -> GET /suggest 200 (x4) {"query":"smo","suggestions":[]}
+
+json events: {'api_document_indexed': 1, 'search_executed': 3, 'sqs_consumer_error': 0, 'sqs_consumer_started': 2}
+[04:43:21] PASS  6 container logs have JSON events search_executed and api_document_indexed
+[04:43:21] tearing down project otterworks-search-smoke
+[04:43:32] RESULT: PASS (13 checks)
+[04:43:32] logs: /home/ubuntu/search-smoke/compose_smoke.log, /home/ubuntu/search-smoke/search-service.log

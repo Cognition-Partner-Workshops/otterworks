@@ -1,0 +1,280 @@
+# SEARCH_SERVICE_URL=http://localhost:8087 pytest tests/contract/test_search_contract.py -v   (repo root; FastAPI container, branch HEAD cfee9ee6, compose.parity.yml overlay)
+============================= test session starts ==============================
+platform linux -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ubuntu/.venv-contract/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/ubuntu/repos/otterworks
+collecting ... collected 18 items
+
+tests/contract/test_search_contract.py::TestSearchEndpoint::test_search_requires_query PASSED [  5%]
+tests/contract/test_search_contract.py::TestSearchEndpoint::test_search_invalid_page PASSED [ 11%]
+tests/contract/test_search_contract.py::TestSearchEndpoint::test_search_valid_query PASSED [ 16%]
+tests/contract/test_search_contract.py::TestSuggestEndpoint::test_suggest_short_prefix PASSED [ 22%]
+tests/contract/test_search_contract.py::TestSuggestEndpoint::test_suggest_valid_prefix PASSED [ 27%]
+tests/contract/test_search_contract.py::TestAdvancedSearchEndpoint::test_advanced_search_empty_body PASSED [ 33%]
+tests/contract/test_search_contract.py::TestAdvancedSearchEndpoint::test_advanced_search_with_filters PASSED [ 38%]
+tests/contract/test_search_contract.py::TestAdvancedSearchEndpoint::test_advanced_search_invalid_page PASSED [ 44%]
+tests/contract/test_search_contract.py::TestHealthEndpoints::test_health_liveness PASSED [ 50%]
+tests/contract/test_search_contract.py::TestHealthEndpoints::test_health_readiness PASSED [ 55%]
+tests/contract/test_search_contract.py::TestMetricsEndpoint::test_metrics_returns_prometheus_format PASSED [ 61%]
+tests/contract/test_search_contract.py::TestAnalyticsEndpoint::test_analytics_response_schema PASSED [ 66%]
+tests/contract/test_search_contract.py::TestIndexEndpoints::test_index_document_missing_body FAILED [ 72%]
+tests/contract/test_search_contract.py::TestIndexEndpoints::test_index_document_missing_id PASSED [ 77%]
+tests/contract/test_search_contract.py::TestIndexEndpoints::test_index_file_missing_body FAILED [ 83%]
+tests/contract/test_search_contract.py::TestIndexEndpoints::test_index_file_missing_name PASSED [ 88%]
+tests/contract/test_search_contract.py::TestSpecCompleteness::test_spec_has_all_paths PASSED [ 94%]
+tests/contract/test_search_contract.py::TestSpecCompleteness::test_spec_schemas_defined PASSED [100%]
+
+=================================== FAILURES ===================================
+_____________ TestIndexEndpoints.test_index_document_missing_body ______________
+
+self = <Response [400]>, kwargs = {}
+
+    def json(self, **kwargs: Any) -> Any:
+        r"""Decodes the JSON response body (if any) as a Python object.
+    
+        This may return a dictionary, list, etc. depending on what is in the response.
+    
+        :param \*\*kwargs: Optional arguments that ``json.loads`` takes.
+        :raises requests.exceptions.JSONDecodeError: If the response body does not
+            contain valid json.
+        """
+    
+        if not self.encoding and self.content and len(self.content) > 3:
+            # No encoding set. JSON RFC 4627 section 3 states we should expect
+            # UTF-8, -16 or -32. Detect which one to use; If the detection or
+            # decoding fails, fall back to `self.text` (using charset_normalizer to make
+            # a best guess).
+            encoding = guess_json_utf(self.content)
+            if encoding is not None:
+                try:
+                    return complexjson.loads(self.content.decode(encoding), **kwargs)
+                except UnicodeDecodeError:
+                    # Wrong UTF codec detected; usually because it's not UTF-8
+                    # but some other 8-bit codec.  This is an RFC violation,
+                    # and the server didn't bother to tell us what codec *was*
+                    # used.
+                    pass
+                except JSONDecodeError as e:
+                    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+    
+        try:
+>           return complexjson.loads(self.text, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../../.venv-contract/lib/python3.12/site-packages/requests/models.py:1116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../.pyenv/versions/3.12.13/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.pyenv/versions/3.12.13/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x74143fd8ea80>
+s = '<!doctype html>\n<html lang=en>\n<title>400 Bad Request</title>\n<h1>Bad Request</h1>\n<p>The browser (or proxy) sent a request that this server could not understand.</p>\n'
+idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../.pyenv/versions/3.12.13/lib/python3.12/json/decoder.py:356: JSONDecodeError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.contract.test_search_contract.TestIndexEndpoints object at 0x74143e8af020>
+openapi_spec = {'openapi': '3.0.3', 'info': {'title': 'OtterWorks Search Service', 'description': 'Full-text search and indexing serv... SQS event processing.\n', 'requestBody': {'required': True, 'content': {'application/json': {...}}}, ...}}, ...}, ...}
+
+    def test_index_document_missing_body(self, openapi_spec: dict[str, Any]) -> None:
+        """POST /api/v1/search/index/document without body returns 400."""
+        resp = requests.post(
+            f"{BASE_URL}/api/v1/search/index/document",
+            headers={"Content-Type": "application/json", "X-User-ID": "test-user-001"},
+        )
+        # Flask returns 400 for missing JSON body
+        assert resp.status_code == 400
+>       body = resp.json()
+               ^^^^^^^^^^^
+
+tests/contract/test_search_contract.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Response [400]>, kwargs = {}
+
+    def json(self, **kwargs: Any) -> Any:
+        r"""Decodes the JSON response body (if any) as a Python object.
+    
+        This may return a dictionary, list, etc. depending on what is in the response.
+    
+        :param \*\*kwargs: Optional arguments that ``json.loads`` takes.
+        :raises requests.exceptions.JSONDecodeError: If the response body does not
+            contain valid json.
+        """
+    
+        if not self.encoding and self.content and len(self.content) > 3:
+            # No encoding set. JSON RFC 4627 section 3 states we should expect
+            # UTF-8, -16 or -32. Detect which one to use; If the detection or
+            # decoding fails, fall back to `self.text` (using charset_normalizer to make
+            # a best guess).
+            encoding = guess_json_utf(self.content)
+            if encoding is not None:
+                try:
+                    return complexjson.loads(self.content.decode(encoding), **kwargs)
+                except UnicodeDecodeError:
+                    # Wrong UTF codec detected; usually because it's not UTF-8
+                    # but some other 8-bit codec.  This is an RFC violation,
+                    # and the server didn't bother to tell us what codec *was*
+                    # used.
+                    pass
+                except JSONDecodeError as e:
+                    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+    
+        try:
+            return complexjson.loads(self.text, **kwargs)
+        except JSONDecodeError as e:
+            # Catch JSON-related errors and raise as requests.JSONDecodeError
+            # This aliases json.JSONDecodeError and simplejson.JSONDecodeError
+>           raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+E           requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../.venv-contract/lib/python3.12/site-packages/requests/models.py:1120: JSONDecodeError
+_______________ TestIndexEndpoints.test_index_file_missing_body ________________
+
+self = <Response [400]>, kwargs = {}
+
+    def json(self, **kwargs: Any) -> Any:
+        r"""Decodes the JSON response body (if any) as a Python object.
+    
+        This may return a dictionary, list, etc. depending on what is in the response.
+    
+        :param \*\*kwargs: Optional arguments that ``json.loads`` takes.
+        :raises requests.exceptions.JSONDecodeError: If the response body does not
+            contain valid json.
+        """
+    
+        if not self.encoding and self.content and len(self.content) > 3:
+            # No encoding set. JSON RFC 4627 section 3 states we should expect
+            # UTF-8, -16 or -32. Detect which one to use; If the detection or
+            # decoding fails, fall back to `self.text` (using charset_normalizer to make
+            # a best guess).
+            encoding = guess_json_utf(self.content)
+            if encoding is not None:
+                try:
+                    return complexjson.loads(self.content.decode(encoding), **kwargs)
+                except UnicodeDecodeError:
+                    # Wrong UTF codec detected; usually because it's not UTF-8
+                    # but some other 8-bit codec.  This is an RFC violation,
+                    # and the server didn't bother to tell us what codec *was*
+                    # used.
+                    pass
+                except JSONDecodeError as e:
+                    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+    
+        try:
+>           return complexjson.loads(self.text, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../../.venv-contract/lib/python3.12/site-packages/requests/models.py:1116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../.pyenv/versions/3.12.13/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.pyenv/versions/3.12.13/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x74143fd8ea80>
+s = '<!doctype html>\n<html lang=en>\n<title>400 Bad Request</title>\n<h1>Bad Request</h1>\n<p>The browser (or proxy) sent a request that this server could not understand.</p>\n'
+idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../.pyenv/versions/3.12.13/lib/python3.12/json/decoder.py:356: JSONDecodeError
+
+During handling of the above exception, another exception occurred:
+
+self = <tests.contract.test_search_contract.TestIndexEndpoints object at 0x74143e883aa0>
+openapi_spec = {'openapi': '3.0.3', 'info': {'title': 'OtterWorks Search Service', 'description': 'Full-text search and indexing serv... SQS event processing.\n', 'requestBody': {'required': True, 'content': {'application/json': {...}}}, ...}}, ...}, ...}
+
+    def test_index_file_missing_body(self, openapi_spec: dict[str, Any]) -> None:
+        """POST /api/v1/search/index/file without body returns 400."""
+        resp = requests.post(
+            f"{BASE_URL}/api/v1/search/index/file",
+            headers={"Content-Type": "application/json", "X-User-ID": "test-user-001"},
+        )
+        assert resp.status_code == 400
+>       body = resp.json()
+               ^^^^^^^^^^^
+
+tests/contract/test_search_contract.py:326: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Response [400]>, kwargs = {}
+
+    def json(self, **kwargs: Any) -> Any:
+        r"""Decodes the JSON response body (if any) as a Python object.
+    
+        This may return a dictionary, list, etc. depending on what is in the response.
+    
+        :param \*\*kwargs: Optional arguments that ``json.loads`` takes.
+        :raises requests.exceptions.JSONDecodeError: If the response body does not
+            contain valid json.
+        """
+    
+        if not self.encoding and self.content and len(self.content) > 3:
+            # No encoding set. JSON RFC 4627 section 3 states we should expect
+            # UTF-8, -16 or -32. Detect which one to use; If the detection or
+            # decoding fails, fall back to `self.text` (using charset_normalizer to make
+            # a best guess).
+            encoding = guess_json_utf(self.content)
+            if encoding is not None:
+                try:
+                    return complexjson.loads(self.content.decode(encoding), **kwargs)
+                except UnicodeDecodeError:
+                    # Wrong UTF codec detected; usually because it's not UTF-8
+                    # but some other 8-bit codec.  This is an RFC violation,
+                    # and the server didn't bother to tell us what codec *was*
+                    # used.
+                    pass
+                except JSONDecodeError as e:
+                    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+    
+        try:
+            return complexjson.loads(self.text, **kwargs)
+        except JSONDecodeError as e:
+            # Catch JSON-related errors and raise as requests.JSONDecodeError
+            # This aliases json.JSONDecodeError and simplejson.JSONDecodeError
+>           raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+E           requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../.venv-contract/lib/python3.12/site-packages/requests/models.py:1120: JSONDecodeError
+=========================== short test summary info ============================
+FAILED tests/contract/test_search_contract.py::TestIndexEndpoints::test_index_document_missing_body
+FAILED tests/contract/test_search_contract.py::TestIndexEndpoints::test_index_file_missing_body
+========================= 2 failed, 16 passed in 0.42s =========================

@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import structlog
-from flask import Blueprint, current_app, jsonify
+from fastapi import APIRouter, Request
 from prometheus_client import (
     Counter,
     Histogram,
     generate_latest,
 )
+from starlette.responses import Response
+
+from app.flask_compat import jsonify
 
 logger = structlog.get_logger()
 
-health_bp = Blueprint("health", __name__)
+router = APIRouter()
 
 # Prometheus metrics
 REQUEST_COUNT = Counter(
@@ -36,34 +41,27 @@ INDEX_COUNT = Counter(
 )
 
 
-@health_bp.route("/health")
-def health() -> tuple:
+@router.get("/health")
+async def health() -> Response:
     """Liveness check — returns 200 if the process is running."""
-    return jsonify({
-        "status": "alive",
-        "service": "search-service",
-    }), 200
+    return jsonify({"status": "alive", "service": "search-service"}, 200)
 
 
-@health_bp.route("/health/ready")
-def readiness() -> tuple:
+@router.get("/health/ready")
+async def readiness(request: Request) -> Response:
     """Readiness check — returns 503 if MeiliSearch is unreachable."""
-    search_service = current_app.config.get("SEARCH_SERVICE")
+    search_service = getattr(request.app.state, "search_service", None)
 
     healthy = False
     if search_service:
-        healthy = search_service.ping()
+        healthy = await asyncio.to_thread(search_service.ping)
 
     if healthy:
-        return jsonify({"ready": True}), 200
-    return jsonify({"ready": False, "reason": "meilisearch_unavailable"}), 503
+        return jsonify({"ready": True}, 200)
+    return jsonify({"ready": False, "reason": "meilisearch_unavailable"}, 503)
 
 
-@health_bp.route("/metrics")
-def metrics() -> tuple:
+@router.get("/metrics")
+async def metrics() -> Response:
     """Prometheus metrics endpoint."""
-    return (
-        generate_latest(),
-        200,
-        {"Content-Type": "text/plain; charset=utf-8"},
-    )
+    return Response(generate_latest(), status_code=200, headers={"Content-Type": "text/plain; charset=utf-8"})
