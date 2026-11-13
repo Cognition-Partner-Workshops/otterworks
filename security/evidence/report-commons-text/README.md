@@ -68,6 +68,32 @@ still carry the advisory and are outside this PR's exclusive report-service scop
 The captured `after-tree.txt` and image scan show that this module resolves 1.10.0
 and no longer contains the vulnerable artifact version.
 
+## Mixed-state CI validation
+
+The original dependency job failed after all service suites passed:
+https://github.com/Cognition-Partner-Workshops/otterworks/actions/runs/43441567836/job/131940208552.
+`deps-latest-before-failed.txt` preserves the exact failed-step log. The global
+advisory gate correctly found vulnerable versions in other modules, but the
+workflow then graded this already-fixed module as the vulnerable baseline and
+failed because its three attack markers remained literal. The before/after
+module grades and observations are archived above.
+
+The small gate correction adds `transcript --stage auto`: select baseline or
+remediated grading from each module's measured dependency tree. The global
+inventory/advisory report remains unchanged; an unmeasured tree remains
+inconclusive. Existing contract and attack comparisons, recorded expectations,
+advisories and other modules' code are untouched. This retains baseline validation
+for deliberately vulnerable modules and requires fixed modules to neutralize
+all attack cases. Five regression checks cover mixed states, removed artifacts,
+unmeasured trees, attack regressions and changed contract output; exact test
+output is in `gate-regressions.txt`.
+
+```bash
+uv run --with pyyaml==6.0.2 --with tabulate==0.10.0 python -m unittest discover -s security/deps/harness -v
+uv run --with ruff==0.9.10 ruff check security/deps/harness
+uv run --with pyyaml==6.0.2 --with tabulate==0.10.0 security/deps/harness/deps_check.py transcript --stage auto
+```
+
 Use two separate source worktrees (baseline commit above and this PR) and Trivy 0.71.0.
 Preserve the SAME vulnerability and Java DB caches for both scans. Copy the archived
 DB into `$TRIVY_CACHE` to reproduce these historical counts; a current DB will differ.

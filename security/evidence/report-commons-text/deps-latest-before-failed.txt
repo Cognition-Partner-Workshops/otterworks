@@ -1,0 +1,79 @@
+deps	Gate on the advisory, then grade behavior for that state	﻿2026-11-13T14:22:54.6004298Z ##[group]Run # Invoked through the harness directly, not `make deps-gate`: make reports
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6005121Z [36;1m# Invoked through the harness directly, not `make deps-gate`: make reports[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6005848Z [36;1m# any recipe failure as its own exit 2, which would erase the difference[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6006461Z [36;1m# between "vulnerable" (1) and "no verdict reached" (2).[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6006965Z [36;1mdeps=$(make -s deps-command)[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6007411Z [36;1mset +e[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6007840Z [36;1m$deps gate[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6008239Z [36;1mgate=$?[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6008601Z [36;1mset -e[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6008998Z [36;1mif [ "$gate" -eq 0 ]; then[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6009610Z [36;1m  echo "::notice::no vulnerable version reachable — grading the remediated contract"[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6010217Z [36;1m  make deps-transcript[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6010632Z [36;1melif [ "$gate" -eq 1 ]; then[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6011544Z [36;1m  echo "::notice::the vulnerable version is still present (this is the documented" \[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6012244Z [36;1m       "before-state) — grading the recorded baseline transcript instead"[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6012831Z [36;1m  make deps-transcript-baseline[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6013305Z [36;1melse[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6013783Z [36;1m  # Exit 2 is "no verdict reached" (a tree failed to resolve), never a pass:[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6014440Z [36;1m  # grading either contract off an unmeasured estate would invent confidence.[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6015138Z [36;1m  echo "::error::the advisory gate was inconclusive (exit $gate); refusing to grade"[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6015740Z [36;1m  exit "$gate"[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6016560Z [36;1mfi[0m
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6049512Z shell: /usr/bin/bash -e {0}
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6050008Z env:
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6050556Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6052254Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/11.0.32-1/x64
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6053026Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6053697Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-9/x64
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6054450Z   JAVA_HOME_11_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/11.0.32-1/x64
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6055056Z   GRADLE_ACTION_ID: gradle/actions/setup-gradle
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6055620Z   GRADLE_USER_HOME: /home/runner/.gradle
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6056065Z   GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6056648Z   GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6057272Z   DEVELOCITY_INJECTION_INIT_SCRIPT_NAME: gradle-actions.inject-develocity.init.gradle
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6057914Z   DEVELOCITY_INJECTION_CUSTOM_VALUE: gradle-actions
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6058464Z   GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:22:54.6058934Z ##[endgroup]
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2222829Z 
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2224205Z GATE FAILED: CVE-2022-42889 still reachable:
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2225498Z   - legacy-portal -> org.apache.commons:commons-text:1.9 (via org.apache.commons:commons-configuration2:2.8.0)
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2226541Z   - notification-service -> org.apache.commons:commons-text:1.9
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2227318Z   - auth-service -> org.apache.commons:commons-text:1.9
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2232335Z CVE-2022-42889: org.apache.commons:commons-text vulnerable in [1.5, 1.10.0) — Apache Commons Text interpolation RCE ("Text4Shell")
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2251561Z 
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2252712Z | module                             | build   | status     | version   | path                                                 | declared at                                                                                                  |
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2254263Z |------------------------------------|---------|------------|-----------|------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2256339Z | report-service                     | maven   | ok         | 1.10.0    | direct                                               | services/report-service/pom.xml:43, services/report-service/pom.xml:134, services/report-service/pom.xml:135 |
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2257765Z | legacy-portal                      | maven   | VULNERABLE | 1.9       | via org.apache.commons:commons-configuration2:2.8.0  | (not declared here)                                                                                          |
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2259054Z | notification-service               | gradle  | VULNERABLE | 1.9       | direct                                               | services/notification-service/build.gradle.kts:51                                                            |
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2260198Z | auth-service                       | gradle  | VULNERABLE | 1.9       | direct                                               | services/auth-service/build.gradle:44                                                                        |
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2261619Z | legacy-portal-lambda-announcements | maven   | ok         | 1.12.0    | via org.apache.commons:commons-configuration2:2.11.0 | (not declared here)                                                                                          |
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2262794Z | legacy-portal-lambda-preferences   | maven   | clean      | -         | -                                                    | -                                                                                                            |
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2263802Z | legacy-portal-lambda-feedback      | maven   | clean      | -         | -                                                    | -                                                                                                            |
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2264365Z 
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2265188Z not measured (exempt): frontend/client-app/mobile/android — Capacitor Android shell. Ships no server-side JVM dependencies and needs the Android SDK to resolve, which the build image does not carry.
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2265933Z 
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2266657Z not measured (exempt): tests/legacy-suites/selenium — Browser automation fixture for the admin UI. It is not a shipped application module and does not have a production runtime dependency graph.
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2267359Z 
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2267602Z report: security/deps/reports/gate.json
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2412742Z ##[notice]the vulnerable version is still present (this is the documented before-state) — grading the recorded baseline transcript instead
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:22.2419945Z uv run --with pyyaml==6.0.2 --with tabulate==0.10.0 security/deps/harness/deps_check.py transcript --stage baseline 
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7686305Z 
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7687805Z report-service/attack-script-lookup (attack): recorded ok '7', observed ok '${script:javascript:3+4}'
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7688551Z 
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7689218Z report-service/attack-dns-lookup (attack): recorded ok '127.0.0.1', observed ok '${dns:address|127.0.0.1}'
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7689939Z 
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7691019Z report-service/attack-url-lookup (attack): recorded error java.lang.IllegalArgumentException (Error looking up URL [http://127.0.0.1:1/otterworks] with Charset [UTF-8].), observed ok '${url:UTF-8:http://127.0.0.1:1/otterworks}'
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7691918Z 
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7692183Z TRANSCRIPT FAILED: behavior diverged from the recording.
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7692860Z transcript stage: baseline
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7695864Z | module               | status   |   cases | detail                                                     |
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7696526Z |----------------------|----------|---------|------------------------------------------------------------|
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7697263Z | report-service       | fail     |      11 | attack-script-lookup, attack-dns-lookup, attack-url-lookup |
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7698148Z | legacy-portal        | pass     |       7 |                                                            |
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7698802Z | notification-service | pass     |       9 |                                                            |
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7699175Z 
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7699426Z report: security/deps/reports/transcript-baseline.json
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7929769Z make: *** [Makefile:384: deps-transcript-baseline] Error 1
+deps	Gate on the advisory, then grade behavior for that state	2026-11-13T14:23:54.7939017Z ##[error]Process completed with exit code 2.

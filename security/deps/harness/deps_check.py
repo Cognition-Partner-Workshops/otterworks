@@ -20,6 +20,7 @@ Three gates, one advisory (security/deps/advisory.yaml):
                                  template text literal in the output
               --stage baseline grades every case against the recording (proving the
               before-state reproduces); --stage remediated applies the policies.
+              --stage auto selects the policy from each module's measured tree.
 
 Usage:
     uv run security/deps/harness/deps_check.py inventory
@@ -806,18 +807,34 @@ def command_transcript(modules: list[Module], stage: str, only: str | None) -> i
     if not graded:
         raise ConfigError(f"no module with recorded cases matches {only!r}")
 
-    results = [grade_module(module, stage) for module in graded]
+    if stage == "auto":
+        trees = collect_trees(load_advisory(), graded)
+        results = []
+        for tree in trees:
+            if tree.status != PASS:
+                results.append({"module": tree.module.id, "status": UNMEASURED,
+                                "detail": tree.detail or "dependency tree was not measured"})
+                continue
+            module_stage = ("baseline" if any(item.vulnerable for item in tree.occurrences)
+                            else "remediated")
+            result = grade_module(tree.module, module_stage)
+            result["stage"] = module_stage
+            results.append(result)
+    else:
+        results = [grade_module(module, stage) for module in graded]
     rows = [
         [
             result["module"],
             result["status"],
+            result.get("stage", stage),
             len(result.get("cases", [])),
             ", ".join(result.get("failed", [])) or result.get("detail", ""),
         ]
         for result in results
     ]
     print(f"transcript stage: {stage}")
-    print(tabulate(rows, headers=["module", "status", "cases", "detail"], tablefmt="github"))
+    print(tabulate(rows, headers=["module", "status", "stage", "cases", "detail"],
+                   tablefmt="github"))
 
     for result in results:
         for case in result.get("cases", []):
@@ -893,7 +910,8 @@ def main(argv: list[str] | None = None) -> int:
     tests.add_argument("--module")
 
     transcript = sub.add_parser("transcript", help="grade recorded interpolation transcripts")
-    transcript.add_argument("--stage", choices=["baseline", "remediated"], default="remediated")
+    transcript.add_argument("--stage", choices=["baseline", "remediated", "auto"],
+                            default="remediated")
     transcript.add_argument("--module")
     transcript.add_argument("--record", action="store_true",
                             help="write the observed transcripts as the recording")
