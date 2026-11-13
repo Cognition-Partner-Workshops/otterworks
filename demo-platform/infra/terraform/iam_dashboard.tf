@@ -226,6 +226,19 @@ data "aws_iam_policy_document" "dashboard" {
     resources = ["arn:aws:s3:::${var.terraform_state_bucket}/*"]
   }
 
+  # The state bucket also matches var.shared_s3_bucket_prefix, so the reaper's
+  # per-tenant prefix GC (SharedBucketObjectGC) would otherwise be allowed to
+  # delete Terraform state for the app, platform and this layer. The runner only
+  # ever reads state; deny every object write/delete there outright.
+  statement {
+    sid    = "DenyTerraformStateWrite"
+    effect = "Deny"
+    actions = [
+      "s3:DeleteObject", "s3:DeleteObjectVersion", "s3:PutObject",
+    ]
+    resources = ["arn:aws:s3:::${var.terraform_state_bucket}/*"]
+  }
+
   # deploy-tenant.sh resolves the newest image tag per service from ECR.
   statement {
     sid       = "EcrAuth"
