@@ -71,3 +71,75 @@ async def test_export_endpoint_404s_for_unreadable_file(client, monkeypatch, tmp
     resp = await client.get("/api/v1/documents/exports", params={"name": "locked.md"})
 
     assert resp.status_code == 404
+
+
+@pytest.fixture
+def secret_outside_archive(tmp_path):
+    archive_dir = tmp_path / "archive"
+    (archive_dir / "reports").mkdir(parents=True)
+    (archive_dir / "report.md").write_text("# Report\n", encoding="utf-8")
+    secret = tmp_path / "outside" / "tenant-secrets.env"
+    secret.parent.mkdir()
+    secret.write_text("SUPPLIER_API_KEY=fixture\n", encoding="utf-8")
+    return archive_dir, secret
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "../outside/tenant-secrets.env",
+        "reports/../../outside/tenant-secrets.env",
+        "/etc/passwd",
+        "../../../../../../etc/passwd",
+        "..",
+        ".",
+        "report.md\x00",
+    ],
+)
+def test_rejects_names_that_escape_the_archive(secret_outside_archive, name):
+    archive_dir, _ = secret_outside_archive
+    with pytest.raises(FileNotFoundError):
+        ExportArchive(base_dir=str(archive_dir)).read_export(name)
+
+
+def test_rejects_absolute_path_inside_the_archive(secret_outside_archive):
+    archive_dir, _ = secret_outside_archive
+    with pytest.raises(FileNotFoundError):
+        ExportArchive(base_dir=str(archive_dir)).read_export(str(archive_dir / "report.md"))
+
+
+def test_rejects_symlink_pointing_outside_the_archive(secret_outside_archive):
+    archive_dir, secret = secret_outside_archive
+    (archive_dir / "link.env").symlink_to(secret)
+    with pytest.raises(FileNotFoundError):
+        ExportArchive(base_dir=str(archive_dir)).read_export("link.env")
+
+
+def test_allows_dot_segments_that_stay_inside_the_archive(secret_outside_archive):
+    archive_dir, _ = secret_outside_archive
+    archive = ExportArchive(base_dir=str(archive_dir))
+    assert archive.read_export("reports/../report.md") == "# Report\n"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "name",
+    [
+        "../outside/tenant-secrets.env",
+        "/etc/passwd",
+        "../../../../../../etc/passwd",
+        "/proc/self/environ",
+        "report.md\x00",
+    ],
+)
+async def test_export_endpoint_404s_for_traversal(
+    client, monkeypatch, secret_outside_archive, name
+):
+    archive_dir, _ = secret_outside_archive
+    monkeypatch.setenv("EXPORT_ARCHIVE_DIR", str(archive_dir))
+
+    resp = await client.get("/api/v1/documents/exports", params={"name": name})
+
+    assert resp.status_code == 404
+    assert "SUPPLIER_API_KEY" not in resp.text
+    assert "root:" not in resp.text
