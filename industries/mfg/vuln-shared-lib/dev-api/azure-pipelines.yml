@@ -1,0 +1,51 @@
+trigger:
+  branches:
+    include: [demo-vuln-shared-lib]
+  paths:
+    include:
+      - industries/mfg/vuln-shared-lib/dev-api/*
+      - industries/mfg/vuln-shared-lib/platform-shared/*
+
+pr:
+  branches:
+    include: [demo-vuln-shared-lib]
+  paths:
+    include:
+      - industries/mfg/vuln-shared-lib/dev-api/*
+      - industries/mfg/vuln-shared-lib/platform-shared/*
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  projectDir: industries/mfg/vuln-shared-lib/dev-api
+  buildConfiguration: Release
+  NUGET_PACKAGES: $(Build.SourcesDirectory)/industries/mfg/vuln-shared-lib/dev-api/.nuget/packages
+
+steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: sdk
+      version: 8.0.x
+
+  - script: make vsl-pack
+    workingDirectory: $(Build.SourcesDirectory)
+    displayName: Prepare local feed
+
+  - script: dotnet restore DevApi.sln
+    workingDirectory: $(projectDir)
+    displayName: Restore
+
+  - script: dotnet build DevApi.sln --no-restore -c $(buildConfiguration)
+    workingDirectory: $(projectDir)
+    displayName: Build
+
+  - script: dotnet test DevApi.sln --no-build -c $(buildConfiguration) --logger trx --results-directory $(Agent.TempDirectory)/test-results
+    workingDirectory: $(projectDir)
+    displayName: Test
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: $(Agent.TempDirectory)/test-results/*.trx
