@@ -4,6 +4,8 @@ Writes findings.sarif (SARIF 2.1.0, Checkmarx field shape, one run per repositor
 findings.csv and prioritized.csv next to this file. Line numbers are resolved from
 each finding's anchor in the current source, so the export always points at the code
 as it is. `--check` regenerates in memory and fails if the committed files differ.
+VSL_SOURCE_ROOT points the anchors at another checkout (CI uses the seeded-v1 tree for
+PRs that fix findings, since a fix removes the line its anchor matches).
 """
 
 import argparse
@@ -11,6 +13,7 @@ import csv
 import hashlib
 import io
 import json
+import os
 import re
 import sys
 from datetime import date, timedelta
@@ -20,6 +23,8 @@ HERE = Path(__file__).resolve().parent
 ESTATE = HERE.parents[1]
 REPO_ROOT = ESTATE.parents[2]
 MANIFEST = HERE / "findings.manifest.json"
+SOURCE_ROOT = Path(os.environ.get("VSL_SOURCE_ROOT") or REPO_ROOT).resolve()
+SOURCE = SOURCE_ROOT / ESTATE.relative_to(REPO_ROOT)
 OUTPUTS = ("findings.sarif", "findings.csv", "prioritized.csv")
 
 SARIF_LEVEL = {"Critical": "error", "High": "error", "Medium": "warning", "Low": "note"}
@@ -35,7 +40,7 @@ def load_manifest(path=MANIFEST):
     return manifest
 
 
-def locate(finding, root=ESTATE):
+def locate(finding, root=SOURCE):
     source = root / finding["path"]
     lines = source.read_text().splitlines()
     pattern = re.compile(finding["anchor"])
@@ -54,7 +59,7 @@ def similarity_id(finding):
     return int.from_bytes(digest[:4], "big", signed=True)
 
 
-def resolve(manifest, root=ESTATE):
+def resolve(manifest, root=SOURCE):
     scan_date = date.fromisoformat(manifest["scan_date"])
     rows = []
     for finding in manifest["findings"]:
@@ -157,7 +162,7 @@ def prioritized_csv(rows):
           row["sla_due"], row["team"], f"{row['uri']}:{row['line']}"] for row in ordered])
 
 
-def render(manifest=None, root=ESTATE):
+def render(manifest=None, root=SOURCE):
     manifest = manifest or load_manifest()
     rows = resolve(manifest, root)
     return {
