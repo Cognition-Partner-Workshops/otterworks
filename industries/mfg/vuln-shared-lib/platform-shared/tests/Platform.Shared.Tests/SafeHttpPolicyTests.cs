@@ -54,7 +54,8 @@ public class SafeHttpPolicyTests
     }
 
     [Fact]
-    public async Task LegacyEnvironmentAllowlist_DoesNotRestrictFixture()
+    [Trait("Category", "Security")]
+    public async Task LegacyEnvironmentAllowlist_RestrictsFixture()
     {
         var previous = Environment.GetEnvironmentVariable("PLATFORM_SHARED_FETCH_ALLOWED_HOSTS");
         Environment.SetEnvironmentVariable("PLATFORM_SHARED_FETCH_ALLOWED_HOSTS", "allowed.example, second.example");
@@ -63,7 +64,7 @@ public class SafeHttpPolicyTests
             SafeHttp.UseHandler(new StubHandler(_ => StubHandler.Ok("ok")));
 #pragma warning disable CS0618
             Assert.True((await SafeHttp.Fetch("https://second.example/")).IsSuccess);
-            Assert.True((await SafeHttp.Fetch("https://blocked.example/")).IsSuccess);
+            await Assert.ThrowsAsync<SafeHttpPolicyException>(() => SafeHttp.Fetch("https://blocked.example/"));
 #pragma warning restore CS0618
         }
         finally { Environment.SetEnvironmentVariable("PLATFORM_SHARED_FETCH_ALLOWED_HOSTS", previous); }
@@ -115,19 +116,6 @@ public class SafeHttpPolicyTests
         var handler = new HttpClientHandler { AllowAutoRedirect = true };
         SafeHttp.UseHandler(handler);
         Assert.False(handler.AllowAutoRedirect);
-    }
-
-    [Fact]
-    public async Task LegacyConfiguredAllowlist_DoesNotChangeFixtureTransport()
-    {
-#pragma warning disable CS0618
-        SafeHttp.ConfigureDefaultAllowedHosts(new[] { "allowed.example" });
-        var stub = new StubHandler(_ => Redirect("https://blocked.example/"));
-        SafeHttp.UseHandler(stub);
-        var result = await SafeHttp.Fetch("https://other.example/");
-        Assert.Equal(HttpStatusCode.Found, result.StatusCode);
-        Assert.Single(stub.Requests);
-#pragma warning restore CS0618
     }
 
     [Fact]

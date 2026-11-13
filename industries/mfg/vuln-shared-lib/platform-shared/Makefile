@@ -22,6 +22,8 @@ consumer-compat: pack
 	bash tests/compat/consumers.sh
 
 compat:
+	VSL_SEEDED_REF=vsl-missing-seeded-ref bash tests/compat/pack-seeded.sh "$(CURDIR)/artifacts/compat/fallback-feed"
+	test -f "$(CURDIR)/artifacts/compat/fallback-feed/Platform.Shared.1.0.0.nupkg"
 	./tests/compat/run.sh
 
 clean:

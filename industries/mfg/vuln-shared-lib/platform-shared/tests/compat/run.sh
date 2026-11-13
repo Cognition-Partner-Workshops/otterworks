@@ -4,6 +4,7 @@ library="$(cd "$(dirname "$0")/../.." && pwd)"
 repo="$(git -C "$library" rev-parse --show-toplevel)"
 work="$library/artifacts/compat"
 mkdir -p "$work/seed" "$work/feed" "$work/consumer"
+unset PLATFORM_SHARED_FETCH_ALLOWED_HOSTS PLATFORM_SHARED_SIGNING_KEY
 git -C "$repo" archive ad7b313dc36473216897731f88971eea7c9c96b1 industries/mfg/vuln-shared-lib/platform-shared | tar -x -C "$work/seed"
 dotnet pack "$work/seed/industries/mfg/vuln-shared-lib/platform-shared/src/Platform.Shared/Platform.Shared.csproj" -c Release -o "$work/feed"
 cp "$library/tests/compat/Consumer.csproj" "$library/tests/compat/Program.cs" "$work/consumer/"
