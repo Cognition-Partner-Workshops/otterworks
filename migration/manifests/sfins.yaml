@@ -1,0 +1,3 @@
+tables: 15
+fact_rows: 200000
+child_sessions: 3
