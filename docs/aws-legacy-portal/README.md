@@ -22,6 +22,62 @@ python3 replay.py --base <api url> --context feedback --stage first --out /tmp/r
 
 `replay.py` is adapted from `run_parity.py` on that branch. The Java side is always the recording. It compares status code, media type and body, replaces wall-clock timestamps with a placeholder naming their format, and writes `<context>.json` per context and a `SUMMARY.md` table. Stage `first` stops each context at its first divergence and prints the diff. Stage `full` runs every case.
 
+## Data migration before cutover
+
+Apply `infrastructure/terraform/legacy-portal-serverless/schema.sql` first (Terraform's
+`apply-schema.sh` does this for Aurora). Install the Python 3 driver with
+`python3 -m pip install 'psycopg[binary]>=3.1,<4'`. Direct connections need PostgreSQL
+network access; Data API also needs the AWS CLI and credentials permitted to execute/batch
+statements and begin/commit/rollback transactions on the cluster and read its secret.
+
+**Stop source and target writers for the entire copy and verification, and take a backup.**
+This is an offline cutover, not ongoing replication. The source is read in one read-only
+repeatable-read snapshot; all three target tables are locked exclusively, copied, verified,
+and committed in one transaction. Failure rolls back target rows and transactional sequence
+restarts. The tool never creates schemas or changes column definitions. Do not run the
+monolith with `ddl-auto=update` against a live Aurora target during the cutover.
+
+```bash
+# Use environment variables / a secret manager, not URLs with passwords in command history.
+export SOURCE_URL='postgresql://.../legacyportal'
+export TARGET_URL='postgresql://.../legacyportal'  # direct PostgreSQL or Aurora connection
+make lp-migrate RUN=lp-20261113-dm DRY_RUN=1
+make lp-migrate RUN=lp-20261113-dm
+make lp-migrate-verify RUN=lp-20261113-dm
+# Alternatively unset TARGET_URL; export CLUSTER_ARN, SECRET_ARN, DATABASE for Data API.
+# Explicitly destructive replacement of ALL THREE target tables:
+make lp-migrate RUN=lp-20261113-dm TRUNCATE=1
+```
+
+The CLI also accepts `--source-url`, `--target-url`, `--run`, `--dry-run`, and `--truncate`;
+`python3 scripts/lp-migrate.py verify ...` runs verification alone. Non-empty targets are
+refused by default, even in dry-run. `TRUNCATE=1 DRY_RUN=1` describes replacement without
+changing rows or sequences. Keep URLs out of CLI arguments where other processes can see
+them. Transcripts (no credentials or row contents) go to
+`.demo/legacy-portal/<RUN>/migrate-<UTC>.log` and `verify-<UTC>.log`.
+
+IDs and all column values are retained, including timestamp-without-time-zone microseconds
+(no timezone conversion), booleans, Unicode, and full-length strings. Preferences has a
+`user_id` primary key and no sequence. The two bigserial sequences are restarted at
+`max(id)+1`, or 1 for empty tables. Verification does **not** call `nextval`: it reports source
+next, target next and expected target next separately. Source sequences can legitimately
+have gaps; only the target must have next=max+1. Run verification before accepting new
+writes, since source/target content is intentionally expected to diverge after cutover.
+
+Verification checks per-table counts and an order-independent checksum:
+SHA256(count || sum(SHA256(canonical JSON row)) modulo 2^256). Timestamps are selected as
+ISO PostgreSQL text on both sides; rows use a fixed column order. Reads use keyset pages
+(250 direct / 25 Data API), inserts are batched (25 Data API), and memory use is bounded.
+Data API uses the same 30-attempt, 10-second resume retry cases as `apply-schema.sh`.
+Both sides need SELECT on tables/sequences; target also needs INSERT/TRUNCATE, sequence
+ownership for ALTER SEQUENCE, and permission to lock tables. Schema/type incompatibility,
+connection failure, occupied targets and verification mismatches exit nonzero; inspect the
+transcript before rerunning with `TRUNCATE=1`. Driver errors suppress values/connection
+details, so diagnose connectivity independently when necessary. The operator must keep the
+source quiescent; locks cannot stop source writes after its snapshot was taken.
+
+Offline tests: `make lp-migrate-tests` (stdlib unittest, no DB/AWS needed).
+
 ## Terraform root
 
 `infrastructure/terraform/legacy-portal-serverless/` takes `run_token` as its one required variable and keeps one state object per token under `otterworks/legacy-portal-serverless/<token>/terraform.tfstate` in bucket `otterworks-terraform-state`. Every resource carries the tags `demo=legacy-portal-serverless`, `run_token=<token>`, `RunToken=<token>`, `Expires=<date>` and `ManagedBy=terraform`, and every name starts with the token.

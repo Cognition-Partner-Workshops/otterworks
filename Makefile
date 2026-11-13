@@ -581,6 +581,16 @@ cw-trail: ## CloudTrail events from devin-cw-* identities in the last two hours
 # Transcripts go to .demo/legacy-portal/<token>/. See docs/aws-legacy-portal/README.md.
 LP = RUN=$(RUN) CTX=$(CTX) STAGE=$(STAGE) scripts/lp-serverless.sh
 
+.PHONY: lp-migrate lp-migrate-verify lp-migrate-tests
+lp-migrate: ## Copy VM data into an empty Aurora/PostgreSQL target and verify (RUN=, SOURCE_URL=, TARGET_URL= or Data API env)
+	@python3 scripts/lp-migrate.py migrate
+
+lp-migrate-verify: ## Compare source/target counts, checksums and next IDs without writing data (RUN=, SOURCE_URL=)
+	@python3 scripts/lp-migrate.py verify
+
+lp-migrate-tests: ## Run the data-migration tool's offline unit tests
+	@python3 -m unittest discover -s scripts/tests -p 'test_lp_migrate.py' -v
+
 lp-up: ## Apply the legacy-portal serverless stack for a run (RUN=lp-<yyyymmdd>-<xx>)
 	@$(LP) up
 
