@@ -6,7 +6,7 @@ import uuid
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
-from starlette.responses import StreamingResponse
+from starlette.responses import Response, StreamingResponse
 
 from app.chaos import FLAG_REQUEST_LOG
 from app.middleware import request_log as request_log_module
@@ -14,10 +14,29 @@ from app.middleware.request_log import (
     REDACTED,
     RESPONSE_CAPTURE_BYTES,
     RequestLog,
+    _chunks,
     redact_body,
     redact_headers,
     redact_query,
 )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("body", [b"hello", b""])
+async def test_chunks_reads_plain_response(body: bytes) -> None:
+    assert b"".join([chunk async for chunk in _chunks(Response(body))]) == body
+
+
+@pytest.mark.asyncio
+async def test_chunks_propagates_stream_error() -> None:
+    async def broken():
+        yield b"prefix"
+        raise RuntimeError("stream failed")
+
+    chunks = _chunks(StreamingResponse(broken()))
+    assert await anext(chunks) == b"prefix"
+    with pytest.raises(RuntimeError, match="stream failed"):
+        await anext(chunks)
 
 
 def test_redact_headers_masks_credentials_only() -> None:

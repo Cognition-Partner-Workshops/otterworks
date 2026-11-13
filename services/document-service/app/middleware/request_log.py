@@ -111,7 +111,7 @@ def declared_length(response: Response) -> int | None:
 
 
 async def _chunks(response: Response) -> AsyncIterator[bytes]:
-    if isinstance(response, StreamingResponse):
+    if hasattr(response, "body_iterator"):
         async for chunk in response.body_iterator:
             yield chunk if isinstance(chunk, bytes) else chunk.encode()
     else:
