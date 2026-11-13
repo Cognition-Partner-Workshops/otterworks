@@ -1,0 +1,136 @@
+{
+  "source_branch": "demo-sfins",
+  "source_commit": "4c4680123a04f7a10835e863023a9715fac2ab6d",
+  "source_pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2828",
+  "manifest_entries": {
+    "warehouse": {
+      "fixture": "services/industry-solutions/insurance",
+      "classes": [
+        {
+          "id": "SFI-01",
+          "title": "Premium precision exceeds a two-decimal target",
+          "causing_condition": "Feed and fact premiums use NUMBER(14,4). A fixed random seed produces nonzero third and fourth decimal places; mapping premiums to NUMBER(12,2) changes their values.",
+          "locations": [
+            {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 6},
+            {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 34},
+            {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 59}
+          ],
+          "surfaces_in": "Type mapping and premium reconciliation at source precision"
+        },
+        {
+          "id": "SFI-02",
+          "title": "Empty agent strings become Oracle NULLs",
+          "causing_condition": "Every seventeenth policy sends an empty agent code. Oracle stores the empty string as NULL and the loader preserves the NULL in the policy dimension and fact. A target retaining empty strings changes NULL counts and join behavior.",
+          "locations": [
+            {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 63},
+            {"file": "services/industry-solutions/insurance/db/olap/04_policy_claims_pkg.sql", "line": 25}
+          ],
+          "surfaces_in": "Agent NULL profiling and target join parity"
+        },
+        {
+          "id": "SFI-03",
+          "title": "Rate resolution depends on the Oracle DATE time component",
+          "causing_condition": "Policy transactions occur at 14:30 on the rate change day. The lookup uses strict eff_dt < transaction time, selecting 0.12. Truncating the transaction to midnight before the same lookup selects the previous 0.10 rate.",
+          "locations": [
+            {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 57},
+            {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 64},
+            {"file": "services/industry-solutions/insurance/db/olap/04_policy_claims_pkg.sql", "line": 23}
+          ],
+          "surfaces_in": "Effective-date boundary characterization and rate reconciliation"
+        },
+        {
+          "id": "SFI-04",
+          "title": "Payment delivery repeats claim and payment sequence keys",
+          "causing_condition": "The initial delivery repeats eight keys. ROW_NUMBER selects the latest load_ts per claim and payment sequence before MERGE. Removing the selection either creates unstable MERGE inputs or overstates aggregates. The November delivery adds a source column and ten more duplicate payment rows.",
+          "locations": [
+            {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 72},
+            {"file": "services/industry-solutions/insurance/db/olap/04_policy_claims_pkg.sql", "line": 31},
+            {"file": "services/industry-solutions/insurance/db/olap/claims_feed_2026_11_delivery.sql", "line": 2}
+          ],
+          "surfaces_in": "Payment key profiling, MERGE translation and overnight schema drift"
+        },
+        {
+          "id": "SFI-05",
+          "title": "Agent-level rounding survives portfolio reconciliation",
+          "causing_condition": "The loader rounds each 33.33/33.33/33.34 percent agent share to cents before summing. Paired 1.00 and 1.01 amounts offset their rounding differences at portfolio level, while individual policy distributions differ by a cent from a total-first allocation. Comparing portfolio totals alone misses the differences.",
+          "locations": [
+            {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 65},
+            {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 76},
+            {"file": "services/industry-solutions/insurance/db/olap/04_policy_claims_pkg.sql", "line": 42},
+            {"file": "services/industry-solutions/insurance/db/tests/run_olap_tests.sql", "line": 95}
+          ],
+          "surfaces_in": "Per-policy and per-agent reconciliation despite matching portfolio totals"
+        },
+        {
+          "id": "SFI-06",
+          "title": "Scheduled territory snapshot has no consumer",
+          "causing_condition": "The weekly agent territory job writes agent_territory_snapshot. The output table has no reader in ETL, services, report SQL or frontend code; only the writer references the table.",
+          "locations": [
+            {"file": "etl/scripts/agent_territory_weekly.py", "line": 7},
+            {"file": "etl/crontab", "line": 8}
+          ],
+          "surfaces_in": "Schedule inventory and downstream lineage discovery"
+        },
+        {
+          "id": "SFI-07",
+          "title": "Warehouse codes need interpretation outside the database",
+          "causing_condition": "CLM_FLG_3 and POL_CD_X have no column comments. CLM_STATUS is restricted to integers 1 through 7 with no database lookup table or labels. The only status-to-label mapping lives in the React claim screen.",
+          "locations": [
+            {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 5},
+            {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 11},
+            {"file": "frontend/client-app/src/pages/claims.tsx", "line": 4}
+          ],
+          "surfaces_in": "Business glossary discovery and frontend-to-warehouse lineage"
+        },
+        {
+          "id": "SFI-08",
+          "title": "Lapsed policies exclude commission reversal rows",
+          "causing_condition": "Some policies carry both LAPSED status and a REVERSAL entry. The loader's eligibility predicate excludes these rows, while loading reversals for active policies. A migration preserving source reversals rather than the legacy filter changes warehouse totals; business review must decide the future rule.",
+          "locations": [
+            {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 61},
+            {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 66},
+            {"file": "services/industry-solutions/insurance/db/olap/04_policy_claims_pkg.sql", "line": 45}
+          ],
+          "surfaces_in": "Reversal coverage, reconciliation and business-owner review"
+        }
+      ]
+    }
+  },
+  "discovery_extras": [
+    {
+      "title": "External agent codes have no agent dimension match",
+      "causing_condition": "Six EXT-prefixed agent codes occur in feed_policy, dim_policy and fact_policy but have no DIM_AGENT row. Ordinary assigned codes match the existing AG-100 through AG-105 agents; every seventeenth row remains unassigned.",
+      "locations": [
+        {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 62},
+        {"file": "services/industry-solutions/insurance/db/olap/04_policy_claims_pkg.sql", "line": 21}
+      ],
+      "surfaces_in": "Referential integrity profiling and unmatched-agent joins"
+    },
+    {
+      "title": "Claim delivery contains placeholder and out-of-order dates",
+      "causing_condition": "Three claims have a 1900-01-01 loss date and three have a loss date after their report date. Source dates are retained in feed_claim rather than rejected or normalized.",
+      "locations": [
+        {"file": "services/industry-solutions/insurance/db/olap/03_policy_claims.sql", "line": 69}
+      ],
+      "surfaces_in": "Date profiling and source-quality acceptance rules"
+    },
+    {
+      "title": "Daily and weekly jobs rebuild the same claims payment summary",
+      "causing_condition": "The daily job groups joined payment rows by policy code. The weekly job first aggregates by claim, then groups by policy code. Both rebuild all-history counts and totals, and the report reads both output tables. The equivalent business process can be consolidated into one model.",
+      "locations": [
+        {"file": "etl/scripts/claims_payment_daily.py", "line": 10},
+        {"file": "etl/scripts/claims_payment_weekly.py", "line": 10},
+        {"file": "etl/claims_payment_report.sql", "line": 1},
+        {"file": "etl/crontab", "line": 9}
+      ],
+      "surfaces_in": "Schedule comparison, SQL lineage and model consolidation"
+    }
+  ],
+  "background": [
+    {"id": "INS-01", "title": "Monthly per-agent commission cap applied by a ledger trigger outside COMMISSION_PKG", "scope": "Pre-existing on demo-insurance; outside SFI scope", "answer_key": "estate-keys/demo-insurance.json"},
+    {"id": "INS-02", "title": "Tier rate change takes effect one day late", "scope": "Pre-existing on demo-insurance; outside SFI scope", "answer_key": "estate-keys/demo-insurance.json"},
+    {"id": "INS-03", "title": "Premium tier boundary differs between COMMISSION_PKG and DW_ETL_PKG", "scope": "Pre-existing on demo-insurance; outside SFI scope", "answer_key": "estate-keys/demo-insurance.json"},
+    {"id": "INS-04", "title": "Early-lapse chargeback code and specification disagree", "scope": "Pre-existing on demo-insurance; outside SFI scope", "answer_key": "estate-keys/demo-insurance.json"},
+    {"id": "INS-05", "title": "Commission specification exists only as an image-only scan", "scope": "Pre-existing on demo-insurance; outside SFI scope", "answer_key": "estate-keys/demo-insurance.json"}
+  ]
+}
