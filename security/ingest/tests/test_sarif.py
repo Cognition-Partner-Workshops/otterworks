@@ -50,6 +50,15 @@ def test_clusters(fixture):
         {"repo_name": "owner/one", "host": "github.com"}, {"repo_name": "owner/two", "host": "github.com"}]
 
 
+def test_ingestion_prefers_github_provenance_over_logical_repository():
+    run = {"properties": {"repository": "logical-name"},
+           "versionControlProvenance": [{"repositoryUri": "https://github.com/owner/mono", "branch": "b"}]}
+    plain = {"properties": {"repository": "owner/plain"}}
+    body = di.request_body(ss.document([run, dict(run), plain]), "p", "url")
+    assert body["repos"] == [{"repo_name": "owner/mono", "host": "github.com"},
+                             {"repo_name": "owner/plain", "host": "github.com"}]
+
+
 def test_empty_and_invalid():
     report = ss.document([ss.build_run("owner/repo", "abc", [], {})])
     assert cs.cluster(report) == []
