@@ -47,6 +47,8 @@ def extract(conn, tables, out, token, ttl_hours=24):
     with conn.cursor() as cursor:
         cursor.execute("SET TRANSACTION READ ONLY")
         for table in tables:
+            # SQL identifiers cannot be bound; identifier() allowlists and quotes each part.
+            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
             cursor.execute(f"SELECT * FROM {identifier(table)}")
             rows = cursor.fetchall()
             schema = pa.schema([pa.field(c.name, arrow_type(c, [r[i] for r in rows]))
@@ -107,9 +109,13 @@ def load_duckdb(manifest_path, out, token, prefix="MIGRATION"):
         try:
             for obj in manifest["objects"]:
                 source = str(Path(manifest_path).parent / obj["file"])
+                # Table names are validated; the file path is bound separately.
+                # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
                 conn.execute(f"CREATE TABLE {identifier(obj['name'])} AS SELECT * FROM read_parquet(?)", [source])
                 comment = json.dumps({"token": token, "expires_at": manifest["expires_at"]})
                 escaped = comment.replace("'", "''")
+                # DuckDB comments require a literal; embedded quotes are doubled.
+                # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
                 conn.execute(f"COMMENT ON TABLE {identifier(obj['name'])} IS '{escaped}'")
             conn.execute("COMMIT")
         except Exception:

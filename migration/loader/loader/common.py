@@ -35,4 +35,4 @@ def checksum(path):
 
 
 def literal(value):
-    return "'" + str(value).replace("'", "''") + "'"
+    return "'" + str(value).replace("\\", "\\\\").replace("'", "''") + "'"

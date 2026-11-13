@@ -9,7 +9,7 @@ import oracledb
 import pyarrow as pa
 import pytest
 
-from loader.common import token_name
+from loader.common import identifier, literal, token_name
 from loader.frozen import arrow_type, extract, load_duckdb, validate
 from loader.snowflake import inventory, load, sql_type, teardown
 
@@ -83,6 +83,15 @@ def test_validation_and_types():
         arrow_type(column("N", oracledb.DB_TYPE_NUMBER), [Decimal("1e38"), Decimal("0.1")])
     with pytest.raises(ValueError):
         sql_type(pa.list_(pa.int64()))
+
+
+def test_sql_encoding():
+    assert identifier('PUBLIC.LEDGER') == '"PUBLIC"."LEDGER"'
+    for value in ('ledger;DROP TABLE x', 'ledger" --', '', 'a..b', 'a b', 'a\n--'):
+        with pytest.raises(ValueError, match='identifier'):
+            identifier(value)
+    assert literal("a'b") == "'a''b'"
+    assert literal("\\'") == "'\\\\'''"
 
 
 def test_snowflake_load_sql_only(frozen, monkeypatch):
