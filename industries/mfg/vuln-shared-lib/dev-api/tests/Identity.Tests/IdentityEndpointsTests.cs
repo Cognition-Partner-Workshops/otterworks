@@ -6,7 +6,6 @@ using Identity.Models;
 using Identity.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Platform.Shared.Crypto;
-using Platform.Shared.Crypto;
 
 namespace Identity.Tests;
 
