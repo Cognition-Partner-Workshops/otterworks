@@ -13,14 +13,24 @@ public static class SafeHttp
     private static bool _legacyRedirects;
     private static bool _automaticRedirects;
     private static HttpMessageHandler? _installedHandler;
+    private static string[]? _defaultAllowedHosts;
 
-    /// <summary>Retained for binary compatibility. Validates entries but does not restrict the legacy fixture overload.</summary>
-    public static void ConfigureDefaultAllowedHosts(IEnumerable<string> allowedHosts) => ValidateHosts(allowedHosts);
+    /// <summary>Sets the allowlist enforced by the obsolete fetch overload. Invalid configuration fails closed.</summary>
+    public static void ConfigureDefaultAllowedHosts(IEnumerable<string> allowedHosts)
+    {
+        _defaultAllowedHosts = allowedHosts?.ToArray() ?? Array.Empty<string>();
+        ValidateHosts(_defaultAllowedHosts);
+    }
 
-    /// <summary>Legacy fixture compatibility: unrestricted HTTP fetch and redirects, with no host allowlist. Unsafe for untrusted URLs. Use Fetch(url, allowedHosts).</summary>
+    /// <summary>Uses the configured default or PLATFORM_SHARED_FETCH_ALLOWED_HOSTS allowlist. Only with neither set, preserves unrestricted seeded fetch and redirects. Deprecated for one release; removed in 3.0.0. Use Fetch(url, allowedHosts).</summary>
     [Obsolete("Use Fetch(url, allowedHosts) with an explicit allowlist.")]
     public static async Task<FetchResult> Fetch(string url)
     {
+        var hosts = _defaultAllowedHosts;
+        if (hosts is null && Environment.GetEnvironmentVariable("PLATFORM_SHARED_FETCH_ALLOWED_HOSTS") is { } configured)
+            hosts = configured.Split(',').Select(host => host.Trim()).ToArray();
+        if (hosts is not null)
+            return await Fetch(url, hosts).ConfigureAwait(false);
         ArgumentException.ThrowIfNullOrWhiteSpace(url);
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))

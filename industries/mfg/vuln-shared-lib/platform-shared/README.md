@@ -20,8 +20,9 @@ The consumers compile against these entry points. Changing one of their signatur
 
 ## Version 2 policies
 
-Version 2.0.1 retains the 2.0 additions and restores the actual seeded 1.x behavior of
-the obsolete overloads. Version 2.0.0 was already published with different legacy behavior.
+Version 2.0.2 retains the 2.0 additions. Obsolete overloads honor default or environment
+configuration, falling back to seeded 1.x behavior only when neither is set.
+Versions 2.0.0 and 2.0.1 are already published and immutable.
 
 `SafeHttp.Fetch(url, allowedHosts)` accepts only absolute HTTP or HTTPS URLs without
 userinfo. Entries are exact host names or `host:port`, matched case-insensitively after
@@ -33,11 +34,15 @@ Policy violations throw `SafeHttpPolicyException`, a subclass of `HttpRequestExc
 `FinalUri` is the last fetched URI. The existing response size bound remains in force.
 The allowlist matches host names and does not pin resolved IP addresses; DNS rebinding of an allowlisted name is out of scope, so allowlist only hosts you control.
 
-The obsolete `Fetch(url)` is an unrestricted fetch with the seeded redirect semantics.
-It does not enforce any host allowlist and is unsafe for untrusted URLs. It preserves
-the seeded HTTP(S) validation, response size bound and final URI. The retained
-`ConfigureDefaultAllowedHosts` method validates its argument but no longer changes
-legacy behavior; the environment allowlist is not consulted. Use the explicit overload.
+The obsolete `Fetch(url)` first uses `ConfigureDefaultAllowedHosts` configuration,
+otherwise the comma-separated `PLATFORM_SHARED_FETCH_ALLOWED_HOSTS` environment variable.
+Configured requests use the full explicit policy, including redirect checks. Entries
+from the environment are trimmed; blank or malformed configuration throws and never
+falls back to unrestricted fetching. A rejected default configuration remains denied
+until replaced with a valid allowlist. Only when neither setting is present does it
+perform unrestricted fetches with seeded redirect semantics, HTTP(S) validation,
+response size bound and final URI. That no-config mode is unsafe for untrusted URLs.
+Use the explicit overload.
 For the explicit overload, one total timeout covers all redirects and body reads.
 Reinstalling a used handler is supported. A previously started native handler that
 still enables automatic redirects can be used by the legacy path, but the explicit
@@ -53,14 +58,17 @@ old signatures expire, then remove it. Keys and the list are defensively copied.
 HMAC-SHA256 signatures are unpadded base64url with no key id; the envelope stays
 `v1.<payload>.<sig>`, but old SHA-1 signatures are not accepted.
 
-The obsolete `Sign(payload)` and `Verify(payload, signature)` reproduce seeded HMAC-SHA1
-with the existing compiled synthetic fixture key, byte for byte. This public key is
+The obsolete `Sign(payload)` and `Verify(payload, signature)` first use the provider
+from `ConfigureDefaultKeyProvider`, otherwise `PLATFORM_SHARED_SIGNING_KEY` containing
+base64 or base64url material of at least 32 bytes. Both configured paths use HMAC-SHA256
+and reject seeded HMAC-SHA1 signatures. Malformed environment material throws instead
+of using the seeded key. Only with neither setting present do they reproduce seeded
+HMAC-SHA1 with the existing compiled synthetic fixture key, byte for byte. This public key is
 not a secret and cannot authenticate real users or data. No new legacy key material
 is introduced. The legacy path is retained only for the existing inert demo fixture,
 not for production use; it has no runtime restriction to fixture payloads or hosts.
-`ConfigureDefaultKeyProvider` is retained for binary compatibility and validates its
-argument, but does not affect legacy output. The signing environment variable is not
-consulted. Migrate to explicit providers and HMAC-SHA256 for any real use.
+The obsolete overloads are deprecated for one release and will be removed in 3.0.0.
+Migrate to explicit allowlists and providers for any real use.
 
 `DeviceFingerprint.Compute(userAgent, deviceId)` is deterministic and unkeyed. It hashes
 the UTF-8 prefix `Platform.Shared.DeviceFingerprint.v1` followed by a zero byte, then
@@ -94,7 +102,9 @@ make pack        # pack Platform.Shared.<version>.nupkg into artifacts/feed
 
 From the repository root, `make vsl-pack` does the same pack. Both commands also build
 seeded 1.0.0 directly from `seeded-v1` under ignored `artifacts/seeded` and put both
-versions in the local feed. A shallow checkout fetches that tag if needed. The consumers' `nuget.config` files point at `industries/mfg/vuln-shared-lib/platform-shared/artifacts/feed`, so they restore without a token once the feed is populated.
+versions in the local feed. If the tag is absent, packing uses the locally available
+pinned seeded commit before trying to fetch the tag. `make compat` also tests this
+missing-tag fallback. The consumers' `nuget.config` files point at `industries/mfg/vuln-shared-lib/platform-shared/artifacts/feed`, so they restore without a token once the feed is populated.
 
 ## Packages
 
