@@ -1,0 +1,22 @@
+{
+  "rules": [
+    "R24"
+  ],
+  "steps": [
+    {
+      "call": "resolve_rate",
+      "error": {
+        "code": "ORA-20007",
+        "message": "No rate in force for NOPE/agent default on 2025-06-15"
+      },
+      "inputs": {
+        "p_agent_id": null,
+        "p_as_of": "2025-06-15",
+        "p_product_code": "NOPE"
+      },
+      "sql": "BEGIN :rate_id := commission_pkg.resolve_rate(:p_product_code, :p_agent_id, :p_as_of); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_resolve_rate.py::test_no_rate_in_force_rejected[NOPE-None-as_of1-No rate in force for NOPE/agent default on 2025-06-15]"
+}

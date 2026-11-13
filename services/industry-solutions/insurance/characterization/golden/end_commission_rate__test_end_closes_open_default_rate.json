@@ -1,0 +1,48 @@
+{
+  "rules": [
+    "R10",
+    "R12"
+  ],
+  "steps": [
+    {
+      "call": "end_commission_rate",
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": null,
+        "p_effective_to": "2025-12-31",
+        "p_product_code": "AUTO-STD"
+      },
+      "outputs": {},
+      "sql": "BEGIN commission_pkg.end_commission_rate(:p_product_code, :p_agent_id, :p_effective_to, :p_actor); END;",
+      "writes": {
+        "commission_rates": {
+          "updated": [
+            {
+              "changes": {
+                "effective_to": [
+                  null,
+                  "2025-12-31"
+                ]
+              },
+              "rate_id": 1
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "RATE_END",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 1,
+              "detail": "to=2025-12-31",
+              "policy_id": null,
+              "product_code": "AUTO-STD"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "test": "tests/test_end_commission_rate.py::test_end_closes_open_default_rate"
+}

@@ -1,0 +1,25 @@
+{
+  "rules": [
+    "R9",
+    "R37"
+  ],
+  "steps": [
+    {
+      "call": "upsert_commission_rate",
+      "error": {
+        "code": "ORA-02290",
+        "message": "check constraint (COMMISSION_PAY.CK_RATES_RANGE) violated"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": null,
+        "p_effective_from": "2026-01-01",
+        "p_product_code": "AUTO-STD",
+        "p_rate_pct": "0.001"
+      },
+      "sql": "BEGIN commission_pkg.upsert_commission_rate(:p_product_code, :p_agent_id, :p_rate_pct, :p_effective_from, :p_actor, :o_rate_id); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_upsert_commission_rate.py::test_sub_cent_rate_passes_guard_then_fails_constraint_and_rolls_back"
+}

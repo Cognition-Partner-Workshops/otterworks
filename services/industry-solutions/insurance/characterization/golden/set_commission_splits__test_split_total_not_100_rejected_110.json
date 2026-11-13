@@ -1,0 +1,33 @@
+{
+  "rules": [
+    "R18",
+    "R21",
+    "R38"
+  ],
+  "steps": [
+    {
+      "call": "set_commission_splits",
+      "error": {
+        "code": "ORA-20006",
+        "message": "Split percentages must total 100.00, got 110"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_policy_id": 4,
+        "p_splits": [
+          {
+            "agent_id": 1,
+            "split_pct": "70"
+          },
+          {
+            "agent_id": 2,
+            "split_pct": "40"
+          }
+        ]
+      },
+      "sql": "BEGIN commission_pkg.set_commission_splits(:p_policy_id, :p_splits, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_set_commission_splits.py::test_split_total_not_100_rejected[110]"
+}

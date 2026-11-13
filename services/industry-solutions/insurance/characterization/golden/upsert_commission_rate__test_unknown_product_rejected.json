@@ -1,0 +1,24 @@
+{
+  "rules": [
+    "R2"
+  ],
+  "steps": [
+    {
+      "call": "upsert_commission_rate",
+      "error": {
+        "code": "ORA-20004",
+        "message": "Unknown product: NOPE"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": null,
+        "p_effective_from": "2026-01-01",
+        "p_product_code": "NOPE",
+        "p_rate_pct": "5"
+      },
+      "sql": "BEGIN commission_pkg.upsert_commission_rate(:p_product_code, :p_agent_id, :p_rate_pct, :p_effective_from, :p_actor, :o_rate_id); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_upsert_commission_rate.py::test_unknown_product_rejected"
+}
