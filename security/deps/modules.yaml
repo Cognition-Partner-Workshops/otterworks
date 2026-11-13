@@ -104,6 +104,11 @@ modules:
     cases: null
 
 exempt:
+  - path: industries/mfg/vuln-shared-lib/android-app
+    reason: >
+      Android client fixture with no server-side JVM dependency graph. Resolving it
+      needs the Android SDK, which the dependency build image does not carry.
+
   - path: frontend/client-app/mobile/android
     reason: >
       Capacitor Android shell. Ships no server-side JVM dependencies and needs the

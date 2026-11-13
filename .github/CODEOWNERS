@@ -8,6 +8,7 @@
 /industries/mfg/vuln-shared-lib/dealer-portal/           @Cognition-Partner-Workshops/portal-team
 /industries/mfg/vuln-shared-lib/android-app/             @Cognition-Partner-Workshops/mobile-team
 /.github/workflows/vsl-platform-shared.yml               @Cognition-Partner-Workshops/platform-team
+/.github/workflows/vsl-android-app.yml                   @Cognition-Partner-Workshops/mobile-team
 /industries/mfg/vuln-shared-lib/dev-api/tests/Dealer*   @Cognition-Partner-Workshops/dealer-team
 /industries/mfg/vuln-shared-lib/dev-api/tests/Warranty* @Cognition-Partner-Workshops/warranty-team
 /industries/mfg/vuln-shared-lib/dev-api/tests/Payments* @Cognition-Partner-Workshops/payments-team

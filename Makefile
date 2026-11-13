@@ -632,6 +632,10 @@ lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains
 
 # --- Shared-library remediation estate (industries/mfg/vuln-shared-lib) ---
 VSL_DIR := industries/mfg/vuln-shared-lib
+.PHONY: vsl-android-app-test
+vsl-android-app-test: ## Run the dealer Android consumer unit tests
+	$(MAKE) -C $(VSL_DIR)/android-app test
+
 .PHONY: vsl-dev-api-test
 vsl-dev-api-test: vsl-pack ## Build and test the shared-library API consumer
 	$(MAKE) -C $(VSL_DIR)/dev-api test
