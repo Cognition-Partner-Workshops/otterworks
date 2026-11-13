@@ -1,0 +1,29 @@
+# Trivy evidence: file-service
+Version: 0.71.0
+Vulnerability DB:
+  Version: 2
+  UpdatedAt: 2026-11-13 12:56:33.451543713 +0000 UTC
+  NextUpdate: 2026-11-14 12:56:33.451543367 +0000 UTC
+  DownloadedAt: 2026-11-13 14:00:24.995666652 +0000 UTC
+
+## Cargo.lock before: 14 records, by severity {"HIGH":2,"LOW":6,"MEDIUM":6}
+## Cargo.lock after: 0 records, by severity null
+## image ow-file-service:baseline ImageID sha256:acf09107eeab117482fa579448d33c486e1f244988202043bd6349598bb1927b scanned 2026-11-13T14:05:32.161432243Z: total 422, by severity {"HIGH":122,"LOW":157,"MEDIUM":139,"UNKNOWN":4}
+  os-pkgs ow-file-service:baseline (debian 13.7): 422 (fixable 3)
+## image ow-file-service:after ImageID sha256:80c4ff4c76f2aa176b08ba21130bc415375893ae601c3998ce16bc43ccf1bef9 scanned 2026-11-13T14:14:22.874631074Z: total 422, by severity {"HIGH":122,"LOW":157,"MEDIUM":139,"UNKNOWN":4}
+  os-pkgs ow-file-service:after (debian 13.7): 422 (fixable 3)
+
+## test/lint logs (local)
+### baseline-test
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+### after-test
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+### after-fmt
+### after-clippy
+    Checking aws-config v1.8.15
+    Checking file-service v0.1.0 (/home/ubuntu/wt-file/services/file-service)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 36.35s

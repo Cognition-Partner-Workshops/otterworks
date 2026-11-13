@@ -1,0 +1,74 @@
+
+Report Summary
+
+┌────────────┬───────┬─────────────────┐
+│   Target   │ Type  │ Vulnerabilities │
+├────────────┼───────┼─────────────────┤
+│ Cargo.lock │ cargo │       14        │
+└────────────┴───────┴─────────────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+
+Cargo.lock (cargo)
+==================
+Total: 14 (UNKNOWN: 0, LOW: 6, MEDIUM: 6, HIGH: 2, CRITICAL: 0)
+
+┌───────────────────┬─────────────────────┬──────────┬────────┬───────────────────┬───────────────────────────┬─────────────────────────────────────────────────────────────┐
+│      Library      │    Vulnerability    │ Severity │ Status │ Installed Version │       Fixed Version       │                            Title                            │
+├───────────────────┼─────────────────────┼──────────┼────────┼───────────────────┼───────────────────────────┼─────────────────────────────────────────────────────────────┤
+│ actix-http        │ GHSA-xhj4-vrgc-hr34 │ MEDIUM   │ fixed  │ 3.12.0            │ 3.12.1                    │ actix-http has HTTP/1.1 CL.TE Request Smuggling             │
+│                   │                     │          │        │                   │                           │ https://github.com/advisories/GHSA-xhj4-vrgc-hr34           │
+├───────────────────┼─────────────────────┼──────────┤        ├───────────────────┼───────────────────────────┼─────────────────────────────────────────────────────────────┤
+│ aws-smithy-json   │ CVE-2026-18140      │ HIGH     │        │ 0.62.5            │ 0.62.7                    │ aws-smithy-json: aws-smithy-json: Denial of Service via     │
+│                   │                     │          │        │                   │                           │ uncontrolled recursion with deeply nested JSON...           │
+│                   │                     │          │        │                   │                           │ https://avd.aquasec.com/nvd/cve-2026-18140                  │
+├───────────────────┼─────────────────────┼──────────┤        ├───────────────────┼───────────────────────────┼─────────────────────────────────────────────────────────────┤
+│ opentelemetry_sdk │ CVE-2026-48504      │ MEDIUM   │        │ 0.21.2            │ 0.32.1                    │ opentelemetry_sdk has unbounded memory allocation in W3C    │
+│                   │                     │          │        │                   │                           │ Baggage propagation                                         │
+│                   │                     │          │        │                   │                           │ https://avd.aquasec.com/nvd/cve-2026-48504                  │
+├───────────────────┼─────────────────────┤          │        ├───────────────────┼───────────────────────────┼─────────────────────────────────────────────────────────────┤
+│ protobuf          │ CVE-2025-53605      │          │        │ 2.28.0            │ 3.7.2                     │ protobuf: Protobuf: Uncontrolled Recursion Vulnerability    │
+│                   │                     │          │        │                   │                           │ https://avd.aquasec.com/nvd/cve-2025-53605                  │
+├───────────────────┼─────────────────────┤          │        ├───────────────────┼───────────────────────────┼─────────────────────────────────────────────────────────────┤
+│ rustls            │ GHSA-c8m5-c952-6cm4 │          │        │ 0.21.12           │ 0.23.46, 0.24.0-dev.2     │ Rustls: Session Debug formatting exposes TLS master secrets │
+│                   │                     │          │        │                   │                           │ and resumption PSKs                                         │
+│                   │                     │          │        │                   │                           │ https://github.com/advisories/GHSA-c8m5-c952-6cm4           │
+│                   ├─────────────────────┼──────────┤        │                   │                           ├─────────────────────────────────────────────────────────────┤
+│                   │ GHSA-h2v8-394m-p7vv │ LOW      │        │                   │                           │ Rustls: Brotli certificate decompression can allocate an    │
+│                   │                     │          │        │                   │                           │ attacker-controlled amount of memory up...                  │
+│                   │                     │          │        │                   │                           │ https://github.com/advisories/GHSA-h2v8-394m-p7vv           │
+│                   ├─────────────────────┤          │        │                   │                           ├─────────────────────────────────────────────────────────────┤
+│                   │ GHSA-w44r-93j7-qv28 │          │        │                   │                           │ rustls: An unauthenticated ServerHello poisons the per-name │
+│                   │                     │          │        │                   │                           │ key-exchange record, so later ClientHellos...               │
+│                   │                     │          │        │                   │                           │ https://github.com/advisories/GHSA-w44r-93j7-qv28           │
+│                   ├─────────────────────┼──────────┤        ├───────────────────┼───────────────────────────┼─────────────────────────────────────────────────────────────┤
+│                   │ GHSA-2mjx-qc3c-rqvc │ MEDIUM   │        │ 0.23.38           │ 0.23.45                   │ Rustls: TLS 1.3 handshake messages incorrectly accepted     │
+│                   │                     │          │        │                   │                           │ across encryption level boundaries                          │
+│                   │                     │          │        │                   │                           │ https://github.com/advisories/GHSA-2mjx-qc3c-rqvc           │
+│                   ├─────────────────────┤          │        │                   ├───────────────────────────┼─────────────────────────────────────────────────────────────┤
+│                   │ GHSA-c8m5-c952-6cm4 │          │        │                   │ 0.23.46, 0.24.0-dev.2     │ Rustls: Session Debug formatting exposes TLS master secrets │
+│                   │                     │          │        │                   │                           │ and resumption PSKs                                         │
+│                   │                     │          │        │                   │                           │ https://github.com/advisories/GHSA-c8m5-c952-6cm4           │
+│                   ├─────────────────────┼──────────┤        │                   │                           ├─────────────────────────────────────────────────────────────┤
+│                   │ GHSA-h2v8-394m-p7vv │ LOW      │        │                   │                           │ Rustls: Brotli certificate decompression can allocate an    │
+│                   │                     │          │        │                   │                           │ attacker-controlled amount of memory up...                  │
+│                   │                     │          │        │                   │                           │ https://github.com/advisories/GHSA-h2v8-394m-p7vv           │
+│                   ├─────────────────────┤          │        │                   │                           ├─────────────────────────────────────────────────────────────┤
+│                   │ GHSA-w44r-93j7-qv28 │          │        │                   │                           │ rustls: An unauthenticated ServerHello poisons the per-name │
+│                   │                     │          │        │                   │                           │ key-exchange record, so later ClientHellos...               │
+│                   │                     │          │        │                   │                           │ https://github.com/advisories/GHSA-w44r-93j7-qv28           │
+├───────────────────┼─────────────────────┼──────────┤        ├───────────────────┼───────────────────────────┼─────────────────────────────────────────────────────────────┤
+│ rustls-webpki     │ GHSA-82j2-j2ch-gfr8 │ HIGH     │        │ 0.101.7           │ 0.103.13, 0.104.0-alpha.7 │ rustls-webpki: Denial of service via panic on malformed CRL │
+│                   │                     │          │        │                   │                           │ BIT STRING                                                  │
+│                   │                     │          │        │                   │                           │ https://github.com/advisories/GHSA-82j2-j2ch-gfr8           │
+│                   ├─────────────────────┼──────────┤        │                   ├───────────────────────────┼─────────────────────────────────────────────────────────────┤
+│                   │ GHSA-965h-392x-2mh5 │ LOW      │        │                   │ 0.103.12, 0.104.0-alpha.6 │ webpki: Name constraints for URI names were incorrectly     │
+│                   │                     │          │        │                   │                           │ accepted                                                    │
+│                   │                     │          │        │                   │                           │ https://github.com/advisories/GHSA-965h-392x-2mh5           │
+│                   ├─────────────────────┤          │        │                   │                           ├─────────────────────────────────────────────────────────────┤
+│                   │ GHSA-xgp8-3hg3-c2mh │          │        │                   │                           │ webpki: Name constraints were accepted for certificates     │
+│                   │                     │          │        │                   │                           │ asserting a wildcard name                                   │
+│                   │                     │          │        │                   │                           │ https://github.com/advisories/GHSA-xgp8-3hg3-c2mh           │
+└───────────────────┴─────────────────────┴──────────┴────────┴───────────────────┴───────────────────────────┴─────────────────────────────────────────────────────────────┘
