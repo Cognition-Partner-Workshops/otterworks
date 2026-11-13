@@ -7,6 +7,7 @@ namespace Payments.Tests;
 public sealed class FetchPolicyRegressionTests
 {
     [Theory]
+    [Trait("Category","Security")]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("https://malformed.example/")]
