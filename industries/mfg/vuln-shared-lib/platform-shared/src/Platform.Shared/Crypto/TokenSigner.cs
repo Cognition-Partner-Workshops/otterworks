@@ -9,20 +9,17 @@ namespace Platform.Shared.Crypto;
 /// </summary>
 public static class TokenSigner
 {
-    private static byte[] SigningKey =>
-        Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("PLATFORM_SIGNING_KEY")
-            ?? throw new InvalidOperationException("PLATFORM_SIGNING_KEY is not set."));
-
-    /// <summary>Returns the base64url signature of <paramref name="payload"/>.</summary>
-    public static string Sign(string payload)
+    /// <summary>Returns the base64url HMAC-SHA256 signature of <paramref name="payload"/>.</summary>
+    public static string Sign(string payload, ISigningKeyProvider keys)
     {
         ArgumentNullException.ThrowIfNull(payload);
-        using var hmac = new HMACSHA256(SigningKey);
+        ArgumentNullException.ThrowIfNull(keys);
+        using var hmac = new HMACSHA256(keys.CurrentKey);
         return Base64Url.Encode(hmac.ComputeHash(Encoding.UTF8.GetBytes(payload)));
     }
 
     /// <summary>Checks <paramref name="signature"/> against <paramref name="payload"/> in constant time.</summary>
-    public static bool Verify(string payload, string signature)
+    public static bool Verify(string payload, string signature, ISigningKeyProvider keys)
     {
         ArgumentNullException.ThrowIfNull(payload);
         if (string.IsNullOrEmpty(signature))
@@ -30,7 +27,7 @@ public static class TokenSigner
             return false;
         }
 
-        var expected = Encoding.ASCII.GetBytes(Sign(payload));
+        var expected = Encoding.ASCII.GetBytes(Sign(payload, keys));
         var actual = Encoding.ASCII.GetBytes(signature);
         return CryptographicOperations.FixedTimeEquals(expected, actual);
     }
