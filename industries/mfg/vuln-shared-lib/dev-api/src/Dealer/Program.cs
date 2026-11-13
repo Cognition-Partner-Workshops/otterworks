@@ -20,7 +20,8 @@ public partial class Program
         builder.Services.AddSingleton<InventoryRepository>();
         builder.Services.AddSingleton<ExportLinkSigner>();
         builder.Services.AddSingleton<PriceBulletinService>();
-        builder.Services.AddHttpClient("images");
+        builder.Services.AddHttpClient("images")
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
         var app = builder.Build();
         _ = app.Services.GetRequiredService<ISigningKeyProvider>();
         app.Services.GetRequiredService<InventoryRepository>().Initialize();

@@ -56,8 +56,13 @@ public sealed class DealerOperationsController(
     [HttpGet("exports/files")]
     public IActionResult FileByName(string name)
     {
+        if (string.IsNullOrWhiteSpace(name) || name != Path.GetFileName(name) ||
+            name.Contains('/') || name.Contains('\\') || name is "." or "..")
+            return BadRequest();
         try
         {
+            if (new FileInfo(Path.Combine(ExportRoot, name)).LinkTarget is not null)
+                return BadRequest();
             return File(System.IO.File.OpenRead(Path.Combine(ExportRoot, name)), "text/csv", Path.GetFileName(name));
         }
         catch (FileNotFoundException) { return NotFound(); }
@@ -66,11 +71,13 @@ public sealed class DealerOperationsController(
     [HttpGet("images/proxy")]
     public async Task<IActionResult> Image(string url)
     {
-        if (string.IsNullOrWhiteSpace(url))
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var imageUri) ||
+            imageUri.Scheme != Uri.UriSchemeHttps || imageUri.Host != "images.dealer.example" ||
+            !imageUri.IsDefaultPort || imageUri.UserInfo.Length != 0)
             return BadRequest();
         try
         {
-            using var response = await clients.CreateClient("images").GetAsync(url);
+            using var response = await clients.CreateClient("images").GetAsync(imageUri);
             if (!response.IsSuccessStatusCode)
                 return StatusCode(502);
             return File(await response.Content.ReadAsByteArrayAsync(),
