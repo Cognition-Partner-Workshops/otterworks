@@ -23,6 +23,10 @@ public sealed class PortalFactory : WebApplicationFactory<Program>
     {
         _settings = new Dictionary<string, string?>
         {
+            ["Platform:Signing:CurrentKeyId"] = "vsl-synthetic-test",
+            ["Platform:Signing:Keys:0:Id"] = "vsl-synthetic-test",
+            ["Platform:Signing:Keys:0:Material"] = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(SyntheticSigning.VslSyntheticSigningKey)),
+            ["Portal:NoticeFeedAllowedHosts:0"] = "bulletins.oem.example",
             ["Portal:DevApiBaseUrl"] = "http://dev-api.test",
             ["Portal:NoticeFeedUrl"] = "https://bulletins.oem.example/dealer-notices.json",
             ["Portal:SecureCookie"] = "true",

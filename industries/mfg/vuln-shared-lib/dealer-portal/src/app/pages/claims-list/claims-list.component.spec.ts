@@ -41,7 +41,17 @@ describe('ClaimsListComponent', () => {
     api.claims.and.returnValue(of(CLAIMS));
     const el = await render();
     const description = el.querySelector('[data-testid="claim-row"] .description') as HTMLElement;
-    expect(description.innerHTML).toBe('Rattle at idle<br>Worse when cold');
+    expect(description.textContent).toBe('Rattle at idle\nWorse when cold');
+    expect(getComputedStyle(description).whiteSpace).toBe('pre-line');
+  });
+
+  it('renders claim markup as literal text without image elements', async () => {
+    const description = '<img src=x onerror="window.__xss=1">Bad';
+    api.claims.and.returnValue(of([{ ...CLAIMS[0], description }]));
+    const el = await render();
+    const cell = el.querySelector('.description') as HTMLElement;
+    expect(cell.querySelector('img')).toBeNull();
+    expect(cell.textContent).toContain(description);
   });
 
   it('shows an empty state', async () => {

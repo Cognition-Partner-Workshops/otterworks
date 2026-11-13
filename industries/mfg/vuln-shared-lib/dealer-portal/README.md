@@ -29,7 +29,18 @@ Owned by `portal-team`.
 | `GET /bff/claims`, `POST /bff/claims` | `GET/POST /api/warranty/claims` |
 | `GET /bff/notices` | `Portal:NoticeFeedUrl` |
 
-Configuration lives under `Portal` in `bff/src/DealerPortal.Bff/appsettings.json` and can be overridden with environment variables (`Portal__DevApiBaseUrl`, `Portal__NoticeFeedUrl`, `Portal__StaticRoot`, `Portal__ClientKey`, `Portal__SecureCookie`).
+Configuration lives under `Portal` in `bff/src/DealerPortal.Bff/appsettings.json` and can be overridden with environment variables (`Portal__DevApiBaseUrl`, `Portal__NoticeFeedUrl`, `Portal__StaticRoot`, `Portal__SecureCookie`).
+
+The BFF requires externally configured signing keys at startup. Set
+`Platform__Signing__CurrentKeyId`, `Platform__Signing__Keys__0__Id`, and
+`Platform__Signing__Keys__0__Material` (base64 of at least 32 bytes). Previous keys
+can remain in `Keys__1` during rotation until old sessions expire. Missing or invalid
+keys stop startup. Do not commit key material to appsettings files. Tests supply
+synthetic keys through their host configuration.
+
+`Portal:NoticeFeedAllowedHosts` supplies the explicit host allowlist for notice URLs
+and redirects. Only allow controlled hosts; use `host:port` for nondefault ports.
+The existing notice error response stays 502 for policy rejection.
 
 The BFF uses `Platform.Shared`:
 

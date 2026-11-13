@@ -118,6 +118,35 @@ public sealed class DealerEndpointsTests : IDisposable
         Assert.Equal("https://bulletins.oem.example/dealer-notices.json", _factory.Upstream.Requests[^1].RequestUri!.ToString());
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Notices_BlockedHostOrRedirectNeverSends(bool redirect)
+    {
+        using var factory = new PortalFactory(redirect ? null : new Dictionary<string, string?>
+        {
+            ["Portal:NoticeFeedUrl"] = "https://blocked.example/dealer-notices.json"
+        });
+        if (redirect) factory.Upstream.NoticeRedirect = new Uri("https://blocked.example/dealer-notices.json");
+        using var client = await factory.SignedInClientAsync();
+        Assert.Equal(HttpStatusCode.BadGateway, (await client.GetAsync("/bff/notices")).StatusCode);
+        Assert.DoesNotContain(factory.Upstream.Requests, request => request.RequestUri!.Host == "blocked.example");
+        Assert.Equal(redirect ? 1 : 0, factory.Upstream.Requests.Count(request => request.RequestUri!.Host == "bulletins.oem.example"));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("https://malformed.example/")]
+    public async Task Notices_MissingEmptyOrMalformedAllowlistIsBadGateway(string? host)
+    {
+        using var factory = new PortalFactory(new() { ["Portal:NoticeFeedAllowedHosts:0"] = host });
+        using var client = await factory.SignedInClientAsync();
+        factory.Upstream.Requests.Clear();
+        Assert.Equal(HttpStatusCode.BadGateway, (await client.GetAsync("/bff/notices")).StatusCode);
+        Assert.Empty(factory.Upstream.Requests);
+    }
+
     [Fact]
     public async Task Notices_MalformedFeedIsBadGateway()
     {

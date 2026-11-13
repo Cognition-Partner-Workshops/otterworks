@@ -1,33 +1,6 @@
-using System.Security.Cryptography;
-using System.Text;
 using DealerPortal.Bff.Session;
-using Microsoft.Extensions.Options;
 
 namespace DealerPortal.Bff.Endpoints;
-
-public sealed class PortalKeyFilter : IEndpointFilter
-{
-    public const string Header = "X-Portal-Key";
-
-    private readonly byte[] _expected;
-
-    public PortalKeyFilter(IOptions<PortalOptions> options) =>
-        _expected = Encoding.UTF8.GetBytes(options.Value.ClientKey);
-
-    public ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
-    {
-        if (_expected.Length > 0)
-        {
-            var supplied = Encoding.UTF8.GetBytes(context.HttpContext.Request.Headers[Header].ToString());
-            if (!CryptographicOperations.FixedTimeEquals(_expected, supplied))
-            {
-                return ValueTask.FromResult<object?>(Results.Unauthorized());
-            }
-        }
-
-        return next(context);
-    }
-}
 
 public sealed class SessionFilter : IEndpointFilter
 {
