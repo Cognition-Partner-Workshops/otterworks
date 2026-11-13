@@ -12,7 +12,7 @@ dotnet restore "$work/consumer/Consumer.csproj" --source "$work/feed" --packages
 dotnet build "$work/consumer/Consumer.csproj" --no-restore -c Release
 dotnet build "$library/src/Platform.Shared/Platform.Shared.csproj" -c Release
 cp "$work/seed/industries/mfg/vuln-shared-lib/platform-shared/src/Platform.Shared/bin/Release/net8.0/Platform.Shared.dll" "$work/consumer/bin/Release/net8.0/Platform.Shared.dll"
-dotnet "$work/consumer/bin/Release/net8.0/Consumer.dll"
+dotnet "$work/consumer/bin/Release/net8.0/Consumer.dll" --seeded
 cp "$library/src/Platform.Shared/bin/Release/net8.0/Platform.Shared.dll" "$work/consumer/bin/Release/net8.0/Platform.Shared.dll"
 unset PLATFORM_SHARED_FETCH_ALLOWED_HOSTS PLATFORM_SHARED_SIGNING_KEY
 dotnet "$work/consumer/bin/Release/net8.0/Consumer.dll"

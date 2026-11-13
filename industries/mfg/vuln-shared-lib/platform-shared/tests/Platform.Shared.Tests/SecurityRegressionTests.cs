@@ -37,21 +37,21 @@ public class SecurityRegressionTests : IDisposable
 
     [Fact]
     [Trait("Category", "Security")]
-    public void LegacySigning_PreservesSeededSha1()
+    public void LegacySigning_WithoutProviderFailsClosed()
     {
-        Assert.Equal(20, Base64Url.Decode(TokenSigner.Sign("vsl-synthetic-payload")).Length);
-        Assert.Equal("DT8y6tTXY-DXVtp48b5aWm_4rTc", TokenSigner.Sign("vsl-synthetic-compat"));
-        Assert.True(TokenSigner.Verify("vsl-synthetic-compat", "DT8y6tTXY-DXVtp48b5aWm_4rTc"));
+        Assert.Throws<InvalidOperationException>(() => TokenSigner.Sign("vsl-synthetic-payload"));
+        Assert.Throws<InvalidOperationException>(() => TokenSigner.Verify("vsl-synthetic-compat", "DT8y6tTXY-DXVtp48b5aWm_4rTc"));
+        Assert.Throws<InvalidOperationException>(() => TokenSigner.Verify("vsl-synthetic-compat", ""));
     }
 
     [Fact]
     [Trait("Category", "Security")]
-    public async Task LegacyFetch_PreservesUnrestrictedFixture()
+    public async Task LegacyFetch_WithoutPolicyFailsClosed()
     {
         var stub = new StubHandler(_ => StubHandler.Ok("blocked"));
         SafeHttp.UseHandler(stub);
-        Assert.True((await SafeHttp.Fetch("https://blocked.example/")).IsSuccess);
-        Assert.Single(stub.Requests);
+        await Assert.ThrowsAsync<SafeHttpPolicyException>(() => SafeHttp.Fetch("https://blocked.example/"));
+        Assert.Empty(stub.Requests);
     }
 
     [Theory]

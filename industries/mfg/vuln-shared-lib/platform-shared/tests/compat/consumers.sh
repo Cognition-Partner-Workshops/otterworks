@@ -17,6 +17,6 @@ for i in "${!assemblies[@]}"; do
     cp "${assemblies[$i]}" "$work/$i.dll"
     cp "$library/src/Platform.Shared/bin/Release/net8.0/Platform.Shared.dll" "${assemblies[$i]}"
 done
-echo "Unmigrated consumers compiled against 1.0.0, executing with the new Platform.Shared DLL:"
+echo "Consumer suites compiled against their pinned package, executing with the new Platform.Shared DLL:"
 dotnet test "$estate/dev-api/DevApi.sln" --no-build --no-restore -c Release
 dotnet test "$estate/dealer-portal/bff/DealerPortal.Bff.sln" --no-build --no-restore -c Release
