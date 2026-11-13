@@ -37,7 +37,7 @@ public sealed class ClaimImportBatch
     public List<ClaimImportItem> Items { get; set; } = [];
 }
 
-public abstract class ClaimImportItem
+public class ClaimImportItem
 {
     public string Vin { get; set; } = "";
     public string Description { get; set; } = "";
