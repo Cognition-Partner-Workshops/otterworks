@@ -636,5 +636,13 @@ VSL_DIR := industries/mfg/vuln-shared-lib
 vsl-android-app-test: ## Run the dealer Android consumer unit tests
 	$(MAKE) -C $(VSL_DIR)/android-app test
 
+.PHONY: vsl-dev-api-test
+vsl-dev-api-test: vsl-pack ## Build and test the shared-library API consumer
+	$(MAKE) -C $(VSL_DIR)/dev-api test
+
 vsl-pack: ## Pack Platform.Shared into the repository-local feed the vuln-shared-lib consumers restore from
 	$(MAKE) -C $(VSL_DIR)/platform-shared pack
+
+.PHONY: vsl-dealer-portal-test
+vsl-dealer-portal-test: ## Run the dealer portal unit and BFF tests (run make vsl-pack first)
+	$(MAKE) -C $(VSL_DIR)/dealer-portal test

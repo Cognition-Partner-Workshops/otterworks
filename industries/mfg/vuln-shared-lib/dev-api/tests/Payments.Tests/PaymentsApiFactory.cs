@@ -1,0 +1,78 @@
+using System.Net;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Payments.Models;
+using Payments.Repositories;
+using Platform.Shared.Http;
+
+namespace Payments.Tests;
+
+public sealed class PaymentsApiFactory : WebApplicationFactory<Payments.Program>
+{
+    private readonly SqliteConnection connection = new("Data Source=:memory:");
+    public PaymentTransport Transport { get; } = new();
+
+    public PaymentsApiFactory()
+    {
+        connection.Open();
+    }
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<DbContextOptions<PaymentsContext>>();
+            services.AddDbContext<PaymentsContext>(options => options.UseSqlite(connection));
+            services.AddHttpClient("webhooks").ConfigurePrimaryHttpMessageHandler(() => Transport);
+        });
+    }
+
+    public void Seed()
+    {
+        using var scope = Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+        context.Settlements.AddRange(
+            new Settlement { Id = 1, DealerId = "D-1001", Reference = "ST-1001", AmountCents = 10000 },
+            new Settlement { Id = 2, DealerId = "D-2001", Reference = "ST-2001", AmountCents = 5000 });
+        context.Refunds.Add(new Refund { Id = 1, SettlementId = 1, DealerId = "D-1001", AmountCents = 1000, Reason = "Parts return" });
+        context.SaveChanges();
+        SafeHttp.UseHandler(Transport);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (disposing)
+        {
+            connection.Dispose();
+        }
+    }
+}
+
+public sealed class PaymentTransport : HttpMessageHandler
+{
+    public HttpStatusCode Status { get; set; } = HttpStatusCode.OK;
+    public string Statement { get; set; } = """[{"reference":"REM-1001","amountCents":12000}]""";
+    public string? Signature { get; private set; }
+    public string? Body { get; private set; }
+    public Uri? Destination { get; private set; }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        Destination = request.RequestUri;
+        if (request.Method == HttpMethod.Post)
+        {
+            Signature = request.Headers.GetValues("X-Payments-Signature").Single();
+            Body = await request.Content!.ReadAsStringAsync(cancellationToken);
+        }
+        return new HttpResponseMessage(Status)
+        {
+            RequestMessage = request,
+            Content = new StringContent(Statement)
+        };
+    }
+}

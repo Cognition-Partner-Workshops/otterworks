@@ -9,3 +9,14 @@
 /industries/mfg/vuln-shared-lib/android-app/             @Cognition-Partner-Workshops/mobile-team
 /.github/workflows/vsl-platform-shared.yml               @Cognition-Partner-Workshops/platform-team
 /.github/workflows/vsl-android-app.yml                   @Cognition-Partner-Workshops/mobile-team
+/industries/mfg/vuln-shared-lib/dev-api/tests/Dealer*   @Cognition-Partner-Workshops/dealer-team
+/industries/mfg/vuln-shared-lib/dev-api/tests/Warranty* @Cognition-Partner-Workshops/warranty-team
+/industries/mfg/vuln-shared-lib/dev-api/tests/Payments* @Cognition-Partner-Workshops/payments-team
+/industries/mfg/vuln-shared-lib/dev-api/tests/Identity* @Cognition-Partner-Workshops/identity-team
+/industries/mfg/vuln-shared-lib/dev-api/Directory.Build.props  @Cognition-Partner-Workshops/platform-team
+/industries/mfg/vuln-shared-lib/dev-api/Directory.Packages.props  @Cognition-Partner-Workshops/platform-team
+/industries/mfg/vuln-shared-lib/dev-api/nuget.config           @Cognition-Partner-Workshops/platform-team
+/industries/mfg/vuln-shared-lib/dev-api/DevApi.sln             @Cognition-Partner-Workshops/platform-team
+/industries/mfg/vuln-shared-lib/dev-api/Makefile               @Cognition-Partner-Workshops/platform-team
+/industries/mfg/vuln-shared-lib/dev-api/azure-pipelines.yml  @Cognition-Partner-Workshops/platform-team
+/.github/workflows/vsl-dev-api.yml                       @Cognition-Partner-Workshops/platform-team

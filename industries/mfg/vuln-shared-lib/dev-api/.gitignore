@@ -1,0 +1,6 @@
+bin/
+obj/
+.nuget/
+TestResults/
+data/
+*.user

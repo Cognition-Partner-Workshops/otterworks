@@ -1,0 +1,16 @@
+@model Dealer.Models.StickerModel
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8" /><title>@Model.Vehicle.Model window sticker</title></head>
+<body>
+    <main>
+        <h1>@Model.Vehicle.Year @Model.Vehicle.Model</h1>
+        <dl>
+            <dt>VIN</dt><dd>@Model.Vehicle.Vin</dd>
+            <dt>Status</dt><dd>@Model.Vehicle.Status</dd>
+            <dt>Price</dt><dd>@((Model.Vehicle.PriceCents / 100m).ToString("C"))</dd>
+        </dl>
+        <section aria-label="Dealer note">@Html.Raw(Model.Note)</section>
+    </main>
+</body>
+</html>
