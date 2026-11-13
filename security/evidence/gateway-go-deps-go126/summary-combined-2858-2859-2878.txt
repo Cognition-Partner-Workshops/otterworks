@@ -1,0 +1,3 @@
+ow-gw:combined (alpine 3.24.4) [os-pkgs] 0
+app/server [lang-pkgs] 0
+total=0 CRITICAL=0 HIGH=0 MEDIUM=0 LOW=0 UNKNOWN=0

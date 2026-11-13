@@ -1,0 +1,26 @@
+{
+  "SchemaVersion": 2,
+  "ArtifactName": "ow-gw:combined",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "ImageID": "sha256:d8ae46f09893d9586731df8d305c02a4057f596a9d489b032a1b4482f137eb80",
+    "OS": {
+      "Family": "alpine",
+      "Name": "3.24.4"
+    }
+  },
+  "Results": [
+    {
+      "Target": "ow-gw:combined (alpine 3.24.4)",
+      "Class": "os-pkgs",
+      "Type": "alpine",
+      "Vulnerabilities": []
+    },
+    {
+      "Target": "app/server",
+      "Class": "lang-pkgs",
+      "Type": "gobinary",
+      "Vulnerabilities": []
+    }
+  ]
+}

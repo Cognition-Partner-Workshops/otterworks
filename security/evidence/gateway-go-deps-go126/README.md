@@ -26,3 +26,27 @@ reduced to identifiers; `summary-*.txt` are the counts; `trivy-version.txt` has 
 ImageIDs: baseline `sha256:bd9d8d4a75d073cad804673b8b4e725b0309b7194e82d4de1ba6f82f690ec0bf`,
 toolchain-only `sha256:05436088435aa31d9f73baff1ecf1fbfd44c48f5d1e9f844e9ae0cfc7f9e0a44`,
 after `sha256:6ad85ee087f04a5d6c1b35edc8638ed5fbbedc1f02a88a0ec48ff08c7c34e4fe`.
+
+## Combined check: #2858 builder + #2859 runtime + this PR's modules
+
+`Dockerfile.combined-2858-2859-2878` is a temporary, evidence-only Dockerfile (not used by CI/CD).
+Its builder stage is the same as #2858's; its runtime stage is the same as #2859's
+(`alpine:3.24@sha256:f59abe65...`, `apk upgrade`). It was built from this branch's
+`services/api-gateway` and scanned with the same Trivy 0.71.0 / DB 2026-11-13 12:56:33 UTC:
+
+```sh
+docker build -f Dockerfile.combined-2858-2859-2878 -t ow-gw:combined services/api-gateway
+trivy image --image-src docker --scanners vuln --ignorefile /dev/null --no-progress \
+  --format json --output combined.json ow-gw:combined
+```
+
+| Target | Records |
+|---|---:|
+| `ow-gw:combined (alpine 3.24.4)` os-pkgs | 0 |
+| `app/server` gobinary (stdlib + third-party) | 0 |
+| **Full image** | **0** (CRITICAL 0, HIGH 0, MEDIUM 0, LOW 0, UNKNOWN 0) |
+
+ImageID `sha256:d8ae46f09893d9586731df8d305c02a4057f596a9d489b032a1b4482f137eb80`.
+`/health` returned HTTP 200 `{"status":"healthy","version":"0.1.0"}` (run with a local-only
+`JWT_SECRET`); `go vet ./...` and `go test ./...` passed on the Go 1.26 builder image.
+This is a local build. It does not prove what is deployed in ECR.
