@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "warehouse-parity"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["PyYAML>=6,<7", "duckdb>=1.4,<2"]
+
+[project.optional-dependencies]
+oracle = ["oracledb>=3.4,<5"]
+snowflake = ["snowflake-connector-python>=3.17,<5"]
+dev = ["pytest>=8,<9", "ruff==0.9.10"]
+
+[tool.setuptools.packages.find]
+include = ["parity*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
