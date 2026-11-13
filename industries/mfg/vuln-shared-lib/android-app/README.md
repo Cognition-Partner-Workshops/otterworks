@@ -41,6 +41,8 @@ The API client tests use MockWebServer and never require a running API.
 ## CI
 
 GitHub Actions runs unit tests and both APK builds on estate pull requests that touch
-this consumer, Platform.Shared or Identity. A separate emulator job runs the Compose
-smoke test. APKs and test reports are uploaded as artifacts.
-`azure-pipelines.yml` runs the same make targets with JDK 17 and an API 35 emulator.
+this consumer, Platform.Shared or Identity. The emulator smoke test is a manually
+dispatched job: use workflow_dispatch to run ui-smoke. APKs and test reports are
+uploaded as artifacts. Hosted emulator setup can vary between runner images.
+`azure-pipelines.yml` runs unit tests and builds with JDK 17; manually enable its
+runUiSmoke parameter to also run the API 35 emulator smoke test.

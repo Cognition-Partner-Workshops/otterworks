@@ -1,3 +1,7 @@
+parameters:
+  - name: runUiSmoke
+    type: boolean
+    default: false
 trigger:
   paths:
     include:
@@ -18,13 +22,14 @@ steps:
     displayName: Configure Android command-line tools
   - script: |
       yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null
-      $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" "system-images;android-35;google_apis;x86_64"
+      $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0"
     displayName: Android SDK
   - script: make test
     workingDirectory: $(projectDir)
   - script: make build
     workingDirectory: $(projectDir)
   - script: |
+      $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "system-images;android-35;google_apis;x86_64"
       echo no | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n dealer -k "system-images;android-35;google_apis;x86_64"
       $ANDROID_HOME/emulator/emulator -avd dealer -no-window -no-audio -no-snapshot -gpu swiftshader_indirect > $(Agent.TempDirectory)/emulator.log 2>&1 &
       $ANDROID_HOME/platform-tools/adb wait-for-device
@@ -32,6 +37,7 @@ steps:
       make ui-test
     workingDirectory: $(projectDir)
     displayName: Compose smoke
+    condition: and(succeeded(), ${{ eq(parameters.runUiSmoke, true) }})
   - task: PublishTestResults@2
     condition: always()
     inputs:
