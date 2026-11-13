@@ -274,3 +274,34 @@ def test_exact_line_provenance_uses_oldest_addition(monkeypatch):
     assert rows[0]['added_commit'] == 'oldest'
     assert '--reverse' in calls[0] and '--diff-filter=AM' in calls[0]
     assert '-SCVE-2020-1 exp:2027-01-01' in calls[0]
+
+
+def test_weekly_summary_counts_distinct_alerts():
+    import weekly_refresh as weekly
+
+    rows = [dict(kind='dismissed', path='', line=None, id='CVE-1', security=True,
+                 flags=['NO_REASON'], alert={'number': number}) for number in [1, 2]]
+    pack = dict(exceptions=rows, sha='head', branch='demo', generated_at='now',
+                metrics={'dependabot': [dict(severity='critical', past_sla=1, sla_days=7,
+                                             open={'n': 2, 'median_days': 8})]},
+                wide_scan={'clusters': []}, advisory_exposure={'verdict': 'inconclusive'})
+    status = {key: {'exit_code': 0} for key in ['live_check', 'deps_inventory', 'deps_gate']}
+    status['wide_scan'] = {'dispatch': {'exit_code': 1}, 'collection_error': 'unavailable'}
+    rendered = weekly.summary(pack, status, {'exceptions': rows[:1]})
+    assert 'Flagged exceptions: 2; new identities vs last committed pack: 1.' in rendered
+    assert 'Wide scan limitation: unavailable' in rendered
+    assert len(rendered.splitlines()) <= 40
+    pack['exceptions'] = []
+    rendered = weekly.summary(pack, status, {})
+    assert 'Lead exception: none.' in rendered
+    assert 'Flagged exceptions: 0; new identities vs last committed pack: not computable.' in rendered
+
+
+def test_weekly_dispatch_failure_is_recorded(monkeypatch, tmp_path):
+    import weekly_refresh as weekly
+
+    monkeypatch.setattr(weekly, 'gh_json', lambda args: [])
+    monkeypatch.setattr(weekly, 'run_step', lambda *args: {'exit_code': 1})
+    result = weekly.wide_scan('demo', tmp_path)
+    assert result['dispatch']['exit_code'] == 1
+    assert 'watch' not in result and 'download' not in result

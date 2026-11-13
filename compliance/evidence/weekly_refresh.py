@@ -90,8 +90,11 @@ def wide_scan(branch, out):
 def summary(pack, status, baseline):
     actions = repo_actions(pack['exceptions'])
     lead = actions[0] if actions else None
-    before = {(e['kind'], e['path'], e['id']) for e in baseline.get('exceptions', []) if e['flags']}
-    after = {(e['kind'], e['path'], e['id']) for e in pack['exceptions'] if e['flags']}
+    def identity(entry):
+        return entry['kind'], entry['path'], entry['line'], entry['id'], entry.get('alert', {}).get('number')
+
+    before = {identity(e) for e in baseline.get('exceptions', []) if e['flags']}
+    after = {identity(e) for e in pack['exceptions'] if e['flags']}
     critical = next(r for r in pack['metrics']['dependabot'] if r['severity'] == 'critical')
     sonar = pack['wide_scan']
     lines = ['# Weekly CISO evidence summary', '',
