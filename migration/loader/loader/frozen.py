@@ -1,7 +1,9 @@
 import json
+import os
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import duckdb
 import oracledb
@@ -25,6 +27,8 @@ def arrow_type(column, values=()):
             raise ValueError("Numeric range exceeds a lossless DECIMAL(38) mapping")
         return pa.decimal128(precision, scale)
     if kind in (oracledb.DB_TYPE_DATE, oracledb.DB_TYPE_TIMESTAMP):
+        if kind == oracledb.DB_TYPE_TIMESTAMP and column.scale is not None and column.scale > 6:
+            raise ValueError(f"Oracle TIMESTAMP({column.scale}) exceeds microsecond precision; extraction refused")
         return pa.timestamp("us")
     if kind in (oracledb.DB_TYPE_TIMESTAMP_TZ, oracledb.DB_TYPE_TIMESTAMP_LTZ):
         raise ValueError("Timezone columns require an explicit extraction mapping")
@@ -104,9 +108,10 @@ def load_duckdb(manifest_path, out, token, prefix="MIGRATION"):
     path = out / f"{name}.duckdb"
     if path.exists():
         raise FileExistsError("Target already exists")
-    with duckdb.connect(str(path)) as conn:
-        conn.execute("BEGIN")
-        try:
+    with TemporaryDirectory(prefix=f".{name}-", dir=out) as staging:
+        temporary = Path(staging) / "load.duckdb"
+        with duckdb.connect(str(temporary)) as conn:
+            conn.execute("BEGIN")
             for obj in manifest["objects"]:
                 source = str(Path(manifest_path).parent / obj["file"])
                 # Table names are validated; the file path is bound separately.
@@ -118,7 +123,5 @@ def load_duckdb(manifest_path, out, token, prefix="MIGRATION"):
                 # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
                 conn.execute(f"COMMENT ON TABLE {identifier(obj['name'])} IS '{escaped}'")
             conn.execute("COMMIT")
-        except Exception:
-            conn.execute("ROLLBACK")
-            raise
+        os.link(temporary, path)
     return path

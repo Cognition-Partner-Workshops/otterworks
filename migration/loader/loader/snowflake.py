@@ -52,7 +52,7 @@ def load(conn, manifest_path, token, prefix="MIGRATION"):
     public_key = os.environ["SNOWFLAKE_RUN_PUBLIC_KEY"]
     if not re.fullmatch(r"[A-Za-z0-9+/=]+", public_key):
         raise ValueError("Public key must be base64 DER without PEM headers")
-    tag = literal(json.dumps({"token": token, "expires_at": manifest["expires_at"]}))
+    tag = literal(json.dumps({"token": token, "prefix": prefix, "expires_at": manifest["expires_at"]}))
     database, warehouse, role, user = [identifier(base + suffix) for suffix in ("", "_WH", "_ROLE", "_USER")]
     expiry_name = re.sub(r"[^0-9]", "", manifest["expires_at"])
     monitor = identifier(base + "_RM_E" + expiry_name)
@@ -69,7 +69,8 @@ def load(conn, manifest_path, token, prefix="MIGRATION"):
         # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
         cursor.execute(f"CREATE ROLE {role} COMMENT={tag}")
         # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
-        cursor.execute(f"CREATE USER {user} TYPE=SERVICE RSA_PUBLIC_KEY={literal(public_key)} COMMENT={tag}")
+        cursor.execute(f"CREATE USER {user} TYPE=SERVICE RSA_PUBLIC_KEY={literal(public_key)} "
+                       f"DEFAULT_ROLE={role} DEFAULT_WAREHOUSE={warehouse} COMMENT={tag}")
         # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
         cursor.execute(f"GRANT ROLE {role} TO USER {user}")
         # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
@@ -117,19 +118,33 @@ def inventory(cursor, token):
             raise ValueError("SHOW inventory limit reached; cleanup cannot be verified")
         for values in rows:
             row = dict(zip(columns, values, strict=True))
-            if pattern.search(str(row.get("name", ""))) or re.search(
-                rf'"token"\s*:\s*"{re.escape(token)}"', str(row.get("comment", "")), re.I
+            if (pattern.search(str(row.get("name", ""))) or pattern.search(str(row.get("database_name", "")))
+                or re.search(rf'"token"\s*:\s*"{re.escape(token)}"', str(row.get("comment", "")), re.I)
             ):
                 found.append({"kind": kind, "name": row.get("name"), "comment": row.get("comment"),
-                              "state": row.get("state")})
+                              "state": row.get("state"), "database_name": row.get("database_name")})
     return found
+
+
+def belongs_to_run(obj, token, prefix):
+    base = token_name(token, prefix)
+    name = str(obj.get("name", "")).upper()
+    name_prefix, marker, suffix = name.rpartition(f"_{token.upper()}_AFTER")
+    named = marker and name_prefix == prefix and (not suffix or suffix.startswith("_"))
+    if named or obj.get("database_name") == base:
+        return True
+    try:
+        comment = json.loads(obj.get("comment") or "{}")
+    except (ValueError, TypeError):
+        return False
+    return isinstance(comment, dict) and comment.get("token") == token and comment.get("prefix") == prefix
 
 
 def teardown(conn, token, prefix="MIGRATION"):
     base = token_name(token, prefix)
     failures = []
     with conn.cursor() as cursor:
-        before = inventory(cursor, token)
+        before = [obj for obj in inventory(cursor, token) if belongs_to_run(obj, token, prefix)]
         monitors = [obj["name"] for obj in before if obj["kind"] == "RESOURCE MONITORS"]
         suspends = [f"ALTER WAREHOUSE {identifier(obj['name'])} SUSPEND" for obj in before
                     if obj["kind"] == "WAREHOUSES" and obj["state"] != "SUSPENDED"]
@@ -138,12 +153,12 @@ def teardown(conn, token, prefix="MIGRATION"):
             for kind, suffix in (("DATABASE", ""), ("WAREHOUSE", "_WH"))
         ] + [f"DROP RESOURCE MONITOR IF EXISTS {identifier(name)}" for name in monitors] + [
             f"DROP {kind} IF EXISTS {identifier(base + suffix)}"
-            for kind, suffix in (("USER", "_USER"), ("ROLE", "_ROLE"))
+            for kind, suffix in (("ROLE", "_ROLE"), ("USER", "_USER"))
         ]
         for statement in statements:
             try:
                 cursor.execute(statement)
             except Exception as exc:
                 failures.append(type(exc).__name__)
-        remaining = inventory(cursor, token)
+        remaining = [obj for obj in inventory(cursor, token) if belongs_to_run(obj, token, prefix)]
     return {"remaining": remaining, "errors": failures}
