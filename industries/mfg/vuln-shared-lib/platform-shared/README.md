@@ -10,15 +10,66 @@ The consumers compile against these entry points. Changing one of their signatur
 
 | Type | Entry point | Used by |
 |---|---|---|
-| `Platform.Shared.Http.SafeHttp` | `Fetch(string url)` | Dealer image proxy, Payments webhook delivery, portal BFF |
-| `Platform.Shared.Crypto.TokenSigner` | `Sign(string payload)`, `Verify(string payload, string signature)` | Identity tokens, Dealer export links, Payments webhooks, portal BFF session |
+| `Platform.Shared.Http.SafeHttp` | `Fetch(string url, IEnumerable<string> allowedHosts)` | Dealer image proxy, Payments webhook delivery, portal BFF |
+| `Platform.Shared.Crypto.TokenSigner` | `Sign(string payload, ISigningKeyProvider keyProvider)`, `Verify(string payload, string signature, ISigningKeyProvider keyProvider)` | Identity tokens, Dealer export links, Payments webhooks, portal BFF session |
 | `Platform.Shared.Storage.FileStore` | `Open(string root, string relativePath)` | Warranty attachments, Dealer exports |
 | `Platform.Shared.Data.QueryHelpers` | `InClause`, `LikeContains`, `OrderBy`, `Page` | Dealer Dapper queries, Warranty reports |
 | `Platform.Shared.Crypto` | `PasswordHasher`, `DataProtector`, `Base64Url` | Identity |
 
 `tests/Platform.Shared.Tests/PublicApi.approved.txt` lists the full public surface and `PublicApiTests` fails when it drifts. Regenerate it with `UPDATE_PUBLIC_API=1 dotnet test` only when the change ships with a version bump and the consumer migration.
 
-## Build and test
+## Version 2 policies
+
+Version 2.0.0 preserves the old method signatures for source and binary compatibility,
+but changes their behavior. Consumers need an explicit migration before rollout.
+
+`SafeHttp.Fetch(url, allowedHosts)` accepts only absolute HTTP or HTTPS URLs without
+userinfo. Entries are exact host names or `host:port`, matched case-insensitively after
+IDN/punycode normalization. A host-only entry permits only the scheme's default port.
+There are no suffix or wildcard matches. Null or empty lists throw `ArgumentException`.
+The transport disables automatic redirects. At most five redirects are followed, each
+checked against the same allowlist, with HTTPS-to-HTTP downgrades rejected before sending.
+Policy violations throw `SafeHttpPolicyException`, a subclass of `HttpRequestException`.
+`FinalUri` is the last fetched URI. The existing response size bound remains in force.
+Allowlisting a host trusts its DNS and infrastructure; this is not a DNS rebinding defense.
+
+The obsolete `Fetch(url)` uses `SafeHttp.ConfigureDefaultAllowedHosts(...)`, otherwise
+`PLATFORM_SHARED_FETCH_ALLOWED_HOSTS` (comma-separated). Without either it denies all hosts.
+Configured defaults apply process-wide. The same redirect policy always applies.
+
+Create a `SigningKey` with an id and at least 32 bytes of externally managed material,
+or use `SigningKey.FromBase64(id, text)` for base64 or base64url config binding. Never
+commit production key material. `SigningKeyRing(currentKey, verificationKeys)` implements
+`ISigningKeyProvider`: sign uses the current key, verify tries every verification key
+with constant-time comparisons. Include the current key in the verification list.
+To rotate, change the current key and keep the old key in the verification list until
+old signatures expire, then remove it. Keys and the list are defensively copied.
+HMAC-SHA256 signatures are unpadded base64url with no key id; the envelope stays
+`v1.<payload>.<sig>`, but old SHA-1 signatures are not accepted.
+
+The obsolete `Sign(payload)` and `Verify(payload, signature)` use a provider set with
+`TokenSigner.ConfigureDefaultKeyProvider(...)`. Otherwise they read
+`PLATFORM_SHARED_SIGNING_KEY` (base64, at least 32 bytes) once on first use. Without it,
+they generate one random 256-bit key per process. These fallback signatures work only
+inside that process, not across restarts or replicas. Invalid configured keys fail rather
+than falling back. Use explicit providers for durable tokens and cross-service verification.
+
+`DeviceFingerprint.Compute(userAgent, deviceId)` is deterministic and unkeyed. It hashes
+the UTF-8 prefix `Platform.Shared.DeviceFingerprint.v1` followed by a zero byte, then
+each field as a 4-byte big-endian UTF-8 byte length followed by its bytes, using SHA-256.
+The result is lowercase hex. Empty fields are supported, null fields throw
+`ArgumentNullException`. It is an identifier, not an authentication secret.
+
+The binary compatibility check builds a console consumer against a published-style
+1.0.0 package made from the seeded commit, swaps only the library DLL, and runs it:
+
+```bash
+bash tests/compat/run.sh
+```
+
+It keeps build artifacts under `~/act3-logs/binary-compat` and requires .NET 8 and git.
+
+## Commands
 
 ```bash
 make test        # restore, build and run the xUnit suite
