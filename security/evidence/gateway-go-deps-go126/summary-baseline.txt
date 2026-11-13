@@ -1,0 +1,44 @@
+ImageID: sha256:bd9d8d4a75d073cad804673b8b4e725b0309b7194e82d4de1ba6f82f690ec0bf
+full image     : CRITICAL=5 HIGH=46 MEDIUM=81 LOW=21 UNKNOWN=2 total=155
+os packages    : CRITICAL=3 HIGH=6 MEDIUM=26 LOW=14 UNKNOWN=0 total=49
+go stdlib      : CRITICAL=1 HIGH=25 MEDIUM=37 LOW=3 UNKNOWN=1 total=67
+go third-party : CRITICAL=1 HIGH=15 MEDIUM=18 LOW=4 UNKNOWN=1 total=39
+   github.com/go-chi/chi/v5 v5.0.12 CVE-2025-71405 MEDIUM fixed=5.2.2
+   github.com/go-chi/chi/v5 v5.0.12 CVE-2026-114437 MEDIUM fixed=5.4.0
+   github.com/golang-jwt/jwt/v5 v5.2.1 CVE-2025-30204 HIGH fixed=5.2.2
+   github.com/redis/go-redis/v9 v9.5.1 CVE-2025-29923 LOW fixed=9.7.3, 9.6.3, 9.5.5
+   go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.24.0 CVE-2026-81870 LOW fixed=1.45.0
+   go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.24.0 CVE-2026-39882 MEDIUM fixed=1.43.0
+   go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.24.0 CVE-2026-81870 LOW fixed=1.45.0
+   go.opentelemetry.io/otel/sdk v1.24.0 CVE-2026-24051 HIGH fixed=1.40.0
+   go.opentelemetry.io/otel/sdk v1.24.0 CVE-2026-39883 HIGH fixed=1.43.0
+   go.opentelemetry.io/otel/sdk v1.24.0 CVE-2026-81869 MEDIUM fixed=1.33.0
+   go.opentelemetry.io/otel/sdk v1.24.0 CVE-2026-81870 LOW fixed=1.45.0
+   golang.org/x/net v0.35.0 CVE-2025-22870 MEDIUM fixed=0.36.0
+   golang.org/x/net v0.35.0 CVE-2025-22872 MEDIUM fixed=0.38.0
+   golang.org/x/net v0.35.0 CVE-2025-47911 MEDIUM fixed=0.45.0
+   golang.org/x/net v0.35.0 CVE-2025-58190 MEDIUM fixed=0.45.0
+   golang.org/x/net v0.35.0 CVE-2026-25680 MEDIUM fixed=0.55.0
+   golang.org/x/net v0.35.0 CVE-2026-25681 HIGH fixed=0.55.0
+   golang.org/x/net v0.35.0 CVE-2026-27136 HIGH fixed=0.55.0
+   golang.org/x/net v0.35.0 CVE-2026-33814 HIGH fixed=0.53.0
+   golang.org/x/net v0.35.0 CVE-2026-39821 HIGH fixed=0.55.0
+   golang.org/x/net v0.35.0 CVE-2026-42502 MEDIUM fixed=0.55.0
+   golang.org/x/net v0.35.0 CVE-2026-42506 MEDIUM fixed=0.55.0
+   golang.org/x/net v0.35.0 CVE-2026-46600 HIGH fixed=0.56.0
+   golang.org/x/net v0.35.0 CVE-2026-78659 MEDIUM fixed=0.60.0
+   golang.org/x/net v0.35.0 CVE-2026-78660 MEDIUM fixed=0.60.0
+   golang.org/x/net v0.35.0 CVE-2026-78661 HIGH fixed=0.62.0
+   golang.org/x/net v0.35.0 CVE-2026-78663 MEDIUM fixed=0.60.0
+   golang.org/x/net v0.35.0 CVE-2026-78669 HIGH fixed=0.60.0
+   golang.org/x/net v0.35.0 CVE-2026-97032 MEDIUM fixed=0.60.0
+   golang.org/x/net v0.35.0 CVE-2026-97045 MEDIUM fixed=0.62.0
+   golang.org/x/sys v0.30.0 CVE-2026-39824 UNKNOWN fixed=0.44.0
+   golang.org/x/text v0.22.0 CVE-2026-56851 HIGH fixed=0.41.0
+   golang.org/x/text v0.22.0 CVE-2026-56852 HIGH fixed=0.39.0
+   google.golang.org/grpc v1.61.1 CVE-2026-33186 CRITICAL fixed=1.79.3
+   google.golang.org/grpc v1.61.1 CVE-2026-84303 MEDIUM fixed=1.83.1
+   google.golang.org/grpc v1.61.1 CVE-2026-84304 HIGH fixed=1.83.1
+   google.golang.org/grpc v1.61.1 CVE-2026-84445 HIGH fixed=1.82.2, 1.83.2, 1.84.0-dev.0.20260825144003-d5a41119e0e3, 1.85.0-dev.0.20260825072537-93e31b48545e
+   google.golang.org/grpc v1.61.1 GHSA-hrxh-6v49-42gf HIGH fixed=1.82.1
+   google.golang.org/protobuf v1.32.0 CVE-2024-24786 MEDIUM fixed=1.33.0

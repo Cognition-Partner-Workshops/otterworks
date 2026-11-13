@@ -1,0 +1,5 @@
+ImageID: sha256:6ad85ee087f04a5d6c1b35edc8638ed5fbbedc1f02a88a0ec48ff08c7c34e4fe
+full image     : CRITICAL=3 HIGH=6 MEDIUM=26 LOW=14 UNKNOWN=0 total=49
+os packages    : CRITICAL=3 HIGH=6 MEDIUM=26 LOW=14 UNKNOWN=0 total=49
+go stdlib      : CRITICAL=0 HIGH=0 MEDIUM=0 LOW=0 UNKNOWN=0 total=0
+go third-party : CRITICAL=0 HIGH=0 MEDIUM=0 LOW=0 UNKNOWN=0 total=0

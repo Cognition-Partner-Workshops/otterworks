@@ -1,0 +1,736 @@
+{
+ "ArtifactName": "ow-gw:toolchain-only",
+ "ImageID": "sha256:05436088435aa31d9f73baff1ecf1fbfd44c48f5d1e9f844e9ae0cfc7f9e0a44",
+ "RepoDigests": [
+  "ow-gw@sha256:05436088435aa31d9f73baff1ecf1fbfd44c48f5d1e9f844e9ae0cfc7f9e0a44"
+ ],
+ "OS": {
+  "Family": "alpine",
+  "Name": "3.18.0",
+  "EOSL": true
+ },
+ "CreatedAt": "2026-11-13T14:07:27.036462532Z",
+ "Trivy": {
+  "Version": "0.71.0"
+ },
+ "Results": [
+  {
+   "Target": "ow-gw:toolchain-only (alpine 3.18.0)",
+   "Class": "os-pkgs",
+   "Type": "alpine",
+   "Vulnerabilities": [
+    {
+     "VulnerabilityID": "CVE-2022-48174",
+     "PkgName": "busybox",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r1",
+     "Severity": "CRITICAL",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-42363",
+     "PkgName": "busybox",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r7",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-42364",
+     "PkgName": "busybox",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r7",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-42365",
+     "PkgName": "busybox",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r7",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-42366",
+     "PkgName": "busybox",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r6",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2022-48174",
+     "PkgName": "busybox-binsh",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r1",
+     "Severity": "CRITICAL",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-42363",
+     "PkgName": "busybox-binsh",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r7",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-42364",
+     "PkgName": "busybox-binsh",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r7",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-42365",
+     "PkgName": "busybox-binsh",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r7",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-42366",
+     "PkgName": "busybox-binsh",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r6",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-5363",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.4-r0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-6119",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.7-r0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-2650",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.1-r0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-2975",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.1-r2",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-3446",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.1-r3",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-3817",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.2-r0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-5678",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.4-r1",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-6129",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.4-r3",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-0727",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.4-r5",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-6237",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.4-r4",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-13176",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.8-r0",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-2511",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.4-r6",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-4603",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.5-r0",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-4741",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.6-r0",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-5535",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.6-r0",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-9143",
+     "PkgName": "libcrypto3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.7-r1",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-5363",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.4-r0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-6119",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.7-r0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-2650",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.1-r0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-2975",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.1-r2",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-3446",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.1-r3",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-3817",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.2-r0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-5678",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.4-r1",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-6129",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.4-r3",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-0727",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.4-r5",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-6237",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.4-r4",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-13176",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.8-r0",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-2511",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.4-r6",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-4603",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.5-r0",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-4741",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.6-r0",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-5535",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.6-r0",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-9143",
+     "PkgName": "libssl3",
+     "InstalledVersion": "3.1.0-r4",
+     "FixedVersion": "3.1.7-r1",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2025-26519",
+     "PkgName": "musl",
+     "InstalledVersion": "1.2.4-r0",
+     "FixedVersion": "1.2.4-r3",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2025-26519",
+     "PkgName": "musl-utils",
+     "InstalledVersion": "1.2.4-r0",
+     "FixedVersion": "1.2.4-r3",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2022-48174",
+     "PkgName": "ssl_client",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r1",
+     "Severity": "CRITICAL",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-42363",
+     "PkgName": "ssl_client",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r7",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-42364",
+     "PkgName": "ssl_client",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r7",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-42365",
+     "PkgName": "ssl_client",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r7",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2023-42366",
+     "PkgName": "ssl_client",
+     "InstalledVersion": "1.36.0-r9",
+     "FixedVersion": "1.36.1-r6",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    }
+   ]
+  },
+  {
+   "Target": "app/server",
+   "Class": "lang-pkgs",
+   "Type": "gobinary",
+   "Vulnerabilities": [
+    {
+     "VulnerabilityID": "CVE-2025-71405",
+     "PkgName": "github.com/go-chi/chi/v5",
+     "InstalledVersion": "v5.0.12",
+     "FixedVersion": "5.2.2",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-114437",
+     "PkgName": "github.com/go-chi/chi/v5",
+     "InstalledVersion": "v5.0.12",
+     "FixedVersion": "5.4.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2025-30204",
+     "PkgName": "github.com/golang-jwt/jwt/v5",
+     "InstalledVersion": "v5.2.1",
+     "FixedVersion": "5.2.2",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2025-29923",
+     "PkgName": "github.com/redis/go-redis/v9",
+     "InstalledVersion": "v9.5.1",
+     "FixedVersion": "9.7.3, 9.6.3, 9.5.5",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-81870",
+     "PkgName": "go.opentelemetry.io/otel/exporters/otlp/otlptrace",
+     "InstalledVersion": "v1.24.0",
+     "FixedVersion": "1.45.0",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-39882",
+     "PkgName": "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp",
+     "InstalledVersion": "v1.24.0",
+     "FixedVersion": "1.43.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-81870",
+     "PkgName": "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp",
+     "InstalledVersion": "v1.24.0",
+     "FixedVersion": "1.45.0",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-24051",
+     "PkgName": "go.opentelemetry.io/otel/sdk",
+     "InstalledVersion": "v1.24.0",
+     "FixedVersion": "1.40.0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-39883",
+     "PkgName": "go.opentelemetry.io/otel/sdk",
+     "InstalledVersion": "v1.24.0",
+     "FixedVersion": "1.43.0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-81869",
+     "PkgName": "go.opentelemetry.io/otel/sdk",
+     "InstalledVersion": "v1.24.0",
+     "FixedVersion": "1.33.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-81870",
+     "PkgName": "go.opentelemetry.io/otel/sdk",
+     "InstalledVersion": "v1.24.0",
+     "FixedVersion": "1.45.0",
+     "Severity": "LOW",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-25681",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.55.0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-27136",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.55.0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-33814",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.53.0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-39821",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.55.0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-46600",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.56.0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-78661",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.62.0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-78669",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.60.0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2025-22870",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.36.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2025-22872",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.38.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2025-47911",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.45.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2025-58190",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.45.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-25680",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.55.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-42502",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.55.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-42506",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.55.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-78659",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.60.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-78660",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.60.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-78663",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.60.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-97032",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.60.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-97045",
+     "PkgName": "golang.org/x/net",
+     "InstalledVersion": "v0.35.0",
+     "FixedVersion": "0.62.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-39824",
+     "PkgName": "golang.org/x/sys",
+     "InstalledVersion": "v0.30.0",
+     "FixedVersion": "0.44.0",
+     "Severity": "UNKNOWN",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-56851",
+     "PkgName": "golang.org/x/text",
+     "InstalledVersion": "v0.22.0",
+     "FixedVersion": "0.41.0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-56852",
+     "PkgName": "golang.org/x/text",
+     "InstalledVersion": "v0.22.0",
+     "FixedVersion": "0.39.0",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-33186",
+     "PkgName": "google.golang.org/grpc",
+     "InstalledVersion": "v1.61.1",
+     "FixedVersion": "1.79.3",
+     "Severity": "CRITICAL",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-84304",
+     "PkgName": "google.golang.org/grpc",
+     "InstalledVersion": "v1.61.1",
+     "FixedVersion": "1.83.1",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-84445",
+     "PkgName": "google.golang.org/grpc",
+     "InstalledVersion": "v1.61.1",
+     "FixedVersion": "1.82.2, 1.83.2, 1.84.0-dev.0.20260825144003-d5a41119e0e3, 1.85.0-dev.0.20260825072537-93e31b48545e",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "GHSA-hrxh-6v49-42gf",
+     "PkgName": "google.golang.org/grpc",
+     "InstalledVersion": "v1.61.1",
+     "FixedVersion": "1.82.1",
+     "Severity": "HIGH",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2026-84303",
+     "PkgName": "google.golang.org/grpc",
+     "InstalledVersion": "v1.61.1",
+     "FixedVersion": "1.83.1",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "CVE-2024-24786",
+     "PkgName": "google.golang.org/protobuf",
+     "InstalledVersion": "v1.32.0",
+     "FixedVersion": "1.33.0",
+     "Severity": "MEDIUM",
+     "Status": "fixed"
+    }
+   ]
+  }
+ ]
+}
