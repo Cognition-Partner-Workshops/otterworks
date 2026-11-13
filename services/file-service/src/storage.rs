@@ -79,6 +79,7 @@ impl S3Client {
         &self,
         key: &str,
         expires_in_secs: u64,
+        content_disposition: Option<String>,
     ) -> Result<String, ServiceError> {
         let presigning = PresigningConfig::expires_in(Duration::from_secs(expires_in_secs))
             .map_err(|e| ServiceError::S3Error(format!("presign config error: {e}")))?;
@@ -88,6 +89,7 @@ impl S3Client {
             .get_object()
             .bucket(&self.bucket)
             .key(key)
+            .set_response_content_disposition(content_disposition)
             .presigned(presigning)
             .await
             .map_err(|e| ServiceError::S3Error(format!("presign failed: {e}")))?;

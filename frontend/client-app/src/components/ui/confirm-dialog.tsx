@@ -1,10 +1,10 @@
-import { useEffect, useRef, useCallback } from "react";
-import { AlertTriangle } from "lucide-react";
+import { useEffect, useId, useRef, useCallback, type ReactNode } from "react";
+import { AlertTriangle, Trash2 } from "lucide-react";
 
 interface ConfirmDialogProps {
   open: boolean;
   title: string;
-  description: string;
+  description: ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: "destructive" | "default";
@@ -24,6 +24,8 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const cancelRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -38,7 +40,10 @@ export function ConfirmDialog({
         if (focusable.length === 0) return;
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
+        if (!dialogRef.current.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+        } else if (e.shiftKey && document.activeElement === first) {
           e.preventDefault();
           last.focus();
         } else if (!e.shiftKey && document.activeElement === last) {
@@ -52,9 +57,13 @@ export function ConfirmDialog({
 
   useEffect(() => {
     if (open) {
+      const previouslyFocused = document.activeElement as HTMLElement | null;
       document.addEventListener("keydown", handleKeyDown);
       cancelRef.current?.focus();
-      return () => document.removeEventListener("keydown", handleKeyDown);
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+        previouslyFocused?.focus?.();
+      };
     }
   }, [open, handleKeyDown]);
 
@@ -65,10 +74,10 @@ export function ConfirmDialog({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      role="dialog"
+      role={isDestructive ? "alertdialog" : "dialog"}
       aria-modal="true"
-      aria-labelledby="confirm-dialog-title"
-      aria-describedby="confirm-dialog-description"
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
     >
       {/* Backdrop */}
       <div
@@ -89,16 +98,10 @@ export function ConfirmDialog({
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h2
-              id="confirm-dialog-title"
-              className="text-lg font-semibold text-gray-900"
-            >
+            <h2 id={titleId} className="text-lg font-semibold text-gray-900">
               {title}
             </h2>
-            <p
-              id="confirm-dialog-description"
-              className="text-sm text-gray-500 mt-1"
-            >
+            <p id={descriptionId} className="text-sm text-gray-500 mt-1 break-words">
               {description}
             </p>
           </div>
@@ -107,19 +110,23 @@ export function ConfirmDialog({
         <div className="flex justify-end gap-3 pt-2">
           <button
             ref={cancelRef}
+            type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-otter-500 focus-visible:ring-offset-2"
           >
             {cancelLabel}
           </button>
           <button
+            type="button"
             onClick={onConfirm}
+            data-variant={variant}
             className={
               isDestructive
-                ? "px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
-                : "px-4 py-2 text-sm font-medium text-white bg-otter-600 rounded-lg hover:bg-otter-700 transition"
+                ? "flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                : "px-4 py-2 text-sm font-medium text-white bg-otter-600 rounded-lg hover:bg-otter-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-otter-500 focus-visible:ring-offset-2"
             }
           >
+            {isDestructive && <Trash2 size={16} aria-hidden="true" />}
             {confirmLabel}
           </button>
         </div>

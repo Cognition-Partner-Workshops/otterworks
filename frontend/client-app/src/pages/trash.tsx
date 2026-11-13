@@ -142,8 +142,15 @@ function TrashContent() {
       {/* Confirm permanent delete of single item */}
       <ConfirmDialog
         open={deleteTarget !== null}
-        title="Permanently delete"
-        description={`This will permanently delete ${deleteTarget?.name ?? "this item"}. This action cannot be undone.`}
+        title="Delete permanently?"
+        description={
+          <>
+            <strong className="font-medium text-gray-900">
+              &ldquo;{deleteTarget?.name ?? "this item"}&rdquo;
+            </strong>{" "}
+            will be permanently deleted. This action cannot be undone.
+          </>
+        }
         confirmLabel="Delete permanently"
         variant="destructive"
         onConfirm={() => {
@@ -156,7 +163,7 @@ function TrashContent() {
       {/* Confirm empty trash */}
       <ConfirmDialog
         open={showEmptyTrashConfirm}
-        title="Empty trash"
+        title="Empty trash?"
         description={`This will permanently delete all ${totalTrashed} item${totalTrashed === 1 ? "" : "s"} in trash. This action cannot be undone.`}
         confirmLabel="Delete all permanently"
         variant="destructive"
