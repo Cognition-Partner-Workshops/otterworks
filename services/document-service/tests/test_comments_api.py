@@ -1,6 +1,5 @@
 """Tests for comment API endpoints."""
 
-import os
 import uuid
 
 import jwt
@@ -8,7 +7,11 @@ import pytest
 from httpx import AsyncClient
 
 TEST_JWT_SECRET = "test-jwt-secret-for-unit-tests-pad32"  # noqa: S105
-os.environ.setdefault("JWT_SECRET", TEST_JWT_SECRET)
+
+
+@pytest.fixture(autouse=True)
+def _jwt_secret(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET", TEST_JWT_SECRET)
 
 
 def _auth(user_id: uuid.UUID) -> dict[str, str]:
