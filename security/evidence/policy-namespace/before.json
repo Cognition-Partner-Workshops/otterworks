@@ -1,0 +1,38 @@
+{
+  "context": "otterworks-dev",
+  "namespace": "otterworks-ciso",
+  "declared_policy_count": 3,
+  "declared_namespace_mismatches": [
+    {
+      "file": "security/policies/allow-dns.yaml",
+      "name": "allow-dns",
+      "declared_namespace": "decomposition-dev"
+    },
+    {
+      "file": "security/policies/allow-namespace-egress.yaml",
+      "name": "allow-namespace-egress",
+      "declared_namespace": "decomposition-dev"
+    },
+    {
+      "file": "security/policies/network-policy-default-deny.yaml",
+      "name": "default-deny-all",
+      "declared_namespace": "decomposition-dev"
+    }
+  ],
+  "live_comparison": null,
+  "note": "Spec comparison projects declared policies into the target namespace. Extra policies require review: Kubernetes policies are additive; extras are not automatically unauthorized. This does not prove CNI enforcement.",
+  "read_command": [
+    "kubectl",
+    "--context",
+    "otterworks-dev",
+    "-n",
+    "otterworks-ciso",
+    "get",
+    "networkpolicy",
+    "-o",
+    "json"
+  ],
+  "blocked_reason": "error: context \"otterworks-dev\" does not exist",
+  "declared_namespace_mismatch_count": 3,
+  "live_drift_count": null
+}
