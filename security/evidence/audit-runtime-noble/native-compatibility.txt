@@ -1,0 +1,33 @@
+ERROR [08001] [IBM] SQL30081N  A communication error has been detected. Communication protocol being used: "TCP/IP".  Communication API being used: "SOCKETS".  Location where the error was detected: "127.0.0.1".  Communication function detecting the error: "selectForConnectTimeout".  Protocol specific error code(s): "115", "*", "*".  SQLSTATE=08001
+
+PASS: IBM Db2 native client loaded and refused the local test endpoint.
+PRETTY_NAME="Ubuntu 24.04.5 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.5 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+Microsoft.AspNetCore.App 8.0.34 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 8.0.34 [/usr/share/dotnet/shared/Microsoft.NETCore.App]
+	linux-vdso.so.1 (0x00007ffe44950000)
+	libcrypt.so.1 => /lib/x86_64-linux-gnu/libcrypt.so.1 (0x00007875d6bf6000)
+	libpam.so.0 => /lib/x86_64-linux-gnu/libpam.so.0 (0x00007875d6be5000)
+	libxml2.so.2 => /lib/x86_64-linux-gnu/libxml2.so.2 (0x00007875d6a03000)
+	libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007875d6785000)
+	libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007875d669a000)
+	libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007875d666c000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007875d6459000)
+	libaudit.so.1 => /lib/x86_64-linux-gnu/libaudit.so.1 (0x00007875d642b000)
+	libicuuc.so.74 => /lib/x86_64-linux-gnu/libicuuc.so.74 (0x00007875d621e000)
+	libz.so.1 => /lib/x86_64-linux-gnu/libz.so.1 (0x00007875d6202000)
+	liblzma.so.5 => /lib/x86_64-linux-gnu/liblzma.so.5 (0x00007875d61ce000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007875d90ea000)
+	libcap-ng.so.0 => /lib/x86_64-linux-gnu/libcap-ng.so.0 (0x00007875d61c6000)
+	libicudata.so.74 => /lib/x86_64-linux-gnu/libicudata.so.74 (0x00007875d4466000)
