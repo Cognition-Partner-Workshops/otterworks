@@ -23,7 +23,7 @@ var app = builder.Build();
 
 app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }));
 
-var bff = app.MapGroup("/bff").AddEndpointFilter<PortalKeyFilter>();
+var bff = app.MapGroup("/bff");
 bff.MapSessionEndpoints();
 bff.MapDealerEndpoints();
 app.Map("/bff/{**rest}", () => Results.NotFound());

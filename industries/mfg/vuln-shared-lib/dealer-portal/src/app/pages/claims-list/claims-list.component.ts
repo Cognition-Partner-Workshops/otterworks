@@ -1,14 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { WarrantyClaim } from '../../core/models/portal.models';
 import { PortalDatePipe } from '../../core/pipes/portal-date.pipe';
 import { PortalApiService } from '../../core/services/portal-api.service';
-
-interface ClaimRow extends WarrantyClaim {
-  descriptionHtml: SafeHtml;
-}
 
 @Component({
   selector: 'dp-claims-list',
@@ -30,7 +25,7 @@ interface ClaimRow extends WarrantyClaim {
             <td>{{ c.id }}</td>
             <td><a [routerLink]="['/inventory', c.vin]">{{ c.vin }}</a></td>
             <td><span class="badge" [class]="c.status">{{ c.status }}</span></td>
-            <td class="description" [innerHTML]="c.descriptionHtml"></td>
+            <td class="description">{{ c.description }}</td>
             <td [title]="c.submittedAt | portalDate: 'datetime'">{{ c.submittedAt | portalDate: 'relative' }}</td>
           </tr>
         </tbody>
@@ -40,15 +35,15 @@ interface ClaimRow extends WarrantyClaim {
   `,
   styles: [`
     .heading { display: flex; justify-content: space-between; align-items: baseline; }
-    .description { max-width: 420px; }
+    .description { max-width: 420px; white-space: pre-line; }
   `],
 })
 export class ClaimsListComponent implements OnInit {
-  claims: ClaimRow[] = [];
+  claims: WarrantyClaim[] = [];
   loading = true;
   errorMessage = '';
 
-  constructor(private api: PortalApiService, private sanitizer: DomSanitizer) {}
+  constructor(private api: PortalApiService) {}
 
   ngOnInit(): void {
     this.api.claims().subscribe({
@@ -56,8 +51,7 @@ export class ClaimsListComponent implements OnInit {
         this.loading = false;
         this.claims = claims
           .slice()
-          .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt))
-          .map(claim => ({ ...claim, descriptionHtml: this.formatDescription(claim.description) }));
+          .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
       },
       error: () => {
         this.loading = false;
@@ -66,7 +60,4 @@ export class ClaimsListComponent implements OnInit {
     });
   }
 
-  private formatDescription(description: string): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml((description ?? '').replace(/\r?\n/g, '<br>'));
-  }
 }
