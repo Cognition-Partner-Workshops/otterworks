@@ -3,7 +3,7 @@ export NUGET_PACKAGES := $(CURDIR)/.nuget/packages
 
 .PHONY: restore build test clean
 restore:
-	dotnet restore DevApi.sln
+	dotnet restore DevApi.sln --verbosity normal
 build: restore
 	dotnet build DevApi.sln --no-restore -c $(CONFIG)
 test:

@@ -65,7 +65,7 @@ public sealed class DealerEndpointsTests : IDisposable
         var response = await client.GetAsync("/dealer/inventory/VIN1001/sticker?note=%3Cb%3EReady%3C%2Fb%3E");
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadAsStringAsync();
-        Assert.Contains("<b>Ready</b>", body);
+        Assert.Contains("&lt;b&gt;Ready&lt;/b&gt;", body);
         Assert.Contains("Atlas", body);
     }
 

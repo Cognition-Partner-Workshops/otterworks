@@ -3,6 +3,19 @@ using Warranty.Models;
 
 namespace Warranty.Validation;
 
+public sealed class ClaimImportBatchValidator : AbstractValidator<ClaimImportBatch>
+{
+    public ClaimImportBatchValidator()
+    {
+        RuleFor(x => x.Items).NotNull();
+        RuleForEach(x => x.Items).NotNull().ChildRules(item =>
+        {
+            item.RuleFor(x => x.Vin).NotEmpty().MaximumLength(32);
+            item.RuleFor(x => x.Description).NotEmpty().MaximumLength(2000);
+        });
+    }
+}
+
 public sealed class CreateClaimValidator : AbstractValidator<CreateClaimRequest>
 {
     public CreateClaimValidator()

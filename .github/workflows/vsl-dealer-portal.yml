@@ -10,6 +10,7 @@ on:
       - industries/mfg/vuln-shared-lib/dealer-portal/**
       - industries/mfg/vuln-shared-lib/platform-shared/**
       - .github/workflows/vsl-dealer-portal.yml
+      - .github/workflows/vsl-wait-for-package.yml
   workflow_dispatch:
 
 permissions:
@@ -26,6 +27,11 @@ env:
   PROJECT_DIR: industries/mfg/vuln-shared-lib/dealer-portal
 
 jobs:
+  wait-for-package:
+    uses: ./.github/workflows/vsl-wait-for-package.yml
+    with:
+      project-file: industries/mfg/vuln-shared-lib/dealer-portal/bff/src/DealerPortal.Bff/DealerPortal.Bff.csproj
+
   web:
     name: web (node ${{ matrix.node }})
     runs-on: ubuntu-latest
@@ -57,6 +63,7 @@ jobs:
       - run: make -C "$PROJECT_DIR" bff-test
 
   bff-github-packages:
+    needs: wait-for-package
     name: bff (Platform.Shared from GitHub Packages)
     runs-on: ubuntu-latest
     steps:

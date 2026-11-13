@@ -1,4 +1,6 @@
 using FluentValidation;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Payments.Models;
@@ -19,7 +21,10 @@ public sealed class ProcessorController(
     [HttpPost("processor/callback")]
     public async Task<IActionResult> Callback(ProcessorCallbackRequest request, IValidator<ProcessorCallbackRequest> validator)
     {
-        if (Request.Headers["X-Processor-Secret"] != configuration["Payments:Processor:ApiSecret"])
+        var secret = configuration["Payments:Processor:ApiSecret"];
+        var supplied = Request.Headers["X-Processor-Secret"].ToString();
+        if (string.IsNullOrEmpty(secret) || !CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(secret), Encoding.UTF8.GetBytes(supplied)))
         {
             return Unauthorized();
         }
@@ -47,7 +52,7 @@ public sealed class ProcessorController(
         {
             return Ok(new { imported = await remittance.Pull(User.FindFirst("dealer")!.Value) });
         }
-        catch (Exception exception) when (exception is HttpRequestException or InvalidDataException or System.Text.Json.JsonException)
+        catch (Exception exception) when (exception is ArgumentException or HttpRequestException or InvalidDataException or System.Text.Json.JsonException)
         {
             return Problem("Remittance statement could not be loaded.", statusCode: 502);
         }

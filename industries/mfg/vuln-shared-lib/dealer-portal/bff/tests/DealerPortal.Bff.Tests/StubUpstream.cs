@@ -10,13 +10,14 @@ public sealed class StubUpstream : HttpMessageHandler
     public const string Email = "dealer-ops@dealer.example";
     public const string DealerId = "D-1001";
     public const string AccessToken =
-        "v1.eyJzdWIiOiJkZWFsZXItb3BzQGRlYWxlci5leGFtcGxlIiwiZGVhbGVyIjoiRC0xMDAxIiwicm9sZXMiOlsiZGVhbGVyIl0sImlhdCI6MTc5ODc2MTYwMCwiZXhwIjoxNzk4NzY1MjAwfQ.aQiSk3ln-G_hMxS28Rm8xvC-7P0";
+        "v1.eyJzdWIiOiJkZWFsZXItb3BzQGRlYWxlci5leGFtcGxlIiwiZGVhbGVyIjoiRC0xMDAxIiwicm9sZXMiOlsiZGVhbGVyIl0sImlhdCI6MTc5ODc2MTYwMCwiZXhwIjoxNzk4NzY1MjAwfQ.tsR_nbfw6TFkFEydowMEG_yXhQQgMO3oYDFVNkxeA1s";
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     public List<HttpRequestMessage> Requests { get; } = [];
     public List<string> Bodies { get; } = [];
     public HttpStatusCode? ForceStatus { get; set; }
+    public Uri? NoticeRedirect { get; set; }
     public string NoticeFeed { get; set; } = JsonSerializer.Serialize(new[]
     {
         new { id = "N-1", title = "Brake hose inspection", severity = "critical", publishedAt = "2026-02-01T12:00:00Z", body = "Inspect before delivery." },
@@ -42,6 +43,7 @@ public sealed class StubUpstream : HttpMessageHandler
         var path = request.RequestUri!.AbsolutePath;
         if (path.EndsWith("/dealer-notices.json", StringComparison.Ordinal))
         {
+            if (NoticeRedirect is not null) return new HttpResponseMessage(HttpStatusCode.Found) { Headers = { Location = NoticeRedirect } };
             return Respond(HttpStatusCode.OK, NoticeFeed);
         }
 

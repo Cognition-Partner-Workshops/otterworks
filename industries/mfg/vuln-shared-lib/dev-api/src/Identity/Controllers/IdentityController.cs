@@ -31,7 +31,10 @@ public sealed class IdentityController(
     [HttpPost("introspect")]
     public IActionResult Introspect(TokenRequest request)
     {
-        if (Request.Headers["X-Client-Secret"] != configuration["Identity:ClientSecret"])
+        var secret = configuration["Identity:ClientSecret"];
+        var supplied = Request.Headers["X-Client-Secret"].ToString();
+        if (string.IsNullOrWhiteSpace(secret) || string.IsNullOrWhiteSpace(supplied) ||
+            !CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(secret), Encoding.UTF8.GetBytes(supplied)))
             return Unauthorized();
         var identity = tokens.Verify(request.AccessToken);
         return identity is null ? Ok(new { active = false }) :
@@ -44,7 +47,7 @@ public sealed class IdentityController(
         var identity = CurrentIdentity();
         if (identity is null)
             return Unauthorized();
-        var fingerprint = Convert.ToHexString(MD5.HashData(Encoding.UTF8.GetBytes(request.UserAgent + request.DeviceId)));
+        var fingerprint = DeviceFingerprint.Compute(request.UserAgent, request.DeviceId);
         var device = new RegisteredDevice
         {
             Email = identity.Email,
@@ -72,7 +75,11 @@ public sealed class IdentityController(
     public IActionResult SignOut([FromQuery] string returnUrl = "/")
     {
         Response.Cookies.Delete("remember_me");
-        return Redirect(returnUrl);
+        var allowedHosts = configuration.GetSection("Identity:AllowedReturnHosts").Get<string[]>() ?? [];
+        var allowed = Url.IsLocalUrl(returnUrl) ||
+            (Uri.TryCreate(returnUrl, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps &&
+                allowedHosts.Contains(uri.Host, StringComparer.OrdinalIgnoreCase));
+        return Redirect(allowed ? returnUrl : "/");
     }
 
     [HttpPost("password-reset")]

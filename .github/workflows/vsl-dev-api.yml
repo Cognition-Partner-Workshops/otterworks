@@ -8,6 +8,7 @@ on:
       - industries/mfg/vuln-shared-lib/dev-api/**
       - industries/mfg/vuln-shared-lib/platform-shared/**
       - .github/workflows/vsl-dev-api.yml
+      - .github/workflows/vsl-wait-for-package.yml
   workflow_dispatch:
 
 permissions:
@@ -23,6 +24,11 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: '1'
 
 jobs:
+  wait-for-package:
+    uses: ./.github/workflows/vsl-wait-for-package.yml
+    with:
+      project-file: industries/mfg/vuln-shared-lib/dev-api/Directory.Packages.props
+
   local-feed:
     runs-on: ubuntu-latest
     steps:
@@ -34,6 +40,7 @@ jobs:
       - run: make -C industries/mfg/vuln-shared-lib/dev-api test
 
   github-packages:
+    needs: wait-for-package
     runs-on: ubuntu-latest
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/industries/mfg/vuln-shared-lib/dev-api/.nuget/packages
@@ -63,6 +70,6 @@ jobs:
           ET.SubElement(entry, "package", pattern="Platform.Shared")
           tree.write("nuget.config", encoding="utf-8", xml_declaration=True)
           PY
-      - run: dotnet restore DevApi.sln
+      - run: dotnet restore DevApi.sln --verbosity normal
       - run: dotnet build DevApi.sln --no-restore -c Release
       - run: dotnet test DevApi.sln --no-build -c Release

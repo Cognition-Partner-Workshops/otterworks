@@ -10,7 +10,7 @@
             <dt>Status</dt><dd>@Model.Vehicle.Status</dd>
             <dt>Price</dt><dd>@((Model.Vehicle.PriceCents / 100m).ToString("C"))</dd>
         </dl>
-        <section aria-label="Dealer note">@Html.Raw(Model.Note)</section>
+        <section aria-label="Dealer note">@Model.Note</section>
     </main>
 </body>
 </html>

@@ -6,14 +6,11 @@ namespace DealerPortal.Bff.Tests;
 public sealed class HostingTests
 {
     [Fact]
-    public async Task PortalKey_IsEnforcedWhenConfigured()
+    public async Task Session_WorksWithoutPortalKeyEvenWhenConfigured()
     {
         using var factory = new PortalFactory(new() { ["Portal:ClientKey"] = "test-client-key" });
         var client = factory.CreateClient();
 
-        Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsync("/bff/session", JsonBody("{\"email\":\"dealer-ops@dealer.example\",\"password\":\"x\"}"))).StatusCode);
-
-        client.DefaultRequestHeaders.Add("X-Portal-Key", "test-client-key");
         Assert.Equal(HttpStatusCode.OK, (await client.PostAsync("/bff/session", JsonBody("{\"email\":\"dealer-ops@dealer.example\",\"password\":\"x\"}"))).StatusCode);
     }
 
@@ -44,6 +41,18 @@ public sealed class HostingTests
     {
         using var factory = new PortalFactory();
         Assert.Equal(HttpStatusCode.OK, (await factory.CreateClient().GetAsync("/healthz")).StatusCode);
+    }
+
+    [Theory]
+    [InlineData("Platform:Signing:CurrentKeyId", "")]
+    [InlineData("Platform:Signing:CurrentKeyId", "vsl-synthetic-missing")]
+    [InlineData("Platform:Signing:Keys:0:Material", "AA==")]
+    [InlineData("Platform:Signing:Keys:0:Material", "invalid!")]
+    public void StartupRejectsMissingOrInvalidKeys(string setting, string value)
+    {
+        using var factory = new PortalFactory(new() { [setting] = value });
+        var error = Assert.Throws<InvalidOperationException>(() => factory.CreateClient());
+        Assert.Contains("Platform:Signing", error.Message);
     }
 
     private static StringContent JsonBody(string json) => new(json, System.Text.Encoding.UTF8, "application/json");

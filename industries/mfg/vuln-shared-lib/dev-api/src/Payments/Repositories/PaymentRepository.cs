@@ -16,9 +16,9 @@ public sealed class PaymentRepository(PaymentsContext context)
         return context.Settlements.SingleOrDefaultAsync(x => x.Id == id && x.DealerId == dealerId);
     }
 
-    public Task<Refund?> FindRefund(int id)
+    public Task<Refund?> FindRefund(string dealerId, int id)
     {
-        return context.Refunds.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id);
+        return context.Refunds.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id && x.DealerId == dealerId);
     }
 
     public Task<List<Refund>> Refunds(string dealerId)

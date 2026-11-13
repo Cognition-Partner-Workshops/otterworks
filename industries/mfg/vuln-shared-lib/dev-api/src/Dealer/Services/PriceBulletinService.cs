@@ -10,7 +10,8 @@ public sealed class PriceBulletinService(IConfiguration configuration, Inventory
 {
     public async Task<int> Refresh()
     {
-        var response = await SafeHttp.Fetch(configuration["Dealer:PriceBulletinUrl"]!);
+        var response = await SafeHttp.Fetch(configuration["Dealer:PriceBulletinUrl"]!,
+            configuration.GetSection("Dealer:PriceBulletinAllowedHosts").Get<string[]>() ?? Array.Empty<string>());
         if (!response.IsSuccess)
             throw new HttpRequestException("Price bulletin was not available.");
         var rows = JsonConvert.DeserializeObject<List<BulletinRow>>(Encoding.UTF8.GetString(response.Body))

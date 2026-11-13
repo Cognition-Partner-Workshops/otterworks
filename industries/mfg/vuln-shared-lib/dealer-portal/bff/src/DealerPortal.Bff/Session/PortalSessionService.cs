@@ -12,11 +12,13 @@ public sealed class PortalSessionService
     public const string CookieName = "dp_session";
 
     private readonly TimeProvider _clock;
+    private readonly ISigningKeyProvider _signingKeys;
     private readonly PortalOptions _options;
 
-    public PortalSessionService(TimeProvider clock, IOptions<PortalOptions> options)
+    public PortalSessionService(TimeProvider clock, IOptions<PortalOptions> options, ISigningKeyProvider signingKeys)
     {
         _clock = clock;
+        _signingKeys = signingKeys;
         _options = options.Value;
     }
 
@@ -26,7 +28,7 @@ public sealed class PortalSessionService
     public string Encode(PortalSession session)
     {
         var payload = Base64Url.Encode(JsonSerializer.SerializeToUtf8Bytes(session));
-        return payload + "." + TokenSigner.Sign(payload);
+        return payload + "." + TokenSigner.Sign(payload, _signingKeys);
     }
 
     public PortalSession? Decode(string? cookie)
@@ -43,7 +45,7 @@ public sealed class PortalSessionService
         }
 
         var payload = cookie[..dot];
-        if (!TokenSigner.Verify(payload, cookie[(dot + 1)..]))
+        if (!TokenSigner.Verify(payload, cookie[(dot + 1)..], _signingKeys))
         {
             return null;
         }

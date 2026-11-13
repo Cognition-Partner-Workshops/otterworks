@@ -2,12 +2,12 @@ using Platform.Shared.Crypto;
 
 namespace Dealer.Services;
 
-public sealed class ExportLinkSigner(TimeProvider clock)
+public sealed class ExportLinkSigner(TimeProvider clock, ISigningKeyProvider signingKeys)
 {
     public string Sign(string fileName, long expiresUnix) =>
-        TokenSigner.Sign($"export:{fileName}:{expiresUnix}");
+        TokenSigner.Sign($"export:{fileName}:{expiresUnix}", signingKeys);
 
     public bool Verify(string fileName, long expiresUnix, string signature) =>
         expiresUnix > clock.GetUtcNow().ToUnixTimeSeconds() &&
-        TokenSigner.Verify($"export:{fileName}:{expiresUnix}", signature);
+        TokenSigner.Verify($"export:{fileName}:{expiresUnix}", signature, signingKeys);
 }
