@@ -86,3 +86,77 @@ async def test_unfiltered_list_is_unchanged(client: AsyncClient, owner_id: uuid.
 
     assert resp.status_code == 200
     assert resp.json()["total"] == 1
+
+
+@pytest.mark.asyncio
+async def test_title_injection_returns_no_extra_rows(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    await _create(client, owner_id, "Quarterly Report")
+
+    resp = await client.get("/api/v1/documents/", params={"title": "x') OR 1=1 --"})
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["total"] == 0
+    assert body["items"] == []
+
+
+@pytest.mark.asyncio
+async def test_content_type_tautology_matches_nothing(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    await _create(client, owner_id, "Plan", content_type="text/markdown")
+
+    resp = await client.get(
+        "/api/v1/documents/", params={"content_type": "x' OR '1'='1"}
+    )
+
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+
+
+@pytest.mark.asyncio
+async def test_quote_in_title_is_a_literal_not_a_sql_error(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    await _create(client, owner_id, "Owner's Report")
+
+    resp = await client.get("/api/v1/documents/", params={"title": "owner's"})
+
+    assert resp.status_code == 200
+    assert [item["title"] for item in resp.json()["items"]] == ["Owner's Report"]
+
+
+@pytest.mark.asyncio
+async def test_like_wildcards_in_title_are_literal(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    await _create(client, owner_id, "100% done")
+    await _create(client, owner_id, "Plan")
+
+    resp = await client.get("/api/v1/documents/", params={"title": "%"})
+
+    assert resp.status_code == 200
+    assert [item["title"] for item in resp.json()["items"]] == ["100% done"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"sort": "(select 1)"},
+        {"sort": "title; DROP TABLE documents"},
+        {"sort": "title", "direction": "desc, (select 1)"},
+    ],
+)
+async def test_unsupported_ordering_is_rejected(
+    client: AsyncClient, owner_id: uuid.UUID, params: dict
+):
+    await _create(client, owner_id, "Quarterly Report")
+
+    resp = await client.get("/api/v1/documents/", params=params)
+
+    assert resp.status_code == 400
+    detail = resp.json()["detail"]
+    assert "SELECT" not in detail and "syntax" not in detail.lower()
