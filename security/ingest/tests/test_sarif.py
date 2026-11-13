@@ -59,6 +59,12 @@ def test_ingestion_prefers_github_provenance_over_logical_repository():
                              {"repo_name": "owner/plain", "host": "github.com"}]
 
 
+@pytest.mark.parametrize("uri", ["https://github.com/owner/repo", "https://github.com/owner/repo/",
+                                 "https://github.com/owner/repo.git", "https://github.com/owner/repo.git/"])
+def test_ingestion_normalizes_provenance_uri(uri):
+    assert di.ingest_repository({"versionControlProvenance": [{"repositoryUri": uri}]}) == "owner/repo"
+
+
 def test_empty_and_invalid():
     report = ss.document([ss.build_run("owner/repo", "abc", [], {})])
     assert cs.cluster(report) == []
