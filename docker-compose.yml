@@ -157,6 +157,9 @@ services:
       DOC_SVC_AWS_ENDPOINT_URL: http://localstack:4566
       DOC_SVC_SNS_ENABLED: 'true'
       JWT_SECRET: ${JWT_SECRET:-otterworks-local-dev-jwt-secret-change-me-in-production}
+      # No default on purpose: document-service refuses to start without a private
+      # key. `make up` generates one; plain `docker compose` callers must export it.
+      SHARE_LINK_SECRET: ${SHARE_LINK_SECRET:-}
     depends_on:
       postgres:
         condition: service_healthy

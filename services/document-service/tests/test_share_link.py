@@ -1,17 +1,19 @@
 """Tests for read-only share-link tokens."""
 
+import hashlib
 import uuid
 
 import pytest
 
-from app.services.share_link import ShareLinkService
+from app.main import app, lifespan
+from app.services.share_link import ShareLinkSecretError, ShareLinkService
 
 DOC_ID = "11111111-1111-4111-8111-111111111111"
 
 
 @pytest.fixture
 def service():
-    return ShareLinkService(salt="test-salt")
+    return ShareLinkService(secret="share-link-test-key")
 
 
 def test_minted_token_verifies(service):
@@ -58,3 +60,60 @@ async def test_share_endpoint_round_trip(client, owner_id: uuid.UUID, monkeypatc
         "/api/v1/documents/shared", params={"document_id": doc_id, "token": "wrong"}
     )
     assert denied.status_code == 403
+
+
+def _legacy_default_salt_token(document_id: str) -> str:
+    """The token the old unkeyed scheme derived from the id and the public salt."""
+    return hashlib.md5(
+        f"{document_id}:otterworks-share".encode(), usedforsecurity=False
+    ).hexdigest()[:16]
+
+
+def test_token_depends_on_the_secret():
+    assert ShareLinkService(secret="share-link-key-one").mint_token(DOC_ID) != ShareLinkService(
+        secret="share-link-key-two"
+    ).mint_token(DOC_ID)
+
+
+def test_legacy_default_salt_token_is_rejected():
+    assert ShareLinkService().verify_token(DOC_ID, _legacy_default_salt_token(DOC_ID)) is False
+
+
+def test_missing_secret_is_refused(monkeypatch):
+    monkeypatch.delenv("SHARE_LINK_SECRET", raising=False)
+    with pytest.raises(ShareLinkSecretError):
+        ShareLinkService()
+
+
+@pytest.mark.parametrize("secret", ["", "otterworks-share", "short"])
+def test_public_or_weak_secret_is_refused(monkeypatch, secret):
+    monkeypatch.setenv("SHARE_LINK_SECRET", secret)
+    with pytest.raises(ShareLinkSecretError):
+        ShareLinkService()
+
+
+@pytest.mark.asyncio
+async def test_startup_fails_without_secret(monkeypatch):
+    monkeypatch.delenv("SHARE_LINK_SECRET", raising=False)
+    with pytest.raises(ShareLinkSecretError):
+        async with lifespan(app):
+            pass
+
+
+@pytest.mark.asyncio
+async def test_share_endpoint_rejects_legacy_default_salt_token(
+    client, owner_id: uuid.UUID, monkeypatch
+):
+    monkeypatch.delenv("JWT_SECRET", raising=False)
+    created = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Private", "content": "secret body", "owner_id": str(owner_id)},
+    )
+    doc_id = created.json()["id"]
+
+    forged = await client.get(
+        "/api/v1/documents/shared",
+        params={"document_id": doc_id, "token": _legacy_default_salt_token(doc_id)},
+    )
+    assert forged.status_code == 403
+    assert "secret body" not in forged.text
