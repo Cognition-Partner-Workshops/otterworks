@@ -1,0 +1,238 @@
+{
+ "root": "platform/terraform",
+ "summary": {
+  "passed": 162,
+  "failed": 25,
+  "skipped": 0,
+  "parsing_errors": 0,
+  "resource_count": 57,
+  "checkov_version": "3.4.5"
+ },
+ "failed": [
+  {
+   "check_id": "CKV_AWS_136",
+   "resource": "module.ecr.aws_ecr_repository.services[\"audit-service\"]",
+   "file": "/modules/ecr/main.tf",
+   "lines": [
+    13,
+    27
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_136",
+   "resource": "module.ecr.aws_ecr_repository.services[\"notification-service\"]",
+   "file": "/modules/ecr/main.tf",
+   "lines": [
+    13,
+    27
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_136",
+   "resource": "module.ecr.aws_ecr_repository.services[\"auth-service\"]",
+   "file": "/modules/ecr/main.tf",
+   "lines": [
+    13,
+    27
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_136",
+   "resource": "module.ecr.aws_ecr_repository.services[\"analytics-service\"]",
+   "file": "/modules/ecr/main.tf",
+   "lines": [
+    13,
+    27
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_136",
+   "resource": "module.ecr.aws_ecr_repository.services[\"search-service\"]",
+   "file": "/modules/ecr/main.tf",
+   "lines": [
+    13,
+    27
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_136",
+   "resource": "module.ecr.aws_ecr_repository.services[\"admin-service\"]",
+   "file": "/modules/ecr/main.tf",
+   "lines": [
+    13,
+    27
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_136",
+   "resource": "module.ecr.aws_ecr_repository.services[\"admin-dashboard\"]",
+   "file": "/modules/ecr/main.tf",
+   "lines": [
+    13,
+    27
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_136",
+   "resource": "module.ecr.aws_ecr_repository.services[\"report-service\"]",
+   "file": "/modules/ecr/main.tf",
+   "lines": [
+    13,
+    27
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_136",
+   "resource": "module.ecr.aws_ecr_repository.services[\"web-app\"]",
+   "file": "/modules/ecr/main.tf",
+   "lines": [
+    13,
+    27
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_136",
+   "resource": "module.ecr.aws_ecr_repository.services[\"collab-service\"]",
+   "file": "/modules/ecr/main.tf",
+   "lines": [
+    13,
+    27
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_136",
+   "resource": "module.ecr.aws_ecr_repository.services[\"api-gateway\"]",
+   "file": "/modules/ecr/main.tf",
+   "lines": [
+    13,
+    27
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_136",
+   "resource": "module.ecr.aws_ecr_repository.services[\"document-service\"]",
+   "file": "/modules/ecr/main.tf",
+   "lines": [
+    13,
+    27
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_136",
+   "resource": "module.ecr.aws_ecr_repository.services[\"file-service\"]",
+   "file": "/modules/ecr/main.tf",
+   "lines": [
+    13,
+    27
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_158",
+   "resource": "module.eks.aws_cloudwatch_log_group.cluster",
+   "file": "/modules/eks/main.tf",
+   "lines": [
+    52,
+    59
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_338",
+   "resource": "module.eks.aws_cloudwatch_log_group.cluster",
+   "file": "/modules/eks/main.tf",
+   "lines": [
+    52,
+    59
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_37",
+   "resource": "module.eks.aws_eks_cluster.main",
+   "file": "/modules/eks/main.tf",
+   "lines": [
+    93,
+    124
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_39",
+   "resource": "module.eks.aws_eks_cluster.main",
+   "file": "/modules/eks/main.tf",
+   "lines": [
+    93,
+    124
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_38",
+   "resource": "module.eks.aws_eks_cluster.main",
+   "file": "/modules/eks/main.tf",
+   "lines": [
+    93,
+    124
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_341",
+   "resource": "module.eks.aws_launch_template.node_group",
+   "file": "/modules/eks/main.tf",
+   "lines": [
+    184,
+    206
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_394",
+   "resource": "module.vpc.aws_availability_zones.available",
+   "file": "/modules/vpc/main.tf",
+   "lines": [
+    6,
+    8
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_130",
+   "resource": "module.vpc.aws_subnet.public[0]",
+   "file": "/modules/vpc/main.tf",
+   "lines": [
+    58,
+    71
+   ]
+  },
+  {
+   "check_id": "CKV_AWS_130",
+   "resource": "module.vpc.aws_subnet.public[1]",
+   "file": "/modules/vpc/main.tf",
+   "lines": [
+    58,
+    71
+   ]
+  },
+  {
+   "check_id": "CKV2_AWS_11",
+   "resource": "module.vpc.aws_vpc.main",
+   "file": "/modules/vpc/main.tf",
+   "lines": [
+    36,
+    44
+   ]
+  },
+  {
+   "check_id": "CKV2_AWS_12",
+   "resource": "module.vpc.aws_vpc.main",
+   "file": "/modules/vpc/main.tf",
+   "lines": [
+    36,
+    44
+   ]
+  },
+  {
+   "check_id": "CKV2_AWS_64",
+   "resource": "module.eks.aws_kms_key.eks_secrets",
+   "file": "/modules/eks/main.tf",
+   "lines": [
+    64,
+    72
+   ]
+  }
+ ]
+}

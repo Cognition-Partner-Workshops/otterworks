@@ -58,6 +58,38 @@ resource "aws_cloudwatch_log_group" "cluster" { # nosemgrep: terraform.aws.secur
   })
 }
 
+# Envelope encryption of Kubernetes Secrets (tenant DB credentials, dashboard
+# passcode, service secrets) with a customer-managed key. Enabling it on an
+# existing cluster is in-place, but it can never be turned off again.
+resource "aws_kms_key" "eks_secrets" {
+  description             = "EKS Secrets envelope encryption for ${var.cluster_name}"
+  enable_key_rotation     = true
+  deletion_window_in_days = 30
+
+  tags = merge(local.common_tags, {
+    Component = "eks-cluster"
+  })
+}
+
+resource "aws_kms_alias" "eks_secrets" {
+  name          = "alias/${var.cluster_name}-eks-secrets"
+  target_key_id = aws_kms_key.eks_secrets.key_id
+}
+
+data "aws_iam_policy_document" "cluster_encryption" {
+  statement {
+    effect    = "Allow"
+    actions   = ["kms:Encrypt", "kms:Decrypt", "kms:ListGrants", "kms:DescribeKey"]
+    resources = [aws_kms_key.eks_secrets.arn]
+  }
+}
+
+resource "aws_iam_role_policy" "cluster_encryption" {
+  name   = "eks-secrets-encryption"
+  role   = aws_iam_role.cluster.id
+  policy = data.aws_iam_policy_document.cluster_encryption.json
+}
+
 resource "aws_eks_cluster" "main" { # nosemgrep: terraform.lang.security.eks-public-endpoint-enabled.eks-public-endpoint-enabled
   name     = var.cluster_name
   version  = var.cluster_version
@@ -65,6 +97,13 @@ resource "aws_eks_cluster" "main" { # nosemgrep: terraform.lang.security.eks-pub
 
   # api + audit only; the other three are noise for a demo cluster and bill per GB.
   enabled_cluster_log_types = ["api", "audit"]
+
+  encryption_config {
+    resources = ["secrets"]
+    provider {
+      key_arn = aws_kms_key.eks_secrets.arn
+    }
+  }
 
   vpc_config {
     subnet_ids              = concat(var.public_subnet_ids, var.private_subnet_ids)
@@ -79,6 +118,7 @@ resource "aws_eks_cluster" "main" { # nosemgrep: terraform.lang.security.eks-pub
   depends_on = [
     aws_iam_role_policy_attachment.cluster_policy,
     aws_iam_role_policy_attachment.cluster_vpc_controller,
+    aws_iam_role_policy.cluster_encryption,
     aws_cloudwatch_log_group.cluster,
   ]
 }
