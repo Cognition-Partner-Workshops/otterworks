@@ -23,6 +23,7 @@ import PrivacyPage from "@/pages/privacy";
 import BillingPlansPage from "@/features/billing/plans-page";
 import BillingEntitlementPage from "@/features/billing/entitlement-page";
 import BillingChangePlanPage from "@/features/billing/change-plan-page";
+import ClaimsPage from "@/pages/claims";
 
 const BILLING_FIXTURE_ENABLED =
   import.meta.env.VITE_ENABLE_BILLING_FIXTURE === "true" ||
@@ -52,6 +53,8 @@ export default function App() {
           <Route path="/files/:id" element={<FileDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/margins" element={<MarginsPage />} />
+          <Route path="/claims" element={<ClaimsPage />} />
+          <Route path="/claims/:id" element={<ClaimsPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/recent" element={<RecentPage />} />

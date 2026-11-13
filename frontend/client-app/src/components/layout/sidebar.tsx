@@ -41,6 +41,7 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard", label: "Overview", icon: Home },
       { href: "/recent", label: "Recent", icon: Clock },
       { href: "/files", label: "Claim files", icon: FolderOpen },
+      { href: "/claims", label: "Claims", icon: FileText },
       { href: "/documents", label: "Policy documents", icon: FileText },
       { href: "/search", label: "Search", icon: Search },
       { href: "/margins", label: "Book margins", icon: TrendingUp },

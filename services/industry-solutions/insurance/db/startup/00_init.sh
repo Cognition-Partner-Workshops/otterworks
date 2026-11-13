@@ -65,6 +65,9 @@ SQL
   run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/04_ledger_triggers.sql"
   run_sql "commission_dw/commission_dw"   "${SQL_DIR}/olap/01_star_schema.sql"
   run_sql "commission_dw/commission_dw"   "${SQL_DIR}/olap/02_etl_pkg.sql"
+  sqlplus -s "commission_dw/commission_dw@localhost:1521/FREEPDB1" \
+    @"${SQL_DIR}/olap/03_policy_claims.sql" "${INSURANCE_FACT_ROWS:-200000}"
+  run_sql "commission_dw/commission_dw"   "${SQL_DIR}/olap/04_policy_claims_pkg.sql"
 
   # PL/SQL compilation errors do not trip WHENEVER SQLERROR, so assert every
   # object in both schemas is VALID before declaring success.
