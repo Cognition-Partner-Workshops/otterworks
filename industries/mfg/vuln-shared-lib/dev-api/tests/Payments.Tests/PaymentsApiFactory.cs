@@ -5,14 +5,18 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Configuration;
 using Payments.Models;
 using Payments.Repositories;
+using Payments.Services;
 using Platform.Shared.Http;
 
 namespace Payments.Tests;
 
 public sealed class PaymentsApiFactory : WebApplicationFactory<Payments.Program>
 {
+    public string? ProcessorSecret { get; set; }
+    public IPAddress[] WebhookAddresses { get; set; } = [IPAddress.Parse("93.184.216.34")];
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     public PaymentTransport Transport { get; } = new();
 
@@ -23,9 +27,16 @@ public sealed class PaymentsApiFactory : WebApplicationFactory<Payments.Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration((_, config) =>
+        {
+            if (ProcessorSecret is not null)
+                config.AddInMemoryCollection(new Dictionary<string, string?> { ["Payments:Processor:ApiSecret"] = ProcessorSecret });
+        });
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<DbContextOptions<PaymentsContext>>();
+            services.RemoveAll<IWebhookHostResolver>();
+            services.AddSingleton<IWebhookHostResolver>(new StubWebhookResolver(this));
             services.AddDbContext<PaymentsContext>(options => options.UseSqlite(connection));
             services.AddHttpClient("webhooks").ConfigurePrimaryHttpMessageHandler(() => Transport);
         });
@@ -39,6 +50,7 @@ public sealed class PaymentsApiFactory : WebApplicationFactory<Payments.Program>
             new Settlement { Id = 1, DealerId = "D-1001", Reference = "ST-1001", AmountCents = 10000 },
             new Settlement { Id = 2, DealerId = "D-2001", Reference = "ST-2001", AmountCents = 5000 });
         context.Refunds.Add(new Refund { Id = 1, SettlementId = 1, DealerId = "D-1001", AmountCents = 1000, Reason = "Parts return" });
+        context.Refunds.Add(new Refund { Id = 2, SettlementId = 2, DealerId = "D-2001", AmountCents = 100, Reason = "Other return" });
         context.SaveChanges();
         SafeHttp.UseHandler(Transport);
     }
@@ -51,6 +63,12 @@ public sealed class PaymentsApiFactory : WebApplicationFactory<Payments.Program>
             connection.Dispose();
         }
     }
+}
+
+public sealed class StubWebhookResolver(PaymentsApiFactory factory) : IWebhookHostResolver
+{
+    public Task<IPAddress[]> Resolve(string host, CancellationToken cancellationToken) =>
+        Task.FromResult(factory.WebhookAddresses);
 }
 
 public sealed class PaymentTransport : HttpMessageHandler
