@@ -61,10 +61,27 @@ resource "aws_cloudwatch_log_group" "cluster" { # nosemgrep: terraform.aws.secur
 # Envelope encryption of Kubernetes Secrets (tenant DB credentials, dashboard
 # passcode, service secrets) with a customer-managed key. Enabling it on an
 # existing cluster is in-place, but it can never be turned off again.
+# The KMS default key policy, written out: access is delegated to IAM in this
+# account, and the cluster role is granted use of the key below.
+data "aws_iam_policy_document" "eks_secrets_key" {
+  statement {
+    sid       = "EnableIamPolicies"
+    effect    = "Allow"
+    actions   = ["kms:*"]
+    resources = ["*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}:root"]
+    }
+  }
+}
+
 resource "aws_kms_key" "eks_secrets" {
   description             = "EKS Secrets envelope encryption for ${var.cluster_name}"
   enable_key_rotation     = true
   deletion_window_in_days = 30
+  policy                  = data.aws_iam_policy_document.eks_secrets_key.json
 
   tags = merge(local.common_tags, {
     Component = "eks-cluster"
