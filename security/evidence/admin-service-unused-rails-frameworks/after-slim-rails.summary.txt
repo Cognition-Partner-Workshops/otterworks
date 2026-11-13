@@ -1,0 +1,5 @@
+image=admin-service:slim-rails id=sha256:6f830c68d3c775059591c376664be663932d5a2369f3fd5219529b9ea3910521
+total=508 by_severity: HIGH=138 LOW=176 MEDIUM=186 UNKNOWN=8
+  admin-service:slim-rails (debian 13.7) [debian]: 427 HIGH=126 LOW=157 MEDIUM=140 UNKNOWN=4
+  Ruby [gemspec]: 81 HIGH=12 LOW=19 MEDIUM=46 UNKNOWN=4
+  gem CRITICAL:
