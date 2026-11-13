@@ -27,6 +27,7 @@ services/report-service/target/
 services/legacy-portal/target/
 *.class
 *.jar
+!industries/mfg/vuln-shared-lib/android-app/gradle/wrapper/gradle-wrapper.jar
 
 # --- Rust ---
 services/file-service/target/

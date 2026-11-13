@@ -1,0 +1,40 @@
+trigger:
+  paths:
+    include:
+      - industries/mfg/vuln-shared-lib/android-app/*
+pool:
+  vmImage: ubuntu-latest
+variables:
+  projectDir: industries/mfg/vuln-shared-lib/android-app
+steps:
+  - task: JavaToolInstaller@0
+    inputs:
+      versionSpec: '17'
+      jdkArchitectureOption: x64
+      jdkSourceOption: PreInstalled
+  - script: |
+      yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null
+      $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" "system-images;android-35;google_apis;x86_64"
+    displayName: Android SDK
+  - script: make test
+    workingDirectory: $(projectDir)
+  - script: make build
+    workingDirectory: $(projectDir)
+  - script: |
+      echo no | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n dealer -k "system-images;android-35;google_apis;x86_64"
+      $ANDROID_HOME/emulator/emulator -avd dealer -no-window -no-audio -no-snapshot -gpu swiftshader_indirect > $(Agent.TempDirectory)/emulator.log 2>&1 &
+      $ANDROID_HOME/platform-tools/adb wait-for-device
+      timeout 240 sh -c 'until [ "$($ANDROID_HOME/platform-tools/adb shell getprop sys.boot_completed | tr -d "\r")" = "1" ]; do sleep 2; done'
+      make ui-test
+    workingDirectory: $(projectDir)
+    displayName: Compose smoke
+  - task: PublishTestResults@2
+    condition: always()
+    inputs:
+      testResultsFormat: JUnit
+      testResultsFiles: '**/build/**/TEST-*.xml'
+  - task: PublishPipelineArtifact@1
+    condition: always()
+    inputs:
+      targetPath: $(projectDir)/app/build/outputs
+      artifact: android-outputs
