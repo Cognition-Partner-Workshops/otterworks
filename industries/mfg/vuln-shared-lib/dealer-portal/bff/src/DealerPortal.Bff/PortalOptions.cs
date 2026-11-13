@@ -10,6 +10,8 @@ public sealed class PortalOptions
     /// <summary>OEM bulletin feed shown on the Notices screen.</summary>
     public string NoticeFeedUrl { get; set; } = "https://bulletins.oem.example/dealer-notices.json";
 
+    public string[] NoticeFeedAllowedHosts { get; set; } = [];
+
     /// <summary>Directory holding the Angular build; relative paths resolve against the content root.</summary>
     public string StaticRoot { get; set; } = "wwwroot";
 

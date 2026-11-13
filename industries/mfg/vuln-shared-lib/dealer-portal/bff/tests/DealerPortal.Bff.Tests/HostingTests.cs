@@ -46,5 +46,17 @@ public sealed class HostingTests
         Assert.Equal(HttpStatusCode.OK, (await factory.CreateClient().GetAsync("/healthz")).StatusCode);
     }
 
+    [Theory]
+    [InlineData("Platform:Signing:CurrentKeyId", "")]
+    [InlineData("Platform:Signing:CurrentKeyId", "vsl-synthetic-missing")]
+    [InlineData("Platform:Signing:Keys:0:Material", "AA==")]
+    [InlineData("Platform:Signing:Keys:0:Material", "invalid!")]
+    public void StartupRejectsMissingOrInvalidKeys(string setting, string value)
+    {
+        using var factory = new PortalFactory(new() { [setting] = value });
+        var error = Assert.Throws<InvalidOperationException>(() => factory.CreateClient());
+        Assert.Contains("Platform:Signing", error.Message);
+    }
+
     private static StringContent JsonBody(string json) => new(json, System.Text.Encoding.UTF8, "application/json");
 }

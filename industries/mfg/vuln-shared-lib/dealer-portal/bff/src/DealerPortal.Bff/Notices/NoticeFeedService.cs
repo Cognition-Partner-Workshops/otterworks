@@ -25,7 +25,8 @@ public sealed class NoticeFeedService
         FetchResult result;
         try
         {
-            result = await SafeHttp.Fetch(_options.NoticeFeedUrl);
+            if (_options.NoticeFeedAllowedHosts.Length == 0) throw new SafeHttpPolicyException("No notice feed hosts configured.");
+            result = await SafeHttp.Fetch(_options.NoticeFeedUrl, _options.NoticeFeedAllowedHosts);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException)
         {

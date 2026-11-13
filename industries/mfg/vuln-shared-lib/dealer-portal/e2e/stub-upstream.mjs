@@ -5,7 +5,7 @@ const port = Number(process.env.STUB_PORT || 5199);
 const EMAIL = 'dealer-ops@dealer.example';
 const DEALER_ID = 'D-1001';
 const TOKEN =
-  'v1.eyJzdWIiOiJkZWFsZXItb3BzQGRlYWxlci5leGFtcGxlIiwiZGVhbGVyIjoiRC0xMDAxIiwicm9sZXMiOlsiZGVhbGVyIl0sImlhdCI6MTc5ODc2MTYwMCwiZXhwIjoxNzk4NzY1MjAwfQ.aQiSk3ln-G_hMxS28Rm8xvC-7P0';
+  'v1.eyJzdWIiOiJkZWFsZXItb3BzQGRlYWxlci5leGFtcGxlIiwiZGVhbGVyIjoiRC0xMDAxIiwicm9sZXMiOlsiZGVhbGVyIl0sImlhdCI6MTc5ODc2MTYwMCwiZXhwIjoxNzk4NzY1MjAwfQ.tsR_nbfw6TFkFEydowMEG_yXhQQgMO3oYDFVNkxeA1s';
 
 const inventory = [
   { vin: '1VSLA0000AA000001', model: 'Ranger LT', year: 2026, status: 'AVAILABLE', priceCents: 3899000, imageUrl: '/favicon.ico' },
