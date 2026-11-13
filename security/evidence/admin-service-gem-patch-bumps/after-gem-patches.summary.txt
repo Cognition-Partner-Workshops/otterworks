@@ -1,0 +1,6 @@
+image=admin-service:gem-patches id=sha256:3568ca6662e8948488815ed1b21405d4808ff18ed002f80ee1b7a96791eec2e4
+total=482 by_severity: CRITICAL=4 HIGH=140 LOW=164 MEDIUM=170 UNKNOWN=4
+  admin-service:gem-patches (debian 13.7) [debian]: 427 HIGH=126 LOW=157 MEDIUM=140 UNKNOWN=4
+  Node.js [node-pkg]: 0
+  Ruby [gemspec]: 55 CRITICAL=4 HIGH=14 LOW=7 MEDIUM=30
+  gem CRITICAL: activestorage@7.1.6 CVE-2026-122006, activestorage@7.1.6 CVE-2026-33195, activestorage@7.1.6 CVE-2026-33202, activestorage@7.1.6 GHSA-f3w6-w445-fwh9
