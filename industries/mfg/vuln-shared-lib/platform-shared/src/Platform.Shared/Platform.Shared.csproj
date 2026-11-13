@@ -10,7 +10,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <PackageId>Platform.Shared</PackageId>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
     <Authors>platform-team</Authors>
     <Description>Shared HTTP fetch, file storage, token signing and query helpers for the dealer, warranty and payments platform.</Description>
     <RepositoryUrl>https://github.com/Cognition-Partner-Workshops/otterworks</RepositoryUrl>

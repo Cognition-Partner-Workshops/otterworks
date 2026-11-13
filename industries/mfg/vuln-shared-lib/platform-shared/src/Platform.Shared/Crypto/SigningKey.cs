@@ -38,6 +38,6 @@ public sealed class SigningKeyRing : ISigningKeyProvider
         if (keys.Length == 0 || keys.Any(key => key is null))
             throw new ArgumentException("Verification keys must be nonempty and contain no nulls.", nameof(verificationKeys));
         CurrentKey = currentKey;
-        VerificationKeys = Array.AsReadOnly(keys);
+        VerificationKeys = Array.AsReadOnly(new[] { currentKey }.Concat(keys).DistinctBy(key => key.Id).ToArray());
     }
 }

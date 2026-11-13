@@ -19,6 +19,20 @@ public class SigningAndFingerprintTests
         Assert.False(TokenSigner.Verify("vsl-synthetic-payload", expected, Ring(New)));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    [Trait("Category", "Security")]
+    public void Rotation_OmittedCurrentKeyIsIncludedFirstAndDeduplicated(bool duplicates)
+    {
+        var duplicateCurrent = new SigningKey(New.Id, Old.Material);
+        var rotated = new SigningKeyRing(New, duplicates ? new[] { Old, duplicateCurrent, Old } : new[] { Old });
+        var signature = TokenSigner.Sign("payload", rotated);
+        Assert.True(TokenSigner.Verify("payload", signature, rotated));
+        Assert.True(TokenSigner.Verify("payload", TokenSigner.Sign("payload", Ring(Old)), rotated));
+        Assert.Equal(new[] { New, Old }, rotated.VerificationKeys);
+    }
+
     [Fact]
     public void Rotation_RetainsThenRemovesOldKey()
     {
