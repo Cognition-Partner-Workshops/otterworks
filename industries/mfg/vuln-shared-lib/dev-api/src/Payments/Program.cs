@@ -27,7 +27,15 @@ public partial class Program
         builder.Services.AddScoped<WebhookService>();
         builder.Services.AddScoped<RemittanceStatementClient>();
         builder.Services.AddSingleton<WebhookSigner>();
-        builder.Services.AddHttpClient("webhooks");
+        builder.Services.AddSingleton<IWebhookHostResolver, DnsWebhookHostResolver>();
+        builder.Services.AddSingleton<WebhookDestinationPolicy>();
+        builder.Services.AddHttpClient("webhooks").ConfigurePrimaryHttpMessageHandler(services =>
+            new SocketsHttpHandler
+            {
+                AllowAutoRedirect = false,
+                UseProxy = false,
+                ConnectCallback = services.GetRequiredService<WebhookDestinationPolicy>().Connect
+            });
         var app = builder.Build();
         Directory.CreateDirectory("data");
         using (var scope = app.Services.CreateScope())

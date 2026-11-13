@@ -49,7 +49,11 @@ public sealed class SettlementsController(PaymentRepository repository, Settleme
         try
         {
             var batch = JsonConvert.DeserializeObject<SettlementBatch>(body,
-                new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.Auto,
+                    SerializationBinder = new SettlementAdjustmentBinder()
+                });
             if (batch is null || batch.Items is null)
             {
                 return BadRequest("A settlement batch is required.");

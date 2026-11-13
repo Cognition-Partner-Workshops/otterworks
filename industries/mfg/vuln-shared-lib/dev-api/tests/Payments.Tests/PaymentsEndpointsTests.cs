@@ -117,24 +117,26 @@ public sealed class PaymentsEndpointsTests : IDisposable
 
     [Fact]
     [Trait("Category","Security")]
-    public async Task RefundDetailCanBeReadWithoutSession()
+    public async Task RefundDetailRequiresSession()
     {
         client.DefaultRequestHeaders.Authorization = null;
-        var refund = await client.GetFromJsonAsync<Refund>("/api/payments/refunds/1");
-        Assert.Equal("Parts return", refund!.Reason);
-        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/api/payments/refunds/999")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/payments/refunds/1")).StatusCode);
     }
 
     [Fact]
     [Trait("Category","Security")]
     public async Task ProcessorCallbackStoresStatusAndSignedEvent()
     {
-        client.DefaultRequestHeaders.Add("X-Processor-Secret", "vsl-synthetic-processor-api-secret-remittance");
-        var response = await client.PostAsJsonAsync("/api/payments/processor/callback", new ProcessorCallbackRequest(1, "paid"));
+        using var configuredFactory = new PaymentsApiFactory { ProcessorSecret = "synthetic-configured-secret" };
+        using var configuredClient = configuredFactory.CreateClient();
+        configuredFactory.Seed();
+        configuredClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TestTokens.Create());
+        configuredClient.DefaultRequestHeaders.Add("X-Processor-Secret", "synthetic-configured-secret");
+        var response = await configuredClient.PostAsJsonAsync("/api/payments/processor/callback", new ProcessorCallbackRequest(1, "paid"));
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var rows = await client.GetFromJsonAsync<Settlement[]>("/api/payments/settlements");
+        var rows = await configuredClient.GetFromJsonAsync<Settlement[]>("/api/payments/settlements");
         Assert.Equal("paid", rows!.Single().Status);
-        var entry = Assert.Single((await client.GetFromJsonAsync<WebhookEvent[]>("/api/payments/webhooks/events"))!);
+        var entry = Assert.Single((await configuredClient.GetFromJsonAsync<WebhookEvent[]>("/api/payments/webhooks/events"))!);
         Assert.True(new WebhookSigner().Verify(entry.Body, entry.Signature));
     }
 

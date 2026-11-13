@@ -31,6 +31,10 @@ public sealed class WebhooksController(WebhookService service, PaymentRepository
             var delivered = await service.SendSample(User.FindFirst("dealer")!.Value, request.Url);
             return delivered ? Ok(new { delivered }) : StatusCode(502);
         }
+        catch (InvalidDataException)
+        {
+            return BadRequest();
+        }
         catch (HttpRequestException)
         {
             return StatusCode(502);
