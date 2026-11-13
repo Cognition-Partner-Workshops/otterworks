@@ -1,0 +1,50 @@
+# Same restore, build, test and pack steps as .github/workflows/vsl-platform-shared.yml.
+trigger:
+  branches:
+    include: [demo-vuln-shared-lib]
+  paths:
+    include: [industries/mfg/vuln-shared-lib/platform-shared/*]
+
+pr:
+  branches:
+    include: [demo-vuln-shared-lib]
+  paths:
+    include: [industries/mfg/vuln-shared-lib/platform-shared/*]
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  projectDir: industries/mfg/vuln-shared-lib/platform-shared
+  buildConfiguration: Release
+
+steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: sdk
+      version: 8.0.x
+
+  - script: dotnet restore Platform.Shared.sln
+    workingDirectory: $(projectDir)
+    displayName: Restore
+
+  - script: dotnet build Platform.Shared.sln --no-restore -c $(buildConfiguration)
+    workingDirectory: $(projectDir)
+    displayName: Build
+
+  - script: dotnet test Platform.Shared.sln --no-build -c $(buildConfiguration) --logger trx --results-directory $(Agent.TempDirectory)/test-results
+    workingDirectory: $(projectDir)
+    displayName: Test
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: $(Agent.TempDirectory)/test-results/*.trx
+
+  - script: dotnet pack src/Platform.Shared/Platform.Shared.csproj --no-build -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)/feed
+    workingDirectory: $(projectDir)
+    displayName: Pack
+
+  - publish: $(Build.ArtifactStagingDirectory)/feed
+    artifact: platform-shared-nupkg

@@ -1,0 +1,10 @@
+# Shared-library remediation estate. Review is suggested, not enforced, until the teams
+# exist and branch protection on demo-vuln-shared-lib requires code-owner review.
+/industries/mfg/vuln-shared-lib/dev-api/src/Dealer/      @Cognition-Partner-Workshops/dealer-team
+/industries/mfg/vuln-shared-lib/dev-api/src/Warranty/    @Cognition-Partner-Workshops/warranty-team
+/industries/mfg/vuln-shared-lib/dev-api/src/Payments/    @Cognition-Partner-Workshops/payments-team
+/industries/mfg/vuln-shared-lib/dev-api/src/Identity/    @Cognition-Partner-Workshops/identity-team
+/industries/mfg/vuln-shared-lib/platform-shared/         @Cognition-Partner-Workshops/platform-team
+/industries/mfg/vuln-shared-lib/dealer-portal/           @Cognition-Partner-Workshops/portal-team
+/industries/mfg/vuln-shared-lib/android-app/             @Cognition-Partner-Workshops/mobile-team
+/.github/workflows/vsl-platform-shared.yml               @Cognition-Partner-Workshops/platform-team
