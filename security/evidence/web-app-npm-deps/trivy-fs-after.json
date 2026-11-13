@@ -1,0 +1,23 @@
+{
+  "ArtifactName": "/home/ubuntu/fe/npm/frontend/client-app/package-lock.json",
+  "ImageID": null,
+  "RepoDigests": null,
+  "OS": null,
+  "Results": [
+    {
+      "Target": "package-lock.json",
+      "Class": "lang-pkgs",
+      "Type": "npm",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "GHSA-cp6q-959q-f8rh",
+          "PkgName": "@tiptap/core",
+          "InstalledVersion": "2.27.2",
+          "FixedVersion": "3.30.4",
+          "Status": "fixed",
+          "Severity": "MEDIUM"
+        }
+      ]
+    }
+  ]
+}
