@@ -1,0 +1,26 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< com.otterworks:report-service >--------------------
+[INFO] Building OtterWorks Report Service 0.1.0
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-checkstyle-plugin:3.3.1:check (default-cli) @ report-service ---
+[INFO] Starting audit...
+[WARN] /work/services/report-service/src/main/java/com/otterworks/report/reconciliation/ReconciliationRepository.java:126: Line is longer than 120 characters (found 121). [LineLength]
+[WARN] /work/services/report-service/src/test/java/com/otterworks/report/archive/JdbcArchiveStoreTest.java:171: Line is longer than 120 characters (found 121). [LineLength]
+Audit done.
+[WARNING] src/main/java/com/otterworks/report/reconciliation/ReconciliationRepository.java:[126] (sizes) LineLength: Line is longer than 120 characters (found 121).
+[WARNING] src/test/java/com/otterworks/report/archive/JdbcArchiveStoreTest.java:[171] (sizes) LineLength: Line is longer than 120 characters (found 121).
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.162 s
+[INFO] Finished at: 2026-11-13T14:08:32Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-checkstyle-plugin:3.3.1:check (default-cli) on project report-service: You have 2 Checkstyle violations. -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
