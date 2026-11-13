@@ -25,12 +25,30 @@ public class SigningAndFingerprintTests
     [Trait("Category", "Security")]
     public void Rotation_OmittedCurrentKeyIsIncludedFirstAndDeduplicated(bool duplicates)
     {
-        var duplicateCurrent = new SigningKey(New.Id, Old.Material);
+        var duplicateCurrent = new SigningKey(New.Id, New.Material);
         var rotated = new SigningKeyRing(New, duplicates ? new[] { Old, duplicateCurrent, Old } : new[] { Old });
         var signature = TokenSigner.Sign("payload", rotated);
         Assert.True(TokenSigner.Verify("payload", signature, rotated));
         Assert.True(TokenSigner.Verify("payload", TokenSigner.Sign("payload", Ring(Old)), rotated));
         Assert.Equal(new[] { New, Old }, rotated.VerificationKeys);
+    }
+
+    [Fact]
+    [Trait("Category", "Security")]
+    public void Rotation_ConflictingCurrentKeyMaterialIsRejected()
+    {
+        var conflicting = new SigningKey(New.Id, Old.Material);
+        var exception = Assert.Throws<ArgumentException>(() => new SigningKeyRing(New, new[] { Old, conflicting }));
+        Assert.Contains("different material", exception.Message);
+    }
+
+    [Fact]
+    [Trait("Category", "Security")]
+    public void Rotation_ConflictingVerificationKeyMaterialIsRejected()
+    {
+        var conflicting = new SigningKey(Old.Id, New.Material);
+        var exception = Assert.Throws<ArgumentException>(() => new SigningKeyRing(New, new[] { Old, conflicting }));
+        Assert.Contains("different material", exception.Message);
     }
 
     [Fact]

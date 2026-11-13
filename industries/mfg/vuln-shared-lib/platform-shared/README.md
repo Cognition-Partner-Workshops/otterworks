@@ -20,7 +20,7 @@ The consumers compile against these entry points. Changing one of their signatur
 
 ## Version 2 policies
 
-Version 2.1.1 hardens the obsolete overloads: default or environment configuration is
+Version 2.1.2 hardens the obsolete overloads: default or environment configuration is
 required. Missing configuration now fails closed, including for binaries compiled
 against 1.0.0. Public signatures are unchanged, but no-config behavior is intentionally
 incompatible. Versions 2.0.0, 2.0.1 and 2.0.2 remain immutable.
@@ -52,7 +52,8 @@ or use `SigningKey.FromBase64(id, text)` for base64 or base64url config binding.
 commit production key material. `SigningKeyRing(currentKey, verificationKeys)` implements
 `ISigningKeyProvider`: sign uses the current key, verify tries every verification key
 with constant-time comparisons. The ring always includes the current key first,
-de-duplicating verification keys by key id with the first occurrence retained.
+collapsing exact duplicates by key id and material. Reusing an id with different
+material throws `ArgumentException`; use a new id when rotating key material.
 To rotate, change the current key and keep the old key in the verification list until
 old signatures expire, then remove it. Keys and the list are defensively copied.
 HMAC-SHA256 signatures are unpadded base64url with no key id; the envelope stays
@@ -88,7 +89,7 @@ It prints the loaded assembly name, path and SHA-256. It keeps build artifacts u
 `artifacts/compat` and requires .NET 8 and git.
 
 `make consumer-compat` runs the full migrated dev-api and BFF suites with their
-2.1.1 pins, then swaps only the DLL in the test output and reruns both full suites
+2.1.2 pins, then swaps only the DLL in the test output and reruns both full suites
 against the current DLL. This includes Dealer BulletinRefresh, Payments RemittancePull
 and the provider-based Identity SignInReturnsOrderedToken pin. Original DLLs are restored on exit.
 The 1.0.0-compiled binary check is separate in `make compat`.

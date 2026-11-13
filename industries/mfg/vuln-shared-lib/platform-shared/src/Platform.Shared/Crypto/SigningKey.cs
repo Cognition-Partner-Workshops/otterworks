@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+
 namespace Platform.Shared.Crypto;
 
 public sealed class SigningKey
@@ -38,6 +40,21 @@ public sealed class SigningKeyRing : ISigningKeyProvider
         if (keys.Length == 0 || keys.Any(key => key is null))
             throw new ArgumentException("Verification keys must be nonempty and contain no nulls.", nameof(verificationKeys));
         CurrentKey = currentKey;
-        VerificationKeys = Array.AsReadOnly(new[] { currentKey }.Concat(keys).DistinctBy(key => key.Id).ToArray());
+        var unique = new Dictionary<string, SigningKey>(StringComparer.Ordinal);
+        var ordered = new List<SigningKey>();
+        foreach (var key in new[] { currentKey }.Concat(keys))
+        {
+            if (unique.TryGetValue(key.Id, out var existing))
+            {
+                if (!CryptographicOperations.FixedTimeEquals(existing.Material, key.Material))
+                    throw new ArgumentException("Signing keys with the same id must not have different material.", nameof(verificationKeys));
+            }
+            else
+            {
+                unique.Add(key.Id, key);
+                ordered.Add(key);
+            }
+        }
+        VerificationKeys = Array.AsReadOnly(ordered.ToArray());
     }
 }
