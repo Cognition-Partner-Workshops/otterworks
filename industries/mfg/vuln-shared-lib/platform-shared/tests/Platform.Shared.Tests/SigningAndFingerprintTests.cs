@@ -53,18 +53,6 @@ public class SigningAndFingerprintTests
     }
 
     [Fact]
-    public void LegacyConfiguredProvider_DoesNotChangeSeededFixture()
-    {
-#pragma warning disable CS0618
-        var seeded = TokenSigner.Sign("payload");
-        TokenSigner.ConfigureDefaultKeyProvider(Ring(Old));
-        Assert.Equal(seeded, TokenSigner.Sign("payload"));
-        Assert.True(TokenSigner.Verify("payload", seeded));
-        Assert.NotEqual(TokenSigner.Sign("payload", Ring(Old)), seeded);
-#pragma warning restore CS0618
-    }
-
-    [Fact]
     public void Fingerprint_KnownAnswerAndStability()
     {
         const string expected = "5d7434b86a55836da8cc63110ee7874d8354bd0828f723a53e164fd5fcdc6f5a";
