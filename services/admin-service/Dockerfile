@@ -6,7 +6,7 @@ COPY Gemfile Gemfile.lock ./
 RUN bundle config set --local without 'test development' && bundle install
 
 FROM ruby:3.3-slim
-RUN apt-get update && apt-get install -y libpq5 curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libpq5 curl zlib1g && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /usr/local/bundle /usr/local/bundle
 COPY . .
