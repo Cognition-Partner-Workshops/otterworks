@@ -9,37 +9,57 @@ public static class SafeHttp
     public static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
 
     private static HttpClient _client = CreateClient(new SocketsHttpHandler { AllowAutoRedirect = false });
-    private static string[]? _defaultAllowedHosts;
+    private static HttpClient _legacyClient = CreateClient(new SocketsHttpHandler { AllowAutoRedirect = true });
+    private static bool _legacyRedirects;
+    private static bool _automaticRedirects;
+    private static HttpMessageHandler? _installedHandler;
 
-    /// <summary>Sets the process-wide allowlist used by the legacy overload.</summary>
-    public static void ConfigureDefaultAllowedHosts(IEnumerable<string> allowedHosts) =>
-        _defaultAllowedHosts = ValidateHosts(allowedHosts);
+    /// <summary>Retained for binary compatibility. Validates entries but does not restrict the legacy fixture overload.</summary>
+    public static void ConfigureDefaultAllowedHosts(IEnumerable<string> allowedHosts) => ValidateHosts(allowedHosts);
 
-    /// <summary>
-    /// Uses the configured process allowlist or PLATFORM_SHARED_FETCH_ALLOWED_HOSTS (comma separated).
-    /// Without either, denies all requests. Redirects obey the same policy.
-    /// </summary>
+    /// <summary>Legacy fixture compatibility: unrestricted HTTP fetch and redirects, with no host allowlist. Unsafe for untrusted URLs. Use Fetch(url, allowedHosts).</summary>
     [Obsolete("Use Fetch(url, allowedHosts) with an explicit allowlist.")]
-    public static Task<FetchResult> Fetch(string url)
+    public static async Task<FetchResult> Fetch(string url)
     {
-        var hosts = _defaultAllowedHosts ?? Environment.GetEnvironmentVariable("PLATFORM_SHARED_FETCH_ALLOWED_HOSTS")?
-            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        if (hosts is null || hosts.Length == 0)
-            throw new SafeHttpPolicyException("No default allowed hosts configured.");
-        return Fetch(url, hosts);
+        ArgumentException.ThrowIfNullOrWhiteSpace(url);
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            throw new ArgumentException($"Only absolute http(s) URLs can be fetched: '{url}'.", nameof(url));
+        var client = _legacyClient;
+        for (var redirects = 0; ; redirects++)
+        {
+            using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+            if (_legacyRedirects && (int)response.StatusCode is 300 or 301 or 302 or 303 or 307 or 308 &&
+                response.Headers.Location is { } location && Uri.TryCreate(uri, location, out var next) &&
+                (next.Scheme == Uri.UriSchemeHttp || next.Scheme == Uri.UriSchemeHttps) &&
+                !(uri.Scheme == Uri.UriSchemeHttps && next.Scheme == Uri.UriSchemeHttp))
+            {
+                if (redirects >= 50) throw new HttpRequestException("Redirect limit exceeded.");
+                uri = next;
+                continue;
+            }
+            var body = await ReadBounded(response.Content).ConfigureAwait(false);
+            return new FetchResult(response.StatusCode, response.Content.Headers.ContentType?.MediaType,
+                body, response.RequestMessage?.RequestUri ?? uri);
+        }
     }
 
     /// <summary>Fetches a URL, allowing only exact normalized hosts and approved ports, including on redirects.</summary>
-    public static async Task<FetchResult> Fetch(string url, IEnumerable<string> allowedHosts)
+    public static Task<FetchResult> Fetch(string url, IEnumerable<string> allowedHosts) => Fetch(url, allowedHosts, Timeout);
+
+    internal static async Task<FetchResult> Fetch(string url, IEnumerable<string> allowedHosts, TimeSpan timeout)
     {
         var hosts = ValidateHosts(allowedHosts);
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
             throw new SafeHttpPolicyException("Only absolute http(s) URLs can be fetched.");
         CheckUri(uri, hosts);
+        if (_automaticRedirects)
+            throw new SafeHttpPolicyException("The supplied started handler still enables automatic redirects. Supply a handler with AllowAutoRedirect=false.");
         var client = _client;
+        using var deadline = new CancellationTokenSource(timeout);
         for (var redirects = 0; ; redirects++)
         {
-            using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+            using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, deadline.Token).ConfigureAwait(false);
             if ((int)response.StatusCode is 301 or 302 or 303 or 307 or 308 && response.Headers.Location is { } location)
             {
                 if (redirects >= 5)
@@ -52,7 +72,7 @@ public static class SafeHttp
                 uri = next;
                 continue;
             }
-            var body = await ReadBounded(response.Content).ConfigureAwait(false);
+            var body = await ReadBounded(response.Content, deadline.Token).ConfigureAwait(false);
             return new FetchResult(response.StatusCode, response.Content.Headers.ContentType?.MediaType, body, uri);
         }
     }
@@ -90,24 +110,37 @@ public static class SafeHttp
     public static void UseHandler(HttpMessageHandler handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
+        if (ReferenceEquals(handler, _installedHandler)) return;
+        _legacyRedirects = false;
+        _automaticRedirects = false;
         for (var current = handler; current is not null; current = (current as DelegatingHandler)?.InnerHandler)
         {
-            if (current is HttpClientHandler http) http.AllowAutoRedirect = false;
-            if (current is SocketsHttpHandler sockets) sockets.AllowAutoRedirect = false;
+            if (current is HttpClientHandler http && http.AllowAutoRedirect)
+            {
+                try { http.AllowAutoRedirect = false; _legacyRedirects = true; }
+                catch (InvalidOperationException) { _automaticRedirects = true; }
+            }
+            if (current is SocketsHttpHandler sockets && sockets.AllowAutoRedirect)
+            {
+                try { sockets.AllowAutoRedirect = false; _legacyRedirects = true; }
+                catch (InvalidOperationException) { _automaticRedirects = true; }
+            }
         }
         _client = CreateClient(handler);
+        _legacyClient = _client;
+        _installedHandler = handler;
     }
 
     private static HttpClient CreateClient(HttpMessageHandler handler) =>
         new(handler, disposeHandler: false) { Timeout = Timeout };
 
-    private static async Task<byte[]> ReadBounded(HttpContent content)
+    private static async Task<byte[]> ReadBounded(HttpContent content, CancellationToken cancellationToken = default)
     {
-        await using var stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
+        await using var stream = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         using var buffer = new MemoryStream();
         var chunk = new byte[81920];
         int read;
-        while ((read = await stream.ReadAsync(chunk).ConfigureAwait(false)) > 0)
+        while ((read = await stream.ReadAsync(chunk, cancellationToken).ConfigureAwait(false)) > 0)
         {
             if (buffer.Length + read > MaxResponseBytes)
             {

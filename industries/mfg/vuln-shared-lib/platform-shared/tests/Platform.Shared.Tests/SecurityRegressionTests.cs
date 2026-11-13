@@ -8,19 +8,19 @@ namespace Platform.Shared.Tests;
 public class SecurityRegressionTests
 {
     [Fact]
-    public void LegacySigning_UsesSha256Length()
+    public void LegacySigning_PreservesSeededSha1()
     {
-        Assert.Equal(32, Base64Url.Decode(TokenSigner.Sign("vsl-synthetic-payload")).Length);
+        Assert.Equal(20, Base64Url.Decode(TokenSigner.Sign("vsl-synthetic-payload")).Length);
     }
 
     [Fact]
-    public async Task LegacyFetch_DeniesWithoutDefault()
+    public async Task LegacyFetch_PreservesUnrestrictedFixture()
     {
         Environment.SetEnvironmentVariable("PLATFORM_SHARED_FETCH_ALLOWED_HOSTS", null);
         var stub = new StubHandler(_ => StubHandler.Ok("blocked"));
         SafeHttp.UseHandler(stub);
-        await Assert.ThrowsAnyAsync<HttpRequestException>(() => SafeHttp.Fetch("https://blocked.example/"));
-        Assert.Empty(stub.Requests);
+        Assert.True((await SafeHttp.Fetch("https://blocked.example/")).IsSuccess);
+        Assert.Single(stub.Requests);
     }
 }
 #pragma warning restore CS0618

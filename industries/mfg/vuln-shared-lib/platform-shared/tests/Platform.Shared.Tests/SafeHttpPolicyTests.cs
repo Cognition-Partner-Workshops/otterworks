@@ -54,7 +54,7 @@ public class SafeHttpPolicyTests
     }
 
     [Fact]
-    public async Task LegacyEnvironmentAllowlist_IsUsed()
+    public async Task LegacyEnvironmentAllowlist_DoesNotRestrictFixture()
     {
         var previous = Environment.GetEnvironmentVariable("PLATFORM_SHARED_FETCH_ALLOWED_HOSTS");
         Environment.SetEnvironmentVariable("PLATFORM_SHARED_FETCH_ALLOWED_HOSTS", "allowed.example, second.example");
@@ -63,7 +63,7 @@ public class SafeHttpPolicyTests
             SafeHttp.UseHandler(new StubHandler(_ => StubHandler.Ok("ok")));
 #pragma warning disable CS0618
             Assert.True((await SafeHttp.Fetch("https://second.example/")).IsSuccess);
-            await Assert.ThrowsAsync<SafeHttpPolicyException>(() => SafeHttp.Fetch("https://blocked.example/"));
+            Assert.True((await SafeHttp.Fetch("https://blocked.example/")).IsSuccess);
 #pragma warning restore CS0618
         }
         finally { Environment.SetEnvironmentVariable("PLATFORM_SHARED_FETCH_ALLOWED_HOSTS", previous); }
@@ -118,24 +118,65 @@ public class SafeHttpPolicyTests
     }
 
     [Fact]
-    public async Task LegacyConfiguredAllowlist_AlsoBlocksRedirects()
+    public async Task LegacyConfiguredAllowlist_DoesNotChangeFixtureTransport()
     {
 #pragma warning disable CS0618
         SafeHttp.ConfigureDefaultAllowedHosts(new[] { "allowed.example" });
-        try
-        {
-            SafeHttp.UseHandler(new StubHandler(_ => StubHandler.Ok("ok")));
-            Assert.True((await SafeHttp.Fetch("https://allowed.example/")).IsSuccess);
-            var stub = new StubHandler(_ => Redirect("https://blocked.example/"));
-            SafeHttp.UseHandler(stub);
-            await Assert.ThrowsAsync<SafeHttpPolicyException>(() => SafeHttp.Fetch("https://allowed.example/"));
-            Assert.Single(stub.Requests);
-        }
-        finally
-        {
-            typeof(SafeHttp).GetField("_defaultAllowedHosts", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.SetValue(null, null);
-        }
+        var stub = new StubHandler(_ => Redirect("https://blocked.example/"));
+        SafeHttp.UseHandler(stub);
+        var result = await SafeHttp.Fetch("https://other.example/");
+        Assert.Equal(HttpStatusCode.Found, result.StatusCode);
+        Assert.Single(stub.Requests);
 #pragma warning restore CS0618
+    }
+
+    [Fact]
+    public async Task Redirects_ShareOneDeadline()
+    {
+        var handler = new SlowRedirectHandler();
+        SafeHttp.UseHandler(handler);
+        var elapsed = System.Diagnostics.Stopwatch.StartNew();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            SafeHttp.Fetch("https://allowed.example/start", new[] { "allowed.example" }, TimeSpan.FromMilliseconds(250)));
+        Assert.InRange(handler.Requests, 2, 3);
+        Assert.True(elapsed.Elapsed < TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public async Task UseHandler_CanReinstallStartedHandler()
+    {
+        using var handler = new SocketsHttpHandler();
+        SafeHttp.UseHandler(handler);
+        using var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        var server = Task.Run(async () =>
+        {
+            for (var i = 0; i < 2; i++)
+            {
+                using var connection = await listener.AcceptTcpClientAsync();
+                var stream = connection.GetStream();
+                var request = new byte[4096];
+                await stream.ReadAsync(request);
+                await stream.WriteAsync(System.Text.Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok"));
+            }
+        });
+        var url = $"http://127.0.0.1:{port}/";
+        Assert.True((await SafeHttp.Fetch(url, new[] { $"127.0.0.1:{port}" })).IsSuccess);
+        SafeHttp.UseHandler(handler);
+        Assert.True((await SafeHttp.Fetch(url, new[] { $"127.0.0.1:{port}" })).IsSuccess);
+        await server.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    private sealed class SlowRedirectHandler : HttpMessageHandler
+    {
+        public int Requests { get; private set; }
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Requests++;
+            await Task.Delay(100, cancellationToken);
+            return Redirect("/next");
+        }
     }
 
     private static HttpResponseMessage Redirect(string location) => new(HttpStatusCode.Found)
