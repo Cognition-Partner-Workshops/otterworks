@@ -7,13 +7,21 @@ namespace Platform.Shared.Tests;
 [Collection(SafeHttpCollection.Name)]
 public class SafeHttpTests
 {
+    private static readonly IReadOnlySet<string> Allowed = new HashSet<string> { "images.dealer.example" };
+
+    [Fact]
+    public async Task Fetch_RejectsHostsOutsideTheAllowList()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(() => SafeHttp.Fetch("http://169.254.169.254/latest/meta-data/", Allowed));
+    }
+
     [Fact]
     public async Task Fetch_ReturnsBodyStatusAndContentType()
     {
         var stub = new StubHandler(_ => StubHandler.Ok("{\"ok\":true}", "application/json"));
         SafeHttp.UseHandler(stub);
 
-        var result = await SafeHttp.Fetch("https://images.dealer.example/cars/42.json");
+        var result = await SafeHttp.Fetch("https://images.dealer.example/cars/42.json", Allowed);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -31,7 +39,7 @@ public class SafeHttpTests
     {
         SafeHttp.UseHandler(new StubHandler(_ => StubHandler.Ok("unused")));
 
-        await Assert.ThrowsAsync<ArgumentException>(() => SafeHttp.Fetch(url));
+        await Assert.ThrowsAsync<ArgumentException>(() => SafeHttp.Fetch(url, Allowed));
     }
 
     [Fact]
@@ -40,7 +48,7 @@ public class SafeHttpTests
         var big = new string('x', SafeHttp.MaxResponseBytes + 1);
         SafeHttp.UseHandler(new StubHandler(_ => StubHandler.Ok(big)));
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => SafeHttp.Fetch("https://images.dealer.example/big"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => SafeHttp.Fetch("https://images.dealer.example/big", Allowed));
     }
 }
 

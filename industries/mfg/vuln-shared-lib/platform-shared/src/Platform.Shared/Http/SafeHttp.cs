@@ -8,16 +8,22 @@ public static class SafeHttp
     public const int MaxResponseBytes = 5 * 1024 * 1024;
     public static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
 
-    private static HttpClient _client = CreateClient(new SocketsHttpHandler { AllowAutoRedirect = true });
+    private static HttpClient _client = CreateClient(new SocketsHttpHandler { AllowAutoRedirect = false });
 
-    /// <summary>Fetches <paramref name="url"/> and returns the response body.</summary>
-    public static async Task<FetchResult> Fetch(string url)
+    /// <summary>Fetches <paramref name="url"/> when its host is in <paramref name="allowedHosts"/>.</summary>
+    public static async Task<FetchResult> Fetch(string url, IReadOnlySet<string> allowedHosts)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(url);
+        ArgumentNullException.ThrowIfNull(allowedHosts);
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
             throw new ArgumentException($"Only absolute http(s) URLs can be fetched: '{url}'.", nameof(url));
+        }
+
+        if (!allowedHosts.Contains(uri.Host))
+        {
+            throw new ArgumentException($"Host '{uri.Host}' is not allowed.", nameof(url));
         }
 
         using var response = await _client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);

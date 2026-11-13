@@ -4,13 +4,13 @@ Platform.Shared.Crypto.DataProtector.Protect(Byte[] plaintext) -> Byte[]
 Platform.Shared.Crypto.DataProtector.Unprotect(Byte[] protectedData) -> Byte[]
 Platform.Shared.Crypto.PasswordHasher.Hash(String password) -> String
 Platform.Shared.Crypto.PasswordHasher.Verify(String password, String encoded) -> Boolean
-Platform.Shared.Crypto.TokenSigner.Sign(String payload) -> String
-Platform.Shared.Crypto.TokenSigner.Verify(String payload, String signature) -> Boolean
+Platform.Shared.Crypto.TokenSigner.Sign(String payload, ISigningKeyProvider keys) -> String
+Platform.Shared.Crypto.TokenSigner.Verify(String payload, String signature, ISigningKeyProvider keys) -> Boolean
 Platform.Shared.Data.QueryHelpers.InClause(String prefix, IEnumerable<T> values) -> ValueTuple<String, IReadOnlyDictionary<String, Object>>
 Platform.Shared.Data.QueryHelpers.LikeContains(String term) -> String
 Platform.Shared.Data.QueryHelpers.OrderBy(String column, Boolean descending, IReadOnlyCollection<String> allowedColumns, String fallback) -> String
 Platform.Shared.Data.QueryHelpers.Page(Int32 page, Int32 pageSize) -> ValueTuple<Int32, Int32>
-Platform.Shared.Http.SafeHttp.Fetch(String url) -> Task<FetchResult>
+Platform.Shared.Http.SafeHttp.Fetch(String url, IReadOnlySet<String> allowedHosts) -> Task<FetchResult>
 Platform.Shared.Http.SafeHttp.UseHandler(HttpMessageHandler handler) -> Void
 Platform.Shared.Storage.FileStore.Open(String root, String relativePath) -> FileStream
 Platform.Shared.Storage.FileStore.Resolve(String root, String relativePath) -> String
