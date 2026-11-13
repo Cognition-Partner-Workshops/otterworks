@@ -1,0 +1,67 @@
+name: vsl wait for Platform.Shared
+
+on:
+  workflow_call:
+    inputs:
+      project-file:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  wait-for-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 11
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Wait for pinned Platform.Shared version
+        env:
+          PROJECT_FILE: ${{ inputs.project-file }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import base64
+          import json
+          import os
+          import time
+          import urllib.error
+          import urllib.request
+          import xml.etree.ElementTree as ET
+
+          root = ET.parse(os.environ["PROJECT_FILE"]).getroot()
+          pins = [node.get("Version") for node in root.iter()
+                  if node.tag in {"PackageVersion", "PackageReference"} and node.get("Include") == "Platform.Shared"]
+          if len(pins) != 1 or not pins[0]:
+              raise SystemExit("Expected exactly one explicit Platform.Shared version pin.")
+          version = pins[0].lower()
+          credentials = base64.b64encode(f'{os.environ["GITHUB_ACTOR"]}:{os.environ["GITHUB_TOKEN"]}'.encode()).decode()
+          index = f'https://nuget.pkg.github.com/{os.environ["GITHUB_REPOSITORY_OWNER"]}/index.json'
+          deadline = time.monotonic() + 600
+
+          def fetch(url):
+              request = urllib.request.Request(url, headers={"Authorization": f"Basic {credentials}"})
+              with urllib.request.urlopen(request, timeout=max(0.1, min(20, deadline - time.monotonic()))) as response:
+                  return json.load(response)
+
+          while time.monotonic() < deadline:
+              try:
+                  resources = fetch(index)["resources"]
+                  base = next(resource["@id"] for resource in resources
+                              if resource["@type"].startswith("PackageBaseAddress/"))
+                  versions = fetch(base.rstrip("/") + "/platform.shared/index.json")["versions"]
+                  if version in [item.lower() for item in versions]:
+                      print(f"Platform.Shared {version} is available from GitHub Packages.", flush=True)
+                      break
+              except urllib.error.HTTPError as error:
+                  if error.code not in {404, 429, 500, 502, 503, 504}:
+                      raise SystemExit(f"GitHub Packages availability check failed: HTTP {error.code}")
+              except (urllib.error.URLError, TimeoutError):
+                  pass
+              print(f"Waiting for Platform.Shared {version} in GitHub Packages...", flush=True)
+              time.sleep(max(0, min(10, deadline - time.monotonic())))
+          else:
+              raise SystemExit(f"Timed out after 600 seconds waiting for Platform.Shared {version} in GitHub Packages.")
+          PY
