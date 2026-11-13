@@ -1,0 +1,729 @@
+terraform scan results:
+
+Passed checks: 565, Failed checks: 170, Skipped checks: 0
+
+Check: CKV_AZURE_59: "Ensure that Storage accounts disallow public access"
+	FAILED for resource: azurerm_storage_account.staging
+	File: /azure/main.tf:36-54
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-networking-policies/ensure-that-storage-accounts-disallow-public-access
+Check: CKV_AZURE_33: "Ensure Storage logging is enabled for Queue service for read, write and delete requests"
+	FAILED for resource: azurerm_storage_account.staging
+	File: /azure/main.tf:36-54
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-logging-policies/enable-requests-on-storage-logging-for-queue-service
+Check: CKV_AZURE_206: "Ensure that Storage Accounts use replication"
+	FAILED for resource: azurerm_storage_account.staging
+	File: /azure/main.tf:36-54
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/azr-general-206
+Check: CKV_AZURE_42: "Ensure the key vault is recoverable"
+	FAILED for resource: azurerm_key_vault.this
+	File: /azure/main.tf:75-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/ensure-the-key-vault-is-recoverable
+Check: CKV_AZURE_110: "Ensure that key vault enables purge protection"
+	FAILED for resource: azurerm_key_vault.this
+	File: /azure/main.tf:75-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/ensure-that-key-vault-enables-purge-protection
+Check: CKV_AZURE_113: "Ensure that SQL server disables public network access"
+	FAILED for resource: azurerm_mssql_server.this
+	File: /azure/main.tf:176-200
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-networking-policies/ensure-that-sql-server-disables-public-network-access
+Check: CKV_AZURE_224: "Ensure that the Ledger feature is enabled on database that requires cryptographic proof and nonrepudiation of data integrity"
+	FAILED for resource: azurerm_mssql_database.this
+	File: /azure/main.tf:202-213
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-logging-policies/bc-azure-224
+Check: CKV_AZURE_229: "Ensure the Azure SQL Database Namespace is zone redundant"
+	FAILED for resource: azurerm_mssql_database.this
+	File: /azure/main.tf:202-213
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-storage-policies/bc-azure-229
+Check: CKV_AWS_273: "Ensure access is controlled through SSO and not AWS IAM defined users"
+	FAILED for resource: aws_iam_user.devin_reader
+	File: /cloud-worker/iam.tf:128-130
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-iam-policies/bc-aws-273
+Check: CKV_AWS_355: "Ensure no IAM policies documents allow "*" as a statement's resource for restrictable actions"
+	FAILED for resource: aws_iam_role_policy.devin_engineer_iam
+	File: /cloud-worker/iam.tf:221-294
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-iam-policies/bc-aws-355
+Check: CKV_AWS_40: "Ensure IAM policies are attached only to groups or roles (Reducing access management complexity may in-turn reduce opportunity for a principal to inadvertently receive or retain excessive privileges.)"
+	FAILED for resource: aws_iam_user_policy.devin_reader
+	File: /cloud-worker/iam.tf:296-312
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-iam-policies/iam-16-iam-policy-privileges-1
+Check: CKV_AWS_26: "Ensure all data stored in the SNS topic is encrypted"
+	FAILED for resource: aws_sns_topic.events
+	File: /cloud-worker/messaging.tf:1-3
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-15
+Check: CKV_AWS_28: "Ensure DynamoDB point in time recovery (backup) is enabled"
+	FAILED for resource: aws_dynamodb_table.notifications
+	File: /cloud-worker/messaging.tf:68-98
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-6
+Check: CKV_AWS_119: "Ensure DynamoDB Tables are encrypted using a KMS Customer Managed CMK"
+	FAILED for resource: aws_dynamodb_table.notifications
+	File: /cloud-worker/messaging.tf:68-98
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-52
+Check: CKV_AWS_28: "Ensure DynamoDB point in time recovery (backup) is enabled"
+	FAILED for resource: aws_dynamodb_table.notification_preferences
+	File: /cloud-worker/messaging.tf:100-113
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-6
+Check: CKV_AWS_119: "Ensure DynamoDB Tables are encrypted using a KMS Customer Managed CMK"
+	FAILED for resource: aws_dynamodb_table.notification_preferences
+	File: /cloud-worker/messaging.tf:100-113
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-52
+Check: CKV_AWS_189: "Ensure EBS Volume is encrypted by KMS using a customer managed Key (CMK)"
+	FAILED for resource: aws_ebs_volume.db2
+	File: /demo-aws/main.tf:42-54
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-general-109
+Check: CKV_AWS_300: "Ensure S3 lifecycle configuration sets period for aborting failed uploads"
+	FAILED for resource: aws_s3_bucket_lifecycle_configuration.demo
+	File: /demo-aws/main.tf:87-102
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-300
+Check: CKV_AWS_51: "Ensure ECR Image Tags are immutable"
+	FAILED for resource: aws_ecr_repository.job
+	File: /demo-aws/main.tf:122-133
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-general-24
+Check: CKV_AWS_136: "Ensure that ECR repositories are encrypted using KMS"
+	FAILED for resource: aws_ecr_repository.job
+	File: /demo-aws/main.tf:122-133
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-ecr-repositories-are-encrypted
+Check: CKV_AWS_131: "Ensure that ALB drops HTTP headers"
+	FAILED for resource: aws_lb.this
+	File: /legacy-portal-ec2/alb.tf:5-11
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-that-alb-drops-http-headers
+Check: CKV_AWS_91: "Ensure the ELBv2 (Application/Network) has access logging enabled"
+	FAILED for resource: aws_lb.this
+	File: /legacy-portal-ec2/alb.tf:5-11
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-logging-22
+Check: CKV_AWS_150: "Ensure that Load Balancer has deletion protection enabled"
+	FAILED for resource: aws_lb.this
+	File: /legacy-portal-ec2/alb.tf:5-11
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-150
+Check: CKV_AWS_2: "Ensure ALB protocol is HTTPS"
+	FAILED for resource: aws_lb_listener.http
+	File: /legacy-portal-ec2/alb.tf:36-45
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/networking-29
+Check: CKV_AWS_260: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 80"
+	FAILED for resource: aws_vpc_security_group_ingress_rule.alb_http
+	File: /legacy-portal-ec2/ec2.tf:11-18
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-aws-security-groups-do-not-allow-ingress-from-00000-to-port-80
+Check: CKV_AWS_126: "Ensure that detailed monitoring is enabled for EC2 instances"
+	FAILED for resource: aws_instance.this
+	File: /legacy-portal-ec2/ec2.tf:50-80
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/ensure-that-detailed-monitoring-is-enabled-for-ec2-instances
+Check: CKV_AWS_135: "Ensure that EC2 is EBS optimized"
+	FAILED for resource: aws_instance.this
+	File: /legacy-portal-ec2/ec2.tf:50-80
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-ec2-is-ebs-optimized
+Check: CKV_AWS_158: "Ensure that CloudWatch Log Group is encrypted by KMS"
+	FAILED for resource: aws_cloudwatch_log_group.app
+	File: /legacy-portal-ec2/main.tf:66-69
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-cloudwatch-log-group-is-encrypted-by-kms
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: aws_cloudwatch_log_group.app
+	File: /legacy-portal-ec2/main.tf:66-69
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_158: "Ensure that CloudWatch Log Group is encrypted by KMS"
+	FAILED for resource: aws_cloudwatch_log_group.api
+	File: /legacy-portal-serverless/api.tf:7-10
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-cloudwatch-log-group-is-encrypted-by-kms
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: aws_cloudwatch_log_group.api
+	File: /legacy-portal-serverless/api.tf:7-10
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_309: "Ensure API GatewayV2 routes specify an authorization type"
+	FAILED for resource: aws_apigatewayv2_route.context
+	File: /legacy-portal-serverless/api.tf:51-56
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-iam-policies/bc-aws-309
+Check: CKV_AWS_309: "Ensure API GatewayV2 routes specify an authorization type"
+	FAILED for resource: aws_apigatewayv2_route.default
+	File: /legacy-portal-serverless/api.tf:58-62
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-iam-policies/bc-aws-309
+Check: CKV_AWS_149: "Ensure that Secrets Manager secret is encrypted using KMS CMK"
+	FAILED for resource: aws_secretsmanager_secret.db
+	File: /legacy-portal-serverless/aurora.tf:6-10
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-secrets-manager-secret-is-encrypted-using-kms
+Check: CKV_AWS_324: "Ensure that RDS Cluster log capture is enabled"
+	FAILED for resource: aws_rds_cluster.this
+	File: /legacy-portal-serverless/aurora.tf:35-59
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-324
+Check: CKV_AWS_327: "Ensure RDS Clusters are encrypted using KMS CMKs"
+	FAILED for resource: aws_rds_cluster.this
+	File: /legacy-portal-serverless/aurora.tf:35-59
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-327
+Check: CKV_AWS_139: "Ensure that RDS clusters have deletion protection enabled"
+	FAILED for resource: aws_rds_cluster.this
+	File: /legacy-portal-serverless/aurora.tf:35-59
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-rds-clusters-and-instances-have-deletion-protection-enabled
+Check: CKV_AWS_162: "Ensure RDS cluster has IAM authentication enabled"
+	FAILED for resource: aws_rds_cluster.this
+	File: /legacy-portal-serverless/aurora.tf:35-59
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-iam-policies/ensure-rds-cluster-has-iam-authentication-enabled
+Check: CKV_AWS_226: "Ensure DB instance gets all minor upgrades automatically"
+	FAILED for resource: aws_rds_cluster_instance.writer
+	File: /legacy-portal-serverless/aurora.tf:61-70
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-aws-db-instance-gets-all-minor-upgrades-automatically
+Check: CKV_AWS_353: "Ensure that RDS instances have performance insights enabled"
+	FAILED for resource: aws_rds_cluster_instance.writer
+	File: /legacy-portal-serverless/aurora.tf:61-70
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-353
+Check: CKV_AWS_118: "Ensure that enhanced monitoring is enabled for Amazon RDS instances"
+	FAILED for resource: aws_rds_cluster_instance.writer
+	File: /legacy-portal-serverless/aurora.tf:61-70
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/ensure-that-enhanced-monitoring-is-enabled-for-amazon-rds-instances
+Check: CKV_AWS_28: "Ensure DynamoDB point in time recovery (backup) is enabled"
+	FAILED for resource: aws_dynamodb_table.notifications
+	File: /legacy-portal-serverless/events.tf:13-26
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-6
+Check: CKV_AWS_119: "Ensure DynamoDB Tables are encrypted using a KMS Customer Managed CMK"
+	FAILED for resource: aws_dynamodb_table.notifications
+	File: /legacy-portal-serverless/events.tf:13-26
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-52
+Check: CKV_AWS_158: "Ensure that CloudWatch Log Group is encrypted by KMS"
+	FAILED for resource: aws_cloudwatch_log_group.consumer
+	File: /legacy-portal-serverless/events.tf:60-63
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-cloudwatch-log-group-is-encrypted-by-kms
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: aws_cloudwatch_log_group.consumer
+	File: /legacy-portal-serverless/events.tf:60-63
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_173: "Check encryption settings for Lambda environmental variable"
+	FAILED for resource: aws_lambda_function.consumer
+	File: /legacy-portal-serverless/events.tf:65-83
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-serverless-policies/bc-aws-serverless-5
+Check: CKV_AWS_115: "Ensure that AWS Lambda function is configured for function-level concurrent execution limit"
+	FAILED for resource: aws_lambda_function.consumer
+	File: /legacy-portal-serverless/events.tf:65-83
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-aws-lambda-function-is-configured-for-function-level-concurrent-execution-limit
+Check: CKV_AWS_50: "X-Ray tracing is enabled for Lambda"
+	FAILED for resource: aws_lambda_function.consumer
+	File: /legacy-portal-serverless/events.tf:65-83
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-serverless-policies/bc-aws-serverless-4
+Check: CKV_AWS_117: "Ensure that AWS Lambda function is configured inside a VPC"
+	FAILED for resource: aws_lambda_function.consumer
+	File: /legacy-portal-serverless/events.tf:65-83
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-aws-lambda-function-is-configured-inside-a-vpc-1
+Check: CKV_AWS_116: "Ensure that AWS Lambda function is configured for a Dead Letter Queue(DLQ)"
+	FAILED for resource: aws_lambda_function.consumer
+	File: /legacy-portal-serverless/events.tf:65-83
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-aws-lambda-function-is-configured-for-a-dead-letter-queue-dlq
+Check: CKV_AWS_272: "Ensure AWS Lambda function is configured to validate code-signing"
+	FAILED for resource: aws_lambda_function.consumer
+	File: /legacy-portal-serverless/events.tf:65-83
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-272
+Check: CKV_AWS_356: "Ensure no IAM policies documents allow "*" as a statement's resource for restrictable actions"
+	FAILED for resource: aws_iam_policy_document.builder
+	File: /legacy-portal-serverless/iam.tf:13-119
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-iam-policies/bc-aws-356
+Check: CKV_AWS_158: "Ensure that CloudWatch Log Group is encrypted by KMS"
+	FAILED for resource: aws_cloudwatch_log_group.lambda
+	File: /legacy-portal-serverless/lambda.tf:61-65
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-cloudwatch-log-group-is-encrypted-by-kms
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: aws_cloudwatch_log_group.lambda
+	File: /legacy-portal-serverless/lambda.tf:61-65
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_173: "Check encryption settings for Lambda environmental variable"
+	FAILED for resource: aws_lambda_function.context["announcements"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-serverless-policies/bc-aws-serverless-5
+Check: CKV_AWS_115: "Ensure that AWS Lambda function is configured for function-level concurrent execution limit"
+	FAILED for resource: aws_lambda_function.context["announcements"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-aws-lambda-function-is-configured-for-function-level-concurrent-execution-limit
+Check: CKV_AWS_50: "X-Ray tracing is enabled for Lambda"
+	FAILED for resource: aws_lambda_function.context["announcements"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-serverless-policies/bc-aws-serverless-4
+Check: CKV_AWS_117: "Ensure that AWS Lambda function is configured inside a VPC"
+	FAILED for resource: aws_lambda_function.context["announcements"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-aws-lambda-function-is-configured-inside-a-vpc-1
+Check: CKV_AWS_116: "Ensure that AWS Lambda function is configured for a Dead Letter Queue(DLQ)"
+	FAILED for resource: aws_lambda_function.context["announcements"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-aws-lambda-function-is-configured-for-a-dead-letter-queue-dlq
+Check: CKV_AWS_272: "Ensure AWS Lambda function is configured to validate code-signing"
+	FAILED for resource: aws_lambda_function.context["announcements"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-272
+Check: CKV_AWS_173: "Check encryption settings for Lambda environmental variable"
+	FAILED for resource: aws_lambda_function.context["feedback"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-serverless-policies/bc-aws-serverless-5
+Check: CKV_AWS_115: "Ensure that AWS Lambda function is configured for function-level concurrent execution limit"
+	FAILED for resource: aws_lambda_function.context["feedback"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-aws-lambda-function-is-configured-for-function-level-concurrent-execution-limit
+Check: CKV_AWS_50: "X-Ray tracing is enabled for Lambda"
+	FAILED for resource: aws_lambda_function.context["feedback"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-serverless-policies/bc-aws-serverless-4
+Check: CKV_AWS_117: "Ensure that AWS Lambda function is configured inside a VPC"
+	FAILED for resource: aws_lambda_function.context["feedback"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-aws-lambda-function-is-configured-inside-a-vpc-1
+Check: CKV_AWS_116: "Ensure that AWS Lambda function is configured for a Dead Letter Queue(DLQ)"
+	FAILED for resource: aws_lambda_function.context["feedback"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-aws-lambda-function-is-configured-for-a-dead-letter-queue-dlq
+Check: CKV_AWS_272: "Ensure AWS Lambda function is configured to validate code-signing"
+	FAILED for resource: aws_lambda_function.context["feedback"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-272
+Check: CKV_AWS_173: "Check encryption settings for Lambda environmental variable"
+	FAILED for resource: aws_lambda_function.context["preferences"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-serverless-policies/bc-aws-serverless-5
+Check: CKV_AWS_115: "Ensure that AWS Lambda function is configured for function-level concurrent execution limit"
+	FAILED for resource: aws_lambda_function.context["preferences"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-aws-lambda-function-is-configured-for-function-level-concurrent-execution-limit
+Check: CKV_AWS_50: "X-Ray tracing is enabled for Lambda"
+	FAILED for resource: aws_lambda_function.context["preferences"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-serverless-policies/bc-aws-serverless-4
+Check: CKV_AWS_117: "Ensure that AWS Lambda function is configured inside a VPC"
+	FAILED for resource: aws_lambda_function.context["preferences"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-aws-lambda-function-is-configured-inside-a-vpc-1
+Check: CKV_AWS_116: "Ensure that AWS Lambda function is configured for a Dead Letter Queue(DLQ)"
+	FAILED for resource: aws_lambda_function.context["preferences"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-aws-lambda-function-is-configured-for-a-dead-letter-queue-dlq
+Check: CKV_AWS_272: "Ensure AWS Lambda function is configured to validate code-signing"
+	FAILED for resource: aws_lambda_function.context["preferences"]
+	File: /legacy-portal-serverless/lambda.tf:70-101
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-272
+Check: CKV_AWS_300: "Ensure S3 lifecycle configuration sets period for aborting failed uploads"
+	FAILED for resource: aws_s3_bucket_lifecycle_configuration.probe_artifacts
+	File: /legacy-portal-serverless/probe.tf:30-40
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-300
+Check: CKV_AWS_23: "Ensure every security group and rule has a description"
+	FAILED for resource: module.cache.aws_security_group.redis
+	File: /modules/cache/main.tf:23-46
+	Calling File: /main.tf:138-146
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/networking-31
+Check: CKV_AWS_382: "Ensure no security groups allow egress from 0.0.0.0:0 to port -1"
+	FAILED for resource: module.cache.aws_security_group.redis
+	File: /modules/cache/main.tf:23-46
+	Calling File: /main.tf:138-146
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/bc-aws-382
+Check: CKV_AWS_30: "Ensure all data stored in the ElastiCache Replication Group is securely encrypted at transit"
+	FAILED for resource: module.cache.aws_elasticache_replication_group.main
+	File: /modules/cache/main.tf:48-70
+	Calling File: /main.tf:138-146
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-10
+Check: CKV_AWS_31: "Ensure all data stored in the ElastiCache Replication Group is securely encrypted at transit and has auth token"
+	FAILED for resource: module.cache.aws_elasticache_replication_group.main
+	File: /modules/cache/main.tf:48-70
+	Calling File: /main.tf:138-146
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-11
+Check: CKV_AWS_191: "Ensure ElastiCache replication group is encrypted by KMS using a customer managed Key (CMK)"
+	FAILED for resource: module.cache.aws_elasticache_replication_group.main
+	File: /modules/cache/main.tf:48-70
+	Calling File: /main.tf:138-146
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-general-111
+Check: CKV_AWS_23: "Ensure every security group and rule has a description"
+	FAILED for resource: module.database.aws_security_group.rds
+	File: /modules/database/main.tf:26-49
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/networking-31
+Check: CKV_AWS_382: "Ensure no security groups allow egress from 0.0.0.0:0 to port -1"
+	FAILED for resource: module.database.aws_security_group.rds
+	File: /modules/database/main.tf:26-49
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/bc-aws-382
+Check: CKV_AWS_161: "Ensure RDS database has IAM authentication enabled"
+	FAILED for resource: module.database.aws_db_instance.postgres
+	File: /modules/database/main.tf:53-81
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-iam-policies/ensure-rds-database-has-iam-authentication-enabled
+Check: CKV_AWS_226: "Ensure DB instance gets all minor upgrades automatically"
+	FAILED for resource: module.database.aws_db_instance.postgres
+	File: /modules/database/main.tf:53-81
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-aws-db-instance-gets-all-minor-upgrades-automatically
+Check: CKV_AWS_353: "Ensure that RDS instances have performance insights enabled"
+	FAILED for resource: module.database.aws_db_instance.postgres
+	File: /modules/database/main.tf:53-81
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-353
+Check: CKV_AWS_16: "Ensure all data stored in the RDS is securely encrypted at rest"
+	FAILED for resource: module.database.aws_db_instance.postgres
+	File: /modules/database/main.tf:53-81
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-4
+Check: CKV_AWS_118: "Ensure that enhanced monitoring is enabled for Amazon RDS instances"
+	FAILED for resource: module.database.aws_db_instance.postgres
+	File: /modules/database/main.tf:53-81
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/ensure-that-enhanced-monitoring-is-enabled-for-amazon-rds-instances
+Check: CKV_AWS_17: "Ensure all data stored in RDS is not publicly accessible"
+	FAILED for resource: module.database.aws_db_instance.postgres
+	File: /modules/database/main.tf:53-81
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/public-policies/public-2
+Check: CKV_AWS_157: "Ensure that RDS instances have Multi-AZ enabled"
+	FAILED for resource: module.database.aws_db_instance.postgres
+	File: /modules/database/main.tf:53-81
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-73
+Check: CKV_AWS_119: "Ensure DynamoDB Tables are encrypted using a KMS Customer Managed CMK"
+	FAILED for resource: module.database.aws_dynamodb_table.file_metadata
+	File: /modules/database/main.tf:85-128
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-52
+Check: CKV_AWS_119: "Ensure DynamoDB Tables are encrypted using a KMS Customer Managed CMK"
+	FAILED for resource: module.database.aws_dynamodb_table.audit_events
+	File: /modules/database/main.tf:132-182
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-52
+Check: CKV_AWS_119: "Ensure DynamoDB Tables are encrypted using a KMS Customer Managed CMK"
+	FAILED for resource: module.database.aws_dynamodb_table.notifications
+	File: /modules/database/main.tf:186-224
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-52
+Check: CKV_AWS_119: "Ensure DynamoDB Tables are encrypted using a KMS Customer Managed CMK"
+	FAILED for resource: module.database.aws_dynamodb_table.folders
+	File: /modules/database/main.tf:228-249
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-52
+Check: CKV_AWS_119: "Ensure DynamoDB Tables are encrypted using a KMS Customer Managed CMK"
+	FAILED for resource: module.database.aws_dynamodb_table.file_versions
+	File: /modules/database/main.tf:253-280
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-52
+Check: CKV_AWS_119: "Ensure DynamoDB Tables are encrypted using a KMS Customer Managed CMK"
+	FAILED for resource: module.database.aws_dynamodb_table.file_shares
+	File: /modules/database/main.tf:284-305
+	Calling File: /main.tf:99-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-52
+Check: CKV_AWS_26: "Ensure all data stored in the SNS topic is encrypted"
+	FAILED for resource: module.messaging.aws_sns_topic.events
+	File: /modules/messaging/main.tf:15-21
+	Calling File: /main.tf:112-116
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-15
+Check: CKV_AWS_27: "Ensure all data stored in the SQS queue is encrypted"
+	FAILED for resource: module.messaging.aws_sqs_queue.notifications
+	File: /modules/messaging/main.tf:25-39
+	Calling File: /main.tf:112-116
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-16-encrypt-sqs-queue
+Check: CKV_AWS_27: "Ensure all data stored in the SQS queue is encrypted"
+	FAILED for resource: module.messaging.aws_sqs_queue.notifications_dlq
+	File: /modules/messaging/main.tf:41-48
+	Calling File: /main.tf:112-116
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-16-encrypt-sqs-queue
+Check: CKV_AWS_27: "Ensure all data stored in the SQS queue is encrypted"
+	FAILED for resource: module.messaging.aws_sqs_queue.analytics_events
+	File: /modules/messaging/main.tf:52-61
+	Calling File: /main.tf:112-116
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-16-encrypt-sqs-queue
+Check: CKV_AWS_27: "Ensure all data stored in the SQS queue is encrypted"
+	FAILED for resource: module.messaging.aws_sqs_queue.search_indexing
+	File: /modules/messaging/main.tf:65-74
+	Calling File: /main.tf:112-116
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-16-encrypt-sqs-queue
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: module.monitoring.aws_cloudwatch_log_group.services["audit-service"]
+	File: /modules/monitoring/main.tf:28-38
+	Calling File: /main.tf:148-153
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: module.monitoring.aws_cloudwatch_log_group.services["document-service"]
+	File: /modules/monitoring/main.tf:28-38
+	Calling File: /main.tf:148-153
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: module.monitoring.aws_cloudwatch_log_group.services["admin-service"]
+	File: /modules/monitoring/main.tf:28-38
+	Calling File: /main.tf:148-153
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: module.monitoring.aws_cloudwatch_log_group.services["file-service"]
+	File: /modules/monitoring/main.tf:28-38
+	Calling File: /main.tf:148-153
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: module.monitoring.aws_cloudwatch_log_group.services["auth-service"]
+	File: /modules/monitoring/main.tf:28-38
+	Calling File: /main.tf:148-153
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: module.monitoring.aws_cloudwatch_log_group.services["api-gateway"]
+	File: /modules/monitoring/main.tf:28-38
+	Calling File: /main.tf:148-153
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: module.monitoring.aws_cloudwatch_log_group.services["web-app"]
+	File: /modules/monitoring/main.tf:28-38
+	Calling File: /main.tf:148-153
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: module.monitoring.aws_cloudwatch_log_group.services["analytics-service"]
+	File: /modules/monitoring/main.tf:28-38
+	Calling File: /main.tf:148-153
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: module.monitoring.aws_cloudwatch_log_group.services["collab-service"]
+	File: /modules/monitoring/main.tf:28-38
+	Calling File: /main.tf:148-153
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: module.monitoring.aws_cloudwatch_log_group.services["notification-service"]
+	File: /modules/monitoring/main.tf:28-38
+	Calling File: /main.tf:148-153
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: module.monitoring.aws_cloudwatch_log_group.services["admin-dashboard"]
+	File: /modules/monitoring/main.tf:28-38
+	Calling File: /main.tf:148-153
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: module.monitoring.aws_cloudwatch_log_group.services["search-service"]
+	File: /modules/monitoring/main.tf:28-38
+	Calling File: /main.tf:148-153
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_23: "Ensure every security group and rule has a description"
+	FAILED for resource: module.search.aws_security_group.meilisearch
+	File: /modules/search/main.tf:15-38
+	Calling File: /main.tf:119-129
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/networking-31
+Check: CKV_AWS_382: "Ensure no security groups allow egress from 0.0.0.0:0 to port -1"
+	FAILED for resource: module.search.aws_security_group.meilisearch
+	File: /modules/search/main.tf:15-38
+	Calling File: /main.tf:119-129
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/bc-aws-382
+Check: CKV_AWS_149: "Ensure that Secrets Manager secret is encrypted using KMS CMK"
+	FAILED for resource: module.search.aws_secretsmanager_secret.meilisearch_master_key
+	File: /modules/search/main.tf:83-91
+	Calling File: /main.tf:119-129
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-secrets-manager-secret-is-encrypted-using-kms
+Check: CKV_AWS_65: "Ensure container insights are enabled on ECS cluster"
+	FAILED for resource: module.search.aws_ecs_cluster.meilisearch
+	File: /modules/search/main.tf:101-107
+	Calling File: /main.tf:119-129
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-logging-11
+Check: CKV_AWS_158: "Ensure that CloudWatch Log Group is encrypted by KMS"
+	FAILED for resource: module.search.aws_cloudwatch_log_group.meilisearch
+	File: /modules/search/main.tf:111-116
+	Calling File: /main.tf:119-129
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-cloudwatch-log-group-is-encrypted-by-kms
+Check: CKV_AWS_338: "Ensure CloudWatch log groups retains logs for at least 1 year"
+	FAILED for resource: module.search.aws_cloudwatch_log_group.meilisearch
+	File: /modules/search/main.tf:111-116
+	Calling File: /main.tf:119-129
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-338
+Check: CKV_AWS_300: "Ensure S3 lifecycle configuration sets period for aborting failed uploads"
+	FAILED for resource: module.storage.aws_s3_bucket_lifecycle_configuration.files
+	File: /modules/storage/main.tf:50-64
+	Calling File: /main.tf:92-97
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-300
+Check: CKV2_AWS_27: "Ensure Postgres RDS as aws_rds_cluster has Query Logging enabled"
+	FAILED for resource: aws_rds_cluster.this
+	File: /legacy-portal-serverless/aurora.tf:35-59
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-logging-32
+Check: CKV2_AWS_30: "Ensure Postgres RDS as aws_db_instance has Query Logging enabled"
+	FAILED for resource: module.database.aws_db_instance.postgres
+	File: /modules/database/main.tf:53-81
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-postgres-rds-has-query-logging-enabled
+Check: CKV2_AWS_8: "Ensure that RDS clusters has backup plan of AWS Backup"
+	FAILED for resource: aws_rds_cluster.this
+	File: /legacy-portal-serverless/aurora.tf:35-59
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-rds-clusters-has-backup-plan-of-aws-backup
+Check: CKV_AWS_378: "Ensure AWS Load Balancer doesn't use HTTP protocol"
+	FAILED for resource: aws_lb_target_group.app
+	File: /legacy-portal-ec2/alb.tf:13-28
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/bc-aws-378
+Check: CKV2_AWS_60: "Ensure RDS instance with copy tags to snapshots is enabled"
+	FAILED for resource: module.database.aws_db_instance.postgres
+	File: /modules/database/main.tf:53-81
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-2-60
+Check: CKV2_AWS_50: "Ensure AWS ElastiCache Redis cluster with Multi-AZ Automatic Failover feature set to enabled"
+	FAILED for resource: module.cache.aws_elasticache_replication_group.main
+	File: /modules/cache/main.tf:48-70
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-aws-elasticache-redis-cluster-with-multi-az-automatic-failover-feature-set-to-enabled
+Check: CKV_AWS_144: "Ensure that S3 bucket has cross-region replication enabled"
+	FAILED for resource: aws_s3_bucket.demo
+	File: /demo-aws/main.tf:57-61
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-s3-bucket-has-cross-region-replication-enabled
+Check: CKV_AWS_144: "Ensure that S3 bucket has cross-region replication enabled"
+	FAILED for resource: aws_s3_bucket.artifacts
+	File: /legacy-portal-ec2/main.tf:45-48
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-s3-bucket-has-cross-region-replication-enabled
+Check: CKV_AWS_144: "Ensure that S3 bucket has cross-region replication enabled"
+	FAILED for resource: aws_s3_bucket.probe_artifacts
+	File: /legacy-portal-serverless/probe.tf:8-11
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-s3-bucket-has-cross-region-replication-enabled
+Check: CKV_AWS_144: "Ensure that S3 bucket has cross-region replication enabled"
+	FAILED for resource: module.storage.aws_s3_bucket.files
+	File: /modules/storage/main.tf:15-23
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-s3-bucket-has-cross-region-replication-enabled
+Check: CKV_AWS_144: "Ensure that S3 bucket has cross-region replication enabled"
+	FAILED for resource: module.storage.aws_s3_bucket.data_lake
+	File: /modules/storage/main.tf:68-76
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-s3-bucket-has-cross-region-replication-enabled
+Check: CKV_AWS_144: "Ensure that S3 bucket has cross-region replication enabled"
+	FAILED for resource: module.storage.aws_s3_bucket.audit_archive
+	File: /modules/storage/main.tf:98-106
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-s3-bucket-has-cross-region-replication-enabled
+Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
+	FAILED for resource: aws_s3_bucket.demo
+	File: /demo-aws/main.tf:57-61
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-16-enable-versioning
+Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
+	FAILED for resource: aws_s3_bucket.artifacts
+	File: /legacy-portal-ec2/main.tf:45-48
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-16-enable-versioning
+Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
+	FAILED for resource: aws_s3_bucket.probe_artifacts
+	File: /legacy-portal-serverless/probe.tf:8-11
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-16-enable-versioning
+Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
+	FAILED for resource: module.storage.aws_s3_bucket.data_lake
+	File: /modules/storage/main.tf:68-76
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-16-enable-versioning
+Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
+	FAILED for resource: module.storage.aws_s3_bucket.audit_archive
+	File: /modules/storage/main.tf:98-106
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-16-enable-versioning
+Check: CKV2_AWS_20: "Ensure that ALB redirects HTTP requests into HTTPS ones"
+	FAILED for resource: aws_lb.this
+	File: /legacy-portal-ec2/alb.tf:5-11
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-that-alb-redirects-http-requests-into-https-ones
+Check: CKV2_AWS_62: "Ensure S3 buckets should have event notifications enabled"
+	FAILED for resource: aws_s3_bucket.demo
+	File: /demo-aws/main.tf:57-61
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-2-62
+Check: CKV2_AWS_62: "Ensure S3 buckets should have event notifications enabled"
+	FAILED for resource: aws_s3_bucket.artifacts
+	File: /legacy-portal-ec2/main.tf:45-48
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-2-62
+Check: CKV2_AWS_62: "Ensure S3 buckets should have event notifications enabled"
+	FAILED for resource: aws_s3_bucket.probe_artifacts
+	File: /legacy-portal-serverless/probe.tf:8-11
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-2-62
+Check: CKV2_AWS_62: "Ensure S3 buckets should have event notifications enabled"
+	FAILED for resource: module.storage.aws_s3_bucket.files
+	File: /modules/storage/main.tf:15-23
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-2-62
+Check: CKV2_AWS_62: "Ensure S3 buckets should have event notifications enabled"
+	FAILED for resource: module.storage.aws_s3_bucket.data_lake
+	File: /modules/storage/main.tf:68-76
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-2-62
+Check: CKV2_AWS_62: "Ensure S3 buckets should have event notifications enabled"
+	FAILED for resource: module.storage.aws_s3_bucket.audit_archive
+	File: /modules/storage/main.tf:98-106
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-2-62
+Check: CKV2_AWS_28: "Ensure public facing ALB are protected by WAF"
+	FAILED for resource: aws_lb.this
+	File: /legacy-portal-ec2/alb.tf:5-11
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-public-facing-alb-are-protected-by-waf
+Check: CKV2_AWS_57: "Ensure Secrets Manager secrets should have automatic rotation enabled"
+	FAILED for resource: aws_secretsmanager_secret.db
+	File: /legacy-portal-serverless/aurora.tf:6-10
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-2-57
+Check: CKV2_AWS_57: "Ensure Secrets Manager secrets should have automatic rotation enabled"
+	FAILED for resource: module.search.aws_secretsmanager_secret.meilisearch_master_key
+	File: /modules/search/main.tf:83-91
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-2-57
+Check: CKV_AWS_103: "Ensure that load balancer is using at least TLS 1.2"
+	FAILED for resource: aws_lb_listener.http
+	File: /legacy-portal-ec2/alb.tf:36-45
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-general-43
+Check: CKV2_AZURE_45: "Ensure Microsoft SQL server is configured with private endpoint"
+	FAILED for resource: azurerm_mssql_server.this
+	File: /azure/main.tf:176-200
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/bc-azure-2-45
+Check: CKV_AWS_145: "Ensure that S3 buckets are encrypted with KMS by default"
+	FAILED for resource: aws_s3_bucket.demo
+	File: /demo-aws/main.tf:57-61
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-s3-buckets-are-encrypted-with-kms-by-default
+Check: CKV_AWS_145: "Ensure that S3 buckets are encrypted with KMS by default"
+	FAILED for resource: aws_s3_bucket.artifacts
+	File: /legacy-portal-ec2/main.tf:45-48
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-s3-buckets-are-encrypted-with-kms-by-default
+Check: CKV_AWS_145: "Ensure that S3 buckets are encrypted with KMS by default"
+	FAILED for resource: aws_s3_bucket.probe_artifacts
+	File: /legacy-portal-serverless/probe.tf:8-11
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-that-s3-buckets-are-encrypted-with-kms-by-default
+Check: CKV2_AWS_61: "Ensure that an S3 bucket has a lifecycle configuration"
+	FAILED for resource: aws_s3_bucket.artifacts
+	File: /legacy-portal-ec2/main.tf:45-48
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-2-61
+Check: CKV2_AWS_61: "Ensure that an S3 bucket has a lifecycle configuration"
+	FAILED for resource: module.storage.aws_s3_bucket.data_lake
+	File: /modules/storage/main.tf:68-76
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-2-61
+Check: CKV2_AWS_61: "Ensure that an S3 bucket has a lifecycle configuration"
+	FAILED for resource: module.storage.aws_s3_bucket.audit_archive
+	File: /modules/storage/main.tf:98-106
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-2-61
+Check: CKV2_AZURE_33: "Ensure storage account is configured with private endpoint"
+	FAILED for resource: azurerm_storage_account.staging
+	File: /azure/main.tf:36-54
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/bc-azure-2-33
+Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
+	FAILED for resource: aws_s3_bucket.demo
+	File: /demo-aws/main.tf:57-61
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-13-enable-logging
+Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
+	FAILED for resource: aws_s3_bucket.artifacts
+	File: /legacy-portal-ec2/main.tf:45-48
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-13-enable-logging
+Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
+	FAILED for resource: aws_s3_bucket.probe_artifacts
+	File: /legacy-portal-serverless/probe.tf:8-11
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-13-enable-logging
+Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
+	FAILED for resource: module.storage.aws_s3_bucket.files
+	File: /modules/storage/main.tf:15-23
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-13-enable-logging
+Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
+	FAILED for resource: module.storage.aws_s3_bucket.data_lake
+	File: /modules/storage/main.tf:68-76
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-13-enable-logging
+Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
+	FAILED for resource: module.storage.aws_s3_bucket.audit_archive
+	File: /modules/storage/main.tf:98-106
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-13-enable-logging
+Check: CKV2_AZURE_1: "Ensure storage for critical data are encrypted with Customer Managed Key"
+	FAILED for resource: azurerm_storage_account.staging
+	File: /azure/main.tf:36-54
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/ensure-storage-for-critical-data-are-encrypted-with-customer-managed-key
+Check: CKV2_AZURE_21: "Ensure Storage logging is enabled for Blob service for read requests"
+	FAILED for resource: azurerm_storage_container.staging
+	File: /azure/main.tf:56-60
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-logging-policies/ensure-storage-logging-is-enabled-for-blob-service-for-read-requests
+Check: CKV2_AZURE_34: "Ensure Azure SQL server firewall is not overly permissive"
+	FAILED for resource: azurerm_mssql_firewall_rule.azure_services[0]
+	File: /azure/main.tf:225-232
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-networking-policies/bc-azure-2-34
+Check: CKV2_AZURE_32: "Ensure private endpoint is configured to key vault"
+	FAILED for resource: azurerm_key_vault.this
+	File: /azure/main.tf:75-110
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/bc-azure-2-32
+Check: CKV2_AZURE_40: "Ensure storage account is not configured with Shared Key authorization"
+	FAILED for resource: azurerm_storage_account.staging
+	File: /azure/main.tf:36-54
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-iam-policies/bc-azure-2-40
+Check: CKV2_AZURE_2: "Ensure that Vulnerability Assessment (VA) is enabled on a SQL server by setting a Storage Account"
+	FAILED for resource: azurerm_mssql_server.this
+	File: /azure/main.tf:176-200
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/ensure-that-vulnerability-assessment-va-is-enabled-on-a-sql-server-by-setting-a-storage-account
+Check: CKV2_AZURE_41: "Ensure storage account is configured with SAS expiration policy"
+	FAILED for resource: azurerm_storage_account.staging
+	File: /azure/main.tf:36-54
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-iam-policies/bc-azure-2-41
+Check: CKV_AZURE_23: "Ensure that 'Auditing' is set to 'On' for SQL servers"
+	FAILED for resource: azurerm_mssql_server.this
+	File: /azure/main.tf:176-200
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-logging-policies/bc-azr-logging-2
+Check: CKV_AZURE_24: "Ensure that 'Auditing' Retention is 'greater than 90 days' for SQL servers"
+	FAILED for resource: azurerm_mssql_server.this
+	File: /azure/main.tf:176-200
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-logging-policies/bc-azr-logging-3
+Check: CKV2_AZURE_31: "Ensure VNET subnet is configured with a Network Security Group (NSG)"
+	FAILED for resource: azurerm_subnet.container_apps
+	File: /azure/network.tf:36-51
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/bc-azure-2-31
+Check: CKV2_AZURE_31: "Ensure VNET subnet is configured with a Network Security Group (NSG)"
+	FAILED for resource: azurerm_subnet.private_endpoints
+	File: /azure/network.tf:53-60
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/bc-azure-2-31
+
