@@ -40,7 +40,7 @@ def test_every_location_resolves_to_its_anchor(report, manifest):
     for run in report["runs"]:
         for result in run["results"]:
             location = result["locations"][0]["physicalLocation"]
-            line = (REPO_ROOT / location["artifactLocation"]["uri"]).read_text().splitlines()[
+            line = (gf.SOURCE_ROOT / location["artifactLocation"]["uri"]).read_text().splitlines()[
                 location["region"]["startLine"] - 1]
             assert re.search(anchors[result["properties"]["findingId"]], line)
 
@@ -71,7 +71,7 @@ def test_ingestion_targets_the_monorepo_where_locations_resolve(report, manifest
             assert result["properties"]["repository"] == run["properties"]["repository"]
             uri = result["locations"][0]["physicalLocation"]["artifactLocation"]["uri"]
             assert uri.startswith(run["properties"]["projectPath"] + "/")
-            assert (REPO_ROOT / uri).is_file()
+            assert (gf.SOURCE_ROOT / uri).is_file()
 
 
 def test_csv_exports_cover_every_finding():

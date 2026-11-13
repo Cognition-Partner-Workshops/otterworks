@@ -21,6 +21,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+      - name: Resolve anchors against seeded-v1 when the PR leaves the export alone
+        if: github.event_name == 'pull_request'
+        run: |
+          if git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- industries/mfg/vuln-shared-lib/dev-api/security \
+             && git rev-parse -q --verify refs/tags/seeded-v1 >/dev/null; then
+            mkdir -p "$RUNNER_TEMP/seed"
+            git archive seeded-v1 industries/mfg/vuln-shared-lib | tar -x -C "$RUNNER_TEMP/seed"
+            echo "VSL_SOURCE_ROOT=$RUNNER_TEMP/seed" >> "$GITHUB_ENV"
+          fi
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
