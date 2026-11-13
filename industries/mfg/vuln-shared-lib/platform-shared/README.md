@@ -20,8 +20,8 @@ The consumers compile against these entry points. Changing one of their signatur
 
 ## Version 2 policies
 
-Version 2.0.0 preserves the old method signatures for source and binary compatibility,
-but changes their behavior. Consumers need an explicit migration before rollout.
+Version 2.0.1 retains the 2.0 additions and restores the actual seeded 1.x behavior of
+the obsolete overloads. Version 2.0.0 was already published with different legacy behavior.
 
 `SafeHttp.Fetch(url, allowedHosts)` accepts only absolute HTTP or HTTPS URLs without
 userinfo. Entries are exact host names or `host:port`, matched case-insensitively after
@@ -33,9 +33,15 @@ Policy violations throw `SafeHttpPolicyException`, a subclass of `HttpRequestExc
 `FinalUri` is the last fetched URI. The existing response size bound remains in force.
 The allowlist matches host names and does not pin resolved IP addresses; DNS rebinding of an allowlisted name is out of scope, so allowlist only hosts you control.
 
-The obsolete `Fetch(url)` uses `SafeHttp.ConfigureDefaultAllowedHosts(...)`, otherwise
-`PLATFORM_SHARED_FETCH_ALLOWED_HOSTS` (comma-separated). Without either it denies all hosts.
-Configured defaults apply process-wide. The same redirect policy always applies.
+The obsolete `Fetch(url)` is an unrestricted fetch with the seeded redirect semantics.
+It does not enforce any host allowlist and is unsafe for untrusted URLs. It preserves
+the seeded HTTP(S) validation, response size bound and final URI. The retained
+`ConfigureDefaultAllowedHosts` method validates its argument but no longer changes
+legacy behavior; the environment allowlist is not consulted. Use the explicit overload.
+For the explicit overload, one total timeout covers all redirects and body reads.
+Reinstalling a used handler is supported. A previously started native handler that
+still enables automatic redirects can be used by the legacy path, but the explicit
+path rejects it before sending; supply a handler with automatic redirects disabled.
 
 Create a `SigningKey` with an id and at least 32 bytes of externally managed material,
 or use `SigningKey.FromBase64(id, text)` for base64 or base64url config binding. Never
@@ -47,12 +53,14 @@ old signatures expire, then remove it. Keys and the list are defensively copied.
 HMAC-SHA256 signatures are unpadded base64url with no key id; the envelope stays
 `v1.<payload>.<sig>`, but old SHA-1 signatures are not accepted.
 
-The obsolete `Sign(payload)` and `Verify(payload, signature)` use a provider set with
-`TokenSigner.ConfigureDefaultKeyProvider(...)`. Otherwise they read
-`PLATFORM_SHARED_SIGNING_KEY` (base64, at least 32 bytes) once on first use. Without it,
-they generate one random 256-bit key per process. These fallback signatures work only
-inside that process, not across restarts or replicas. Invalid configured keys fail rather
-than falling back. Use explicit providers for durable tokens and cross-service verification.
+The obsolete `Sign(payload)` and `Verify(payload, signature)` reproduce seeded HMAC-SHA1
+with the existing compiled synthetic fixture key, byte for byte. This public key is
+not a secret and cannot authenticate real users or data. No new legacy key material
+is introduced. The legacy path is retained only for the existing inert demo fixture,
+not for production use; it has no runtime restriction to fixture payloads or hosts.
+`ConfigureDefaultKeyProvider` is retained for binary compatibility and validates its
+argument, but does not affect legacy output. The signing environment variable is not
+consulted. Migrate to explicit providers and HMAC-SHA256 for any real use.
 
 `DeviceFingerprint.Compute(userAgent, deviceId)` is deterministic and unkeyed. It hashes
 the UTF-8 prefix `Platform.Shared.DeviceFingerprint.v1` followed by a zero byte, then
@@ -67,7 +75,15 @@ The binary compatibility check builds a console consumer against a published-sty
 make compat
 ```
 
-It keeps build artifacts under `artifacts/compat` and requires .NET 8 and git.
+It runs the same compiled consumer first with the seeded DLL, then with the new DLL,
+asserting the exact seeded signature and unrestricted fixture fetch behavior. It keeps
+build artifacts under `artifacts/compat` and requires .NET 8 and git.
+
+`make consumer-compat` runs the full unmigrated dev-api and BFF suites with their
+1.0.0 pins, then swaps only the DLL in the test output and reruns both full suites
+against the new DLL. This includes Dealer BulletinRefresh, Payments RemittancePull
+and the old Identity SignInReturnsOrderedToken pin. Original DLLs are restored on exit.
+The explicit-overload security tests remain separate in `make test`.
 
 ## Commands
 
@@ -76,7 +92,9 @@ make test        # restore, build and run the xUnit suite
 make pack        # pack Platform.Shared.<version>.nupkg into artifacts/feed
 ```
 
-From the repository root, `make vsl-pack` does the same pack. The consumers' `nuget.config` files point at `industries/mfg/vuln-shared-lib/platform-shared/artifacts/feed`, so they restore without a token once the feed is populated.
+From the repository root, `make vsl-pack` does the same pack. Both commands also build
+seeded 1.0.0 directly from `seeded-v1` under ignored `artifacts/seeded` and put both
+versions in the local feed. A shallow checkout fetches that tag if needed. The consumers' `nuget.config` files point at `industries/mfg/vuln-shared-lib/platform-shared/artifacts/feed`, so they restore without a token once the feed is populated.
 
 ## Packages
 
