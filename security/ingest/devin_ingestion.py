@@ -14,7 +14,7 @@ def ingest_repository(run):
     for provenance in run.get("versionControlProvenance", []):
         uri = provenance.get("repositoryUri", "")
         if uri.startswith("https://github.com/"):
-            return uri.removeprefix("https://github.com/").removesuffix(".git").strip("/")
+            return uri.removeprefix("https://github.com/").strip("/").removesuffix(".git")
     return run["properties"]["repository"]
 
 
