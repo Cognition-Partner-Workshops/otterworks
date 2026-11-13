@@ -18,13 +18,13 @@ CREATE OR REPLACE PACKAGE BODY dw_policy_claims_pkg AS
             VALUES (s.clm_id, s.pol_id, s.clm_flg_3, s.clm_status);
 
         MERGE INTO fact_policy d USING (
-            SELECT p.pol_id, p.eff_dt, p.prm_amt, r.rt
+            SELECT p.pol_id, p.eff_dt, p.prm_amt, r.rt, p.ag_cd
               FROM feed_policy p JOIN policy_rate r
                 ON r.eff_dt=(SELECT MAX(eff_dt) FROM policy_rate WHERE eff_dt < p.eff_dt)
         ) s ON (d.pol_id=s.pol_id)
-        WHEN MATCHED THEN UPDATE SET d.eff_dt=s.eff_dt, d.prm_amt=s.prm_amt, d.rt=s.rt
-        WHEN NOT MATCHED THEN INSERT (pol_id, eff_dt, prm_amt, rt)
-            VALUES (s.pol_id, s.eff_dt, s.prm_amt, s.rt);
+        WHEN MATCHED THEN UPDATE SET d.eff_dt=s.eff_dt, d.prm_amt=s.prm_amt, d.rt=s.rt, d.ag_cd=s.ag_cd
+        WHEN NOT MATCHED THEN INSERT (pol_id, eff_dt, prm_amt, rt, ag_cd)
+            VALUES (s.pol_id, s.eff_dt, s.prm_amt, s.rt, s.ag_cd);
 
         MERGE INTO fact_claim_payment d USING (
             SELECT clm_id, pay_seq, pay_amt FROM (

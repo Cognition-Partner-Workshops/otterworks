@@ -116,6 +116,12 @@ BEGIN
     SELECT COUNT(*) INTO l_num FROM dim_claim WHERE clm_status BETWEEN 1 AND 7;
     SELECT COUNT(*) INTO l_num2 FROM feed_claim;
     check_case('P10 claim status coverage', l_num=l_num2);
+    SELECT COUNT(*) INTO l_num FROM fact_policy f
+     WHERE f.ag_cd IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dim_agent a WHERE a.agent_code=f.ag_cd);
+    check_case('P10a external agent references retained', l_num=6);
+    SELECT COUNT(*) INTO l_num FROM feed_claim
+     WHERE loss_dt > report_dt OR loss_dt=DATE '1900-01-01';
+    check_case('P10b claim delivery dates retained', l_num=6);
 
     SELECT * BULK COLLECT INTO l_payments FROM feed_claim_payment;
     SELECT COUNT(*) INTO l_num FROM fact_claim_payment;

@@ -9,7 +9,7 @@ CREATE TABLE feed_policy (
 CREATE TABLE feed_claim (
     clm_id NUMBER PRIMARY KEY, pol_id NUMBER REFERENCES feed_policy,
     clm_flg_3 NUMBER(1), clm_status NUMBER(1) CHECK (clm_status BETWEEN 1 AND 7),
-    loss_dt DATE, rsv_amt NUMBER(14,4)
+    loss_dt DATE, report_dt DATE, rsv_amt NUMBER(14,4)
 );
 CREATE TABLE feed_claim_payment (
     clm_id NUMBER REFERENCES feed_claim, pay_seq NUMBER, pay_amt NUMBER(14,4),
@@ -31,7 +31,7 @@ CREATE TABLE policy_agent_split (
 );
 CREATE TABLE fact_policy (
     pol_id NUMBER PRIMARY KEY REFERENCES dim_policy, eff_dt DATE,
-    prm_amt NUMBER(14,4), rt NUMBER(8,4)
+    prm_amt NUMBER(14,4), rt NUMBER(8,4), ag_cd VARCHAR2(16)
 );
 CREATE TABLE fact_claim_payment (
     clm_id NUMBER REFERENCES dim_claim, pay_seq NUMBER, pay_amt NUMBER(14,4),
@@ -59,12 +59,16 @@ BEGIN
         l_prm := 1000 + ROUND(DBMS_RANDOM.VALUE(0, 100), 4);
         INSERT INTO feed_policy VALUES (
             i, 'P' || MOD(i, 9), CASE WHEN MOD(CEIL(i/2),20)=0 THEN 'LAPSED' ELSE 'ACTIVE' END,
-            CASE WHEN MOD(i,17)=0 THEN '' ELSE 'A' || MOD(i,100) END,
+            CASE WHEN i <= 6 THEN 'EXT' || i
+                 WHEN MOD(i,17)=0 THEN '' ELSE 'AG-' || (100 + MOD(i,6)) END,
             DATE '2025-06-15' + 14.5/24, l_prm,
             CASE WHEN MOD(i,2)=0 THEN 1.00 ELSE 1.01 END,
             CASE WHEN MOD(CEIL(i/2),10)=0 THEN 'REVERSAL' ELSE 'COMMISSION' END);
         INSERT INTO feed_claim VALUES (
-            i, i, MOD(i,2), MOD(i-1,7)+1, DATE '2025-06-16', l_prm * 2);
+            i, i, MOD(i,2), MOD(i-1,7)+1,
+            CASE WHEN i <= 3 THEN DATE '1900-01-01'
+                 WHEN i <= 6 THEN DATE '2025-07-01' ELSE DATE '2025-06-16' END,
+            DATE '2025-06-17', l_prm * 2);
         INSERT INTO feed_claim_payment VALUES (i, 1, 50 + MOD(i,31), TIMESTAMP '2025-06-17 03:00:00');
         IF i <= 8 THEN
             INSERT INTO feed_claim_payment VALUES (i, 1, 49 + MOD(i,31), TIMESTAMP '2025-06-17 02:00:00');
