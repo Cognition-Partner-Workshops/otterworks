@@ -298,7 +298,7 @@ class DocumentService:
     # ---- Comments ----
 
     async def add_comment(
-        self, document_id: UUID, data: CommentCreate
+        self, document_id: UUID, author_id: UUID, data: CommentCreate
     ) -> Comment | None:
         document = await self.get(document_id)
         if not document:
@@ -306,7 +306,7 @@ class DocumentService:
 
         comment = Comment(
             document_id=document_id,
-            author_id=data.author_id,
+            author_id=author_id,
             content=data.content,
         )
         self.db.add(comment)
@@ -318,7 +318,7 @@ class DocumentService:
             {
                 "comment_id": comment.id,
                 "document_id": document_id,
-                "author_id": data.author_id,
+                "author_id": author_id,
             },
         )
         return comment
@@ -331,18 +331,17 @@ class DocumentService:
         )
         return list(result.scalars().all())
 
-    async def delete_comment(self, document_id: UUID, comment_id: UUID) -> bool:
+    async def get_comment(self, document_id: UUID, comment_id: UUID) -> Comment | None:
         result = await self.db.execute(
             select(Comment).where(
                 Comment.id == comment_id, Comment.document_id == document_id
             )
         )
-        comment = result.scalar_one_or_none()
-        if not comment:
-            return False
+        return result.scalar_one_or_none()
+
+    async def delete_comment(self, comment: Comment) -> None:
         await self.db.delete(comment)
         await self.db.commit()
-        return True
 
     # ---- Templates ----
 

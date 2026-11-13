@@ -164,26 +164,40 @@ async def test_comments_crud(db_session: AsyncSession, owner_id: uuid.UUID):
     doc = await service.create(
         DocumentCreate(title="Commented", content="", owner_id=owner_id)
     )
-    author = uuid.uuid4()
 
-    comment = await service.add_comment(
-        doc.id, CommentCreate(author_id=author, content="Nice!")
-    )
+    comment = await service.add_comment(doc.id, owner_id, CommentCreate(content="Nice!"))
     assert comment is not None
     assert comment.content == "Nice!"
+    assert comment.author_id == owner_id
 
     comments = await service.list_comments(doc.id)
     assert len(comments) == 1
 
-    assert await service.delete_comment(doc.id, comment.id) is True
+    fetched = await service.get_comment(doc.id, comment.id)
+    assert fetched is not None
+    await service.delete_comment(fetched)
     assert len(await service.list_comments(doc.id)) == 0
+
+
+@pytest.mark.asyncio
+async def test_get_comment_scoped_to_document(
+    db_session: AsyncSession, owner_id: uuid.UUID
+):
+    service = DocumentService(db_session)
+    doc = await service.create(
+        DocumentCreate(title="Commented", content="", owner_id=owner_id)
+    )
+    comment = await service.add_comment(doc.id, owner_id, CommentCreate(content="Hi"))
+    assert comment is not None
+
+    assert await service.get_comment(uuid.uuid4(), comment.id) is None
 
 
 @pytest.mark.asyncio
 async def test_add_comment_to_nonexistent_document(db_session: AsyncSession):
     service = DocumentService(db_session)
     result = await service.add_comment(
-        uuid.uuid4(), CommentCreate(author_id=uuid.uuid4(), content="Orphan")
+        uuid.uuid4(), uuid.uuid4(), CommentCreate(content="Orphan")
     )
     assert result is None
 
