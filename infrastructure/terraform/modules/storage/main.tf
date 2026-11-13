@@ -113,6 +113,33 @@ resource "aws_s3_bucket_public_access_block" "audit_archive" {
   restrict_public_buckets = true
 }
 
+# The archiver deletes events from DynamoDB once they are written here, so this
+# bucket holds the only copy; keep prior versions of overwritten/deleted objects.
+resource "aws_s3_bucket_versioning" "audit_archive" {
+  bucket = aws_s3_bucket.audit_archive.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "audit_archive" {
+  bucket = aws_s3_bucket.audit_archive.id
+
+  rule {
+    id     = "expire-noncurrent-versions"
+    status = "Enabled"
+    filter {}
+    noncurrent_version_expiration {
+      noncurrent_days = 365
+    }
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+
+  depends_on = [aws_s3_bucket_versioning.audit_archive]
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "audit_archive" {
   bucket = aws_s3_bucket.audit_archive.id
   rule {
