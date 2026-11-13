@@ -58,7 +58,7 @@ resource "aws_db_instance" "postgres" {
 
   allocated_storage     = var.db_allocated_storage
   max_allocated_storage = var.db_max_allocated_storage
-  storage_encrypted     = false
+  storage_encrypted     = true
 
   db_name  = "otterworks"
   username = "otterworks_admin"
