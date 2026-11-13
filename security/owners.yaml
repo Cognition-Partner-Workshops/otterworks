@@ -1,0 +1,61 @@
+services:
+  admin-service:
+    team: Operations Platform
+    contact: operations-platform@otterworks.example
+    escalation: Page the operations on-call for admin access incidents.
+  analytics-service:
+    team: Data Platform
+    contact: data-platform@otterworks.example
+    escalation: Escalate data exposure to the data on-call.
+  api-gateway:
+    team: Edge Platform
+    contact: edge-platform@otterworks.example
+    escalation: Page the edge on-call for routing or access failures.
+  audit-service:
+    team: Security Platform
+    contact: security-platform@otterworks.example
+    escalation: Page security on-call for audit integrity incidents.
+  auth-service:
+    team: Identity Platform
+    contact: identity-platform@otterworks.example
+    escalation: Page identity on-call for authentication incidents.
+  billing-service:
+    team: Billing Platform
+    contact: billing-platform@otterworks.example
+    escalation: Escalate payment integrity issues to billing on-call.
+  collab-service:
+    team: Collaboration Platform
+    contact: collaboration-platform@otterworks.example
+    escalation: Page collaboration on-call for session isolation failures.
+  document-service:
+    team: Docs Platform
+    contact: docs-platform@otterworks.example
+    escalation: Page docs on-call for document access incidents.
+  file-service:
+    team: Storage Platform
+    contact: storage-platform@otterworks.example
+    escalation: Page storage on-call for file exposure or data loss.
+  industry-solutions:
+    team: Solutions Engineering
+    contact: solutions-engineering@otterworks.example
+    escalation: Route domain workflow incidents to solutions on-call.
+  legacy-billing:
+    team: Billing Platform
+    contact: billing-platform@otterworks.example
+    escalation: Engage billing on-call for legacy payment incidents.
+  legacy-portal:
+    team: Portal Platform
+    contact: portal-platform@otterworks.example
+    escalation: Page portal on-call for account access incidents.
+  legacy-portal-lambda:
+    team: Portal Platform
+    contact: portal-platform@otterworks.example
+    escalation: Engage portal on-call for function execution incidents.
+  report-service:
+    team: Reporting Platform
+    contact: reporting-platform@otterworks.example
+    escalation: Escalate report disclosure to reporting on-call.
+  search-service:
+    team: Discovery Platform
+    contact: discovery-platform@otterworks.example
+    escalation: Page discovery on-call for index access incidents.
