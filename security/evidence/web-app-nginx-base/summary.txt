@@ -1,0 +1,2 @@
+baseline alpine 3.21.3 EOSL=false CRITICAL=3 HIGH=65 MEDIUM=103 LOW=46 UNKNOWN=0 total=217
+after alpine 3.24.2 EOSL=false CRITICAL=0 HIGH=0 MEDIUM=0 LOW=0 UNKNOWN=0 total=0

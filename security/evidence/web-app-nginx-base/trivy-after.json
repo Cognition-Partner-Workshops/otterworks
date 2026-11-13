@@ -1,0 +1,19 @@
+{
+  "ArtifactName": "ow-fe/web-app:after",
+  "ImageID": "sha256:c0817bf16024c6c9de3913ac51d06423569f5363ee343a0d12471da8ac7c6c76",
+  "RepoDigests": [
+    "ow-fe/web-app@sha256:c0817bf16024c6c9de3913ac51d06423569f5363ee343a0d12471da8ac7c6c76"
+  ],
+  "OS": {
+    "Family": "alpine",
+    "Name": "3.24.2"
+  },
+  "Results": [
+    {
+      "Target": "ow-fe/web-app:after (alpine 3.24.2)",
+      "Class": "os-pkgs",
+      "Type": "alpine",
+      "Vulnerabilities": []
+    }
+  ]
+}
