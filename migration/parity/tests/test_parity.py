@@ -6,6 +6,7 @@ import duckdb
 import pytest
 
 from parity.__main__ import run
+from parity.adapters import identifier
 from parity.core import canonical, compare
 
 
@@ -85,3 +86,10 @@ def test_canonical_values():
     assert canonical(Decimal("1.00")) == canonical(1)
     with pytest.raises(ValueError):
         compare({"left_table": "x", "keys": [], "compare": [], "sample_size": -1}, [], [])
+
+
+def test_identifier_validation():
+    assert identifier("PUBLIC.LEDGER") == '"PUBLIC"."LEDGER"'
+    for value in ('ledger;DROP TABLE x', 'ledger" --', '', 'a..b', 'a b', 'a\n--'):
+        with pytest.raises(ValueError, match="identifier"):
+            identifier(value)

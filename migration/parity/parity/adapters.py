@@ -46,6 +46,8 @@ def connection(kind, settings):
 def read_table(conn, table, columns):
     cursor = conn.cursor()
     try:
+        # SQL identifiers cannot be bound; identifier() allowlists and quotes each part.
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
         cursor.execute(f"SELECT {', '.join(identifier(c) for c in columns)} FROM {identifier(table)}")
         while rows := cursor.fetchmany(10000):
             yield from rows
