@@ -80,4 +80,19 @@ public class PreviewAuthorizerTest {
         assertThrows(PreviewDeniedException.class,
                 () -> legacy.authorize("legacy-rollup", () -> "other", request));
     }
+
+    @Test
+    public void rejectsExecutableOwnerDirectivesEvenForAdmin() {
+        request.addUserRole("REPORT_ADMIN");
+        for (String directive : new String[] {
+                "${script:javascript:3+4}",
+                "${script:javascript:\"ops-\"+\"analyst\"}",
+                "prefix-${script:javascript:\"ops-analyst\"}"}) {
+            Properties properties = new Properties();
+            properties.setProperty("preview.owner.dynamic", directive);
+            PreviewAuthorizer configured = new PreviewAuthorizer(new PreviewTemplates(properties));
+            assertThrows(PreviewDeniedException.class,
+                    () -> configured.authorize("dynamic", () -> "ops-analyst", request));
+        }
+    }
 }

@@ -1,0 +1,13 @@
+INFO add_decision: Id::<PubGrubPackage>(0) @ 0a0.dev0 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(1) @ 6.0.2 without checking dependencies    
+INFO add_decision: Id::<PubGrubPackage>(2) @ 0.10.0 without checking dependencies    
+test_fixed_tree_accepts_the_actual_safe_captured_transcript (test_deps_check.TranscriptStateTests.test_fixed_tree_accepts_the_actual_safe_captured_transcript) ... ok
+test_fixed_tree_still_rejects_a_changed_contract (test_deps_check.TranscriptStateTests.test_fixed_tree_still_rejects_a_changed_contract) ... ok
+test_fixed_tree_still_rejects_attack_lookup_resolution (test_deps_check.TranscriptStateTests.test_fixed_tree_still_rejects_attack_lookup_resolution) ... ok
+test_mixed_versions_get_their_own_contract_and_clean_modules_are_remediated (test_deps_check.TranscriptStateTests.test_mixed_versions_get_their_own_contract_and_clean_modules_are_remediated) ... ok
+test_unmeasured_tree_never_gets_a_contract_or_a_pass (test_deps_check.TranscriptStateTests.test_unmeasured_tree_never_gets_a_contract_or_a_pass) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.011s
+
+OK

@@ -1,0 +1,23 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< com.otterworks:report-service >--------------------
+[INFO] Building OtterWorks Report Service 0.1.0
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] Downloading from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/commons/commons-text/1.10.0/commons-text-1.10.0.pom
+[INFO] Downloaded from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/commons/commons-text/1.10.0/commons-text-1.10.0.pom (21 kB at 31 kB/s)
+[INFO] Downloading from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/commons/commons-parent/54/commons-parent-54.pom
+[INFO] Downloaded from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/commons/commons-parent/54/commons-parent-54.pom (82 kB at 910 kB/s)
+[INFO] Downloading from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/junit/junit-bom/5.9.1/junit-bom-5.9.1.pom
+[INFO] Downloaded from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/junit/junit-bom/5.9.1/junit-bom-5.9.1.pom (5.6 kB at 122 kB/s)
+[INFO] 
+[INFO] --- maven-dependency-plugin:3.1.2:tree (default-cli) @ report-service ---
+[INFO] Downloading from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/commons/commons-text/1.10.0/commons-text-1.10.0.jar
+[INFO] Downloaded from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/commons/commons-text/1.10.0/commons-text-1.10.0.jar (238 kB at 2.5 MB/s)
+[INFO] com.otterworks:report-service:jar:0.1.0
+[INFO] \- org.apache.commons:commons-text:jar:1.10.0:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.393 s
+[INFO] Finished at: 2026-11-13T14:14:29Z
+[INFO] ------------------------------------------------------------------------

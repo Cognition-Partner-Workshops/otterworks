@@ -1,0 +1,10 @@
+[
+  {
+    "VulnerabilityID": "CVE-2022-42889",
+    "PkgName": "org.apache.commons:commons-text",
+    "InstalledVersion": "1.9",
+    "Severity": "CRITICAL",
+    "FixedVersion": "1.10.0",
+    "Title": "apache-commons-text: variable interpolation RCE"
+  }
+]
