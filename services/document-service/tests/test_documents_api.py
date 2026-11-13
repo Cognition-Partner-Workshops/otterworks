@@ -260,6 +260,22 @@ async def test_create_document_via_jwt_hs384(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("invalid", ["bad-signature", "expired"])
+async def test_create_document_rejects_invalid_jwt(client: AsyncClient, invalid: str):
+    payload = {"user_id": str(uuid.uuid4())}
+    if invalid == "expired":
+        payload["exp"] = 1
+    secret = TEST_JWT_SECRET if invalid == "expired" else "wrong-secret-padded-to-32-characters"
+    token = jwt.encode(payload, secret, algorithm="HS256")
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Invalid JWT Doc"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_create_document_x_user_id_header_ignored(client: AsyncClient):
     """X-User-Id header alone is not trusted (prevents identity spoofing)."""
     user_id = uuid.uuid4()

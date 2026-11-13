@@ -1,0 +1,18 @@
+# Trivy evidence: document-service
+Version: 0.71.0
+Vulnerability DB:
+  Version: 2
+  UpdatedAt: 2026-11-13 12:56:33.451543713 +0000 UTC
+  NextUpdate: 2026-11-14 12:56:33.451543367 +0000 UTC
+  DownloadedAt: 2026-11-13 14:00:24.995666652 +0000 UTC
+
+## baseline image ow-document-service:baseline  ImageID sha256:96b7b63aea54d4457af53ac92ec2d4c30c44f0257eb3806d647ec7ee3a47fbef  scanned 2026-11-13T14:01:15.310853071Z
+total: 469
+by severity: {"CRITICAL":3,"HIGH":135,"LOW":161,"MEDIUM":166,"UNKNOWN":4}
+  os-pkgs ow-document-service:baseline (debian 13.7): 424 (fixable 3)
+  lang-pkgs Python: 45 (fixable 44)
+## after image ow-document-service:after  ImageID sha256:b32e6d6a179f0224b82e1553c561b03aeb1fd9c0b16d3ac3b47fb3958199a433  scanned 2026-11-13T14:08:49.224870319Z
+total: 424
+by severity: {"HIGH":123,"LOW":158,"MEDIUM":139,"UNKNOWN":4}
+  os-pkgs ow-document-service:after (debian 13.7): 424 (fixable 3)
+  lang-pkgs Python: 0 (fixable 0)
