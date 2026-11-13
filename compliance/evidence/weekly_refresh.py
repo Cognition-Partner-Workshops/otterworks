@@ -7,6 +7,10 @@ from pathlib import Path
 import shutil
 import subprocess
 import time
+import shlex
+from urllib.error import HTTPError, URLError
+from urllib.request import urlopen
+from xml.sax.saxutils import escape
 from datetime import datetime, timezone
 
 from build_evidence_pack import REPOSITORY, ROOT, repo_actions
@@ -34,6 +38,103 @@ def gh_json(args):
     if result.returncode:
         raise RuntimeError(result.stderr.strip())
     return json.loads(result.stdout)
+
+
+def configure_mirror(out):
+    mirror = os.environ.get('MAVEN_MIRROR_URL')
+    if not mirror:
+        return
+    if not mirror.startswith('https://'):
+        raise ValueError('MAVEN_MIRROR_URL must use HTTPS')
+    directory = out / 'toolchain'
+    directory.mkdir(exist_ok=True)
+    settings = directory / 'settings.xml'
+    settings.write_text('<settings><mirrors><mirror><id>weekly</id><mirrorOf>central</mirrorOf>'
+                        f'<url>{escape(mirror)}</url></mirror></mirrors></settings>')
+    executable = shutil.which('mvn', path=os.pathsep.join(
+        p for p in os.environ['PATH'].split(os.pathsep) if p != str(directory)))
+    if not executable:
+        raise RuntimeError('Maven provisioning did not provide mvn')
+    shim = directory / 'mvn'
+    shim.write_text(f'#!/bin/sh\nexec {shlex.quote(executable)} -s {shlex.quote(str(settings))} "$@"\n')
+    shim.chmod(0o700)
+    os.environ['MAVEN_ARGS'] = '-s ' + shlex.quote(str(settings))
+    os.environ['PATH'] = str(directory) + ':' + os.environ['PATH']
+    gradle = directory / 'gradle-home'
+    init = gradle / 'init.d'
+    init.mkdir(parents=True, exist_ok=True)
+    (init / 'mirror.gradle').write_text('allprojects { repositories.all { repo ->\n'
+                                      'if (repo instanceof org.gradle.api.artifacts.repositories.MavenArtifactRepository '
+                                      '&& repo.url.host in ["repo.maven.apache.org", "repo1.maven.org"]) '
+                                      f'{{ repo.setUrl({json.dumps(mirror)}) }}\n' + '} }\n')
+    os.environ['GRADLE_USER_HOME'] = str(gradle)
+
+
+def central_block():
+    base = os.environ.get('MAVEN_MIRROR_URL', 'https://repo.maven.apache.org/maven2')
+    try:
+        with urlopen(base.rstrip('/') + '/org/apache/commons/commons-text/1.9/commons-text-1.9.pom', timeout=30):
+            return None
+    except HTTPError as exc:
+        return 'Maven repository HTTP 429 (rate limited)' if exc.code == 429 else None
+    except (URLError, TimeoutError):
+        return None
+
+
+def dependency_ci(branch):
+    fields = 'databaseId,conclusion,url,headSha,headBranch,event,createdAt'
+    args = ['run', 'list', '-R', REPOSITORY, '-w', 'deps-remediation.yml', '--status', 'completed',
+            '--limit', '100', '--json', fields]
+    runs = gh_json([*args, '--branch', branch])
+    if not runs:
+        prs = gh_json(['api', f'repos/{REPOSITORY}/pulls?state=all&base={branch}&sort=created&direction=desc&per_page=1'])
+        if prs:
+            pr = prs[0]
+            candidates = gh_json([*args, '--branch', pr['head']['ref']])
+            for run in candidates:
+                associations = gh_json(['api', f'repos/{REPOSITORY}/actions/runs/{run["databaseId"]}'])
+                if any(p['number'] == pr['number'] for p in associations.get('pull_requests', [])):
+                    runs.append(run)
+    return max(runs, key=lambda r: r['createdAt']) if runs else None
+
+
+def advisory_steps(status, out, branch):
+    configure_mirror(out)
+    blocked = None
+    for attempt in range(3):
+        if attempt:
+            time.sleep([120, 300][attempt - 1])
+        blocked = central_block()
+        for key, target in [('deps_inventory', 'deps-inventory'), ('deps_gate', 'deps-gate')]:
+            if blocked:
+                print(f'{target}: attempt {attempt + 1}/3 blocked: {blocked}', flush=True)
+                log = out / f'{target}-attempt-{attempt + 1}.log'
+                log.write_text(blocked + '\nPreflight blocked; make was not invoked.\n')
+                step = {'exit_code': 75, 'log': str(log.relative_to(ROOT)),
+                        'started_at': datetime.now(timezone.utc).isoformat(), 'blocked_reason': blocked}
+            else:
+                step = run_step(f'{target}-attempt-{attempt + 1}', ['make', target], out)
+            status.setdefault(key, {'attempts': []})['attempts'].append(step)
+            status[key].update(step)
+            report = ROOT / 'security/deps/reports' / ('inventory.json' if key == 'deps_inventory' else 'gate.json')
+            if not blocked and report.exists() and report.stat().st_mtime >= datetime.fromisoformat(step['started_at']).timestamp():
+                destination = out / 'advisory'
+                destination.mkdir(exist_ok=True)
+                shutil.copyfile(report, destination / report.name)
+        evidence = '\n'.join((ROOT / status[k]['log']).read_text() for k in ['deps_inventory', 'deps_gate'])
+        for name in ['inventory.json', 'gate.json']:
+            path = out / 'advisory' / name
+            if path.exists():
+                evidence += path.read_text()
+        if '429' not in evidence:
+            break
+        blocked = 'Maven repository HTTP 429 (rate limited)'
+    if blocked:
+        status['advisory_blocked_reason'] = blocked
+        try:
+            status['advisory_ci'] = dependency_ci(branch)
+        except (RuntimeError, subprocess.TimeoutExpired, OSError) as exc:
+            status['advisory_ci_error'] = str(exc)
 
 
 def wide_scan(branch, out):
@@ -119,7 +220,7 @@ def summary(pack, status, baseline):
     lines += [f"Remediation: {critical['past_sla']}/{critical['open']['n']} open criticals past assumed "
               f"{critical['sla_days']}-day SLA; median age {critical['open']['median_days']} days.",
               'Pack: [Markdown](../evidence-pack.md) · [JSON](../evidence-pack.json).',
-              'Logs: live_check.log, deps-inventory.log, deps-gate.log, sonar-*.log, build-pack.log.',
+              'Logs: live_check.log, deps-*-attempt-*.log, sonar-*.log, build-pack.log.',
               'Status: [weekly-status.json](weekly-status.json).']
     for key in ['discovery_error', 'collection_error']:
         if status['wide_scan'].get(key):
@@ -131,30 +232,32 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--branch', default='demo-ciso', help='Remote workflow ref and gate target branch')
     parser.add_argument('--out', type=Path, default=ROOT / 'compliance/evidence/out')
+    parser.add_argument('--deps-only', action='store_true', help='Reuse recorded scans and Sonar evidence')
     args = parser.parse_args()
     args.out = args.out.resolve()
     args.out.mkdir(parents=True, exist_ok=True)
-    for path in [args.out / 'weekly-status.json', args.out / 'advisory/inventory.json', args.out / 'advisory/gate.json']:
+    status_path = args.out / 'weekly-status.json'
+    retained = json.loads(status_path.read_text()) if args.deps_only and status_path.exists() else {}
+    if args.deps_only and not retained:
+        parser.error('--deps-only requires a previous weekly-status.json')
+    for path in [args.out / 'advisory/inventory.json', args.out / 'advisory/gate.json']:
         path.unlink(missing_ok=True)
     os.environ['PATH'] = str(Path.home() / 'bin') + ':' + str(Path.home() / '.local/bin') + ':' + os.environ['PATH']
     previous = subprocess.run(['git', 'show', 'HEAD:compliance/evidence/evidence-pack.json'],
                               cwd=ROOT, text=True, capture_output=True)
     baseline = json.loads(previous.stdout) if previous.returncode == 0 else {}
-    status = {'branch': args.branch, 'sha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()}
-    status['live_check'] = run_step('live_check', ['bash', 'compliance/evidence/live_check.sh', str(args.out)], args.out, 3600)
-    status['deps_inventory'] = run_step('deps-inventory', ['make', 'deps-inventory'], args.out)
-    status['deps_gate'] = run_step('deps-gate', ['make', 'deps-gate'], args.out)
-    destination = args.out / 'advisory'
-    destination.mkdir(exist_ok=True)
-    for name in ['inventory.json', 'gate.json']:
-        path = ROOT / 'security/deps/reports' / name
-        if path.exists() and path.stat().st_mtime >= datetime.fromisoformat(status['deps_inventory']['started_at']).timestamp():
-            shutil.copyfile(path, destination / name)
-    status['wide_scan'] = wide_scan(args.branch, args.out)
+    status = retained or {'branch': args.branch, 'sha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()}
+    for key in ['deps_inventory', 'deps_gate', 'advisory_ci', 'advisory_ci_error', 'advisory_blocked_reason']:
+        status.pop(key, None)
+    if not args.deps_only:
+        status['live_check'] = run_step('live_check', ['bash', 'compliance/evidence/live_check.sh', str(args.out)], args.out, 3600)
+    advisory_steps(status, args.out, args.branch)
+    if not args.deps_only:
+        status['wide_scan'] = wide_scan(args.branch, args.out)
     status_path = args.out / 'weekly-status.json'
     status_path.write_text(json.dumps(status, indent=2) + '\n')
     status['build_pack'] = run_step('build-pack', ['python3', 'compliance/evidence/build_evidence_pack.py',
-                                                '--branch', args.branch, '--source-ref', 'HEAD',
+                                                '--branch', args.branch, '--source-ref', status['sha'],
                                                 '--live-dir', str(args.out), '--refresh'], args.out, 900)
     status_path.write_text(json.dumps(status, indent=2) + '\n')
     if status['build_pack']['exit_code']:

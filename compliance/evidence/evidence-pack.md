@@ -4,7 +4,7 @@
 - **Exceptions:** 15 live; 4 stale/not needed; 21 repo entries need action.
 - **Gates on demo-ciso:** 9/12 have no direct push/PR eligibility; 4 are informational-only (overlap possible). [Details](#gates).
 - **CI-skip security commits:** [#2853](https://github.com/Cognition-Partner-Workshops/otterworks/pull/2853): runtime base downgrade/change; [#2852](https://github.com/Cognition-Partner-Workshops/otterworks/pull/2852): RDS public, unencrypted; [#2851](https://github.com/Cognition-Partner-Workshops/otterworks/pull/2851).
-- **Remediation:** 28/29 open criticals past assumed 7-day SLA; median age 42.36 days.
+- **Remediation:** 28/29 open criticals past assumed 7-day SLA; median age 42.37 days.
 - **Catalog gaps:** 50 OUT-OF-CATALOG exceptions; coverage gaps in SSC-02, SSC-03, SSC-04, SSC-05, SSC-06, SSC-09, SSC-10, SSC-12. [Matrix](#control-coverage-matrix).
 
 ## Exceptions needing action
@@ -29,10 +29,10 @@ Runtime changes in adding commit: -FROM alpine:3.19; +FROM alpine:3.18.0
 
 ## Sources, scope and assumptions
 
-Target `demo-ciso` at `7039e61fbe89ace11a23ff02d968b74e460cff1b`. Generated 2026-11-13T14:08:13.484306+00:00.
+Target `demo-ciso` at `7039e61fbe89ace11a23ff02d968b74e460cff1b`. Generated 2026-11-13T14:29:18.984284+00:00.
 Dependabot and CodeQL track the **default branch (main)**, not demo-ciso. PR metrics cover all merged PRs whose title/body references a named security finding; this is not independent proof each finding was closed. Counts are evidence records, not deduplicated vulnerabilities.
-Data window: earliest alert 2026-06-05T06:52:53Z through 2026-11-13T14:08:13.484306+00:00.
-GitHub API fetch/cache timestamps: 2026-11-13T14:05:23.534969+00:00 to 2026-11-13T14:08:15.596374+00:00; endpoint inventory is in JSON.
+Data window: earliest alert 2026-06-05T06:52:53Z through 2026-11-13T14:29:18.984284+00:00.
+GitHub API fetch/cache timestamps: 2026-11-13T14:26:20.278685+00:00 to 2026-11-13T14:29:03.544590+00:00; endpoint inventory is in JSON.
 Reporting assumption, not a committed policy: critical 7, high 30, medium 90, low 180 days. docs/labs/security-sprint-guide.md instead says critical immediately and high within the current sprint.
 Percentile convention: nearest-rank p90; all durations are elapsed UTC days. Missing/restricted API data is reported, never interpreted as zero evidence.
 Reason detection is a transparent text heuristic; dates are entry-local or inherited section dates, not inherited from a preceding entry. Mapping is curated but **requires human sign-off**. This generator cannot certify a human review.
@@ -539,10 +539,10 @@ Static YAML analysis, not observed workflow runs or branch-protection proof. PR 
 
 | Severity | Fixed n | Median days | p90 days | Max days | Open n | Median age days | Oldest days | SLA days (assumed) | Open past SLA |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| critical | 7 | 2.53 | 42.45 | 42.45 | 29 | 42.36 | 161.3 | 7 | 28 |
-| high | 68 | 38.5 | 42.45 | 42.45 | 198 | 65.51 | 161.3 | 30 | 161 |
-| medium | 49 | 38.5 | 42.45 | 42.45 | 264 | 66.01 | 161.3 | 90 | 116 |
-| low | 11 | 30.68 | 42.45 | 42.45 | 70 | 50.65 | 161.3 | 180 | 0 |
+| critical | 7 | 2.53 | 42.45 | 42.45 | 29 | 42.37 | 161.32 | 7 | 28 |
+| high | 68 | 38.5 | 42.45 | 42.45 | 198 | 65.52 | 161.32 | 30 | 161 |
+| medium | 49 | 38.5 | 42.45 | 42.45 | 264 | 66.03 | 161.32 | 90 | 116 |
+| low | 11 | 30.68 | 42.45 | 42.45 | 70 | 50.66 | 161.32 | 180 | 0 |
 | unknown | 0 | — | — | — | 0 | — | — | — | — |
 
 **Where we are slow:** critical: 28/29 open past the assumed 7-day SLA (median age 42.4 days; oldest 161.3). high: 161/198 open past the assumed 30-day SLA (median age 65.5 days; oldest 161.3). medium: 116/264 open past the assumed 90-day SLA (median age 66.0 days; oldest 161.3).
@@ -551,86 +551,86 @@ Static YAML analysis, not observed workflow runs or branch-protection proof. PR 
 
 | Severity | Count | Median age days | Oldest days |
 | --- | --- | --- | --- |
-| critical | 2 | 37.46 | 37.46 |
-| high | 16 | 37.46 | 37.46 |
-| medium | 54 | 37.46 | 37.46 |
+| critical | 2 | 37.47 | 37.47 |
+| high | 16 | 37.47 | 37.47 |
+| medium | 54 | 37.47 | 37.47 |
 | low | 0 | — | — |
 | unknown | 0 | — | — |
 
 | Alert | Severity | Age days | Controls |
 | --- | --- | --- | --- |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/119) | medium | 17.3 | OUT-OF-CATALOG |
-| [actions/untrusted-checkout/medium](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/117) | medium | 23.66 | OUT-OF-CATALOG |
-| [actions/untrusted-checkout/medium](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/116) | medium | 23.66 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/90) | medium | 29.77 | OUT-OF-CATALOG |
-| [java/log-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/68) | medium | 37.46 | OUT-OF-CATALOG |
-| [java/log-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/67) | medium | 37.46 | OUT-OF-CATALOG |
-| [java/log-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/66) | medium | 37.46 | OUT-OF-CATALOG |
-| [java/local-temp-file-or-directory-information-disclosure](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/65) | medium | 37.46 | SSC-09 |
-| [java/local-temp-file-or-directory-information-disclosure](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/64) | medium | 37.46 | SSC-09 |
-| [java/spring-disabled-csrf-protection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/63) | high | 37.46 | SSC-01 |
-| [java/spring-disabled-csrf-protection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/62) | high | 37.46 | SSC-01 |
-| [cs/log-forging](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/61) | medium | 37.46 | OUT-OF-CATALOG |
-| [cs/log-forging](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/60) | medium | 37.46 | OUT-OF-CATALOG |
-| [cs/log-forging](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/59) | medium | 37.46 | OUT-OF-CATALOG |
-| [cs/log-forging](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/58) | medium | 37.46 | OUT-OF-CATALOG |
-| [cs/log-forging](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/57) | medium | 37.46 | OUT-OF-CATALOG |
-| [cs/log-forging](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/56) | medium | 37.46 | OUT-OF-CATALOG |
-| [js/file-access-to-http](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/55) | medium | 37.46 | OUT-OF-CATALOG |
-| [js/file-system-race](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/54) | high | 37.46 | OUT-OF-CATALOG |
-| [js/empty-password-in-configuration-file](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/53) | high | 37.46 | SSC-02 |
-| [js/empty-password-in-configuration-file](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/52) | high | 37.46 | SSC-02 |
-| [js/weak-cryptographic-algorithm](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/51) | high | 37.46 | SSC-01, SSC-05 |
-| [js/prototype-polluting-assignment](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/50) | medium | 37.46 | OUT-OF-CATALOG |
-| [js/prototype-polluting-assignment](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/49) | medium | 37.46 | OUT-OF-CATALOG |
-| [js/prototype-polluting-assignment](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/48) | medium | 37.46 | OUT-OF-CATALOG |
-| [js/prototype-polluting-assignment](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/47) | medium | 37.46 | OUT-OF-CATALOG |
-| [js/insufficient-password-hash](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/46) | high | 37.46 | SSC-05 |
-| [js/insufficient-password-hash](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/45) | high | 37.46 | SSC-05 |
-| [js/insufficient-password-hash](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/44) | high | 37.46 | SSC-05 |
-| [js/insufficient-password-hash](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/43) | high | 37.46 | SSC-05 |
-| [go/incorrect-integer-conversion](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/42) | high | 37.46 | OUT-OF-CATALOG |
-| [py/sql-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/41) | high | 37.46 | SSC-08 |
-| [py/stack-trace-exposure](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/40) | medium | 37.46 | SSC-09 |
-| [py/stack-trace-exposure](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/39) | medium | 37.46 | SSC-09 |
-| [py/stack-trace-exposure](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/38) | medium | 37.46 | SSC-09 |
-| [py/stack-trace-exposure](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/37) | medium | 37.46 | SSC-09 |
-| [py/path-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/36) | high | 37.46 | OUT-OF-CATALOG |
-| [py/path-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/35) | high | 37.46 | OUT-OF-CATALOG |
-| [py/path-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/34) | high | 37.46 | OUT-OF-CATALOG |
-| [rb/weak-sensitive-data-hashing](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/33) | high | 37.46 | SSC-01, SSC-05 |
-| [rb/insecure-mass-assignment](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/32) | critical | 37.46 | OUT-OF-CATALOG |
-| [rb/insecure-mass-assignment](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/31) | critical | 37.46 | OUT-OF-CATALOG |
-| [actions/unpinned-tag](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/30) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/unpinned-tag](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/29) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/unpinned-tag](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/28) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/unpinned-tag](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/27) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/unpinned-tag](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/26) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/unpinned-tag](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/25) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/24) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/23) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/22) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/21) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/20) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/19) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/18) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/17) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/16) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/15) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/14) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/13) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/12) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/11) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/10) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/9) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/8) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/7) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/6) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/5) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/4) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/3) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/2) | medium | 37.46 | OUT-OF-CATALOG |
-| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/1) | medium | 37.46 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/119) | medium | 17.32 | OUT-OF-CATALOG |
+| [actions/untrusted-checkout/medium](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/117) | medium | 23.67 | OUT-OF-CATALOG |
+| [actions/untrusted-checkout/medium](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/116) | medium | 23.67 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/90) | medium | 29.78 | OUT-OF-CATALOG |
+| [java/log-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/68) | medium | 37.47 | OUT-OF-CATALOG |
+| [java/log-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/67) | medium | 37.47 | OUT-OF-CATALOG |
+| [java/log-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/66) | medium | 37.47 | OUT-OF-CATALOG |
+| [java/local-temp-file-or-directory-information-disclosure](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/65) | medium | 37.47 | SSC-09 |
+| [java/local-temp-file-or-directory-information-disclosure](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/64) | medium | 37.47 | SSC-09 |
+| [java/spring-disabled-csrf-protection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/63) | high | 37.47 | SSC-01 |
+| [java/spring-disabled-csrf-protection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/62) | high | 37.47 | SSC-01 |
+| [cs/log-forging](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/61) | medium | 37.47 | OUT-OF-CATALOG |
+| [cs/log-forging](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/60) | medium | 37.47 | OUT-OF-CATALOG |
+| [cs/log-forging](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/59) | medium | 37.47 | OUT-OF-CATALOG |
+| [cs/log-forging](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/58) | medium | 37.47 | OUT-OF-CATALOG |
+| [cs/log-forging](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/57) | medium | 37.47 | OUT-OF-CATALOG |
+| [cs/log-forging](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/56) | medium | 37.47 | OUT-OF-CATALOG |
+| [js/file-access-to-http](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/55) | medium | 37.47 | OUT-OF-CATALOG |
+| [js/file-system-race](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/54) | high | 37.47 | OUT-OF-CATALOG |
+| [js/empty-password-in-configuration-file](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/53) | high | 37.47 | SSC-02 |
+| [js/empty-password-in-configuration-file](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/52) | high | 37.47 | SSC-02 |
+| [js/weak-cryptographic-algorithm](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/51) | high | 37.47 | SSC-01, SSC-05 |
+| [js/prototype-polluting-assignment](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/50) | medium | 37.47 | OUT-OF-CATALOG |
+| [js/prototype-polluting-assignment](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/49) | medium | 37.47 | OUT-OF-CATALOG |
+| [js/prototype-polluting-assignment](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/48) | medium | 37.47 | OUT-OF-CATALOG |
+| [js/prototype-polluting-assignment](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/47) | medium | 37.47 | OUT-OF-CATALOG |
+| [js/insufficient-password-hash](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/46) | high | 37.47 | SSC-05 |
+| [js/insufficient-password-hash](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/45) | high | 37.47 | SSC-05 |
+| [js/insufficient-password-hash](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/44) | high | 37.47 | SSC-05 |
+| [js/insufficient-password-hash](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/43) | high | 37.47 | SSC-05 |
+| [go/incorrect-integer-conversion](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/42) | high | 37.47 | OUT-OF-CATALOG |
+| [py/sql-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/41) | high | 37.47 | SSC-08 |
+| [py/stack-trace-exposure](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/40) | medium | 37.47 | SSC-09 |
+| [py/stack-trace-exposure](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/39) | medium | 37.47 | SSC-09 |
+| [py/stack-trace-exposure](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/38) | medium | 37.47 | SSC-09 |
+| [py/stack-trace-exposure](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/37) | medium | 37.47 | SSC-09 |
+| [py/path-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/36) | high | 37.47 | OUT-OF-CATALOG |
+| [py/path-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/35) | high | 37.47 | OUT-OF-CATALOG |
+| [py/path-injection](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/34) | high | 37.47 | OUT-OF-CATALOG |
+| [rb/weak-sensitive-data-hashing](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/33) | high | 37.47 | SSC-01, SSC-05 |
+| [rb/insecure-mass-assignment](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/32) | critical | 37.47 | OUT-OF-CATALOG |
+| [rb/insecure-mass-assignment](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/31) | critical | 37.47 | OUT-OF-CATALOG |
+| [actions/unpinned-tag](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/30) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/unpinned-tag](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/29) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/unpinned-tag](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/28) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/unpinned-tag](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/27) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/unpinned-tag](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/26) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/unpinned-tag](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/25) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/24) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/23) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/22) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/21) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/20) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/19) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/18) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/17) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/16) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/15) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/14) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/13) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/12) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/11) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/10) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/9) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/8) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/7) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/6) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/5) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/4) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/3) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/2) | medium | 37.47 | OUT-OF-CATALOG |
+| [actions/missing-workflow-permissions](https://github.com/Cognition-Partner-Workshops/otterworks/security/code-scanning/1) | medium | 37.47 | OUT-OF-CATALOG |
 
 ### Merged security PR open→merge time (all bases)
 
@@ -641,12 +641,12 @@ Static YAML analysis, not observed workflow runs or branch-protection proof. PR 
 ## Advisory exposure check — SSC-11
 
 CVE-2022-42889 / commons-text harness. Make exit 2 is not a pass: Make also wraps recipe failures as 2; use the structured gate report for the actual verdict.
-**Verdict:** INCONCLUSIVE: 7 unmeasured modules
+**Verdict:** CI run evidence (local run blocked: Maven repository HTTP 429 (rate limited)) — no matching completed CI run available
 | Step | Exit code | Evidence |
 | --- | --- | --- |
-| deps_inventory | 2 | [log](out/deps-inventory.log) |
-| deps_gate | 2 | [log](out/deps-gate.log) |
-[Structured gate report](out/advisory/gate.json)
+| deps_inventory | 75 | [log](out/deps-inventory-attempt-3.log) |
+| deps_gate | 75 | [log](out/deps-gate-attempt-3.log) |
+No fresh local gate report; inspect the attempt logs and CI provenance above.
 
 ## Wide-scan SonarQube triage
 

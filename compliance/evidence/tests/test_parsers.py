@@ -305,3 +305,107 @@ def test_weekly_dispatch_failure_is_recorded(monkeypatch, tmp_path):
     result = weekly.wide_scan('demo', tmp_path)
     assert result['dispatch']['exit_code'] == 1
     assert 'watch' not in result and 'download' not in result
+
+
+def test_advisory_rate_limit_retries_and_ci_label(monkeypatch, tmp_path):
+    import json
+    import weekly_refresh as weekly
+    import build_evidence_pack as builder
+
+    monkeypatch.setattr(weekly, 'ROOT', tmp_path)
+    monkeypatch.setattr(weekly, 'configure_mirror', lambda out: None)
+    monkeypatch.setattr(weekly, 'central_block', lambda: 'Maven repository HTTP 429 (rate limited)')
+    delays = []
+    monkeypatch.setattr(weekly.time, 'sleep', delays.append)
+    ci = dict(conclusion='failure', url='https://example/run/1', headSha='previous', createdAt='now')
+    monkeypatch.setattr(weekly, 'dependency_ci', lambda branch: ci)
+    status = {}
+    weekly.advisory_steps(status, tmp_path, 'demo')
+    assert delays == [120, 300]
+    assert len(status['deps_gate']['attempts']) == 3
+    assert status['deps_gate']['exit_code'] == 75
+    (tmp_path / 'weekly-status.json').write_text(json.dumps(status))
+    advisory, _ = builder.weekly_evidence(tmp_path, {})
+    assert advisory['verdict'].startswith('CI run evidence (local run blocked:')
+    assert 'failure' in advisory['verdict'] and 'previous' in advisory['verdict']
+    status['advisory_ci'] = None
+    (tmp_path / 'weekly-status.json').write_text(json.dumps(status))
+    advisory, _ = builder.weekly_evidence(tmp_path, {})
+    assert 'no matching completed CI run available' in advisory['verdict']
+
+
+def test_advisory_normal_run_does_not_retry(monkeypatch, tmp_path):
+    import weekly_refresh as weekly
+
+    monkeypatch.setattr(weekly, 'ROOT', tmp_path)
+    monkeypatch.setattr(weekly, 'configure_mirror', lambda out: None)
+    monkeypatch.setattr(weekly, 'central_block', lambda: None)
+    calls = []
+
+    def run(name, args, out):
+        calls.append(args)
+        log = out / (name + '.log')
+        log.write_text('measured')
+        return dict(exit_code=0, log=log.name, started_at='2026-11-13T00:00:00+00:00')
+
+    monkeypatch.setattr(weekly, 'run_step', run)
+    status = {}
+    weekly.advisory_steps(status, tmp_path, 'demo')
+    assert calls == [['make', 'deps-inventory'], ['make', 'deps-gate']]
+    assert 'advisory_ci' not in status
+
+
+def test_dependency_ci_selects_latest_branch_run(monkeypatch):
+    import weekly_refresh as weekly
+
+    runs = [dict(createdAt='2026-01-01', headSha='old'), dict(createdAt='2026-02-01', headSha='new')]
+    monkeypatch.setattr(weekly, 'gh_json', lambda args: runs)
+    assert weekly.dependency_ci('demo')['headSha'] == 'new'
+
+
+def test_dependency_ci_latest_pr_association(monkeypatch):
+    import weekly_refresh as weekly
+
+    calls = []
+
+    def gh(args):
+        calls.append(args)
+        if 'demo' in args:
+            return []
+        if args[0] == 'api' and '/pulls?' in args[1]:
+            assert 'base=demo' in args[1]
+            return [dict(number=1, head={'ref': 'feature'})]
+        if args[0] == 'api':
+            return {'pull_requests': [{'number': 1}]}
+        return [dict(databaseId=2, createdAt='now', headSha='pr')]
+
+    monkeypatch.setattr(weekly, 'gh_json', gh)
+    assert weekly.dependency_ci('demo')['headSha'] == 'pr'
+
+
+def test_mirror_unset_and_invalid(monkeypatch, tmp_path):
+    import weekly_refresh as weekly
+
+    monkeypatch.delenv('MAVEN_MIRROR_URL', raising=False)
+    weekly.configure_mirror(tmp_path)
+    assert not (tmp_path / 'toolchain').exists()
+    monkeypatch.setenv('MAVEN_MIRROR_URL', 'http://untrusted')
+    with pytest.raises(ValueError, match='HTTPS'):
+        weekly.configure_mirror(tmp_path)
+
+
+def test_mirror_configuration_is_isolated(monkeypatch, tmp_path):
+    import weekly_refresh as weekly
+    import xml.etree.ElementTree as xml
+
+    monkeypatch.setenv('MAVEN_MIRROR_URL', 'https://mirror.example/maven')
+    monkeypatch.setenv('PATH', '/usr/bin')
+    monkeypatch.setenv('MAVEN_ARGS', '')
+    monkeypatch.setenv('GRADLE_USER_HOME', '')
+    monkeypatch.setattr(weekly.shutil, 'which', lambda *args, **kwargs: '/usr/bin/mvn')
+    weekly.configure_mirror(tmp_path)
+    settings = tmp_path / 'toolchain/settings.xml'
+    assert xml.parse(settings).findtext('mirrors/mirror/url') == 'https://mirror.example/maven'
+    assert '-s ' in weekly.os.environ['MAVEN_ARGS']
+    assert 'mirror.example' in (tmp_path / 'toolchain/gradle-home/init.d/mirror.gradle').read_text()
+    assert (tmp_path / 'toolchain/mvn').stat().st_mode & 0o100

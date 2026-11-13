@@ -55,7 +55,21 @@ and writes `out/weekly-summary.md` (at most 40 lines) plus `weekly-status.json`.
 The branch must exist on GitHub and support workflow dispatch. Concurrent ambiguous
 dispatches are reported rather than attributed speculatively. Dispatch, scanner and
 advisory failures are captured and do not prevent the other evidence steps. Dependency
-checks need uv, Maven/Gradle and the JDKs declared in `security/deps/modules.yaml`;
-missing tools/JDKs produce inconclusive evidence, not a pass. Commit code before
+checks provision Maven, JDK 11/21 (Ubuntu packages, or Adoptium when unavailable),
+and checksum-verified Gradle 8.6 under `~/opt`; module wrappers remain preferred.
+Provisioning requires root or passwordless sudo. Java homes are exported for the
+harness. `MAVEN_MIRROR_URL` is unset by default; an explicit HTTPS override redirects
+Maven Central dependency resolution for Maven and Gradle without editing modules.
+HTTP 429 receives three attempts with 2- and 5-minute backoffs. A rate-limited
+repository preflight records exit 75 without invoking Make; other failures retain
+their actual Make status. Each attempt has its own log. After exhausted rate limits,
+the latest completed dependency workflow on the target branch, or its most recently
+created PR, is linked with conclusion and head SHA. This is **CI run evidence**, not
+a fresh local pass; absence or API failure is explicit. `--deps-only` refreshes this
+evidence and the pack while retaining the original scan SHA and Sonar artifacts.
+Missing tools/JDKs or unresolved dependencies remain inconclusive. Commit code before
 collecting a weekly snapshot. Generated pack changes will naturally be committed
 after the SHA whose sources were scanned; no self-referential SHA is claimed.
+
+Download destinations and conditional CDN/storage families are documented in
+[NETWORK_ALLOWLIST.md](NETWORK_ALLOWLIST.md).

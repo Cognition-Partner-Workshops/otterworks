@@ -518,6 +518,10 @@ def weekly_evidence(directory, mapping):
     advisory = {'controls': ['SSC-11'], 'steps': {k: status.get(k) for k in ['deps_inventory', 'deps_gate']},
                 'report': gate, 'verdict': 'not measured / inconclusive',
                 'evidence': ['out/deps-inventory.log', 'out/deps-gate.log', 'out/advisory/gate.json']}
+    if status.get('deps_gate'):
+        advisory['evidence'] = [attempt['log'].replace('compliance/evidence/', '')
+                                for key in ['deps_inventory', 'deps_gate']
+                                for attempt in (status.get(key) or {}).get('attempts', [])]
     if gate:
         verdict = gate.get('verdict', {})
         if isinstance(verdict, dict):
@@ -527,6 +531,14 @@ def weekly_evidence(directory, mapping):
                                    f'VULNERABLE: {len(vulnerable)} affected modules' if vulnerable else 'PASS: no vulnerable version reachable')
         else:
             advisory['verdict'] = str(verdict)
+    if status.get('advisory_blocked_reason'):
+        advisory['local_blocked_reason'] = status['advisory_blocked_reason']
+        advisory['ci_run'] = status.get('advisory_ci')
+        ci = advisory['ci_run']
+        advisory['verdict'] = ('CI run evidence (local run blocked: ' + advisory['local_blocked_reason'] + ') — '
+                               + (f"{ci['conclusion']}; {ci['url']}; head {ci['headSha']}" if ci else
+                                  'no matching completed CI run available'))
+        advisory['ci_collection_error'] = status.get('advisory_ci_error')
     sonar = dict(status.get('wide_scan', {}))
     cluster_path = directory / 'wide-scan/clusters.json'
     sonar['clusters'] = []
@@ -676,7 +688,8 @@ def render(pack):
                        [[name, (step or {}).get('exit_code', 'not checked'),
                          f"[log]({(step or {}).get('log', 'out/' + name + '.log') .replace('compliance/evidence/', '')})"]
                         for name, step in advisory['steps'].items()]),
-              '[Structured gate report](out/advisory/gate.json)', '',
+              ('[Structured gate report](out/advisory/gate.json)' if advisory['report'] else
+               'No fresh local gate report; inspect the attempt logs and CI provenance above.'), '',
               '## Wide-scan SonarQube triage', '',
               'External banking repositories, not an OtterWorks blocking gate. Clusters map through CWE rules; '
               'unmapped clusters remain OUT-OF-CATALOG.',

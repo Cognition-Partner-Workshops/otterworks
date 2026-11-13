@@ -1,7 +1,7 @@
 {
   "branch": "demo-ciso",
   "sha": "7039e61fbe89ace11a23ff02d968b74e460cff1b",
-  "generated_at": "2026-11-13T14:08:13.484306+00:00",
+  "generated_at": "2026-11-13T14:29:18.984284+00:00",
   "repository": "Cognition-Partner-Workshops/otterworks",
   "default_branch": "main",
   "live_metadata": {
@@ -13409,9 +13409,9 @@
         },
         "open": {
           "n": 29,
-          "median_days": 42.36,
-          "p90_days": 119.66,
-          "max_days": 161.3
+          "median_days": 42.37,
+          "p90_days": 119.67,
+          "max_days": 161.32
         },
         "sla_days": 7,
         "past_sla": 28
@@ -13426,9 +13426,9 @@
         },
         "open": {
           "n": 198,
-          "median_days": 65.51,
-          "p90_days": 161.3,
-          "max_days": 161.3
+          "median_days": 65.52,
+          "p90_days": 161.32,
+          "max_days": 161.32
         },
         "sla_days": 30,
         "past_sla": 161
@@ -13443,9 +13443,9 @@
         },
         "open": {
           "n": 264,
-          "median_days": 66.01,
-          "p90_days": 161.3,
-          "max_days": 161.3
+          "median_days": 66.03,
+          "p90_days": 161.32,
+          "max_days": 161.32
         },
         "sla_days": 90,
         "past_sla": 116
@@ -13460,9 +13460,9 @@
         },
         "open": {
           "n": 70,
-          "median_days": 50.65,
-          "p90_days": 161.3,
-          "max_days": 161.3
+          "median_days": 50.66,
+          "p90_days": 161.32,
+          "max_days": 161.32
         },
         "sla_days": 180,
         "past_sla": 0
@@ -13503,7 +13503,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 17.3
+        "age_days": 17.32
       },
       {
         "kind": "CodeQL",
@@ -13522,7 +13522,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 23.66
+        "age_days": 23.67
       },
       {
         "kind": "CodeQL",
@@ -13541,7 +13541,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 23.66
+        "age_days": 23.67
       },
       {
         "kind": "CodeQL",
@@ -13560,7 +13560,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 29.77
+        "age_days": 29.78
       },
       {
         "kind": "CodeQL",
@@ -13579,7 +13579,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13598,7 +13598,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13617,7 +13617,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13636,7 +13636,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13655,7 +13655,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13674,7 +13674,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13693,7 +13693,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13712,7 +13712,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13731,7 +13731,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13750,7 +13750,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13769,7 +13769,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13788,7 +13788,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13807,7 +13807,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13826,7 +13826,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13845,7 +13845,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13864,7 +13864,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13883,7 +13883,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13903,7 +13903,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13922,7 +13922,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13941,7 +13941,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13960,7 +13960,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13979,7 +13979,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -13998,7 +13998,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14017,7 +14017,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14036,7 +14036,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14055,7 +14055,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14074,7 +14074,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14093,7 +14093,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14112,7 +14112,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14131,7 +14131,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14150,7 +14150,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14169,7 +14169,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14188,7 +14188,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14207,7 +14207,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14226,7 +14226,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14246,7 +14246,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14265,7 +14265,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14284,7 +14284,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14303,7 +14303,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14322,7 +14322,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14341,7 +14341,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14360,7 +14360,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14379,7 +14379,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14398,7 +14398,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14417,7 +14417,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14436,7 +14436,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14455,7 +14455,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14474,7 +14474,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14493,7 +14493,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14512,7 +14512,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14531,7 +14531,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14550,7 +14550,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14569,7 +14569,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14588,7 +14588,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14607,7 +14607,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14626,7 +14626,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14645,7 +14645,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14664,7 +14664,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14683,7 +14683,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14702,7 +14702,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14721,7 +14721,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14740,7 +14740,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14759,7 +14759,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14778,7 +14778,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14797,7 +14797,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14816,7 +14816,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14835,7 +14835,7 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       },
       {
         "kind": "CodeQL",
@@ -14854,30 +14854,30 @@
         "dismissed_reason": null,
         "dismissed_comment": null,
         "manifest": null,
-        "age_days": 37.46
+        "age_days": 37.47
       }
     ],
     "codeql_summary": [
       {
         "severity": "critical",
         "n": 2,
-        "median_days": 37.46,
-        "p90_days": 37.46,
-        "max_days": 37.46
+        "median_days": 37.47,
+        "p90_days": 37.47,
+        "max_days": 37.47
       },
       {
         "severity": "high",
         "n": 16,
-        "median_days": 37.46,
-        "p90_days": 37.46,
-        "max_days": 37.46
+        "median_days": 37.47,
+        "p90_days": 37.47,
+        "max_days": 37.47
       },
       {
         "severity": "medium",
         "n": 54,
-        "median_days": 37.46,
-        "p90_days": 37.46,
-        "max_days": 37.46
+        "median_days": 37.47,
+        "p90_days": 37.47,
+        "max_days": 37.47
       },
       {
         "severity": "low",
@@ -30463,1348 +30463,1348 @@
   "github_sources": [
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:23.534969+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:24.079752+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:24.675238+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:25.189149+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:25.765593+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:26.253902+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:26.817095+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:27.422177+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:27.972484+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:28.462319+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:29.003519+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:29.565560+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:30.163464+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:30.673684+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:31.241480+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:31.757072+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:32.327940+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:32.862463+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:33.439419+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:34.006296+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:34.628462+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/ba165ac0fee2f1c8c534730f38e3db2580c5cd21/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:35.171794+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:20.278685+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/ba165ac0fee2f1c8c534730f38e3db2580c5cd21/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:35.705890+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:20.278685+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:36.238262+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:36.870366+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:37.443902+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:37.970304+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/e65bd28db3f9fac4b75bd254b875cec393f4eddb/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:38.598296+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:29:01.462604+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/e65bd28db3f9fac4b75bd254b875cec393f4eddb/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:39.225099+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:29:01.462604+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/e65bd28db3f9fac4b75bd254b875cec393f4eddb/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:39.846333+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:29:01.462604+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/1eac9842e9dfc370363c42e803fe650e5b6dc2ca/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:40.390451+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:29.070626+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/1eac9842e9dfc370363c42e803fe650e5b6dc2ca/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:41.057147+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:29.070626+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/1eac9842e9dfc370363c42e803fe650e5b6dc2ca/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:41.639252+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:29.070626+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/1eac9842e9dfc370363c42e803fe650e5b6dc2ca/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:42.376766+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:29.070626+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/5dda591e77138d5da8532150f893f7f13c342e85/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:42.965022+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:31.066613+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/5dda591e77138d5da8532150f893f7f13c342e85/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:43.515634+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:31.066613+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/5dda591e77138d5da8532150f893f7f13c342e85/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:44.057530+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:31.066613+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc2c3694415d61a2a3c5320c25b0d8290c706b57/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:44.625542+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:31.641609+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/871a253b87ec81e49f7e82fba7896fea65ced8a6/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:45.203126+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:36.599576+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/32aa59e01c1b73ad1b9fc51a65b962add4d6155a/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:45.715608+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:00.459416+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/32aa59e01c1b73ad1b9fc51a65b962add4d6155a/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:46.260820+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:00.459416+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/82fa223f9411d1ac8a0bac5a579945b566957bf5/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:46.797702+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:34.732588+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/82fa223f9411d1ac8a0bac5a579945b566957bf5/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:47.350882+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:34.732588+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/871a253b87ec81e49f7e82fba7896fea65ced8a6/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:47.863191+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:36.599576+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/871a253b87ec81e49f7e82fba7896fea65ced8a6/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:48.351557+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:36.599576+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/871a253b87ec81e49f7e82fba7896fea65ced8a6/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:48.873454+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:36.599576+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/32aa59e01c1b73ad1b9fc51a65b962add4d6155a/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:49.368641+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:00.459416+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/32aa59e01c1b73ad1b9fc51a65b962add4d6155a/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:49.885584+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:00.459416+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/e2fb63807f5723969577f84795f49161b0975ef8/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:50.468139+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:39.723555+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/351e26d84a4c16ee315f27d3cf1252076ab86532/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:51.041857+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:39.142559+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/e2fb63807f5723969577f84795f49161b0975ef8/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:51.551863+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:39.723555+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/5a7d20e031cf51ea92d12e6a5e190bc836ea1fc6/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:52.078845+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:45.417517+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/5a7d20e031cf51ea92d12e6a5e190bc836ea1fc6/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:52.540247+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:45.417517+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/6f1c912fa3ad32ebcbe75601908356dcb985041e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:53.268972+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:45.987513+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/6f1c912fa3ad32ebcbe75601908356dcb985041e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:53.787389+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:45.987513+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/6f1c912fa3ad32ebcbe75601908356dcb985041e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:54.275388+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:45.987513+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/6f1c912fa3ad32ebcbe75601908356dcb985041e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:54.778603+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:45.987513+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/5a7d20e031cf51ea92d12e6a5e190bc836ea1fc6/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:55.324633+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:45.417517+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/5a7d20e031cf51ea92d12e6a5e190bc836ea1fc6/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:55.854133+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:45.417517+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/5a7d20e031cf51ea92d12e6a5e190bc836ea1fc6/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:56.362733+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:45.417517+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/6f1c912fa3ad32ebcbe75601908356dcb985041e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:56.868317+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:45.987513+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:57.399718+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:58.047366+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:58.564178+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/7a3988cf47a92626ad0491b8927f5e30791742fd/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:59.096766+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:49.653488+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/7a3988cf47a92626ad0491b8927f5e30791742fd/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:05:59.697548+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:49.653488+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/7a3988cf47a92626ad0491b8927f5e30791742fd/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:00.218848+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:49.653488+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/f6d9eeefc10e7e53d794d5fc1f3a47aa731d9e81/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:00.737551+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:50.922480+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/f6d9eeefc10e7e53d794d5fc1f3a47aa731d9e81/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:01.285814+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:50.922480+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:01.879318+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a6ce7cefb3cc43af5af16208a068923f6d4836c7/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:02.485097+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:58.440429+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/362bab8bc4eefaa040b63e8e05fae7d9f9119590/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:03.058654+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:52.569469+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/19392116c2197d713811213778a7a1d75eb90cc0/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:03.595534+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:53.122465+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:04.158577+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:04.774396+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:05.343218+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:05.851941+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:06.381964+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3c004d6785ca78c6ad0456857a7f230bf8bef3f2/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:06.958883+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:56.699441+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/31e4387633d467511699f49a8feafefacb347490/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:07.470512+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:57.323437+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:08.014273+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a6ce7cefb3cc43af5af16208a068923f6d4836c7/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:08.563931+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:26:58.440429+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/32aa59e01c1b73ad1b9fc51a65b962add4d6155a/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:09.161474+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:00.459416+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/32aa59e01c1b73ad1b9fc51a65b962add4d6155a/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:09.745027+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:00.459416+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/32aa59e01c1b73ad1b9fc51a65b962add4d6155a/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:10.316198+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:00.459416+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/27f5cd85a0cdb5fe80e9197c50be19b5b2c44bc4/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:11.039903+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:01.194411+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:11.819166+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/1fc9cd6cce80512dc21b482bbd69c64c7245401b/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:12.378711+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:03.677394+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/1fc9cd6cce80512dc21b482bbd69c64c7245401b/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:12.877718+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:03.677394+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/1fc9cd6cce80512dc21b482bbd69c64c7245401b/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:13.453922+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:03.677394+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:14.150147+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/6cee7c8be60d060f521b7859e48073135f6ceee1/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:14.757955+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:05.677381+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/6cee7c8be60d060f521b7859e48073135f6ceee1/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:15.317937+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:05.677381+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/d178b6dec15575714386e62811a243c8a7eda55c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:16.504728+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.246377+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/5275ffb618b924d1087a09585f54433927a8afe0/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:17.068872+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:06.747374+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/b1decaa47a12dc6bc5d0a2edaa479e741fbd689c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:17.618904+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:12.810333+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/b1decaa47a12dc6bc5d0a2edaa479e741fbd689c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:18.176521+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:12.810333+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/b1decaa47a12dc6bc5d0a2edaa479e741fbd689c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:18.710928+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:12.810333+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/b1decaa47a12dc6bc5d0a2edaa479e741fbd689c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:19.266127+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:12.810333+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/b1decaa47a12dc6bc5d0a2edaa479e741fbd689c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:19.870378+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:12.810333+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/b1decaa47a12dc6bc5d0a2edaa479e741fbd689c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:20.441968+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:12.810333+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/b1decaa47a12dc6bc5d0a2edaa479e741fbd689c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:21.127198+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:12.810333+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/b1decaa47a12dc6bc5d0a2edaa479e741fbd689c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:21.677054+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:12.810333+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/b1decaa47a12dc6bc5d0a2edaa479e741fbd689c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:22.265126+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:12.810333+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/b1decaa47a12dc6bc5d0a2edaa479e741fbd689c/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:22.792980+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:12.810333+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:23.322939+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:23.838866+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:24.466255+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:25.174170+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:26.323650+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:27.204839+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:27.774754+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:28.476277+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:29.129995+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:29.792703+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:30.534575+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:31.144412+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:31.722471+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3d7fbc1f1508ba318cef344d5dedae258afc41da/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:32.411940+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:21.494275+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/119260fc7ee9fa1eaf49bc365adfb841648c3f57/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:33.149497+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:22.122270+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/b2af9224bda84f9a66c3c4fdf33cc4008520ad8f/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:33.914369+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:22.841265+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/ff7da3254d923083b06db7c19eefeb52f98cebf0/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:34.577320+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:25.947245+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/ff7da3254d923083b06db7c19eefeb52f98cebf0/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:35.149011+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:25.947245+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/ff7da3254d923083b06db7c19eefeb52f98cebf0/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:35.705385+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:25.947245+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/ff7da3254d923083b06db7c19eefeb52f98cebf0/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:36.438874+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:25.947245+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/ff7da3254d923083b06db7c19eefeb52f98cebf0/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:37.056524+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:25.947245+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/dependabot/alerts?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:43.579154+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:32.137203+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/code-scanning/alerts?per_page=100&ref=refs/heads/main&state=open",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:44.083946+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:32.699199+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/code-scanning/alerts?per_page=100&ref=refs/heads/main&state=fixed",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:44.374052+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:33.119197+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/code-scanning/alerts?per_page=100&ref=refs/heads/main&state=dismissed",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:44.767375+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:33.546194+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/c74c05d26784f82f6e9ae4c74a1c7b65c809a9df/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:45.336346+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:44.543120+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/e5748df4eadf08080d76f4a58aa1a8d1f40b1134/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:45.898324+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:47.384101+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/c74c05d26784f82f6e9ae4c74a1c7b65c809a9df/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:46.454072+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:44.543120+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/e5748df4eadf08080d76f4a58aa1a8d1f40b1134/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:47.038682+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:47.384101+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3f3ac116079660224cbfb78607554a3c61b83bad/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:47.629560+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:02.769998+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3f3ac116079660224cbfb78607554a3c61b83bad/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:48.183837+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:02.769998+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/c71d39f8ab071602f5173d19aaf3de5e3fa1e0fe/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:48.717742+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:39.710152+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/c71d39f8ab071602f5173d19aaf3de5e3fa1e0fe/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:49.230134+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:39.710152+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/c71d39f8ab071602f5173d19aaf3de5e3fa1e0fe/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:49.705211+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:39.710152+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/c71d39f8ab071602f5173d19aaf3de5e3fa1e0fe/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:50.306476+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:39.710152+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/c74c05d26784f82f6e9ae4c74a1c7b65c809a9df/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:50.982662+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:44.543120+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/e5748df4eadf08080d76f4a58aa1a8d1f40b1134/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:51.533171+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:47.384101+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/c74c05d26784f82f6e9ae4c74a1c7b65c809a9df/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:52.113605+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:44.543120+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/e5748df4eadf08080d76f4a58aa1a8d1f40b1134/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:52.622851+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:47.384101+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3f3ac116079660224cbfb78607554a3c61b83bad/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:53.231356+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:02.769998+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3f3ac116079660224cbfb78607554a3c61b83bad/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:53.888737+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:02.769998+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3f3ac116079660224cbfb78607554a3c61b83bad/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:54.512524+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:02.769998+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/c74c05d26784f82f6e9ae4c74a1c7b65c809a9df/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:55.147747+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:44.543120+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/e5748df4eadf08080d76f4a58aa1a8d1f40b1134/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:55.697268+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:47.384101+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3f3ac116079660224cbfb78607554a3c61b83bad/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:56.214970+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:02.769998+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3f3ac116079660224cbfb78607554a3c61b83bad/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:56.779300+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:02.769998+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3f3ac116079660224cbfb78607554a3c61b83bad/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:57.691907+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:02.769998+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/e5748df4eadf08080d76f4a58aa1a8d1f40b1134/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:58.314462+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:27:47.384101+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:58.807313+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:59.375517+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:06:59.928748+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:00.473712+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:01.000113+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:01.807156+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:02.254688+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:02.779495+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:03.311287+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:03.948290+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:04.575164+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:05.135280+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:05.709352+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:06.366680+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:06.969174+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:07.593158+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:08.165567+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:08.817064+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:09.402146+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:09.972247+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:10.516450+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3f3ac116079660224cbfb78607554a3c61b83bad/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:11.214105+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:02.769998+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3f3ac116079660224cbfb78607554a3c61b83bad/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:11.889224+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:02.769998+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3f3ac116079660224cbfb78607554a3c61b83bad/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:12.492560+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:02.769998+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:13.132799+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:13.635501+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/3f3ac116079660224cbfb78607554a3c61b83bad/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:14.261743+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:02.769998+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:14.740874+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:15.225292+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:16.087787+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:16.720421+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:17.308138+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:17.923857+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:18.514501+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:19.122339+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:19.693369+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:20.244301+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:20.832611+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:21.484982+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:22.118488+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:22.653470+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:23.264224+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:23.753367+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:24.305371+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:24.921805+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:25.521739+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:26.056174+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:26.633564+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:27.175249+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:27.727765+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:28.252849+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:28.843849+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:29.453546+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:30.078379+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:30.755418+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:31.292231+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:31.767052+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:32.343758+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/c879aa557f196665826a61652526df3b6bccc2dd/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:32.824361+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:21.282873+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:33.479664+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:33.976129+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:34.575979+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:36.222967+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:36.795382+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:37.358692+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:37.933513+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:38.491018+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:39.044570+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:39.641644+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:40.251455+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:40.781411+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:41.326061+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:41.899731+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:42.478898+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:43.038083+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:43.482032+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:44.062261+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:44.604751+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:45.170730+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:45.737731+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:46.314049+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:46.807948+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:47.364505+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:47.944985+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:48.595022+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:49.106467+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:49.675335+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:50.212848+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:50.843866+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/dc1b58ebe7e1c84713fbca7d6c74a492f38a4733/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:51.526893+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:38.225760+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:52.192905+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:52.795054+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:53.436435+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:54.012292+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:54.614258+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:55.245162+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:55.716188+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:56.306446+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:56.826078+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:57.306262+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:57.905464+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:58.506704+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:59.152231+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:07:59.663407+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:08:00.234039+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:08:00.838504+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:08:01.410698+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:08:02.009652+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:08:02.568437+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:08:03.164701+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:08:03.780467+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/a324a50d5fb709a0a6bcc9ba2af309f3ab10de2e/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:08:04.332945+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:50.414678+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/pulls?state=closed&per_page=100&sort=updated&direction=desc",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:08:13.113403+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:28:59.936614+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/e65bd28db3f9fac4b75bd254b875cec393f4eddb/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:08:14.207486+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:29:01.462604+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/0bd8fae174aeb826ecae17e66b25ccabd46bd263/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:08:14.885940+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:29:02.530597+00:00"
     },
     {
       "endpoint": "repos/Cognition-Partner-Workshops/otterworks/commits/6037d49b537fcda41a0fdcd2018504f74285307b/pulls?per_page=100",
-      "cached": false,
-      "fetched_at": "2026-11-13T14:08:15.596374+00:00"
+      "cached": true,
+      "fetched_at": "2026-11-13T14:29:03.544590+00:00"
     }
   ],
   "warnings": [],
@@ -32443,118 +32443,71 @@
     ],
     "steps": {
       "deps_inventory": {
-        "exit_code": 2,
-        "log": "compliance/evidence/out/deps-inventory.log",
-        "started_at": "2026-11-13T13:58:04.264437+00:00"
+        "attempts": [
+          {
+            "exit_code": 75,
+            "log": "compliance/evidence/out/deps-inventory-attempt-1.log",
+            "started_at": "2026-11-13T14:19:03.097621+00:00",
+            "blocked_reason": "Maven repository HTTP 429 (rate limited)"
+          },
+          {
+            "exit_code": 75,
+            "log": "compliance/evidence/out/deps-inventory-attempt-2.log",
+            "started_at": "2026-11-13T14:21:03.208442+00:00",
+            "blocked_reason": "Maven repository HTTP 429 (rate limited)"
+          },
+          {
+            "exit_code": 75,
+            "log": "compliance/evidence/out/deps-inventory-attempt-3.log",
+            "started_at": "2026-11-13T14:26:03.339446+00:00",
+            "blocked_reason": "Maven repository HTTP 429 (rate limited)"
+          }
+        ],
+        "exit_code": 75,
+        "log": "compliance/evidence/out/deps-inventory-attempt-3.log",
+        "started_at": "2026-11-13T14:26:03.339446+00:00",
+        "blocked_reason": "Maven repository HTTP 429 (rate limited)"
       },
       "deps_gate": {
-        "exit_code": 2,
-        "log": "compliance/evidence/out/deps-gate.log",
-        "started_at": "2026-11-13T13:58:10.724433+00:00"
+        "attempts": [
+          {
+            "exit_code": 75,
+            "log": "compliance/evidence/out/deps-gate-attempt-1.log",
+            "started_at": "2026-11-13T14:19:03.097717+00:00",
+            "blocked_reason": "Maven repository HTTP 429 (rate limited)"
+          },
+          {
+            "exit_code": 75,
+            "log": "compliance/evidence/out/deps-gate-attempt-2.log",
+            "started_at": "2026-11-13T14:21:03.208535+00:00",
+            "blocked_reason": "Maven repository HTTP 429 (rate limited)"
+          },
+          {
+            "exit_code": 75,
+            "log": "compliance/evidence/out/deps-gate-attempt-3.log",
+            "started_at": "2026-11-13T14:26:03.339536+00:00",
+            "blocked_reason": "Maven repository HTTP 429 (rate limited)"
+          }
+        ],
+        "exit_code": 75,
+        "log": "compliance/evidence/out/deps-gate-attempt-3.log",
+        "started_at": "2026-11-13T14:26:03.339536+00:00",
+        "blocked_reason": "Maven repository HTTP 429 (rate limited)"
       }
     },
-    "report": {
-      "advisory": "CVE-2022-42889",
-      "artifact": "org.apache.commons:commons-text",
-      "vulnerable_range": {
-        "introduced": "1.5",
-        "fixed": "1.10.0"
-      },
-      "generated_at": "2026-11-13T13:58:11.014538+00:00",
-      "modules": [
-        {
-          "id": "report-service",
-          "build": "maven",
-          "tool": null,
-          "status": "unmeasured",
-          "detail": "none of its JDK candidates exist ($JAVA_HOME_11_X64, /usr/lib/jvm/java-11-openjdk-amd64). Install one or add a candidate rather than measuring it on the wrong JDK.",
-          "declarations": [],
-          "occurrences": []
-        },
-        {
-          "id": "legacy-portal",
-          "build": "maven",
-          "tool": null,
-          "status": "unmeasured",
-          "detail": "none of its JDK candidates exist ($JAVA_HOME_11_X64, /usr/lib/jvm/java-11-openjdk-amd64). Install one or add a candidate rather than measuring it on the wrong JDK.",
-          "declarations": [],
-          "occurrences": []
-        },
-        {
-          "id": "notification-service",
-          "build": "gradle",
-          "tool": null,
-          "status": "unmeasured",
-          "detail": "none of its build tools can run here (gradle). Install one or add a candidate rather than reporting the module as clean.",
-          "declarations": [],
-          "occurrences": []
-        },
-        {
-          "id": "auth-service",
-          "build": "gradle",
-          "tool": null,
-          "status": "unmeasured",
-          "detail": "none of its build tools can run here (./gradlew, gradle). Install one or add a candidate rather than reporting the module as clean.",
-          "declarations": [],
-          "occurrences": []
-        },
-        {
-          "id": "legacy-portal-lambda-announcements",
-          "build": "maven",
-          "tool": null,
-          "status": "unmeasured",
-          "detail": "none of its JDK candidates exist ($JAVA_HOME_21_X64, /usr/lib/jvm/java-21-openjdk-amd64). Install one or add a candidate rather than measuring it on the wrong JDK.",
-          "declarations": [],
-          "occurrences": []
-        },
-        {
-          "id": "legacy-portal-lambda-preferences",
-          "build": "maven",
-          "tool": null,
-          "status": "unmeasured",
-          "detail": "none of its JDK candidates exist ($JAVA_HOME_21_X64, /usr/lib/jvm/java-21-openjdk-amd64). Install one or add a candidate rather than measuring it on the wrong JDK.",
-          "declarations": [],
-          "occurrences": []
-        },
-        {
-          "id": "legacy-portal-lambda-feedback",
-          "build": "maven",
-          "tool": null,
-          "status": "unmeasured",
-          "detail": "none of its JDK candidates exist ($JAVA_HOME_21_X64, /usr/lib/jvm/java-21-openjdk-amd64). Install one or add a candidate rather than measuring it on the wrong JDK.",
-          "declarations": [],
-          "occurrences": []
-        }
-      ],
-      "exempt": [
-        {
-          "path": "frontend/client-app/mobile/android",
-          "reason": "Capacitor Android shell. Ships no server-side JVM dependencies and needs the Android SDK to resolve, which the build image does not carry."
-        },
-        {
-          "path": "tests/legacy-suites/selenium",
-          "reason": "Browser automation fixture for the admin UI. It is not a shipped application module and does not have a production runtime dependency graph."
-        }
-      ],
-      "verdict": {
-        "vulnerable": [],
-        "unmeasured": [
-          "report-service",
-          "legacy-portal",
-          "notification-service",
-          "auth-service",
-          "legacy-portal-lambda-announcements",
-          "legacy-portal-lambda-preferences",
-          "legacy-portal-lambda-feedback"
-        ]
-      }
-    },
-    "verdict": "INCONCLUSIVE: 7 unmeasured modules",
+    "report": null,
+    "verdict": "CI run evidence (local run blocked: Maven repository HTTP 429 (rate limited)) \u2014 no matching completed CI run available",
     "evidence": [
-      "out/deps-inventory.log",
-      "out/deps-gate.log",
-      "out/advisory/gate.json"
-    ]
+      "out/deps-inventory-attempt-1.log",
+      "out/deps-inventory-attempt-2.log",
+      "out/deps-inventory-attempt-3.log",
+      "out/deps-gate-attempt-1.log",
+      "out/deps-gate-attempt-2.log",
+      "out/deps-gate-attempt-3.log"
+    ],
+    "local_blocked_reason": "Maven repository HTTP 429 (rate limited)",
+    "ci_run": null,
+    "ci_collection_error": null
   },
   "wide_scan": {
     "controls_source": "cluster CWE \u2192 control-map.yaml",
