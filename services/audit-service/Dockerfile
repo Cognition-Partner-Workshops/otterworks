@@ -9,8 +9,9 @@ RUN dotnet publish -c Release -o /out
 
 # glibc-based runtime: the IBM Db2 .NET provider (Net.IBM.Data.Db2-lnx) ships native
 # libraries that do not load on musl/Alpine.
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
-RUN apt-get update && apt-get install -y --no-install-recommends curl libxml2 libicu72 \
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-noble
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends curl libxml2 libicu74 libpam0g libcrypt1 \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /out .

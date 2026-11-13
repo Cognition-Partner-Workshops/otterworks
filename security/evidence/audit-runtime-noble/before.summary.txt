@@ -1,0 +1,8 @@
+SCAN /home/ubuntu/security-work/evidence/audit-service-baseline.json
+ImageID: sha256:d20bced7a1f7570826870e4c2b4586a12bf050a417ac467b4ff77620c6a6babf
+TOTAL: 417 {'LOW': 153, 'HIGH': 107, 'MEDIUM': 151, 'UNKNOWN': 4, 'CRITICAL': 2}
+Without published fix: 415
+local/audit-service:baseline (debian 12.15) 415 {'LOW': 153, 'HIGH': 107, 'MEDIUM': 149, 'UNKNOWN': 4, 'CRITICAL': 2}
+app/AuditService.deps.json 2 {'MEDIUM': 2}
+  MEDIUM CVE-2026-40894 OpenTelemetry.Api 1.7.0 -> 1.15.3
+  MEDIUM CVE-2024-32028 OpenTelemetry.Instrumentation.AspNetCore 1.7.1 -> 1.8.1

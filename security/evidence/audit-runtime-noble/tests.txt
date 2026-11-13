@@ -1,0 +1,45 @@
+Unable to find image 'mcr.microsoft.com/dotnet/sdk:8.0-noble' locally
+8.0-noble: Pulling from dotnet/sdk
+5eb01f2d5580: Pulling fs layer
+f8cdc4d30f61: Pulling fs layer
+84ba5943421c: Pulling fs layer
+119649923ab6: Pulling fs layer
+9902affce470: Pulling fs layer
+6193ed25e78f: Pulling fs layer
+ce0e1a56be33: Pulling fs layer
+c1016e3126a2: Pulling fs layer
+1634ffdedc6a: Pulling fs layer
+bc30d088c3db: Pulling fs layer
+ee6b5442cdb1: Pulling fs layer
+9902affce470: Already exists
+f8cdc4d30f61: Already exists
+84ba5943421c: Already exists
+6193ed25e78f: Already exists
+ce0e1a56be33: Already exists
+119649923ab6: Already exists
+ee6b5442cdb1: Download complete
+5eb01f2d5580: Download complete
+c1016e3126a2: Download complete
+bc30d088c3db: Download complete
+c1016e3126a2: Pull complete
+1634ffdedc6a: Download complete
+1634ffdedc6a: Pull complete
+ee6b5442cdb1: Pull complete
+bc30d088c3db: Pull complete
+5eb01f2d5580: Pull complete
+Digest: sha256:3d5cad4bb76fd0130aefd6c629f7267c4aad40cccc86f7fbd1c81e277b58493b
+Status: Downloaded newer image for mcr.microsoft.com/dotnet/sdk:8.0-noble
+  Determining projects to restore...
+/src/AuditService.csproj : warning NU1902: Package 'OpenTelemetry.Instrumentation.AspNetCore' 1.7.1 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-vh2m-22xx-q94f [/src/tests/AuditService.Tests/AuditService.Tests.csproj]
+  Restored /src/AuditService.csproj (in 4.9 sec).
+  Restored /src/tests/AuditService.Tests/AuditService.Tests.csproj (in 5.14 sec).
+/src/AuditService.csproj : warning NU1902: Package 'OpenTelemetry.Instrumentation.AspNetCore' 1.7.1 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-vh2m-22xx-q94f
+  AuditService -> /src/bin/Release/net8.0/AuditService.dll
+  AuditService.Tests -> /src/tests/AuditService.Tests/bin/Release/net8.0/AuditService.Tests.dll
+Test run for /src/tests/AuditService.Tests/bin/Release/net8.0/AuditService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    53, Skipped:     0, Total:    53, Duration: 336 ms - AuditService.Tests.dll (net8.0)

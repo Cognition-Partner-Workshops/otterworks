@@ -1,0 +1,8 @@
+SCAN /home/ubuntu/security-work/evidence/audit-service-noble.json
+ImageID: sha256:35da458f143e3b24d1bd234c8d80166b17e51f04f200fe4b96bbe3602b681952
+TOTAL: 29 {'MEDIUM': 24, 'LOW': 5}
+Without published fix: 27
+local/audit-service:noble (ubuntu 24.04) 27 {'MEDIUM': 22, 'LOW': 5}
+app/AuditService.deps.json 2 {'MEDIUM': 2}
+  MEDIUM CVE-2026-40894 OpenTelemetry.Api 1.7.0 -> 1.15.3
+  MEDIUM CVE-2024-32028 OpenTelemetry.Instrumentation.AspNetCore 1.7.1 -> 1.8.1
