@@ -85,6 +85,12 @@ export default function BillingEntitlementPage() {
           >
             Change plan
           </Link>
+          <Link
+            to={`/billing/rating/${entitlement.tenant_id}`}
+            className="ml-3 mt-6 inline-block rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold"
+          >
+            Usage rating
+          </Link>
         </section>
       )}
     </main>
