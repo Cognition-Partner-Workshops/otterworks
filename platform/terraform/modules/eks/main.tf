@@ -144,10 +144,13 @@ resource "aws_iam_role_policy_attachment" "node_ecr" {
 resource "aws_launch_template" "node_group" {
   name_prefix = "${var.cluster_name}-default-"
 
+  # Hop limit 1 keeps IMDS (and the node role's credentials) reachable from the
+  # node itself and hostNetwork pods only. Workload pods get AWS access through
+  # IRSA; Karpenter's EC2NodeClass already defaults to 1.
   metadata_options {
     http_endpoint               = "enabled"
     http_tokens                 = "required"
-    http_put_response_hop_limit = 2
+    http_put_response_hop_limit = 1
   }
 
   dynamic "tag_specifications" {
