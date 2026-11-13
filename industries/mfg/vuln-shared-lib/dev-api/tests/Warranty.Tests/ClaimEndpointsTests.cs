@@ -102,7 +102,7 @@ public sealed class ClaimEndpointsTests : IDisposable
                 new PartsClaimItem { Vin = "VIN1002", Description = "Mirror glass", PartNumber = "P-20" }
             ]
         };
-        var json = JsonConvert.SerializeObject(batch, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+        var json = JsonConvert.SerializeObject(batch, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.None });
         var response = await client.PostAsync("/api/warranty/claims/import", new StringContent(json, Encoding.UTF8, "application/json"));
         response.EnsureSuccessStatusCode();
         Assert.Equal(2, (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("imported").GetInt32());
@@ -176,7 +176,7 @@ public sealed class ClaimEndpointsTests : IDisposable
         {
             Items = [new RepairClaimItem { Vin = "", Description = "Latch repair", RepairCode = "R-10" }]
         };
-        var json = JsonConvert.SerializeObject(batch, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+        var json = JsonConvert.SerializeObject(batch, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.None });
         var response = await client.PostAsync("/api/warranty/claims/import",
             new StringContent(json, Encoding.UTF8, "application/json"));
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

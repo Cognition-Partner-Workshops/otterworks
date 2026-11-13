@@ -14,7 +14,7 @@ public sealed class ClaimRepository(WarrantyContext context)
     public Task<List<Claim>> Search(string dealerId, string status)
     {
         return context.Claims
-            .FromSqlRaw($"SELECT * FROM Claims WHERE DealerId = '{dealerId}' AND Status = '{status}'")
+            .Where(claim => claim.DealerId == dealerId && claim.Status == status)
             .AsNoTracking().ToListAsync();
     }
 

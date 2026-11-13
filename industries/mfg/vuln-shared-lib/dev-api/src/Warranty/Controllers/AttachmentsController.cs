@@ -44,13 +44,27 @@ public sealed class AttachmentsController(ClaimRepository claims, AttachmentServ
         {
             return NotFound();
         }
-        var attachmentRoot = attachments.Root(id);
+        if (string.IsNullOrWhiteSpace(name) || name is "." or ".." ||
+            name.IndexOfAny(['/', '\\', '\0']) >= 0 || Path.GetFileName(name) != name || Path.IsPathRooted(name))
+        {
+            return BadRequest("A plain file name is required.");
+        }
+        var attachmentRoot = Path.GetFullPath(attachments.Root(id)) + Path.DirectorySeparatorChar;
+        var path = Path.GetFullPath(Path.Combine(attachmentRoot, name));
+        if (!path.StartsWith(attachmentRoot, StringComparison.Ordinal))
+        {
+            return BadRequest("A plain file name is required.");
+        }
         try
         {
-            return File(System.IO.File.OpenRead(Path.Combine(attachmentRoot, name)),
+            return File(System.IO.File.OpenRead(path),
                 "application/octet-stream", Path.GetFileName(name));
         }
         catch (FileNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (DirectoryNotFoundException)
         {
             return NotFound();
         }
