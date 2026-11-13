@@ -4,7 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { Router, provideRouter } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../services/auth.service';
-import { PORTAL_KEY_HEADER, portalKeyInterceptor } from './portal-key.interceptor';
+import { portalKeyInterceptor } from './portal-key.interceptor';
 
 describe('portalKeyInterceptor', () => {
   let client: HttpClient;
@@ -28,10 +28,15 @@ describe('portalKeyInterceptor', () => {
 
   afterEach(() => http.verify());
 
-  it('adds the portal key and credentials to BFF calls', () => {
+  it('has no browser API key configuration', () => {
+    expect(Object.keys(environment).filter(key => /key/i.test(key))).toEqual([]);
+    expect('portalApiKey' in environment).toBeFalse();
+  });
+
+  it('sends credentials without a portal key to BFF calls', () => {
     client.get('/bff/inventory').subscribe();
     const req = http.expectOne('/bff/inventory');
-    expect(req.request.headers.get(PORTAL_KEY_HEADER)).toBe(environment.portalApiKey);
+    expect(req.request.headers.has('X-Portal-Key')).toBeFalse();
     expect(req.request.withCredentials).toBeTrue();
     req.flush([]);
   });
@@ -39,7 +44,7 @@ describe('portalKeyInterceptor', () => {
   it('leaves other requests untouched', () => {
     client.get('/assets/config.json').subscribe();
     const req = http.expectOne('/assets/config.json');
-    expect(req.request.headers.has(PORTAL_KEY_HEADER)).toBeFalse();
+    expect(req.request.headers.has('X-Portal-Key')).toBeFalse();
     expect(req.request.withCredentials).toBeFalse();
     req.flush({});
   });

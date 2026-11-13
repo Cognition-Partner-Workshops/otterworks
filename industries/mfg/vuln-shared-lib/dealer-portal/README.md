@@ -29,7 +29,7 @@ Owned by `portal-team`.
 | `GET /bff/claims`, `POST /bff/claims` | `GET/POST /api/warranty/claims` |
 | `GET /bff/notices` | `Portal:NoticeFeedUrl` |
 
-Configuration lives under `Portal` in `bff/src/DealerPortal.Bff/appsettings.json` and can be overridden with environment variables (`Portal__DevApiBaseUrl`, `Portal__NoticeFeedUrl`, `Portal__StaticRoot`, `Portal__ClientKey`, `Portal__SecureCookie`).
+Configuration lives under `Portal` in `bff/src/DealerPortal.Bff/appsettings.json` and can be overridden with environment variables (`Portal__DevApiBaseUrl`, `Portal__NoticeFeedUrl`, `Portal__StaticRoot`, `Portal__SecureCookie`).
 
 The BFF requires externally configured signing keys at startup. Set
 `Platform__Signing__CurrentKeyId`, `Platform__Signing__Keys__0__Id`, and

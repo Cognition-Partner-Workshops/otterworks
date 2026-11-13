@@ -5,8 +5,6 @@ import { catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../services/auth.service';
 
-export const PORTAL_KEY_HEADER = 'X-Portal-Key';
-
 export const portalKeyInterceptor: HttpInterceptorFn = (req, next) => {
   if (!req.url.startsWith(environment.bffBaseUrl)) {
     return next(req);
@@ -16,7 +14,6 @@ export const portalKeyInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const request = req.clone({
     withCredentials: true,
-    setHeaders: { [PORTAL_KEY_HEADER]: environment.portalApiKey },
   });
 
   return next(request).pipe(
