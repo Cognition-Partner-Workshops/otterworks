@@ -1,0 +1,1498 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Checkmarx",
+          "semanticVersion": "9.6.0",
+          "informationUri": "https://checkmarx.com/",
+          "rules": [
+            {
+              "id": "1118287",
+              "name": "Use_of_Broken_or_Risky_Cryptographic_Algorithm",
+              "shortDescription": {
+                "text": "Use of Broken or Risky Cryptographic Algorithm"
+              },
+              "properties": {
+                "cwe": "CWE-327",
+                "severity": "Medium",
+                "security-severity": "5.5",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-327"
+                ]
+              }
+            },
+            {
+              "id": "1222345",
+              "name": "Open_Redirect",
+              "shortDescription": {
+                "text": "Open Redirect"
+              },
+              "properties": {
+                "cwe": "CWE-601",
+                "severity": "Medium",
+                "security-severity": "5.5",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-601"
+                ]
+              }
+            },
+            {
+              "id": "1609436",
+              "name": "SQL_Injection",
+              "shortDescription": {
+                "text": "SQL Injection"
+              },
+              "properties": {
+                "cwe": "CWE-89",
+                "severity": "Critical",
+                "security-severity": "9.5",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-89"
+                ]
+              }
+            },
+            {
+              "id": "2815013",
+              "name": "Missing_Function_Level_Authorization",
+              "shortDescription": {
+                "text": "Missing Function Level Authorization"
+              },
+              "properties": {
+                "cwe": "CWE-862",
+                "severity": "High",
+                "security-severity": "8.0",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-862"
+                ]
+              }
+            },
+            {
+              "id": "3050690",
+              "name": "Hardcoded_Secret",
+              "shortDescription": {
+                "text": "Hardcoded Secret"
+              },
+              "properties": {
+                "cwe": "CWE-798",
+                "severity": "High",
+                "security-severity": "8.0",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-798"
+                ]
+              }
+            },
+            {
+              "id": "3082032",
+              "name": "Path_Traversal",
+              "shortDescription": {
+                "text": "Path Traversal"
+              },
+              "properties": {
+                "cwe": "CWE-22",
+                "severity": "High",
+                "security-severity": "8.0",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-22"
+                ]
+              }
+            },
+            {
+              "id": "3474118",
+              "name": "Hardcoded_Password",
+              "shortDescription": {
+                "text": "Hardcoded Password"
+              },
+              "properties": {
+                "cwe": "CWE-259",
+                "severity": "Low",
+                "security-severity": "2.0",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-259"
+                ]
+              }
+            },
+            {
+              "id": "4288987",
+              "name": "Deserialization_of_Untrusted_Data",
+              "shortDescription": {
+                "text": "Deserialization of Untrusted Data"
+              },
+              "properties": {
+                "cwe": "CWE-502",
+                "severity": "Critical",
+                "security-severity": "9.5",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-502"
+                ]
+              }
+            },
+            {
+              "id": "4733068",
+              "name": "Server_Side_Request_Forgery",
+              "shortDescription": {
+                "text": "Server Side Request Forgery"
+              },
+              "properties": {
+                "cwe": "CWE-918",
+                "severity": "High",
+                "security-severity": "8.0",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-918"
+                ]
+              }
+            },
+            {
+              "id": "6645480",
+              "name": "Reflected_XSS",
+              "shortDescription": {
+                "text": "Reflected XSS"
+              },
+              "properties": {
+                "cwe": "CWE-79",
+                "severity": "High",
+                "security-severity": "8.0",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-79"
+                ]
+              }
+            },
+            {
+              "id": "8654930",
+              "name": "Vulnerable_Package",
+              "shortDescription": {
+                "text": "Vulnerable Package"
+              },
+              "properties": {
+                "cwe": "CWE-1395",
+                "severity": "High",
+                "security-severity": "8.0",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-1395"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "versionControlProvenance": [
+        {
+          "repositoryUri": "https://github.com/Cognition-Partner-Workshops/otterworks",
+          "branch": "demo-vuln-shared-lib"
+        }
+      ],
+      "properties": {
+        "repository": "uc-vuln-shared-lib-dev-api",
+        "projectPath": "industries/mfg/vuln-shared-lib/dev-api"
+      },
+      "results": [
+        {
+          "ruleId": "1609436",
+          "level": "error",
+          "message": {
+            "text": "Inventory search concatenates the model filter into SQL."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Dealer/Repositories/InventoryRepository.cs"
+                },
+                "region": {
+                  "startLine": 46,
+                  "snippet": {
+                    "text": "var sql = \"SELECT * FROM Inventory WHERE DealerId = @dealerId AND Model LIKE '%\" + model + \"%'\";"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "1593515910"
+          },
+          "properties": {
+            "findingId": "VSL-01",
+            "queryName": "SQL_Injection",
+            "severity": "Critical",
+            "security-severity": "9.5",
+            "cwe": "CWE-89",
+            "similarityId": 1593515910,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "dealer-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-89"
+            ]
+          }
+        },
+        {
+          "ruleId": "1609436",
+          "level": "error",
+          "message": {
+            "text": "Aging report concatenates the sort parameter into ORDER BY."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Dealer/Repositories/InventoryRepository.cs"
+                },
+                "region": {
+                  "startLine": 54,
+                  "snippet": {
+                    "text": "\"SELECT * FROM Inventory WHERE DealerId = @dealerId ORDER BY \" + sort, new { dealerId })).ToList();"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "374449255"
+          },
+          "properties": {
+            "findingId": "VSL-02",
+            "queryName": "SQL_Injection",
+            "severity": "Critical",
+            "security-severity": "9.5",
+            "cwe": "CWE-89",
+            "similarityId": 374449255,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "dealer-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-89"
+            ]
+          }
+        },
+        {
+          "ruleId": "1609436",
+          "level": "error",
+          "message": {
+            "text": "Claim search interpolates dealer and status into FromSqlRaw."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Warranty/Repositories/ClaimRepository.cs"
+                },
+                "region": {
+                  "startLine": 17,
+                  "snippet": {
+                    "text": ".FromSqlRaw($\"SELECT * FROM Claims WHERE DealerId = '{dealerId}' AND Status = '{status}'\")"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-2000080271"
+          },
+          "properties": {
+            "findingId": "VSL-03",
+            "queryName": "SQL_Injection",
+            "severity": "Critical",
+            "security-severity": "9.5",
+            "cwe": "CWE-89",
+            "similarityId": -2000080271,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "warranty-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-89"
+            ]
+          }
+        },
+        {
+          "ruleId": "6645480",
+          "level": "error",
+          "message": {
+            "text": "Window sticker note from the query string is rendered with Html.Raw."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Dealer/Views/WindowSticker/Index.cshtml"
+                },
+                "region": {
+                  "startLine": 13,
+                  "snippet": {
+                    "text": "<section aria-label=\"Dealer note\">@Html.Raw(Model.Note)</section>"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "2116043860"
+          },
+          "properties": {
+            "findingId": "VSL-06",
+            "queryName": "Reflected_XSS",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-79",
+            "similarityId": 2116043860,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "dealer-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-79"
+            ]
+          }
+        },
+        {
+          "ruleId": "4288987",
+          "level": "error",
+          "message": {
+            "text": "Claim import deserializes request bodies with TypeNameHandling.All."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Warranty/Controllers/ClaimImportsController.cs"
+                },
+                "region": {
+                  "startLine": 22,
+                  "snippet": {
+                    "text": "new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-561468874"
+          },
+          "properties": {
+            "findingId": "VSL-07",
+            "queryName": "Deserialization_of_Untrusted_Data",
+            "severity": "Critical",
+            "security-severity": "9.5",
+            "cwe": "CWE-502",
+            "similarityId": -561468874,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "warranty-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-502"
+            ]
+          }
+        },
+        {
+          "ruleId": "4288987",
+          "level": "error",
+          "message": {
+            "text": "Settlement import deserializes request bodies with TypeNameHandling.Auto."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Payments/Controllers/SettlementsController.cs"
+                },
+                "region": {
+                  "startLine": 52,
+                  "snippet": {
+                    "text": "new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-470272306"
+          },
+          "properties": {
+            "findingId": "VSL-08",
+            "queryName": "Deserialization_of_Untrusted_Data",
+            "severity": "Critical",
+            "security-severity": "9.5",
+            "cwe": "CWE-502",
+            "similarityId": -470272306,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "payments-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-502"
+            ]
+          }
+        },
+        {
+          "ruleId": "3050690",
+          "level": "error",
+          "message": {
+            "text": "Processor API secret is committed in appsettings.json."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Payments/appsettings.json"
+                },
+                "region": {
+                  "startLine": 4,
+                  "snippet": {
+                    "text": "\"ApiSecret\": \"vsl-synthetic-processor-api-secret-remittance\","
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "1900936331"
+          },
+          "properties": {
+            "findingId": "VSL-09",
+            "queryName": "Hardcoded_Secret",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-798",
+            "similarityId": 1900936331,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "payments-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-798"
+            ]
+          }
+        },
+        {
+          "ruleId": "3050690",
+          "level": "error",
+          "message": {
+            "text": "Identity client secret is committed in appsettings.json."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Identity/appsettings.json"
+                },
+                "region": {
+                  "startLine": 3,
+                  "snippet": {
+                    "text": "\"ClientSecret\": \"vsl-synthetic-identity-client-secret-portal\""
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-447864539"
+          },
+          "properties": {
+            "findingId": "VSL-10",
+            "queryName": "Hardcoded_Secret",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-798",
+            "similarityId": -447864539,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "identity-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-798"
+            ]
+          }
+        },
+        {
+          "ruleId": "3082032",
+          "level": "error",
+          "message": {
+            "text": "Attachment download combines the root with a user-supplied file name."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Warranty/Controllers/AttachmentsController.cs"
+                },
+                "region": {
+                  "startLine": 50,
+                  "snippet": {
+                    "text": "return File(System.IO.File.OpenRead(Path.Combine(attachmentRoot, name)),"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-794852689"
+          },
+          "properties": {
+            "findingId": "VSL-12",
+            "queryName": "Path_Traversal",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-22",
+            "similarityId": -794852689,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "warranty-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-22"
+            ]
+          }
+        },
+        {
+          "ruleId": "3082032",
+          "level": "error",
+          "message": {
+            "text": "Export file download combines the export root with a user-supplied name."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Dealer/Controllers/DealerOperationsController.cs"
+                },
+                "region": {
+                  "startLine": 61,
+                  "snippet": {
+                    "text": "return File(System.IO.File.OpenRead(Path.Combine(ExportRoot, name)), \"text/csv\", Path.GetFileName(name));"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-2080083673"
+          },
+          "properties": {
+            "findingId": "VSL-13",
+            "queryName": "Path_Traversal",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-22",
+            "similarityId": -2080083673,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "dealer-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-22"
+            ]
+          }
+        },
+        {
+          "ruleId": "1118287",
+          "level": "warning",
+          "message": {
+            "text": "Device fingerprints are hashed with MD5."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Identity/Controllers/IdentityController.cs"
+                },
+                "region": {
+                  "startLine": 47,
+                  "snippet": {
+                    "text": "var fingerprint = Convert.ToHexString(MD5.HashData(Encoding.UTF8.GetBytes(request.UserAgent + request.DeviceId)));"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-1107050446"
+          },
+          "properties": {
+            "findingId": "VSL-14",
+            "queryName": "Use_of_Broken_or_Risky_Cryptographic_Algorithm",
+            "severity": "Medium",
+            "security-severity": "5.5",
+            "cwe": "CWE-327",
+            "similarityId": -1107050446,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "identity-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-327"
+            ]
+          }
+        },
+        {
+          "ruleId": "1118287",
+          "level": "warning",
+          "message": {
+            "text": "Remember-me values are encrypted with AES in ECB mode."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Identity/Services/RememberMeService.cs"
+                },
+                "region": {
+                  "startLine": 14,
+                  "snippet": {
+                    "text": "aes.Mode = CipherMode.ECB;"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-998134188"
+          },
+          "properties": {
+            "findingId": "VSL-15",
+            "queryName": "Use_of_Broken_or_Risky_Cryptographic_Algorithm",
+            "severity": "Medium",
+            "security-severity": "5.5",
+            "cwe": "CWE-327",
+            "similarityId": -998134188,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "identity-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-327"
+            ]
+          }
+        },
+        {
+          "ruleId": "4733068",
+          "level": "error",
+          "message": {
+            "text": "Image proxy fetches a user-supplied URL."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Dealer/Controllers/DealerOperationsController.cs"
+                },
+                "region": {
+                  "startLine": 73,
+                  "snippet": {
+                    "text": "using var response = await clients.CreateClient(\"images\").GetAsync(url);"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-1514569124"
+          },
+          "properties": {
+            "findingId": "VSL-16",
+            "queryName": "Server_Side_Request_Forgery",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-918",
+            "similarityId": -1514569124,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "dealer-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-918"
+            ]
+          }
+        },
+        {
+          "ruleId": "4733068",
+          "level": "error",
+          "message": {
+            "text": "Webhook test posts to a user-supplied URL."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Payments/Services/WebhookService.cs"
+                },
+                "region": {
+                  "startLine": 34,
+                  "snippet": {
+                    "text": "using var response = await clients.CreateClient(\"webhooks\").SendAsync(message);"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "1024403479"
+          },
+          "properties": {
+            "findingId": "VSL-17",
+            "queryName": "Server_Side_Request_Forgery",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-918",
+            "similarityId": 1024403479,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "payments-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-918"
+            ]
+          }
+        },
+        {
+          "ruleId": "1222345",
+          "level": "warning",
+          "message": {
+            "text": "Sign-out redirects to an unvalidated returnUrl."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Identity/Controllers/IdentityController.cs"
+                },
+                "region": {
+                  "startLine": 75,
+                  "snippet": {
+                    "text": "return Redirect(returnUrl);"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-1416164604"
+          },
+          "properties": {
+            "findingId": "VSL-18",
+            "queryName": "Open_Redirect",
+            "severity": "Medium",
+            "security-severity": "5.5",
+            "cwe": "CWE-601",
+            "similarityId": -1416164604,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "identity-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-601"
+            ]
+          }
+        },
+        {
+          "ruleId": "2815013",
+          "level": "error",
+          "message": {
+            "text": "Refund detail action has no authorization policy."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/src/Payments/Controllers/RefundsController.cs"
+                },
+                "region": {
+                  "startLine": 21,
+                  "snippet": {
+                    "text": "[HttpGet(\"{id:int}\")]"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "283087442"
+          },
+          "properties": {
+            "findingId": "VSL-19",
+            "queryName": "Missing_Function_Level_Authorization",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-862",
+            "similarityId": 283087442,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "payments-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-862"
+            ]
+          }
+        },
+        {
+          "ruleId": "8654930",
+          "level": "error",
+          "message": {
+            "text": "Newtonsoft.Json 12.0.3 is affected by GHSA-5crp-9r3c-p9vr."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/Directory.Packages.props"
+                },
+                "region": {
+                  "startLine": 7,
+                  "snippet": {
+                    "text": "<PackageVersion Include=\"Newtonsoft.Json\" Version=\"12.0.3\" />"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "1834306472"
+          },
+          "properties": {
+            "findingId": "VSL-20",
+            "queryName": "Vulnerable_Package",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-1395",
+            "similarityId": 1834306472,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "platform-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-1395"
+            ]
+          }
+        },
+        {
+          "ruleId": "3474118",
+          "level": "note",
+          "message": {
+            "text": "A password literal seeds a user in the Identity tests."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dev-api/tests/Identity.Tests/IdentityApiFactory.cs"
+                },
+                "region": {
+                  "startLine": 40,
+                  "snippet": {
+                    "text": "PasswordHash = PasswordHasher.Hash(\"vsl-synthetic-dealer-ops-password\"),"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-1813561488"
+          },
+          "properties": {
+            "findingId": "VSL-27",
+            "queryName": "Hardcoded_Password",
+            "severity": "Low",
+            "security-severity": "2.0",
+            "cwe": "CWE-259",
+            "similarityId": -1813561488,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dev-api",
+            "ownerTeam": "identity-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-259"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "tool": {
+        "driver": {
+          "name": "Checkmarx",
+          "semanticVersion": "9.6.0",
+          "informationUri": "https://checkmarx.com/",
+          "rules": [
+            {
+              "id": "2234469",
+              "name": "Use_of_Hard_coded_Cryptographic_Key",
+              "shortDescription": {
+                "text": "Use of Hard coded Cryptographic Key"
+              },
+              "properties": {
+                "cwe": "CWE-321",
+                "severity": "High",
+                "security-severity": "8.0",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-321"
+                ]
+              }
+            },
+            {
+              "id": "4733068",
+              "name": "Server_Side_Request_Forgery",
+              "shortDescription": {
+                "text": "Server Side Request Forgery"
+              },
+              "properties": {
+                "cwe": "CWE-918",
+                "severity": "High",
+                "security-severity": "8.0",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-918"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "versionControlProvenance": [
+        {
+          "repositoryUri": "https://github.com/Cognition-Partner-Workshops/otterworks",
+          "branch": "demo-vuln-shared-lib"
+        }
+      ],
+      "properties": {
+        "repository": "uc-vuln-shared-lib-platform-shared",
+        "projectPath": "industries/mfg/vuln-shared-lib/platform-shared"
+      },
+      "results": [
+        {
+          "ruleId": "4733068",
+          "level": "error",
+          "message": {
+            "text": "SafeHttp.Fetch accepts any host and follows redirects; every consumer inherits it."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/platform-shared/src/Platform.Shared/Http/SafeHttp.cs"
+                },
+                "region": {
+                  "startLine": 14,
+                  "snippet": {
+                    "text": "public static async Task<FetchResult> Fetch(string url)"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "934780743"
+          },
+          "properties": {
+            "findingId": "VSL-22",
+            "queryName": "Server_Side_Request_Forgery",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-918",
+            "similarityId": 934780743,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-platform-shared",
+            "ownerTeam": "platform-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-918"
+            ]
+          }
+        },
+        {
+          "ruleId": "2234469",
+          "level": "error",
+          "message": {
+            "text": "TokenSigner signs with HMAC-SHA1 and a key compiled into the library."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/platform-shared/src/Platform.Shared/Crypto/TokenSigner.cs"
+                },
+                "region": {
+                  "startLine": 19,
+                  "snippet": {
+                    "text": "using var hmac = new HMACSHA1(SigningKey);"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-46774317"
+          },
+          "properties": {
+            "findingId": "VSL-23",
+            "queryName": "Use_of_Hard_coded_Cryptographic_Key",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-321",
+            "similarityId": -46774317,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-platform-shared",
+            "ownerTeam": "platform-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-321"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "tool": {
+        "driver": {
+          "name": "Checkmarx",
+          "semanticVersion": "9.6.0",
+          "informationUri": "https://checkmarx.com/",
+          "rules": [
+            {
+              "id": "3050690",
+              "name": "Hardcoded_Secret",
+              "shortDescription": {
+                "text": "Hardcoded Secret"
+              },
+              "properties": {
+                "cwe": "CWE-798",
+                "severity": "High",
+                "security-severity": "8.0",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-798"
+                ]
+              }
+            },
+            {
+              "id": "5803145",
+              "name": "Stored_XSS",
+              "shortDescription": {
+                "text": "Stored XSS"
+              },
+              "properties": {
+                "cwe": "CWE-79",
+                "severity": "High",
+                "security-severity": "8.0",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-79"
+                ]
+              }
+            },
+            {
+              "id": "6645480",
+              "name": "Reflected_XSS",
+              "shortDescription": {
+                "text": "Reflected XSS"
+              },
+              "properties": {
+                "cwe": "CWE-79",
+                "severity": "High",
+                "security-severity": "8.0",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-79"
+                ]
+              }
+            },
+            {
+              "id": "8654930",
+              "name": "Vulnerable_Package",
+              "shortDescription": {
+                "text": "Vulnerable Package"
+              },
+              "properties": {
+                "cwe": "CWE-1395",
+                "severity": "High",
+                "security-severity": "8.0",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-1395"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "versionControlProvenance": [
+        {
+          "repositoryUri": "https://github.com/Cognition-Partner-Workshops/otterworks",
+          "branch": "demo-vuln-shared-lib"
+        }
+      ],
+      "properties": {
+        "repository": "uc-vuln-shared-lib-dealer-portal",
+        "projectPath": "industries/mfg/vuln-shared-lib/dealer-portal"
+      },
+      "results": [
+        {
+          "ruleId": "5803145",
+          "level": "error",
+          "message": {
+            "text": "Claim descriptions bypass Angular sanitization and render as HTML."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dealer-portal/src/app/pages/claims-list/claims-list.component.ts"
+                },
+                "region": {
+                  "startLine": 70,
+                  "snippet": {
+                    "text": "return this.sanitizer.bypassSecurityTrustHtml((description ?? '').replace(/\\r?\\n/g, '<br>'));"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-657136163"
+          },
+          "properties": {
+            "findingId": "VSL-04",
+            "queryName": "Stored_XSS",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-79",
+            "similarityId": -657136163,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dealer-portal",
+            "ownerTeam": "portal-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-79"
+            ]
+          }
+        },
+        {
+          "ruleId": "6645480",
+          "level": "error",
+          "message": {
+            "text": "Search term from the query string is written to innerHTML."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dealer-portal/src/app/pages/inventory-list/inventory-list.component.ts"
+                },
+                "region": {
+                  "startLine": 99,
+                  "snippet": {
+                    "text": "'innerHTML',"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "352688715"
+          },
+          "properties": {
+            "findingId": "VSL-05",
+            "queryName": "Reflected_XSS",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-79",
+            "similarityId": 352688715,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dealer-portal",
+            "ownerTeam": "portal-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-79"
+            ]
+          }
+        },
+        {
+          "ruleId": "3050690",
+          "level": "error",
+          "message": {
+            "text": "Portal client API key is committed in the production environment file."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dealer-portal/src/environments/environment.ts"
+                },
+                "region": {
+                  "startLine": 4,
+                  "snippet": {
+                    "text": "portalApiKey: 'vsl-synthetic-portal-client-key-7f3a9c2e41d8',"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "519995236"
+          },
+          "properties": {
+            "findingId": "VSL-11",
+            "queryName": "Hardcoded_Secret",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-798",
+            "similarityId": 519995236,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dealer-portal",
+            "ownerTeam": "portal-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-798"
+            ]
+          }
+        },
+        {
+          "ruleId": "8654930",
+          "level": "error",
+          "message": {
+            "text": "moment 2.29.1 is affected by GHSA-8hfj-j24r-96c4 and GHSA-wc69-rhjr-hc9g."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/dealer-portal/package.json"
+                },
+                "region": {
+                  "startLine": 20,
+                  "snippet": {
+                    "text": "\"moment\": \"2.29.1\","
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "114152383"
+          },
+          "properties": {
+            "findingId": "VSL-21",
+            "queryName": "Vulnerable_Package",
+            "severity": "High",
+            "security-severity": "8.0",
+            "cwe": "CWE-1395",
+            "similarityId": 114152383,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-dealer-portal",
+            "ownerTeam": "portal-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-1395"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "tool": {
+        "driver": {
+          "name": "Checkmarx",
+          "semanticVersion": "9.6.0",
+          "informationUri": "https://checkmarx.com/",
+          "rules": [
+            {
+              "id": "3050690",
+              "name": "Hardcoded_Secret",
+              "shortDescription": {
+                "text": "Hardcoded Secret"
+              },
+              "properties": {
+                "cwe": "CWE-798",
+                "severity": "Medium",
+                "security-severity": "5.5",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-798"
+                ]
+              }
+            },
+            {
+              "id": "6965114",
+              "name": "Cleartext_Transmission",
+              "shortDescription": {
+                "text": "Cleartext Transmission"
+              },
+              "properties": {
+                "cwe": "CWE-319",
+                "severity": "Medium",
+                "security-severity": "5.5",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-319"
+                ]
+              }
+            },
+            {
+              "id": "8650107",
+              "name": "Insecure_Storage_of_Sensitive_Information",
+              "shortDescription": {
+                "text": "Insecure Storage of Sensitive Information"
+              },
+              "properties": {
+                "cwe": "CWE-312",
+                "severity": "Medium",
+                "security-severity": "5.5",
+                "tags": [
+                  "security",
+                  "external/cwe/cwe-312"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "versionControlProvenance": [
+        {
+          "repositoryUri": "https://github.com/Cognition-Partner-Workshops/otterworks",
+          "branch": "demo-vuln-shared-lib"
+        }
+      ],
+      "properties": {
+        "repository": "uc-vuln-shared-lib-android-app",
+        "projectPath": "industries/mfg/vuln-shared-lib/android-app"
+      },
+      "results": [
+        {
+          "ruleId": "6965114",
+          "level": "warning",
+          "message": {
+            "text": "The manifest allows cleartext HTTP."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/android-app/app/src/main/AndroidManifest.xml"
+                },
+                "region": {
+                  "startLine": 5,
+                  "snippet": {
+                    "text": "android:label=\"Dealer workspace\" android:usesCleartextTraffic=\"true\">"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "177884351"
+          },
+          "properties": {
+            "findingId": "VSL-24",
+            "queryName": "Cleartext_Transmission",
+            "severity": "Medium",
+            "security-severity": "5.5",
+            "cwe": "CWE-319",
+            "similarityId": 177884351,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-android-app",
+            "ownerTeam": "mobile-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-319"
+            ]
+          }
+        },
+        {
+          "ruleId": "8650107",
+          "level": "warning",
+          "message": {
+            "text": "The access token is stored in plain SharedPreferences."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/android-app/app/src/main/kotlin/com/vsl/dealer/PreferenceTokenStore.kt"
+                },
+                "region": {
+                  "startLine": 12,
+                  "snippet": {
+                    "text": "preferences.edit().putString(\"access_token\", token).apply()"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "-749340552"
+          },
+          "properties": {
+            "findingId": "VSL-25",
+            "queryName": "Insecure_Storage_of_Sensitive_Information",
+            "severity": "Medium",
+            "security-severity": "5.5",
+            "cwe": "CWE-312",
+            "similarityId": -749340552,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-android-app",
+            "ownerTeam": "mobile-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-312"
+            ]
+          }
+        },
+        {
+          "ruleId": "3050690",
+          "level": "warning",
+          "message": {
+            "text": "An API key is compiled into BuildConfig."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "industries/mfg/vuln-shared-lib/android-app/app/build.gradle.kts"
+                },
+                "region": {
+                  "startLine": 17,
+                  "snippet": {
+                    "text": "buildConfigField(\"String\", \"DEALER_API_KEY\", \"\\\"vsl-synthetic-mobile-api-key-0001\\\"\")"
+                  }
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "similarityId": "2091703648"
+          },
+          "properties": {
+            "findingId": "VSL-26",
+            "queryName": "Hardcoded_Secret",
+            "severity": "Medium",
+            "security-severity": "5.5",
+            "cwe": "CWE-798",
+            "similarityId": 2091703648,
+            "state": "To Verify",
+            "repository": "uc-vuln-shared-lib-android-app",
+            "ownerTeam": "mobile-team",
+            "tags": [
+              "security",
+              "external/cwe/cwe-798"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
