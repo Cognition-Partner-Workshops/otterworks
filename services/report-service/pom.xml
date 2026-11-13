@@ -26,6 +26,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Keep the Java 8 / javax.servlet line while applying Tomcat security fixes. -->
+        <tomcat.version>9.0.123</tomcat.version>
 
         <!-- LEGACY: SpringFox 3.0 (dead project). Upgrade target: springdoc-openapi 2.x -->
         <springfox.version>3.0.0</springfox.version>

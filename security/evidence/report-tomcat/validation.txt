@@ -1,0 +1,956 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< com.otterworks:report-service >--------------------
+[INFO] Building OtterWorks Report Service 0.1.0
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] Downloading from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/tomcat/embed/tomcat-embed-core/9.0.123/tomcat-embed-core-9.0.123.pom
+[INFO] Downloaded from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/tomcat/embed/tomcat-embed-core/9.0.123/tomcat-embed-core-9.0.123.pom (1.7 kB at 3.2 kB/s)
+[INFO] Downloading from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/tomcat/embed/tomcat-embed-el/9.0.123/tomcat-embed-el-9.0.123.pom
+[INFO] Downloaded from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/tomcat/embed/tomcat-embed-el/9.0.123/tomcat-embed-el-9.0.123.pom (1.5 kB at 12 kB/s)
+[INFO] Downloading from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/9.0.123/tomcat-embed-websocket-9.0.123.pom
+[INFO] Downloaded from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/9.0.123/tomcat-embed-websocket-9.0.123.pom (1.7 kB at 16 kB/s)
+[INFO] Downloading from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/tomcat/embed/tomcat-embed-core/9.0.123/tomcat-embed-core-9.0.123.jar
+[INFO] Downloading from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/9.0.123/tomcat-embed-websocket-9.0.123.jar
+[INFO] Downloading from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/tomcat/embed/tomcat-embed-el/9.0.123/tomcat-embed-el-9.0.123.jar
+[INFO] Downloaded from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/9.0.123/tomcat-embed-websocket-9.0.123.jar (292 kB at 1.0 MB/s)
+[INFO] Downloaded from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/tomcat/embed/tomcat-embed-el/9.0.123/tomcat-embed-el-9.0.123.jar (264 kB at 912 kB/s)
+[INFO] Downloaded from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/tomcat/embed/tomcat-embed-core/9.0.123/tomcat-embed-core-9.0.123.jar (3.8 MB at 12 MB/s)
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:resources (default-resources) @ report-service ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] Copying 2 resources
+[INFO] Copying 2 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ report-service ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 48 source files to /work/services/report-service/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:testResources (default-testResources) @ report-service ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ report-service ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 18 source files to /work/services/report-service/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.22.2:test (default-test) @ report-service ---
+[INFO] Downloading from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/maven/surefire/surefire-junit4/2.22.2/surefire-junit4-2.22.2.pom
+[INFO] Downloaded from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/maven/surefire/surefire-junit4/2.22.2/surefire-junit4-2.22.2.pom (3.1 kB at 21 kB/s)
+[INFO] Downloading from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/maven/surefire/surefire-providers/2.22.2/surefire-providers-2.22.2.pom
+[INFO] Downloaded from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/maven/surefire/surefire-providers/2.22.2/surefire-providers-2.22.2.pom (2.5 kB at 34 kB/s)
+[INFO] Downloading from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/maven/surefire/surefire-junit4/2.22.2/surefire-junit4-2.22.2.jar
+[INFO] Downloaded from google-central: https://maven-central.storage-download.googleapis.com/maven2/org/apache/maven/surefire/surefire-junit4/2.22.2/surefire-junit4-2.22.2.jar (85 kB at 1.1 MB/s)
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.otterworks.report.deps.DependencyTranscriptEmitterTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.024 s - in com.otterworks.report.deps.DependencyTranscriptEmitterTest
+[INFO] Running com.otterworks.report.archive.JdbcArchiveStoreTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.802 s - in com.otterworks.report.archive.JdbcArchiveStoreTest
+[INFO] Running com.otterworks.report.archive.BusinessHashTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s - in com.otterworks.report.archive.BusinessHashTest
+[INFO] Running com.otterworks.report.archive.ArchiveControllerTest
+14:08:58.211 [main] DEBUG org.jboss.logging - Logging Provider: org.jboss.logging.Log4j2LoggerProvider
+14:08:58.212 [main] INFO org.hibernate.validator.internal.util.Version - HV000001: Hibernate Validator 6.2.5.Final
+14:08:58.224 [main] DEBUG org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator - Loaded expression factory via original TCCL
+14:08:58.224 [main] DEBUG org.hibernate.validator.internal.engine.AbstractConfigurationImpl - Setting custom MessageInterpolator of type org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator
+14:08:58.224 [main] DEBUG org.hibernate.validator.internal.engine.AbstractConfigurationImpl - Setting custom ParameterNameProvider of type org.springframework.validation.beanvalidation.LocalValidatorFactoryBean$1
+14:08:58.226 [main] DEBUG org.hibernate.validator.internal.xml.config.ValidationXmlParser - Trying to load META-INF/validation.xml for XML based Validator configuration.
+14:08:58.227 [main] DEBUG org.hibernate.validator.internal.xml.config.ResourceLoaderHelper - Trying to load META-INF/validation.xml via TCCL
+14:08:58.227 [main] DEBUG org.hibernate.validator.internal.xml.config.ResourceLoaderHelper - Trying to load META-INF/validation.xml via Hibernate Validator's class loader
+14:08:58.227 [main] DEBUG org.hibernate.validator.internal.xml.config.ValidationXmlParser - No META-INF/validation.xml found. Using annotation based configuration only.
+14:08:58.231 [main] DEBUG org.hibernate.validator.internal.engine.resolver.TraversableResolvers - Found javax.persistence.Persistence on classpath containing 'getPersistenceUtil'. Assuming JPA 2 environment. Trying to instantiate JPA aware TraversableResolver
+14:08:58.231 [main] DEBUG org.hibernate.validator.internal.engine.resolver.TraversableResolvers - Instantiated JPA aware TraversableResolver of type org.hibernate.validator.internal.engine.resolver.JPATraversableResolver.
+14:08:58.281 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000252: Using org.hibernate.validator.internal.engine.DefaultPropertyNodeNameProvider as property node name provider.
+14:08:58.284 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator as ValidatorFactory-scoped message interpolator.
+14:08:58.284 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.resolver.JPATraversableResolver as ValidatorFactory-scoped traversable resolver.
+14:08:58.284 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.util.ExecutableParameterNameProvider as ValidatorFactory-scoped parameter name provider.
+14:08:58.284 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.DefaultClockProvider as ValidatorFactory-scoped clock provider.
+14:08:58.284 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.scripting.DefaultScriptEvaluatorFactory as ValidatorFactory-scoped script evaluator factory.
+14:08:58.398 [main] DEBUG _org.springframework.web.servlet.HandlerMapping.Mappings - 
+	c.o.r.a.ArchiveController:
+	{GET [/api/archive/documents/{docId} || /api/v1/archive/documents/{docId} || /api/v1/reports/archive/documents/{docId}]}: document(String,boolean)
+	{GET [/api/archive/documents/{docId}/hash || /api/v1/archive/documents/{docId}/hash || /api/v1/reports/archive/documents/{docId}/hash]}: hash(String)
+14:08:58.403 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping - 2 mappings in org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+14:08:58.570 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter - ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+14:08:58.588 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver - ControllerAdvice beans: 1 @ExceptionHandler, 1 ResponseBodyAdvice
+14:08:58.600 [main] INFO org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+14:08:58.600 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+14:08:58.601 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected AcceptHeaderLocaleResolver
+14:08:58.601 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected FixedThemeResolver
+14:08:58.602 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@62db3891
+14:08:58.602 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected org.springframework.web.servlet.support.SessionFlashMapManager@61cd1c71
+14:08:58.602 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+14:08:58.602 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet - Completed initialization in 2 ms
+14:08:58.619 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - GET "/api/archive/documents/doc-1", parameters={}
+14:08:58.622 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping - Mapped to com.otterworks.report.archive.ArchiveController#document(String, boolean)
+14:08:58.666 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+14:08:58.667 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Writing [com.otterworks.report.archive.ArchiveDocument@53311681]
+14:08:58.681 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Completed 200 OK
+14:08:58.711 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['store']
+14:08:58.713 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['versions'][0]['arch_key']
+14:08:58.714 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['versions'][0]['owner_name']
+14:08:58.714 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['versions'][0]['raw']
+14:08:58.714 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['versions'][0]['events'][0]['raw']
+14:08:58.717 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - GET "/api/archive/documents/doc-1", parameters={masked}
+14:08:58.717 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping - Mapped to com.otterworks.report.archive.ArchiveController#document(String, boolean)
+14:08:58.718 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+14:08:58.718 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Writing [com.otterworks.report.archive.ArchiveDocument@27755487]
+14:08:58.720 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Completed 200 OK
+14:08:58.720 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['versions'][0]['raw']['arch_key']
+14:08:58.721 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['versions'][0]['raw']['owner_name']
+14:08:58.723 [main] DEBUG org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator - Loaded expression factory via original TCCL
+14:08:58.725 [main] DEBUG org.hibernate.validator.internal.engine.AbstractConfigurationImpl - Setting custom MessageInterpolator of type org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator
+14:08:58.725 [main] DEBUG org.hibernate.validator.internal.engine.AbstractConfigurationImpl - Setting custom ParameterNameProvider of type org.springframework.validation.beanvalidation.LocalValidatorFactoryBean$1
+14:08:58.725 [main] DEBUG org.hibernate.validator.internal.xml.config.ValidationXmlParser - Trying to load META-INF/validation.xml for XML based Validator configuration.
+14:08:58.725 [main] DEBUG org.hibernate.validator.internal.xml.config.ResourceLoaderHelper - Trying to load META-INF/validation.xml via TCCL
+14:08:58.725 [main] DEBUG org.hibernate.validator.internal.xml.config.ResourceLoaderHelper - Trying to load META-INF/validation.xml via Hibernate Validator's class loader
+14:08:58.726 [main] DEBUG org.hibernate.validator.internal.xml.config.ValidationXmlParser - No META-INF/validation.xml found. Using annotation based configuration only.
+14:08:58.726 [main] DEBUG org.hibernate.validator.internal.engine.resolver.TraversableResolvers - Found javax.persistence.Persistence on classpath containing 'getPersistenceUtil'. Assuming JPA 2 environment. Trying to instantiate JPA aware TraversableResolver
+14:08:58.726 [main] DEBUG org.hibernate.validator.internal.engine.resolver.TraversableResolvers - Instantiated JPA aware TraversableResolver of type org.hibernate.validator.internal.engine.resolver.JPATraversableResolver.
+14:08:58.729 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000252: Using org.hibernate.validator.internal.engine.DefaultPropertyNodeNameProvider as property node name provider.
+14:08:58.729 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator as ValidatorFactory-scoped message interpolator.
+14:08:58.729 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.resolver.JPATraversableResolver as ValidatorFactory-scoped traversable resolver.
+14:08:58.729 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.util.ExecutableParameterNameProvider as ValidatorFactory-scoped parameter name provider.
+14:08:58.729 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.DefaultClockProvider as ValidatorFactory-scoped clock provider.
+14:08:58.729 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.scripting.DefaultScriptEvaluatorFactory as ValidatorFactory-scoped script evaluator factory.
+14:08:58.731 [main] DEBUG _org.springframework.web.servlet.HandlerMapping.Mappings - 
+	c.o.r.a.ArchiveController:
+	{GET [/api/archive/documents/{docId} || /api/v1/archive/documents/{docId} || /api/v1/reports/archive/documents/{docId}]}: document(String,boolean)
+	{GET [/api/archive/documents/{docId}/hash || /api/v1/archive/documents/{docId}/hash || /api/v1/reports/archive/documents/{docId}/hash]}: hash(String)
+14:08:58.731 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping - 2 mappings in org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+14:08:58.733 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter - ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+14:08:58.737 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver - ControllerAdvice beans: 1 @ExceptionHandler, 1 ResponseBodyAdvice
+14:08:58.737 [main] INFO org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+14:08:58.737 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+14:08:58.737 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected AcceptHeaderLocaleResolver
+14:08:58.737 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected FixedThemeResolver
+14:08:58.737 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@65ddee5a
+14:08:58.737 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected org.springframework.web.servlet.support.SessionFlashMapManager@56399b9e
+14:08:58.737 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+14:08:58.737 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+14:08:58.737 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - GET "/api/archive/documents/abc", parameters={}
+14:08:58.738 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping - Mapped to com.otterworks.report.archive.ArchiveController#document(String, boolean)
+14:08:58.739 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver - Using @ExceptionHandler com.otterworks.report.archive.ArchiveExceptionHandler#featureOff(ArchiveFeatureDisabledException)
+14:08:58.740 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Found 'Content-Type:application/json' in response
+14:08:58.742 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Writing [{error=archive feature is not enabled, hint=archive feature is off; set ARCHIVE_STORE=db2, postgresq (truncated)...]
+14:08:58.744 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver - Resolved [com.otterworks.report.archive.ArchiveFeatureDisabledException: archive feature is off; set ARCHIVE_STORE=db2, postgresql or azuresql to enable it]
+14:08:58.744 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Completed 404 NOT_FOUND
+14:08:58.745 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['hint']
+14:08:58.745 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - GET "/api/archive/documents/abc/hash", parameters={}
+14:08:58.745 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping - Mapped to com.otterworks.report.archive.ArchiveController#hash(String)
+14:08:58.746 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver - Using @ExceptionHandler com.otterworks.report.archive.ArchiveExceptionHandler#featureOff(ArchiveFeatureDisabledException)
+14:08:58.746 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Found 'Content-Type:application/json' in response
+14:08:58.746 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Writing [{error=archive feature is not enabled, hint=archive feature is off; set ARCHIVE_STORE=db2, postgresq (truncated)...]
+14:08:58.746 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver - Resolved [com.otterworks.report.archive.ArchiveFeatureDisabledException: archive feature is off; set ARCHIVE_STORE=db2, postgresql or azuresql to enable it]
+14:08:58.746 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Completed 404 NOT_FOUND
+14:08:58.748 [main] DEBUG org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator - Loaded expression factory via original TCCL
+14:08:58.748 [main] DEBUG org.hibernate.validator.internal.engine.AbstractConfigurationImpl - Setting custom MessageInterpolator of type org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator
+14:08:58.748 [main] DEBUG org.hibernate.validator.internal.engine.AbstractConfigurationImpl - Setting custom ParameterNameProvider of type org.springframework.validation.beanvalidation.LocalValidatorFactoryBean$1
+14:08:58.748 [main] DEBUG org.hibernate.validator.internal.xml.config.ValidationXmlParser - Trying to load META-INF/validation.xml for XML based Validator configuration.
+14:08:58.748 [main] DEBUG org.hibernate.validator.internal.xml.config.ResourceLoaderHelper - Trying to load META-INF/validation.xml via TCCL
+14:08:58.748 [main] DEBUG org.hibernate.validator.internal.xml.config.ResourceLoaderHelper - Trying to load META-INF/validation.xml via Hibernate Validator's class loader
+14:08:58.748 [main] DEBUG org.hibernate.validator.internal.xml.config.ValidationXmlParser - No META-INF/validation.xml found. Using annotation based configuration only.
+14:08:58.748 [main] DEBUG org.hibernate.validator.internal.engine.resolver.TraversableResolvers - Found javax.persistence.Persistence on classpath containing 'getPersistenceUtil'. Assuming JPA 2 environment. Trying to instantiate JPA aware TraversableResolver
+14:08:58.748 [main] DEBUG org.hibernate.validator.internal.engine.resolver.TraversableResolvers - Instantiated JPA aware TraversableResolver of type org.hibernate.validator.internal.engine.resolver.JPATraversableResolver.
+14:08:58.749 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000252: Using org.hibernate.validator.internal.engine.DefaultPropertyNodeNameProvider as property node name provider.
+14:08:58.749 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator as ValidatorFactory-scoped message interpolator.
+14:08:58.749 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.resolver.JPATraversableResolver as ValidatorFactory-scoped traversable resolver.
+14:08:58.749 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.util.ExecutableParameterNameProvider as ValidatorFactory-scoped parameter name provider.
+14:08:58.749 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.DefaultClockProvider as ValidatorFactory-scoped clock provider.
+14:08:58.750 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.scripting.DefaultScriptEvaluatorFactory as ValidatorFactory-scoped script evaluator factory.
+14:08:58.751 [main] DEBUG _org.springframework.web.servlet.HandlerMapping.Mappings - 
+	c.o.r.a.ArchiveController:
+	{GET [/api/archive/documents/{docId} || /api/v1/archive/documents/{docId} || /api/v1/reports/archive/documents/{docId}]}: document(String,boolean)
+	{GET [/api/archive/documents/{docId}/hash || /api/v1/archive/documents/{docId}/hash || /api/v1/reports/archive/documents/{docId}/hash]}: hash(String)
+14:08:58.751 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping - 2 mappings in org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+14:08:58.753 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter - ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+14:08:58.754 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver - ControllerAdvice beans: 1 @ExceptionHandler, 1 ResponseBodyAdvice
+14:08:58.754 [main] INFO org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+14:08:58.754 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+14:08:58.754 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected AcceptHeaderLocaleResolver
+14:08:58.755 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected FixedThemeResolver
+14:08:58.755 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@4fe64d23
+14:08:58.755 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected org.springframework.web.servlet.support.SessionFlashMapManager@58437801
+14:08:58.755 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+14:08:58.755 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet - Completed initialization in 1 ms
+14:08:58.755 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - GET "/api/archive/documents/nope", parameters={}
+14:08:58.755 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping - Mapped to com.otterworks.report.archive.ArchiveController#document(String, boolean)
+14:08:58.756 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+14:08:58.756 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Writing [{error=document not found, doc_id=nope}]
+14:08:58.757 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Completed 404 NOT_FOUND
+14:08:58.757 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['error']
+14:08:58.761 [main] DEBUG org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator - Loaded expression factory via original TCCL
+14:08:58.761 [main] DEBUG org.hibernate.validator.internal.engine.AbstractConfigurationImpl - Setting custom MessageInterpolator of type org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator
+14:08:58.761 [main] DEBUG org.hibernate.validator.internal.engine.AbstractConfigurationImpl - Setting custom ParameterNameProvider of type org.springframework.validation.beanvalidation.LocalValidatorFactoryBean$1
+14:08:58.761 [main] DEBUG org.hibernate.validator.internal.xml.config.ValidationXmlParser - Trying to load META-INF/validation.xml for XML based Validator configuration.
+14:08:58.761 [main] DEBUG org.hibernate.validator.internal.xml.config.ResourceLoaderHelper - Trying to load META-INF/validation.xml via TCCL
+14:08:58.761 [main] DEBUG org.hibernate.validator.internal.xml.config.ResourceLoaderHelper - Trying to load META-INF/validation.xml via Hibernate Validator's class loader
+14:08:58.761 [main] DEBUG org.hibernate.validator.internal.xml.config.ValidationXmlParser - No META-INF/validation.xml found. Using annotation based configuration only.
+14:08:58.761 [main] DEBUG org.hibernate.validator.internal.engine.resolver.TraversableResolvers - Found javax.persistence.Persistence on classpath containing 'getPersistenceUtil'. Assuming JPA 2 environment. Trying to instantiate JPA aware TraversableResolver
+14:08:58.761 [main] DEBUG org.hibernate.validator.internal.engine.resolver.TraversableResolvers - Instantiated JPA aware TraversableResolver of type org.hibernate.validator.internal.engine.resolver.JPATraversableResolver.
+14:08:58.762 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000252: Using org.hibernate.validator.internal.engine.DefaultPropertyNodeNameProvider as property node name provider.
+14:08:58.762 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator as ValidatorFactory-scoped message interpolator.
+14:08:58.762 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.resolver.JPATraversableResolver as ValidatorFactory-scoped traversable resolver.
+14:08:58.762 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.util.ExecutableParameterNameProvider as ValidatorFactory-scoped parameter name provider.
+14:08:58.762 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.DefaultClockProvider as ValidatorFactory-scoped clock provider.
+14:08:58.762 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.scripting.DefaultScriptEvaluatorFactory as ValidatorFactory-scoped script evaluator factory.
+14:08:58.764 [main] DEBUG _org.springframework.web.servlet.HandlerMapping.Mappings - 
+	c.o.r.a.ArchiveController:
+	{GET [/api/archive/documents/{docId} || /api/v1/archive/documents/{docId} || /api/v1/reports/archive/documents/{docId}]}: document(String,boolean)
+	{GET [/api/archive/documents/{docId}/hash || /api/v1/archive/documents/{docId}/hash || /api/v1/reports/archive/documents/{docId}/hash]}: hash(String)
+14:08:58.764 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping - 2 mappings in org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+14:08:58.766 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter - ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+14:08:58.767 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver - ControllerAdvice beans: 1 @ExceptionHandler, 1 ResponseBodyAdvice
+14:08:58.767 [main] INFO org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+14:08:58.767 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+14:08:58.767 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected AcceptHeaderLocaleResolver
+14:08:58.767 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected FixedThemeResolver
+14:08:58.767 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@4098dd77
+14:08:58.767 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected org.springframework.web.servlet.support.SessionFlashMapManager@43aeb5e0
+14:08:58.767 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+14:08:58.767 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+14:08:58.768 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - GET "/api/v1/archive/documents/abc", parameters={}
+14:08:58.768 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping - Mapped to com.otterworks.report.archive.ArchiveController#document(String, boolean)
+14:08:58.769 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver - Using @ExceptionHandler com.otterworks.report.archive.ArchiveExceptionHandler#unavailable(ArchiveStoreUnavailableException)
+14:08:58.769 [main] ERROR com.otterworks.report.archive.ArchiveExceptionHandler - archive store unavailable: ARCHIVE_STORE has an unsupported value
+14:08:58.769 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Found 'Content-Type:application/json' in response
+14:08:58.769 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Writing [{error=archive store unavailable, detail=ARCHIVE_STORE has an unsupported value}]
+14:08:58.769 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver - Resolved [com.otterworks.report.archive.ArchiveStoreUnavailableException: ARCHIVE_STORE has an unsupported value]
+14:08:58.769 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Completed 503 SERVICE_UNAVAILABLE
+14:08:58.770 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['error']
+14:08:58.771 [main] DEBUG org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator - Loaded expression factory via original TCCL
+14:08:58.771 [main] DEBUG org.hibernate.validator.internal.engine.AbstractConfigurationImpl - Setting custom MessageInterpolator of type org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator
+14:08:58.771 [main] DEBUG org.hibernate.validator.internal.engine.AbstractConfigurationImpl - Setting custom ParameterNameProvider of type org.springframework.validation.beanvalidation.LocalValidatorFactoryBean$1
+14:08:58.771 [main] DEBUG org.hibernate.validator.internal.xml.config.ValidationXmlParser - Trying to load META-INF/validation.xml for XML based Validator configuration.
+14:08:58.771 [main] DEBUG org.hibernate.validator.internal.xml.config.ResourceLoaderHelper - Trying to load META-INF/validation.xml via TCCL
+14:08:58.771 [main] DEBUG org.hibernate.validator.internal.xml.config.ResourceLoaderHelper - Trying to load META-INF/validation.xml via Hibernate Validator's class loader
+14:08:58.771 [main] DEBUG org.hibernate.validator.internal.xml.config.ValidationXmlParser - No META-INF/validation.xml found. Using annotation based configuration only.
+14:08:58.771 [main] DEBUG org.hibernate.validator.internal.engine.resolver.TraversableResolvers - Found javax.persistence.Persistence on classpath containing 'getPersistenceUtil'. Assuming JPA 2 environment. Trying to instantiate JPA aware TraversableResolver
+14:08:58.772 [main] DEBUG org.hibernate.validator.internal.engine.resolver.TraversableResolvers - Instantiated JPA aware TraversableResolver of type org.hibernate.validator.internal.engine.resolver.JPATraversableResolver.
+14:08:58.772 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000252: Using org.hibernate.validator.internal.engine.DefaultPropertyNodeNameProvider as property node name provider.
+14:08:58.772 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator as ValidatorFactory-scoped message interpolator.
+14:08:58.772 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.resolver.JPATraversableResolver as ValidatorFactory-scoped traversable resolver.
+14:08:58.772 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.util.ExecutableParameterNameProvider as ValidatorFactory-scoped parameter name provider.
+14:08:58.773 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.DefaultClockProvider as ValidatorFactory-scoped clock provider.
+14:08:58.773 [main] DEBUG org.hibernate.validator.internal.engine.ValidatorFactoryConfigurationHelper - HV000234: Using org.hibernate.validator.internal.engine.scripting.DefaultScriptEvaluatorFactory as ValidatorFactory-scoped script evaluator factory.
+14:08:58.774 [main] DEBUG _org.springframework.web.servlet.HandlerMapping.Mappings - 
+	c.o.r.a.ArchiveController:
+	{GET [/api/archive/documents/{docId} || /api/v1/archive/documents/{docId} || /api/v1/reports/archive/documents/{docId}]}: document(String,boolean)
+	{GET [/api/archive/documents/{docId}/hash || /api/v1/archive/documents/{docId}/hash || /api/v1/reports/archive/documents/{docId}/hash]}: hash(String)
+14:08:58.774 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping - 2 mappings in org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+14:08:58.776 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter - ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+14:08:58.778 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver - ControllerAdvice beans: 1 @ExceptionHandler, 1 ResponseBodyAdvice
+14:08:58.779 [main] INFO org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+14:08:58.779 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+14:08:58.779 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected AcceptHeaderLocaleResolver
+14:08:58.779 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected FixedThemeResolver
+14:08:58.779 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@59b65dce
+14:08:58.779 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Detected org.springframework.web.servlet.support.SessionFlashMapManager@1386313f
+14:08:58.779 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+14:08:58.779 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+14:08:58.780 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - GET "/api/v1/reports/archive/documents/doc-1/hash", parameters={}
+14:08:58.784 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping - Mapped to com.otterworks.report.archive.ArchiveController#hash(String)
+14:08:58.785 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+14:08:58.788 [main] DEBUG org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor - Writing [{doc_id=doc-1, store=db2, algorithm=SHA-256 over '|'-joined manifest hash_columns (CONTRACTS §7), do (truncated)...]
+14:08:58.789 [main] DEBUG org.springframework.test.web.servlet.TestDispatcherServlet - Completed 200 OK
+14:08:58.789 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['doc_id']
+14:08:58.789 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['versions'][0]['row_hash']
+14:08:58.790 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['versions'][0]['events'][0]['row_hash']
+14:08:58.790 [main] DEBUG com.jayway.jsonpath.internal.path.CompiledPath - Evaluating path: $['document_hash']
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.869 s - in com.otterworks.report.archive.ArchiveControllerTest
+[INFO] Running com.otterworks.report.archive.ArchiveStoreRegistryTest
+14:08:58.797 [main] ERROR com.otterworks.report.archive.ArchiveStoreRegistry - archive store misconfigured: ARCHIVE_STORE=postgresql but PG_HOST/PG_DATABASE/PG_USER/PG_PASSWORD are incomplete
+14:08:58.894 [main] DEBUG org.springframework.jdbc.datasource.DriverManagerDataSource - Loaded JDBC driver: com.ibm.db2.jcc.DB2Driver
+14:08:58.895 [main] INFO com.otterworks.report.archive.ArchiveStoreRegistry - archive store enabled: db2 (namespace )
+14:08:58.895 [main] DEBUG org.springframework.jdbc.datasource.DriverManagerDataSource - Loaded JDBC driver: com.microsoft.sqlserver.jdbc.SQLServerDriver
+14:08:58.895 [main] INFO com.otterworks.report.archive.ArchiveStoreRegistry - archive store enabled: azuresql (namespace x1-after)
+14:08:58.895 [main] DEBUG org.springframework.jdbc.datasource.DriverManagerDataSource - Loaded JDBC driver: org.postgresql.Driver
+14:08:58.895 [main] INFO com.otterworks.report.archive.ArchiveStoreRegistry - archive store enabled: postgresql (namespace x1-after)
+14:08:58.895 [main] ERROR com.otterworks.report.archive.ArchiveStoreRegistry - archive store misconfigured: ARCHIVE_STORE has an unsupported value 'oracle' (expected db2, postgresql or azuresql)
+14:08:58.895 [main] ERROR com.otterworks.report.archive.ArchiveStoreRegistry - archive store misconfigured: ARCHIVE_STORE=db2 but DB2_HOST/DB2_DATABASE/DB2_USER/DB2_PASSWORD are incomplete
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.105 s - in com.otterworks.report.archive.ArchiveStoreRegistryTest
+[INFO] Running com.otterworks.report.archive.Db2TextTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s - in com.otterworks.report.archive.Db2TextTest
+[INFO] Running com.otterworks.report.controller.ReportControllerIntegrationTest
+14:08:58.917 [main] DEBUG org.springframework.test.context.junit4.SpringJUnit4ClassRunner - SpringJUnit4ClassRunner constructor called with [class com.otterworks.report.controller.ReportControllerIntegrationTest]
+14:08:58.918 [main] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating CacheAwareContextLoaderDelegate from class [org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate]
+14:08:58.921 [main] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating BootstrapContext using constructor [public org.springframework.test.context.support.DefaultBootstrapContext(java.lang.Class,org.springframework.test.context.CacheAwareContextLoaderDelegate)]
+14:08:58.941 [main] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating TestContextBootstrapper for test class [com.otterworks.report.controller.ReportControllerIntegrationTest] from class [org.springframework.boot.test.context.SpringBootTestContextBootstrapper]
+14:08:58.952 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Neither @ContextConfiguration nor @ContextHierarchy found for test class [com.otterworks.report.controller.ReportControllerIntegrationTest], using SpringBootContextLoader
+14:08:58.954 [main] DEBUG org.springframework.test.context.support.AbstractContextLoader - Did not detect default resource location for test class [com.otterworks.report.controller.ReportControllerIntegrationTest]: class path resource [com/otterworks/report/controller/ReportControllerIntegrationTest-context.xml] does not exist
+14:08:58.954 [main] DEBUG org.springframework.test.context.support.AbstractContextLoader - Did not detect default resource location for test class [com.otterworks.report.controller.ReportControllerIntegrationTest]: class path resource [com/otterworks/report/controller/ReportControllerIntegrationTestContext.groovy] does not exist
+14:08:58.954 [main] INFO org.springframework.test.context.support.AbstractContextLoader - Could not detect default resource locations for test class [com.otterworks.report.controller.ReportControllerIntegrationTest]: no resource found for suffixes {-context.xml, Context.groovy}.
+14:08:58.955 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.otterworks.report.controller.ReportControllerIntegrationTest]: ReportControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+14:08:59.075 [main] DEBUG org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider - Identified candidate component class: file [/work/services/report-service/target/classes/com/otterworks/report/ReportApplication.class]
+14:08:59.077 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.otterworks.report.ReportApplication for test class com.otterworks.report.controller.ReportControllerIntegrationTest
+14:08:59.116 [main] DEBUG org.springframework.boot.test.context.SpringBootTestContextBootstrapper - @TestExecutionListeners is not present for class [com.otterworks.report.controller.ReportControllerIntegrationTest]: using defaults.
+14:08:59.116 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Loaded default TestExecutionListener class names from location [META-INF/spring.factories]: [org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener, org.springframework.test.context.web.ServletTestExecutionListener, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener, org.springframework.test.context.event.ApplicationEventsTestExecutionListener, org.springframework.test.context.support.DependencyInjectionTestExecutionListener, org.springframework.test.context.support.DirtiesContextTestExecutionListener, org.springframework.test.context.transaction.TransactionalTestExecutionListener, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener, org.springframework.test.context.event.EventPublishingTestExecutionListener]
+14:08:59.132 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Using TestExecutionListeners: [org.springframework.test.context.web.ServletTestExecutionListener@18b74ea, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener@14924f41, org.springframework.test.context.event.ApplicationEventsTestExecutionListener@493da830, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener@1f939a0f, org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener@45658133, org.springframework.test.context.support.DirtiesContextTestExecutionListener@430b2699, org.springframework.test.context.transaction.TransactionalTestExecutionListener@67536ae0, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener@6413d7e7, org.springframework.test.context.event.EventPublishingTestExecutionListener@d16be4f, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener@17b37e9a, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener@6bcb12e6, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener@111d5c97, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener@29c17c3d, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener@250a9031, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener@1665fa54]
+14:08:59.134 [main] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved @ProfileValueSourceConfiguration [null] for test class [com.otterworks.report.controller.ReportControllerIntegrationTest]
+14:08:59.134 [main] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [com.otterworks.report.controller.ReportControllerIntegrationTest]
+14:08:59.134 [main] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved @ProfileValueSourceConfiguration [null] for test class [com.otterworks.report.controller.ReportControllerIntegrationTest]
+14:08:59.134 [main] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [com.otterworks.report.controller.ReportControllerIntegrationTest]
+14:08:59.136 [main] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved @ProfileValueSourceConfiguration [null] for test class [com.otterworks.report.controller.ReportControllerIntegrationTest]
+14:08:59.136 [main] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [com.otterworks.report.controller.ReportControllerIntegrationTest]
+14:08:59.137 [main] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved @ProfileValueSourceConfiguration [null] for test class [com.otterworks.report.controller.ReportControllerIntegrationTest]
+14:08:59.137 [main] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [com.otterworks.report.controller.ReportControllerIntegrationTest]
+14:08:59.137 [main] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved @ProfileValueSourceConfiguration [null] for test class [com.otterworks.report.controller.ReportControllerIntegrationTest]
+14:08:59.137 [main] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [com.otterworks.report.controller.ReportControllerIntegrationTest]
+14:08:59.142 [main] DEBUG org.springframework.test.context.support.AbstractDirtiesContextTestExecutionListener - Before test class: context [DefaultTestContext@5416f8db testClass = ReportControllerIntegrationTest, testInstance = [null], testMethod = [null], testException = [null], mergedContextConfiguration = [WebMergedContextConfiguration@64e1377c testClass = ReportControllerIntegrationTest, locations = '{}', classes = '{class com.otterworks.report.ReportApplication}', contextInitializerClasses = '[]', activeProfiles = '{test}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}', contextCustomizers = set[[ImportsContextCustomizer@b0fd744 key = [org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@340d6d89, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@1ee47d9e, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@27329d2a, org.springframework.boot.test.autoconfigure.actuate.metrics.MetricsExportContextCustomizerFactory$DisableMetricExportContextCustomizer@36baa049, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@4b3fa0b3, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@4fe533ff, org.springframework.boot.test.context.SpringBootTestArgs@1, org.springframework.boot.test.context.SpringBootTestWebEnvironment@1b5a1d85], resourceBasePath = 'src/main/webapp', contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map['org.springframework.test.context.web.ServletTestExecutionListener.activateListener' -> true]], class annotated with @DirtiesContext [false] with mode [null].
+14:08:59.142 [main] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved @ProfileValueSourceConfiguration [null] for test class [com.otterworks.report.controller.ReportControllerIntegrationTest]
+14:08:59.143 [main] DEBUG org.springframework.test.annotation.ProfileValueUtils - Retrieved ProfileValueSource type [class org.springframework.test.annotation.SystemProfileValueSource] for class [com.otterworks.report.controller.ReportControllerIntegrationTest]
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::               (v2.5.15)
+
+2026-11-13 14:08:59.465 [main] INFO  c.o.r.c.ReportControllerIntegrationTest - Starting ReportControllerIntegrationTest using Java 1.8.0_362 on 85228b2bbeb3 with PID 68 (started by root in /work/services/report-service)
+2026-11-13 14:08:59.466 [main] DEBUG c.o.r.c.ReportControllerIntegrationTest - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-11-13 14:08:59.466 [main] INFO  c.o.r.c.ReportControllerIntegrationTest - The following 1 profile is active: "test"
+2026-11-13 14:09:00.756 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-13 14:09:00.819 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 54 ms. Found 1 JPA repository interfaces.
+2026-11-13 14:09:01.595 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-11-13 14:09:01.677 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 5.4.33
+2026-11-13 14:09:01.741 [main] INFO  o.h.annotations.common.Version - HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2026-11-13 14:09:01.936 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-11-13 14:09:02.122 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-11-13 14:09:02.132 [main] INFO  org.hibernate.dialect.Dialect - HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
+2026-11-13 14:09:02.578 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2026-11-13 14:09:02.583 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-13 14:09:02.653 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-13 14:09:05.721 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 2 endpoint(s) beneath base path '/actuator'
+2026-11-13 14:09:06.458 [main] WARN  o.s.b.a.s.s.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: fd580fa7-c9bf-49db-b793-8161f629b2cb
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-11-13 14:09:06.616 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will not secure any request
+2026-11-13 14:09:06.971 [main] INFO  o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-11-13 14:09:06.972 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-11-13 14:09:06.973 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 1 ms
+2026-11-13 14:09:07.221 [main] INFO  c.o.r.c.ReportControllerIntegrationTest - Started ReportControllerIntegrationTest in 8.046 seconds (JVM running for 10.462)
+2026-11-13 14:09:07.341 [main] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.bind.MethodArgumentNotValidException: Validation failed for argument [0] in public org.springframework.http.ResponseEntity<com.otterworks.report.model.ReportResponse> com.otterworks.report.controller.ReportController.createReport(com.otterworks.report.model.ReportRequest): [Field error in object 'reportRequest' on field 'reportType': rejected value [null]; codes [NotNull.reportRequest.reportType,NotNull.reportType,NotNull.com.otterworks.report.model.ReportType,NotNull]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [reportRequest.reportType,reportType]; arguments []; default message [reportType]]; default message [Report type is required]] ]
+2026-11-13 14:09:07.354 [main] INFO  c.o.r.controller.ReportController - Report request: name=Integration CSV Report, category=AUDIT_LOG, type=CSV, by=integration-user-2
+2026-11-13 14:09:07.436 [main] INFO  c.o.report.service.ReportService - Created report request: id=1, name=Integration CSV Report, type=CSV
+2026-11-13 14:09:07.455 [main] INFO  c.o.r.controller.ReportController - Report request: name=Download Pending Report, category=USAGE_ANALYTICS, type=PDF, by=integration-user-8
+2026-11-13 14:09:07.457 [main] INFO  c.o.report.service.ReportService - Created report request: id=2, name=Download Pending Report, type=PDF
+2026-11-13 14:09:07.569 [task-1] INFO  c.o.report.service.ReportDataFetcher - Fetching audit data from: http://audit-service:8090/api/v1/audit/events?from=2026-11-06T14:09:07Z&to=2026-11-13T14:09:07Z
+2026-11-13 14:09:07.571 [task-2] INFO  c.o.report.service.ReportDataFetcher - Fetching analytics data from: http://analytics-service:8088/api/v1/analytics/events?from=2026-11-06T14:09:07Z&to=2026-11-13T14:09:07Z
+2026-11-13 14:09:07.572 [main] INFO  c.o.r.controller.ReportController - Report request: name=Integration PDF Report, category=USAGE_ANALYTICS, type=PDF, by=integration-user-1
+2026-11-13 14:09:07.580 [main] INFO  c.o.report.service.ReportService - Created report request: id=3, name=Integration PDF Report, type=PDF
+2026-11-13 14:09:07.659 [task-1] ERROR c.o.r.service.ReportGenerationWorker - Report generation failed for 1: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://audit-service:8090/api/v1/audit/events": audit-service: Name or service not known; nested exception is java.net.UnknownHostException: audit-service: Name or service not known
+com.google.common.util.concurrent.UncheckedExecutionException: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://audit-service:8090/api/v1/audit/events": audit-service: Name or service not known; nested exception is java.net.UnknownHostException: audit-service: Name or service not known
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2051)
+	at com.google.common.cache.LocalCache.get(LocalCache.java:3953)
+	at com.google.common.cache.LocalCache$LocalManualCache.get(LocalCache.java:4873)
+	at com.otterworks.report.service.ReportDataFetcher.fetchAuditData(ReportDataFetcher.java:109)
+	at com.otterworks.report.service.ReportGenerationWorker.fetchDataForCategory(ReportGenerationWorker.java:131)
+	at com.otterworks.report.service.ReportGenerationWorker.generateReportAsync(ReportGenerationWorker.java:88)
+	at com.otterworks.report.service.ReportGenerationWorker$$FastClassBySpringCGLIB$$9eb90542.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:793)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.interceptor.AsyncExecutionInterceptor.lambda$invoke$0(AsyncExecutionInterceptor.java:115)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+Caused by: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://audit-service:8090/api/v1/audit/events": audit-service: Name or service not known; nested exception is java.net.UnknownHostException: audit-service: Name or service not known
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:791)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:717)
+	at org.springframework.web.client.RestTemplate.getForEntity(RestTemplate.java:367)
+	at com.otterworks.report.service.ReportDataFetcher.lambda$fetchAuditData$1(ReportDataFetcher.java:117)
+	at com.google.common.cache.LocalCache$LocalManualCache$1.load(LocalCache.java:4878)
+	at com.google.common.cache.LocalCache$LoadingValueReference.loadFuture(LocalCache.java:3529)
+	at com.google.common.cache.LocalCache$Segment.loadSync(LocalCache.java:2278)
+	at com.google.common.cache.LocalCache$Segment.lockedGetOrLoad(LocalCache.java:2155)
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2045)
+	... 15 common frames omitted
+Caused by: java.net.UnknownHostException: audit-service: Name or service not known
+	at java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method)
+	at java.net.InetAddress$2.lookupAllHostAddr(InetAddress.java:866)
+	at java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1293)
+	at java.net.InetAddress$NameServiceAddresses.get(InetAddress.java:815)
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1282)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1140)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1064)
+	at org.apache.http.impl.conn.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:45)
+	at org.apache.http.impl.conn.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:112)
+	at org.apache.http.impl.conn.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:376)
+	at org.apache.http.impl.execchain.MainClientExec.establishRoute(MainClientExec.java:393)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:236)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:83)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:56)
+	at org.springframework.http.client.HttpComponentsClientHttpRequest.executeInternal(HttpComponentsClientHttpRequest.java:87)
+	at org.springframework.http.client.AbstractBufferingClientHttpRequest.executeInternal(AbstractBufferingClientHttpRequest.java:48)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:66)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:782)
+	... 23 common frames omitted
+2026-11-13 14:09:07.660 [task-2] ERROR c.o.r.service.ReportGenerationWorker - Report generation failed for 2: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service: Name or service not known; nested exception is java.net.UnknownHostException: analytics-service: Name or service not known
+com.google.common.util.concurrent.UncheckedExecutionException: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service: Name or service not known; nested exception is java.net.UnknownHostException: analytics-service: Name or service not known
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2051)
+	at com.google.common.cache.LocalCache.get(LocalCache.java:3953)
+	at com.google.common.cache.LocalCache$LocalManualCache.get(LocalCache.java:4873)
+	at com.otterworks.report.service.ReportDataFetcher.fetchAnalyticsData(ReportDataFetcher.java:76)
+	at com.otterworks.report.service.ReportGenerationWorker.fetchDataForCategory(ReportGenerationWorker.java:128)
+	at com.otterworks.report.service.ReportGenerationWorker.generateReportAsync(ReportGenerationWorker.java:88)
+	at com.otterworks.report.service.ReportGenerationWorker$$FastClassBySpringCGLIB$$9eb90542.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:793)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.interceptor.AsyncExecutionInterceptor.lambda$invoke$0(AsyncExecutionInterceptor.java:115)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+Caused by: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service: Name or service not known; nested exception is java.net.UnknownHostException: analytics-service: Name or service not known
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:791)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:717)
+	at org.springframework.web.client.RestTemplate.getForEntity(RestTemplate.java:367)
+	at com.otterworks.report.service.ReportDataFetcher.lambda$fetchAnalyticsData$0(ReportDataFetcher.java:89)
+	at com.google.common.cache.LocalCache$LocalManualCache$1.load(LocalCache.java:4878)
+	at com.google.common.cache.LocalCache$LoadingValueReference.loadFuture(LocalCache.java:3529)
+	at com.google.common.cache.LocalCache$Segment.loadSync(LocalCache.java:2278)
+	at com.google.common.cache.LocalCache$Segment.lockedGetOrLoad(LocalCache.java:2155)
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2045)
+	... 15 common frames omitted
+Caused by: java.net.UnknownHostException: analytics-service: Name or service not known
+	at java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method)
+	at java.net.InetAddress$2.lookupAllHostAddr(InetAddress.java:866)
+	at java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1293)
+	at java.net.InetAddress$NameServiceAddresses.get(InetAddress.java:815)
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1282)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1140)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1064)
+	at org.apache.http.impl.conn.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:45)
+	at org.apache.http.impl.conn.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:112)
+	at org.apache.http.impl.conn.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:376)
+	at org.apache.http.impl.execchain.MainClientExec.establishRoute(MainClientExec.java:393)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:236)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:83)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:56)
+	at org.springframework.http.client.HttpComponentsClientHttpRequest.executeInternal(HttpComponentsClientHttpRequest.java:87)
+	at org.springframework.http.client.AbstractBufferingClientHttpRequest.executeInternal(AbstractBufferingClientHttpRequest.java:48)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:66)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:782)
+	... 23 common frames omitted
+2026-11-13 14:09:07.661 [task-3] ERROR c.o.r.service.ReportGenerationWorker - Report generation failed for 3: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service: Name or service not known; nested exception is java.net.UnknownHostException: analytics-service: Name or service not known
+com.google.common.util.concurrent.UncheckedExecutionException: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service: Name or service not known; nested exception is java.net.UnknownHostException: analytics-service: Name or service not known
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2051)
+	at com.google.common.cache.LocalCache.get(LocalCache.java:3953)
+	at com.google.common.cache.LocalCache$LocalManualCache.get(LocalCache.java:4873)
+	at com.otterworks.report.service.ReportDataFetcher.fetchAnalyticsData(ReportDataFetcher.java:76)
+	at com.otterworks.report.service.ReportGenerationWorker.fetchDataForCategory(ReportGenerationWorker.java:128)
+	at com.otterworks.report.service.ReportGenerationWorker.generateReportAsync(ReportGenerationWorker.java:88)
+	at com.otterworks.report.service.ReportGenerationWorker$$FastClassBySpringCGLIB$$9eb90542.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:793)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.interceptor.AsyncExecutionInterceptor.lambda$invoke$0(AsyncExecutionInterceptor.java:115)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+Caused by: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service: Name or service not known; nested exception is java.net.UnknownHostException: analytics-service: Name or service not known
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:791)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:717)
+	at org.springframework.web.client.RestTemplate.getForEntity(RestTemplate.java:367)
+	at com.otterworks.report.service.ReportDataFetcher.lambda$fetchAnalyticsData$0(ReportDataFetcher.java:89)
+	at com.google.common.cache.LocalCache$LocalManualCache$1.load(LocalCache.java:4878)
+	at com.google.common.cache.LocalCache$LoadingValueReference.loadFuture(LocalCache.java:3529)
+	at com.google.common.cache.LocalCache$Segment.loadSync(LocalCache.java:2278)
+	at com.google.common.cache.LocalCache$Segment.lockedGetOrLoad(LocalCache.java:2155)
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2045)
+	... 15 common frames omitted
+Caused by: java.net.UnknownHostException: analytics-service: Name or service not known
+	at java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method)
+	at java.net.InetAddress$2.lookupAllHostAddr(InetAddress.java:866)
+	at java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1293)
+	at java.net.InetAddress$NameServiceAddresses.get(InetAddress.java:815)
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1282)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1140)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1064)
+	at org.apache.http.impl.conn.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:45)
+	at org.apache.http.impl.conn.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:112)
+	at org.apache.http.impl.conn.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:376)
+	at org.apache.http.impl.execchain.MainClientExec.establishRoute(MainClientExec.java:393)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:236)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:83)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:56)
+	at org.springframework.http.client.HttpComponentsClientHttpRequest.executeInternal(HttpComponentsClientHttpRequest.java:87)
+	at org.springframework.http.client.AbstractBufferingClientHttpRequest.executeInternal(AbstractBufferingClientHttpRequest.java:48)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:66)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:782)
+	... 23 common frames omitted
+2026-11-13 14:09:07.662 [main] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.bind.MethodArgumentNotValidException: Validation failed for argument [0] in public org.springframework.http.ResponseEntity<com.otterworks.report.model.ReportResponse> com.otterworks.report.controller.ReportController.createReport(com.otterworks.report.model.ReportRequest): [Field error in object 'reportRequest' on field 'reportName': rejected value [null]; codes [NotBlank.reportRequest.reportName,NotBlank.reportName,NotBlank.java.lang.String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [reportRequest.reportName,reportName]; arguments []; default message [reportName]]; default message [Report name is required]] ]
+2026-11-13 14:09:07.670 [main] INFO  c.o.r.controller.ReportController - Report request: name=Fetch By Id Report, category=SYSTEM_HEALTH, type=PDF, by=integration-user-7
+2026-11-13 14:09:07.671 [main] INFO  c.o.report.service.ReportService - Created report request: id=4, name=Fetch By Id Report, type=PDF
+2026-11-13 14:09:07.674 [task-4] INFO  c.o.report.service.ReportDataFetcher - Fetching analytics data from: http://analytics-service:8088/api/v1/analytics/events?from=2026-11-06T14:09:07Z&to=2026-11-13T14:09:07Z
+2026-11-13 14:09:07.675 [task-4] ERROR c.o.r.service.ReportGenerationWorker - Report generation failed for 4: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service; nested exception is java.net.UnknownHostException: analytics-service
+com.google.common.util.concurrent.UncheckedExecutionException: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service; nested exception is java.net.UnknownHostException: analytics-service
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2051)
+	at com.google.common.cache.LocalCache.get(LocalCache.java:3953)
+	at com.google.common.cache.LocalCache$LocalManualCache.get(LocalCache.java:4873)
+	at com.otterworks.report.service.ReportDataFetcher.fetchAnalyticsData(ReportDataFetcher.java:76)
+	at com.otterworks.report.service.ReportGenerationWorker.fetchDataForCategory(ReportGenerationWorker.java:128)
+	at com.otterworks.report.service.ReportGenerationWorker.generateReportAsync(ReportGenerationWorker.java:88)
+	at com.otterworks.report.service.ReportGenerationWorker$$FastClassBySpringCGLIB$$9eb90542.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:793)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.interceptor.AsyncExecutionInterceptor.lambda$invoke$0(AsyncExecutionInterceptor.java:115)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+Caused by: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service; nested exception is java.net.UnknownHostException: analytics-service
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:791)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:717)
+	at org.springframework.web.client.RestTemplate.getForEntity(RestTemplate.java:367)
+	at com.otterworks.report.service.ReportDataFetcher.lambda$fetchAnalyticsData$0(ReportDataFetcher.java:89)
+	at com.google.common.cache.LocalCache$LocalManualCache$1.load(LocalCache.java:4878)
+	at com.google.common.cache.LocalCache$LoadingValueReference.loadFuture(LocalCache.java:3529)
+	at com.google.common.cache.LocalCache$Segment.loadSync(LocalCache.java:2278)
+	at com.google.common.cache.LocalCache$Segment.lockedGetOrLoad(LocalCache.java:2155)
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2045)
+	... 15 common frames omitted
+Caused by: java.net.UnknownHostException: analytics-service
+	at java.net.InetAddress$CachedAddresses.get(InetAddress.java:764)
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1282)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1140)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1064)
+	at org.apache.http.impl.conn.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:45)
+	at org.apache.http.impl.conn.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:112)
+	at org.apache.http.impl.conn.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:376)
+	at org.apache.http.impl.execchain.MainClientExec.establishRoute(MainClientExec.java:393)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:236)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:83)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:56)
+	at org.springframework.http.client.HttpComponentsClientHttpRequest.executeInternal(HttpComponentsClientHttpRequest.java:87)
+	at org.springframework.http.client.AbstractBufferingClientHttpRequest.executeInternal(AbstractBufferingClientHttpRequest.java:48)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:66)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:782)
+	... 23 common frames omitted
+2026-11-13 14:09:07.682 [main] INFO  c.o.r.controller.ReportController - Report request: name=Integration Excel Report, category=STORAGE_SUMMARY, type=EXCEL, by=integration-user-3
+2026-11-13 14:09:07.683 [main] INFO  c.o.report.service.ReportService - Created report request: id=5, name=Integration Excel Report, type=EXCEL
+2026-11-13 14:09:07.687 [task-5] INFO  c.o.report.service.ReportDataFetcher - Fetching user activity from: http://auth-service:8081/api/v1/users/activity?from=2026-11-06T14:09:07Z&to=2026-11-13T14:09:07Z
+2026-11-13 14:09:07.691 [task-5] ERROR c.o.report.service.ReportDataFetcher - Failed to fetch user activity data: I/O error on GET request for "http://auth-service:8081/api/v1/users/activity": auth-service: Name or service not known; nested exception is java.net.UnknownHostException: auth-service: Name or service not known
+2026-11-13 14:09:07.693 [main] INFO  c.o.r.controller.ReportController - Report request: name=List Test 1, category=AUDIT_LOG, type=CSV, by=list-test-user-1794578947691
+2026-11-13 14:09:07.693 [main] INFO  c.o.report.service.ReportService - Created report request: id=6, name=List Test 1, type=CSV
+2026-11-13 14:09:07.697 [task-6] INFO  c.o.report.service.ReportDataFetcher - Fetching audit data from: http://audit-service:8090/api/v1/audit/events?from=2026-11-06T14:09:07Z&to=2026-11-13T14:09:07Z
+2026-11-13 14:09:07.697 [main] INFO  c.o.r.controller.ReportController - Report request: name=List Test 2, category=AUDIT_LOG, type=PDF, by=list-test-user-1794578947691
+2026-11-13 14:09:07.698 [task-6] ERROR c.o.r.service.ReportGenerationWorker - Report generation failed for 6: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://audit-service:8090/api/v1/audit/events": audit-service; nested exception is java.net.UnknownHostException: audit-service
+com.google.common.util.concurrent.UncheckedExecutionException: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://audit-service:8090/api/v1/audit/events": audit-service; nested exception is java.net.UnknownHostException: audit-service
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2051)
+	at com.google.common.cache.LocalCache.get(LocalCache.java:3953)
+	at com.google.common.cache.LocalCache$LocalManualCache.get(LocalCache.java:4873)
+	at com.otterworks.report.service.ReportDataFetcher.fetchAuditData(ReportDataFetcher.java:109)
+	at com.otterworks.report.service.ReportGenerationWorker.fetchDataForCategory(ReportGenerationWorker.java:131)
+	at com.otterworks.report.service.ReportGenerationWorker.generateReportAsync(ReportGenerationWorker.java:88)
+	at com.otterworks.report.service.ReportGenerationWorker$$FastClassBySpringCGLIB$$9eb90542.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:793)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.interceptor.AsyncExecutionInterceptor.lambda$invoke$0(AsyncExecutionInterceptor.java:115)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+Caused by: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://audit-service:8090/api/v1/audit/events": audit-service; nested exception is java.net.UnknownHostException: audit-service
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:791)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:717)
+	at org.springframework.web.client.RestTemplate.getForEntity(RestTemplate.java:367)
+	at com.otterworks.report.service.ReportDataFetcher.lambda$fetchAuditData$1(ReportDataFetcher.java:117)
+	at com.google.common.cache.LocalCache$LocalManualCache$1.load(LocalCache.java:4878)
+	at com.google.common.cache.LocalCache$LoadingValueReference.loadFuture(LocalCache.java:3529)
+	at com.google.common.cache.LocalCache$Segment.loadSync(LocalCache.java:2278)
+	at com.google.common.cache.LocalCache$Segment.lockedGetOrLoad(LocalCache.java:2155)
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2045)
+	... 15 common frames omitted
+Caused by: java.net.UnknownHostException: audit-service
+	at java.net.InetAddress$CachedAddresses.get(InetAddress.java:764)
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1282)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1140)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1064)
+	at org.apache.http.impl.conn.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:45)
+	at org.apache.http.impl.conn.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:112)
+	at org.apache.http.impl.conn.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:376)
+	at org.apache.http.impl.execchain.MainClientExec.establishRoute(MainClientExec.java:393)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:236)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:83)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:56)
+	at org.springframework.http.client.HttpComponentsClientHttpRequest.executeInternal(HttpComponentsClientHttpRequest.java:87)
+	at org.springframework.http.client.AbstractBufferingClientHttpRequest.executeInternal(AbstractBufferingClientHttpRequest.java:48)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:66)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:782)
+	... 23 common frames omitted
+2026-11-13 14:09:07.702 [main] INFO  c.o.report.service.ReportService - Created report request: id=7, name=List Test 2, type=PDF
+2026-11-13 14:09:07.706 [task-7] INFO  c.o.report.service.ReportDataFetcher - Fetching audit data from: http://audit-service:8090/api/v1/audit/events?from=2026-11-06T14:09:07Z&to=2026-11-13T14:09:07Z
+2026-11-13 14:09:07.707 [task-7] ERROR c.o.r.service.ReportGenerationWorker - Report generation failed for 7: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://audit-service:8090/api/v1/audit/events": audit-service; nested exception is java.net.UnknownHostException: audit-service
+com.google.common.util.concurrent.UncheckedExecutionException: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://audit-service:8090/api/v1/audit/events": audit-service; nested exception is java.net.UnknownHostException: audit-service
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2051)
+	at com.google.common.cache.LocalCache.get(LocalCache.java:3953)
+	at com.google.common.cache.LocalCache$LocalManualCache.get(LocalCache.java:4873)
+	at com.otterworks.report.service.ReportDataFetcher.fetchAuditData(ReportDataFetcher.java:109)
+	at com.otterworks.report.service.ReportGenerationWorker.fetchDataForCategory(ReportGenerationWorker.java:131)
+	at com.otterworks.report.service.ReportGenerationWorker.generateReportAsync(ReportGenerationWorker.java:88)
+	at com.otterworks.report.service.ReportGenerationWorker$$FastClassBySpringCGLIB$$9eb90542.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:793)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.interceptor.AsyncExecutionInterceptor.lambda$invoke$0(AsyncExecutionInterceptor.java:115)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+Caused by: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://audit-service:8090/api/v1/audit/events": audit-service; nested exception is java.net.UnknownHostException: audit-service
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:791)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:717)
+	at org.springframework.web.client.RestTemplate.getForEntity(RestTemplate.java:367)
+	at com.otterworks.report.service.ReportDataFetcher.lambda$fetchAuditData$1(ReportDataFetcher.java:117)
+	at com.google.common.cache.LocalCache$LocalManualCache$1.load(LocalCache.java:4878)
+	at com.google.common.cache.LocalCache$LoadingValueReference.loadFuture(LocalCache.java:3529)
+	at com.google.common.cache.LocalCache$Segment.loadSync(LocalCache.java:2278)
+	at com.google.common.cache.LocalCache$Segment.lockedGetOrLoad(LocalCache.java:2155)
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2045)
+	... 15 common frames omitted
+Caused by: java.net.UnknownHostException: audit-service
+	at java.net.InetAddress$CachedAddresses.get(InetAddress.java:764)
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1282)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1140)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1064)
+	at org.apache.http.impl.conn.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:45)
+	at org.apache.http.impl.conn.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:112)
+	at org.apache.http.impl.conn.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:376)
+	at org.apache.http.impl.execchain.MainClientExec.establishRoute(MainClientExec.java:393)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:236)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:83)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:56)
+	at org.springframework.http.client.HttpComponentsClientHttpRequest.executeInternal(HttpComponentsClientHttpRequest.java:87)
+	at org.springframework.http.client.AbstractBufferingClientHttpRequest.executeInternal(AbstractBufferingClientHttpRequest.java:48)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:66)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:782)
+	... 23 common frames omitted
+2026-11-13 14:09:07.724 [main] INFO  c.o.r.controller.ReportController - Report request: name=Delete Me Report, category=COLLABORATION_METRICS, type=CSV, by=integration-user-9
+2026-11-13 14:09:07.726 [main] INFO  c.o.report.service.ReportService - Created report request: id=8, name=Delete Me Report, type=CSV
+2026-11-13 14:09:07.733 [main] INFO  c.o.report.service.ReportService - Deleted report: 8
+2026-11-13 14:09:07.739 [task-8] INFO  c.o.report.service.ReportDataFetcher - Fetching analytics data from: http://analytics-service:8088/api/v1/analytics/events?from=2026-11-06T14:09:07Z&to=2026-11-13T14:09:07Z
+2026-11-13 14:09:07.740 [task-8] ERROR c.o.r.service.ReportGenerationWorker - Report generation failed for 8: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service; nested exception is java.net.UnknownHostException: analytics-service
+com.google.common.util.concurrent.UncheckedExecutionException: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service; nested exception is java.net.UnknownHostException: analytics-service
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2051)
+	at com.google.common.cache.LocalCache.get(LocalCache.java:3953)
+	at com.google.common.cache.LocalCache$LocalManualCache.get(LocalCache.java:4873)
+	at com.otterworks.report.service.ReportDataFetcher.fetchAnalyticsData(ReportDataFetcher.java:76)
+	at com.otterworks.report.service.ReportGenerationWorker.fetchDataForCategory(ReportGenerationWorker.java:128)
+	at com.otterworks.report.service.ReportGenerationWorker.generateReportAsync(ReportGenerationWorker.java:88)
+	at com.otterworks.report.service.ReportGenerationWorker$$FastClassBySpringCGLIB$$9eb90542.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:793)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.interceptor.AsyncExecutionInterceptor.lambda$invoke$0(AsyncExecutionInterceptor.java:115)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+Caused by: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service; nested exception is java.net.UnknownHostException: analytics-service
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:791)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:717)
+	at org.springframework.web.client.RestTemplate.getForEntity(RestTemplate.java:367)
+	at com.otterworks.report.service.ReportDataFetcher.lambda$fetchAnalyticsData$0(ReportDataFetcher.java:89)
+	at com.google.common.cache.LocalCache$LocalManualCache$1.load(LocalCache.java:4878)
+	at com.google.common.cache.LocalCache$LoadingValueReference.loadFuture(LocalCache.java:3529)
+	at com.google.common.cache.LocalCache$Segment.loadSync(LocalCache.java:2278)
+	at com.google.common.cache.LocalCache$Segment.lockedGetOrLoad(LocalCache.java:2155)
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2045)
+	... 15 common frames omitted
+Caused by: java.net.UnknownHostException: analytics-service
+	at java.net.InetAddress$CachedAddresses.get(InetAddress.java:764)
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1282)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1140)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1064)
+	at org.apache.http.impl.conn.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:45)
+	at org.apache.http.impl.conn.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:112)
+	at org.apache.http.impl.conn.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:376)
+	at org.apache.http.impl.execchain.MainClientExec.establishRoute(MainClientExec.java:393)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:236)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:83)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:56)
+	at org.springframework.http.client.HttpComponentsClientHttpRequest.executeInternal(HttpComponentsClientHttpRequest.java:87)
+	at org.springframework.http.client.AbstractBufferingClientHttpRequest.executeInternal(AbstractBufferingClientHttpRequest.java:48)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:66)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:782)
+	... 23 common frames omitted
+2026-11-13 14:09:07.757 [main] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.bind.MethodArgumentNotValidException: Validation failed for argument [0] in public org.springframework.http.ResponseEntity<com.otterworks.report.model.ReportResponse> com.otterworks.report.controller.ReportController.createReport(com.otterworks.report.model.ReportRequest): [Field error in object 'reportRequest' on field 'category': rejected value [null]; codes [NotNull.reportRequest.category,NotNull.category,NotNull.com.otterworks.report.model.ReportCategory,NotNull]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [reportRequest.category,category]; arguments []; default message [category]]; default message [Report category is required]] ]
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.856 s - in com.otterworks.report.controller.ReportControllerIntegrationTest
+[INFO] Running com.otterworks.report.reconciliation.ReconciliationRepositoryTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s - in com.otterworks.report.reconciliation.ReconciliationRepositoryTest
+[INFO] Running com.otterworks.report.reconciliation.ReconciliationControllerTest
+2026-11-13 14:09:07.785 [main] INFO  o.s.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-11-13 14:09:07.785 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-11-13 14:09:07.785 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 0 ms
+2026-11-13 14:09:07.791 [main] INFO  o.s.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-11-13 14:09:07.791 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-11-13 14:09:07.791 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 0 ms
+2026-11-13 14:09:07.792 [main] ERROR c.o.r.a.ArchiveExceptionHandler - archive store unavailable: unsupported value
+2026-11-13 14:09:07.797 [main] INFO  o.s.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-11-13 14:09:07.797 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-11-13 14:09:07.797 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 0 ms
+2026-11-13 14:09:07.809 [main] INFO  o.s.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-11-13 14:09:07.810 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-11-13 14:09:07.810 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 0 ms
+2026-11-13 14:09:07.826 [main] INFO  o.s.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-11-13 14:09:07.826 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-11-13 14:09:07.826 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 0 ms
+2026-11-13 14:09:07.838 [main] INFO  o.s.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-11-13 14:09:07.838 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-11-13 14:09:07.838 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 0 ms
+2026-11-13 14:09:07.845 [main] INFO  o.s.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-11-13 14:09:07.845 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-11-13 14:09:07.845 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 0 ms
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.079 s - in com.otterworks.report.reconciliation.ReconciliationControllerTest
+[INFO] Running com.otterworks.report.preview.PreviewFeatureTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 s - in com.otterworks.report.preview.PreviewFeatureTest
+[INFO] Running com.otterworks.report.preview.PreviewControllerTest
+2026-11-13 14:09:07.882 [main] INFO  o.s.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-11-13 14:09:07.883 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-11-13 14:09:07.883 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 0 ms
+2026-11-13 14:09:07.937 [main] INFO  o.s.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-11-13 14:09:07.938 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-11-13 14:09:07.938 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 0 ms
+2026-11-13 14:09:07.945 [main] INFO  o.s.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-11-13 14:09:07.945 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-11-13 14:09:07.945 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 0 ms
+2026-11-13 14:09:07.951 [main] INFO  o.s.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-11-13 14:09:07.951 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-11-13 14:09:07.951 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 0 ms
+2026-11-13 14:09:07.956 [main] INFO  o.s.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-11-13 14:09:07.956 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-11-13 14:09:07.956 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 0 ms
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.082 s - in com.otterworks.report.preview.PreviewControllerTest
+[INFO] Running com.otterworks.report.preview.PreviewAuthorizerTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.34 s - in com.otterworks.report.preview.PreviewAuthorizerTest
+[INFO] Running com.otterworks.report.preview.PreviewServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s - in com.otterworks.report.preview.PreviewServiceTest
+[INFO] Running com.otterworks.report.service.ExcelReportGeneratorTest
+2026-11-13 14:09:09.582 [task-5] INFO  c.o.r.service.ExcelReportGenerator - Generated Excel report: /tmp/reports/integration_excel_report_20261113_140907.xlsx (6011 bytes)
+2026-11-13 14:09:09.588 [main] INFO  c.o.r.service.ExcelReportGenerator - Generated Excel report: /tmp/excel-test-1794578948298/cell_value_report_20261113_140908.xlsx (4659 bytes)
+2026-11-13 14:09:09.599 [task-5] INFO  c.o.r.service.ReportGenerationWorker - Report 5 completed: 25 rows, 6011 bytes, took 1s
+2026-11-13 14:09:09.881 [main] INFO  c.o.r.service.ExcelReportGenerator - Generated Excel report: /tmp/excel-test-1794578949825/storage_summary_report_20261113_140909.xlsx (4759 bytes)
+2026-11-13 14:09:09.906 [main] INFO  c.o.r.service.ExcelReportGenerator - Generated Excel report: /tmp/excel-test-1794578949881/weekly_file_usage_stats_20261113_140909.xlsx (4556 bytes)
+2026-11-13 14:09:09.924 [main] INFO  c.o.r.service.ExcelReportGenerator - Generated Excel report: /tmp/excel-test-1794578949906/header_check_report_20261113_140909.xlsx (4604 bytes)
+2026-11-13 14:09:09.963 [main] INFO  c.o.r.service.ExcelReportGenerator - Generated Excel report: /tmp/excel-test-1794578949940/empty_excel_report_20261113_140909.xlsx (4074 bytes)
+2026-11-13 14:09:10.008 [main] INFO  c.o.r.service.ExcelReportGenerator - Generated Excel report: /tmp/excel-test-1794578949981/readable_excel_report_20261113_140909.xlsx (4656 bytes)
+2026-11-13 14:09:10.046 [main] INFO  c.o.r.service.ExcelReportGenerator - Generated Excel report: /tmp/excel-test-1794578950020/row_count_report_20261113_140910.xlsx (5067 bytes)
+2026-11-13 14:09:10.076 [main] INFO  c.o.r.service.ExcelReportGenerator - Generated Excel report: /tmp/excel-test-1794578950060/two_sheet_report_20261113_140910.xlsx (4756 bytes)
+2026-11-13 14:09:10.104 [main] INFO  c.o.r.service.ExcelReportGenerator - Generated Excel report: /tmp/excel-test-1794578950086/metadata_verification_report_20261113_140910.xlsx (4858 bytes)
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.803 s - in com.otterworks.report.service.ExcelReportGeneratorTest
+[INFO] Running com.otterworks.report.service.CsvReportGeneratorTest
+2026-11-13 14:09:10.118 [main] INFO  c.o.r.service.CsvReportGenerator - Generated CSV report: /tmp/csv-test-1794578950117/column_header_report_20261113_140910.csv (413 bytes)
+2026-11-13 14:09:10.119 [main] INFO  c.o.r.service.CsvReportGenerator - Generated CSV report: /tmp/csv-test-1794578950119/metadata_check_report_20261113_140910.csv (491 bytes)
+2026-11-13 14:09:10.119 [main] INFO  c.o.r.service.CsvReportGenerator - Generated CSV report: /tmp/csv-test-1794578950119/empty_csv_report_20261113_140910.csv (0 bytes)
+2026-11-13 14:09:10.120 [main] INFO  c.o.r.service.CsvReportGenerator - Generated CSV report: /tmp/csv-test-1794578950120/monthly_security_audit_20261113_140910.csv (338 bytes)
+2026-11-13 14:09:10.121 [main] INFO  c.o.r.service.CsvReportGenerator - Generated CSV report: /tmp/csv-test-1794578950120/row_count_report_20261113_140910.csv (1021 bytes)
+2026-11-13 14:09:10.122 [main] INFO  c.o.r.service.CsvReportGenerator - Generated CSV report: /tmp/csv-test-1794578950121/audit_log_export_20261113_140910.csv (638 bytes)
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s - in com.otterworks.report.service.CsvReportGeneratorTest
+[INFO] Running com.otterworks.report.service.PdfReportGeneratorTest
+2026-11-13 14:09:10.294 [main] INFO  c.o.r.service.PdfReportGenerator - Generated PDF report: /tmp/pdf-test-1794578950122/usage_analytics_report_20261113_140910.pdf (1986 bytes)
+2026-11-13 14:09:10.301 [main] INFO  c.o.r.service.PdfReportGenerator - Generated PDF report: /tmp/pdf-test-1794578950295/header_check_report_20261113_140910.pdf (1862 bytes)
+2026-11-13 14:09:10.311 [main] INFO  c.o.r.service.PdfReportGenerator - Generated PDF report: /tmp/pdf-test-1794578950306/quarterly_audit_summary_20261113_140910.pdf (1721 bytes)
+2026-11-13 14:09:10.321 [main] INFO  c.o.r.service.PdfReportGenerator - Generated PDF report: /tmp/pdf-test-1794578950311/small_data_report_20261113_140910.pdf (1804 bytes)
+2026-11-13 14:09:10.386 [main] INFO  c.o.r.service.PdfReportGenerator - Generated PDF report: /tmp/pdf-test-1794578950311/large_data_report_20261113_140910.pdf (5178 bytes)
+2026-11-13 14:09:10.392 [main] INFO  c.o.r.service.PdfReportGenerator - Generated PDF report: /tmp/pdf-test-1794578950388/empty_data_report_20261113_140910.pdf (1464 bytes)
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.269 s - in com.otterworks.report.service.PdfReportGeneratorTest
+[INFO] Running com.otterworks.report.service.ReportHeaderRendererTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s - in com.otterworks.report.service.ReportHeaderRendererTest
+[INFO] Running com.otterworks.report.ReportServiceTest
+2026-11-13 14:09:10.400 [main] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Neither @ContextConfiguration nor @ContextHierarchy found for test class [com.otterworks.report.ReportServiceTest], using SpringBootContextLoader
+2026-11-13 14:09:10.400 [main] INFO  o.s.t.c.s.AbstractContextLoader - Could not detect default resource locations for test class [com.otterworks.report.ReportServiceTest]: no resource found for suffixes {-context.xml, Context.groovy}.
+2026-11-13 14:09:10.400 [main] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.otterworks.report.ReportServiceTest]: ReportServiceTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-11-13 14:09:10.408 [main] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.otterworks.report.ReportApplication for test class com.otterworks.report.ReportServiceTest
+2026-11-13 14:09:10.413 [main] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Loaded default TestExecutionListener class names from location [META-INF/spring.factories]: [org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener, org.springframework.test.context.web.ServletTestExecutionListener, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener, org.springframework.test.context.event.ApplicationEventsTestExecutionListener, org.springframework.test.context.support.DependencyInjectionTestExecutionListener, org.springframework.test.context.support.DirtiesContextTestExecutionListener, org.springframework.test.context.transaction.TransactionalTestExecutionListener, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener, org.springframework.test.context.event.EventPublishingTestExecutionListener]
+2026-11-13 14:09:10.414 [main] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Using TestExecutionListeners: [org.springframework.test.context.web.ServletTestExecutionListener@4136638d, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener@2bac4423, org.springframework.test.context.event.ApplicationEventsTestExecutionListener@37acf9b1, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener@279e9c95, org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener@5546a9e0, org.springframework.test.context.support.DirtiesContextTestExecutionListener@1c027237, org.springframework.test.context.transaction.TransactionalTestExecutionListener@4cb37177, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener@1f9a3640, org.springframework.test.context.event.EventPublishingTestExecutionListener@7ff395fa, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener@70efc3f9, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener@27002c5a, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener@69e636cc, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener@a59324f, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener@427c8f6, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener@226346d4]
+2026-11-13 14:09:10.443 [main] INFO  c.o.r.controller.ReportController - Report request: name=User Activity Summary, category=USER_ACTIVITY, type=EXCEL, by=test-user-003
+2026-11-13 14:09:10.444 [main] INFO  c.o.report.service.ReportService - Created report request: id=10, name=User Activity Summary, type=EXCEL
+2026-11-13 14:09:10.448 [task-2] INFO  c.o.report.service.ReportDataFetcher - Fetching user activity from: http://auth-service:8081/api/v1/users/activity?from=2026-10-14T14:09:10Z&to=2026-11-13T14:09:10Z
+2026-11-13 14:09:10.448 [task-2] ERROR c.o.report.service.ReportDataFetcher - Failed to fetch user activity data: I/O error on GET request for "http://auth-service:8081/api/v1/users/activity": auth-service; nested exception is java.net.UnknownHostException: auth-service
+2026-11-13 14:09:10.455 [main] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.bind.MethodArgumentNotValidException: Validation failed for argument [0] in public org.springframework.http.ResponseEntity<com.otterworks.report.model.ReportResponse> com.otterworks.report.controller.ReportController.createReport(com.otterworks.report.model.ReportRequest): [Field error in object 'reportRequest' on field 'reportName': rejected value [null]; codes [NotBlank.reportRequest.reportName,NotBlank.reportName,NotBlank.java.lang.String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [reportRequest.reportName,reportName]; arguments []; default message [reportName]]; default message [Report name is required]] ]
+2026-11-13 14:09:10.459 [main] INFO  c.o.r.controller.ReportController - Report request: name=Audit Log Export, category=AUDIT_LOG, type=CSV, by=test-user-002
+2026-11-13 14:09:10.460 [main] INFO  c.o.report.service.ReportService - Created report request: id=11, name=Audit Log Export, type=CSV
+2026-11-13 14:09:10.462 [task-1] INFO  c.o.report.service.ReportDataFetcher - Fetching audit data from: http://audit-service:8090/api/v1/audit/events?from=2026-10-14T14:09:10Z&to=2026-11-13T14:09:10Z
+2026-11-13 14:09:10.464 [task-1] ERROR c.o.r.service.ReportGenerationWorker - Report generation failed for 11: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://audit-service:8090/api/v1/audit/events": audit-service; nested exception is java.net.UnknownHostException: audit-service
+com.google.common.util.concurrent.UncheckedExecutionException: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://audit-service:8090/api/v1/audit/events": audit-service; nested exception is java.net.UnknownHostException: audit-service
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2051)
+	at com.google.common.cache.LocalCache.get(LocalCache.java:3953)
+	at com.google.common.cache.LocalCache$LocalManualCache.get(LocalCache.java:4873)
+	at com.otterworks.report.service.ReportDataFetcher.fetchAuditData(ReportDataFetcher.java:109)
+	at com.otterworks.report.service.ReportGenerationWorker.fetchDataForCategory(ReportGenerationWorker.java:131)
+	at com.otterworks.report.service.ReportGenerationWorker.generateReportAsync(ReportGenerationWorker.java:88)
+	at com.otterworks.report.service.ReportGenerationWorker$$FastClassBySpringCGLIB$$9eb90542.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:793)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.interceptor.AsyncExecutionInterceptor.lambda$invoke$0(AsyncExecutionInterceptor.java:115)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+Caused by: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://audit-service:8090/api/v1/audit/events": audit-service; nested exception is java.net.UnknownHostException: audit-service
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:791)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:717)
+	at org.springframework.web.client.RestTemplate.getForEntity(RestTemplate.java:367)
+	at com.otterworks.report.service.ReportDataFetcher.lambda$fetchAuditData$1(ReportDataFetcher.java:117)
+	at com.google.common.cache.LocalCache$LocalManualCache$1.load(LocalCache.java:4878)
+	at com.google.common.cache.LocalCache$LoadingValueReference.loadFuture(LocalCache.java:3529)
+	at com.google.common.cache.LocalCache$Segment.loadSync(LocalCache.java:2278)
+	at com.google.common.cache.LocalCache$Segment.lockedGetOrLoad(LocalCache.java:2155)
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2045)
+	... 15 common frames omitted
+Caused by: java.net.UnknownHostException: audit-service
+	at java.net.InetAddress$CachedAddresses.get(InetAddress.java:764)
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1282)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1140)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1064)
+	at org.apache.http.impl.conn.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:45)
+	at org.apache.http.impl.conn.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:112)
+	at org.apache.http.impl.conn.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:376)
+	at org.apache.http.impl.execchain.MainClientExec.establishRoute(MainClientExec.java:393)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:236)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:83)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:56)
+	at org.springframework.http.client.HttpComponentsClientHttpRequest.executeInternal(HttpComponentsClientHttpRequest.java:87)
+	at org.springframework.http.client.AbstractBufferingClientHttpRequest.executeInternal(AbstractBufferingClientHttpRequest.java:48)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:66)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:782)
+	... 23 common frames omitted
+2026-11-13 14:09:10.468 [main] INFO  c.o.r.controller.ReportController - Report request: name=Test Usage Report, category=USAGE_ANALYTICS, type=PDF, by=test-user-001
+2026-11-13 14:09:10.468 [main] INFO  c.o.report.service.ReportService - Created report request: id=12, name=Test Usage Report, type=PDF
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.079 s - in com.otterworks.report.ReportServiceTest
+2026-11-13 14:09:10.486 [task-3] INFO  c.o.report.service.ReportDataFetcher - Fetching analytics data from: http://analytics-service:8088/api/v1/analytics/events?from=2026-10-14T14:09:10Z&to=2026-11-13T14:09:10Z
+2026-11-13 14:09:10.487 [task-3] ERROR c.o.r.service.ReportGenerationWorker - Report generation failed for 12: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service; nested exception is java.net.UnknownHostException: analytics-service
+com.google.common.util.concurrent.UncheckedExecutionException: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service; nested exception is java.net.UnknownHostException: analytics-service
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2051)
+	at com.google.common.cache.LocalCache.get(LocalCache.java:3953)
+	at com.google.common.cache.LocalCache$LocalManualCache.get(LocalCache.java:4873)
+	at com.otterworks.report.service.ReportDataFetcher.fetchAnalyticsData(ReportDataFetcher.java:76)
+	at com.otterworks.report.service.ReportGenerationWorker.fetchDataForCategory(ReportGenerationWorker.java:128)
+	at com.otterworks.report.service.ReportGenerationWorker.generateReportAsync(ReportGenerationWorker.java:88)
+	at com.otterworks.report.service.ReportGenerationWorker$$FastClassBySpringCGLIB$$9eb90542.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:793)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.interceptor.AsyncExecutionInterceptor.lambda$invoke$0(AsyncExecutionInterceptor.java:115)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+Caused by: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://analytics-service:8088/api/v1/analytics/events": analytics-service; nested exception is java.net.UnknownHostException: analytics-service
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:791)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:717)
+	at org.springframework.web.client.RestTemplate.getForEntity(RestTemplate.java:367)
+	at com.otterworks.report.service.ReportDataFetcher.lambda$fetchAnalyticsData$0(ReportDataFetcher.java:89)
+	at com.google.common.cache.LocalCache$LocalManualCache$1.load(LocalCache.java:4878)
+	at com.google.common.cache.LocalCache$LoadingValueReference.loadFuture(LocalCache.java:3529)
+	at com.google.common.cache.LocalCache$Segment.loadSync(LocalCache.java:2278)
+	at com.google.common.cache.LocalCache$Segment.lockedGetOrLoad(LocalCache.java:2155)
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2045)
+	... 15 common frames omitted
+Caused by: java.net.UnknownHostException: analytics-service
+	at java.net.InetAddress$CachedAddresses.get(InetAddress.java:764)
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1282)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1140)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1064)
+	at org.apache.http.impl.conn.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:45)
+	at org.apache.http.impl.conn.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:112)
+	at org.apache.http.impl.conn.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:376)
+	at org.apache.http.impl.execchain.MainClientExec.establishRoute(MainClientExec.java:393)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:236)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:83)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:56)
+	at org.springframework.http.client.HttpComponentsClientHttpRequest.executeInternal(HttpComponentsClientHttpRequest.java:87)
+	at org.springframework.http.client.AbstractBufferingClientHttpRequest.executeInternal(AbstractBufferingClientHttpRequest.java:48)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:66)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:782)
+	... 23 common frames omitted
+2026-11-13 14:09:10.527 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-11-13 14:09:10.527 [SpringApplicationShutdownHook] INFO  o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000477: Starting delayed evictData of schema as part of SessionFactory shut-down'
+2026-11-13 14:09:10.530 [SpringApplicationShutdownHook] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Error: 90121, SQLState: 90121
+2026-11-13 14:09:10.530 [SpringApplicationShutdownHook] ERROR o.h.e.jdbc.spi.SqlExceptionHelper - Database is already closed (to disable automatic closing at VM shutdown, add ";DB_CLOSE_ON_EXIT=FALSE" to the db URL) [90121-200]
+2026-11-13 14:09:10.531 [SpringApplicationShutdownHook] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Error: 90121, SQLState: 90121
+2026-11-13 14:09:10.531 [SpringApplicationShutdownHook] ERROR o.h.e.jdbc.spi.SqlExceptionHelper - Database is already closed (to disable automatic closing at VM shutdown, add ";DB_CLOSE_ON_EXIT=FALSE" to the db URL) [90121-200]
+2026-11-13 14:09:10.531 [SpringApplicationShutdownHook] WARN  o.s.b.f.s.DisposableBeanAdapter - Invocation of destroy method failed on bean with name 'entityManagerFactory': org.hibernate.exception.JDBCConnectionException: Unable to release JDBC Connection used for DDL execution
+2026-11-13 14:09:10.531 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-11-13 14:09:10.539 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+[INFO] 
+[INFO] Results:
+[INFO] 
+[WARNING] Tests run: 104, Failures: 0, Errors: 0, Skipped: 1
+[INFO] 
+[INFO] 
+[INFO] --- maven-dependency-plugin:3.1.2:tree (default-cli) @ report-service ---
+[INFO] com.otterworks:report-service:jar:0.1.0
+[INFO] +- org.springframework.boot:spring-boot-starter-web:jar:2.5.15:compile
+[INFO] |  \- org.springframework.boot:spring-boot-starter-tomcat:jar:2.5.15:compile
+[INFO] |     +- org.apache.tomcat.embed:tomcat-embed-core:jar:9.0.123:compile
+[INFO] |     \- org.apache.tomcat.embed:tomcat-embed-websocket:jar:9.0.123:compile
+[INFO] \- org.springframework.boot:spring-boot-starter-validation:jar:2.5.15:compile
+[INFO]    \- org.apache.tomcat.embed:tomcat-embed-el:jar:9.0.123:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  20.411 s
+[INFO] Finished at: 2026-11-13T14:09:11Z
+[INFO] ------------------------------------------------------------------------
