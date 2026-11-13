@@ -1,4 +1,5 @@
 import json
+from contextlib import contextmanager
 from datetime import datetime
 from decimal import Decimal
 
@@ -109,3 +110,57 @@ def test_identifier_validation():
     for value in ('ledger;DROP TABLE x', 'ledger" --', '', 'a..b', 'a b', 'a\n--'):
         with pytest.raises(ValueError, match="identifier"):
             identifier(value)
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+@pytest.mark.parametrize("error", [ConnectionError, ImportError])
+def test_connection_failures_write_reports(tmp_path, monkeypatch, side, error):
+    @contextmanager
+    def connect(kind, settings):
+        if settings.get("fail"):
+            raise error("Unavailable adapter")
+        yield object()
+
+    monkeypatch.setattr("parity.__main__.connection", connect)
+    config = {"connections": {"left": {}, "right": {}}, "objects": [
+        {"name": "First", "left_table": "one"}, {"name": "Second", "left_table": "two"}]}
+    config["connections"][side]["fail"] = True
+    out = tmp_path / "report"
+    assert run(config, "duckdb", "duckdb", out) == 1
+    report = json.loads((out / "parity.json").read_text())
+    assert report["summary"] == {"green": 0, "amber": 0, "red": 2}
+    assert [obj["name"] for obj in report["objects"]] == ["First", "Second"]
+    assert all(obj["error"] == error.__name__ for obj in report["objects"])
+    assert error.__name__ in (out / "parity.md").read_text()
+    config["objects"] = []
+    assert run(config, "duckdb", "duckdb", out) == 1
+    assert json.loads((out / "parity.json").read_text())["objects"] == []
+
+
+def test_failed_object_uses_configured_name(databases, tmp_path):
+    code, obj = reconcile(databases, tmp_path, name="Named ledger", right_table="absent")
+    assert code == 1 and obj["name"] == "Named ledger" and obj["status"] == "red"
+    assert obj["error"] == "CatalogException"
+    assert "Named ledger" in (tmp_path / "report/parity.md").read_text()
+
+
+@pytest.mark.parametrize(("values", "minimum", "maximum", "total"), [
+    (["NaN", "1"], "1", "NaN", "NaN"),
+    (["Infinity", "1"], "1", "Infinity", "Infinity"),
+    (["-Infinity", "1"], "-Infinity", "1", "-Infinity"),
+    (["Infinity", "-Infinity", "1"], "-Infinity", "Infinity", "NaN"),
+    (["NaN", "Infinity", "-Infinity", "1"], "-Infinity", "NaN", "NaN"),
+    (["NaN", "NaN"], "NaN", "NaN", "NaN"),
+])
+def test_nonfinite_numeric_profiles(databases, tmp_path, values, minimum, maximum, total):
+    for path in databases:
+        with duckdb.connect(str(path)) as conn:
+            conn.execute("ALTER TABLE ledger ALTER COLUMN amount TYPE DOUBLE")
+            conn.execute("DELETE FROM ledger")
+            conn.executemany("INSERT INTO ledger(id,amount) VALUES (?,?)", list(enumerate(map(float, values))))
+    code, obj = reconcile(databases, tmp_path)
+    assert code == 0 and obj["status"] == "green"
+    profile = obj["left"]["profiles"]["amount"]
+    assert profile["min"] == ["number", minimum]
+    assert profile["max"] == ["number", maximum]
+    assert profile["sum"] == ["number", total]

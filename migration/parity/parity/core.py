@@ -45,14 +45,18 @@ def profile(values):
         scales = [max(0, -n.normalize().as_tuple().exponent) for n in numbers if n.is_finite()]
         bounds = sorted(present, key=lambda v: packed(canonical(v)))
         if numbers and len(numbers) == len(present):
-            bounds = sorted(numbers)
+            bounds = sorted(numbers, key=lambda n: (n.is_nan(), 0 if n.is_nan() else n))
+        if any(n.is_nan() for n in numbers) or (Decimal("Infinity") in numbers and Decimal("-Infinity") in numbers):
+            total = Decimal("NaN")
+        else:
+            total = sum(numbers, Decimal(0))
         return {
             "non_null": len(present), "null": len(values) - len(present),
             "empty_string": sum(isinstance(v, str) and v == "" for v in present),
             "distinct": len({packed(canonical(v)) for v in present}),
             "min": canonical(bounds[0]) if bounds else None,
             "max": canonical(bounds[-1]) if bounds else None,
-            "sum": canonical(sum(numbers, Decimal(0))) if numbers else None,
+            "sum": canonical(total) if numbers else None,
             "max_numeric_scale": max(scales, default=None),
         }
 
