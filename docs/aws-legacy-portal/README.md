@@ -22,9 +22,7 @@ python3 replay.py --base <api url> --context feedback --stage first --out /tmp/r
 
 `replay.py` is adapted from `run_parity.py` on that branch. The Java side is always the recording. It compares status code, media type and body, replaces wall-clock timestamps with a placeholder naming their format, and writes `<context>.json` per context and a `SUMMARY.md` table. Stage `first` stops each context at its first divergence and prints the diff. Stage `full` runs every case.
 
-## Terraform root
-
-### Migrate the existing VM data before cutover
+## Data migration before cutover
 
 Apply `infrastructure/terraform/legacy-portal-serverless/schema.sql` first (Terraform's
 `apply-schema.sh` does this for Aurora). Install the Python 3 driver with
@@ -79,6 +77,8 @@ details, so diagnose connectivity independently when necessary. The operator mus
 source quiescent; locks cannot stop source writes after its snapshot was taken.
 
 Offline tests: `make lp-migrate-tests` (stdlib unittest, no DB/AWS needed).
+
+## Terraform root
 
 `infrastructure/terraform/legacy-portal-serverless/` takes `run_token` as its one required variable and keeps one state object per token under `otterworks/legacy-portal-serverless/<token>/terraform.tfstate` in bucket `otterworks-terraform-state`. Every resource carries the tags `demo=legacy-portal-serverless`, `run_token=<token>`, `RunToken=<token>`, `Expires=<date>` and `ManagedBy=terraform`, and every name starts with the token.
 
