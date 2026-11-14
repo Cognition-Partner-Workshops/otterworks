@@ -6,6 +6,8 @@ lazy val root = project
     name := "analytics-service",
     version := "0.1.0",
     scalaVersion := scala3Version,
+    // Compile against the Java 21 platform API (Temurin 21 is the runtime).
+    scalacOptions ++= Seq("-release", "21"),
     // The HTTP server is the default entrypoint (`java -jar`). The batch job
     // (com.otterworks.analytics.batch.UsageRollupJob) is a second main class run
     // explicitly via `java -cp app.jar ...` (see the analytics-service CronJob).
