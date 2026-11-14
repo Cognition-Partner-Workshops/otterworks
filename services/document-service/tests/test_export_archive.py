@@ -71,3 +71,76 @@ async def test_export_endpoint_404s_for_unreadable_file(client, monkeypatch, tmp
     resp = await client.get("/api/v1/documents/exports", params={"name": "locked.md"})
 
     assert resp.status_code == 404
+
+
+@pytest.fixture
+def archive_with_neighbour(tmp_path):
+    root = tmp_path / "archive"
+    root.mkdir()
+    (root / "report.md").write_text("# Report\n", encoding="utf-8")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "secrets.env").write_text("SUPPLIER_API_KEY=leak\n", encoding="utf-8")
+    return root, outside
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "../outside/secrets.env",
+        "reports/../../outside/secrets.env",
+        "/etc/passwd",
+        "/proc/self/environ",
+        "report.md\x00.txt",
+    ],
+)
+def test_rejects_names_that_escape_the_archive(archive_with_neighbour, name):
+    root, _ = archive_with_neighbour
+    archive = ExportArchive(base_dir=str(root))
+
+    with pytest.raises(PermissionError):
+        archive.read_export(name)
+
+
+def test_rejects_symlink_pointing_outside_the_archive(archive_with_neighbour):
+    root, outside = archive_with_neighbour
+    (root / "link.env").symlink_to(outside / "secrets.env")
+    archive = ExportArchive(base_dir=str(root))
+
+    with pytest.raises(PermissionError):
+        archive.read_export("link.env")
+
+
+def test_allows_dot_segments_that_stay_inside(archive_with_neighbour):
+    root, _ = archive_with_neighbour
+    (root / "reports").mkdir()
+    archive = ExportArchive(base_dir=str(root))
+
+    assert archive.read_export("reports/../report.md") == "# Report\n"
+
+
+def test_rejects_sibling_with_shared_prefix(tmp_path):
+    root = tmp_path / "exports"
+    root.mkdir()
+    sibling = tmp_path / "exports-private"
+    sibling.mkdir()
+    (sibling / "secret.md").write_text("secret\n", encoding="utf-8")
+    archive = ExportArchive(base_dir=str(root))
+
+    with pytest.raises(PermissionError):
+        archive.read_export("../exports-private/secret.md")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("name", ["../outside/secrets.env", "/proc/self/environ"])
+async def test_export_endpoint_404s_for_traversal(
+    client, monkeypatch, archive_with_neighbour, name
+):
+    root, _ = archive_with_neighbour
+    monkeypatch.setenv("EXPORT_ARCHIVE_DIR", str(root))
+
+    resp = await client.get("/api/v1/documents/exports", params={"name": name})
+
+    assert resp.status_code == 404
+    assert resp.json() == {"detail": "Export not found"}
+    assert "SUPPLIER_API_KEY" not in resp.text

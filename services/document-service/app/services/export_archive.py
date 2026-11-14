@@ -6,6 +6,7 @@ Exports are rendered to disk by the export worker under ``EXPORT_ARCHIVE_DIR``
 
 from __future__ import annotations
 
+import errno
 import os
 
 import structlog
@@ -31,5 +32,13 @@ class ExportArchive:
         """
         path = os.path.join(self.base_dir, name)
         logger.debug("export_read", name=name)
+        if "\x00" in name or not self._is_inside_archive(path):
+            logger.warning("export_read_rejected", name=name)
+            raise PermissionError(errno.EACCES, "Export path escapes the archive", name)
         with open(path, encoding="utf-8") as handle:
             return handle.read()
+
+    def _is_inside_archive(self, path: str) -> bool:
+        root = os.path.realpath(self.base_dir)
+        resolved = os.path.realpath(path)
+        return os.path.commonpath([root, resolved]) == root
