@@ -29,6 +29,31 @@ export interface Config {
   };
 }
 
+/** Signing secrets that have been committed to this repository and must never be used. */
+export const KNOWN_DEFAULT_JWT_SECRETS: ReadonlySet<string> = new Set([
+  'otterworks-local-dev-jwt-secret-change-me-in-production',
+  'dev-jwt-secret-otterworks-2024-change-in-production',
+  'otterworks-dev-secret',
+  'dev_jwt_secret_key',
+  'changeme',
+  'change-me',
+  'secret',
+]);
+
+export function requireJwtSecret(
+  secret: string | undefined = process.env.JWT_SECRET,
+): string {
+  if (!secret || secret.trim() === '') {
+    throw new Error('JWT_SECRET environment variable is required but not set');
+  }
+  if (KNOWN_DEFAULT_JWT_SECRETS.has(secret.trim())) {
+    throw new Error(
+      'JWT_SECRET is a publicly known default value; set it to a random secret (e.g. openssl rand -hex 32)',
+    );
+  }
+  return secret;
+}
+
 export function loadConfig(): Config {
   return {
     httpPort: parseInt(process.env.HTTP_PORT || '8084', 10),
@@ -40,7 +65,7 @@ export function loadConfig(): Config {
       keyPrefix: process.env.REDIS_KEY_PREFIX || 'collab:',
     },
     jwt: {
-      secret: process.env.JWT_SECRET || 'otterworks-dev-secret',
+      secret: requireJwtSecret(),
       issuer: process.env.JWT_ISSUER || 'otterworks-auth-service',
     },
     cors: {

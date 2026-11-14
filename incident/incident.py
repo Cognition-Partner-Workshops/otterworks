@@ -139,7 +139,17 @@ def load_scale() -> float:
 
 
 def jwt_secret() -> str:
-    return os.environ.get("JWT_SECRET", "otterworks-local-dev-jwt-secret-change-me-in-production")
+    """The Compose stack's signing secret: $JWT_SECRET, else the repo-root .env Compose reads."""
+    secret = os.environ.get("JWT_SECRET", "").strip()
+    env_file = REPO / ".env"
+    if not secret and env_file.is_file():
+        for line in env_file.read_text().splitlines():
+            key, sep, value = line.partition("=")
+            if sep and key.strip() == "JWT_SECRET":
+                secret = value.strip().strip("'\"")
+    if not secret:
+        die("JWT_SECRET is not set; export it or create .env from .env.example")
+    return secret
 
 
 def bearer(user_id: str) -> dict[str, str]:
