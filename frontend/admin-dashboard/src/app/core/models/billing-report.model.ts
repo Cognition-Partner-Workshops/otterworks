@@ -1,5 +1,5 @@
 export interface BillingReportSource {
-  engine: 'oracle' | 'mongodb' | string;
+  engine: 'oracle' | 'mongodb' | 'postgresql' | string;
   system: string;
   detail: string;
 }

@@ -119,6 +119,13 @@ describe('BillingReportComponent', () => {
     expect(compiled.querySelector('.source-badge')?.classList).toContain('engine-oracle');
   });
 
+  it('should render the PostgreSQL source badge after the estate takeout', () => {
+    flush({ ...REPORT, source: { ...REPORT.source, engine: 'postgresql' } });
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.source-badge')?.textContent).toContain('PostgreSQL Billing Estate');
+    expect(compiled.querySelector('.source-badge')?.classList).toContain('engine-postgresql');
+  });
+
   it('should total invoices and billed amounts across statuses', () => {
     flush();
     expect(component.totalInvoices).toBe(150);

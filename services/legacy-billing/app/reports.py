@@ -1,4 +1,9 @@
-"""Month-end finance reporting served straight from the Oracle billing estate.
+"""Month-end finance reporting served straight from the OW_BILLING estate.
+
+The estate is Oracle (BILLING_BACKEND=oracle) or its PostgreSQL takeout
+(BILLING_BACKEND=ow_billing_pg). Both engines run the same rollup; on
+Postgres the orphan lines sit in invoice_line_orphan and so are excluded the
+same way the inner join excluded them on Oracle.
 
 The report is the legacy RPT-114 rollup (see
 db/oracle/ops/OPERATIONS_HANDBOOK.doc.txt and the CODES lookup conventions):
@@ -18,6 +23,7 @@ from pathlib import Path
 
 from flask import Blueprint, jsonify, request
 
+from backends import get_backend
 from oracle_conn import oracle_connect as connect_oracle
 
 reports = Blueprint("reports", __name__)
@@ -32,6 +38,13 @@ SOURCE = {
     "engine": "oracle",
     "system": "OW_BILLING legacy estate (Oracle FREEPDB1)",
     "detail": "INVOICE_HEADER / INVOICE_LINE via CODES lookup (RPT-114)",
+}
+
+PG_SOURCE = {
+    "engine": "postgresql",
+    "system": "OW_BILLING estate on PostgreSQL 15 (ow_tp_billing.ow_billing)",
+    "detail": "invoice_header / invoice_line via codes lookup (RPT-114); "
+              "orphan lines quarantined in invoice_line_orphan",
 }
 
 FINANCE_SOURCE = {
@@ -88,6 +101,108 @@ SELECT COUNT(*)                                          AS customer_count,
  WHERE conversion_batch_no = :batch_no
 """
 
+PG_MONEY = "'FM999999999999990.00'"
+PG_STATUS = "COALESCE(st.code_desc, CONCAT('UNKNOWN(', h.status_cd, ')'))"
+PG_LINE_TYPE = """CASE l.line_type_cd WHEN 1 THEN 'CHARGE'
+                                WHEN 2 THEN 'CREDIT'
+                                WHEN 3 THEN 'ADJUSTMENT'
+                                WHEN 9 THEN 'MISC'
+                                ELSE CONCAT('UNKNOWN(', l.line_type_cd, ')') END"""
+
+# Counts are cast to numeric so they serialize exactly as Oracle NUMBER does.
+PG_STATUS_SQL = f"""
+SELECT {PG_STATUS} AS status_desc,
+       COUNT(*)::numeric AS invoice_count,
+       TO_CHAR(SUM(h.total_amt), {PG_MONEY}) AS header_total_amt
+  FROM invoice_header h
+  LEFT JOIN codes st ON st.code_type = 'INV_STATUS' AND st.code_val = h.status_cd
+ WHERE h.batch_no = %(batch_no)s
+ GROUP BY 1
+ ORDER BY 1
+"""
+
+PG_LINE_SQL = f"""
+SELECT {PG_STATUS} AS status_desc,
+       {PG_LINE_TYPE} AS line_type,
+       COUNT(*)::numeric AS line_count,
+       TO_CHAR(SUM(l.amount), {PG_MONEY}) AS line_amount,
+       TO_CHAR(SUM(l.tax_amt), {PG_MONEY}) AS line_tax,
+       COUNT(DISTINCT h.invoice_id)::numeric AS invoices_touched
+  FROM invoice_header h
+  JOIN invoice_line l ON l.invoice_id = h.invoice_id
+  LEFT JOIN codes st ON st.code_type = 'INV_STATUS' AND st.code_val = h.status_cd
+ WHERE h.batch_no = %(batch_no)s
+ GROUP BY 1, 2
+ ORDER BY 1, 2
+"""
+
+PG_BALANCES_SQL = f"""
+SELECT COUNT(*)::numeric AS customer_count,
+       TO_CHAR(SUM(cur_bal_amt), {PG_MONEY}) AS current_balance_total,
+       TO_CHAR(SUM(past_due_amt), {PG_MONEY}) AS past_due_total
+  FROM customer_master
+ WHERE conversion_batch_no = %(batch_no)s
+"""
+
+# Recomputed from the live Postgres tables on every call and compared with the
+# Oracle-side figures migrate.py captured into migration_baseline.
+PG_ACTUALS_SQL = f"""
+WITH lines AS (
+    SELECT amount, tax_amt FROM invoice_line WHERE batch_no = %(batch_no)s
+    UNION ALL
+    SELECT amount, tax_amt FROM invoice_line_orphan WHERE batch_no = %(batch_no)s
+)
+SELECT 'customers-count', COUNT(*)::text
+  FROM customer_master WHERE conversion_batch_no = %(batch_no)s
+UNION ALL
+SELECT 'current-balance-total', TO_CHAR(SUM(cur_bal_amt), {PG_MONEY})
+  FROM customer_master WHERE conversion_batch_no = %(batch_no)s
+UNION ALL
+SELECT 'past-due-total', TO_CHAR(SUM(past_due_amt), {PG_MONEY})
+  FROM customer_master WHERE conversion_batch_no = %(batch_no)s
+UNION ALL
+SELECT 'customers-checksum',
+       md5(string_agg(cust_id || ':' || TO_CHAR(cur_bal_amt, {PG_MONEY}) || E'\\n', ''
+                      ORDER BY cust_id))
+  FROM customer_master WHERE conversion_batch_no = %(batch_no)s
+UNION ALL
+SELECT 'invoice-headers-count', COUNT(*)::text
+  FROM invoice_header WHERE batch_no = %(batch_no)s
+UNION ALL
+SELECT 'invoice-header-total', TO_CHAR(SUM(total_amt), {PG_MONEY})
+  FROM invoice_header WHERE batch_no = %(batch_no)s
+UNION ALL
+SELECT 'invoice-lines-count', COUNT(*)::text FROM lines
+UNION ALL
+SELECT 'invoice-line-amount', TO_CHAR(SUM(amount), {PG_MONEY}) FROM lines
+UNION ALL
+SELECT 'invoice-line-tax', TO_CHAR(SUM(tax_amt), {PG_MONEY}) FROM lines
+UNION ALL
+SELECT 'orphan-lines-quarantined', COUNT(*)::text
+  FROM invoice_line_orphan WHERE batch_no = %(batch_no)s
+UNION ALL
+SELECT 'orphan-line-amount', TO_CHAR(SUM(amount), {PG_MONEY})
+  FROM invoice_line_orphan WHERE batch_no = %(batch_no)s
+"""
+
+PG_BASELINE_SQL = """
+SELECT check_name, expected FROM migration_baseline WHERE batch_no = %(batch_no)s
+"""
+
+RECON_CHECKS = (
+    "customers-count",
+    "current-balance-total",
+    "past-due-total",
+    "customers-checksum",
+    "invoice-headers-count",
+    "invoice-header-total",
+    "invoice-lines-count",
+    "invoice-line-amount",
+    "invoice-line-tax",
+    "orphan-lines-quarantined",
+    "orphan-line-amount",
+)
+
 
 def ns_batch_no(ns):
     """Deterministic conversion batch number for a namespace.
@@ -129,6 +244,16 @@ def shape_balances(row):
     }
 
 
+ORACLE_QUERIES = {"status": STATUS_SQL, "line": LINE_SQL, "balances": BALANCES_SQL}
+PG_QUERIES = {
+    "status": PG_STATUS_SQL,
+    "line": PG_LINE_SQL,
+    "balances": PG_BALANCES_SQL,
+    "actuals": PG_ACTUALS_SQL,
+    "baseline": PG_BASELINE_SQL,
+}
+
+
 class FinanceReportTooLarge(Exception):
     pass
 
@@ -139,11 +264,43 @@ def oracle_query(sql, params):
         return cursor.fetchall()
 
 
+def _on_postgres():
+    return get_backend().NAME == "ow_billing_pg"
+
+
+def estate_query(name, params):
+    """Run report query `name` on whichever engine holds the estate."""
+    if _on_postgres():
+        return get_backend().report_query(PG_QUERIES[name], params)
+    return oracle_query(ORACLE_QUERIES[name], params)
+
+
+def reconciliation_checks(baseline_rows, actual_rows):
+    expected = dict(baseline_rows)
+    actual = dict(actual_rows)
+    if not expected:
+        return [{
+            "name": "migration-baseline",
+            "status": "fail",
+            "expected": "recorded by migrate.py",
+            "actual": "missing",
+        }]
+    return [
+        {
+            "name": name,
+            "status": "pass" if expected.get(name) == actual.get(name) else "fail",
+            "expected": expected.get(name),
+            "actual": actual.get(name),
+        }
+        for name in RECON_CHECKS
+    ]
+
+
 def report_meta(ns):
     return {
         "namespace": ns,
         "batch_no": ns_batch_no(ns),
-        "source": SOURCE,
+        "source": PG_SOURCE if _on_postgres() else SOURCE,
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
 
@@ -161,8 +318,8 @@ def month_end():
     ns = request.args.get("ns", "demo")
     batch_no = ns_batch_no(ns)
     try:
-        status_rows = oracle_query(STATUS_SQL, {"batch_no": batch_no})
-        line_rows = oracle_query(LINE_SQL, {"batch_no": batch_no})
+        status_rows = estate_query("status", {"batch_no": batch_no})
+        line_rows = estate_query("line", {"batch_no": batch_no})
     except Exception:  # estate offline: fail closed, never fabricate numbers
         logger.exception("month-end report failed for ns=%s", ns)
         return jsonify(ESTATE_UNAVAILABLE), 503
@@ -184,18 +341,26 @@ def admin_month_end():
 def reconciliation():
     ns = request.args.get("ns", "demo")
     batch_no = ns_batch_no(ns)
+    params = {"batch_no": batch_no}
     try:
-        balance_rows = oracle_query(BALANCES_SQL, {"batch_no": batch_no})
+        balance_rows = estate_query("balances", params)
+        if _on_postgres():
+            checks = reconciliation_checks(
+                estate_query("baseline", params), estate_query("actuals", params),
+            )
     except Exception:
         logger.exception("reconciliation report failed for ns=%s", ns)
         return jsonify(ESTATE_UNAVAILABLE), 503
     body = report_meta(ns)
     body["balances"] = shape_balances(balance_rows[0])
-    # The legacy estate IS the source of truth: there is nothing to reconcile
-    # against, so it reports baseline with no checks. Post-migration backends
-    # return status pass|fail with per-check results instead.
-    body["status"] = "baseline"
-    body["checks"] = []
+    if _on_postgres():
+        body["status"] = "pass" if all(c["status"] == "pass" for c in checks) else "fail"
+        body["checks"] = checks
+    else:
+        # The legacy estate IS the source of truth: there is nothing to
+        # reconcile against, so it reports baseline with no checks.
+        body["status"] = "baseline"
+        body["checks"] = []
     return jsonify(body)
 
 

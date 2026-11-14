@@ -11,7 +11,15 @@ services:
     ports:
       - "127.0.0.1:8096:8096"
     environment:
-      BILLING_BACKEND: oracle
+      # OW_BILLING runs on its PostgreSQL takeout (docker-compose.billing-postgres.yml).
+      # BILLING_BACKEND=oracle (+ the ORACLE_* settings) is the rollback path while
+      # the Oracle estate still exists.
+      BILLING_BACKEND: ${BILLING_BACKEND:-ow_billing_pg}
+      BILLING_PG_HOST: ${BILLING_PG_HOST:-host.docker.internal}
+      BILLING_PG_PORT: ${BILLING_PG_PORT:-55433}
+      BILLING_PG_DB: ${BILLING_PG_DB:-ow_tp_billing}
+      BILLING_PG_USER: ${BILLING_PG_USER:-ow_billing}
+      BILLING_PG_PASSWORD: ${BILLING_PG_PASSWORD:-ow_billing}
       ORACLE_HOST: ${ORACLE_HOST:-host.docker.internal}
       ORACLE_PORT: ${ORACLE_BILLING_DB_PORT:-52521}
       ORACLE_USER: ${ORACLE_USER:-ow_billing}
