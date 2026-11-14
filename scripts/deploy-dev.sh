@@ -349,7 +349,12 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.SPRING_FLYWAY_URL=jdbc:postgresql://${DB_ENDPOINT_HOST}:${DB_SESSION_PORT}/${DB_NAME}")
       EXTRA_ARGS+=(--set-string "config.SPRING_FLYWAY_USER=${DB_USER}")
       add_secret SPRING_FLYWAY_PASSWORD "${DB_PASSWORD}"
-      add_secret SPRING_DATASOURCE_PASSWORD "${DB_PASSWORD}" ;;
+      add_secret SPRING_DATASOURCE_PASSWORD "${DB_PASSWORD}"
+      # Bootstrap admin is hashed at startup from these; without a password none is seeded.
+      if [ -n "${ADMIN_SEED_PASSWORD:-}" ]; then
+        EXTRA_ARGS+=(--set-string "config.ADMIN_SEED_EMAIL=${ADMIN_SEED_EMAIL:-admin@otterworks.dev}")
+        add_secret ADMIN_SEED_PASSWORD "${ADMIN_SEED_PASSWORD}"
+      fi ;;
     file-service)
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.S3_BUCKET=${S3_FILE_BUCKET}")
