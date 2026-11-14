@@ -16,11 +16,6 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
-import io.ktor.server.websocket.webSocket
-import io.ktor.websocket.CloseReason
-import io.ktor.websocket.Frame
-import io.ktor.websocket.close
-import io.ktor.websocket.readText
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
@@ -162,32 +157,6 @@ fun Application.configureRouting(prometheusRegistry: PrometheusMeterRegistry) {
             }
         }
 
-        webSocket("/ws/notifications/{userId}") {
-            val userId = call.parameters["userId"]
-            if (userId.isNullOrBlank()) {
-                close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "userId is required"))
-                return@webSocket
-            }
-
-            webSocketManager.addConnection(userId, this)
-
-            try {
-                for (frame in incoming) {
-                    when (frame) {
-                        is Frame.Text -> {
-                            val text = frame.readText()
-                            // Handle ping/pong or client messages if needed
-                            if (text == "ping") {
-                                send(Frame.Text("pong"))
-                            }
-                        }
-                        is Frame.Close -> break
-                        else -> { /* ignore other frame types */ }
-                    }
-                }
-            } finally {
-                webSocketManager.removeConnection(userId, this)
-            }
-        }
+        notificationWebSocket(webSocketManager)
     }
 }
