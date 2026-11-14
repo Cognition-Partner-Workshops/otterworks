@@ -14,6 +14,10 @@ import { DocumentStore } from './services/document-store';
 import { AwarenessService } from './services/awareness';
 import { PresenceHandler } from './handlers/presence';
 import { setupCollaborationHandlers } from './handlers/collaboration';
+import {
+  HttpDocumentAccessChecker,
+  documentIdFromYjsRoom,
+} from './services/document-access';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { setupWSConnection } = require('y-websocket/bin/utils');
@@ -112,6 +116,11 @@ const documentStore = new DocumentStore(redisAdapter, logger, {
   maxSnapshots: config.persistence.maxSnapshotsPerDocument,
 });
 
+const documentAccess = new HttpDocumentAccessChecker(
+  { baseUrl: config.documentService.url, timeoutMs: config.documentService.timeoutMs },
+  logger,
+);
+
 const awareness = new AwarenessService(logger);
 const presenceHandler = new PresenceHandler(awareness, logger);
 
@@ -123,6 +132,7 @@ const collabManager = setupCollaborationHandlers(
   presenceHandler,
   metrics,
   logger,
+  documentAccess,
   config.persistence.intervalMs,
   config.persistence.snapshotIntervalMs,
 );
@@ -154,8 +164,10 @@ httpServer.on('upgrade', (request, socket, head) => {
     return;
   }
 
+  let userId: string | undefined;
   try {
-    jwt.verify(token, config.jwt.secret);
+    const decoded = jwt.verify(token, config.jwt.secret);
+    userId = typeof decoded === 'object' ? decoded.sub : undefined;
   } catch {
     logger.warn('y-websocket_connection_rejected: invalid token');
     socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
@@ -163,9 +175,33 @@ httpServer.on('upgrade', (request, socket, head) => {
     return;
   }
 
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
-  });
+  // y-websocket uses the URL path as the room name; only allow rooms for
+  // documents the caller can access in document-service.
+  const documentId = documentIdFromYjsRoom(url.pathname);
+  if (!documentId || !userId) {
+    logger.warn({ path: url.pathname }, 'y-websocket_connection_rejected: invalid room');
+    socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+    socket.destroy();
+    return;
+  }
+
+  documentAccess
+    .canAccess({ documentId, userId, token })
+    .then((allowed) => {
+      if (!allowed) {
+        logger.warn({ documentId, userId }, 'y-websocket_connection_rejected: forbidden');
+        socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+        socket.destroy();
+        return;
+      }
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    })
+    .catch((err) => {
+      logger.error({ err, documentId }, 'y-websocket_access_check_failed');
+      socket.destroy();
+    });
 });
 
 // Start presence cleanup with document eviction callback
