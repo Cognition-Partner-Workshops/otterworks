@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Bootstrap for the legacy-portal "before" host: Amazon Corretto 11, a local
+# Bootstrap for the legacy-portal "before" host: Amazon Corretto 21, a local
 # PostgreSQL 15 with the three bounded-context schemas, the fat jar from the
 # run's artifact bucket, a systemd unit, and the CloudWatch agent shipping the
 # application log.
 set -euxo pipefail
 exec > >(tee /var/log/legacy-portal-bootstrap.log | logger -t lp-bootstrap) 2>&1
 
-dnf install -y java-11-amazon-corretto postgresql15-server amazon-cloudwatch-agent
+dnf install -y java-21-amazon-corretto postgresql15-server amazon-cloudwatch-agent
 
 # --- PostgreSQL on the instance, deliberately not a managed database ---
 if [ ! -s /var/lib/pgsql/data/PG_VERSION ]; then
