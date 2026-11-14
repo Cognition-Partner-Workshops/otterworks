@@ -13,5 +13,7 @@ contactPoints:
           username: ""
           password: ""
           authorization_scheme: Bearer
+          # Must equal admin-service's ALERT_WEBHOOK_SECRET (set in .env); admin-service
+          # rejects every alert while it is unset.
           authorization_credentials: $ALERT_WEBHOOK_SECRET
         disableResolveMessage: false
