@@ -3,8 +3,10 @@
 import uuid
 from collections.abc import AsyncGenerator
 
+import jwt
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import Uuid
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.api import documents as documents_api
@@ -16,10 +18,29 @@ from app.models.document import Comment, Document, DocumentVersion, Template  # 
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
+
+def _bind_uuid_as_text(self, dialect):  # noqa: ANN001, ANN202 - SQLAlchemy hook
+    def process(value):  # noqa: ANN001, ANN202
+        return None if value is None else str(value)
+
+    return process
+
+
+# SQLite has no uuid type and SQLAlchemy stores bare hex there, so the raw-SQL
+# filter path (which compares owner_id as text) never matches. Store the
+# hyphenated form Postgres renders, as security/equivalence's emitter does.
+Uuid.bind_processor = _bind_uuid_as_text
+TEST_JWT_SECRET = "test-jwt-secret-for-unit-tests-pad32"  # noqa: S105
+
+
+def auth_headers_for(user_id: uuid.UUID) -> dict[str, str]:
+    """Authorization header carrying a JWT signed with TEST_JWT_SECRET for user_id."""
+    token = jwt.encode({"user_id": str(user_id)}, TEST_JWT_SECRET, algorithm="HS256")
+    return {"Authorization": f"Bearer {token}"}
+
+
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
-TestingSessionLocal = async_sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
-)
+TestingSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
 @pytest.fixture(autouse=True)
@@ -64,3 +85,9 @@ def owner_id() -> uuid.UUID:
 @pytest.fixture
 def folder_id() -> uuid.UUID:
     return uuid.uuid4()
+
+
+@pytest.fixture
+def owner_headers(owner_id: uuid.UUID, monkeypatch: pytest.MonkeyPatch) -> dict[str, str]:
+    monkeypatch.setenv("JWT_SECRET", TEST_JWT_SECRET)
+    return auth_headers_for(owner_id)
