@@ -1,0 +1,40 @@
+server:
+  port: 8098
+
+spring:
+  application:
+    name: preferences-service
+  # Default profile: embedded H2, used by tests and local runs. The schema is created by
+  # Flyway (db/migration), not by Hibernate.
+  datasource:
+    url: 'jdbc:h2:mem:preferences;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE'
+    username: sa
+    password: ''
+    driver-class-name: org.h2.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+---
+# Container / cluster profile: the service's own PostgreSQL database. No other service
+# reads or writes it.
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/preferences}
+    username: ${SPRING_DATASOURCE_USERNAME:preferences}
+    password: ${SPRING_DATASOURCE_PASSWORD:preferences}
+    driver-class-name: org.postgresql.Driver

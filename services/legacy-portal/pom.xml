@@ -17,8 +17,8 @@
     <version>0.1.0</version>
     <packaging>jar</packaging>
     <name>OtterWorks Legacy Portal</name>
-    <description>Legacy modular monolith bundling three bounded contexts (announcements,
-        user-preferences, feedback) in one deployable. Runs on a VM today — a rehost and
+    <description>Legacy modular monolith bundling the announcements and feedback bounded
+        contexts in one deployable (user-preferences moved to preferences-service). Runs on a VM today — a rehost and
         monolith-decomposition "before" state.</description>
 
     <properties>

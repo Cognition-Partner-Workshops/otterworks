@@ -103,6 +103,20 @@ modules:
     test: -B test
     cases: null
 
+  # user-preferences context extracted from legacy-portal (Spring Boot 3.3, Java 21),
+  # served behind the legacy-portal strangler route. Same wrapper pin as legacy-portal.
+  - id: preferences-service
+    path: services/preferences-service
+    build: maven
+    java_home:
+      - $JAVA_HOME_21_X64
+      - /usr/lib/jvm/java-21-openjdk-amd64
+    tool:
+      - ./mvnw
+      - mvn
+    test: -B test
+    cases: null
+
 exempt:
   - path: frontend/client-app/mobile/android
     reason: >

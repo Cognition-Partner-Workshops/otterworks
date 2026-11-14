@@ -1,12 +1,12 @@
-package com.otterworks.legacyportal.userpreferences;
+package com.otterworks.preferences;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 /**
- * Bounded context: user-preferences. Owns the {@code user_preferences} schema.
+ * Bounded context: user-preferences. Owns the {@code user_preferences} schema in its own database.
  */
 @Entity
 @Table(name = "user_preference", schema = "user_preferences")

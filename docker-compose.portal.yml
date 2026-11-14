@@ -1,0 +1,103 @@
+# legacy-portal with user preferences strangled out to preferences-service.
+#
+#   legacy-portal-edge (nginx, :8095)  /api/preferences, /api/preferences/**  -> preferences-service
+#                                      everything else                        -> legacy-portal
+#
+# Each service has its own PostgreSQL; no table is shared. Like docker-compose.onprem.yml this is
+# separate from the Helm/EKS path for legacy-portal. preferences-service also has a chart at
+# infrastructure/helm/preferences-service.
+#
+#   docker compose -f docker-compose.portal.yml up --build --wait
+#   curl -i http://localhost:8095/api/preferences/alice    # X-Served-By: preferences-service
+#   curl -i http://localhost:8095/api/announcements        # X-Served-By: legacy-portal
+#   docker compose -f docker-compose.portal.yml down -v
+services:
+  legacy-portal-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: legacyportal
+      POSTGRES_USER: legacyportal
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-legacyportal}
+    volumes:
+      - ./services/legacy-portal/scripts/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql:ro
+      - legacy-portal-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U legacyportal -d legacyportal"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  legacy-portal:
+    build:
+      context: ./services/legacy-portal
+      dockerfile: Dockerfile
+    image: otterworks/legacy-portal:local
+    depends_on:
+      legacy-portal-db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://legacy-portal-db:5432/legacyportal
+      SPRING_DATASOURCE_USERNAME: legacyportal
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-legacyportal}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8095/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 40s
+      retries: 5
+
+  preferences-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: preferences
+      POSTGRES_USER: preferences
+      POSTGRES_PASSWORD: ${PREFERENCES_DB_PASSWORD:-preferences}
+    volumes:
+      - preferences-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U preferences -d preferences"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  preferences-service:
+    build:
+      context: ./services/preferences-service
+      dockerfile: Dockerfile
+    image: otterworks/preferences-service:local
+    depends_on:
+      preferences-db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://preferences-db:5432/preferences
+      SPRING_DATASOURCE_USERNAME: preferences
+      SPRING_DATASOURCE_PASSWORD: ${PREFERENCES_DB_PASSWORD:-preferences}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8098/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 40s
+      retries: 5
+
+  legacy-portal-edge:
+    image: nginx:1.27-alpine
+    depends_on:
+      legacy-portal:
+        condition: service_healthy
+      preferences-service:
+        condition: service_healthy
+    volumes:
+      - ./services/legacy-portal/strangler/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "127.0.0.1:${PORTAL_EDGE_PORT:-8095}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/edge-health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  legacy-portal-db-data:
+  preferences-db-data:
