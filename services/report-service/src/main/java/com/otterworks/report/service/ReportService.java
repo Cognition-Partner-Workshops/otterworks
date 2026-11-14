@@ -111,6 +111,16 @@ public class ReportService {
     }
 
     /**
+     * List a user's reports, optionally narrowed to one status.
+     */
+    public List<Report> getReportsByUser(String userId, ReportStatus status) {
+        if (status == null) {
+            return getReportsByUser(userId);
+        }
+        return reportRepository.findByRequestedByAndStatusOrderByCreatedAtDesc(userId, status);
+    }
+
+    /**
      * List reports by status.
      */
     public List<Report> getReportsByStatus(ReportStatus status) {
