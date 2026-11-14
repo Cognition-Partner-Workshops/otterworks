@@ -9,7 +9,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/otterworks}
     username: ${SPRING_DATASOURCE_USERNAME:otterworks}
-    password: ${SPRING_DATASOURCE_PASSWORD:otterworks_dev}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -32,6 +32,11 @@ jwt:
   secret: ${JWT_SECRET:dev-jwt-secret-otterworks-2024-change-in-production}
   access-token-expiry: ${JWT_ACCESS_TOKEN_EXPIRY:3600}
   refresh-token-expiry: ${JWT_REFRESH_TOKEN_EXPIRY:2592000}
+
+auth:
+  bootstrap-admin:
+    email: ${AUTH_BOOTSTRAP_ADMIN_EMAIL:admin@otterworks.dev}
+    password: ${AUTH_BOOTSTRAP_ADMIN_PASSWORD:}
 
 management:
   endpoints:
