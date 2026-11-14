@@ -75,6 +75,8 @@ class ScanContext:
     burner: Identity = field(init=False)
     _victim_document: dict[str, Any] | None = field(default=None, init=False)
     _victim_document_attempted: bool = field(default=False, init=False)
+    _victim_file: dict[str, Any] | None = field(default=None, init=False)
+    _victim_file_attempted: bool = field(default=False, init=False)
 
     def __post_init__(self) -> None:
         self.attacker = Identity(
@@ -253,6 +255,36 @@ class ScanContext:
                 content=f"confidential {self.victim_marker}",
             )
         return self._victim_document
+
+    def upload_file(self, identity: Identity, name: str, content: bytes) -> dict[str, Any] | None:
+        """Upload a file as ``identity``; the created file's metadata, or None on failure."""
+        try:
+            response = self.client.post(
+                "/api/v1/files/upload",
+                headers=dict(identity.headers),
+                files={"file": (name, content, "text/plain")},
+            )
+        except httpx.HTTPError:
+            return None
+        if response.status_code not in (200, 201):
+            return None
+        try:
+            body = response.json()
+        except ValueError:
+            return None
+        created = body.get("file") if isinstance(body, dict) else None
+        return created if isinstance(created, dict) and created.get("id") else None
+
+    def victim_file(self) -> dict[str, Any] | None:
+        """A file owned solely by the victim, uploaded once per scan."""
+        if not self._victim_file_attempted:
+            self._victim_file_attempted = True
+            self._victim_file = self.upload_file(
+                self.victim,
+                f"victim-private-{self.run_id}.txt",
+                f"confidential {self.run_id}".encode(),
+            )
+        return self._victim_file
 
     # ── HTTP helpers ─────────────────────────────────────────────────────────
 
