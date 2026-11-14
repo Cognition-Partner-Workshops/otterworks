@@ -12,10 +12,10 @@ namespace OtterWorks.Desktop.ViewModels
         private readonly SessionState _session;
         private readonly MainViewModel _main;
 
-        private string _displayName;
-        private string _email;
-        private string _password;
-        private string _errorMessage;
+        private string? _displayName;
+        private string? _email;
+        private string? _password;
+        private string? _errorMessage;
         private bool _isBusy;
 
         public RegisterViewModel(OtterWorksApiClient api, SessionState session, MainViewModel main)
@@ -28,25 +28,25 @@ namespace OtterWorks.Desktop.ViewModels
             GoToLoginCommand = new RelayCommand(() => _main.ShowLogin());
         }
 
-        public string DisplayName
+        public string? DisplayName
         {
             get => _displayName;
             set => SetProperty(ref _displayName, value);
         }
 
-        public string Email
+        public string? Email
         {
             get => _email;
             set => SetProperty(ref _email, value);
         }
 
-        public string Password
+        public string? Password
         {
             get => _password;
             set => SetProperty(ref _password, value);
         }
 
-        public string ErrorMessage
+        public string? ErrorMessage
         {
             get => _errorMessage;
             set => SetProperty(ref _errorMessage, value);
@@ -81,8 +81,8 @@ namespace OtterWorks.Desktop.ViewModels
             IsBusy = true;
             try
             {
-                AuthResponse response = await _api
-                    .RegisterAsync(DisplayName.Trim(), Email.Trim(), Password)
+                AuthResponse? response = await _api
+                    .RegisterAsync(DisplayName!.Trim(), Email!.Trim(), Password!)
                     .ConfigureAwait(true);
                 if (response?.AccessToken == null)
                 {

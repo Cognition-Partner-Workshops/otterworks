@@ -1,28 +1,28 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace OtterWorks.Desktop.Models
 {
     /// <summary>Request body for POST /auth/register.</summary>
     public class RegisterRequest
     {
-        [JsonProperty("displayName")]
-        public string DisplayName { get; set; }
+        [JsonPropertyName("displayName")]
+        public string DisplayName { get; set; } = string.Empty;
 
-        [JsonProperty("email")]
-        public string Email { get; set; }
+        [JsonPropertyName("email")]
+        public string Email { get; set; } = string.Empty;
 
-        [JsonProperty("password")]
-        public string Password { get; set; }
+        [JsonPropertyName("password")]
+        public string Password { get; set; } = string.Empty;
     }
 
     /// <summary>Request body for POST /auth/login.</summary>
     public class LoginRequest
     {
-        [JsonProperty("email")]
-        public string Email { get; set; }
+        [JsonPropertyName("email")]
+        public string Email { get; set; } = string.Empty;
 
-        [JsonProperty("password")]
-        public string Password { get; set; }
+        [JsonPropertyName("password")]
+        public string Password { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -30,31 +30,31 @@ namespace OtterWorks.Desktop.Models
     /// </summary>
     public class AuthResponse
     {
-        [JsonProperty("accessToken")]
-        public string AccessToken { get; set; }
+        [JsonPropertyName("accessToken")]
+        public string? AccessToken { get; set; }
 
-        [JsonProperty("refreshToken")]
-        public string RefreshToken { get; set; }
+        [JsonPropertyName("refreshToken")]
+        public string? RefreshToken { get; set; }
 
-        [JsonProperty("tokenType")]
-        public string TokenType { get; set; }
+        [JsonPropertyName("tokenType")]
+        public string? TokenType { get; set; }
 
-        [JsonProperty("expiresIn")]
+        [JsonPropertyName("expiresIn")]
         public long ExpiresIn { get; set; }
 
-        [JsonProperty("user")]
-        public AuthUser User { get; set; }
+        [JsonPropertyName("user")]
+        public AuthUser? User { get; set; }
     }
 
     public class AuthUser
     {
-        [JsonProperty("id")]
-        public string Id { get; set; }
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
 
-        [JsonProperty("email")]
-        public string Email { get; set; }
+        [JsonPropertyName("email")]
+        public string? Email { get; set; }
 
-        [JsonProperty("displayName")]
-        public string DisplayName { get; set; }
+        [JsonPropertyName("displayName")]
+        public string? DisplayName { get; set; }
     }
 }

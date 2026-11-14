@@ -1,0 +1,3 @@
+pytest>=8
+uiautomation==2.0.29
+pillow>=10

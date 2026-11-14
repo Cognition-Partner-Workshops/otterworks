@@ -12,9 +12,9 @@ namespace OtterWorks.Desktop.ViewModels
         private readonly SessionState _session;
         private readonly MainViewModel _main;
 
-        private string _email;
-        private string _password;
-        private string _errorMessage;
+        private string? _email;
+        private string? _password;
+        private string? _errorMessage;
         private bool _isBusy;
 
         public LoginViewModel(OtterWorksApiClient api, SessionState session, MainViewModel main)
@@ -27,19 +27,19 @@ namespace OtterWorks.Desktop.ViewModels
             GoToRegisterCommand = new RelayCommand(() => _main.ShowRegister());
         }
 
-        public string Email
+        public string? Email
         {
             get => _email;
             set => SetProperty(ref _email, value);
         }
 
-        public string Password
+        public string? Password
         {
             get => _password;
             set => SetProperty(ref _password, value);
         }
 
-        public string ErrorMessage
+        public string? ErrorMessage
         {
             get => _errorMessage;
             set => SetProperty(ref _errorMessage, value);
@@ -64,7 +64,7 @@ namespace OtterWorks.Desktop.ViewModels
             IsBusy = true;
             try
             {
-                AuthResponse response = await _api.LoginAsync(Email.Trim(), Password).ConfigureAwait(true);
+                AuthResponse? response = await _api.LoginAsync(Email!.Trim(), Password!).ConfigureAwait(true);
                 if (response?.AccessToken == null)
                 {
                     ErrorMessage = "Login succeeded but the server returned an empty response.";

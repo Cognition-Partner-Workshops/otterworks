@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
 using OtterWorks.Desktop.Models;
 
 namespace OtterWorks.Desktop.Services
@@ -27,11 +27,11 @@ namespace OtterWorks.Desktop.Services
             _storePath = Path.Combine(dir, "session.dat");
         }
 
-        public string AccessToken { get; private set; }
+        public string? AccessToken { get; private set; }
 
-        public string RefreshToken { get; private set; }
+        public string? RefreshToken { get; private set; }
 
-        public AuthUser User { get; private set; }
+        public AuthUser? User { get; private set; }
 
         public bool IsAuthenticated => !string.IsNullOrEmpty(AccessToken);
 
@@ -77,7 +77,7 @@ namespace OtterWorks.Desktop.Services
                 byte[] protectedBytes = File.ReadAllBytes(_storePath);
                 byte[] plainBytes = ProtectedData.Unprotect(protectedBytes, null, DataProtectionScope.CurrentUser);
                 string json = Encoding.UTF8.GetString(plainBytes);
-                PersistedSession session = JsonConvert.DeserializeObject<PersistedSession>(json);
+                PersistedSession? session = JsonSerializer.Deserialize<PersistedSession>(json, JsonDefaults.Options);
                 if (session != null && !string.IsNullOrEmpty(session.AccessToken))
                 {
                     AccessToken = session.AccessToken;
@@ -98,14 +98,14 @@ namespace OtterWorks.Desktop.Services
         {
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(_storePath));
+                Directory.CreateDirectory(Path.GetDirectoryName(_storePath)!);
                 var session = new PersistedSession
                 {
                     AccessToken = AccessToken,
                     RefreshToken = RefreshToken,
                     User = User,
                 };
-                byte[] plainBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(session));
+                byte[] plainBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(session, JsonDefaults.Options));
                 byte[] protectedBytes = ProtectedData.Protect(plainBytes, null, DataProtectionScope.CurrentUser);
                 File.WriteAllBytes(_storePath, protectedBytes);
             }
@@ -132,11 +132,11 @@ namespace OtterWorks.Desktop.Services
 
         private class PersistedSession
         {
-            public string AccessToken { get; set; }
+            public string? AccessToken { get; set; }
 
-            public string RefreshToken { get; set; }
+            public string? RefreshToken { get; set; }
 
-            public AuthUser User { get; set; }
+            public AuthUser? User { get; set; }
         }
     }
 }
