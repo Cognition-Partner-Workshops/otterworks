@@ -48,6 +48,14 @@ impl EventPublisher {
         }
     }
 
+    #[cfg(test)]
+    pub fn disabled(client: aws_sdk_sns::Client) -> Self {
+        Self {
+            client,
+            topic_arn: None,
+        }
+    }
+
     async fn publish(&self, event: &FileEvent) -> Result<(), ServiceError> {
         let topic_arn = match &self.topic_arn {
             Some(arn) => arn,
