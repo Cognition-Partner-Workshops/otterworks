@@ -44,6 +44,16 @@ runs the repo's `scripts/deploy-tenant.sh` / `teardown-tenant.sh` / `inject-bug.
 `RUNNER_IMAGE`, carrying `CONTROL_TABLE` / `TENANT_ID` / `TENANT_BRANCH` etc. as env. Secrets
 are referenced via `secretKeyRef` (never placed on argv).
 
+Every Job carries `activeDeadlineSeconds` (`RUNNER_JOB_DEADLINE_SECONDS`, default 5400) so a
+wedged runner cannot hold the per-tenant "deploy already running" guard forever. The runner
+gets `RUNNER_OP_TIMEOUT_SECONDS` (deadline − 300s) and stops `deploy-tenant.sh` there, so a
+timed-out deploy is recorded as `status=error` + `deploy_fail` instead of being killed while
+still `deploying`. Control-table calls use explicit SDK timeouts (3s connect / 5s request)
+and at most 3 attempts in the SDK's standard retry mode.
+
+Tests: `npm test` (vitest) here, and `bash demo-platform/runner/tests/entrypoint-deploy.test.sh`
+for the runner's deploy status bookkeeping.
+
 ## Docker
 
 Multi-stage `Dockerfile` (node:20-alpine, `output: 'standalone'`) builds a minimal runnable

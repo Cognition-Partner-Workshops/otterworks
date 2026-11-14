@@ -26,18 +26,13 @@ pub struct MetadataClient {
 
 impl MetadataClient {
     pub async fn new(config: &AwsConfig) -> Self {
-        let mut aws_config_builder = aws_config::defaults(aws_config::BehaviorVersion::latest())
-            .region(aws_config::Region::new(config.region.clone()));
+        let sdk_config = config.sdk_config_loader().load().await;
+        Self::from_sdk_config(&sdk_config, config)
+    }
 
-        if let Some(endpoint) = &config.endpoint_url {
-            aws_config_builder = aws_config_builder.endpoint_url(endpoint);
-        }
-
-        let aws_config = aws_config_builder.load().await;
-        let client = aws_sdk_dynamodb::Client::new(&aws_config);
-
+    pub fn from_sdk_config(sdk_config: &aws_config::SdkConfig, config: &AwsConfig) -> Self {
         Self {
-            client,
+            client: aws_sdk_dynamodb::Client::new(sdk_config),
             files_table: config.dynamodb_table.clone(),
             folders_table: config.dynamodb_folders_table.clone(),
             versions_table: config.dynamodb_versions_table.clone(),
@@ -479,6 +474,18 @@ impl MetadataClient {
         Ok(())
     }
 
+    pub async fn delete_version(&self, file_id: &Uuid, version: u32) -> Result<(), ServiceError> {
+        self.client
+            .delete_item()
+            .table_name(&self.versions_table)
+            .key("file_id", AttributeValue::S(file_id.to_string()))
+            .key("version", AttributeValue::N(version.to_string()))
+            .send()
+            .await
+            .map_err(|e| ServiceError::DynamoError(e.to_string()))?;
+        Ok(())
+    }
+
     pub async fn list_versions(&self, file_id: &Uuid) -> Result<Vec<FileVersion>, ServiceError> {
         let result = self
             .client
@@ -502,38 +509,50 @@ impl MetadataClient {
     // -- File Shares --
 
     pub async fn put_share(&self, share: &FileShare) -> Result<(), ServiceError> {
-        let mut item = std::collections::HashMap::new();
-        item.insert("id".into(), AttributeValue::S(share.id.to_string()));
-        item.insert(
-            "file_id".into(),
-            AttributeValue::S(share.file_id.to_string()),
-        );
-        item.insert(
-            "shared_with".into(),
-            AttributeValue::S(share.shared_with.to_string()),
-        );
-        item.insert(
-            "permission".into(),
-            AttributeValue::S(share.permission.to_string()),
-        );
-        item.insert(
-            "shared_by".into(),
-            AttributeValue::S(share.shared_by.to_string()),
-        );
-        item.insert(
-            "created_at".into(),
-            AttributeValue::S(share.created_at.to_rfc3339()),
-        );
-
         self.client
             .put_item()
             .table_name(&self.shares_table)
-            .set_item(Some(item))
+            .set_item(Some(share_item(share)))
             .send()
             .await
             .map_err(|e| ServiceError::DynamoError(e.to_string()))?;
 
         Ok(())
+    }
+
+    /// Insert a share only if no item with the same id exists. Returns `false`
+    /// when another request already created it.
+    pub async fn put_share_if_absent(&self, share: &FileShare) -> Result<bool, ServiceError> {
+        match self
+            .client
+            .put_item()
+            .table_name(&self.shares_table)
+            .set_item(Some(share_item(share)))
+            .condition_expression("attribute_not_exists(id)")
+            .send()
+            .await
+        {
+            Ok(_) => Ok(true),
+            Err(e) if is_conditional_check_failed(&e) => Ok(false),
+            Err(e) => Err(ServiceError::DynamoError(e.to_string())),
+        }
+    }
+
+    pub async fn get_share(&self, share_id: &Uuid) -> Result<FileShare, ServiceError> {
+        let result = self
+            .client
+            .get_item()
+            .table_name(&self.shares_table)
+            .key("id", AttributeValue::S(share_id.to_string()))
+            .consistent_read(true)
+            .send()
+            .await
+            .map_err(|e| ServiceError::DynamoError(e.to_string()))?;
+
+        let item = result
+            .item()
+            .ok_or_else(|| ServiceError::ShareNotFound(share_id.to_string()))?;
+        parse_file_share(item)
     }
 
     pub async fn find_existing_share(
@@ -638,6 +657,32 @@ impl MetadataClient {
 }
 
 // -- Parsing helpers --
+
+fn share_item(share: &FileShare) -> std::collections::HashMap<String, AttributeValue> {
+    let mut item = std::collections::HashMap::new();
+    item.insert("id".into(), AttributeValue::S(share.id.to_string()));
+    item.insert(
+        "file_id".into(),
+        AttributeValue::S(share.file_id.to_string()),
+    );
+    item.insert(
+        "shared_with".into(),
+        AttributeValue::S(share.shared_with.to_string()),
+    );
+    item.insert(
+        "permission".into(),
+        AttributeValue::S(share.permission.to_string()),
+    );
+    item.insert(
+        "shared_by".into(),
+        AttributeValue::S(share.shared_by.to_string()),
+    );
+    item.insert(
+        "created_at".into(),
+        AttributeValue::S(share.created_at.to_rfc3339()),
+    );
+    item
+}
 
 fn get_s(
     item: &std::collections::HashMap<String, AttributeValue>,

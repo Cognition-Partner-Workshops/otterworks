@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock, patch
+
 
 class TestIndexDocumentEndpoint:
     """Tests for POST /api/v1/search/index/document."""
@@ -103,8 +105,11 @@ class TestReindexEndpoint:
     """Tests for POST /api/v1/search/reindex."""
 
     def test_reindex_success(self, client, mock_meilisearch_client):
-        """Reindex returns 200."""
-        response = client.post("/api/v1/search/reindex")
+        """Reindex returns 200 when both source services are readable."""
+        empty_page = MagicMock(status_code=200)
+        empty_page.json.return_value = {"items": []}
+        with patch("app.services.indexer.requests.get", return_value=empty_page):
+            response = client.post("/api/v1/search/reindex")
         assert response.status_code == 200
         data = response.get_json()
         assert data["status"] == "reindexed"

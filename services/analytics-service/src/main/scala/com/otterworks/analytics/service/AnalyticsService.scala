@@ -27,6 +27,11 @@ class AnalyticsService(repository: MetricsRepository)(using ec: ExecutionContext
     logger.info("Tracking event: type={}, user={}, resource={}", event.eventType, event.userId, event.resourceId)
     repository.storeEvent(event).map(_ => event)
 
+  /** Persist an already-identified event (e.g. from SQS); storing the same eventId twice is a no-op. */
+  def ingestEvent(event: AnalyticsEvent): Future[AnalyticsEvent] =
+    logger.info("Ingesting event {}: type={}, user={}, resource={}", event.eventId, event.eventType, event.userId, event.resourceId)
+    repository.storeEvent(event).map(_ => event)
+
   /** Get aggregated dashboard metrics for the given period. */
   def getDashboardSummary(period: String): Future[DashboardSummary] =
     logger.debug("Fetching dashboard summary for period={}", period)

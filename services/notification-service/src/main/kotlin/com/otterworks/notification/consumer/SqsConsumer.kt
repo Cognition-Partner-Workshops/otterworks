@@ -2,16 +2,20 @@ package com.otterworks.notification.consumer
 
 import aws.sdk.kotlin.services.sqs.SqsClient
 import aws.sdk.kotlin.services.sqs.model.DeleteMessageRequest
+import aws.sdk.kotlin.services.sqs.model.Message
 import aws.sdk.kotlin.services.sqs.model.ReceiveMessageRequest
 import com.otterworks.notification.config.AppConfig
 import com.otterworks.notification.model.SqsNotificationMessage
 import com.otterworks.notification.service.NotificationService
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import redis.clients.jedis.JedisPool
@@ -65,52 +69,79 @@ class SqsConsumer(
 
         while (isActive) {
             try {
-                val request = ReceiveMessageRequest {
-                    queueUrl = config.sqsQueueUrl
-                    maxNumberOfMessages = config.sqsMaxMessages
-                    waitTimeSeconds = config.sqsWaitTimeSeconds
-                }
-
-                val response = sqsClient.receiveMessage(request)
-                val messages = response.messages ?: emptyList()
-
-                if (messages.isNotEmpty()) {
-                    logger.info { "Received ${messages.size} messages from SQS" }
-                }
-
-                for (msg in messages) {
-                    launch {
-                        try {
-                            val body = msg.body ?: return@launch
-                            val event = parseMessage(body)
-
-                            if (event != null) {
-                                notificationService.processEvent(event)
-
-                                val deleteRequest = DeleteMessageRequest {
-                                    queueUrl = config.sqsQueueUrl
-                                    receiptHandle = msg.receiptHandle
-                                }
-                                sqsClient.deleteMessage(deleteRequest)
-                                logger.debug { "Deleted SQS message: ${msg.messageId}" }
-                            } else {
-                                processingErrorsCounter?.increment()
-                                logger.warn { "Failed to parse SQS message: ${msg.messageId}" }
-                            }
-                        } catch (e: Exception) {
-                            logger.error(e) { "Error processing SQS message: ${msg.messageId}" }
-                        }
-                    }
-                }
-
-                if (messages.isEmpty()) {
+                if (pollOnce() == 0) {
                     delay(config.sqsPollIntervalMs)
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 logger.error(e) { "Error polling SQS" }
                 delay(config.sqsPollIntervalMs * 2)
             }
         }
+    }
+
+    /**
+     * Receives one batch and waits for every message in it to finish before returning, so at most
+     * [AppConfig.sqsMaxMessages] messages are in flight and none outlives its visibility timeout.
+     */
+    internal suspend fun pollOnce(): Int {
+        val request = ReceiveMessageRequest {
+            queueUrl = config.sqsQueueUrl
+            maxNumberOfMessages = config.sqsMaxMessages
+            waitTimeSeconds = config.sqsWaitTimeSeconds
+        }
+
+        val messages = sqsClient.receiveMessage(request).messages ?: emptyList()
+        if (messages.isNotEmpty()) {
+            logger.info { "Received ${messages.size} messages from SQS" }
+        }
+
+        coroutineScope {
+            for (msg in messages) {
+                launch { handleMessage(msg) }
+            }
+        }
+        return messages.size
+    }
+
+    private suspend fun handleMessage(msg: Message) {
+        try {
+            val body = msg.body ?: return
+            val event = parseMessage(body)
+
+            if (event != null) {
+                val idempotencyKey = snsMessageId(body) ?: msg.messageId
+                withTimeout(config.sqsMessageProcessingTimeoutMs) {
+                    notificationService.processEvent(event, idempotencyKey)
+                }
+
+                val deleteRequest = DeleteMessageRequest {
+                    queueUrl = config.sqsQueueUrl
+                    receiptHandle = msg.receiptHandle
+                }
+                sqsClient.deleteMessage(deleteRequest)
+                logger.debug { "Deleted SQS message: ${msg.messageId}" }
+            } else {
+                processingErrorsCounter?.increment()
+                logger.warn { "Failed to parse SQS message: ${msg.messageId}" }
+            }
+        } catch (e: TimeoutCancellationException) {
+            logger.error {
+                "Processing SQS message ${msg.messageId} exceeded ${config.sqsMessageProcessingTimeoutMs}ms; " +
+                    "leaving it for redelivery"
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            logger.error(e) { "Error processing SQS message: ${msg.messageId}" }
+        }
+    }
+
+    private fun snsMessageId(body: String): String? = try {
+        json.decodeFromString<SnsEnvelope>(body).MessageId.ifBlank { null }
+    } catch (_: Exception) {
+        null
     }
 
     internal fun parseMessage(body: String): SqsNotificationMessage? {

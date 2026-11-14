@@ -23,6 +23,14 @@ export const env = {
   get runnerImage(): string | undefined {
     return process.env.RUNNER_IMAGE;
   },
+  // Hard wall-clock cap on a runner Job (Kubernetes activeDeadlineSeconds).
+  // Without it a wedged runner never finishes, and redeploy refuses forever
+  // because a deploy Job is still "running". The runner bounds its own deploy
+  // step below this (RUNNER_OP_TIMEOUT_SECONDS) so it can record the failure.
+  get runnerJobDeadlineSeconds(): number {
+    const n = Number(process.env.RUNNER_JOB_DEADLINE_SECONDS);
+    return Number.isInteger(n) && n > 0 ? n : 5400;
+  },
   get serviceAccount(): string {
     return process.env.DASHBOARD_SERVICE_ACCOUNT || "demo-ops-dashboard";
   },

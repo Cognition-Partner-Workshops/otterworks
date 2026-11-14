@@ -223,6 +223,7 @@ def test_db2_sqlcode_surfaces_on_purge_after_retries_exhausted(
         stage.run(ctx)
     slept: list[float] = []
     monkeypatch.setattr(purge, "_sleep", slept.append)
+    monkeypatch.setattr(purge, "_jitter", lambda lo, hi: hi)  # pin jitter to the cap for determinism
     seed.source.fail_delete_for.add("FA000000000000000001".ljust(20))
     code, _ = execute(ctx, "purge")
     assert code == 1
@@ -256,6 +257,7 @@ def test_transient_source_pressure_retries_batch_then_purges(
     monkeypatch.setattr(source, "purge_batch", flaky)
     slept: list[float] = []
     monkeypatch.setattr(purge, "_sleep", slept.append)
+    monkeypatch.setattr(purge, "_jitter", lambda lo, hi: hi)  # pin jitter to the cap for determinism
     code, tables = execute(ctx, "purge")
     assert code == 0, tables
     assert log_full["remaining"] == 0 and slept == [5.0, 10.0]

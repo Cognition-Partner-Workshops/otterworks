@@ -44,7 +44,9 @@ public class AnnouncementsHandler implements RequestStreamHandler {
     }
 
     private static Dispatcher defaultDispatcher() {
-        RdsDataClient client = RdsDataClient.builder().build();
+        RdsDataClient client = RdsDataClient.builder()
+                .overrideConfiguration(DataApiAnnouncementRepository.clientOverrides())
+                .build();
         DataApiAnnouncementRepository repository = new DataApiAnnouncementRepository(
                 client,
                 System.getenv("CLUSTER_ARN"),

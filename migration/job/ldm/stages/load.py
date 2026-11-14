@@ -123,14 +123,18 @@ def load_range(ctx: RunContext, ts: TableSpec, rng: KeyRange) -> tuple[int, int]
     lrecl = ts.config.record_length
 
     loaded = rejected = 0
+    batch_no = 0
     seen_keys: set[str] = set()
     batch: list[StagedRow] = []
     rejects: list[Reject] = []
 
     def flush() -> None:
-        nonlocal loaded, rejected
+        nonlocal loaded, rejected, batch_no
         if not batch:
             return
+        batch_no += 1
+        for r in batch:
+            r.batch_no = batch_no
         failures = ctx.target.insert_staging(ctx.run_id, ctx.namespace, ts.name, batch)
         failed_keys = {f.source_key for f in failures}
         loaded += len(batch) - len(failed_keys)

@@ -43,6 +43,8 @@ for arg in "$@"; do
     --skip-platform)  SKIP_PLATFORM=true ;;
     --skip-terraform) SKIP_TERRAFORM=true ;;
     --skip-build)     SKIP_BUILD=true ;;
+    -h|--help)        sed -n '2,13p' "$0"; exit 0 ;;
+    *) echo "[deploy] unknown option: $arg (see --help)" >&2; exit 2 ;;
   esac
 done
 
@@ -88,6 +90,12 @@ command -v helm >/dev/null 2>&1      || { err "helm not found"; exit 1; }
 command -v kubectl >/dev/null 2>&1   || { err "kubectl not found"; exit 1; }
 command -v terraform >/dev/null 2>&1 || { err "terraform not found"; exit 1; }
 command -v jq >/dev/null 2>&1        || { err "jq not found (required to read IRSA role ARNs from Terraform outputs)"; exit 1; }
+
+# Fail before the platform apply, not between it and the application apply.
+if [ "${SKIP_TERRAFORM}" = false ] && [ -z "${DB_PASSWORD}" ]; then
+  err "DB_PASSWORD must be set when running Terraform (or pass --skip-terraform)"
+  exit 1
+fi
 
 # ---------- Step 1: Provision Platform (VPC, EKS, ECR) ----------
 

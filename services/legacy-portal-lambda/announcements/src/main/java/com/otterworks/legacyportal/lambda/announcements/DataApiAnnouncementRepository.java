@@ -1,5 +1,6 @@
 package com.otterworks.legacyportal.lambda.announcements;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -9,8 +10,11 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.services.rdsdata.RdsDataClient;
+import software.amazon.awssdk.services.rdsdata.model.DatabaseResumingException;
 import software.amazon.awssdk.services.rdsdata.model.ExecuteStatementRequest;
 import software.amazon.awssdk.services.rdsdata.model.ExecuteStatementResponse;
 import software.amazon.awssdk.services.rdsdata.model.Field;
@@ -37,19 +41,57 @@ public class DataApiAnnouncementRepository implements AnnouncementRepository {
             .optionalEnd()
             .toFormatter();
 
+    // Retry window for a paused cluster plus one call must stay under the 29 s Lambda timeout.
+    static final long RETRY_WINDOW_NANOS = 20_000_000_000L;
+    static final Duration API_CALL_TIMEOUT = Duration.ofSeconds(8);
+    static final long MAX_DELAY_MILLIS = 3_000;
+
+    interface RetryClock {
+        long nanoTime();
+
+        void sleep(long nanos) throws InterruptedException;
+    }
+
+    static final RetryClock SYSTEM_CLOCK = new RetryClock() {
+        @Override
+        public long nanoTime() {
+            return System.nanoTime();
+        }
+
+        @Override
+        public void sleep(long nanos) throws InterruptedException {
+            Thread.sleep(nanos / 1_000_000L, (int) (nanos % 1_000_000L));
+        }
+    };
+
     private final RdsDataClient client;
     private final String clusterArn;
     private final String secretArn;
     private final String database;
     private final String table;
+    private final RetryClock clock;
 
     public DataApiAnnouncementRepository(RdsDataClient client, String clusterArn, String secretArn,
             String database, String schema) {
+        this(client, clusterArn, secretArn, database, schema, SYSTEM_CLOCK);
+    }
+
+    DataApiAnnouncementRepository(RdsDataClient client, String clusterArn, String secretArn,
+            String database, String schema, RetryClock clock) {
+        this.clock = clock;
         this.client = client;
         this.clusterArn = clusterArn;
         this.secretArn = secretArn;
         this.database = database;
         this.table = schema + ".announcement";
+    }
+
+    /**
+     * Total deadline per ExecuteStatement including SDK retries. No per-attempt timeout: the
+     * SDK retries attempt timeouts, which could run a committed INSERT a second time.
+     */
+    public static ClientOverrideConfiguration clientOverrides() {
+        return ClientOverrideConfiguration.builder().apiCallTimeout(API_CALL_TIMEOUT).build();
     }
 
     @Override
@@ -146,23 +188,30 @@ public class DataApiAnnouncementRepository implements AnnouncementRepository {
                 .parameters(parameters)
                 .build();
         // Aurora Serverless v2 can be paused at 0 ACU; the Data API answers
-        // DatabaseResumingException until the cluster is warm again.
-        long deadline = System.nanoTime() + 20_000_000_000L;
+        // DatabaseResumingException (statement not run) until the cluster is warm again.
+        long started = clock.nanoTime();
         int attempt = 0;
         while (true) {
             try {
                 return client.executeStatement(request);
-            } catch (software.amazon.awssdk.services.rdsdata.model.DatabaseResumingException e) {
-                if (System.nanoTime() >= deadline) {
+            } catch (DatabaseResumingException e) {
+                long remaining = RETRY_WINDOW_NANOS - (clock.nanoTime() - started);
+                if (remaining <= 0) {
                     throw e;
                 }
                 try {
-                    Thread.sleep(Math.min(500L * ++attempt, 3000L));
+                    clock.sleep(Math.min(remaining, backoffMillis(++attempt) * 1_000_000L));
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     throw e;
                 }
             }
         }
+    }
+
+    /** Linear growth capped at 3 s, with equal jitter so cold-start callers spread out. */
+    static long backoffMillis(int attempt) {
+        long ceiling = Math.min(500L * attempt, MAX_DELAY_MILLIS);
+        return ceiling / 2 + ThreadLocalRandom.current().nextLong(ceiling / 2 + 1);
     }
 }

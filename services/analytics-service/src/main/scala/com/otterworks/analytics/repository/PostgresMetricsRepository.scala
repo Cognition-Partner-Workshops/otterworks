@@ -68,7 +68,8 @@ class PostgresMetricsRepository(db: AnalyticsDb)(using ec: ExecutionContext) ext
       sqlu"""INSERT INTO analytics_events
                (event_id, event_type, user_id, resource_id, resource_type, metadata, occurred_at)
              VALUES (${event.eventId}, ${event.eventType}, ${event.userId}, ${event.resourceId},
-                     ${event.resourceType}, ${encodeMetadata(event.metadata)}, ${occurred})"""
+                     ${event.resourceType}, ${encodeMetadata(event.metadata)}, ${occurred})
+           ON CONFLICT (event_id) DO NOTHING"""
     val upsertRollup =
       sqlu"""INSERT INTO analytics_daily_metrics (event_date, event_type, event_count)
              VALUES (${day}::date, ${event.eventType}, 1)
@@ -76,7 +77,11 @@ class PostgresMetricsRepository(db: AnalyticsDb)(using ec: ExecutionContext) ext
              DO UPDATE SET event_count = analytics_daily_metrics.event_count + 1,
                            updated_at = NOW()"""
     db.database
-      .run(DBIO.seq(insertEvent, upsertRollup).transactionally)
+      .run(
+        insertEvent
+          .flatMap(inserted => if inserted > 0 then upsertRollup else DBIO.successful(0))
+          .transactionally
+      )
       .map { _ =>
         logger.debug("Stored event {} of type {}", event.eventId, event.eventType)
       }

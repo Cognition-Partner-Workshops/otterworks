@@ -62,6 +62,9 @@ def main():
     max_messages = 10000  # hardcoded limit
     batch_size = 10
     consecutive_errors = 0
+    # Messages stay hidden until the data lake load commits; only then are they deleted.
+    visibility_timeout_seconds = 3600
+    receipt_handles = {}
 
     print("[%s] Polling SQS queue: %s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), sqs_queue_url))
 
@@ -71,6 +74,7 @@ def main():
                 QueueUrl=sqs_queue_url,
                 MaxNumberOfMessages=batch_size,
                 WaitTimeSeconds=5,
+                VisibilityTimeout=visibility_timeout_seconds,
                 AttributeNames=["All"],
                 MessageAttributeNames=["All"],
             )
@@ -89,20 +93,18 @@ def main():
             print("[%s] No more messages after %d processed" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), messages_processed))
             break
 
-        entries_to_delete = []
         for msg in messages:
+            if msg["MessageId"] in receipt_handles:
+                # Redelivered within this run: keep the newest receipt handle, count the event once.
+                receipt_handles[msg["MessageId"]] = msg["ReceiptHandle"]
+                continue
             try:
                 event = json.loads(msg["Body"])
                 all_sqs_events.append(event)
-                entries_to_delete.append(
-                    {"Id": msg["MessageId"], "ReceiptHandle": msg["ReceiptHandle"]}
-                )
+                receipt_handles[msg["MessageId"]] = msg["ReceiptHandle"]
             except:
                 # TODO ETL-103: Add dead-letter queue for malformed messages (2020-01-08)
                 pass
-
-        if entries_to_delete:
-            sqs_client.delete_message_batch(QueueUrl=sqs_queue_url, Entries=entries_to_delete)
 
         messages_processed += len(messages)
 
@@ -336,6 +338,21 @@ def main():
     )
 
     print("[%s] Loaded analytics data to s3://%s/%s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), data_lake_bucket, partition_key))
+
+    # ---- Acknowledge SQS messages now that the data lake load has committed ----
+    entries_to_delete = [
+        {"Id": message_id, "ReceiptHandle": handle} for message_id, handle in receipt_handles.items()
+    ]
+    failed_deletes = 0
+    for start in range(0, len(entries_to_delete), batch_size):
+        delete_response = sqs_client.delete_message_batch(
+            QueueUrl=sqs_queue_url, Entries=entries_to_delete[start:start + batch_size]
+        )
+        failed_deletes += len(delete_response.get("Failed", []))
+    if failed_deletes:
+        print("[%s] WARNING: %d SQS messages not deleted; they will be redelivered" % (
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"), failed_deletes
+        ))
 
     # ---- Upsert PostgreSQL aggregates ----
     print("[%s] Connecting to PostgreSQL at %s:%d/%s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), db_host, db_port, db_name))

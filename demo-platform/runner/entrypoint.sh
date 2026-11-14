@@ -30,6 +30,8 @@
 #   REPO_DIR      checked-out repo path                   (default /workspace)
 #   REPO_REMOTE   git remote name                         (default origin)
 #   ACTOR         audit actor label                       (default runner)
+#   RUNNER_OP_TIMEOUT_SECONDS  wall-clock cap on deploy-tenant.sh (default unbounded;
+#                 the dashboard sets it below the Job's activeDeadlineSeconds)
 #
 # Secrets (from Kubernetes Secret refs in the Job spec — env only, NEVER argv):
 #   DB_PASSWORD, JWT_SECRET, SECRET_KEY_BASE
@@ -148,13 +150,29 @@ run_deploy() {
   [ -n "${TENANT_BRANCH:-}" ] && args+=(--branch "${TENANT_BRANCH}")
   # Secrets (DB_PASSWORD/JWT_SECRET/SECRET_KEY_BASE) are read from the env by the
   # script; they are NOT placed on this argv.
-  if "${REPO_DIR}/scripts/deploy-tenant.sh" "${TENANT_ID}" "${args[@]}"; then
+  # Bound the deploy below the Job's activeDeadlineSeconds: if Kubernetes kills
+  # the pod first, nothing records the failure and the tenant sits in
+  # "deploying" until its TTL lapses.
+  local deploy=("${REPO_DIR}/scripts/deploy-tenant.sh")
+  local op_timeout="${RUNNER_OP_TIMEOUT_SECONDS:-}"
+  if [[ "${op_timeout}" =~ ^[1-9][0-9]*$ ]]; then
+    deploy=(timeout --kill-after=30 "${op_timeout}" "${deploy[@]}")
+  else
+    op_timeout=""
+  fi
+  local rc=0
+  "${deploy[@]}" "${TENANT_ID}" "${args[@]}" || rc=$?
+  if [ "${rc}" -eq 0 ]; then
     ctl_set_active "${TENANT_ID}" "${url}" "${api_url}" "${db}" "${ns}" "${exp}"
     ctl_audit "${TENANT_ID}" deploy_ok "url=${url}"
     log "deploy complete for ${TENANT_ID} (${ns})"
   else
     ctl_update_status "${TENANT_ID}" error
-    ctl_audit "${TENANT_ID}" deploy_fail "deploy-tenant.sh returned non-zero"
+    if [ -n "${op_timeout}" ] && { [ "${rc}" -eq 124 ] || [ "${rc}" -eq 137 ]; }; then
+      ctl_audit "${TENANT_ID}" deploy_fail "deploy-tenant.sh timed out after ${op_timeout}s"
+    else
+      ctl_audit "${TENANT_ID}" deploy_fail "deploy-tenant.sh returned non-zero"
+    fi
     die "deploy failed for ${TENANT_ID}"
   fi
 }

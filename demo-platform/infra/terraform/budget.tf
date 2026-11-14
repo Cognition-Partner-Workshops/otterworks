@@ -13,7 +13,7 @@
 # ------------------------------------------------------------------------------
 
 resource "aws_budgets_budget" "monthly" {
-  count = var.budget_alert_emails != null && length(var.budget_alert_emails) > 0 ? 1 : 0
+  count = length(var.budget_alert_emails) > 0 ? 1 : 0
 
   name         = "otterworks-${var.environment}-monthly"
   budget_type  = "COST"

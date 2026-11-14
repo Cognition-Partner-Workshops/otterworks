@@ -322,7 +322,12 @@ export class TicketService {
       }
     }
     const result = await dispatch(project, t, this.dispatchOpts);
-    await this.store.addDelivery(result.delivery);
+    try {
+      await this.store.addDelivery(result.delivery);
+    } catch (err) {
+      // The delivery is an audit row; losing it must not orphan a session Devin already started.
+      console.error(`otter-projects: failed to record delivery for ${t.key}`, err);
+    }
 
     const fresh = (await this.store.getTicket(t.key)) ?? t;
     fresh.devin = { ...fresh.devin, dispatcher: project.dispatcher, dispatchedAt: Date.now() };
@@ -393,7 +398,8 @@ export class TicketService {
         devin.lastMessage = message.slice(0, 500);
         devin.lastMessageAt = at;
         await this.store.addComment({
-          id: crypto.randomUUID(),
+          // Deterministic so concurrent deliveries of one message overwrite instead of duplicating.
+          id: `devin-msg-${id}`,
           ticketKey: t.key,
           author: actor,
           body: message,

@@ -73,7 +73,9 @@ class MeiliSearchService:
 
     def __init__(self, config: MeiliSearchConfig) -> None:
         self.config = config
-        self.client = meilisearch.Client(config.url, config.api_key or None)
+        self.client = meilisearch.Client(
+            config.url, config.api_key or None, timeout=config.timeout_seconds
+        )
         self.documents_index_name = config.documents_index
         self.files_index_name = config.files_index
 

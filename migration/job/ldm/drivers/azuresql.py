@@ -104,11 +104,13 @@ class AzureSqlTarget:
         *,
         host: str = "local",
         driver: str = "ODBC Driver 18 for SQL Server",
+        query_timeout: int = 600,
     ):
         self.server, self.database, self.auth = server, database, auth
         self.user, self.password, self.client_id = user, password, client_id
         self.host = host
         self.driver = driver
+        self.query_timeout = query_timeout
         self._pyodbc: ModuleType | None = None
         self._conn: object | None = None
         self.shapes: dict[str, _Shape] = {}
@@ -142,6 +144,10 @@ class AzureSqlTarget:
             return
         try:
             self._conn = self.pyodbc.connect(self.connection_string(), autocommit=True, timeout=30)
+            # The connect() timeout only bounds the login; a statement-level deadline keeps a stalled
+            # query from pinning the Job forever (pyodbc.timeout applies to every cursor op).
+            if self.query_timeout > 0:
+                self._conn.timeout = self.query_timeout
         except self.pyodbc.Error as e:
             raise TargetError(*parse_odbc_error(e)) from e
 
@@ -487,7 +493,15 @@ class AzureSqlTarget:
 
     def _staging_params(self, run_id: str, namespace: str, row: StagedRow, columns: Sequence[str]) -> list[object]:
         seq = row.key_range_seq if row.key_range_seq is not None else 0
-        return [run_id, namespace, row.source_key, seq, 0, row.raw_bytes, *(bind_value(row.values[c]) for c in columns)]
+        return [
+            run_id,
+            namespace,
+            row.source_key,
+            seq,
+            row.batch_no,
+            row.raw_bytes,
+            *(bind_value(row.values[c]) for c in columns),
+        ]
 
     def insert_staging(self, run_id: str, namespace: str, table: str, rows: Sequence[StagedRow]) -> list[InsertFailure]:
         if not rows:

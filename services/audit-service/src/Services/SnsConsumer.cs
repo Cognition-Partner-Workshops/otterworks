@@ -15,6 +15,7 @@ public class SnsConsumer : BackgroundService
     private readonly IAuditRepository _repository;
     private readonly AwsSettings _settings;
     private readonly ILogger<SnsConsumer> _logger;
+    private const double MaxInitRetryDelaySeconds = 60;
     private string? _queueUrl;
 
     public SnsConsumer(
@@ -33,13 +34,9 @@ public class SnsConsumer : BackgroundService
     {
         _logger.LogInformation("SNS Consumer starting, waiting for audit events...");
 
-        try
+        _queueUrl = await InitializeQueueUrlAsync(stoppingToken);
+        if (_queueUrl is null)
         {
-            _queueUrl = await GetOrCreateQueueUrlAsync(stoppingToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to initialize SQS queue. SNS Consumer will not process messages");
             return;
         }
 
@@ -73,6 +70,43 @@ public class SnsConsumer : BackgroundService
         }
 
         _logger.LogInformation("SNS Consumer stopping");
+    }
+
+    protected virtual Task DelayAsync(TimeSpan delay, CancellationToken ct) => Task.Delay(delay, ct);
+
+    protected static TimeSpan InitRetryDelay(int attempt)
+    {
+        var capSeconds = Math.Min(MaxInitRetryDelaySeconds, Math.Pow(2, Math.Min(attempt, 10) - 1));
+        return TimeSpan.FromSeconds(capSeconds * (0.5 + (Random.Shared.NextDouble() / 2)));
+    }
+
+    private async Task<string?> InitializeQueueUrlAsync(CancellationToken ct)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                return await GetOrCreateQueueUrlAsync(ct);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                return null;
+            }
+            catch (Exception ex)
+            {
+                var delay = InitRetryDelay(attempt);
+                _logger.LogWarning(ex, "Failed to initialize SQS queue (attempt {Attempt}); retrying in {Delay}",
+                    attempt, delay);
+                try
+                {
+                    await DelayAsync(delay, ct);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    return null;
+                }
+            }
+        }
     }
 
     private async Task<string> GetOrCreateQueueUrlAsync(CancellationToken ct)
@@ -133,8 +167,9 @@ public class SnsConsumer : BackgroundService
 
             if (auditEvent is null)
             {
-                _logger.LogWarning("Failed to deserialize audit event from message {MessageId}", message.MessageId);
-                await _sqsClient.DeleteMessageAsync(_queueUrl, message.ReceiptHandle, ct);
+                _logger.LogWarning(
+                    "Failed to deserialize audit event from message {MessageId}; leaving it for SQS redrive",
+                    message.MessageId);
                 return;
             }
 

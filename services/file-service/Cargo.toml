@@ -11,7 +11,7 @@ actix-rt = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["full"] }
-uuid = { version = "1", features = ["v4", "serde"] }
+uuid = { version = "1", features = ["v4", "v5", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
@@ -39,3 +39,6 @@ redis = { version = "0.25", features = ["tokio-comp", "connection-manager"] }
 actix-rt = "2"
 actix-web = "4"
 tokio = { version = "1", features = ["full", "test-util"] }
+aws-smithy-http-client = { version = "1", features = ["test-util"] }
+http = "1"
+aws-smithy-runtime-api = { version = "1", features = ["client"] }

@@ -41,6 +41,13 @@ class _FakeS3:
         self.objects[(Bucket, Key)] = (Body, ContentType)
 
 
+class _FakeConfig:
+    """Enough of botocore.config.Config to capture the store's client settings."""
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+
 @pytest.fixture
 def fake_boto3(monkeypatch: pytest.MonkeyPatch) -> _FakeS3:
     holder: dict[str, _FakeS3] = {}
@@ -55,16 +62,24 @@ def fake_boto3(monkeypatch: pytest.MonkeyPatch) -> _FakeS3:
     botocore = types.ModuleType("botocore")
     exceptions = types.ModuleType("botocore.exceptions")
     exceptions.ClientError = _ClientError  # type: ignore[attr-defined]
+    config_mod = types.ModuleType("botocore.config")
+    config_mod.Config = _FakeConfig  # type: ignore[attr-defined]
     monkeypatch.setitem(sys.modules, "boto3", boto3)
     monkeypatch.setitem(sys.modules, "botocore", botocore)
     monkeypatch.setitem(sys.modules, "botocore.exceptions", exceptions)
+    monkeypatch.setitem(sys.modules, "botocore.config", config_mod)
     return holder  # type: ignore[return-value]
 
 
 def test_s3_round_trip_keeps_bytes_checksum_and_tenant_prefix(tmp_path: Path, fake_boto3) -> None:
     store = S3BlobStore("shared-staging", region="us-east-1", endpoint_url="http://localhost:9000")
     client = fake_boto3["c"]
-    assert client.kwargs == {"region_name": "us-east-1", "endpoint_url": "http://localhost:9000"}
+    assert client.kwargs["region_name"] == "us-east-1"
+    assert client.kwargs["endpoint_url"] == "http://localhost:9000"
+    cfg = client.kwargs["config"]
+    assert cfg.kwargs["retries"]["mode"] == "adaptive" and cfg.kwargs["retries"]["max_attempts"] == 10
+    assert cfg.kwargs["connect_timeout"] == 10 and cfg.kwargs["read_timeout"] == 60
+    assert cfg.kwargs["tcp_keepalive"] is True
     src = tmp_path / "000001.dat"
     src.write_bytes(bytes(range(256)) * 10)
     key = "d24-after/run-1/unload/DOCARCH/000001.dat"

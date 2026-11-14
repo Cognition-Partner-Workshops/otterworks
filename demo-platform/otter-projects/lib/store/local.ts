@@ -114,7 +114,9 @@ export class LocalStore implements Store {
     return this.data.comments.filter((c) => c.ticketKey === ticketKey).sort(byCreated);
   }
   async addComment(comment: Comment): Promise<void> {
-    this.data.comments.push(comment);
+    const i = this.data.comments.findIndex((c) => c.id === comment.id);
+    if (i >= 0) this.data.comments[i] = comment;
+    else this.data.comments.push(comment);
     this.flush();
   }
 
