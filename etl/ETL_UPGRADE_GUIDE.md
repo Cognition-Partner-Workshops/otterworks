@@ -2,13 +2,30 @@
 
 ## Current State (Legacy)
 
-The OtterWorks ETL pipeline consists of five Python scripts executed via system cron on a single EC2 instance. The scripts share a `config.ini` file that contains hardcoded AWS credentials, database passwords, and service URLs in plaintext.
+The OtterWorks ETL pipeline consists of five Python scripts executed via system cron on a single EC2 instance. The scripts share a host-local `config.ini` (non-secret settings such as bucket names and service URLs) loaded through `scripts/etl_config.py`; credentials are supplied as environment variables.
+
+### Configuration and Credentials (ETL-142)
+
+Plaintext credentials used to be committed in `etl/config.ini`. As of ETL-142 the repository only tracks `etl/config.ini.example` (secret fields blank), and `etl/config.ini` is git-ignored. **The database password and MeiliSearch master key that were previously committed must be treated as compromised and rotated**; they remain in git history.
+
+- Copy `config.ini.example` to `/opt/etl/config.ini` (or set `ETL_CONFIG_PATH`) and fill in the non-secret settings.
+- Provide credentials via the environment -- `/opt/etl/.env` (sourced by `run.sh`, mode `0600`, never committed) or a secrets manager that injects env vars:
+
+| Setting | Environment variable | Notes |
+|---------|----------------------|-------|
+| `[database] password` | `ETL_DB_PASSWORD` | Required by `analytics_daily.py` and `user_activity_daily.py` |
+| `[services] meilisearch_api_key` | `MEILISEARCH_API_KEY` | Used by `search_reindex_weekly.py` |
+| `[aws] access_key` / `secret_key` | `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Optional; when unset boto3 uses its default chain (instance profile / IRSA) -- preferred |
+| `[aws] region` | `AWS_REGION` / `AWS_DEFAULT_REGION` | |
+| any `[section] option` | `ETL_<SECTION>_<OPTION>` | e.g. `ETL_DATABASE_HOST` |
+
+Environment variables take precedence over the INI file. A required setting that is missing from both fails the run with an error naming the variable to set. Regression tests: `cd etl && python -m pytest tests`.
 
 ### Problems with the Current Implementation
 
 | Problem | Impact |
 |---------|--------|
-| **Hardcoded credentials in `config.ini`** | Security risk; credentials committed to version control |
+| ~~**Hardcoded credentials in `config.ini`**~~ | Resolved by ETL-142: credentials come from environment variables; exposed secrets must be rotated |
 | **No orchestration** | Cron provides no dependency management, no DAG visibility, no backfill capability |
 | **No retry logic** | Transient AWS/network failures cause silent data loss |
 | **`print()` logging** | No structured logging, no log levels, no correlation IDs; logs go to flat files on disk |
@@ -40,7 +57,7 @@ The OtterWorks ETL pipeline consists of five Python scripts executed via system 
 | Component | Current (Legacy) | Target |
 |-----------|-----------------|--------|
 | Orchestration | System cron | **Apache Airflow 2.8+** |
-| Configuration | `config.ini` with plaintext secrets | **Airflow Variables + Connections** |
+| Configuration | Host-local `config.ini` + credentials from environment variables | **Airflow Variables + Connections** |
 | AWS Access | Raw `boto3` with inline credentials | **Airflow Amazon Provider Hooks** (S3Hook, SqsHook, DynamoDBHook) |
 | Database Access | Raw `psycopg2` with manual connect/close | **Airflow PostgresHook** with connection pooling |
 | Aggregation | `pandas` in-memory | **PySpark** on EMR/Spark cluster |
@@ -95,7 +112,7 @@ The OtterWorks ETL pipeline consists of five Python scripts executed via system 
 
 ### 2. `config.ini` to Airflow Variables + Connections
 
-**Current:** All configuration in a single `config.ini` file, including AWS credentials and database passwords in plaintext.
+**Current:** Non-secret configuration in a host-local `config.ini` (template: `config.ini.example`); credentials read from environment variables via `scripts/etl_config.py` (ETL-142).
 
 **Target:**
 - AWS credentials managed via Airflow Connections (`aws_default`) backed by IAM roles or a secrets backend (AWS Secrets Manager)
@@ -206,4 +223,4 @@ The OtterWorks ETL pipeline consists of five Python scripts executed via system 
 
 8. **Decommission cron** -- Remove cron entries from the EC2 instance. Archive the legacy scripts.
 
-9. **Delete `config.ini`** -- Remove the plaintext credentials file from the repository and rotate all exposed secrets.
+9. **Retire `config.ini`** -- Remove `config.ini.example` and `scripts/etl_config.py` once every value lives in Airflow Variables/Connections. (The plaintext credentials were already removed from the repository by ETL-142; confirm the exposed secrets were rotated.)

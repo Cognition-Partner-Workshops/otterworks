@@ -120,3 +120,8 @@ incident/reports/
 # legacy-portal replay evidence written by replay.py without --out
 services/legacy-portal/parity/out/
 services/legacy-portal-lambda/*/target/
+
+# --- ETL ---
+# Host-local ETL config; only config.ini.example is tracked (ETL-142)
+etl/config.ini
+etl/.env
