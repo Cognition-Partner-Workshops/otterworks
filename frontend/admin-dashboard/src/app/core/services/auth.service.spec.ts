@@ -107,6 +107,16 @@ describe('AuthService', () => {
     expect(service.getToken()!.startsWith('mock-jwt-token-')).toBeTrue();
   }));
 
+  it('should not fall back to a signed JWT when the gateway is offline', fakeAsync(() => {
+    let loggedInUser: AuthUser | undefined;
+    service.login('admin@otterworks.io', 'admin123').subscribe(user => { loggedInUser = user; });
+    gatewayOffline();
+    tick(900);
+    const jwtPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
+    expect(loggedInUser!.token).not.toMatch(jwtPattern);
+    expect(localStorage.getItem('ow_admin_token')).not.toMatch(jwtPattern);
+  }));
+
   it('should reject login with empty password', fakeAsync(() => {
     let error: Error | undefined;
     service.login('admin@otterworks.io', '').subscribe({
