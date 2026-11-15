@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{screens/fragments :: head('Commission statement')}"></head>
+<body>
+<header th:replace="~{screens/fragments :: header}"></header>
+<main>
+  <div th:replace="~{screens/fragments :: nav}"></div>
+  <h2>Agent commission statement</h2>
+  <p>
+    Agent <strong th:text="${agent.agentCode}">AG-100</strong>
+    (id <span th:text="${agent.agentId}">1</span>) <span th:text="${agent.fullName}">name</span>,
+    <span th:text="${agent.status}">ACTIVE</span> &middot;
+    Period <strong th:text="${period}">2026-03</strong>
+  </p>
+  <table id="statement">
+    <thead>
+    <tr>
+      <th>Policy</th><th>Product</th><th class="num">Annual premium</th><th class="num">Rate %</th>
+      <th class="num">Split %</th><th class="num">Commission</th><th>Calculated by (rate_audit_log actor)</th><th>Calculated at</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="r : ${rows}">
+      <td th:text="${r.policyNo}">POL-1</td>
+      <td th:text="${r.productCode}">AUTO-STD</td>
+      <td class="num" th:text="${fmt.money(r.annualPremium)}">1,200.00</td>
+      <td class="num" th:text="${fmt.money(r.ratePct)}">8.50</td>
+      <td class="num" th:text="${fmt.money(r.splitPct)}">100.00</td>
+      <td class="num" th:text="${fmt.money(r.commission)}">8.50</td>
+      <td th:text="${r.calculatedBy}">ledger-run</td>
+      <td th:text="${#temporals.format(r.calculatedAt, 'yyyy-MM-dd HH:mm:ss')}">2026-10-20</td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(rows)}"><td colspan="8">No ledger rows for this agent and period.</td></tr>
+    <tr class="total">
+      <td colspan="5">Period total (<span th:text="${#lists.size(rows)}">0</span> rows)</td>
+      <td class="num" id="total" th:text="${total}">0.00</td>
+      <td colspan="2"></td>
+    </tr>
+    </tbody>
+  </table>
+  <p class="meta" id="provenance">
+    Commission per row: commission_ledger.commission_amt as stored, computed by whoever ran calculate_policy_commission
+    for that policy and period: on ORACLE the COMMISSION_PKG PL/SQL package, on POSTGRES the Java commission-service
+    (the "Calculated by" column is the actor written to rate_audit_log by that run).
+    Period total: exact sum of the rows above, added up by this screen.
+  </p>
+</main>
+</body>
+</html>
