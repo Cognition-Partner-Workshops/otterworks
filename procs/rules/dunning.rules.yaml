@@ -1,0 +1,212 @@
+module: dunning
+rules:
+- id: DUNNING-R01
+  statement: The overdue-accounts list returns every invoice with status 'overdue' whose issued_at, cast
+    to a UTC date, is strictly before as_of, joined to its tenant (tenant_id, invoice_id, total, tenant_status)
+    and ordered by issued_at, then invoice id.
+  source:
+    file: services/legacy-billing/db/procs/dunning.sql
+    lines:
+    - 1
+    - 18
+  inputs:
+  - as_of
+  outputs:
+  - tenant_id
+  - invoice_id
+  - total
+  - tenant_status
+  confidence: high
+  scenarios:
+  - DUNNING-001
+  question: 'Tenant status is not filtered: tenant 2 is already suspended and is still listed. An invoice
+    issued on as_of itself is excluded (strict <). Keep both as legacy behaviour? Recommendation: keep
+    for parity.'
+  decision:
+    status: approved
+    reviewer: Pre-Sales
+    date: '2026-10-07'
+    note: Approved as written; legacy behaviour kept for parity.
+  answer: 'Keep legacy: suspended tenants stay in the list and an invoice issued on as_of is excluded.'
+  tags:
+  - legacy-quirk
+- id: DUNNING-R02
+  statement: days_overdue is as_of minus the UTC date of issued_at in whole days, counted from the issue
+    date with no due date or grace period.
+  source:
+    file: services/legacy-billing/db/procs/dunning.sql
+    lines:
+    - 11
+    - 12
+  inputs:
+  - as_of
+  outputs:
+  - days_overdue
+  confidence: high
+  scenarios:
+  - DUNNING-001
+  question: 'The count starts at the issue date, not at a due date, so an invoice issued yesterday reports
+    1 day overdue. Keep "days since issue" as days_overdue? Recommendation: keep for parity; record a
+    follow-up if finance wants a due-date basis.'
+  decision:
+    status: approved
+    reviewer: Pre-Sales
+    date: '2026-10-07'
+    note: Approved as written; legacy behaviour kept for parity.
+  answer: 'Keep days since issue date as days_overdue. Follow-up: finance to decide whether a due-date
+    basis is wanted.'
+  tags:
+  - legacy-quirk
+  - follow-up
+- id: DUNNING-R03
+  statement: Scheduling processes every invoice with status 'overdue' in issued_at, then id order, with
+    no filter on issue date versus as_of and no filter on tenant status.
+  source:
+    file: services/legacy-billing/db/procs/dunning.sql
+    lines:
+    - 28
+    - 33
+  inputs:
+  - as_of
+  outputs:
+  - schedule_rows
+  confidence: high
+  scenarios:
+  - DUNNING-002
+  - DUNNING-003
+  question: 'An overdue invoice issued after as_of still gets an attempt dated before its issue date (probed:
+    as_of 2026-01-05 schedules invoice 2 issued 2026-02-13), and the already-suspended tenant 2 is still
+    dunned. Looks like a legacy defect. Recommendation: copy legacy for parity and tag suspected-legacy-defect
+    / follow-up.'
+  decision:
+    status: approved
+    reviewer: Pre-Sales
+    date: '2026-10-07'
+    note: Approved as written; legacy behaviour kept for parity.
+  answer: 'Copy legacy for parity: schedule every overdue invoice regardless of issue date or tenant status.
+    Follow-up to fix in a later change.'
+  tags:
+  - suspected-legacy-defect
+  - follow-up
+- id: DUNNING-R04
+  statement: Each scheduling run inserts one new attempt per selected invoice with attempt_no = highest
+    existing attempt_no + 1 (1 when none), status 'scheduled' and id md5(invoice_id::text || attempt_no::text)::uuid,
+    leaving earlier attempts (including 'sent' ones) unchanged; an existing (invoice_id, attempt_no) row
+    is kept as is.
+  source:
+    file: services/legacy-billing/db/procs/dunning.sql
+    lines:
+    - 34
+    - 48
+  inputs:
+  - as_of
+  outputs:
+  - attempt_no
+  - status
+  - schedule_rows
+  confidence: high
+  scenarios:
+  - DUNNING-002
+  - DUNNING-003
+  question: 'Every run appends a new attempt even if the latest attempt is still ''scheduled'' and was
+    never sent (probed: two runs give attempts 1 and 2, both ''scheduled''), so repeated runs grow attempts
+    without bound. ON CONFLICT DO NOTHING only matters under concurrency. Keep append-per-run? Recommendation:
+    keep for parity and tag suspected-legacy-defect / follow-up.'
+  decision:
+    status: approved
+    reviewer: Pre-Sales
+    date: '2026-10-07'
+    note: Approved as written; legacy behaviour kept for parity.
+  answer: 'Copy legacy for parity: every run appends attempt max+1 even when the latest attempt is still
+    scheduled. Follow-up to fix in a later change.'
+  tags:
+  - suspected-legacy-defect
+  - follow-up
+- id: DUNNING-R05
+  statement: scheduled_for is as_of, moved to the following Monday when as_of is a Saturday (+2 days)
+    or a Sunday (+1 day); weekdays are unchanged and there is no holiday calendar.
+  source:
+    file: services/legacy-billing/db/procs/dunning.sql
+    lines:
+    - 37
+    - 42
+  inputs:
+  - as_of
+  outputs:
+  - scheduled_for
+  confidence: high
+  scenarios:
+  - DUNNING-002
+  - DUNNING-003
+  decision:
+    status: approved
+    reviewer: Pre-Sales
+    date: '2026-10-07'
+    note: Approved as written; legacy behaviour kept for parity.
+- id: DUNNING-R06
+  statement: Suspension selects each distinct tenant with an 'overdue' invoice whose UTC issue date is
+    on or before as_of - 14 days and, only if the tenant is 'active', sets the tenant to 'suspended' and
+    every subscription of that tenant with status 'active' to 'suspended' with suspended_on = as_of.
+  source:
+    file: services/legacy-billing/db/procs/dunning.sql
+    lines:
+    - 59
+    - 75
+  inputs:
+  - as_of
+  outputs:
+  - status
+  - suspended_on
+  confidence: high
+  scenarios:
+  - DUNNING-004
+  - DUNNING-005
+  question: 'The 14-day threshold is inclusive (probed: issued 2026-02-13 suspends on 2026-02-27, not
+    on 2026-02-26). Subscriptions are picked by status only: an ''active'' row whose ends_on is in the
+    past is also suspended, and an ''active'' row starting after as_of breaks the CHECK suspended_on >=
+    starts_on, so legacy raises and rolls back the whole run. No scenario covers that. Proposal: keep
+    the inclusive threshold and status-only selection; for the CHECK case the service rolls back the whole
+    run and returns HTTP 409. Approve?'
+  decision:
+    status: approved
+    reviewer: Pre-Sales
+    date: '2026-10-07'
+    note: Approved as written; the HTTP 409 replaces the legacy CHECK-violation error, which no scenario
+      records.
+  answer: Keep the inclusive 14-day threshold and status-only subscription selection. When suspending
+    would violate suspended_on >= starts_on the service rolls back the whole run and returns HTTP 409.
+  tags:
+  - legacy-quirk
+  - follow-up
+- id: DUNNING-R07
+  statement: Each tenant suspended by a run gets one 'suspension' notification with id md5(tenant_id::text
+    || 'suspension' || as_of::text)::uuid and sent_at = as_of at 00:00 UTC, unless one already exists
+    for that tenant, kind and sent_at; tenants that were not 'active' get none, so a second run for the
+    same as_of changes nothing.
+  source:
+    file: services/legacy-billing/db/procs/dunning.sql
+    lines:
+    - 76
+    - 84
+  inputs:
+  - as_of
+  outputs:
+  - notification_kinds
+  - suspension_notifications
+  confidence: high
+  scenarios:
+  - DUNNING-004
+  - DUNNING-005
+  question: 'A tenant that is already suspended (tenant 2, suspended 2026-02-15 with no suspension notification)
+    never gets one. Keep? Recommendation: keep for parity. Note: DUNNING-005 runs the procedure twice
+    on legacy (after_sql). The replay harness sends one request, so the "second run is a no-op" part is
+    proven by a unit test.'
+  decision:
+    status: approved
+    reviewer: Pre-Sales
+    date: '2026-10-07'
+    note: Approved as written; legacy behaviour kept for parity.
+  answer: 'Keep legacy: tenants already suspended never get a suspension notification; the second-run
+    no-op is proven by a unit test.'
+  tags:
+  - legacy-quirk

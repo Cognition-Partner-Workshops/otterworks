@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Annotated
 from uuid import UUID
 
@@ -12,8 +12,20 @@ from pydantic import BaseModel
 
 from app.config import settings
 from app.db import connect, migrate, reset
-from app.domain import catalog, change_plan, entitlement
-from app.repository import PostgresPlansRepository
+from app.domain import (
+    DunningAttemptRow,
+    NotificationRow,
+    SuspensionConflictError,
+    catalog,
+    change_plan,
+    entitlement,
+    overdue_accounts,
+    schedule_dunning,
+    sorted_attempts,
+    suspend_overdue,
+    suspension_notifications,
+)
+from app.repository import PostgresDunningRepository, PostgresPlansRepository
 
 
 @asynccontextmanager
@@ -35,6 +47,32 @@ app.add_middleware(
 class PlanChange(BaseModel):
     plan_id: UUID
     effective_on: date
+
+
+class DunningRun(BaseModel):
+    as_of: date
+
+
+def _attempt_json(attempt: DunningAttemptRow) -> dict:
+    return {
+        "invoice_id": str(attempt.invoice_id),
+        "attempt_no": attempt.attempt_no,
+        "scheduled_for": attempt.scheduled_for.isoformat(),
+        "status": attempt.status,
+    }
+
+
+def _timestamp_json(value: datetime) -> str:
+    return value.astimezone(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def _notification_json(notification: NotificationRow) -> dict:
+    return {
+        "id": str(notification.notification_id),
+        "tenant_id": str(notification.tenant_id),
+        "kind": notification.kind,
+        "sent_at": _timestamp_json(notification.sent_at),
+    }
 
 
 @app.get("/health")
@@ -127,3 +165,71 @@ def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) 
             status_code=409,
             detail="this plan change has already been requested",
         ) from error
+
+
+@app.get("/api/dunning/overdue")
+def list_overdue_accounts(as_of: Annotated[date, Query()]) -> list[dict]:
+    with connect() as connection:
+        repository = PostgresDunningRepository(connection)
+        accounts = overdue_accounts(repository.list_invoices(), repository.list_tenants(), as_of)
+    return [
+        {
+            "tenant_id": str(account.tenant_id),
+            "invoice_id": str(account.invoice_id),
+            "total": f"{account.total:.2f}",
+            "days_overdue": account.days_overdue,
+            "tenant_status": account.tenant_status,
+        }
+        for account in accounts
+    ]
+
+
+@app.post("/api/dunning/schedule")
+def schedule_dunning_run(request: DunningRun) -> dict:
+    try:
+        with connect() as connection:
+            repository = PostgresDunningRepository(connection)
+            created = schedule_dunning(repository, request.as_of)
+            attempts = sorted_attempts(repository.list_attempts())
+    except psycopg.errors.UniqueViolation as error:
+        raise HTTPException(
+            status_code=409,
+            detail="a concurrent dunning run already scheduled these attempts",
+        ) from error
+    return {
+        "scheduled": [_attempt_json(item) for item in created],
+        "last_scheduled": _attempt_json(created[-1]) if created else None,
+        "attempts": [_attempt_json(item) for item in attempts],
+    }
+
+
+@app.post("/api/dunning/suspend")
+def suspend_overdue_run(request: DunningRun) -> dict:
+    try:
+        with connect() as connection:
+            repository = PostgresDunningRepository(connection)
+            result = suspend_overdue(repository, request.as_of)
+            notifications = suspension_notifications(repository.list_notifications())
+    except (SuspensionConflictError, psycopg.errors.CheckViolation) as error:
+        raise HTTPException(
+            status_code=409,
+            detail="a subscription to suspend starts after the requested date",
+        ) from error
+    except psycopg.errors.UniqueViolation as error:
+        raise HTTPException(
+            status_code=409,
+            detail="a concurrent suspension run already suspended these tenants",
+        ) from error
+    return {
+        "suspended_tenants": [str(item) for item in result.suspended_tenants],
+        "suspended_subscriptions": [
+            {
+                "subscription_id": str(item.subscription_id),
+                "tenant_id": str(item.tenant_id),
+                "status": item.status,
+                "suspended_on": item.suspended_on.isoformat() if item.suspended_on else None,
+            }
+            for item in result.suspended_subscriptions
+        ],
+        "notifications": [_notification_json(item) for item in notifications],
+    }
