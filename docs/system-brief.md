@@ -28,9 +28,9 @@ Sources: each package's manifests and Dockerfiles (including banking `vm/Dockerf
 | `svc/industry-solutions/insurance` | Oracle PL/SQL fixture | No application runtime manifest in this directory |
 | `ui/workbench` | TypeScript / React, Vite | React ^18.2.0; Vite ^8.1.7; Node 20 build, nginx 1.27 serving |
 | `ui/admin-dashboard` | TypeScript / Angular | Angular ^17.3.0; Node 20 build, nginx 1.25 serving |
-| `ui/client-app` | TypeScript / React, Vite | React ^18.2.0; Vite ^8.1.7; Node 20 build, nginx 1.27 serving |
+| `ui/client-app` | TypeScript / React, Vite | React ^18.2.0; Vite ^8.1.4; Node 20 build, nginx 1.27 serving |
 | `ui/client-app/desktop` | TypeScript / Electron | Electron 43.1.1 |
-| `ui/client-app/mobile/android` | Capacitor / Android | JS Capacitor ^8.4.3; min SDK 24, compile/target SDK 36 |
+| `ui/client-app/mobile/android` | Capacitor / Android | JS Capacitor ^8.4.2; min SDK 24, compile/target SDK 36 |
 | `ui/client-app/mobile/ios` | Swift / Capacitor | Swift tools 5.9; iOS >=15; native Capacitor package exactly 8.4.2 |
 | `demo/dashboard` | TypeScript / Next.js, React | Node 20 image; Next 15.5.20; React 18.3.1 |
 | `demo/otter-projects` | TypeScript / Next.js, React | Node 20 image; Next 15.5.29; React 18.3.1 |
@@ -53,4 +53,4 @@ Window: `git log origin/demo-bank --since='3 weeks ago' --first-parent`, read 20
 - Incident orchestration and alert delivery: concurrent arming of four scenarios and recoverable alert batches (#2531); mock Slack Alertmanager channel (#2500); absent-5xx-series fallback while traffic is positive (#2486).
 - Incident workspace and bank rehearsal: shared workspace/MCP adapters (#2475), document-service alerts/dashboard overlay (#2477), and synthetic statement/KYC document seeds (#2470).
 - Developer tooling and validation: SonarQube ingest export for Helm, Terraform and document-service (#2472); equivalence CI Python/Poetry setup (#2496); busy-workspace title-filter test and flake measurement script (#2476).
-- This week's local maintenance: Python, Rust, report-service JVM and Node direct dependency patch bumps with lock updates; bumps for admin-dashboard, demo dashboard, legacy-billing, testdata harness and ETL were reverted because those modules lacked passing tests. JVM Lambda/Gradle, Go, Ruby and .NET bumps were deferred because their toolchains could not be installed in the run environment.
+- This week's maintenance: Python, Rust, report-service JVM and Node direct dependency patch bumps with lock updates; bumps for admin-dashboard, demo dashboard, legacy-billing, testdata harness and ETL were reverted because those modules lacked passing tests. The client-app batch was reverted after CI rejected its regenerated lockfile. JVM Lambda/Gradle, Go, Ruby and .NET bumps were deferred because their toolchains could not be installed in the run environment.
