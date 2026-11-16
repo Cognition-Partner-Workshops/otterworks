@@ -30,6 +30,26 @@ resource "aws_s3_bucket_public_access_block" "files" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_policy" "files" {
+  bucket = aws_s3_bucket.files.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "DenyInsecureTransport"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = "s3:*"
+      Resource = [
+        aws_s3_bucket.files.arn,
+        "${aws_s3_bucket.files.arn}/*",
+      ]
+      Condition = { Bool = { "aws:SecureTransport" = "false" } }
+    }]
+  })
+
+  depends_on = [aws_s3_bucket_public_access_block.files]
+}
+
 resource "aws_s3_bucket_versioning" "files" {
   bucket = aws_s3_bucket.files.id
   versioning_configuration {
@@ -83,6 +103,26 @@ resource "aws_s3_bucket_public_access_block" "data_lake" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_policy" "data_lake" {
+  bucket = aws_s3_bucket.data_lake.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "DenyInsecureTransport"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = "s3:*"
+      Resource = [
+        aws_s3_bucket.data_lake.arn,
+        "${aws_s3_bucket.data_lake.arn}/*",
+      ]
+      Condition = { Bool = { "aws:SecureTransport" = "false" } }
+    }]
+  })
+
+  depends_on = [aws_s3_bucket_public_access_block.data_lake]
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "data_lake" {
   bucket = aws_s3_bucket.data_lake.id
   rule {
@@ -111,6 +151,26 @@ resource "aws_s3_bucket_public_access_block" "audit_archive" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_policy" "audit_archive" {
+  bucket = aws_s3_bucket.audit_archive.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "DenyInsecureTransport"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = "s3:*"
+      Resource = [
+        aws_s3_bucket.audit_archive.arn,
+        "${aws_s3_bucket.audit_archive.arn}/*",
+      ]
+      Condition = { Bool = { "aws:SecureTransport" = "false" } }
+    }]
+  })
+
+  depends_on = [aws_s3_bucket_public_access_block.audit_archive]
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "audit_archive" {
