@@ -23,3 +23,14 @@ variable "force_destroy" {
   type        = bool
   default     = false
 }
+
+variable "access_log_retention_days" {
+  description = "Days to retain S3 server access logs before expiring them"
+  type        = number
+  default     = 365
+
+  validation {
+    condition     = var.access_log_retention_days >= 1
+    error_message = "Access log retention must be at least 1 day."
+  }
+}
