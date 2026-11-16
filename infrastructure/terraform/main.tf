@@ -222,6 +222,11 @@ module "irsa" {
           Action   = ["sns:Publish"]
           Resource = [module.messaging.events_topic_arn]
         },
+        {
+          Effect   = "Allow"
+          Action   = ["kms:GenerateDataKey", "kms:Decrypt"]
+          Resource = [module.messaging.events_topic_kms_key_arn]
+        },
       ]
     })
 
@@ -387,6 +392,11 @@ module "irsa" {
           Action   = ["sns:Publish"]
           Resource = [module.messaging.events_topic_arn]
         },
+        {
+          Effect   = "Allow"
+          Action   = ["kms:GenerateDataKey", "kms:Decrypt"]
+          Resource = [module.messaging.events_topic_kms_key_arn]
+        },
       ]
     })
 
@@ -397,6 +407,11 @@ module "irsa" {
           Effect   = "Allow"
           Action   = ["sns:Publish"]
           Resource = [module.messaging.events_topic_arn]
+        },
+        {
+          Effect   = "Allow"
+          Action   = ["kms:GenerateDataKey", "kms:Decrypt"]
+          Resource = [module.messaging.events_topic_kms_key_arn]
         },
       ]
     })
