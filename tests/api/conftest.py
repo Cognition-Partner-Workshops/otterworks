@@ -37,6 +37,7 @@ class ApiClient:
         self.created_reports: list[str] = []
         self.indexed_documents: list[str] = []
         self.indexed_files: list[str] = []
+        self.resource_headers: dict[str, dict[str, str]] = {}
 
     def unique_email(self, prefix: str) -> str:
         return f"{prefix}-{self.run_id}-{uuid.uuid4().hex[:8]}@example.test"
@@ -135,6 +136,47 @@ class ApiClient:
         self.created_documents.append(document["id"])
         return document
 
+    def upload_file(
+        self,
+        user: RegisteredUser,
+        name: str,
+        content: bytes,
+        content_type: str = "text/plain",
+        folder_id: str | None = None,
+        extra_fields: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
+        data = dict(extra_fields or {})
+        if folder_id is not None:
+            data["folder_id"] = folder_id
+        response = self.client.post(
+            "/api/v1/files/upload",
+            headers=user.auth_headers,
+            files={"file": (name, content, content_type)},
+            data=data,
+        )
+        assert response.status_code == 201, response.text
+        file_metadata = response.json()["file"]
+        self.created_files.append(file_metadata["id"])
+        self.resource_headers[file_metadata["id"]] = user.auth_headers
+        return file_metadata
+
+    def create_folder(
+        self,
+        user: RegisteredUser,
+        name: str,
+        parent_id: str | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {"name": name, "owner_id": user.id}
+        if parent_id is not None:
+            payload["parent_id"] = parent_id
+        response = self.client.post("/api/v1/folders", headers=user.auth_headers, json=payload)
+        self.assert_gateway_route_available(response, "/api/v1/folders")
+        assert response.status_code == 201, response.text
+        folder = response.json()
+        self.created_folders.append(folder["id"])
+        self.resource_headers[folder["id"]] = user.auth_headers
+        return folder
+
     def cleanup(self) -> None:
         for report_id in reversed(self.created_reports):
             self.client.delete(f"/api/v1/reports/{report_id}")
@@ -143,11 +185,11 @@ class ApiClient:
         for file_id in reversed(self.indexed_files):
             self.client.delete(f"/api/v1/search/index/file/{file_id}")
         for file_id in reversed(self.created_files):
-            self.client.delete(f"/api/v1/files/{file_id}")
+            self.client.delete(f"/api/v1/files/{file_id}", headers=self.resource_headers.get(file_id, {}))
         for document_id in reversed(self.created_documents):
             self.client.delete(f"/api/v1/documents/{document_id}")
         for folder_id in reversed(self.created_folders):
-            self.client.delete(f"/api/v1/folders/{folder_id}")
+            self.client.delete(f"/api/v1/folders/{folder_id}", headers=self.resource_headers.get(folder_id, {}))
 
 
 @pytest.fixture(scope="session")
