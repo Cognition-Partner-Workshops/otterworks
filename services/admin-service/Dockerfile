@@ -9,7 +9,11 @@ FROM ruby:3.3-slim
 RUN apt-get update && apt-get install -y libpq5 curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /usr/local/bundle /usr/local/bundle
-COPY . .
+COPY Gemfile Gemfile.lock Rakefile config.ru ./
+COPY bin ./bin
+COPY config ./config
+COPY db ./db
+COPY app ./app
 
 RUN useradd -r -u 1001 appuser && mkdir -p /app/tmp/pids /app/tmp/cache /app/log && chown -R appuser:appuser /app/tmp /app/log
 USER appuser
