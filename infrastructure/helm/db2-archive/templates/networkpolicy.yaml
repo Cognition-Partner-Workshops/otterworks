@@ -24,6 +24,9 @@ spec:
       ports:
         - port: {{ .Values.service.port }}
           protocol: TCP
+        # Istio ambient mTLS: meshed traffic arrives as HBONE on 15008.
+        - port: 15008
+          protocol: TCP
     # Health (8080): monitoring namespace, plus the node CIDRs when the CNI enforces policy on
     # kubelet probe traffic.
     - from:
@@ -36,5 +39,8 @@ spec:
         {{- end }}
       ports:
         - port: {{ .Values.health.port }}
+          protocol: TCP
+        # Istio ambient mTLS: meshed traffic arrives as HBONE on 15008.
+        - port: 15008
           protocol: TCP
 {{- end }}

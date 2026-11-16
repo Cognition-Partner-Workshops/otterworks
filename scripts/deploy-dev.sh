@@ -139,6 +139,16 @@ kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply
 source "${SCRIPT_DIR}/lib/ingress-nginx.sh"
 ensure_ingress_nginx
 
+# ---------- Step 4c: Shared service mesh (ambient mTLS) ----------
+
+# Service-to-service calls are plain http:// to cluster DNS; the mesh is what
+# encrypts and authenticates them on the wire (STRICT mTLS), so it is a
+# prerequisite of the deploy in the same way the ingress controller is.
+# shellcheck source=lib/service-mesh.sh
+source "${SCRIPT_DIR}/lib/service-mesh.sh"
+ensure_service_mesh
+enroll_namespace_in_mesh "${NAMESPACE}"
+
 # ---------- Step 5: ECR Login ----------
 
 log "Logging into ECR..."
