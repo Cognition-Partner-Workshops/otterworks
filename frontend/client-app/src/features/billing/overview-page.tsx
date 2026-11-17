@@ -51,13 +51,13 @@ export default function BillingOverviewPage() {
         {!loading && me && usage && (
           <>
             <section className="grid gap-4 md:grid-cols-3">
-              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-xs">
                 <p className="text-sm text-gray-500">Account</p>
                 <h2 className="mt-1 text-xl font-semibold text-gray-900">{me.name}</h2>
                 <p className="mt-2 text-sm text-gray-600">Status: {me.status}</p>
                 <p className="text-sm text-gray-600">Tenant: {me.tenant_id}</p>
               </div>
-              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-xs">
                 <p className="text-sm text-gray-500">Current plan</p>
                 <h2 className="mt-1 text-xl font-semibold text-gray-900">
                   {me.entitlement[0]?.plan_code ?? "No plan"}
@@ -72,7 +72,7 @@ export default function BillingOverviewPage() {
                   View plans
                 </Link>
               </div>
-              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-xs">
                 <p className="text-sm text-gray-500">Customer balance</p>
                 {me.customer ? (
                   <>
@@ -88,7 +88,7 @@ export default function BillingOverviewPage() {
                 )}
               </div>
             </section>
-            <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-xs">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900">Usage this month</h2>
                 <Link to="/billing/invoices" className="text-sm font-medium text-otter-700 hover:underline">View invoices</Link>
