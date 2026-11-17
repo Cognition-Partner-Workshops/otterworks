@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BillingReportComponent } from './billing-report.component';
 import { MonthEndReport, ReconciliationReport } from '../../core/models/billing-report.model';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 const SOURCE = {
   engine: 'oracle',
@@ -54,8 +55,9 @@ describe('BillingReportComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BillingReportComponent, HttpClientTestingModule, NoopAnimationsModule],
-    }).compileComponents();
+    imports: [BillingReportComponent, NoopAnimationsModule],
+    providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()]
+}).compileComponents();
 
     fixture = TestBed.createComponent(BillingReportComponent);
     component = fixture.componentInstance;

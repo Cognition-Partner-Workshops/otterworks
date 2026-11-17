@@ -1,21 +1,23 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { UsersComponent } from './users.component';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('UsersComponent', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
   let component: UsersComponent;
   let fixture: ComponentFixture<UsersComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        UsersComponent,
-        HttpClientTestingModule,
+      imports: [UsersComponent,
         RouterTestingModule,
-        NoopAnimationsModule,
-      ],
+        NoopAnimationsModule],
+      providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(UsersComponent);
@@ -27,16 +29,16 @@ describe('UsersComponent', () => {
   });
 
   it('should start with loading state', () => {
-    expect(component.loading).toBeTrue();
+    expect(component.loading).toBe(true);
   });
 
-  it('should load users', fakeAsync(() => {
+  it('should load users', () => {
     fixture.detectChanges();
-    tick(700);
+    vi.advanceTimersByTime(700);
     fixture.detectChanges();
-    expect(component.loading).toBeFalse();
+    expect(component.loading).toBe(false);
     expect(component.dataSource.data.length).toBeGreaterThan(0);
-  }));
+  });
 
   it('should have correct displayed columns', () => {
     expect(component.displayedColumns).toEqual([
@@ -44,20 +46,20 @@ describe('UsersComponent', () => {
     ]);
   });
 
-  it('should apply text filter', fakeAsync(() => {
+  it('should apply text filter', () => {
     fixture.detectChanges();
-    tick(700);
+    vi.advanceTimersByTime(700);
     fixture.detectChanges();
     const event = { target: { value: 'alice' } } as unknown as Event;
     component.applyFilter(event);
     expect(component.dataSource.filter).toBe('alice');
-  }));
+  });
 
-  it('should display page title', fakeAsync(() => {
+  it('should display page title', () => {
     fixture.detectChanges();
-    tick(700);
+    vi.advanceTimersByTime(700);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('User Management');
-  }));
+  });
 });

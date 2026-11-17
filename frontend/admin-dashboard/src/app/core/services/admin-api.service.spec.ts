@@ -1,13 +1,18 @@
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AdminApiService } from './admin-api.service';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('AdminApiService', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
   let service: AdminApiService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [],
+      providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()]
     });
     service = TestBed.inject(AdminApiService);
   });
@@ -16,7 +21,7 @@ describe('AdminApiService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should return dashboard stats', fakeAsync(() => {
+  it('should return dashboard stats', () => {
     service.getDashboardStats().subscribe(stats => {
       expect(stats).toBeTruthy();
       expect(stats.totalUsers).toBeGreaterThan(0);
@@ -24,89 +29,89 @@ describe('AdminApiService', () => {
       expect(stats.storageUsed).toBeTruthy();
       expect(stats.activeSessions).toBeGreaterThan(0);
     });
-    tick(700);
-  }));
+    vi.advanceTimersByTime(700);
+  });
 
-  it('should return users list', fakeAsync(() => {
+  it('should return users list', () => {
     service.getUsers().subscribe(users => {
       expect(users).toBeTruthy();
       expect(users.length).toBeGreaterThan(0);
       expect(users[0].displayName).toBeTruthy();
       expect(users[0].email).toBeTruthy();
     });
-    tick(700);
-  }));
+    vi.advanceTimersByTime(700);
+  });
 
-  it('should return a single user by id', fakeAsync(() => {
+  it('should return a single user by id', () => {
     service.getUser('user-001').subscribe(user => {
       expect(user).toBeTruthy();
       expect(user!.id).toBe('user-001');
     });
-    tick(700);
-  }));
+    vi.advanceTimersByTime(700);
+  });
 
-  it('should return audit events', fakeAsync(() => {
+  it('should return audit events', () => {
     service.getAuditEvents().subscribe(events => {
       expect(events).toBeTruthy();
       expect(events.length).toBeGreaterThan(0);
       expect(events[0].action).toBeTruthy();
     });
-    tick(700);
-  }));
+    vi.advanceTimersByTime(700);
+  });
 
-  it('should return feature flags', fakeAsync(() => {
+  it('should return feature flags', () => {
     service.getFeatureFlags().subscribe(flags => {
       expect(flags).toBeTruthy();
       expect(flags.length).toBeGreaterThan(0);
       expect(flags[0].name).toBeTruthy();
       expect(flags[0].key).toBeTruthy();
     });
-    tick(700);
-  }));
+    vi.advanceTimersByTime(700);
+  });
 
-  it('should return system health', fakeAsync(() => {
+  it('should return system health', () => {
     service.getSystemHealth().subscribe(services => {
       expect(services).toBeTruthy();
       expect(services.length).toBeGreaterThan(0);
       expect(services[0].name).toBeTruthy();
       expect(services[0].status).toBeTruthy();
     });
-    tick(700);
-  }));
+    vi.advanceTimersByTime(700);
+  });
 
-  it('should return announcements', fakeAsync(() => {
+  it('should return announcements', () => {
     service.getAnnouncements().subscribe(announcements => {
       expect(announcements).toBeTruthy();
       expect(announcements.length).toBeGreaterThan(0);
     });
-    tick(700);
-  }));
+    vi.advanceTimersByTime(700);
+  });
 
-  it('should return analytics report', fakeAsync(() => {
+  it('should return analytics report', () => {
     service.getAnalyticsReport().subscribe(report => {
       expect(report).toBeTruthy();
       expect(report.userSignups).toBeTruthy();
       expect(report.activeUsers).toBeTruthy();
       expect(report.storageUsage).toBeTruthy();
     });
-    tick(700);
-  }));
+    vi.advanceTimersByTime(700);
+  });
 
-  it('should toggle feature flag', fakeAsync(() => {
+  it('should toggle feature flag', () => {
     service.toggleFeatureFlag('flag-001', true).subscribe(flag => {
       expect(flag).toBeTruthy();
-      expect(flag.enabled).toBeTrue();
+      expect(flag.enabled).toBe(true);
     });
-    tick(700);
-  }));
+    vi.advanceTimersByTime(700);
+  });
 
-  it('should suspend a user', fakeAsync(() => {
+  it('should suspend a user', () => {
     service.suspendUser('user-001').subscribe(user => {
       expect(user).toBeTruthy();
       expect(user.status).toBe('suspended');
     });
-    tick(700);
-  }));
+    vi.advanceTimersByTime(700);
+  });
 
   describe('Incident API methods', () => {
     let httpMock: HttpTestingController;
