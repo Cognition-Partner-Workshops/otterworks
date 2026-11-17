@@ -99,7 +99,7 @@ export default function BillingPlansPage() {
             {plans.map((plan) => {
               const current = plan.plan_code === currentPlan;
               return (
-                <article key={plan.plan_id} className={`rounded-xl border bg-white p-5 shadow-sm ${current ? "border-otter-500 ring-2 ring-otter-100" : "border-gray-200"}`}>
+                <article key={plan.plan_id} className={`rounded-xl border bg-white p-5 shadow-xs ${current ? "border-otter-500 ring-2 ring-otter-100" : "border-gray-200"}`}>
                   {current && <span className="rounded-full bg-otter-100 px-2 py-1 text-xs font-semibold text-otter-800">Current plan</span>}
                   <h2 className="mt-3 text-xl font-semibold text-gray-900">{plan.plan_code}</h2>
                   <p className="mt-1 text-sm text-gray-600">{plan.tier}</p>

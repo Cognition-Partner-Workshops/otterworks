@@ -41,7 +41,7 @@ export default function BillingInvoicesPage() {
         {!loading && isEstateUnavailable(error) && <EstateUnavailable detail={errorDetail(error)} />}
         {!loading && Boolean(error) && !isEstateUnavailable(error) && <p role="alert" className="rounded-lg bg-red-50 p-4 text-red-800">Invoices could not be loaded.</p>}
         {!loading && !error && (
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-xs">
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 text-xs uppercase text-gray-500">
                 <tr><th className="px-5 py-3">Period</th><th className="px-5 py-3">Status</th><th className="px-5 py-3 text-right">Subtotal</th><th className="px-5 py-3 text-right">Tax</th><th className="px-5 py-3 text-right">Total</th></tr>

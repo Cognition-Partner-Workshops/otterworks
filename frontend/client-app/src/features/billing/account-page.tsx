@@ -29,7 +29,7 @@ export default function BillingAccountPage() {
         )}
         {!loading && customer && (
           <>
-            <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-xs">
               <h2 className="text-lg font-semibold text-gray-900">Key fields</h2>
               <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {fields.slice(0, 18).map(([key, value]) => (
@@ -37,7 +37,7 @@ export default function BillingAccountPage() {
                 ))}
               </dl>
             </section>
-            <details className="rounded-xl border border-gray-200 bg-white shadow-sm">
+            <details className="rounded-xl border border-gray-200 bg-white shadow-xs">
               <summary className="cursor-pointer px-5 py-4 font-semibold text-gray-900">All {fields.length} legacy fields</summary>
               <div className="overflow-x-auto border-t border-gray-100">
                 <table className="w-full text-left text-sm">
@@ -47,7 +47,7 @@ export default function BillingAccountPage() {
                 </table>
               </div>
             </details>
-            <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-xs">
               <h2 className="text-lg font-semibold text-gray-900">Attributes (EAV)</h2>
               <table className="mt-4 w-full text-left text-sm">
                 <thead className="text-xs uppercase text-gray-500"><tr><th className="py-2">Name</th><th className="py-2">Value</th><th className="py-2">Type</th></tr></thead>
