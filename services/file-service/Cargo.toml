@@ -16,10 +16,10 @@ chrono = { version = "0.4", features = ["serde"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
 tracing-actix-web = "0.7"
-tracing-opentelemetry = "0.22"
-opentelemetry = "0.21"
-opentelemetry_sdk = { version = "0.21", features = ["rt-tokio"] }
-opentelemetry-otlp = "0.14"
+tracing-opentelemetry = "0.34"
+opentelemetry = "0.33"
+opentelemetry_sdk = { version = "0.33", features = ["rt-tokio"] }
+opentelemetry-otlp = "0.33"
 aws-config = "1.1"
 aws-sdk-s3 = "1.15"
 aws-sdk-dynamodb = "1.14"
