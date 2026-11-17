@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { LoginComponent } from './login.component';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -11,12 +12,10 @@ describe('LoginComponent', () => {
   beforeEach(async () => {
     localStorage.clear();
     await TestBed.configureTestingModule({
-      imports: [
-        LoginComponent,
-        HttpClientTestingModule,
+      imports: [LoginComponent,
         RouterTestingModule,
-        NoopAnimationsModule,
-      ],
+        NoopAnimationsModule],
+      providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginComponent);
@@ -31,13 +30,13 @@ describe('LoginComponent', () => {
   it('should initialize with empty form', () => {
     expect(component.email).toBe('');
     expect(component.password).toBe('');
-    expect(component.loading).toBeFalse();
+    expect(component.loading).toBe(false);
     expect(component.errorMessage).toBe('');
   });
 
   it('should not submit with empty fields', () => {
     component.onLogin();
-    expect(component.loading).toBeFalse();
+    expect(component.loading).toBe(false);
   });
 
   it('should render login form elements', () => {

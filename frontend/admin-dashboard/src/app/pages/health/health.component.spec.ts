@@ -1,19 +1,21 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { HealthComponent } from './health.component';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('HealthComponent', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
   let component: HealthComponent;
   let fixture: ComponentFixture<HealthComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        HealthComponent,
-        HttpClientTestingModule,
-        NoopAnimationsModule,
-      ],
+      imports: [HealthComponent,
+        NoopAnimationsModule],
+      providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(HealthComponent);
@@ -25,32 +27,32 @@ describe('HealthComponent', () => {
   });
 
   it('should start with loading state', () => {
-    expect(component.loading).toBeTrue();
+    expect(component.loading).toBe(true);
   });
 
-  it('should load system health data', fakeAsync(() => {
+  it('should load system health data', () => {
     fixture.detectChanges();
-    tick(700);
+    vi.advanceTimersByTime(700);
     fixture.detectChanges();
-    expect(component.loading).toBeFalse();
+    expect(component.loading).toBe(false);
     expect(component.services.length).toBeGreaterThan(0);
-  }));
+  });
 
-  it('should compute health counts', fakeAsync(() => {
+  it('should compute health counts', () => {
     fixture.detectChanges();
-    tick(700);
+    vi.advanceTimersByTime(700);
     fixture.detectChanges();
     const total = component.healthyCounts.healthy +
-                  component.healthyCounts.degraded +
-                  component.healthyCounts.down;
+      component.healthyCounts.degraded +
+      component.healthyCounts.down;
     expect(total).toBe(component.services.length);
-  }));
+  });
 
-  it('should display page title', fakeAsync(() => {
+  it('should display page title', () => {
     fixture.detectChanges();
-    tick(700);
+    vi.advanceTimersByTime(700);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('System Health');
-  }));
+  });
 });

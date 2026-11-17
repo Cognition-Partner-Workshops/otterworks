@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { authGuard } from './auth.guard';
 import { AuthService } from '../services/auth.service';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('authGuard', () => {
   let authService: AuthService;
@@ -15,7 +16,8 @@ describe('authGuard', () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, RouterTestingModule],
+      imports: [RouterTestingModule],
+      providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()]
     });
     authService = TestBed.inject(AuthService);
     router = TestBed.inject(Router);
@@ -26,15 +28,15 @@ describe('authGuard', () => {
   });
 
   it('should deny access when not authenticated', () => {
-    spyOn(router, 'navigate');
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
     const result = TestBed.runInInjectionContext(() => authGuard(mockRoute, mockState));
-    expect(result).toBeFalse();
+    expect(result).toBe(false);
     expect(router.navigate).toHaveBeenCalledWith(['/login']);
   });
 
   it('should allow access when authenticated', () => {
     localStorage.setItem('ow_admin_token', 'test-token');
     const result = TestBed.runInInjectionContext(() => authGuard(mockRoute, mockState));
-    expect(result).toBeTrue();
+    expect(result).toBe(true);
   });
 });
