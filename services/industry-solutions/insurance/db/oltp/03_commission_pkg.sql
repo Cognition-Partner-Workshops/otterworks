@@ -128,6 +128,7 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         o_rate_id        OUT commission_rates.rate_id%TYPE
     ) IS
     BEGIN
+        audit_kit.set_actor(p_actor);
         IF p_rate_pct IS NULL OR p_rate_pct <= 0 OR p_rate_pct > 50 THEN
             RAISE_APPLICATION_ERROR(-20001,
                 'Rate must be in (0, 50]: ' || NVL(TO_CHAR(p_rate_pct), 'NULL'));
@@ -168,9 +169,11 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         log_action('RATE_UPSERT', p_product_code, p_agent_id, NULL,
                    'rate_id=' || o_rate_id || ' pct=' || p_rate_pct
                    || ' from=' || TO_CHAR(p_effective_from, 'YYYY-MM-DD'), p_actor);
+        audit_kit.clear_actor;
         COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
+            audit_kit.clear_actor;
             ROLLBACK;
             RAISE;
     END upsert_commission_rate;
@@ -182,6 +185,7 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         p_actor        IN VARCHAR2
     ) IS
     BEGIN
+        audit_kit.set_actor(p_actor);
         UPDATE commission_rates
            SET effective_to = p_effective_to
          WHERE product_code = p_product_code
@@ -193,9 +197,11 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         END IF;
         log_action('RATE_END', p_product_code, p_agent_id, NULL,
                    'to=' || TO_CHAR(p_effective_to, 'YYYY-MM-DD'), p_actor);
+        audit_kit.clear_actor;
         COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
+            audit_kit.clear_actor;
             ROLLBACK;
             RAISE;
     END end_commission_rate;
