@@ -17,6 +17,7 @@ from warehouse.run_config import RunConfig
     (None, "sfx-d1110", "sfx-d1110"),
     ("sfx2220", None, "sfx2220"),
     ("sfx2220", "sfx-d1110", "sfx2220"),
+    ("sfx2220", "sfx-d1110-test'quote", "sfx2220"),
 ])
 @pytest.mark.parametrize("override", [None, "sfx3330"])
 def test_query_tag_and_ledger_resolve_the_same_run(monkeypatch, capsys, current, legacy, expected, override):

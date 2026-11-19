@@ -46,12 +46,21 @@ class RunConfig:
         values = {"__RUN_TOKEN__": self.token, "__RUN_DATABASE__": self.database,
                   "__BEFORE_NAMESPACE__": self.before_namespace,
                   "__AFTER_NAMESPACE__": self.after_namespace}
-        for marker, value in values.items():
-            text = text.replace(marker, value)
-        text = re.sub(r"sfx-d[0-9]+-before", self.before_namespace, text)
-        text = re.sub(r"sfx-d[0-9]+-after", self.after_namespace, text)
-        text = re.sub(r"sfx-d[0-9]+", self.token, text)
-        return re.sub(r"SFX_D[0-9]+(?:_AFTER)?", self.database, text)
+        def replacement(match):
+            marker = match.group()
+            if marker in values:
+                return values[marker]
+            if marker.startswith("SFX_D"):
+                return self.database
+            if marker.endswith("-before"):
+                return self.before_namespace
+            if marker.endswith("-after"):
+                return self.after_namespace
+            return self.token
+
+        pattern = "|".join([*values, r"sfx-d[0-9]+(?:-(?:before|after))?",
+                            r"SFX_D[0-9]+(?:_AFTER)?"])
+        return re.sub(pattern, replacement, text)
 
 
 def render(text):
