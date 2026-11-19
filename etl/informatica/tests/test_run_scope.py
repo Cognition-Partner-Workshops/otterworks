@@ -34,3 +34,44 @@ def test_explicit_namespace_and_root_win(monkeypatch, tmp_path):
     assert process_variables()['$PMRootDir'] == str(tmp_path)
     assert db.default_port() == str(54500 + zlib.crc32(b'sfx3330-custom') % 1000)
     assert db.default_port('explicit') == str(54500 + zlib.crc32(b'explicit') % 1000)
+
+
+@pytest.mark.parametrize('arguments', [
+    ['RUN_TOKEN=invalid'], ['RUN_TOKEN='], ["RUN_TOKEN=sfx1119'quote"],
+    ['RUN_TOKEN=invalid', 'NS=sfx-safe-before'], ['INFA_NS='], ['INFA_NS= '],
+    ['NS=..'], ['NS=../other'], ['NS=/'],
+])
+def test_teardown_dry_run_rejects_invalid_scope(arguments, monkeypatch):
+    monkeypatch.delenv('NS', raising=False)
+    result = subprocess.run(['make', '-n', 'sfx-informatica-down', *arguments],
+                            cwd=ROOT, capture_output=True, text=True)
+    assert result.returncode != 0
+    assert 'RunConfig' in result.stderr or 'nonempty namespace' in result.stderr
+    assert 'docker' not in result.stdout and 'rm -rf' not in result.stdout
+
+
+@pytest.mark.parametrize('output,status', [('sfx-1119-before', 7), ('', 0)])
+def test_run_config_failure_or_empty_output_stops_teardown(tmp_path, monkeypatch, output, status):
+    executable = tmp_path / 'python3'
+    executable.write_text(f'#!/bin/sh\nprintf "%s" "{output}"\nexit {status}\n')
+    executable.chmod(0o755)
+    monkeypatch.setenv('PATH', str(tmp_path) + os.pathsep + os.environ['PATH'])
+    result = subprocess.run(['make', '-n', 'sfx-informatica-down'],
+                            cwd=ROOT, capture_output=True, text=True)
+    assert result.returncode != 0
+    assert 'RunConfig' in result.stderr
+    assert 'docker' not in result.stdout and 'rm -rf' not in result.stdout
+
+
+def test_teardown_removes_only_the_selected_child(tmp_path):
+    parent = tmp_path / 'infa_shared'
+    selected = parent / 'sfx-2220-before'
+    sibling = parent / 'sfx-1119-before'
+    selected.mkdir(parents=True)
+    sibling.mkdir()
+    (selected / 'session.log').write_text('selected')
+    (sibling / 'session.log').write_text('retained')
+    subprocess.run(['make', 'sfx-informatica-down', 'RUN_TOKEN=sfx2220', 'INFA_DB=teradata',
+                    f'INFA_DIR={tmp_path}'], cwd=ROOT, capture_output=True, text=True, check=True)
+    assert not selected.exists()
+    assert parent.is_dir() and (sibling / 'session.log').read_text() == 'retained'

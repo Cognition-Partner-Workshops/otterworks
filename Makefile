@@ -5,6 +5,12 @@ SHELL := /bin/bash
 RUN_TOKEN ?= sfx1119
 export RUN_TOKEN
 RUN_BEFORE_NAMESPACE := $(shell RUN_TOKEN='$(subst ','"'"',$(RUN_TOKEN))' python3 -c 'from warehouse.run_config import RunConfig; print(RunConfig.from_env().before_namespace)')
+ifneq ($(.SHELLSTATUS),0)
+$(error RunConfig failed for RUN_TOKEN)
+endif
+ifeq ($(strip $(RUN_BEFORE_NAMESPACE)),)
+$(error RunConfig returned an empty before namespace)
+endif
 .DEFAULT_GOAL := help
 
 .PHONY: sfx-observability-up sfx-observability-down sfx-feed-target-test sfx-target-sql
@@ -889,6 +895,10 @@ lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains
 # INFA_DB=teradata points the runner at the Teradata emulation's compose service instead.
 INFA_DIR = etl/informatica
 INFA_NS = $(or $(NS),$(RUN_BEFORE_NAMESPACE))
+INFA_NS_VALID := $(shell NS='$(subst ','"'"',$(INFA_NS))' python3 -c 'import os,re; print(bool(re.fullmatch("[a-z0-9][a-z0-9_-]*", os.environ["NS"])))')
+ifneq ($(INFA_NS_VALID),True)
+$(error INFA_NS must be a nonempty namespace containing lowercase letters, digits, underscores or hyphens)
+endif
 INFA_DB ?= fixture
 MAPPINGS ?= 20
 INFA_PORT_OFFSET = $(shell python3 -c "import zlib; print(zlib.crc32('$(INFA_NS)'.encode()) % 1000)")
@@ -915,7 +925,7 @@ sfx-informatica-test: ## Unit and integration tests of the runner against the NS
 
 sfx-informatica-down: ## Stop the NS warehouse database, drop its volume and the run directory
 	@if [ "$(INFA_DB)" != teradata ]; then $(INFA_COMPOSE) down -v --remove-orphans; fi
-	@rm -rf $(INFA_DIR)/infa_shared/$(INFA_NS)
+	@rm -rf -- "$(INFA_DIR)/infa_shared/$(INFA_NS)"
 
 # SnowConvert AI (scai) on the workflow exports. scai reads the Snowflake password only from connections.toml;
 # SNOWFLAKE_CONNECTION names the connection (default: the TOML default). The raw output is kept untouched under
