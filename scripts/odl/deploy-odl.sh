@@ -43,6 +43,9 @@ kubectl -n "$NS" rollout status deployment --timeout=120s
 kubectl -n "$NS" label deploy,sts,svc,ingress,secret,cm,job,cronjob,networkpolicy,resourcequota,limitrange,sa,role,rolebinding,pod,replicaset --all run_token=odl-1795112287 --overwrite >/dev/null
 kubectl label namespace "$NS" run_token=odl-1795112287 --overwrite >/dev/null
 if [ "$MODE" = after ] && [ -d "${ROOT}/services/operational-data-layer/deploy" ]; then
+  if [ "$ID" = odl ]; then
+    "${ROOT}/scripts/odl/deploy-odl-ui.sh" "$ID"
+  fi
   helm upgrade --install operational-data-layer "${ROOT}/services/operational-data-layer/deploy" -n "$NS" \
     --post-renderer "$HELM_POST_RENDERER" --labels run_token=odl-1795112287 --wait --timeout 3m
 fi
