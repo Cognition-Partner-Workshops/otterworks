@@ -4,6 +4,7 @@ import os
 from common.runtime import register, save_partition, session
 
 spark = session("audit_actor_activity_join")
+spark.conf.set("spark.sql.shuffle.partitions", "2")
 register(spark, "AUDIT_EVENT", "USER_ACTIVITY_DAILY", "LOGIN_EVENT")
 result = spark.sql("""
 WITH activity AS (
@@ -24,8 +25,7 @@ SELECT coalesce(a.ACTOR_USER_ID, 0) USER_KEY, a.AUDIT_EVENT_ID,
 FROM AUDIT_EVENT a
 JOIN activity d ON coalesce(a.ACTOR_USER_ID, 0) = d.USER_KEY
 JOIN logins l ON coalesce(a.ACTOR_USER_ID, 0) = l.USER_KEY
-""").cache()
+""").coalesce(1)
 run_date = os.environ.get("SFX_RUN_DATE") or datetime.now(timezone.utc).date().isoformat()
 save_partition(result, "audit", "audit_actor_activity_join", run_date)
-result.unpersist()
 spark.stop()
