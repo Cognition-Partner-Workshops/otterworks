@@ -17,7 +17,7 @@ class RunConfig:
 
     @classmethod
     def from_env(cls):
-        return cls(os.environ.get("RUN_TOKEN", "sfx1119"))
+        return cls(os.environ.get("RUN_TOKEN", os.environ.get("SNOWFLAKE_RUN_TOKEN", "sfx1119")))
 
     @property
     def suffix(self):
