@@ -39,9 +39,10 @@ rules:
 alerting:
   webhook:
     enabled: false
+    headerRelay: false
     secretName: alertmanager-sre-webhook
     urlKey: url
-    authorizationKey: token
+    authorizationKey: webhook-secret
   groupWait: 30s
   groupInterval: 5m
   repeatInterval: 4h

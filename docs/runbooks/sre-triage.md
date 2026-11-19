@@ -21,6 +21,16 @@ read-only role for CloudWatch Logs, EKS, RDS and PI. RBAC service-proxy GET cann
 limit the inner URL path; see the chart README's security boundary. Never print
 raw Alertmanager `/api/v2/status` configuration: it may expose webhook headers.
 
+Automation auth is `X-Webhook-Secret`, not Bearer. The live shared receiver uses
+native `http_headers.X-Webhook-Secret.values`, but the current AlertmanagerConfig
+CRD exposes no custom header field. This chart therefore requires an explicit
+header-relay opt-in before enabling delivery: Secret
+`monitoring/alertmanager-sre-webhook` keys `url` (HTTPS relay URL, **not** the
+Automation URL) and `webhook-secret` (Bearer credential to the relay, forwarded
+as `X-Webhook-Secret`). No relay is deployed here. Until one is provisioned,
+leave webhook disabled; see the chart README. Never substitute a CONNECT proxy
+header or embed header secret values in chart values.
+
 ## Signals and exact read-only queries
 
 Commands assume an authenticated kubectl context for `otterworks-dev` and AWS

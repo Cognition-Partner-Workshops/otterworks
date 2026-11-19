@@ -104,6 +104,9 @@ module "database" {
 
   db_instance_class = "db.t3.small"
 
+  performance_insights_enabled          = var.db_performance_insights_enabled
+  performance_insights_retention_period = var.db_performance_insights_retention_period
+
   vpc_id     = local.vpc_id
   vpc_cidr   = local.vpc_cidr
   subnet_ids = local.private_subnets

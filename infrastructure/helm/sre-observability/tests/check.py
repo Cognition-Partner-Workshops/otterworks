@@ -18,12 +18,17 @@ def render(*args):
 
 docs = [d for d in render() if d]
 assert not any(d["kind"] in ("Secret", "AlertmanagerConfig", "Service") for d in docs)
-enabled = [d for d in render("--set", "alerting.webhook.enabled=true") if d]
+blocked = subprocess.run(
+    ["helm", "template", "sre-observability", str(CHART), "-n", "monitoring", "--set", "alerting.webhook.enabled=true"],
+    capture_output=True, text=True,
+)
+assert blocked.returncode != 0 and "Bearer-to-X-Webhook-Secret relay" in blocked.stderr
+enabled = [d for d in render("--set", "alerting.webhook.enabled=true", "--set", "alerting.webhook.headerRelay=true") if d]
 config = next(d for d in enabled if d["kind"] == "AlertmanagerConfig")
 assert config["spec"]["route"]["groupBy"] == ["alertname", "affected_namespace"]
 receiver = config["spec"]["receivers"][0]["webhookConfigs"][0]
 assert receiver["sendResolved"] is True and receiver["urlSecret"]["key"] == "url"
-assert receiver["httpConfig"]["authorization"]["credentials"]["key"] == "token"
+assert receiver["httpConfig"]["authorization"]["credentials"]["key"] == "webhook-secret"
 for doc in docs:
     for rule in doc.get("rules", []):
         assert set(rule["verbs"]) <= {"get", "list", "watch"}

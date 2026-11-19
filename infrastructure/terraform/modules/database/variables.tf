@@ -52,6 +52,23 @@ variable "vpc_id" {
   type        = string
 }
 
+variable "performance_insights_enabled" {
+  description = "Enable RDS Performance Insights for PostgreSQL"
+  type        = bool
+  default     = true
+}
+
+variable "performance_insights_retention_period" {
+  description = "Performance Insights retention in days; 7 is the free retention tier"
+  type        = number
+  default     = 7
+
+  validation {
+    condition     = var.performance_insights_retention_period == 7 || var.performance_insights_retention_period == 731 || contains([for months in range(1, 24) : months * 31], var.performance_insights_retention_period)
+    error_message = "Retention must be 7, a multiple of 31 from 31 to 713, or 731 days; retention above 7 days incurs charges."
+  }
+}
+
 variable "subnet_ids" {
   description = "Subnet IDs for the RDS subnet group"
   type        = list(string)

@@ -1,4 +1,7 @@
 {{- if .Values.alerting.webhook.enabled }}
+{{- if not .Values.alerting.webhook.headerRelay }}
+{{- fail "AlertmanagerConfig lacks custom HTTP headers: use a Bearer-to-X-Webhook-Secret relay and set alerting.webhook.headerRelay=true" }}
+{{- end }}
 apiVersion: monitoring.coreos.com/v1alpha1
 kind: AlertmanagerConfig
 metadata:

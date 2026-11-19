@@ -15,10 +15,21 @@ Webhook delivery defaults **off**. Before opting in, provision Secret
 
 | Key | Content |
 |---|---|
-| `url` | HTTPS webhook endpoint accepting Alertmanager v4 JSON |
-| `token` | Bearer authorization credential (no `Bearer ` prefix) |
+| `url` | HTTPS header-relay endpoint accepting Alertmanager v4 JSON (not the Automation URL) |
+| `webhook-secret` | Credential sent to the relay as Bearer; relay forwards it as `X-Webhook-Secret` |
 
-Enable with `--set alerting.webhook.enabled=true`. No Secret resource or secret
+The deployed operator v0.94.1 AlertmanagerConfig CRD has **no custom HTTP header
+field**. The shared receiver uses native Alertmanager
+`http_headers.X-Webhook-Secret.values`; that cannot be expressed by this CRD.
+`proxyConnectHeader` only authenticates HTTP CONNECT proxies, not webhooks.
+Closest supported option: Secret-backed Bearer auth to a separately managed
+HTTPS relay that verifies the credential, forwards the JSON to the Automation,
+and translates the credential into `X-Webhook-Secret`. The relay is not supplied
+by this chart; never point this receiver directly at Devin (Bearer is rejected).
+Do not put secret header values in chart values or patch shared configuration.
+
+After the relay exists, enable with `--set alerting.webhook.enabled=true
+--set alerting.webhook.headerRelay=true`. No Secret resource or secret
 value is rendered by this chart. Secret name/keys and grouping intervals are
 configurable. Never set `page: devin`; it belongs to the incident demo automation.
 Rules preserve the source namespace as `affected_namespace`, then set
