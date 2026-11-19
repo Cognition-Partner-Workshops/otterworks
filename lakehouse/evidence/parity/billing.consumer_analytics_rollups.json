@@ -1,0 +1,177 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "id": "billing.consumer_analytics_rollups",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "consumer:analytics-service"
+  ],
+  "results": {
+    "columns": [
+      "month_label",
+      "region_cd",
+      "plan_name",
+      "billed_revenue",
+      "collected_cash",
+      "active_accounts",
+      "parity_row"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "active_accounts": {
+          "count": 60,
+          "hash": "6ae864fa69b4ce727f55f31124678d3158cf4f7b758da01b2efa5748eab2a3c0",
+          "null_count": 0,
+          "sum": "684"
+        },
+        "billed_revenue": {
+          "count": 60,
+          "hash": "84b4180c2a6073a14e7036deb4cb2e6c03ea0639da7d533bf66ae6d776e1849f",
+          "null_count": 0,
+          "sum": "12941.14"
+        },
+        "collected_cash": {
+          "count": 60,
+          "hash": "1dcbff9a1c68bd2c976c892c15da6193c852cb96719b0201fddfc0d4b6fbbfe7",
+          "null_count": 0,
+          "sum": "6728.81"
+        },
+        "month_label": {
+          "count": 60,
+          "hash": "ad6835ae020e98af0ef97b906c1d5f54cc429a322025e14ebaebd55c61a2143a",
+          "null_count": 0,
+          "sum": null
+        },
+        "parity_row": {
+          "count": 60,
+          "hash": "ffbc2ae537136a7038bf7c1110bcde16e1ffc5271b978f8c9cbd1666a6d19ae8",
+          "null_count": 0,
+          "sum": "1830"
+        },
+        "plan_name": {
+          "count": 60,
+          "hash": "3ac9166fa7f4ee0242406039bd3cd7b72b66f848bab985dc6ded94d56764644c",
+          "null_count": 0,
+          "sum": null
+        },
+        "region_cd": {
+          "count": 60,
+          "hash": "a069079b798ba4d5f9218ac7ad83e51e27ba5bbc41ae8dda9f0d46a24d887c36",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "active_accounts": {
+          "count": 60,
+          "hash": "6ae864fa69b4ce727f55f31124678d3158cf4f7b758da01b2efa5748eab2a3c0",
+          "null_count": 0,
+          "sum": "684"
+        },
+        "billed_revenue": {
+          "count": 60,
+          "hash": "84b4180c2a6073a14e7036deb4cb2e6c03ea0639da7d533bf66ae6d776e1849f",
+          "null_count": 0,
+          "sum": "12941.14"
+        },
+        "collected_cash": {
+          "count": 60,
+          "hash": "1dcbff9a1c68bd2c976c892c15da6193c852cb96719b0201fddfc0d4b6fbbfe7",
+          "null_count": 0,
+          "sum": "6728.81"
+        },
+        "month_label": {
+          "count": 60,
+          "hash": "ad6835ae020e98af0ef97b906c1d5f54cc429a322025e14ebaebd55c61a2143a",
+          "null_count": 0,
+          "sum": null
+        },
+        "parity_row": {
+          "count": 60,
+          "hash": "ffbc2ae537136a7038bf7c1110bcde16e1ffc5271b978f8c9cbd1666a6d19ae8",
+          "null_count": 0,
+          "sum": "1830"
+        },
+        "plan_name": {
+          "count": 60,
+          "hash": "3ac9166fa7f4ee0242406039bd3cd7b72b66f848bab985dc6ded94d56764644c",
+          "null_count": 0,
+          "sum": null
+        },
+        "region_cd": {
+          "count": 60,
+          "hash": "a069079b798ba4d5f9218ac7ad83e51e27ba5bbc41ae8dda9f0d46a24d887c36",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "active_accounts": {
+        "count": 0,
+        "samples": []
+      },
+      "billed_revenue": {
+        "count": 0,
+        "samples": []
+      },
+      "collected_cash": {
+        "count": 0,
+        "samples": []
+      },
+      "month_label": {
+        "count": 0,
+        "samples": []
+      },
+      "parity_row": {
+        "count": 0,
+        "samples": []
+      },
+      "plan_name": {
+        "count": 0,
+        "samples": []
+      },
+      "region_cd": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 60,
+      "legacy": 60
+    }
+  },
+  "row_counts": {
+    "lakehouse": 60,
+    "legacy": 60
+  },
+  "spec_hash": "e9593fba6cefd8fdc75f51c1631969d3514ba3222d5c6586dc3914e32869aa19",
+  "timestamp": "2026-11-19T14:14:43.505784+00:00"
+}

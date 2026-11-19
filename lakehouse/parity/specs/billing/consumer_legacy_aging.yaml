@@ -1,0 +1,110 @@
+{
+  "id": "billing.consumer_legacy_aging",
+  "legacy_objects": [
+    "consumer:legacy-billing"
+  ],
+  "legacy": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing_consumers/{business_date}/legacy_aging.jsonl",
+    "columns": [
+      "account_no",
+      "customer_name",
+      "currency_cd",
+      "oldest_due_date",
+      "open_balance",
+      "current_amt",
+      "days_1_30",
+      "days_31_60",
+      "days_61_90",
+      "days_over_90",
+      "open_ratio",
+      "parity_row"
+    ]
+  },
+  "lakehouse": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/exports/billing_consumers/{business_date}/current/queries/legacy_aging.jsonl",
+    "columns": [
+      "account_no",
+      "customer_name",
+      "currency_cd",
+      "oldest_due_date",
+      "open_balance",
+      "current_amt",
+      "days_1_30",
+      "days_31_60",
+      "days_61_90",
+      "days_over_90",
+      "open_ratio",
+      "parity_row"
+    ]
+  },
+  "keys": [
+    "parity_row"
+  ],
+  "columns": [
+    "account_no",
+    "customer_name",
+    "currency_cd",
+    "oldest_due_date",
+    "open_balance",
+    "current_amt",
+    "days_1_30",
+    "days_31_60",
+    "days_61_90",
+    "days_over_90",
+    "open_ratio",
+    "parity_row"
+  ],
+  "normalize": {
+    "account_no": {
+      "rstrip": true
+    },
+    "customer_name": {
+      "rstrip": true
+    },
+    "currency_cd": {
+      "rstrip": true,
+      "case_fold": true
+    },
+    "oldest_due_date": {
+      "rstrip": true
+    },
+    "open_balance": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "current_amt": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "days_1_30": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "days_31_60": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "days_61_90": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "days_over_90": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "open_ratio": {
+      "trim": true,
+      "numeric_scale": 6
+    },
+    "parity_row": {
+      "trim": true,
+      "numeric_scale": 0
+    }
+  },
+  "tolerance": {
+    "open_ratio": 0.000001
+  },
+  "description": "A-131..A-134: actual source SQL/emulator vs lakehouse-bound SQL, pinned clock. Canonically sorted comparison-only ordinal preserves duplicates and null rows. CHAR padding and declared code/group representatives normalized; ratios have 1e-6 absolute tolerance."
+}

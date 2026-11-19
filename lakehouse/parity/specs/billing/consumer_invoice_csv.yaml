@@ -1,0 +1,82 @@
+{
+  "id": "billing.consumer_invoice_csv",
+  "legacy_objects": [
+    "consumer:billing-service"
+  ],
+  "legacy": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing_consumers/{business_date}/invoices.csv",
+    "delimiter": ",",
+    "header": true,
+    "columns": [
+      "invoice_no",
+      "customer_name",
+      "account_no",
+      "invoice_date",
+      "currency_cd",
+      "amount_due",
+      "tax_amt",
+      "open_balance"
+    ]
+  },
+  "lakehouse": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/exports/billing_consumers/{business_date}/current/invoices.csv",
+    "delimiter": ",",
+    "header": true,
+    "columns": [
+      "invoice_no",
+      "customer_name",
+      "account_no",
+      "invoice_date",
+      "currency_cd",
+      "amount_due",
+      "tax_amt",
+      "open_balance"
+    ]
+  },
+  "keys": [
+    "invoice_no"
+  ],
+  "columns": [
+    "invoice_no",
+    "customer_name",
+    "account_no",
+    "invoice_date",
+    "currency_cd",
+    "amount_due",
+    "tax_amt",
+    "open_balance"
+  ],
+  "normalize": {
+    "invoice_no": {
+      "rstrip": true
+    },
+    "customer_name": {
+      "rstrip": true
+    },
+    "account_no": {
+      "rstrip": true
+    },
+    "invoice_date": {
+      "rstrip": true
+    },
+    "currency_cd": {
+      "rstrip": true,
+      "case_fold": true
+    },
+    "amount_due": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "tax_amt": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "open_balance": {
+      "trim": true,
+      "numeric_scale": 2
+    }
+  },
+  "description": "Actual legacy Python DTO/export function vs independent lakehouse CSV writer. Row-level CSV, CHAR padding only; ordered duplicate behavior separately verified against the source exporter."
+}

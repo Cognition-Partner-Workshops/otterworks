@@ -1,0 +1,34 @@
+{
+  "id": "billing.consumer_partner_csv",
+  "legacy_objects": [
+    "consumer:partner-extract",
+    "bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq",
+    "consumer_script:consumers/partner-extract/bin/nightly_extract.sh",
+    "consumer_script:consumers/partner-extract/bin/postprocess.sh",
+    "consumer_script:consumers/partner-extract/bin/sftp_push.sh",
+    "cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed"
+  ],
+  "legacy": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing_consumers/{business_date}/partner-invoices-{business_date}.csv",
+    "delimiter": "\t",
+    "columns": [
+      "line"
+    ]
+  },
+  "lakehouse": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/exports/billing_partner/{business_date}/current/partner-invoices-{business_date}.csv",
+    "delimiter": "\t",
+    "columns": [
+      "line"
+    ]
+  },
+  "keys": [
+    "line"
+  ],
+  "columns": [
+    "line"
+  ],
+  "description": "Exact complete CSV lines including header and trailer against actual unchanged awk postprocessor. No field normalization; native golden tests additionally verify exact byte order, negative zero, empty and fractional money."
+}

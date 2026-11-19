@@ -1,0 +1,54 @@
+{
+  "id": "billing.consumer_workbook_feed",
+  "legacy_objects": [
+    "consumer:finance-account-workbook",
+    "bi_artifact:consumers/bi/account_status.pq"
+  ],
+  "legacy": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing_consumers/{business_date}/workbook_feed.jsonl",
+    "columns": [
+      "account_status",
+      "currency_code",
+      "account_count",
+      "parity_row"
+    ]
+  },
+  "lakehouse": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/exports/billing_consumers/{business_date}/current/workbook_feed.jsonl",
+    "columns": [
+      "account_status",
+      "currency_code",
+      "account_count",
+      "parity_row"
+    ]
+  },
+  "keys": [
+    "parity_row"
+  ],
+  "columns": [
+    "account_status",
+    "currency_code",
+    "account_count",
+    "parity_row"
+  ],
+  "normalize": {
+    "account_status": {
+      "rstrip": true,
+      "case_fold": true
+    },
+    "currency_code": {
+      "rstrip": true,
+      "case_fold": true
+    },
+    "account_count": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "parity_row": {
+      "numeric_scale": 0
+    }
+  },
+  "description": "A-136: independent typed reader of actual legacy account_status PSV and lakehouse PSV; workbook feed pivots counts. Empty text is unknown/null, never count zero. Case-insensitive original grouping representatives normalized."
+}

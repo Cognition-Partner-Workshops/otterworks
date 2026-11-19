@@ -1,0 +1,12 @@
+{
+  "business_date": "2026-11-09",
+  "clock": "2026-11-10",
+  "sources": {
+    "services/billing-service/app/warehouse/teradata.py": "071fe57dc105e8834d4fa5053d7af7833502a24a354862774f8fdc4c45c77f22",
+    "services/legacy-billing/app/finance_warehouse.py": "21668523980e8d7aad85f25d384f2865a57c6ef54f9b2496fc0f2229f2d4c518",
+    "services/admin-service/app/services/finance_warehouse/dashboard_queries.rb": "6c9ff612b6f0caecbb349e965b78933c4ee3ddf12594e1f30442524998829c88",
+    "services/analytics-service/src/main/scala/com/otterworks/analytics/finance/FinanceRollupRepository.scala": "80e0df3b2adb0f2a1a6f12d5e3ad9f3d8bc33e5f6f80f4bc14d07aeda449aceb",
+    "services/report-service/src/main/java/com/otterworks/report/financewarehouse/TeradataFinanceWarehouse.java": "14fe950c2ec455dbc3fd09d48867db20c06dd8bbc58835280c30bbf621475521",
+    "consumers/partner-extract/sql/partner_invoice_extract.bteq": "664c4c5a6b523c0728fe5816f0ca3c49a6c799b3aff5577b40ca46689622703f"
+  }
+}

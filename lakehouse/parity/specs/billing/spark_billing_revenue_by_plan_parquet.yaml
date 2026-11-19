@@ -1,0 +1,30 @@
+{
+  "id": "billing.spark_billing_revenue_by_plan_parquet",
+  "legacy_objects": [
+    "spark_job:billing_revenue_by_plan",
+    "spark_submit:etl/spark/submit/billing_revenue_by_plan.sh",
+    "cron_entry:etl/crontab#8018504ce246"
+  ],
+  "legacy": {
+    "kind": "spark_sql",
+    "sql": "SELECT * FROM gold_billing.legacy_billing_revenue_by_plan_parquet"
+  },
+  "lakehouse": {
+    "kind": "spark_sql",
+    "sql": "SELECT * FROM gold_billing.billing_revenue_by_plan_parquet"
+  },
+  "keys": [
+    "parity_row"
+  ],
+  "columns": [
+    "plan_id",
+    "plan_name",
+    "revenue",
+    "parity_row"
+  ],
+  "normalize": {
+    "parity_row": {
+      "numeric_scale": 0
+    }
+  }
+}

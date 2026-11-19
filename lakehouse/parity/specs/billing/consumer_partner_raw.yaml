@@ -1,0 +1,78 @@
+{
+  "id": "billing.consumer_partner_raw",
+  "legacy_objects": [
+    "consumer:partner-extract",
+    "bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq",
+    "consumer_script:consumers/partner-extract/bin/nightly_extract.sh",
+    "consumer_script:consumers/partner-extract/bin/postprocess.sh",
+    "consumer_script:consumers/partner-extract/bin/sftp_push.sh",
+    "cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed"
+  ],
+  "legacy": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing_consumers/{business_date}/raw.csv",
+    "delimiter": ",",
+    "columns": [
+      "invoice_no",
+      "account_no",
+      "invoice_date",
+      "amount_due",
+      "tax_amt",
+      "open_balance",
+      "currency"
+    ]
+  },
+  "lakehouse": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/exports/billing_partner/{business_date}/current/raw.csv",
+    "delimiter": ",",
+    "columns": [
+      "invoice_no",
+      "account_no",
+      "invoice_date",
+      "amount_due",
+      "tax_amt",
+      "open_balance",
+      "currency"
+    ]
+  },
+  "keys": [
+    "invoice_no"
+  ],
+  "columns": [
+    "invoice_no",
+    "account_no",
+    "invoice_date",
+    "amount_due",
+    "tax_amt",
+    "open_balance",
+    "currency"
+  ],
+  "normalize": {
+    "invoice_no": {
+      "trim": true
+    },
+    "account_no": {
+      "trim": true
+    },
+    "invoice_date": {
+      "trim": true
+    },
+    "amount_due": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "tax_amt": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "open_balance": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "currency": {
+      "trim": true
+    }
+  },
+  "description": "Actual raw BTEQ REPORT rows vs lakehouse raw rows. Normalize FORMAT leading spaces and fractional leading zero through exact cents, not amounts or row counts."
+}

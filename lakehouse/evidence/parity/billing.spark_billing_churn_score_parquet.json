@@ -1,0 +1,196 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "id": "billing.spark_billing_churn_score_parquet",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "spark_job:billing_churn_score",
+    "spark_submit:etl/spark/submit/billing_churn_score.sh",
+    "cron_entry:etl/crontab#5f21c41e60ca"
+  ],
+  "results": {
+    "columns": [
+      "subscription_id",
+      "customer_id",
+      "plan_id",
+      "start_date",
+      "end_date",
+      "status",
+      "churn_score",
+      "parity_row"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "churn_score": {
+          "count": 3,
+          "hash": "11245ecf1f81269b2381bd838de75d72fd95111c36f3a3eaf0eeceb8b0bb0eff",
+          "null_count": 0,
+          "sum": "1.04531340917448713"
+        },
+        "customer_id": {
+          "count": 3,
+          "hash": "9b48bb8a7e8646b27dba8153d986f060bd9e39d1f27dd60a22c4164b161b4188",
+          "null_count": 0,
+          "sum": "100"
+        },
+        "end_date": {
+          "count": 3,
+          "hash": "055727d484336911668306b718fc1b3e5699249c48a150ae1c1ce71de961bae9",
+          "null_count": 2,
+          "sum": null
+        },
+        "parity_row": {
+          "count": 3,
+          "hash": "de8029d8370caf37ead3d4ef9e82858511a9dc83faa34a2ae9f558fa60435419",
+          "null_count": 0,
+          "sum": "6"
+        },
+        "plan_id": {
+          "count": 3,
+          "hash": "6016d3bdf22da268b91040249e3e1fb074d8a60c192ade6d794f18fbe6d4ace0",
+          "null_count": 0,
+          "sum": "4"
+        },
+        "start_date": {
+          "count": 3,
+          "hash": "28e703d7fd627c7222446d207f3d04e251e1a8ea6f466c1a108b3ac6a2b258f1",
+          "null_count": 0,
+          "sum": null
+        },
+        "status": {
+          "count": 3,
+          "hash": "a8b29c4bdec7f4fe8f42aa4d4768fd3893888528174627df8219cc1aa4000291",
+          "null_count": 1,
+          "sum": null
+        },
+        "subscription_id": {
+          "count": 3,
+          "hash": "de8029d8370caf37ead3d4ef9e82858511a9dc83faa34a2ae9f558fa60435419",
+          "null_count": 0,
+          "sum": "6"
+        }
+      },
+      "legacy": {
+        "churn_score": {
+          "count": 3,
+          "hash": "11245ecf1f81269b2381bd838de75d72fd95111c36f3a3eaf0eeceb8b0bb0eff",
+          "null_count": 0,
+          "sum": "1.04531340917448713"
+        },
+        "customer_id": {
+          "count": 3,
+          "hash": "9b48bb8a7e8646b27dba8153d986f060bd9e39d1f27dd60a22c4164b161b4188",
+          "null_count": 0,
+          "sum": "100"
+        },
+        "end_date": {
+          "count": 3,
+          "hash": "055727d484336911668306b718fc1b3e5699249c48a150ae1c1ce71de961bae9",
+          "null_count": 2,
+          "sum": null
+        },
+        "parity_row": {
+          "count": 3,
+          "hash": "de8029d8370caf37ead3d4ef9e82858511a9dc83faa34a2ae9f558fa60435419",
+          "null_count": 0,
+          "sum": "6"
+        },
+        "plan_id": {
+          "count": 3,
+          "hash": "6016d3bdf22da268b91040249e3e1fb074d8a60c192ade6d794f18fbe6d4ace0",
+          "null_count": 0,
+          "sum": "4"
+        },
+        "start_date": {
+          "count": 3,
+          "hash": "28e703d7fd627c7222446d207f3d04e251e1a8ea6f466c1a108b3ac6a2b258f1",
+          "null_count": 0,
+          "sum": null
+        },
+        "status": {
+          "count": 3,
+          "hash": "a8b29c4bdec7f4fe8f42aa4d4768fd3893888528174627df8219cc1aa4000291",
+          "null_count": 1,
+          "sum": null
+        },
+        "subscription_id": {
+          "count": 3,
+          "hash": "de8029d8370caf37ead3d4ef9e82858511a9dc83faa34a2ae9f558fa60435419",
+          "null_count": 0,
+          "sum": "6"
+        }
+      }
+    },
+    "mismatches": {
+      "churn_score": {
+        "count": 0,
+        "samples": []
+      },
+      "customer_id": {
+        "count": 0,
+        "samples": []
+      },
+      "end_date": {
+        "count": 0,
+        "samples": []
+      },
+      "parity_row": {
+        "count": 0,
+        "samples": []
+      },
+      "plan_id": {
+        "count": 0,
+        "samples": []
+      },
+      "start_date": {
+        "count": 0,
+        "samples": []
+      },
+      "status": {
+        "count": 0,
+        "samples": []
+      },
+      "subscription_id": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 3,
+      "legacy": 3
+    }
+  },
+  "row_counts": {
+    "lakehouse": 3,
+    "legacy": 3
+  },
+  "spec_hash": "50a797ccad37135013f1af13959a4af1a72297e751b093be0773c20d5a559643",
+  "timestamp": "2026-11-19T14:15:03.339050+00:00"
+}

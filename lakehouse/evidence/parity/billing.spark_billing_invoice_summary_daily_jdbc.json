@@ -1,0 +1,145 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "id": "billing.spark_billing_invoice_summary_daily_jdbc",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "spark_job:billing_invoice_summary_daily",
+    "spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh",
+    "cron_entry:etl/crontab#d223b2edaac1"
+  ],
+  "results": {
+    "columns": [
+      "customer_id",
+      "invoice_date",
+      "line_count",
+      "amount",
+      "parity_row"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "amount": {
+          "count": 3,
+          "hash": "a9b0eb281b78f2ca17ba16728107fbaad658cb7a6ba716c230ad936b3118cbd5",
+          "null_count": 0,
+          "sum": "5"
+        },
+        "customer_id": {
+          "count": 3,
+          "hash": "419e70119c435c25c4d8bf3ba045be4bb23cb91bca86f04adb337e027b4811f6",
+          "null_count": 1,
+          "sum": "15"
+        },
+        "invoice_date": {
+          "count": 3,
+          "hash": "28e703d7fd627c7222446d207f3d04e251e1a8ea6f466c1a108b3ac6a2b258f1",
+          "null_count": 0,
+          "sum": null
+        },
+        "line_count": {
+          "count": 3,
+          "hash": "6016d3bdf22da268b91040249e3e1fb074d8a60c192ade6d794f18fbe6d4ace0",
+          "null_count": 0,
+          "sum": "4"
+        },
+        "parity_row": {
+          "count": 3,
+          "hash": "de8029d8370caf37ead3d4ef9e82858511a9dc83faa34a2ae9f558fa60435419",
+          "null_count": 0,
+          "sum": "6"
+        }
+      },
+      "legacy": {
+        "amount": {
+          "count": 3,
+          "hash": "a9b0eb281b78f2ca17ba16728107fbaad658cb7a6ba716c230ad936b3118cbd5",
+          "null_count": 0,
+          "sum": "5"
+        },
+        "customer_id": {
+          "count": 3,
+          "hash": "419e70119c435c25c4d8bf3ba045be4bb23cb91bca86f04adb337e027b4811f6",
+          "null_count": 1,
+          "sum": "15"
+        },
+        "invoice_date": {
+          "count": 3,
+          "hash": "28e703d7fd627c7222446d207f3d04e251e1a8ea6f466c1a108b3ac6a2b258f1",
+          "null_count": 0,
+          "sum": null
+        },
+        "line_count": {
+          "count": 3,
+          "hash": "6016d3bdf22da268b91040249e3e1fb074d8a60c192ade6d794f18fbe6d4ace0",
+          "null_count": 0,
+          "sum": "4"
+        },
+        "parity_row": {
+          "count": 3,
+          "hash": "de8029d8370caf37ead3d4ef9e82858511a9dc83faa34a2ae9f558fa60435419",
+          "null_count": 0,
+          "sum": "6"
+        }
+      }
+    },
+    "mismatches": {
+      "amount": {
+        "count": 0,
+        "samples": []
+      },
+      "customer_id": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_date": {
+        "count": 0,
+        "samples": []
+      },
+      "line_count": {
+        "count": 0,
+        "samples": []
+      },
+      "parity_row": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 3,
+      "legacy": 3
+    }
+  },
+  "row_counts": {
+    "lakehouse": 3,
+    "legacy": 3
+  },
+  "spec_hash": "6dc2ebd5ad6b9d71a33efe47a427554b1ac89d2158a6154fa9a713977c2e8da5",
+  "timestamp": "2026-11-19T14:15:04.609794+00:00"
+}

@@ -1,0 +1,369 @@
+{
+  "business_date": "20261109",
+  "execution": "Unchanged PySpark scripts; isolated PostgreSQL; local[2], UTC, two shuffle partitions",
+  "input_signature": "56f1486b31476925f4ec6ed478464ea38fcc8aff494137ae3f5f064983e6e9b5",
+  "jdbc_driver_hash": "188976721ead8e8627eb6d8389d500dccc0c9bebd885268a3047180274a6031e",
+  "runner_hash": "7e91cdd1f94301486627f7d5943b3dc86ddd7ee5a1d3dfde9991a3638cd1bfdc",
+  "sources": {
+    "etl/spark/jobs/py/billing_churn_score.py": "97921eedc2ca83594f5bed9e47a6246778f78728600e4f82bf05b7aae8f665da",
+    "etl/spark/jobs/py/billing_gl_trial_balance.py": "83820bec1fdadeff9bc85b7c72801b2bbf9f7c2d428fa9dc753a5b255f38757b",
+    "etl/spark/jobs/py/billing_invoice_summary_daily.py": "465498ec85d1ac3ff518b8506c08db041383f4e4b1d5f51592e9c691a2dfef78",
+    "etl/spark/jobs/py/billing_payment_aging.py": "04a8470b62301b8fce4e8c79af6e28fa4e4524642574f05cfff46ca0d4dd7230",
+    "etl/spark/jobs/py/billing_revenue_by_plan.py": "8e3fc23a9cacef7970a402566d9bf56b69fcd3f7a49a27ff4e6c14bcd9ea4092",
+    "etl/spark/jobs/py/billing_usage_append_daily.py": "d9ffe378655fe8ff586643e48b4bf25a0c81947dd266a2d03fa17729e2ebe924",
+    "etl/spark/jobs/py/common/runtime.py": "7a68ac84ae8f534f7241ea2086256bf63d22e6f5e993105b2f1829f422a652b8",
+    "etl/spark/jobs/py/common/schemas.py": "14f7457f3245cc28fed857809dbeecb99fe463bab59eba1724de22e5256df77d",
+    "etl/spark/submit/billing_churn_score.sh": "439fb97021c4dd15c73696e5ebc2080709e5e9b57f68178131eff654da2d9ebf",
+    "etl/spark/submit/billing_gl_trial_balance.sh": "5c95c140abc2a46ec78330bcc9e518360acc250e6a6df791778325fc1d997093",
+    "etl/spark/submit/billing_invoice_summary_daily.sh": "25b529e3bfa5532998431f5e41d036eff59c7028450bec4964cf6fccd1740c81",
+    "etl/spark/submit/billing_payment_aging.sh": "94867c7512e87932d4ee8e83aedb85514fa8595d7bcad64bf2083f566aa70892",
+    "etl/spark/submit/billing_revenue_by_plan.sh": "e2114db5b366264512e54c043e7c8512d3eb06a4d69b15564f89eb5b47d4ee69",
+    "etl/spark/submit/billing_usage_append_daily.sh": "758c7b4a86074782579de4c214d28a63d85896ee00c537391007c1c34b404a86"
+  },
+  "spark": "3.5.3",
+  "namespace": "sfx-d1110-after",
+  "legacy_namespace": "sfx-d1110-before",
+  "branch": "devin/1795091104-lakehouse-billing-spark",
+  "jdbc_database": "billing_spark_sfx-d1110-after",
+  "input_manifest": {
+    "business_date": "20261109",
+    "files": {
+      "billing/CREDIT_NOTE/20261108.psv": "5a5d66dfc5f4237c8e20233b7411832c48a1c17f5a3a66dfae5b7710136d7057",
+      "billing/CREDIT_NOTE/20261109.psv": "656af2a1888425049459e798c5cdcda9ac7f780df07ef467daca61909944bc3c",
+      "billing/GL_ACCOUNT/20261108.psv": "a1f872353c2cf01c142d0879f24b927db66507f7abad422b777aa6f1816a1f5a",
+      "billing/GL_ACCOUNT/20261109.psv": "02ae2f34c7f3568c9dd4937d7cb4f78a21a6e19f4656e4f4cfe5c69bf97e4e98",
+      "billing/GL_JOURNAL_LINE/20261108.psv": "4db42affe84002178e0ff92f9e669c0c7a102b414540abba4e8e358a83c3f51c",
+      "billing/GL_JOURNAL_LINE/20261109.psv": "92f588189fc094b5c8195ab250704e3660daae7eaf40b4a089eb99a0a8588acc",
+      "billing/INVOICE_HDR/20261108.psv": "9b041627baba381313dd0abff9b239ed9c2f76a0aba38ac91500bdd3302a8f40",
+      "billing/INVOICE_HDR/20261109.psv": "4c3bb5a566feeccfc327eedc8e15d8616427686fc39778a55e1ed6e32740d45c",
+      "billing/INVOICE_LINE/20261108.psv": "f81f4c357bdddc8dd5598b5e0c5059bcae2878c497c86d086ef5c3ac96112a1f",
+      "billing/INVOICE_LINE/20261109.psv": "a629e1fe3d38cd07cea7c620228faa50b6a5f01937a9dde7225e9fb770040628",
+      "billing/PAYMENT/20261108.psv": "8633e37cab26ec38c3971c0e1b01a6adb666f3176c9250856cb61b786a544cf8",
+      "billing/PAYMENT/20261109.psv": "ed491783e910f526f06db3b93b2f71b706e4a77d21eadde94994e58c71f3bddb",
+      "billing/PLAN_CATALOG/20261108.psv": "360372a41a838f7c8c37a124c13aa2d20d7b2cf8396007ee88a7f09be9fbd081",
+      "billing/PLAN_CATALOG/20261109.psv": "14eff9c64c658dde372624fb41b7ab879a711a43a0b669dd039c4622df558978",
+      "billing/SUBSCRIPTION/20261108.psv": "9b41bb36cc1e1f3be5538b19a1034304f0bc238d579b934e545ef58556625268",
+      "billing/SUBSCRIPTION/20261109.psv": "a7b10a1a9cdf8cca1063538e08d023634846a6df03546e348ae3d454fde427f9",
+      "billing/USAGE_DAILY/20261108.psv": "55429c21d0843ac3d1d8f0d1f3f4b72ce936c720b328bf86f3adb9269f1f19ec",
+      "billing/USAGE_DAILY/20261109.psv": "c89343dccfa7eafd82652c68e0fc9b1ff7a4af7be81d4c4c5e77e2aba790387e"
+    },
+    "generator_hash": "ce561506da1e41b0a7e8cdf1acdf73c5809a65d2e2bfa2872cab5ffc070ab6b2",
+    "schema_hash": "14f7457f3245cc28fed857809dbeecb99fe463bab59eba1724de22e5256df77d",
+    "schemas": {
+      "CREDIT_NOTE": [
+        [
+          "CREDIT_NOTE_ID",
+          "BIGINT"
+        ],
+        [
+          "INVOICE_ID",
+          "BIGINT"
+        ],
+        [
+          "CUSTOMER_ID",
+          "BIGINT"
+        ],
+        [
+          "GL_ACCOUNT_ID",
+          "BIGINT"
+        ],
+        [
+          "POSTING_DATE",
+          "DATE"
+        ],
+        [
+          "CURRENCY_CODE",
+          "TEXT"
+        ],
+        [
+          "AMOUNT",
+          "DECIMAL(18,2)"
+        ],
+        [
+          "REASON",
+          "TEXT"
+        ]
+      ],
+      "GL_ACCOUNT": [
+        [
+          "GL_ACCOUNT_ID",
+          "BIGINT"
+        ],
+        [
+          "ACCOUNT_CODE",
+          "TEXT"
+        ],
+        [
+          "ACCOUNT_NAME",
+          "TEXT"
+        ],
+        [
+          "ACCOUNT_TYPE",
+          "TEXT"
+        ]
+      ],
+      "GL_JOURNAL_LINE": [
+        [
+          "GL_JOURNAL_LINE_ID",
+          "BIGINT"
+        ],
+        [
+          "JOURNAL_ID",
+          "BIGINT"
+        ],
+        [
+          "LINE_NO",
+          "BIGINT"
+        ],
+        [
+          "GL_ACCOUNT_ID",
+          "BIGINT"
+        ],
+        [
+          "DEBIT_AMT",
+          "DECIMAL(18,2)"
+        ],
+        [
+          "CREDIT_AMT",
+          "DECIMAL(18,2)"
+        ],
+        [
+          "CURRENCY_CODE",
+          "TEXT"
+        ],
+        [
+          "POSTING_DATE",
+          "DATE"
+        ],
+        [
+          "SOURCE",
+          "TEXT"
+        ],
+        [
+          "CUSTOMER_ID",
+          "BIGINT"
+        ],
+        [
+          "INVOICE_ID",
+          "BIGINT"
+        ]
+      ],
+      "INVOICE_HDR": [
+        [
+          "INVOICE_ID",
+          "BIGINT"
+        ],
+        [
+          "CUSTOMER_ID",
+          "BIGINT"
+        ],
+        [
+          "INVOICE_NUMBER",
+          "TEXT"
+        ],
+        [
+          "INVOICE_DATE",
+          "DATE"
+        ],
+        [
+          "DUE_DATE",
+          "DATE"
+        ],
+        [
+          "CURRENCY_CODE",
+          "TEXT"
+        ],
+        [
+          "TOTAL_AMOUNT",
+          "DECIMAL(18,2)"
+        ],
+        [
+          "STATUS",
+          "TEXT"
+        ]
+      ],
+      "INVOICE_LINE": [
+        [
+          "INVOICE_LINE_ID",
+          "BIGINT"
+        ],
+        [
+          "INVOICE_ID",
+          "BIGINT"
+        ],
+        [
+          "PLAN_ID",
+          "BIGINT"
+        ],
+        [
+          "QUANTITY",
+          "BIGINT"
+        ],
+        [
+          "UNIT_PRICE",
+          "DECIMAL(18,2)"
+        ],
+        [
+          "AMOUNT",
+          "DECIMAL(18,2)"
+        ]
+      ],
+      "PAYMENT": [
+        [
+          "PAYMENT_ID",
+          "BIGINT"
+        ],
+        [
+          "INVOICE_ID",
+          "BIGINT"
+        ],
+        [
+          "CUSTOMER_ID",
+          "BIGINT"
+        ],
+        [
+          "PAYMENT_DATE",
+          "DATE"
+        ],
+        [
+          "AMOUNT",
+          "DECIMAL(18,2)"
+        ],
+        [
+          "STATUS",
+          "TEXT"
+        ]
+      ],
+      "PLAN_CATALOG": [
+        [
+          "PLAN_ID",
+          "BIGINT"
+        ],
+        [
+          "PLAN_NAME",
+          "TEXT"
+        ],
+        [
+          "MONTHLY_PRICE",
+          "DECIMAL(18,2)"
+        ]
+      ],
+      "SUBSCRIPTION": [
+        [
+          "SUBSCRIPTION_ID",
+          "BIGINT"
+        ],
+        [
+          "CUSTOMER_ID",
+          "BIGINT"
+        ],
+        [
+          "PLAN_ID",
+          "BIGINT"
+        ],
+        [
+          "START_DATE",
+          "DATE"
+        ],
+        [
+          "END_DATE",
+          "DATE"
+        ],
+        [
+          "STATUS",
+          "TEXT"
+        ]
+      ],
+      "USAGE_DAILY": [
+        [
+          "USAGE_ID",
+          "BIGINT"
+        ],
+        [
+          "CUSTOMER_ID",
+          "BIGINT"
+        ],
+        [
+          "USAGE_DATE",
+          "DATE"
+        ],
+        [
+          "UNITS",
+          "BIGINT"
+        ],
+        [
+          "AMOUNT",
+          "DECIMAL(18,2)"
+        ]
+      ]
+    },
+    "version": 1
+  },
+  "converted_sources": {
+    "lakehouse/billing/spark.py": "522acc7f817aa53dbc5204a8588ffed2041741f69db22f3be30b6bc5196fd821",
+    "lakehouse/billing/spark_inputs.py": "ce561506da1e41b0a7e8cdf1acdf73c5809a65d2e2bfa2872cab5ffc070ab6b2"
+  },
+  "observed_identical_delivery_replay": {
+    "legacy_parquet": 4,
+    "legacy_jdbc": 4,
+    "converted_parquet": 2,
+    "converted_delta": 2,
+    "reference_restored_to_one_delivery": true
+  },
+  "parity_reports": [
+    {
+      "id": "billing.spark_billing_churn_score_parquet",
+      "spec_hash": "50a797ccad37135013f1af13959a4af1a72297e751b093be0773c20d5a559643",
+      "timestamp": "2026-11-19T12:45:49.861711+00:00",
+      "report": "parity/billing.spark_billing_churn_score_parquet.json"
+    },
+    {
+      "id": "billing.spark_billing_gl_trial_balance_jdbc",
+      "spec_hash": "6f3c49f6b7a453c5486cfeee5bf0bf9d3e827ca452d4706611ff7b552b84bb83",
+      "timestamp": "2026-11-19T12:45:50.063068+00:00",
+      "report": "parity/billing.spark_billing_gl_trial_balance_jdbc.json"
+    },
+    {
+      "id": "billing.spark_billing_gl_trial_balance_parquet",
+      "spec_hash": "886d9b02a21cf341d0a9e6b061bd9bdb5f530c711a9b607d202b6eec2a0b2542",
+      "timestamp": "2026-11-19T12:45:50.464940+00:00",
+      "report": "parity/billing.spark_billing_gl_trial_balance_parquet.json"
+    },
+    {
+      "id": "billing.spark_billing_invoice_summary_daily_jdbc",
+      "spec_hash": "6dc2ebd5ad6b9d71a33efe47a427554b1ac89d2158a6154fa9a713977c2e8da5",
+      "timestamp": "2026-11-19T12:45:50.633607+00:00",
+      "report": "parity/billing.spark_billing_invoice_summary_daily_jdbc.json"
+    },
+    {
+      "id": "billing.spark_billing_invoice_summary_daily_parquet",
+      "spec_hash": "594d0b777393b440d3d193719aab6596bba6faf73fc362a1a66c458b96eff50d",
+      "timestamp": "2026-11-19T12:45:50.983542+00:00",
+      "report": "parity/billing.spark_billing_invoice_summary_daily_parquet.json"
+    },
+    {
+      "id": "billing.spark_billing_payment_aging_parquet",
+      "spec_hash": "9df87d491e6a184ae748a9dfde62586232dafd287633419a9bf29bdb0511704f",
+      "timestamp": "2026-11-19T12:45:51.145804+00:00",
+      "report": "parity/billing.spark_billing_payment_aging_parquet.json"
+    },
+    {
+      "id": "billing.spark_billing_revenue_by_plan_parquet",
+      "spec_hash": "171e0581f88c027257a4eddae7a81916826f3a4342e49d1ed99e42a3206fb740",
+      "timestamp": "2026-11-19T12:45:51.325613+00:00",
+      "report": "parity/billing.spark_billing_revenue_by_plan_parquet.json"
+    },
+    {
+      "id": "billing.spark_billing_usage_append_daily_jdbc",
+      "spec_hash": "dbef04ccd8906b02175bf63b0b42e4aba0eccbb5264b7c30164eee16947bfb37",
+      "timestamp": "2026-11-19T12:45:51.505808+00:00",
+      "report": "parity/billing.spark_billing_usage_append_daily_jdbc.json"
+    },
+    {
+      "id": "billing.spark_billing_usage_append_daily_parquet",
+      "spec_hash": "57b832ab4875bf55ea1cc1a8f037c0961038af8ab337fded0d223a61dcbe2fd1",
+      "timestamp": "2026-11-19T12:45:51.873143+00:00",
+      "report": "parity/billing.spark_billing_usage_append_daily_parquet.json"
+    }
+  ]
+}

@@ -8,7 +8,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.sensors.filesystem import FileSensor
 from airflow.timetables.base import TimeRestriction
 
-from lakehouse.orchestration.graph import load, logical_business_date
+from lakehouse.orchestration.graph import artifact_path, load, logical_business_date
 from lakehouse.runtime.layout import ROOT
 
 
@@ -37,7 +37,7 @@ def test_dagbag_contract_and_templates():
                 if node['kind'] == 'feed_sensor':
                     assert task.filepath.endswith('/' + node['table'] + '/20261109.psv')
                 else:
-                    assert task.filepath.endswith('/20261109/docs_event_export_hourly/_SUCCESS')
+                    assert Path(task.filepath) == artifact_path(node, '20261109')
                 if node.get('landing_prefix'):
                     assert '/' + node['landing_prefix'].format(business_date='20261109') + '/' in task.filepath
                 assert task.mode == 'reschedule' and task.timeout == node['timeout_seconds']

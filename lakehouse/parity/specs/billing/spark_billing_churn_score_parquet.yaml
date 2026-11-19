@@ -1,0 +1,34 @@
+{
+  "id": "billing.spark_billing_churn_score_parquet",
+  "legacy_objects": [
+    "spark_job:billing_churn_score",
+    "spark_submit:etl/spark/submit/billing_churn_score.sh",
+    "cron_entry:etl/crontab#5f21c41e60ca"
+  ],
+  "legacy": {
+    "kind": "spark_sql",
+    "sql": "SELECT * FROM gold_billing.legacy_billing_churn_score_parquet"
+  },
+  "lakehouse": {
+    "kind": "spark_sql",
+    "sql": "SELECT * FROM gold_billing.billing_churn_score_parquet"
+  },
+  "keys": [
+    "parity_row"
+  ],
+  "columns": [
+    "subscription_id",
+    "customer_id",
+    "plan_id",
+    "start_date",
+    "end_date",
+    "status",
+    "churn_score",
+    "parity_row"
+  ],
+  "normalize": {
+    "parity_row": {
+      "numeric_scale": 0
+    }
+  }
+}

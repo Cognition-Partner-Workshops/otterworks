@@ -1,0 +1,73 @@
+{
+  "id": "billing.consumer_analytics_rollups",
+  "legacy_objects": [
+    "consumer:analytics-service"
+  ],
+  "legacy": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing_consumers/{business_date}/analytics_rollups.jsonl",
+    "columns": [
+      "month_label",
+      "region_cd",
+      "plan_name",
+      "billed_revenue",
+      "collected_cash",
+      "active_accounts",
+      "parity_row"
+    ]
+  },
+  "lakehouse": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/exports/billing_consumers/{business_date}/current/queries/analytics_rollups.jsonl",
+    "columns": [
+      "month_label",
+      "region_cd",
+      "plan_name",
+      "billed_revenue",
+      "collected_cash",
+      "active_accounts",
+      "parity_row"
+    ]
+  },
+  "keys": [
+    "parity_row"
+  ],
+  "columns": [
+    "month_label",
+    "region_cd",
+    "plan_name",
+    "billed_revenue",
+    "collected_cash",
+    "active_accounts",
+    "parity_row"
+  ],
+  "normalize": {
+    "month_label": {
+      "rstrip": true
+    },
+    "region_cd": {
+      "rstrip": true
+    },
+    "plan_name": {
+      "rstrip": true
+    },
+    "billed_revenue": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "collected_cash": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "active_accounts": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "parity_row": {
+      "trim": true,
+      "numeric_scale": 0
+    }
+  },
+  "tolerance": {},
+  "description": "A-131..A-134: actual source SQL/emulator vs lakehouse-bound SQL, pinned clock. Canonically sorted comparison-only ordinal preserves duplicates and null rows. CHAR padding and declared code/group representatives normalized; ratios have 1e-6 absolute tolerance."
+}

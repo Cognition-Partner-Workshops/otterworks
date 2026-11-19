@@ -1,0 +1,262 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "id": "billing.consumer_legacy_aging",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "consumer:legacy-billing"
+  ],
+  "results": {
+    "columns": [
+      "account_no",
+      "customer_name",
+      "currency_cd",
+      "oldest_due_date",
+      "open_balance",
+      "current_amt",
+      "days_1_30",
+      "days_31_60",
+      "days_61_90",
+      "days_over_90",
+      "open_ratio",
+      "parity_row"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "account_no": {
+          "count": 100,
+          "hash": "c538d1bc777221c797e3415900b6d9300edf37fa67baba0ac731d1e7b9bfb5bc",
+          "null_count": 0,
+          "sum": null
+        },
+        "currency_cd": {
+          "count": 100,
+          "hash": "86754162b51dd71bcb80d00c4a555aa382102ec3896fa114d2e2eabf2ec5b900",
+          "null_count": 0,
+          "sum": null
+        },
+        "current_amt": {
+          "count": 100,
+          "hash": "1c3ea848eeef18d88b410ae5f4ea186d2961c362e8c58a3cfe45539ed0032084",
+          "null_count": 0,
+          "sum": "351257.12"
+        },
+        "customer_name": {
+          "count": 100,
+          "hash": "bf07b2ce79399e4bcb6fe2f19d268e5260f98c96064754359b5bc8e5ca135302",
+          "null_count": 0,
+          "sum": null
+        },
+        "days_1_30": {
+          "count": 100,
+          "hash": "b60aca00f01a3166effea47e9966c4d489ad0ff6392ae4f5c99d3490b64d2602",
+          "null_count": 0,
+          "sum": "0"
+        },
+        "days_31_60": {
+          "count": 100,
+          "hash": "b60aca00f01a3166effea47e9966c4d489ad0ff6392ae4f5c99d3490b64d2602",
+          "null_count": 0,
+          "sum": "0"
+        },
+        "days_61_90": {
+          "count": 100,
+          "hash": "b60aca00f01a3166effea47e9966c4d489ad0ff6392ae4f5c99d3490b64d2602",
+          "null_count": 0,
+          "sum": "0"
+        },
+        "days_over_90": {
+          "count": 100,
+          "hash": "b60aca00f01a3166effea47e9966c4d489ad0ff6392ae4f5c99d3490b64d2602",
+          "null_count": 0,
+          "sum": "0"
+        },
+        "oldest_due_date": {
+          "count": 100,
+          "hash": "4e3e9c1acbc8efc717a80ddd0b4d6c720e459dedef3b07f7a866bae062e13a71",
+          "null_count": 0,
+          "sum": null
+        },
+        "open_balance": {
+          "count": 100,
+          "hash": "1c3ea848eeef18d88b410ae5f4ea186d2961c362e8c58a3cfe45539ed0032084",
+          "null_count": 0,
+          "sum": "351257.12"
+        },
+        "open_ratio": {
+          "count": 100,
+          "hash": "e527989565c7ac2b0b451d960140b336e4423f20795f9ceb203fff7723a40a37",
+          "null_count": 0,
+          "sum": "71.943902"
+        },
+        "parity_row": {
+          "count": 100,
+          "hash": "7e3d59edabcaacd3d8e95517ebf3dc57edecf089ce845b2f85a6533a9d7c33cc",
+          "null_count": 0,
+          "sum": "5050"
+        }
+      },
+      "legacy": {
+        "account_no": {
+          "count": 100,
+          "hash": "c538d1bc777221c797e3415900b6d9300edf37fa67baba0ac731d1e7b9bfb5bc",
+          "null_count": 0,
+          "sum": null
+        },
+        "currency_cd": {
+          "count": 100,
+          "hash": "86754162b51dd71bcb80d00c4a555aa382102ec3896fa114d2e2eabf2ec5b900",
+          "null_count": 0,
+          "sum": null
+        },
+        "current_amt": {
+          "count": 100,
+          "hash": "1c3ea848eeef18d88b410ae5f4ea186d2961c362e8c58a3cfe45539ed0032084",
+          "null_count": 0,
+          "sum": "351257.12"
+        },
+        "customer_name": {
+          "count": 100,
+          "hash": "bf07b2ce79399e4bcb6fe2f19d268e5260f98c96064754359b5bc8e5ca135302",
+          "null_count": 0,
+          "sum": null
+        },
+        "days_1_30": {
+          "count": 100,
+          "hash": "b60aca00f01a3166effea47e9966c4d489ad0ff6392ae4f5c99d3490b64d2602",
+          "null_count": 0,
+          "sum": "0"
+        },
+        "days_31_60": {
+          "count": 100,
+          "hash": "b60aca00f01a3166effea47e9966c4d489ad0ff6392ae4f5c99d3490b64d2602",
+          "null_count": 0,
+          "sum": "0"
+        },
+        "days_61_90": {
+          "count": 100,
+          "hash": "b60aca00f01a3166effea47e9966c4d489ad0ff6392ae4f5c99d3490b64d2602",
+          "null_count": 0,
+          "sum": "0"
+        },
+        "days_over_90": {
+          "count": 100,
+          "hash": "b60aca00f01a3166effea47e9966c4d489ad0ff6392ae4f5c99d3490b64d2602",
+          "null_count": 0,
+          "sum": "0"
+        },
+        "oldest_due_date": {
+          "count": 100,
+          "hash": "4e3e9c1acbc8efc717a80ddd0b4d6c720e459dedef3b07f7a866bae062e13a71",
+          "null_count": 0,
+          "sum": null
+        },
+        "open_balance": {
+          "count": 100,
+          "hash": "1c3ea848eeef18d88b410ae5f4ea186d2961c362e8c58a3cfe45539ed0032084",
+          "null_count": 0,
+          "sum": "351257.12"
+        },
+        "open_ratio": {
+          "count": 100,
+          "hash": "e527989565c7ac2b0b451d960140b336e4423f20795f9ceb203fff7723a40a37",
+          "null_count": 0,
+          "sum": "71.943902"
+        },
+        "parity_row": {
+          "count": 100,
+          "hash": "7e3d59edabcaacd3d8e95517ebf3dc57edecf089ce845b2f85a6533a9d7c33cc",
+          "null_count": 0,
+          "sum": "5050"
+        }
+      }
+    },
+    "mismatches": {
+      "account_no": {
+        "count": 0,
+        "samples": []
+      },
+      "currency_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "current_amt": {
+        "count": 0,
+        "samples": []
+      },
+      "customer_name": {
+        "count": 0,
+        "samples": []
+      },
+      "days_1_30": {
+        "count": 0,
+        "samples": []
+      },
+      "days_31_60": {
+        "count": 0,
+        "samples": []
+      },
+      "days_61_90": {
+        "count": 0,
+        "samples": []
+      },
+      "days_over_90": {
+        "count": 0,
+        "samples": []
+      },
+      "oldest_due_date": {
+        "count": 0,
+        "samples": []
+      },
+      "open_balance": {
+        "count": 0,
+        "samples": []
+      },
+      "open_ratio": {
+        "count": 0,
+        "samples": []
+      },
+      "parity_row": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 100,
+      "legacy": 100
+    }
+  },
+  "row_counts": {
+    "lakehouse": 100,
+    "legacy": 100
+  },
+  "spec_hash": "1e3f4d9ed6260e018c92bea66dfa28cb665d0ba6f4c7f849fd6a32a985775143",
+  "timestamp": "2026-11-19T14:14:43.624714+00:00"
+}

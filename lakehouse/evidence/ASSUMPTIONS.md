@@ -1,6 +1,6 @@
 # Migration assumptions
 
-Entries: 127. Validation errors: 0.
+Entries: 141. Validation errors: 0.
 
 ## A-001 — PSV empty fields and nulls
 
@@ -1297,6 +1297,258 @@ Entries: 127. Validation errors: 0.
 **verification:** test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 
 **sources:** etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML, etl/informatica/runner/engine.py, etl/informatica/runner/workflow.py, etl/informatica/runner/expr.py, etl/informatica/params/sfx_d1110_daily.par
+
+## A-125 — Billing Spark alternate wildcard contract
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** spark_job:billing_invoice_summary_daily, spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh, cron_entry:etl/crontab#d223b2edaac1, spark_job:billing_revenue_by_plan, spark_submit:etl/spark/submit/billing_revenue_by_plan.sh, cron_entry:etl/crontab#8018504ce246, spark_job:billing_payment_aging, spark_submit:etl/spark/submit/billing_payment_aging.sh, cron_entry:etl/crontab#2ec3f6dad69f, spark_job:billing_usage_append_daily, spark_submit:etl/spark/submit/billing_usage_append_daily.sh, cron_entry:etl/crontab#ed928bb7422d, spark_job:billing_gl_trial_balance, spark_submit:etl/spark/submit/billing_gl_trial_balance.sh, cron_entry:etl/crontab#146d93841612, spark_job:billing_churn_score, spark_submit:etl/spark/submit/billing_churn_score.sh, cron_entry:etl/crontab#5f21c41e60ca
+
+**ambiguity:** Headered Spark feeds differ from warehouse columns and may contain multiple dates. Payment aging reads JDBC, not CSV.
+
+**decision:** Use a separate billing-spark/YYYYMMDD bundle with all nine table schemas, exact header/file set and SHA256 manifest. Both engines consume every wildcard PSV. The isolated reference JDBC PAYMENT/INVOICE_HDR tables are loaded from those same files; converted aging reads their frozen file snapshot. Never use billing BTEQ tables for these jobs.
+
+**rationale:** The actual common/schemas.py types and complete multi-file delivery determine inputs; readiness is checked before and after execution. Invalid numeric CSV values retain native permissive null parsing; JDBC snapshots must be valid PostgreSQL typed values.
+
+**verification:** test:lakehouse/tests/test_billing_spark.py::test_billing_spark_input_contract
+
+**sources:** etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/jobs/py/billing_invoice_summary_daily.py, etl/spark/jobs/py/billing_revenue_by_plan.py, etl/spark/jobs/py/billing_payment_aging.py, etl/spark/jobs/py/billing_usage_append_daily.py, etl/spark/jobs/py/billing_gl_trial_balance.py, etl/spark/jobs/py/billing_churn_score.py, etl/crontab, etl/spark/submit/billing_invoice_summary_daily.sh, etl/spark/submit/billing_revenue_by_plan.sh, etl/spark/submit/billing_payment_aging.sh, etl/spark/submit/billing_usage_append_daily.sh, etl/spark/submit/billing_gl_trial_balance.sh, etl/spark/submit/billing_churn_score.sh
+
+## A-126 — Billing Spark expression and bag semantics
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** spark_job:billing_invoice_summary_daily, spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh, cron_entry:etl/crontab#d223b2edaac1, spark_job:billing_revenue_by_plan, spark_submit:etl/spark/submit/billing_revenue_by_plan.sh, cron_entry:etl/crontab#8018504ce246, spark_job:billing_payment_aging, spark_submit:etl/spark/submit/billing_payment_aging.sh, cron_entry:etl/crontab#2ec3f6dad69f, spark_job:billing_usage_append_daily, spark_submit:etl/spark/submit/billing_usage_append_daily.sh, cron_entry:etl/crontab#ed928bb7422d, spark_job:billing_gl_trial_balance, spark_submit:etl/spark/submit/billing_gl_trial_balance.sh, cron_entry:etl/crontab#146d93841612, spark_job:billing_churn_score, spark_submit:etl/spark/submit/billing_churn_score.sh, cron_entry:etl/crontab#5f21c41e60ca
+
+**ambiguity:** SQL joins, nullable keys, decimal aggregates, UDF doubles and max-date filtering must not be replaced by BTEQ meanings.
+
+**decision:** Preserve native inner/left joins, duplicate multiplicity, SUM nulls, GL null-key nonmatches, separate SUM(debit-credit), case-sensitive closed status, Python math.exp, and latest USAGE_DATE across all files even when different from BUSINESS_DATE. Use ANSI=false as native Spark. Parity orders every output column and assigns a row number only in comparison views, retaining nulls and exact duplicate counts.
+
+**rationale:** All six original PySpark scripts execute independently in the oracle; no reference transformation is reimplemented or imported into converted transformations.
+
+**verification:** test:lakehouse/tests/test_billing_spark.py::test_billing_spark_transformations
+
+**sources:** etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/jobs/py/billing_invoice_summary_daily.py, etl/spark/jobs/py/billing_revenue_by_plan.py, etl/spark/jobs/py/billing_payment_aging.py, etl/spark/jobs/py/billing_usage_append_daily.py, etl/spark/jobs/py/billing_gl_trial_balance.py, etl/spark/jobs/py/billing_churn_score.py, etl/crontab, etl/spark/submit/billing_invoice_summary_daily.sh, etl/spark/submit/billing_revenue_by_plan.sh, etl/spark/submit/billing_payment_aging.sh, etl/spark/submit/billing_usage_append_daily.sh, etl/spark/submit/billing_gl_trial_balance.sh, etl/spark/submit/billing_churn_score.sh
+
+## A-127 — Billing Spark physical output separation
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** spark_job:billing_invoice_summary_daily, spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh, cron_entry:etl/crontab#d223b2edaac1, spark_job:billing_revenue_by_plan, spark_submit:etl/spark/submit/billing_revenue_by_plan.sh, cron_entry:etl/crontab#8018504ce246, spark_job:billing_payment_aging, spark_submit:etl/spark/submit/billing_payment_aging.sh, cron_entry:etl/crontab#2ec3f6dad69f, spark_job:billing_usage_append_daily, spark_submit:etl/spark/submit/billing_usage_append_daily.sh, cron_entry:etl/crontab#ed928bb7422d, spark_job:billing_gl_trial_balance, spark_submit:etl/spark/submit/billing_gl_trial_balance.sh, cron_entry:etl/crontab#146d93841612, spark_job:billing_churn_score, spark_submit:etl/spark/submit/billing_churn_score.sh, cron_entry:etl/crontab#5f21c41e60ca
+
+**ambiguity:** Three jobs write both Parquet and JDBC; neither those JDBC schemas nor these feed meanings are the BTEQ outputs.
+
+**decision:** Keep six raw Parquet outputs and three separately persisted Delta replacements for native JDBC outputs, with nine independent actual-output parity specs. No legacy database or downstream consumer is retargeted. Each output exposes a gold_billing comparison view with an added parity-only row number.
+
+**rationale:** Isolated native JDBC target tables and Parquet files are read separately. Consumer cutover and live JDBC publication are not part of this step.
+
+**verification:** billing.spark_billing_gl_trial_balance_jdbc
+
+**sources:** etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/jobs/py/billing_invoice_summary_daily.py, etl/spark/jobs/py/billing_revenue_by_plan.py, etl/spark/jobs/py/billing_payment_aging.py, etl/spark/jobs/py/billing_usage_append_daily.py, etl/spark/jobs/py/billing_gl_trial_balance.py, etl/spark/jobs/py/billing_churn_score.py, etl/crontab, etl/spark/submit/billing_invoice_summary_daily.sh, etl/spark/submit/billing_revenue_by_plan.sh, etl/spark/submit/billing_payment_aging.sh, etl/spark/submit/billing_usage_append_daily.sh, etl/spark/submit/billing_gl_trial_balance.sh, etl/spark/submit/billing_churn_score.sh
+
+## A-128 — Billing usage delivery idempotence versus native append
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** spark_job:billing_invoice_summary_daily, spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh, cron_entry:etl/crontab#d223b2edaac1, spark_job:billing_revenue_by_plan, spark_submit:etl/spark/submit/billing_revenue_by_plan.sh, cron_entry:etl/crontab#8018504ce246, spark_job:billing_payment_aging, spark_submit:etl/spark/submit/billing_payment_aging.sh, cron_entry:etl/crontab#2ec3f6dad69f, spark_job:billing_usage_append_daily, spark_submit:etl/spark/submit/billing_usage_append_daily.sh, cron_entry:etl/crontab#ed928bb7422d, spark_job:billing_gl_trial_balance, spark_submit:etl/spark/submit/billing_gl_trial_balance.sh, cron_entry:etl/crontab#146d93841612, spark_job:billing_churn_score, spark_submit:etl/spark/submit/billing_churn_score.sh, cron_entry:etl/crontab#5f21c41e60ca
+
+**ambiguity:** The native usage job appends duplicates on every invocation, including a replay.
+
+**decision:** Treat business date plus immutable input/code signature as a delivery. Append a new delivery once, preserve duplicates within it, and make identical retries no-ops in both Parquet and Delta. Reject a changed completed append delivery. Distinct business-date deliveries append even if MAX(USAGE_DATE) is unchanged. Non-append jobs overwrite their current snapshot and permit explicit older-date reruns.
+
+**rationale:** The requested retry idempotence intentionally differs from raw native replay; baseline parity compares one invocation. Tests cover native duplicate rows, identical replay, later delivery, old-date replay and changed-delivery rejection.
+
+**verification:** test:lakehouse/tests/test_billing_spark.py::test_billing_spark_append_replay_and_atomic_recovery
+
+**sources:** etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/jobs/py/billing_invoice_summary_daily.py, etl/spark/jobs/py/billing_revenue_by_plan.py, etl/spark/jobs/py/billing_payment_aging.py, etl/spark/jobs/py/billing_usage_append_daily.py, etl/spark/jobs/py/billing_gl_trial_balance.py, etl/spark/jobs/py/billing_churn_score.py, etl/crontab, etl/spark/submit/billing_invoice_summary_daily.sh, etl/spark/submit/billing_revenue_by_plan.sh, etl/spark/submit/billing_payment_aging.sh, etl/spark/submit/billing_usage_append_daily.sh, etl/spark/submit/billing_gl_trial_balance.sh, etl/spark/submit/billing_churn_score.sh
+
+## A-129 — Billing Spark cron and submit replacement
+
+**status:** open
+
+**risk:** med
+
+**legacy_objects:** spark_job:billing_invoice_summary_daily, spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh, cron_entry:etl/crontab#d223b2edaac1, spark_job:billing_revenue_by_plan, spark_submit:etl/spark/submit/billing_revenue_by_plan.sh, cron_entry:etl/crontab#8018504ce246, spark_job:billing_payment_aging, spark_submit:etl/spark/submit/billing_payment_aging.sh, cron_entry:etl/crontab#2ec3f6dad69f, spark_job:billing_usage_append_daily, spark_submit:etl/spark/submit/billing_usage_append_daily.sh, cron_entry:etl/crontab#ed928bb7422d, spark_job:billing_gl_trial_balance, spark_submit:etl/spark/submit/billing_gl_trial_balance.sh, cron_entry:etl/crontab#146d93841612, spark_job:billing_churn_score, spark_submit:etl/spark/submit/billing_churn_score.sh, cron_entry:etl/crontab#5f21c41e60ca
+
+**ambiguity:** Six submit wrappers carry cluster resource settings and environment/credential behavior alongside six independent cron times.
+
+**decision:** Replace scheduling with six paused UTC DAGs at the exact original minute/hour. Validate input manifests before readiness, run, then parity. Preserve one active run/task, namespace serialization and retries. Start at the foundation date; earlier dates require explicit backfill. Local two-thread Spark replaces executor/shuffle tuning; do not reproduce embedded wrapper credentials. Supply managed credentials at consumer cutover.
+
+**rationale:** Named tests verify all six cadences and success edges. Native jobs are invoked directly, not wrappers with cluster-specific paths and credential exports. Production sizing, actual scheduler activation and live credential/JDBC wiring remain unverified.
+
+**verification:** test:lakehouse/tests/test_billing_spark.py::test_billing_spark_cron_replacement
+
+**sources:** etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/jobs/py/billing_invoice_summary_daily.py, etl/spark/jobs/py/billing_revenue_by_plan.py, etl/spark/jobs/py/billing_payment_aging.py, etl/spark/jobs/py/billing_usage_append_daily.py, etl/spark/jobs/py/billing_gl_trial_balance.py, etl/spark/jobs/py/billing_churn_score.py, etl/crontab, etl/spark/submit/billing_invoice_summary_daily.sh, etl/spark/submit/billing_revenue_by_plan.sh, etl/spark/submit/billing_payment_aging.sh, etl/spark/submit/billing_usage_append_daily.sh, etl/spark/submit/billing_gl_trial_balance.sh, etl/spark/submit/billing_churn_score.sh
+
+## A-130 — Billing Spark publication and recovery boundary
+
+**status:** open
+
+**risk:** high
+
+**legacy_objects:** spark_job:billing_invoice_summary_daily, spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh, cron_entry:etl/crontab#d223b2edaac1, spark_job:billing_revenue_by_plan, spark_submit:etl/spark/submit/billing_revenue_by_plan.sh, cron_entry:etl/crontab#8018504ce246, spark_job:billing_payment_aging, spark_submit:etl/spark/submit/billing_payment_aging.sh, cron_entry:etl/crontab#2ec3f6dad69f, spark_job:billing_usage_append_daily, spark_submit:etl/spark/submit/billing_usage_append_daily.sh, cron_entry:etl/crontab#ed928bb7422d, spark_job:billing_gl_trial_balance, spark_submit:etl/spark/submit/billing_gl_trial_balance.sh, cron_entry:etl/crontab#146d93841612, spark_job:billing_churn_score, spark_submit:etl/spark/submit/billing_churn_score.sh, cron_entry:etl/crontab#5f21c41e60ca
+
+**ambiguity:** Legacy Parquet and JDBC writes can fail independently; append replay may duplicate the successful half.
+
+**decision:** Write immutable Parquet and Delta version directories, validate the original manifest again and atomically replace one POSIX current symlink after both outputs finish. Persist delivery state inside the committed version. Re-register comparison views on retry. Keep failed/orphan versions for inspection. Use the namespace-serialized orchestrator; direct billing CLI calls also take an exclusive billing lock.
+
+**rationale:** Injected commit/input failures prove the previous two-surface publication survives and retry succeeds. This is a local-filesystem contract, not object-store/distributed transaction equivalence. Comparison-view DDL is separately retryable, full-history append rewrites grow over time, orphan cleanup and production-scale recovery remain operational risks.
+
+**verification:** test:lakehouse/tests/test_billing_spark.py::test_billing_spark_append_replay_and_atomic_recovery
+
+**sources:** etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/jobs/py/billing_invoice_summary_daily.py, etl/spark/jobs/py/billing_revenue_by_plan.py, etl/spark/jobs/py/billing_payment_aging.py, etl/spark/jobs/py/billing_usage_append_daily.py, etl/spark/jobs/py/billing_gl_trial_balance.py, etl/spark/jobs/py/billing_churn_score.py, etl/crontab, etl/spark/submit/billing_invoice_summary_daily.sh, etl/spark/submit/billing_revenue_by_plan.sh, etl/spark/submit/billing_payment_aging.sh, etl/spark/submit/billing_usage_append_daily.sh, etl/spark/submit/billing_gl_trial_balance.sh, etl/spark/submit/billing_churn_score.sh
+
+## A-131 — Pinned consumer clocks
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bi_artifact:consumers/bi/account_status.pq, bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq, consumer:admin-service, consumer:analytics-service, consumer:billing-service, consumer:finance-account-workbook, consumer:legacy-billing, consumer:partner-extract, consumer:report-service, consumer_script:consumers/partner-extract/bin/nightly_extract.sh, consumer_script:consumers/partner-extract/bin/postprocess.sh, consumer_script:consumers/partner-extract/bin/sftp_push.sh, cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed
+
+**ambiguity:** CURRENT_DATE, default run dates and prior-day gates otherwise drift between runs.
+
+**decision:** Business date is the delivered day; default UTC clock is business date plus one day. Optional clock-date overrides are explicit and validated. Calendar arithmetic, strict inequalities and 12-month windows are preserved.
+
+**rationale:** The legacy batch host is UTC and defaults to yesterday; actual source queries execute at both sides of the bill-date and aging boundaries.
+
+**verification:** test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+
+**sources:** consumers/registry.yaml, consumers/bi/account_status.pq, consumers/bi/README.md, consumers/partner-extract/sql/partner_invoice_extract.bteq, consumers/partner-extract/bin/nightly_extract.sh, consumers/partner-extract/bin/postprocess.sh, consumers/partner-extract/bin/sftp_push.sh, warehouse/teradata/jobs/crontab.example, services/billing-service/app/warehouse/teradata.py, services/billing-service/app/export_invoices.py, services/legacy-billing/app/finance_warehouse.py, services/admin-service/app/services/finance_warehouse/dashboard_queries.rb, services/analytics-service/src/main/scala/com/otterworks/analytics/finance/FinanceRollupRepository.scala, services/report-service/src/main/java/com/otterworks/report/financewarehouse/TeradataFinanceWarehouse.java
+
+## A-132 — Consumer query source and input precedence
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bi_artifact:consumers/bi/account_status.pq, bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq, consumer:admin-service, consumer:analytics-service, consumer:billing-service, consumer:finance-account-workbook, consumer:legacy-billing, consumer:partner-extract, consumer:report-service, consumer_script:consumers/partner-extract/bin/nightly_extract.sh, consumer_script:consumers/partner-extract/bin/postprocess.sh, consumer_script:consumers/partner-extract/bin/sftp_push.sh, cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed
+
+**ambiguity:** Readers span Python, Ruby, Java, Scala and Teradata SQL; rewriting services is prohibited.
+
+**decision:** Extract only the fixed SQL constants and bind validated parameters. Legacy reference runs the actual SQL through Runner; independent SQLGlot AST migration maps to silver billing plus final monthly/closed gold relations. Informatica/Spark targets do not override warehouse consumer inputs. Service query-module bindings are opt-in.
+
+**rationale:** Source-derived SQL prevents hidden query omissions; no services, legacy SQL or source files are modified. The existing 44 warehouse-output parity specs establish matching input states. Both translators share the SQLGlot parser, not the backend rewrite logic; native Teradata is not executed.
+
+**verification:** test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+
+**sources:** consumers/registry.yaml, consumers/bi/account_status.pq, consumers/bi/README.md, consumers/partner-extract/sql/partner_invoice_extract.bteq, consumers/partner-extract/bin/nightly_extract.sh, consumers/partner-extract/bin/postprocess.sh, consumers/partner-extract/bin/sftp_push.sh, warehouse/teradata/jobs/crontab.example, services/billing-service/app/warehouse/teradata.py, services/billing-service/app/export_invoices.py, services/legacy-billing/app/finance_warehouse.py, services/admin-service/app/services/finance_warehouse/dashboard_queries.rb, services/analytics-service/src/main/scala/com/otterworks/analytics/finance/FinanceRollupRepository.scala, services/report-service/src/main/java/com/otterworks/report/financewarehouse/TeradataFinanceWarehouse.java
+
+## A-133 — Consumer numeric, collation and bag comparison
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bi_artifact:consumers/bi/account_status.pq, bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq, consumer:admin-service, consumer:analytics-service, consumer:billing-service, consumer:finance-account-workbook, consumer:legacy-billing, consumer:partner-extract, consumer:report-service, consumer_script:consumers/partner-extract/bin/nightly_extract.sh, consumer_script:consumers/partner-extract/bin/postprocess.sh, consumer_script:consumers/partner-extract/bin/sftp_push.sh, cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed
+
+**ambiguity:** FORMAT fields, CHAR padding, NOCASE currency groups, nullable keys and decimal division differ by engine.
+
+**decision:** Ignore CHAR right padding; exact cents for money; 1e-6 absolute tolerance only for DSO/open ratio. Case-fold only NOCASE status/currency representatives, never CASESPECIFIC plan names, region or customer names. Comparison-only deterministic ordinals preserve duplicate and null rows. Currency aging groups use lowercase NOCASE keys.
+
+**rationale:** Raw business rows are unchanged except declared code representatives and FORMAT display. Ratio precision differences are bounded explicitly; no financial-cent mismatch is tolerated.
+
+**verification:** test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+
+**sources:** consumers/registry.yaml, consumers/bi/account_status.pq, consumers/bi/README.md, consumers/partner-extract/sql/partner_invoice_extract.bteq, consumers/partner-extract/bin/nightly_extract.sh, consumers/partner-extract/bin/postprocess.sh, consumers/partner-extract/bin/sftp_push.sh, warehouse/teradata/jobs/crontab.example, services/billing-service/app/warehouse/teradata.py, services/billing-service/app/export_invoices.py, services/legacy-billing/app/finance_warehouse.py, services/admin-service/app/services/finance_warehouse/dashboard_queries.rb, services/analytics-service/src/main/scala/com/otterworks/analytics/finance/FinanceRollupRepository.scala, services/report-service/src/main/java/com/otterworks/report/financewarehouse/TeradataFinanceWarehouse.java
+
+## A-134 — Billing CSV and service read interfaces
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bi_artifact:consumers/bi/account_status.pq, bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq, consumer:admin-service, consumer:analytics-service, consumer:billing-service, consumer:finance-account-workbook, consumer:legacy-billing, consumer:partner-extract, consumer:report-service, consumer_script:consumers/partner-extract/bin/nightly_extract.sh, consumer_script:consumers/partner-extract/bin/postprocess.sh, consumer_script:consumers/partner-extract/bin/sftp_push.sh, cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed
+
+**ambiguity:** Billing export DTO formatting, 100000-row limits and API reads must remain usable without editing services.
+
+**decision:** Expose query(spark,name,business_date,clock,parameters) and preserve all seven service SQL result schemas, filters, limits and ordering. Emit billing CSV with original header, Python CSV quoting, ISO dates, Decimal money and row cap; preserve duplicate invoice rows. Legacy DTO/export function ASTs execute directly as the file oracle.
+
+**rationale:** These replace warehouse read responsibilities and CSV output, not authentication, HTTP routing, caching or unrelated service data. Services can point an adapter to the lakehouse module; automatic production cutover is outside this change.
+
+**verification:** test:lakehouse/tests/test_billing_consumers.py::test_invoice_csv_source_and_duplicates
+
+**sources:** consumers/registry.yaml, consumers/bi/account_status.pq, consumers/bi/README.md, consumers/partner-extract/sql/partner_invoice_extract.bteq, consumers/partner-extract/bin/nightly_extract.sh, consumers/partner-extract/bin/postprocess.sh, consumers/partner-extract/bin/sftp_push.sh, warehouse/teradata/jobs/crontab.example, services/billing-service/app/warehouse/teradata.py, services/billing-service/app/export_invoices.py, services/legacy-billing/app/finance_warehouse.py, services/admin-service/app/services/finance_warehouse/dashboard_queries.rb, services/analytics-service/src/main/scala/com/otterworks/analytics/finance/FinanceRollupRepository.scala, services/report-service/src/main/java/com/otterworks/report/financewarehouse/TeradataFinanceWarehouse.java
+
+## A-135 — Partner validation, publication and simulated transfer
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bi_artifact:consumers/bi/account_status.pq, bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq, consumer:admin-service, consumer:analytics-service, consumer:billing-service, consumer:finance-account-workbook, consumer:legacy-billing, consumer:partner-extract, consumer:report-service, consumer_script:consumers/partner-extract/bin/nightly_extract.sh, consumer_script:consumers/partner-extract/bin/postprocess.sh, consumer_script:consumers/partner-extract/bin/sftp_push.sh, cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed
+
+**ambiguity:** Raw REPORT formatting, awk cent arithmetic, duplicate rejection and publication/transfer boundaries need independent coverage.
+
+**decision:** Compare raw rows with exact-cent FORMAT normalization; validate seven fields, duplicate IDs, money and cumulative cent limits; preserve signed zero matching awk. Publish CSV and simulated-transfer receipt through one atomic version pointer. Live SFTP remains unsupported. Choose explicit partner-invoices-YYYYMMDD.csv output paths, as permitted by the legacy CLI optional output argument.
+
+**rationale:** The actual legacy awk and SFTP scripts produce the references. CSV lines include header/trailer. Receipt verifies actual native dry-run put destination and physical payload SHA256/bytes. Unsafe/live-transfer configurations fail before lakehouse publication, stronger than legacy publish-then-transfer failure.
+
+**verification:** test:lakehouse/tests/test_billing_consumers.py::test_duplicate_and_atomic_publication_errors
+
+**sources:** consumers/registry.yaml, consumers/bi/account_status.pq, consumers/bi/README.md, consumers/partner-extract/sql/partner_invoice_extract.bteq, consumers/partner-extract/bin/nightly_extract.sh, consumers/partner-extract/bin/postprocess.sh, consumers/partner-extract/bin/sftp_push.sh, warehouse/teradata/jobs/crontab.example, services/billing-service/app/warehouse/teradata.py, services/billing-service/app/export_invoices.py, services/legacy-billing/app/finance_warehouse.py, services/admin-service/app/services/finance_warehouse/dashboard_queries.rb, services/analytics-service/src/main/scala/com/otterworks/analytics/finance/FinanceRollupRepository.scala, services/report-service/src/main/java/com/otterworks/report/financewarehouse/TeradataFinanceWarehouse.java
+
+## A-136 — BI artifact and workbook feed
+
+**status:** open
+
+**risk:** med
+
+**legacy_objects:** bi_artifact:consumers/bi/account_status.pq, bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq, consumer:admin-service, consumer:analytics-service, consumer:billing-service, consumer:finance-account-workbook, consumer:legacy-billing, consumer:partner-extract, consumer:report-service, consumer_script:consumers/partner-extract/bin/nightly_extract.sh, consumer_script:consumers/partner-extract/bin/postprocess.sh, consumer_script:consumers/partner-extract/bin/sftp_push.sh, cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed
+
+**ambiguity:** Excel Power Query is not available; typed empty fields and workbook grouping need an explicit reference contract.
+
+**decision:** Independently read the actual legacy and lakehouse account-status PSV files with the source PQ four-column UTF-8/date/text/Int64 contract. Empty text remains unknown/null, not zero; publish typed rows and a status/currency count feed.
+
+**rationale:** The actual PQ source and workbook README define the contract. Python readers emulate typed Power Query and workbook aggregation; Excel refresh/rendering and locale-specific behavior are not executed.
+
+**verification:** test:lakehouse/tests/test_billing_consumers.py::test_atomic_bytes_and_bi_contract
+
+**sources:** consumers/registry.yaml, consumers/bi/account_status.pq, consumers/bi/README.md, consumers/partner-extract/sql/partner_invoice_extract.bteq, consumers/partner-extract/bin/nightly_extract.sh, consumers/partner-extract/bin/postprocess.sh, consumers/partner-extract/bin/sftp_push.sh, warehouse/teradata/jobs/crontab.example, services/billing-service/app/warehouse/teradata.py, services/billing-service/app/export_invoices.py, services/legacy-billing/app/finance_warehouse.py, services/admin-service/app/services/finance_warehouse/dashboard_queries.rb, services/analytics-service/src/main/scala/com/otterworks/analytics/finance/FinanceRollupRepository.scala, services/report-service/src/main/java/com/otterworks/report/financewarehouse/TeradataFinanceWarehouse.java
+
+## A-137 — Consumer atomicity and production integration
+
+**status:** open
+
+**risk:** high
+
+**legacy_objects:** bi_artifact:consumers/bi/account_status.pq, bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq, consumer:admin-service, consumer:analytics-service, consumer:billing-service, consumer:finance-account-workbook, consumer:legacy-billing, consumer:partner-extract, consumer:report-service, consumer_script:consumers/partner-extract/bin/nightly_extract.sh, consumer_script:consumers/partner-extract/bin/postprocess.sh, consumer_script:consumers/partner-extract/bin/sftp_push.sh, cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed
+
+**ambiguity:** Retry, process failure, concurrent publication and deployment filesystems differ from the legacy scripts.
+
+**decision:** Private 0600 temporary files, fsync, immutable version directories and atomic local POSIX symlink publication preserve prior files on validation/write/rename errors. A namespace lock serializes the CLI. Partner and other consumer outputs are separate transactions; orphans are retained.
+
+**rationale:** Empty/error and injected-failure tests cover local publication. Object-store publication, cross-worker whole-DAG leases, cleanup, full production volume, driver collection limits and actual consumer configuration rollout require review before cutover.
+
+**verification:** test:lakehouse/tests/test_billing_consumers.py::test_duplicate_and_atomic_publication_errors
+
+**sources:** consumers/registry.yaml, consumers/bi/account_status.pq, consumers/bi/README.md, consumers/partner-extract/sql/partner_invoice_extract.bteq, consumers/partner-extract/bin/nightly_extract.sh, consumers/partner-extract/bin/postprocess.sh, consumers/partner-extract/bin/sftp_push.sh, warehouse/teradata/jobs/crontab.example, services/billing-service/app/warehouse/teradata.py, services/billing-service/app/export_invoices.py, services/legacy-billing/app/finance_warehouse.py, services/admin-service/app/services/finance_warehouse/dashboard_queries.rb, services/analytics-service/src/main/scala/com/otterworks/analytics/finance/FinanceRollupRepository.scala, services/report-service/src/main/java/com/otterworks/report/financewarehouse/TeradataFinanceWarehouse.java
+
+## A-138 — Partner cron and on-demand responsibilities
+
+**status:** open
+
+**risk:** med
+
+**legacy_objects:** bi_artifact:consumers/bi/account_status.pq, bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq, consumer:admin-service, consumer:analytics-service, consumer:billing-service, consumer:finance-account-workbook, consumer:legacy-billing, consumer:partner-extract, consumer:report-service, consumer_script:consumers/partner-extract/bin/nightly_extract.sh, consumer_script:consumers/partner-extract/bin/postprocess.sh, consumer_script:consumers/partner-extract/bin/sftp_push.sh, cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed
+
+**ambiguity:** The owned UTC host cron runs at 02:15 while other readers are on-demand or cached services.
+
+**decision:** Add a paused UTC 15 2 * * * DAG, readiness-gated on the dated closed/history export, running only partner extraction then all three parity specs. Main daily DAG publishes all consumer artifacts after billing gold/history exports. Existing service cache and HTTP schedules are not claimed as migrated.
+
+**rationale:** Cadence, logical-date-minus-one convention, readiness, retries and dependencies are named-test verified. Live scheduling, late-feed behavior, resource sizing and historical backfill coordination still require operational acceptance.
+
+**verification:** test:lakehouse/tests/test_billing_consumers.py::test_consumer_parameters_and_cron_replacement
+
+**sources:** consumers/registry.yaml, consumers/bi/account_status.pq, consumers/bi/README.md, consumers/partner-extract/sql/partner_invoice_extract.bteq, consumers/partner-extract/bin/nightly_extract.sh, consumers/partner-extract/bin/postprocess.sh, consumers/partner-extract/bin/sftp_push.sh, warehouse/teradata/jobs/crontab.example, services/billing-service/app/warehouse/teradata.py, services/billing-service/app/export_invoices.py, services/legacy-billing/app/finance_warehouse.py, services/admin-service/app/services/finance_warehouse/dashboard_queries.rb, services/analytics-service/src/main/scala/com/otterworks/analytics/finance/FinanceRollupRepository.scala, services/report-service/src/main/java/com/otterworks/report/financewarehouse/TeradataFinanceWarehouse.java
 
 ## A-200 — Deterministic latest version timestamp ties
 
