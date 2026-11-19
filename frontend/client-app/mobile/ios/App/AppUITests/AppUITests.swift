@@ -157,9 +157,35 @@ final class AppUITests: AppUITestCase {
             menu.tap()
             let close = element(.button, "Toggle sidebar")
             XCTAssertTrue(close.isHittable)
+            let navigation = element(.other, "Workspace navigation", contains: true)
+            XCTAssertTrue(navigation.waitForExistence(timeout: 5))
+            let dashboard = element(.link, "Dashboard")
+            func visibleInNavigation(_ link: XCUIElement) -> Bool {
+                link.isHittable && navigation.frame.contains(link.frame)
+            }
+            func seekInNavigation(_ link: XCUIElement) {
+                for _ in 0..<10 {
+                    if visibleInNavigation(link) { return }
+                    let targetAbove = link.frame.minY < navigation.frame.minY
+                    let start = navigation.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: targetAbove ? 0.33 : 0.67))
+                    let end = navigation.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: targetAbove ? 0.67 : 0.33))
+                    start.press(forDuration: 0.1, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.2)
+                }
+            }
+            seekInNavigation(dashboard)
             XCTAssertGreaterThanOrEqual(element(.link, "Dashboard").frame.minX, app.frame.minX + 40)
             saveScreenshot("landscape-safe-area")
+            for name in ["Margins", "Shared with me", "Starred", "Notifications", "Trash", "Settings"] {
+                let link = element(.link, name)
+                seekInNavigation(link)
+                XCTAssertTrue(link.isHittable, "Unreachable landscape drawer item: \(name)")
+                XCTAssertTrue(visibleInNavigation(link), "Clipped landscape drawer item: \(name)")
+            }
+            saveScreenshot("landscape-scrolled")
+            element(.link, "Settings").tap()
+            XCTAssertTrue(app.webViews.descendants(matching: .other).matching(NSPredicate(format: "label == 'Settings' AND value == '1'")).firstMatch.waitForExistence(timeout: 10))
             close.tap()
+            assertText("Profile")
         }
     }
 
