@@ -90,8 +90,12 @@ Every non-2xx v1 response is `application/json`:
 | 409 | `conflict` | unique violation / action already applied |
 | 422 | `unprocessable` | well-formed input the database rejects (FK or CHECK violation) |
 | 500 | `internal` | anything else; `message` is generic, no stack traces or SQL |
+| 429 | `rate_limited` | gateway: rate limit hit (`Retry-After` set) |
+| 502 / 503 | `internal` | gateway: backend unreachable / circuit breaker open |
 
-`details` is optional and always a list. Clients branch on `code`, not
+The gateway emits this shape itself for its own rejections on `/api/v1/billing`
+(`internal/middleware/billing_errors.go`); other gateway prefixes keep their
+existing bodies. `details` is optional and always a list. Clients branch on `code`, not
 `message`.
 
 ## Pagination
