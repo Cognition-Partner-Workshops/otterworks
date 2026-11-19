@@ -1,5 +1,6 @@
 """Versioned invoicing entrypoints and legacy request/response adapters."""
 
+from decimal import Decimal
 from functools import wraps
 
 from flask import jsonify, request
@@ -33,8 +34,9 @@ def _lines(kind, identifier, values, legacy=False):
     for row in result:
         for field in ("amount", "tax_amount", "credit_applied", "total"):
             value = row.get(field)
-            if isinstance(value, str) and "." not in value:
-                row[field] = value + ".0"
+            if isinstance(value, str):
+                value = format(Decimal(value), "f")
+                row[field] = value if "." in value else value + ".0"
     result = [{({"line_no": "number", "line_type": "type"}.get(key, key)): value
                for key, value in row.items()} for row in result]
     return jsonify(paginate(result))

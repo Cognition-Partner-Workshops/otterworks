@@ -1,3 +1,4 @@
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -20,10 +21,14 @@ LEGACY_MONEY_FORMAT = ("amount", "tax_amount", "credit_applied", "total")
 
 
 def legacy_decimal_body(response):
-    """v1 appends .0 to integral money strings; legacy preserves DB text."""
-    return [{key: value + ".0" if key in LEGACY_MONEY_FORMAT and isinstance(value, str)
-             and "." not in value else value for key, value in row.items()}
-            for row in response.json]
+    """v1 uses fixed-point money with a decimal point; legacy preserves DB text."""
+    result = response.json
+    for row in result:
+        for field in LEGACY_MONEY_FORMAT:
+            if field in row and isinstance(row[field], str):
+                value = format(Decimal(row[field]), "f")
+                row[field] = value if "." in value else value + ".0"
+    return result
 
 
 def state():
