@@ -1,7 +1,6 @@
 """Measure declared outputs without changing migration or retirement state."""
 import argparse
 from collections import Counter
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -18,8 +17,13 @@ import yaml
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'migration/dw-exit/tools'))
+sys.path.insert(0, str(ROOT / 'migration/dw-exit'))
 from warehouse.run_config import RunConfig
 from assess import board as wave_board
+from parity.local_billing import execute
+from parity.semantics import columns as source_columns, numeric_type
+from parity.ladder import local_compare as compare
+from parity.provenance import provenance, markdown
 
 
 def quote(name):
@@ -31,51 +35,6 @@ def relation(name):
     if len(parts) != 2:
         raise ValueError('Expected schema.relation')
     return '.'.join(map(quote, parts))
-
-
-def canonical(value):
-    return json.dumps(value, default=str, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
-
-
-def measure(connection, name):
-    # Relation and column identifiers are double-quoted, not SQL value parameters.
-    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-    cursor = connection.execute('SELECT * FROM ' + relation(name))
-    columns = [col[0] for col in cursor.description]
-    rows = cursor.fetchall()
-    profiles = {}
-    for column in columns:
-        c = quote(column)
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        values = connection.execute(f'SELECT COUNT(*)-COUNT({c}), MIN({c}), MAX({c}), COUNT(DISTINCT {c}) FROM {relation(name)}').fetchone()
-        profiles[column] = dict(zip(('nulls', 'min', 'max', 'distinct'), values))
-    return columns, rows, profiles
-
-
-def compare(before, after, source, target, sample_size=5):
-    bcols, brows, bp = measure(before, source)
-    acols, arows, ap = measure(after, target)
-    if not bcols or bcols != acols:
-        raise ValueError('Output column names/order differ')
-    def digests(rows):
-        return Counter((canonical(row[:1]), hashlib.sha256(canonical(row).encode()).hexdigest()) for row in rows)
-    bh, ah = digests(brows), digests(arows)
-    def checksum(values):
-        return hashlib.sha256(canonical(sorted((key,digest,count) for (key,digest),count in values.items())).encode()).hexdigest()
-    delta = (bh-ah) + (ah-bh)
-    mismatched_keys = {key for key, digest in delta}
-    samples = []
-    for key in sorted(mismatched_keys)[:sample_size]:
-        samples.append({'key': json.loads(key),
-                        'before': sorted((r for r in brows if canonical(r[:1]) == key), key=canonical)[:sample_size],
-                        'after': sorted((r for r in arows if canonical(r[:1]) == key), key=canonical)[:sample_size]})
-    return {'row_count': {'before': len(brows), 'after': len(arows)},
-            'column_profile': {'before': bp, 'after': ap},
-            'keyed_row_hash': {'keys': bcols[:1], 'difference': sum(delta.values()),
-                               'before': checksum(bh), 'after': checksum(ah),
-                               'key_policy': 'first declared column; full-row digest preserves multiplicity'},
-            'sampled_differences': samples,
-            'passed': len(brows) == len(arows) and canonical(bp) == canonical(ap) and not delta}
 
 
 def source_snapshot(dsn, names):
@@ -94,14 +53,16 @@ def source_snapshot(dsn, names):
                     continue
                 schema, table, cols = index[name]
                 try:
+                    cursor.execute(sql.SQL('SELECT * FROM {}.{}').format(sql.Identifier(schema),sql.Identifier(table)))
+                    rows = cursor.fetchall()
                     definitions = []
-                    for column, dtype, precision, scale in cols:
+                    for column_index, (column, dtype, precision, scale) in enumerate(cols):
                         kind = {'smallint': 'SMALLINT', 'integer': 'INTEGER', 'bigint': 'BIGINT',
                                 'date': 'DATE', 'timestamp without time zone': 'TIMESTAMP',
                                 'timestamp with time zone': 'TIMESTAMPTZ', 'boolean': 'BOOLEAN',
                                 'real': 'FLOAT', 'double precision': 'DOUBLE', 'bytea': 'BLOB'}.get(dtype, 'VARCHAR')
                         if dtype == 'numeric':
-                            kind = f'DECIMAL({precision or 38},{scale or 0})'
+                            kind = numeric_type([row[column_index] for row in rows], precision, scale)
                         definitions.append(quote(column.upper())+' '+kind)
                     source_schema, source_table = name.split('.')
                     # Identifiers are quoted; column types come from the fixed mapping above.
@@ -111,8 +72,6 @@ def source_snapshot(dsn, names):
                     connection.execute(f'CREATE TABLE {relation(name)} ({", ".join(definitions)})')
                     # psycopg Identifier quotes both catalog-derived identifiers.
                     # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-                    cursor.execute(sql.SQL('SELECT * FROM {}.{}').format(sql.Identifier(schema),sql.Identifier(table)))
-                    rows = cursor.fetchall()
                     if rows:
                         connection.executemany(f'INSERT INTO {relation(name)} VALUES ({", ".join("?" for _ in cols)})', rows)
                     ready.add(name)
@@ -122,10 +81,16 @@ def source_snapshot(dsn, names):
     return connection, ready, errors
 
 
-def materialize(before, names, conversion_dir):
+def materialize(before, names, conversion_dir, business_date='20261109'):
     after = duckdb.connect()
     ready, errors = set(), {}
     after.execute('CREATE SCHEMA BILLING')
+    if (conversion_dir / '15_storage.sql').exists():
+        rows = before.execute('SELECT * FROM SFX_DOCUMENTS.STORAGE_USAGE_DAILY').fetchall()
+        definitions = before.execute('DESCRIBE SFX_DOCUMENTS.STORAGE_USAGE_DAILY').fetchall()
+        after.execute('CREATE TABLE BILLING.STORAGE_USAGE_INPUT ('+', '.join(quote(c[0])+' '+c[1] for c in definitions)+')')
+        if rows:
+            after.executemany('INSERT INTO BILLING.STORAGE_USAGE_INPUT VALUES ('+', '.join('?' for _ in definitions)+')', rows)
     for name in sorted(names):
         if not name.startswith('SFX_BILLING.'):
             continue
@@ -137,13 +102,17 @@ def materialize(before, names, conversion_dir):
         # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         definitions = before.execute('DESCRIBE '+relation(name)).fetchall()
         # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        after.execute(f'CREATE TABLE {relation(target)} ({", ".join(quote(c[0])+" "+c[1] for c in definitions)})')
+        rules = source_columns(name)
+        after.execute(f'CREATE TABLE {relation(target)} ({", ".join(quote(c[0])+" "+c[1]+(" COLLATE NOCASE" if rules.get(c[0], {}).get("case_insensitive") else "") for c in definitions)})')
         if table.startswith('STG_'):
             # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             rows = before.execute('SELECT * FROM '+relation(name)).fetchall()
             if rows:
                 after.executemany(f'INSERT INTO {relation(target)} VALUES ({", ".join("?" for _ in definitions)})', rows)
             ready.add(target)
+    if (conversion_dir / '20_routines.sql').exists():
+        errors.update(execute(after, conversion_dir, ready, business_date))
+        return after, ready, errors
     for filename in ('10_load.sql', '30_views.sql'):
         text = RunConfig.from_env().render((conversion_dir / filename).read_text())
         try:
@@ -191,13 +160,15 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     result = wave_board(objects, counters or {})
     result.update(run_token=RunConfig.from_env().token, target=target, rows=[])
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
-        'local_target': 'DuckDB', 'conversions': ['billing/initial/10_load.sql','billing/initial/30_views.sql'],
+        'local_target': 'DuckDB', 'conversions': ['billing/'+s for s in ('10_load.sql','15_storage.sql','20_routines.sql','30_views.sql','40_close.sql')],
         'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
     available, errors = set(available or ()), errors or {}
     for obj in objects:
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
         row.update(status='red', migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'),
                    row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
+        if obj['subject_area'] == 'billing':
+            row['provenance'] = provenance(obj)
         if obj['system'] == 'spark':
             if obj.get('source') and (ROOT / obj['source']).is_file():
                 row.update(source=obj['source'], source_ref=obj.get('source_ref'))
@@ -224,6 +195,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 row['row_count'] = {side:sum(r['row_count'][side] for r in measured.values()) for side in ('before','after')}
                 for field in ('column_profile','keyed_row_hash','sampled_differences'):
                     row[field] = {name:values[field] for name,values in measured.items()}
+                row['comparison_rules'] = {name:values['comparison_rules'] for name,values in measured.items()}
                 row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
                 if row['status'] == 'red':
                     row['reason'] = 'measured parity mismatch'
@@ -254,10 +226,14 @@ def main():
             port = os.environ.get('TD_PG_PORT',str(54500+zlib.crc32(ns.encode())%1000))
             dsn = os.environ.get('BOARD_SOURCE_DSN',f'host=127.0.0.1 port={port} dbname=teradata user=postgres')
             before, source_ready, source_errors = source_snapshot(dsn,names)
-            after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing/initial')
+            after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing',os.environ.get('BUSINESS_DATE','20261109'))
             errors.update(source_errors)
         payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters)
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
+        readme = args.output.parent / 'README.md'
+        if readme.exists():
+            text = readme.read_text().split('\n## Billing parity provenance')[0]
+            readme.write_text(text.rstrip()+'\n'+markdown(payload['rows']))
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
         if before is not None:

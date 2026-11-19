@@ -39,6 +39,10 @@ def main():
     read = lambda path: json.loads(_run_render(path.read_text()))
     text = '# Live billing parity: red to green\n\n'
     text += table(read(args.red), read(args.green))
+    text += '\n\n## Comparison rules\n\n'
+    for row in read(args.green):
+        padded = row.get('comparison_rules', {}).get('trailing_pad_insensitive', [])
+        text += f"- {row['name']}: trailing-pad-insensitive CHAR columns: {', '.join(padded) or 'none'}; all other columns exact.\n"
     text += '\n\n## Supplemental probes — not billing\n\n'
     text += table(read(args.supplemental_red), read(args.supplemental_green))
     text += ('\n\nProfiles cover null counts, min, max and distinct counts. Hash gaps are unmatched '
