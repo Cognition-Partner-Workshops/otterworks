@@ -49,6 +49,8 @@ documented in `README.md` (branch from `main`, open PR, CI must pass).
 
 ## 2. CI (build / test) — Present
 
+See [CI maturity assessment](CI-MATURITY.md) for current hardening, proposed required checks, and remaining gaps.
+
 **Evidence.** `.github/workflows/ci.yml` defines a `detect-changes` job using
 `dorny/paths-filter` that fans out to **one job per service/language**, each running the idiomatic
 toolchain:
