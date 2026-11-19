@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { billingApi, type Entitlement } from "./api";
 import { BillingAlert } from "./alert";
 import { localToday } from "./format";
+import { BillingDateInput, isCompleteDate } from "./date-input";
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
@@ -10,7 +11,8 @@ export default function BillingEntitlementPage() {
   const { tenantId } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const asOf = searchParams.get("on") ?? localToday();
+  const requestedDate = searchParams.get("on") ?? "";
+  const asOf = isCompleteDate(requestedDate) ? requestedDate : localToday();
   const [entitlement, setEntitlement] = useState<Entitlement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -28,11 +30,6 @@ export default function BillingEntitlementPage() {
         mounted = false;
         setError("");
       };
-    }
-    if (!asOf) {
-      setError("Choose an as-of date.");
-      setIsLoading(false);
-      return;
     }
     billingApi
       .entitlement(tenantId, asOf)
@@ -63,16 +60,14 @@ export default function BillingEntitlementPage() {
       <h1 className="text-3xl font-bold">Tenant entitlement</h1>
       <div>
         <label htmlFor="entitlement-as-of" className="mb-1 block text-sm font-medium">As of</label>
-        <input
+        <BillingDateInput
           id="entitlement-as-of"
-          type="date"
           value={asOf}
-          onChange={(event) => {
+          onChange={(value) => {
             const next = new URLSearchParams(searchParams);
-            next.set("on", event.target.value);
+            next.set("on", value);
             setSearchParams(next, { replace: true });
           }}
-          className="rounded-lg border border-gray-300 px-3 py-2"
         />
       </div>
       {error && <BillingAlert message={error} onDismiss={() => setError("")} />}

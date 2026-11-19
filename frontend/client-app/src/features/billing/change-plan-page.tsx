@@ -6,6 +6,7 @@ import {
 } from "./api";
 import { BillingAlert } from "./alert";
 import { localToday, money, readableDate } from "./format";
+import { BillingDateInput } from "./date-input";
 
 const UUID = /^[0-9a-f-]{36}$/i;
 const card = "space-y-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm";
@@ -174,7 +175,7 @@ function ChangePlan({ tenantId, preselect }: { tenantId: string; preselect: stri
           </div>
           <div>
             <label htmlFor="change-date" className="mb-1 block text-sm font-medium">Change date</label>
-            <input id="change-date" type="date" value={changeDate} onChange={(event) => { invalidate(); setChangeDate(event.target.value); }} aria-describedby="date-help" className="w-full rounded-lg border border-gray-300 px-3 py-2" />
+            <BillingDateInput id="change-date" value={changeDate} onChange={(value) => { invalidate(); setChangeDate(value); }} describedBy="date-help" />
             <p id="date-help" className="mt-1 text-sm text-gray-500">Fixture simulation of today’s date.</p>
           </div>
           {isQuoting && <p role="status">Loading quote…</p>}

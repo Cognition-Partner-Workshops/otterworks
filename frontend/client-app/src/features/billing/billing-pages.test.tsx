@@ -7,6 +7,7 @@ import BillingEntitlementPage from "./entitlement-page";
 import { billingServer } from "../../test-setup";
 import { localToday, money } from "./format";
 import type { Invoice, PlanChangeQuote } from "./api";
+import { BillingDateInput, isCompleteDate } from "./date-input";
 
 const TENANT_A = "00000000-0000-0000-0000-000000000001";
 const TENANT_B = "00000000-0000-0000-0000-000000000002";
@@ -190,8 +191,13 @@ describe("Customer billing flow", () => {
     expect(requested).toEqual(["2026-03-15", "2026-04-01"]);
     expect(screen.queryByText("STARTER")).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("As of"), { target: { value: "" } });
-    expect(await screen.findByRole("alert")).toHaveTextContent("Choose an as-of date.");
-    expect(screen.queryByText("GROWTH")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("As of"), { target: { value: "2026-04" } });
+    await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByText("GROWTH")).toBeInTheDocument();
+    expect(requested).toEqual(["2026-03-15", "2026-04-01"]);
+    fireEvent.change(screen.getByLabelText("As of"), { target: { value: "2026-04-02" } });
+    await waitFor(() => expect(requested).toEqual(["2026-03-15", "2026-04-01", "2026-04-02"]));
   });
 
   it("defaults the entitlement date to local today", async () => {
@@ -307,6 +313,52 @@ describe("Customer billing flow", () => {
     expect(await screen.findByText("No plans are available.")).toBeInTheDocument();
     expect(await screen.findByRole("alert")).toHaveTextContent("Invoices unavailable");
     expect(screen.queryByRole("button", { name: /Upgrade now/ })).not.toBeInTheDocument();
+  });
+
+  it("keeps the last valid change date and quote while a new date is incomplete", async () => {
+    const requested: string[] = [];
+    let posted: unknown;
+    billingServer.use(
+      http.get(`${base}/api/tenants/:tenantId/plan-change-quote`, ({ request }) => {
+        requested.push(new URL(request.url).searchParams.get("on") ?? "");
+        return HttpResponse.json(upgrade);
+      }),
+      http.post(`${base}/api/tenants/:tenantId/plan-changes`, async ({ request }) => {
+        posted = await request.json();
+        return HttpResponse.json({ ...upgrade, invoice, subscriptions: [] });
+      }),
+    );
+    renderChangePlan();
+    await screen.findByRole("region", { name: "Plan change preview" });
+    fireEvent.change(screen.getByLabelText("Change date"), { target: { value: "" } });
+    fireEvent.change(screen.getByLabelText("Change date"), { target: { value: "2026-03" } });
+    await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+    expect(requested).toEqual([localToday()]);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Plan change preview" })).toBeInTheDocument();
+    await confirmUpgrade();
+    await screen.findByRole("region", { name: "Plan change confirmation" });
+    expect(posted).toEqual({ plan_id: GROWTH, requested_on: localToday() });
+    fireEvent.change(screen.getByLabelText("Change date"), { target: { value: "2026-03-16" } });
+    await waitFor(() => expect(requested).toEqual([localToday(), "2026-03-16"]));
+  });
+
+  it("does not reset an unfinished native date edit on unrelated renders", () => {
+    const changed: string[] = [];
+    const props = { id: "date-test", value: "2026-03-15", onChange: (value: string) => changed.push(value) };
+    const view = render(<BillingDateInput {...props} />);
+    const input = view.container.querySelector("input")!;
+    fireEvent.change(input, { target: { value: "" } });
+    view.rerender(<BillingDateInput {...props} />);
+    expect(input).toHaveValue("");
+    expect(changed).toEqual([]);
+    fireEvent.change(input, { target: { value: "2028-02-29" } });
+    expect(changed).toEqual(["2028-02-29"]);
+    view.rerender(<BillingDateInput {...props} value="2026-04-01" />);
+    expect(input).toHaveValue("2026-04-01");
+    expect(isCompleteDate("2026-02-29")).toBe(false);
+    expect(isCompleteDate("2026-02")).toBe(false);
+    expect(isCompleteDate("2028-02-29")).toBe(true);
   });
 
   it("formats server money strings without losing precision", () => {
