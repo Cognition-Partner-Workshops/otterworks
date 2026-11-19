@@ -2,7 +2,7 @@ import pytest
 import uuid
 
 
-pytestmark = pytest.mark.api_flow
+pytestmark = [pytest.mark.api_flow, pytest.mark.smoke]
 
 
 def test_search_index_query_suggest_advanced_and_delete_flow(api_client):

@@ -1,0 +1,11 @@
+{
+  "admin-dashboard": {"format": "lcov", "metric": "Lines", "minimum": 58},
+  "api-gateway": {"format": "go", "metric": "Statements", "minimum": 58},
+  "auth-service": {"format": "jacoco", "metric": "Lines", "minimum": 72},
+  "client-app": {"format": "lcov", "metric": "Lines", "minimum": 6},
+  "collab-service": {"format": "lcov", "metric": "Lines", "minimum": 64},
+  "document-service": {"format": "cobertura", "metric": "Statements", "minimum": 79},
+  "file-service": {"format": "cobertura", "metric": "Lines", "minimum": 14},
+  "search-service": {"format": "cobertura", "metric": "Statements", "minimum": 74},
+  "workbench": {"format": "lcov", "metric": "Lines", "minimum": 92}
+}

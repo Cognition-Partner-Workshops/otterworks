@@ -220,22 +220,25 @@ scanning is not wired — `security-scan.yml` runs Trivy in `fs` mode against so
 built images in ECR; ECR scan-on-push is defined per org standards but not asserted here. No SBOM
 generation / image signing (cosign).
 
-## 6. Testing — Present
+## 6. Testing — Component and live integration checks
 
 **Evidence.**
 - Per-service unit tests exercised by CI (Go `_test.go`, Java/Kotlin `gradle check`, Rust
   `cargo test`, Python `pytest`, Scala `sbt test`, Ruby `rspec`, C# `dotnet test`).
-- Black-box **API flow tests** in `tests/api/` (auth, file, document, collaboration, websocket,
-  search, audit/analytics/report, notification/admin/gateway, degradation, side-effect flows).
-- **Contract tests** in `tests/contract/` plus API/event contracts in `shared/openapi/` and
-  `shared/events/schemas/`.
+- `integration-tests.yml` executes auth, document and search API smoke tests against a minimal
+  Compose stack for relevant PRs, and the full `tests/api/` suite nightly. It also checks the
+  running Search provider against its OpenAPI contract and retains JUnit and Compose diagnostics.
+- `test-coverage.yml` publishes native reports and checks measured per-service floors for nine
+  components. Document and admin dashboard coverage are non-blocking while those suites are red.
+- `client-e2e.yml` runs selected Playwright tests; broader browser coverage is available locally.
 - **Testdata harness** under `testdata/` (generated + harness) with namespaced Postgres schemas
   (see `.agents/skills/synthetic-testdata-generation`).
 
-**Gap / what a demo needs.** `shared/proto/` is a **README stub** (no protobuf/gRPC contracts
-despite the architecture referencing them); `shared/openapi/` covers only 3 of 11 services. No
-enforced coverage thresholds; no load/perf tests; the API flow suite is `--collect-only` in CI
-(imports validated, not executed against a live stack).
+**Remaining gaps.** Live contract verification covers only Search and has known failures.
+The nightly stack excludes the intentionally broken admin service, so admin-dependent failures
+remain visible. Other gaps include incomplete coverage reporting, event-contract verification
+and load/performance testing. See [Testing](TESTING.md) for commands, baseline results and the
+coverage ratchet policy.
 
 ## 7. Security / SAST / DAST / dependency scanning — Present (standout)
 

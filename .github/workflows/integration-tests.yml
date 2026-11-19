@@ -1,0 +1,95 @@
+name: Application integration tests
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/integration-tests.yml'
+      - 'docker-compose.yml'
+      - 'docker-compose.infra.yml'
+      - 'scripts/init-db.sql'
+      - 'scripts/localstack-*.sh'
+      - 'services/**'
+      - 'shared/openapi/**'
+      - 'tests/api/**'
+      - 'tests/contract/**'
+      - 'tests/summarize_junit.py'
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+    inputs:
+      full:
+        description: Run the full API suite rather than PR smoke
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  compose-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      COMPOSE_PROJECT_NAME: otterworks-testing
+      COMPOSE_FILE: docker-compose.infra.yml:docker-compose.yml
+      FULL_SUITE: ${{ github.event_name == 'schedule' || inputs.full == true }}
+      API_FLOWS_REQUIRE_STACK: '1'
+      SEARCH_SERVICE_URL: http://127.0.0.1:8087
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        run: python -m pip install -r tests/api/requirements.txt -r tests/contract/requirements.txt
+      - name: Start Compose and require readiness
+        run: |
+          mkdir -p test-evidence
+          services=(postgres redis localstack meilisearch api-gateway auth-service document-service search-service)
+          if [[ "$FULL_SUITE" == true ]]; then
+            services+=(file-service collab-service notification-service analytics-service audit-service report-service)
+          fi
+          docker compose up --build --detach --wait --wait-timeout 180 "${services[@]}"
+          for url in http://127.0.0.1:8080/health "$SEARCH_SERVICE_URL/health/ready"; do
+            status=$(curl --fail-with-body --retry 12 --retry-all-errors --retry-delay 2 --max-time 5 --silent --show-error --output /dev/null --write-out '%{http_code}' "$url")
+            if [[ "$status" != 200 ]]; then
+              echo "Readiness failed: $url returned HTTP $status" >&2
+              exit 1
+            fi
+          done
+      - name: Run gateway API flows
+        id: api
+        run: |
+          selection=()
+          if [[ "$FULL_SUITE" != true ]]; then
+            selection=(-m smoke)
+          fi
+          python -m pytest tests/api "${selection[@]}" --junitxml=test-evidence/api.xml
+      - name: Verify Search OpenAPI against the running provider
+        if: ${{ !cancelled() && (steps.api.outcome == 'success' || steps.api.outcome == 'failure') }}
+        run: python -m pytest tests/contract --junitxml=test-evidence/search-contract.xml
+      - name: Publish test summary
+        if: always()
+        run: |
+          {
+            echo '## Compose application tests'
+            if [[ "$FULL_SUITE" == true ]]; then
+              echo 'Full API collection. Admin is not started because of the golden-app boot bug; admin-dependent failures remain visible. Degradation tests require a separately controlled outage.'
+            else
+              echo 'PR smoke: auth, document, and Search gateway flows.'
+            fi
+            python tests/summarize_junit.py test-evidence/api.xml test-evidence/search-contract.xml
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Capture Compose diagnostics and tear down
+        if: always()
+        run: |
+          trap 'docker compose down --volumes --remove-orphans' EXIT
+          mkdir -p test-evidence
+          docker compose ps --all > test-evidence/compose-ps.txt
+          docker compose logs --no-color > test-evidence/compose.log 2>&1
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-evidence
+          path: test-evidence/

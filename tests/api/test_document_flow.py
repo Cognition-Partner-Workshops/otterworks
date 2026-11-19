@@ -1,7 +1,7 @@
 import pytest
 
 
-pytestmark = pytest.mark.api_flow
+pytestmark = [pytest.mark.api_flow, pytest.mark.smoke]
 
 
 def test_document_crud_versions_export_comments_and_template_flow(api_client):
