@@ -1,0 +1,76 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "db86a5122c32983b905e92d893b0e4594e757aad",
+  "id": "billing.monthly_invoice_result",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE",
+    "bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq"
+  ],
+  "results": {
+    "columns": [
+      "n"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "n": {
+          "count": 1,
+          "hash": "2313ca5f0efd02b21da310b84df607e12cd48ab1bf98b3976a3c4b869900fd5f",
+          "null_count": 0,
+          "sum": "2084"
+        }
+      },
+      "legacy": {
+        "n": {
+          "count": 1,
+          "hash": "2313ca5f0efd02b21da310b84df607e12cd48ab1bf98b3976a3c4b869900fd5f",
+          "null_count": 0,
+          "sum": "2084"
+        }
+      }
+    },
+    "mismatches": {
+      "n": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 1,
+      "legacy": 1
+    }
+  },
+  "row_counts": {
+    "lakehouse": 1,
+    "legacy": 1
+  },
+  "spec_hash": "0e41f4d3ddd3896b66751c918e9fe36fc0014ecf1e0b631e461bb04e7bc8663c",
+  "timestamp": "2026-11-19T11:19:37.250495+00:00"
+}

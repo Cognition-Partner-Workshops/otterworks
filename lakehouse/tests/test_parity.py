@@ -262,7 +262,8 @@ def test_specs_and_evidence_failure_exit(tmp_path, monkeypatch):
     monkeypatch.setenv('NS', 'test-parity')
     specs = discover()
     path, spec = specs['billing.customer_account']
-    assert spec['legacy_objects'] == ['teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT']
+    assert spec['legacy_objects'] == ['teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT',
+                                      'bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq']
     invalid = tmp_path / 'bad.yaml'
     invalid.write_text('id: ../unsafe\n')
     with pytest.raises(ValueError):

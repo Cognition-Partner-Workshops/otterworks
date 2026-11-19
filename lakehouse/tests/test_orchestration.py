@@ -42,7 +42,8 @@ def test_pipeline_contract_and_staging_replacement():
         assert set(bronze['depends_on']) == {n['id'] for n in sensors if n['domain'] == domain}
         assert bronze['id'] in nodes['dbt_' + domain]['depends_on']
         assert set(nodes['dbt_' + domain]['depends_on']) <= nodes.keys()
-        assert nodes['dbt_' + domain]['selector'] == 'tag:' + domain
+        expected = 'path:models/silver/billing' if domain == 'billing' else 'tag:' + domain
+        assert nodes['dbt_' + domain]['selector'] == expected
     replacing = [n for n in nodes.values() if STAGING in n['legacy_objects']]
     assert {n['domain'] for n in replacing} == {t.area for t in TABLES}
     assert set().union(*(set(n['legacy_objects']) for n in replacing)) - {STAGING} == {
@@ -170,14 +171,15 @@ def test_dbt_selector_passed_to_runner(monkeypatch):
     monkeypatch.setattr(dbt, 'dbtRunner', lambda: SimpleNamespace(invoke=lambda args: calls.append(args) or SimpleNamespace(success=True)))
     dbt.main()
     assert calls[0][-2:] == ['--select', 'tag:billing'] and stopped == [True]
+    assert calls[0][calls[0].index('--indirect-selection') + 1] == 'buildable'
 
 
 def test_cli_check_and_invalid_graph(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr('sys.argv', ['orchestration', 'check'])
     assert main() == 0
     dags = graph.load()
-    task_count = sum(len(dag['nodes']) for dag in dags.values())
-    assert f'{len(dags)} DAGs, {task_count} tasks, valid' in capsys.readouterr().out
+    tasks = sum(len(dag['nodes']) for dag in dags.values())
+    assert f'{len(dags)} DAGs, {tasks} tasks, valid' in capsys.readouterr().out
     path = tmp_path / 'empty.yaml'
     path.write_text('{}')
     monkeypatch.setattr('sys.argv', ['orchestration', 'check', '--pipeline', str(path)])

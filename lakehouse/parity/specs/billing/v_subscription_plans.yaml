@@ -1,0 +1,28 @@
+{
+  "id": "billing.v_subscription_plans",
+  "legacy_objects": [
+    "teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT subscription_id, customer_id, plan_code, monthly_fee FROM sfx_billing.v_subscription_plans"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "gold_billing.v_subscription_plans"
+  },
+  "keys": [
+    "subscription_id"
+  ],
+  "columns": [
+    "subscription_id",
+    "customer_id",
+    "plan_code",
+    "monthly_fee"
+  ],
+  "normalize": {
+    "plan_code": {
+      "rstrip": true
+    }
+  }
+}

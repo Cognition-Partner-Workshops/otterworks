@@ -1,0 +1,25 @@
+{
+  "id": "billing.stg_subscription",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.STG_SUBSCRIPTION"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT subscription_id, customer_id, plan_code, start_dt, end_dt, status_cd FROM sfx_billing.stg_subscription"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.stg_subscription"
+  },
+  "keys": [
+    "subscription_id"
+  ],
+  "columns": [
+    "subscription_id",
+    "customer_id",
+    "plan_code",
+    "start_dt",
+    "end_dt",
+    "status_cd"
+  ]
+}

@@ -1,10 +1,10 @@
 {
-  "NS": "users-after",
+  "NS": "sfx-d1110-after",
   "business_date": "20261109",
-  "git_dirty": false,
-  "git_sha": "9dcb6a5e67bb4bfcc64ef4caa00fb68aacf703cf",
+  "git_dirty": true,
+  "git_sha": "db86a5122c32983b905e92d893b0e4594e757aad",
   "id": "users.stg_app_user",
-  "legacy_NS": "users-before",
+  "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
     "teradata_table:SFX_USERS.STG_APP_USER"
   ],
@@ -139,5 +139,5 @@
     "legacy": 300
   },
   "spec_hash": "711557aeb91fa594f9f9cb37da4c3bb83c0d7f7308b5fb20c2122e11cd6d8e3b",
-  "timestamp": "2026-11-19T08:14:44.733388+00:00"
+  "timestamp": "2026-11-19T11:20:07.765351+00:00"
 }

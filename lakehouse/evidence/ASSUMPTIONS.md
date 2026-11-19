@@ -1,6 +1,6 @@
 # Migration assumptions
 
-Entries: 102. Validation errors: 0.
+Entries: 127. Validation errors: 0.
 
 ## A-001 — PSV empty fields and nulls
 
@@ -847,6 +847,456 @@ Entries: 102. Validation errors: 0.
 **verification:** test:lakehouse/tests/test_orchestration.py::test_pipeline_contract_and_staging_replacement
 
 **sources:** warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain, etl/crontab, lakehouse/orchestration/pipeline.yaml
+
+## A-100 — Billing executable numeric and date types
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH, teradata_table:SFX_BILLING.BILLING_ADJ, teradata_table:SFX_BILLING.CREDIT_NOTE, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST, teradata_table:SFX_BILLING.GL_ACCOUNT, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.PAYMENT, teradata_table:SFX_BILLING.PLAN_CATALOG, teradata_table:SFX_BILLING.STG_BILLING_ADJ, teradata_table:SFX_BILLING.STG_CREDIT_NOTE, teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE, teradata_table:SFX_BILLING.STG_INVOICE_HDR, teradata_table:SFX_BILLING.STG_INVOICE_LINE, teradata_table:SFX_BILLING.STG_PAYMENT, teradata_table:SFX_BILLING.STG_PLAN_CATALOG, teradata_table:SFX_BILLING.STG_SUBSCRIPTION, teradata_table:SFX_BILLING.STG_TAX_RATE, teradata_table:SFX_BILLING.STG_USAGE_DAILY, teradata_table:SFX_BILLING.SUBSCRIPTION, teradata_table:SFX_BILLING.TAX_RATE, teradata_table:SFX_BILLING.USAGE_DAILY
+
+**ambiguity:** Bronze strings do not retain Teradata target numeric/date types or native parser behavior.
+
+**decision:** Cast from explicit DDL types in UTC ANSI Spark: BIGINT, INTEGER, DATE, DECIMAL(14,2) and DECIMAL(7,4). Preserve nulls and decimal rounding. Parity certifies canonical fixture inputs; noncanonical vendor parsing remains unverified.
+
+**rationale:** The runnable emulator and DDL are the comparison contract; invalid canonical casts fail rather than silently becoming null.
+
+**verification:** test:lakehouse/tests/test_billing_load.py::test_billing_load_types_empty_and_errors
+
+**sources:** warehouse/teradata/ddl/billing/00_tables.sql, warehouse/teradata/bteq/runner.py, warehouse/seed/columns.py
+
+## A-101 — Billing character widths and collation
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH, teradata_table:SFX_BILLING.BILLING_ADJ, teradata_table:SFX_BILLING.CREDIT_NOTE, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST, teradata_table:SFX_BILLING.GL_ACCOUNT, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.PAYMENT, teradata_table:SFX_BILLING.PLAN_CATALOG, teradata_table:SFX_BILLING.STG_BILLING_ADJ, teradata_table:SFX_BILLING.STG_CREDIT_NOTE, teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE, teradata_table:SFX_BILLING.STG_INVOICE_HDR, teradata_table:SFX_BILLING.STG_INVOICE_LINE, teradata_table:SFX_BILLING.STG_PAYMENT, teradata_table:SFX_BILLING.STG_PLAN_CATALOG, teradata_table:SFX_BILLING.STG_SUBSCRIPTION, teradata_table:SFX_BILLING.STG_TAX_RATE, teradata_table:SFX_BILLING.STG_USAGE_DAILY, teradata_table:SFX_BILLING.SUBSCRIPTION, teradata_table:SFX_BILLING.TAX_RATE, teradata_table:SFX_BILLING.USAGE_DAILY
+
+**ambiguity:** Delta stores strings without native CHAR padding, widths or NOT CASESPECIFIC collation.
+
+**decision:** Replicate explicit PostgreSQL INSERT casts by truncating target text, padding CHAR to its declared width, and retaining null/empty distinctions. Parity strips trailing ASCII spaces only for declared CHAR columns. History change comparison lowercases and removes trailing ASCII spaces; no other load-layer string predicate requires a collation rewrite.
+
+**rationale:** Base INSERT SELECT is explicitly cast by Runner.translate; staging COPY has distinct width-rejection behavior. Equality of history status/currency follows case-insensitive padded legacy values.
+
+**verification:** test:lakehouse/tests/test_billing_load.py::test_billing_history_replay_and_order
+
+**sources:** warehouse/teradata/bteq/runner.py, warehouse/teradata/ddl/billing/00_type2_account.sql, warehouse/teradata/scripts/billing/load_account_history.bteq
+
+## A-102 — Billing FastLoad replacement and staging
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** fastload:warehouse/teradata/load/fastload/billing_billing_adj.fl, fastload:warehouse/teradata/load/fastload/billing_credit_note.fl, fastload:warehouse/teradata/load/fastload/billing_customer_account.fl, fastload:warehouse/teradata/load/fastload/billing_gl_account.fl, fastload:warehouse/teradata/load/fastload/billing_gl_journal_line.fl, fastload:warehouse/teradata/load/fastload/billing_invoice_hdr.fl, fastload:warehouse/teradata/load/fastload/billing_invoice_line.fl, fastload:warehouse/teradata/load/fastload/billing_payment.fl, fastload:warehouse/teradata/load/fastload/billing_plan_catalog.fl, fastload:warehouse/teradata/load/fastload/billing_subscription.fl, fastload:warehouse/teradata/load/fastload/billing_tax_rate.fl, fastload:warehouse/teradata/load/fastload/billing_usage_daily.fl, teradata_table:SFX_BILLING.STG_BILLING_ADJ, teradata_table:SFX_BILLING.STG_CREDIT_NOTE, teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE, teradata_table:SFX_BILLING.STG_INVOICE_HDR, teradata_table:SFX_BILLING.STG_INVOICE_LINE, teradata_table:SFX_BILLING.STG_PAYMENT, teradata_table:SFX_BILLING.STG_PLAN_CATALOG, teradata_table:SFX_BILLING.STG_SUBSCRIPTION, teradata_table:SFX_BILLING.STG_TAX_RATE, teradata_table:SFX_BILLING.STG_USAGE_DAILY
+
+**ambiguity:** Native FastLoad sessions, error tables, error limits and parser behavior have no direct Delta equivalent.
+
+**decision:** Replace control execution by existing readiness sensors and CSV bronze ingestion, then typed date-filtered silver staging. Preserve quoted pipes/newlines, exactly-empty noncharacter nulls and character empties. Reject malformed/missing feeds and staging text over 200 characters. Do not implement native FastLoad error tables, session parallelism or partial reject acceptance.
+
+**rationale:** Certify executable emulator load_all/load_control behavior and table parity, not an unavailable proprietary runtime. Existing feeds/sensors already cover all twelve billing inputs.
+
+**verification:** test:lakehouse/tests/test_lakehouse.py::test_ingestion_and_pilot
+
+**sources:** warehouse/teradata/bteq/load.py, warehouse/teradata/load/fastload/billing_customer_account.fl, warehouse/teradata/ddl/billing/00_tables.sql
+
+## A-103 — Billing snapshot replacement and journal append
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq, bteq_script:warehouse/teradata/scripts/billing/02_load_subscriptions.bteq, bteq_script:warehouse/teradata/scripts/billing/03_load_invoices.bteq, bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq, bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/02_load_subscriptions, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/03_load_invoices, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/04_load_payments, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/05_load_usage, teradata_table:SFX_BILLING.BILLING_ADJ, teradata_table:SFX_BILLING.CREDIT_NOTE, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.GL_ACCOUNT, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.PAYMENT, teradata_table:SFX_BILLING.PLAN_CATALOG, teradata_table:SFX_BILLING.SUBSCRIPTION, teradata_table:SFX_BILLING.TAX_RATE, teradata_table:SFX_BILLING.USAGE_DAILY
+
+**ambiguity:** Not every billing base table is a current snapshot; GL journal retention is controlled by posting date, not row key.
+
+**decision:** Rebuild eleven current base snapshots only from BUSINESS_DATE. Retain previous GL_JOURNAL_LINE and append staged rows only for posting dates absent in the pre-load journal. Preserve NULL posting-date SQL equality behavior, including repeated append of null-date rows.
+
+**rationale:** Matches DELETE/INSERT in scripts 01..05 and the journal NOT EXISTS POSTING_DT predicate, without deduplication or latest-partition inference.
+
+**verification:** test:lakehouse/tests/test_billing_load.py::test_billing_journal_posting_date_append
+
+**sources:** warehouse/teradata/scripts/billing/01_load_accounts.bteq, warehouse/teradata/scripts/billing/02_load_subscriptions.bteq, warehouse/teradata/scripts/billing/03_load_invoices.bteq, warehouse/teradata/scripts/billing/04_load_payments.bteq, warehouse/teradata/scripts/billing/05_load_usage.bteq
+
+## A-104 — Billing SCD2 replay and ordering
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST, teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH, bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/load_account_history
+
+**ambiguity:** A retained bronze snapshot alone cannot express latest-day correction, absent accounts or rejection of completed older dates.
+
+**decision:** Use existing silver history as state. Remove same-day new rows, reopen same-day closures, close changed current status/currency null-safely and insert newly current rows. Retain absent customers. Track even empty or unchanged completed dates in ACCOUNT_HIST_BATCH and reject any run older than its maximum date before either history output is replaced.
+
+**rationale:** Mirrors the reset/MERGE/INSERT/batch sequence in the legacy transaction, including correcting the latest completed file instead of accumulating duplicate versions.
+
+**verification:** test:lakehouse/tests/test_billing_load.py::test_billing_history_replay_and_order
+
+**sources:** warehouse/teradata/scripts/billing/load_account_history.bteq, warehouse/teradata/ddl/billing/00_type2_account.sql
+
+## A-105 — Billing failure and constraint boundary
+
+**status:** open
+
+**risk:** high
+
+**legacy_objects:** teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH, teradata_table:SFX_BILLING.BILLING_ADJ, teradata_table:SFX_BILLING.CREDIT_NOTE, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST, teradata_table:SFX_BILLING.GL_ACCOUNT, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.PAYMENT, teradata_table:SFX_BILLING.PLAN_CATALOG, teradata_table:SFX_BILLING.STG_BILLING_ADJ, teradata_table:SFX_BILLING.STG_CREDIT_NOTE, teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE, teradata_table:SFX_BILLING.STG_INVOICE_HDR, teradata_table:SFX_BILLING.STG_INVOICE_LINE, teradata_table:SFX_BILLING.STG_PAYMENT, teradata_table:SFX_BILLING.STG_PLAN_CATALOG, teradata_table:SFX_BILLING.STG_SUBSCRIPTION, teradata_table:SFX_BILLING.STG_TAX_RATE, teradata_table:SFX_BILLING.STG_USAGE_DAILY, teradata_table:SFX_BILLING.SUBSCRIPTION, teradata_table:SFX_BILLING.TAX_RATE, teradata_table:SFX_BILLING.USAGE_DAILY, bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq, bteq_script:warehouse/teradata/scripts/billing/02_load_subscriptions.bteq, bteq_script:warehouse/teradata/scripts/billing/03_load_invoices.bteq, bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq, bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq, bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq, fastload:warehouse/teradata/load/fastload/billing_billing_adj.fl, fastload:warehouse/teradata/load/fastload/billing_credit_note.fl, fastload:warehouse/teradata/load/fastload/billing_customer_account.fl, fastload:warehouse/teradata/load/fastload/billing_gl_account.fl, fastload:warehouse/teradata/load/fastload/billing_gl_journal_line.fl, fastload:warehouse/teradata/load/fastload/billing_invoice_hdr.fl, fastload:warehouse/teradata/load/fastload/billing_invoice_line.fl, fastload:warehouse/teradata/load/fastload/billing_payment.fl, fastload:warehouse/teradata/load/fastload/billing_plan_catalog.fl, fastload:warehouse/teradata/load/fastload/billing_subscription.fl, fastload:warehouse/teradata/load/fastload/billing_tax_rate.fl, fastload:warehouse/teradata/load/fastload/billing_usage_daily.fl, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/02_load_subscriptions, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/03_load_invoices, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/04_load_payments, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/05_load_usage, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/load_account_history
+
+**ambiguity:** Delta/dbt cannot reproduce every native transactional constraint, BTEQ label, multi-statement partial commit, or the two-table SCD2 transaction.
+
+**decision:** Use atomic per-model Delta replacement, ANSI cast failure and dbt key/null/invariant tests. History validates nonnull unique input keys and older-date guard before mutation; history then batch are ordered and same-date retry-safe. Do not claim cross-model rollback: a failure between history and batch publication, or a post-materialization dbt constraint failure, can leave partial outputs requiring same-date retry and operational review.
+
+**rationale:** Legacy non-history scripts also partially commit, but exact boundaries differ. Cross-table transactional equivalence is not supplied by this foundation; retain this explicit open risk rather than hide it behind row parity.
+
+**verification:** test:lakehouse/tests/test_billing_load.py::test_billing_history_replay_and_order
+
+**sources:** warehouse/teradata/scripts/billing/load_account_history.bteq, warehouse/teradata/scripts/billing/01_load_accounts.bteq, warehouse/teradata/bteq/runner.py
+
+## A-106 — Load-layer parity uses matching legacy stage
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH, teradata_table:SFX_BILLING.BILLING_ADJ, teradata_table:SFX_BILLING.CREDIT_NOTE, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST, teradata_table:SFX_BILLING.GL_ACCOUNT, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.PAYMENT, teradata_table:SFX_BILLING.PLAN_CATALOG, teradata_table:SFX_BILLING.STG_BILLING_ADJ, teradata_table:SFX_BILLING.STG_CREDIT_NOTE, teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE, teradata_table:SFX_BILLING.STG_INVOICE_HDR, teradata_table:SFX_BILLING.STG_INVOICE_LINE, teradata_table:SFX_BILLING.STG_PAYMENT, teradata_table:SFX_BILLING.STG_PLAN_CATALOG, teradata_table:SFX_BILLING.STG_SUBSCRIPTION, teradata_table:SFX_BILLING.STG_TAX_RATE, teradata_table:SFX_BILLING.STG_USAGE_DAILY, teradata_table:SFX_BILLING.SUBSCRIPTION, teradata_table:SFX_BILLING.TAX_RATE, teradata_table:SFX_BILLING.USAGE_DAILY, bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq, bteq_script:warehouse/teradata/scripts/billing/02_load_subscriptions.bteq, bteq_script:warehouse/teradata/scripts/billing/03_load_invoices.bteq, bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq, bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq, bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq, fastload:warehouse/teradata/load/fastload/billing_billing_adj.fl, fastload:warehouse/teradata/load/fastload/billing_credit_note.fl, fastload:warehouse/teradata/load/fastload/billing_customer_account.fl, fastload:warehouse/teradata/load/fastload/billing_gl_account.fl, fastload:warehouse/teradata/load/fastload/billing_gl_journal_line.fl, fastload:warehouse/teradata/load/fastload/billing_invoice_hdr.fl, fastload:warehouse/teradata/load/fastload/billing_invoice_line.fl, fastload:warehouse/teradata/load/fastload/billing_payment.fl, fastload:warehouse/teradata/load/fastload/billing_plan_catalog.fl, fastload:warehouse/teradata/load/fastload/billing_subscription.fl, fastload:warehouse/teradata/load/fastload/billing_tax_rate.fl, fastload:warehouse/teradata/load/fastload/billing_usage_daily.fl, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/02_load_subscriptions, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/03_load_invoices, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/04_load_payments, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/05_load_usage, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/load_account_history
+
+**ambiguity:** The mutable legacy daily chain later changes invoice headers, lines and GL journal; its final state is not the output of the load layer.
+
+**decision:** Prepare the local legacy billing load baseline by clearing GL journal fixture state and replaying the six scoped BTEQ scripts over unchanged shared landing staging. Compare each of 26 output tables at that load-stage boundary. Do not claim these PASS results certify later monthly billing, period close or historical as-of outputs.
+
+**rationale:** Table parity is meaningful only when both sides represent the same execution stage and prior state. Fresh journal fixture state is used for initial parity; separate stateful tests prove subsequent posting-date retention.
+
+**verification:** billing.gl_journal_line
+
+**sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, warehouse/teradata/scripts/billing/13_period_close.bteq
+
+## A-107 — Billing per-stage scheduler replacement
+
+**status:** accepted
+
+**risk:** low
+
+**legacy_objects:** cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/02_load_subscriptions, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/03_load_invoices, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/04_load_payments, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/05_load_usage, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/load_account_history
+
+**ambiguity:** The all-domain daily runner and its wall-clock scheduling are shared; billing stage replacement cannot claim those global responsibilities.
+
+**decision:** Map only the six scoped billing stage IDs to the tag:billing dbt task after bronze_billing. Model refs order staging and SCD2 batch publication; one parity node per output follows dbt_billing. Shared daily_chain and global cron remain unclaimed.
+
+**rationale:** Existing graph has all twelve billing readiness sensors and domain ingestion. The named contract test checks the exact stage IDs, model presence and parity dependencies.
+
+**verification:** test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
+
+**sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/jobs/crontab.example
+
+## A-108 — Immutable load, monthly and close boundaries
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq, bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq, bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/10_subscription_report, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/11_currency_daily, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/12_invoice_monthly, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/13_period_close, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/14_account_history_extract, teradata_macro:SFX_BILLING.M_CURRENCY_TOTALS, teradata_macro:SFX_BILLING.M_SUBSCRIPTION_PLANS, teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES, teradata_view:SFX_BILLING.V_INVOICE_BASE, teradata_view:SFX_BILLING.V_INVOICE_REVENUE, teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE
+
+**ambiguity:** Monthly and period-close overwrite the same legacy tables and early reports observe different state from final views.
+
+**decision:** Keep silver load snapshots immutable; gold monthly invoice lines feed monthly header amounts/control totals and journal, then closed_invoice_hdr applies period-close fields. Final views read closed headers. Early currency_daily reads silver. The reporting dbt node follows silver; export stages run in legacy order. Legacy parity fixture snapshots the three load tables and the three monthly tables so all stages can be compared in one run.
+
+**rationale:** Avoid cyclic in-place mutation and preserve Step 2 parity while providing explicit final gold serving surfaces.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_billing_reporting_stage_replacement
+
+**sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, warehouse/teradata/scripts/billing/13_period_close.bteq
+
+## A-109 — Monthly procedure joins, dates, decimals and OUT count
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE
+
+**ambiguity:** The monthly procedure has cumulative date predicates, global line deletion, conditional header updates and an OUT parameter.
+
+**decision:** Delete generated descriptions globally, including future invoices; preserve null descriptions. Insert monthly fees and adjustments for invoice_dt <= BUSINESS_DATE, with no adjustment-date or month restriction. Recompute only headers with subscription/plan/tax joins; retain other headers. Use decimal arithmetic and half-up rounding, cast updated targets to DECIMAL(14,2), then compute case-insensitive currency control totals over every header. Expose actual eligible-update count as monthly_invoice_result.n.
+
+**rationale:** Replicate statements rather than infer a conventional current-month billing policy. Capture legacy OUT n from actual procedure log in fixture.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_monthly_states_and_edges
+
+**sources:** warehouse/teradata/procedures/monthly_invoice.sql, warehouse/teradata/ddl/billing/00_tables.sql
+
+## A-110 — Monthly journal replacement and balance
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, teradata_table:SFX_BILLING.GL_JOURNAL_LINE
+
+**ambiguity:** Journal deletion is month-scoped but inserted invoices and credits are cumulative and SQL null predicates matter.
+
+**decision:** Retain journal rows outside the current calendar month, including null posting dates. Regenerate four invoice postings and three eligible credit reversals dated BUSINESS_DATE using legacy numeric IDs and account/sign rules. Null currency cannot join the grouped currency set; null amounts use the original CASE ELSE 0 behavior. Check per-currency debit/credit equality with the same NULL aggregate semantics.
+
+**rationale:** Preserve rerun behavior from an immutable silver prior-state snapshot, not a deduplication/upsert approximation.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_monthly_states_and_edges
+
+**sources:** warehouse/teradata/scripts/billing/12_invoice_monthly.bteq
+
+## A-111 — Period-close date encoding and previous-month window
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq, teradata_table:SFX_BILLING.INVOICE_HDR
+
+**ambiguity:** Teradata date-to-integer arithmetic is not Unix days; PERIOD_START_INT/END_INT refer to the previous calendar month.
+
+**decision:** Apply monthly first. Derive prior date, month number, YYYYMMDD period key and YYYY-MM text for all headers. Set closed=Y only for bill dates in the previous calendar month, retaining other flags. Use explicit BUSINESS_DATE and calendar boundaries, including year/leap transitions.
+
+**rationale:** Matches daily_chain.variables and emulator date_int translation; period-close does not filter the entire header snapshot.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_monthly_states_and_edges
+
+**sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/billing/13_period_close.bteq, warehouse/teradata/bteq/runner.py
+
+## A-112 — DATA/REPORT file contract and atomic publication
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq, bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq, bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq
+
+**ambiguity:** Native BTEQ REPORT layout differs from the executable emulator and unordered SQL does not define physical row order.
+
+**decision:** Publish seven actual headerless UTF-8 PSV files with LF records, null as empty and no CSV quoting, matching Runner.render. Use deterministic sorting; compare file rows ignoring unspecified order, declared CHAR trailing blanks and decimal display scale. Case-fold only case-insensitive grouped key representatives. Preserve required invoice/status ordering. Write a same-directory temporary file, fsync and atomic replace per file; empty results publish an empty file. Reject delimiter/newline fields rather than emitting malformed unquoted records.
+
+**rationale:** Certifies emulator files, not proprietary headings/pagination; avoids partially published files and silent stale data on retries.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_report_atomic_publication
+
+**sources:** warehouse/teradata/bteq/runner.py, warehouse/teradata/scripts/billing/10_subscription_report.bteq, warehouse/teradata/scripts/billing/11_currency_daily.bteq, warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, warehouse/teradata/scripts/billing/13_period_close.bteq, warehouse/teradata/scripts/billing/14_account_history_extract.bteq
+
+## A-113 — Reporting collation and inert macro parameters
+
+**status:** open
+
+**risk:** med
+
+**legacy_objects:** teradata_macro:SFX_BILLING.M_CURRENCY_TOTALS, teradata_macro:SFX_BILLING.M_SUBSCRIPTION_PLANS, teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES, teradata_view:SFX_BILLING.V_INVOICE_BASE, teradata_view:SFX_BILLING.V_INVOICE_REVENUE, teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq, bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq, bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq, teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE
+
+**ambiguity:** NOT CASESPECIFIC ICU text and CHAR padding are not native Spark semantics; both macro date parameters are unused.
+
+**decision:** Join plans by lowercase/rtrim and group currencies/status and GL account numbers by lowercase/rtrim, retaining case-sensitive account names. Currency window partitions use the same keys. Choose a deterministic min spelling for group display and normalize only case-insensitive representative fields in parity. Preserve subscription macro s.PLAN_CODE versus view p.PLAN_CODE and do not date-filter either macro. Non-ASCII ICU accent/locale equivalence beyond tested case/trailing-space examples remains unverified.
+
+**rationale:** Avoid duplicate mixed-case currency groups and incorrect window totals; never case-fold case-sensitive descriptions or account names.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_monthly_states_and_edges
+
+**sources:** warehouse/teradata/bteq/bootstrap.sql, warehouse/teradata/bteq/runner.py, warehouse/teradata/macros/currency_totals.sql, warehouse/teradata/macros/subscription_plans.sql, warehouse/teradata/ddl/billing/10_views.sql, warehouse/teradata/ddl/billing/20_views.sql
+
+## A-114 — Reporting failure and publication boundaries
+
+**status:** open
+
+**risk:** high
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq, bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq, bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/10_subscription_report, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/11_currency_daily, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/12_invoice_monthly, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/13_period_close, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/14_account_history_extract, teradata_macro:SFX_BILLING.M_CURRENCY_TOTALS, teradata_macro:SFX_BILLING.M_SUBSCRIPTION_PLANS, teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES, teradata_view:SFX_BILLING.V_INVOICE_BASE, teradata_view:SFX_BILLING.V_INVOICE_REVENUE, teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE
+
+**ambiguity:** Legacy scripts commit mutations and may export before a later balance failure; dbt and independent files cannot provide the same global transaction.
+
+**decision:** Keep A-105 open. Gold tables publish atomically per model; post-build constraints/balance failures block export tasks but may leave some gold outputs. Files publish atomically individually, not as a multi-file transaction. Retries replace rather than append. Do not claim legacy partial-commit ordering, cross-model rollback, native procedure error codes or production cutover safety. Invalid dates and Spark ANSI arithmetic errors fail visibly.
+
+**rationale:** Explicitly retain differing failure boundaries instead of treating fixture row parity as operational equivalence.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_report_atomic_publication
+
+**sources:** warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, warehouse/teradata/scripts/billing/13_period_close.bteq, warehouse/teradata/procedures/monthly_invoice.sql
+
+## A-115 — History extract as-of interval and null groups
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/14_account_history_extract
+
+**ambiguity:** History extract reads validity intervals rather than current customer rows and includes null group keys.
+
+**decision:** Filter VALID_FROM_DT <= BUSINESS_DATE < VALID_TO_DT, group status/currency case-insensitively with nulls retained, output BUSINESS_DATE, and sort status/currency NULLS LAST. Serialize nulls as empty fields as the emulator does; the table history itself retains null distinctions.
+
+**rationale:** Do not substitute current account status or infer the newest history date.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_monthly_states_and_edges
+
+**sources:** warehouse/teradata/scripts/billing/14_account_history_extract.bteq, warehouse/teradata/ddl/billing/00_type2_account.sql
+
+## A-116 — Separate Informatica overlay and precedence
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** informatica_config:SFX_BILLING.default_session_config, informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_HDR, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE, informatica_mapping:SFX_BILLING.m_SFX_PAYMENT, informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR, informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler, informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_HDR, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE, informatica_session:SFX_BILLING.s_m_SFX_PAYMENT, informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR, informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.FF_INVOICE_HDR, informatica_source:SFX_BILLING.FF_INVOICE_LINE, informatica_source:SFX_BILLING.FF_PAYMENT, informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.STG_INVOICE_HDR, informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.GL_JOURNAL_LINE, informatica_target:SFX_BILLING.INVOICE_HDR, informatica_target:SFX_BILLING.INVOICE_LINE, informatica_target:SFX_BILLING.PAYMENT, informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.STG_INVOICE_HDR, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.dec_GL_POSTED, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.em_GL_POSTING_ALERT, informatica_task:SFX_BILLING.wklt_SFX_BILLING_STAGE.Start, informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY, informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE
+
+**ambiguity:** The estate has multiple writers of the same billing tables.
+
+**decision:** Run Informatica after the BTEQ monthly/close states. Treat those states as its explicit prior inputs, then publish independent Informatica Delta targets; never overwrite BTEQ silver/gold. Preserve unmatched prior rows for upserts, truncate only the two staging targets. This defines BTEQ-then-Informatica precedence within an explicitly isolated serving surface, not a retargeting of consumers.
+
+**rationale:** Make the converted folder's state, data semantics and operational limits explicit; parity certifies the executable emulator on matched inputs.
+
+**verification:** test:lakehouse/tests/test_billing_informatica.py::test_informatica_empty_normal_errors_and_writers
+
+**sources:** etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML, etl/informatica/runner/engine.py, etl/informatica/runner/workflow.py, etl/informatica/runner/expr.py, etl/informatica/params/sfx_d1110_daily.par
+
+## A-117 — Executable reference and independent mapping implementation
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** informatica_config:SFX_BILLING.default_session_config, informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_HDR, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE, informatica_mapping:SFX_BILLING.m_SFX_PAYMENT, informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR, informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler, informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_HDR, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE, informatica_session:SFX_BILLING.s_m_SFX_PAYMENT, informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR, informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.FF_INVOICE_HDR, informatica_source:SFX_BILLING.FF_INVOICE_LINE, informatica_source:SFX_BILLING.FF_PAYMENT, informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.STG_INVOICE_HDR, informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.GL_JOURNAL_LINE, informatica_target:SFX_BILLING.INVOICE_HDR, informatica_target:SFX_BILLING.INVOICE_LINE, informatica_target:SFX_BILLING.PAYMENT, informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.STG_INVOICE_HDR, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.dec_GL_POSTED, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.em_GL_POSTING_ALERT, informatica_task:SFX_BILLING.wklt_SFX_BILLING_STAGE.Start, informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY, informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE
+
+**ambiguity:** XML may not describe all executable quirks.
+
+**decision:** Use the existing etl/informatica/runner Integration and MappingRun against an isolated PostgreSQL database with physical types/constraints cloned from legacy and exact prior values frozen before modern mapping execution in inputs/prior.json; execute the actual workflow XML. The frozen BTEQ boundary avoids eight preexisting case-insensitive gold/native journal currency representative differences without normalizing Informatica outputs. Modern code independently implements the billing expression subset and ordered writers; sharing XML metadata, field lists and serialization does not share transformation evaluation. No native PowerCenter certification is claimed.
+
+**rationale:** Make the converted folder's state, data semantics and operational limits explicit; parity certifies the executable emulator on matched inputs.
+
+**verification:** test:lakehouse/tests/test_billing_informatica.py::test_informatica_native_reject_row_parity
+
+**sources:** etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML, etl/informatica/runner/engine.py, etl/informatica/runner/workflow.py, etl/informatica/runner/expr.py, etl/informatica/params/sfx_d1110_daily.par
+
+## A-118 — Ports, empty values, trimming, defaults and constraints
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** informatica_config:SFX_BILLING.default_session_config, informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_HDR, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE, informatica_mapping:SFX_BILLING.m_SFX_PAYMENT, informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR, informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler, informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_HDR, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE, informatica_session:SFX_BILLING.s_m_SFX_PAYMENT, informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR, informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.FF_INVOICE_HDR, informatica_source:SFX_BILLING.FF_INVOICE_LINE, informatica_source:SFX_BILLING.FF_PAYMENT, informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.STG_INVOICE_HDR, informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.GL_JOURNAL_LINE, informatica_target:SFX_BILLING.INVOICE_HDR, informatica_target:SFX_BILLING.INVOICE_LINE, informatica_target:SFX_BILLING.PAYMENT, informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.STG_INVOICE_HDR, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.dec_GL_POSTED, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.em_GL_POSTING_ALERT, informatica_task:SFX_BILLING.wklt_SFX_BILLING_STAGE.Start, informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY, informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE
+
+**ambiguity:** Flat files, transformation ports and physical columns have distinct coercions.
+
+**decision:** Empty flat fields become null; short records supply null and extra fields are ignored like the emulator. Respect source/output string precision, trim ASCII spaces, uppercase only declared expressions and apply NVL only to null, not a post-trim empty string. Numeric conversion accepts the emulator's numeric prefix and rounds half-up. Validate physical integer/decimal/string bounds and non-null identifiers as writer rejects; malformed expression rows are rejected before filters.
+
+**rationale:** Make the converted folder's state, data semantics and operational limits explicit; parity certifies the executable emulator on matched inputs.
+
+**verification:** test:lakehouse/tests/test_billing_informatica.py::test_informatica_native_reject_row_parity
+
+**sources:** etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML, etl/informatica/runner/engine.py, etl/informatica/runner/workflow.py, etl/informatica/runner/expr.py, etl/informatica/params/sfx_d1110_daily.par
+
+## A-119 — Static lookups, upsert modes and filtered rows
+
+**status:** open
+
+**risk:** med
+
+**legacy_objects:** informatica_config:SFX_BILLING.default_session_config, informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_HDR, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE, informatica_mapping:SFX_BILLING.m_SFX_PAYMENT, informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR, informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler, informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_HDR, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE, informatica_session:SFX_BILLING.s_m_SFX_PAYMENT, informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR, informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.FF_INVOICE_HDR, informatica_source:SFX_BILLING.FF_INVOICE_LINE, informatica_source:SFX_BILLING.FF_PAYMENT, informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.STG_INVOICE_HDR, informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.GL_JOURNAL_LINE, informatica_target:SFX_BILLING.INVOICE_HDR, informatica_target:SFX_BILLING.INVOICE_LINE, informatica_target:SFX_BILLING.PAYMENT, informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.STG_INVOICE_HDR, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.dec_GL_POSTED, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.em_GL_POSTING_ALERT, informatica_task:SFX_BILLING.wklt_SFX_BILLING_STAGE.Start, informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY, informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE
+
+**ambiguity:** Data-driven lookups are cached before writes; different sessions have different writer modes.
+
+**decision:** Customer/header use static prior-key existence to choose insert/update; repeated new keys can reject instead of dynamically switching to update. Header router rejects missing account/amount/date to DD_REJECT. Invoice line/payment use update-else-insert, retain prior unmatched rows and silently filter the XML null predicates. Preserve line-amount quantity/price fallback. Lookups use case-sensitive first-value matching; ambiguous unordered duplicate lookup selection outside tested ordered inputs remains unverified.
+
+**rationale:** Make the converted folder's state, data semantics and operational limits explicit; parity certifies the executable emulator on matched inputs.
+
+**verification:** test:lakehouse/tests/test_billing_informatica.py::test_informatica_native_reject_row_parity
+
+**sources:** etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML, etl/informatica/runner/engine.py, etl/informatica/runner/workflow.py, etl/informatica/runner/expr.py, etl/informatica/params/sfx_d1110_daily.par
+
+## A-120 — Informatica GL branches, pre-SQL and persistent sequence
+
+**status:** open
+
+**risk:** high
+
+**legacy_objects:** informatica_config:SFX_BILLING.default_session_config, informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_HDR, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE, informatica_mapping:SFX_BILLING.m_SFX_PAYMENT, informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR, informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler, informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_HDR, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE, informatica_session:SFX_BILLING.s_m_SFX_PAYMENT, informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR, informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.FF_INVOICE_HDR, informatica_source:SFX_BILLING.FF_INVOICE_LINE, informatica_source:SFX_BILLING.FF_PAYMENT, informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.STG_INVOICE_HDR, informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.GL_JOURNAL_LINE, informatica_target:SFX_BILLING.INVOICE_HDR, informatica_target:SFX_BILLING.INVOICE_LINE, informatica_target:SFX_BILLING.PAYMENT, informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.STG_INVOICE_HDR, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.dec_GL_POSTED, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.em_GL_POSTING_ALERT, informatica_task:SFX_BILLING.wklt_SFX_BILLING_STAGE.Start, informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY, informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE
+
+**ambiguity:** GL is not the BTEQ journal calculation; sequence state is operational input.
+
+**decision:** Delete only no-credit journal rows for nonzero/non-null staged invoice totals, regardless of header router validity. Keep credits/unselected prior rows. Emit AR and deferred-revenue branches, plus tax only when nonzero, using XML lookup accounts and tax rate. Retain negative debit/credit values as expressed. Persist the sequence next value between successful attempts, include each attempt's starting counter in inputs.json and restore that exact counter for native reference execution. Fatal partial-writer sequence persistence is not certified.
+
+**rationale:** Make the converted folder's state, data semantics and operational limits explicit; parity certifies the executable emulator on matched inputs.
+
+**verification:** test:lakehouse/tests/test_billing_informatica.py::test_informatica_journal_filters_tax_sequence_and_retention
+
+**sources:** etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML, etl/informatica/runner/engine.py, etl/informatica/runner/workflow.py, etl/informatica/runner/expr.py, etl/informatica/params/sfx_d1110_daily.par
+
+## A-121 — Complete target and rejection parity
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** informatica_config:SFX_BILLING.default_session_config, informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_HDR, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE, informatica_mapping:SFX_BILLING.m_SFX_PAYMENT, informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR, informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler, informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_HDR, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE, informatica_session:SFX_BILLING.s_m_SFX_PAYMENT, informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR, informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.FF_INVOICE_HDR, informatica_source:SFX_BILLING.FF_INVOICE_LINE, informatica_source:SFX_BILLING.FF_PAYMENT, informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.STG_INVOICE_HDR, informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.GL_JOURNAL_LINE, informatica_target:SFX_BILLING.INVOICE_HDR, informatica_target:SFX_BILLING.INVOICE_LINE, informatica_target:SFX_BILLING.PAYMENT, informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.STG_INVOICE_HDR, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.dec_GL_POSTED, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.em_GL_POSTING_ALERT, informatica_task:SFX_BILLING.wklt_SFX_BILLING_STAGE.Start, informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY, informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE
+
+**ambiguity:** Nullable/duplicate target rows and transformation drops cannot be compared using invented natural keys or only rejection counts.
+
+**decision:** Use typed Delta snapshots for all seven targets, retaining null versus empty and duplicate multiplicity. A canonical all-column ordinal is comparison metadata, not a business key. Compare writer target/record lines exactly as native .bad output; instrument native t_expression to capture removed input contexts without replacing its evaluation. Compare full transformation-rejected rows and counts separately. Reference preparation fails if any native error is not captured. SQL CHAR pad removal is metadata-driven, not general text trimming.
+
+**rationale:** Make the converted folder's state, data semantics and operational limits explicit; parity certifies the executable emulator on matched inputs.
+
+**verification:** test:lakehouse/tests/test_billing_informatica.py::test_informatica_native_reject_row_parity
+
+**sources:** etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML, etl/informatica/runner/engine.py, etl/informatica/runner/workflow.py, etl/informatica/runner/expr.py, etl/informatica/params/sfx_d1110_daily.par
+
+## A-122 — Workflow failure envelopes and branch reachability
+
+**status:** open
+
+**risk:** high
+
+**legacy_objects:** informatica_config:SFX_BILLING.default_session_config, informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_HDR, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE, informatica_mapping:SFX_BILLING.m_SFX_PAYMENT, informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR, informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler, informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_HDR, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE, informatica_session:SFX_BILLING.s_m_SFX_PAYMENT, informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR, informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.FF_INVOICE_HDR, informatica_source:SFX_BILLING.FF_INVOICE_LINE, informatica_source:SFX_BILLING.FF_PAYMENT, informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.STG_INVOICE_HDR, informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.GL_JOURNAL_LINE, informatica_target:SFX_BILLING.INVOICE_HDR, informatica_target:SFX_BILLING.INVOICE_LINE, informatica_target:SFX_BILLING.PAYMENT, informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.STG_INVOICE_HDR, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.dec_GL_POSTED, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.em_GL_POSTING_ALERT, informatica_task:SFX_BILLING.wklt_SFX_BILLING_STAGE.Start, informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY, informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE
+
+**ambiguity:** The graph's all-success edges would otherwise suppress an unconditional decision after failed GL.
+
+**decision:** Each real mapping node atomically records native-style status/failure counts and returns a status envelope. Independent validation nodes fail/block stale data parity on mapping errors; the unconditional decision remains reachable and payment checks the true condition before doing work. Worklet failures skip dependent mappings. Final workflow/alert tasks make caught mapping failures observable as pipeline failure. Abrupt process death/SIGKILL can still block descendants and requires platform-level failure monitoring; no atomic multi-target rollback is claimed.
+
+**rationale:** Make the converted folder's state, data semantics and operational limits explicit; parity certifies the executable emulator on matched inputs.
+
+**verification:** test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
+
+**sources:** etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML, etl/informatica/runner/engine.py, etl/informatica/runner/workflow.py, etl/informatica/runner/expr.py, etl/informatica/params/sfx_d1110_daily.par
+
+## A-123 — Actual alert failure/notification path
+
+**status:** open
+
+**risk:** high
+
+**legacy_objects:** informatica_config:SFX_BILLING.default_session_config, informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_HDR, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE, informatica_mapping:SFX_BILLING.m_SFX_PAYMENT, informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR, informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler, informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_HDR, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE, informatica_session:SFX_BILLING.s_m_SFX_PAYMENT, informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR, informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.FF_INVOICE_HDR, informatica_source:SFX_BILLING.FF_INVOICE_LINE, informatica_source:SFX_BILLING.FF_PAYMENT, informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.STG_INVOICE_HDR, informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.GL_JOURNAL_LINE, informatica_target:SFX_BILLING.INVOICE_HDR, informatica_target:SFX_BILLING.INVOICE_LINE, informatica_target:SFX_BILLING.PAYMENT, informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.STG_INVOICE_HDR, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.dec_GL_POSTED, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.em_GL_POSTING_ALERT, informatica_task:SFX_BILLING.wklt_SFX_BILLING_STAGE.Start, informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY, informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE
+
+**ambiguity:** The legacy emulator only logs an email queue operation, not SMTP delivery.
+
+**decision:** On the false decision branch atomically queue a dated on-call notification with status context and fail the alert task (nonzero exit), never a noop. If SFX_LH_SMTP_HOST is configured, send using SMTP and mark SENT; otherwise the durable outbox plus failed pipeline is the notification handoff. Native subject placeholders are expanded using BUSINESS_DATE. SMTP delivery to a live mail system is unverified; stricter pipeline failure versus legacy successful email enqueue is deliberate.
+
+**rationale:** Make the converted folder's state, data semantics and operational limits explicit; parity certifies the executable emulator on matched inputs.
+
+**verification:** test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
+
+**sources:** etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML, etl/informatica/runner/engine.py, etl/informatica/runner/workflow.py, etl/informatica/runner/expr.py, etl/informatica/params/sfx_d1110_daily.par
+
+## A-124 — Folder scheduler and default session configuration
+
+**status:** open
+
+**risk:** high
+
+**legacy_objects:** informatica_config:SFX_BILLING.default_session_config, informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_HDR, informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE, informatica_mapping:SFX_BILLING.m_SFX_PAYMENT, informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT, informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR, informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler, informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_HDR, informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE, informatica_session:SFX_BILLING.s_m_SFX_PAYMENT, informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT, informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR, informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.FF_INVOICE_HDR, informatica_source:SFX_BILLING.FF_INVOICE_LINE, informatica_source:SFX_BILLING.FF_PAYMENT, informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_source:SFX_BILLING.STG_INVOICE_HDR, informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.GL_JOURNAL_LINE, informatica_target:SFX_BILLING.INVOICE_HDR, informatica_target:SFX_BILLING.INVOICE_LINE, informatica_target:SFX_BILLING.PAYMENT, informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT, informatica_target:SFX_BILLING.STG_INVOICE_HDR, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.dec_GL_POSTED, informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.em_GL_POSTING_ALERT, informatica_task:SFX_BILLING.wklt_SFX_BILLING_STAGE.Start, informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY, informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE
+
+**ambiguity:** XML specifies 01:30 daily without a timezone and performance/log settings that the emulator does not fully implement.
+
+**decision:** Use the existing daily UTC logical-date-minus-one scheduler contract, not an additional 01:30 trigger. Its 20261110 start replaces native 20260701; earlier business dates require explicit backfill and available landing inputs, not an automatic historical scheduling claim. Start/worklet/finish nodes validate dates and statuses. Preserve executable Stop-on-errors=0, static lookup caches, per-session processing order and writer flags. Automatic buffers, 512MB tuning, ten-run log retention and native commit intervals are not emulated/certified; modern Delta publication is per target and the ordered writer currently materializes a fixture-sized row set in driver memory. Production scale and failure recovery require review.
+
+**rationale:** Make the converted folder's state, data semantics and operational limits explicit; parity certifies the executable emulator on matched inputs.
+
+**verification:** test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
+
+**sources:** etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML, etl/informatica/runner/engine.py, etl/informatica/runner/workflow.py, etl/informatica/runner/expr.py, etl/informatica/params/sfx_d1110_daily.par
 
 ## A-200 — Deterministic latest version timestamp ties
 

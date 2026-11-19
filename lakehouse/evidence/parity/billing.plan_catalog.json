@@ -1,0 +1,144 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "db86a5122c32983b905e92d893b0e4594e757aad",
+  "id": "billing.plan_catalog",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.PLAN_CATALOG",
+    "bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq"
+  ],
+  "results": {
+    "columns": [
+      "plan_id",
+      "plan_code",
+      "plan_name",
+      "monthly_fee",
+      "currency_cd"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "currency_cd": {
+          "count": 40,
+          "hash": "90777b1180270c0a664e4a873f427635be31730c33b5e831bb2822b3d61ee9d4",
+          "null_count": 0,
+          "sum": null
+        },
+        "monthly_fee": {
+          "count": 40,
+          "hash": "fc77d866f4f8fb8de07f4ba27c384ccfab729031fc2de07f94191a890ff1da89",
+          "null_count": 0,
+          "sum": "7862.5"
+        },
+        "plan_code": {
+          "count": 40,
+          "hash": "6213fd00077d0598990ab9da917df131d3a0492ec4549937e51da3d23e9dc965",
+          "null_count": 0,
+          "sum": null
+        },
+        "plan_id": {
+          "count": 40,
+          "hash": "4d76db3d982e8210cc66c0101b4e99e7403c29f7eb53e49cb857e407afc374aa",
+          "null_count": 0,
+          "sum": "820"
+        },
+        "plan_name": {
+          "count": 40,
+          "hash": "b2f37eee03f9a54003c0083b899d064b73b041c15dfdef8472ad0b819e190e4e",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "currency_cd": {
+          "count": 40,
+          "hash": "90777b1180270c0a664e4a873f427635be31730c33b5e831bb2822b3d61ee9d4",
+          "null_count": 0,
+          "sum": null
+        },
+        "monthly_fee": {
+          "count": 40,
+          "hash": "fc77d866f4f8fb8de07f4ba27c384ccfab729031fc2de07f94191a890ff1da89",
+          "null_count": 0,
+          "sum": "7862.5"
+        },
+        "plan_code": {
+          "count": 40,
+          "hash": "6213fd00077d0598990ab9da917df131d3a0492ec4549937e51da3d23e9dc965",
+          "null_count": 0,
+          "sum": null
+        },
+        "plan_id": {
+          "count": 40,
+          "hash": "4d76db3d982e8210cc66c0101b4e99e7403c29f7eb53e49cb857e407afc374aa",
+          "null_count": 0,
+          "sum": "820"
+        },
+        "plan_name": {
+          "count": 40,
+          "hash": "b2f37eee03f9a54003c0083b899d064b73b041c15dfdef8472ad0b819e190e4e",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "currency_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "monthly_fee": {
+        "count": 0,
+        "samples": []
+      },
+      "plan_code": {
+        "count": 0,
+        "samples": []
+      },
+      "plan_id": {
+        "count": 0,
+        "samples": []
+      },
+      "plan_name": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 40,
+      "legacy": 40
+    }
+  },
+  "row_counts": {
+    "lakehouse": 40,
+    "legacy": 40
+  },
+  "spec_hash": "b899a5ee2c09ff7bede0147c99eb398382c7afe937dcb94b3038e744d96ea78a",
+  "timestamp": "2026-11-19T11:19:38.041333+00:00"
+}

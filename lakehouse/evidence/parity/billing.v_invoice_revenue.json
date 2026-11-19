@@ -1,0 +1,126 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "db86a5122c32983b905e92d893b0e4594e757aad",
+  "id": "billing.v_invoice_revenue",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_view:SFX_BILLING.V_INVOICE_REVENUE"
+  ],
+  "results": {
+    "columns": [
+      "currency_cd",
+      "invoice_period",
+      "invoice_count",
+      "total_amount"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "currency_cd": {
+          "count": 11,
+          "hash": "956434c2dba00208efeadbeb6ec25be5e1a333c1dd8d54259a20749d8e51d836",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_count": {
+          "count": 11,
+          "hash": "482ec34e1e992e9a8701ad2391301cafe5b091256b24829760c66cb1c7aae485",
+          "null_count": 0,
+          "sum": "2100"
+        },
+        "invoice_period": {
+          "count": 11,
+          "hash": "519ba28d9373c1497794e82fbc9b9180ef92938843e41792ceb14b7dcccf9d98",
+          "null_count": 0,
+          "sum": null
+        },
+        "total_amount": {
+          "count": 11,
+          "hash": "68a53d590e68fc0f1240c81f60e4e7fc0689b82a8d9bf0b8b5358a511a5b1667",
+          "null_count": 0,
+          "sum": "745096.23"
+        }
+      },
+      "legacy": {
+        "currency_cd": {
+          "count": 11,
+          "hash": "956434c2dba00208efeadbeb6ec25be5e1a333c1dd8d54259a20749d8e51d836",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_count": {
+          "count": 11,
+          "hash": "482ec34e1e992e9a8701ad2391301cafe5b091256b24829760c66cb1c7aae485",
+          "null_count": 0,
+          "sum": "2100"
+        },
+        "invoice_period": {
+          "count": 11,
+          "hash": "519ba28d9373c1497794e82fbc9b9180ef92938843e41792ceb14b7dcccf9d98",
+          "null_count": 0,
+          "sum": null
+        },
+        "total_amount": {
+          "count": 11,
+          "hash": "68a53d590e68fc0f1240c81f60e4e7fc0689b82a8d9bf0b8b5358a511a5b1667",
+          "null_count": 0,
+          "sum": "745096.23"
+        }
+      }
+    },
+    "mismatches": {
+      "currency_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_count": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_period": {
+        "count": 0,
+        "samples": []
+      },
+      "total_amount": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 11,
+      "legacy": 11
+    }
+  },
+  "row_counts": {
+    "lakehouse": 11,
+    "legacy": 11
+  },
+  "spec_hash": "1e3f917fdfab7db74fff34b3747b9a2047cff9b40451402ef33e97c96e68340d",
+  "timestamp": "2026-11-19T11:19:46.125765+00:00"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "billing.stg_payment",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.STG_PAYMENT"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT payment_id, invoice_id, customer_id, payment_dt, amount, method_cd, payment_reference FROM sfx_billing.stg_payment"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.stg_payment"
+  },
+  "keys": [
+    "payment_id"
+  ],
+  "columns": [
+    "payment_id",
+    "invoice_id",
+    "customer_id",
+    "payment_dt",
+    "amount",
+    "method_cd",
+    "payment_reference"
+  ]
+}

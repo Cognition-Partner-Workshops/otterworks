@@ -1,0 +1,109 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "db86a5122c32983b905e92d893b0e4594e757aad",
+  "id": "billing.file_period_close",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq"
+  ],
+  "results": {
+    "columns": [
+      "currency_cd",
+      "invoice_count",
+      "total_amount"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "currency_cd": {
+          "count": 1,
+          "hash": "d0349047bf24fe520dcc509d2c1cd06b57236706246cca6f3773d18a5348ad1f",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_count": {
+          "count": 1,
+          "hash": "578175fde46257d78455d4d217aeb314e73ece42a12151fe0c9e25558bbbefa9",
+          "null_count": 0,
+          "sum": null
+        },
+        "total_amount": {
+          "count": 1,
+          "hash": "ba335459091a9c6096c367ffd2e54b0a4c199e05802a712643f365ed7fca1a3d",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "currency_cd": {
+          "count": 1,
+          "hash": "d0349047bf24fe520dcc509d2c1cd06b57236706246cca6f3773d18a5348ad1f",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_count": {
+          "count": 1,
+          "hash": "578175fde46257d78455d4d217aeb314e73ece42a12151fe0c9e25558bbbefa9",
+          "null_count": 0,
+          "sum": null
+        },
+        "total_amount": {
+          "count": 1,
+          "hash": "ba335459091a9c6096c367ffd2e54b0a4c199e05802a712643f365ed7fca1a3d",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "currency_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_count": {
+        "count": 0,
+        "samples": []
+      },
+      "total_amount": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 1,
+      "legacy": 1
+    }
+  },
+  "row_counts": {
+    "lakehouse": 1,
+    "legacy": 1
+  },
+  "spec_hash": "0a028600aa3f59a1ca4628f6ef1aa9070a8ac7b9e3d6c6fd8ca960a68ce3346a",
+  "timestamp": "2026-11-19T11:19:24.382063+00:00"
+}

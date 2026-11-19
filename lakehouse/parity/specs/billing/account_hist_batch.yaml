@@ -1,0 +1,21 @@
+{
+  "id": "billing.account_hist_batch",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH",
+    "bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT business_dt FROM sfx_billing.account_hist_batch"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.account_hist_batch"
+  },
+  "keys": [
+    "business_dt"
+  ],
+  "columns": [
+    "business_dt"
+  ]
+}

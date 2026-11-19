@@ -1,0 +1,25 @@
+{
+  "id": "billing.stg_billing_adj",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.STG_BILLING_ADJ"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT adjustment_id, customer_id, invoice_id, adjustment_dt, amount, reason_cd FROM sfx_billing.stg_billing_adj"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.stg_billing_adj"
+  },
+  "keys": [
+    "adjustment_id"
+  ],
+  "columns": [
+    "adjustment_id",
+    "customer_id",
+    "invoice_id",
+    "adjustment_dt",
+    "amount",
+    "reason_cd"
+  ]
+}

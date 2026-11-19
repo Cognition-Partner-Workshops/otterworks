@@ -119,75 +119,173 @@ objects:
   notes: 'Audit-local external base-count/actor projections. TODO: swap to ref() of domain silver models
     once billing/documents/users merge; keep explicit cross-domain DAG edges.'
 - id: bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/customer_account.sql
+  - lakehouse/dbt/models/silver/billing/gl_account.sql
+  - lakehouse/dbt/models/silver/billing/gl_journal_line.sql
+  - lakehouse/dbt/models/silver/billing/plan_catalog.sql
+  - lakehouse/dbt/models/silver/billing/tax_rate.sql
+  parity:
+  - billing.plan_catalog
+  - billing.tax_rate
+  - billing.gl_account
+  - billing.customer_account
+  - billing.gl_journal_line
   assumptions:
   - A-003
   - A-014
   - A-015
   - A-024
-  notes: Not migrated; no completeness claim.
+  - A-103
+  - A-105
+  - A-106
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/billing/02_load_subscriptions.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/subscription.sql
+  parity:
+  - billing.subscription
+  assumptions:
+  - A-103
+  - A-105
+  - A-106
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/billing/03_load_invoices.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/invoice_hdr.sql
+  - lakehouse/dbt/models/silver/billing/invoice_line.sql
+  parity:
+  - billing.invoice_hdr
+  - billing.invoice_line
+  assumptions:
+  - A-103
+  - A-105
+  - A-106
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/billing_adj.sql
+  - lakehouse/dbt/models/silver/billing/credit_note.sql
+  - lakehouse/dbt/models/silver/billing/payment.sql
+  parity:
+  - billing.payment
+  - billing.credit_note
+  - billing.billing_adj
+  assumptions:
+  - A-103
+  - A-105
+  - A-106
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/usage_daily.sql
+  parity:
+  - billing.usage_daily
+  assumptions:
+  - A-103
+  - A-105
+  - A-106
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/reports.py
+  - lakehouse/dbt/models/gold/billing/subscription_plans.sql
+  parity:
+  - billing.file_subscription_plans
+  - billing.subscription_plans
+  assumptions:
+  - A-108
+  - A-112
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/currency_totals.sql
+  - lakehouse/billing/reports.py
+  parity:
+  - billing.currency_totals
+  - billing.file_currency_daily
+  assumptions:
+  - A-108
+  - A-112
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/currency_totals.sql
+  - lakehouse/billing/reports.py
+  - lakehouse/dbt/models/gold/billing/monthly_gl_journal_line.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_hdr.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_line.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_result.sql
+  parity:
+  - billing.currency_totals
+  - billing.file_gl_trial_balance
+  - billing.file_invoice_monthly
+  - billing.monthly_gl_journal_line
+  - billing.monthly_invoice_hdr
+  - billing.monthly_invoice_line
+  - billing.monthly_invoice_result
+  assumptions:
+  - A-108
+  - A-109
+  - A-110
+  - A-112
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/closed_invoice_hdr.sql
+  - lakehouse/billing/reports.py
+  parity:
+  - billing.closed_invoice_hdr
+  - billing.file_invoice_periods
+  - billing.file_period_close
+  assumptions:
+  - A-108
+  - A-111
+  - A-112
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/reports.py
+  parity:
+  - billing.file_account_status
+  assumptions:
+  - A-108
+  - A-112
+  - A-113
+  - A-114
+  - A-115
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/account_hist_batch.sql
+  - lakehouse/dbt/models/silver/billing/customer_account_hist.sql
+  parity:
+  - billing.account_hist_batch
+  - billing.customer_account_hist
+  assumptions:
+  - A-104
+  - A-105
+  - A-106
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/documents/01_load_folders.bteq
   status: converted
   targets:
@@ -860,82 +958,144 @@ objects:
   notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-103
+  - A-105
+  - A-106
+  - A-107
+  notes: Only this billing load stage is replaced by bronze_billing -> dbt_billing and table parity tasks. Shared runner/global schedule and later billing reports remain pending.
+  verification: test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/02_load_subscriptions
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-103
+  - A-105
+  - A-106
+  - A-107
+  notes: Only this billing load stage is replaced by bronze_billing -> dbt_billing and table parity tasks. Shared runner/global schedule and later billing reports remain pending.
+  verification: test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/03_load_invoices
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-103
+  - A-105
+  - A-106
+  - A-107
+  notes: Only this billing load stage is replaced by bronze_billing -> dbt_billing and table parity tasks. Shared runner/global schedule and later billing reports remain pending.
+  verification: test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/04_load_payments
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-103
+  - A-105
+  - A-106
+  - A-107
+  notes: Only this billing load stage is replaced by bronze_billing -> dbt_billing and table parity tasks. Shared runner/global schedule and later billing reports remain pending.
+  verification: test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/05_load_usage
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-103
+  - A-105
+  - A-106
+  - A-107
+  notes: Only this billing load stage is replaced by bronze_billing -> dbt_billing and table parity tasks. Shared runner/global schedule and later billing reports remain pending.
+  verification: test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/10_subscription_report
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing_reporting
+  - lakehouse/billing/reports.py
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-108
+  - A-114
+  notes: Only this billing stage is replaced by ordered gold models and atomic report exports, not the shared runner/global schedule. A-114 failure boundaries remain open.
+  verification: test:lakehouse/tests/test_billing_reporting.py::test_billing_reporting_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/11_currency_daily
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing_reporting
+  - lakehouse/billing/reports.py
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-108
+  - A-114
+  notes: Only this billing stage is replaced by ordered gold models and atomic report exports, not the shared runner/global schedule. A-114 failure boundaries remain open.
+  verification: test:lakehouse/tests/test_billing_reporting.py::test_billing_reporting_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/12_invoice_monthly
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing_reporting
+  - lakehouse/billing/reports.py
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-108
+  - A-114
+  notes: Only this billing stage is replaced by ordered gold models and atomic report exports, not the shared runner/global schedule. A-114 failure boundaries remain open.
+  verification: test:lakehouse/tests/test_billing_reporting.py::test_billing_reporting_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/13_period_close
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing_reporting
+  - lakehouse/billing/reports.py
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-108
+  - A-114
+  notes: Only this billing stage is replaced by ordered gold models and atomic report exports, not the shared runner/global schedule. A-114 failure boundaries remain open.
+  verification: test:lakehouse/tests/test_billing_reporting.py::test_billing_reporting_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/14_account_history_extract
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing_reporting
+  - lakehouse/billing/reports.py
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-108
+  - A-114
+  - A-115
+  notes: Only this billing stage is replaced by ordered gold models and atomic report exports, not the shared runner/global schedule. A-114 failure boundaries remain open.
+  verification: test:lakehouse/tests/test_billing_reporting.py::test_billing_reporting_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/load_account_history
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-104
+  - A-105
+  - A-106
+  - A-107
+  notes: Only this billing load stage is replaced by bronze_billing -> dbt_billing and table parity tasks. Shared runner/global schedule and later billing reports remain pending.
+  verification: test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/01_load_folders
   status: converted
   targets:
@@ -1167,7 +1327,9 @@ objects:
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_billing_adj.sql
+  parity:
+  - billing.stg_billing_adj
   assumptions:
   - A-001
   - A-002
@@ -1183,12 +1345,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_credit_note.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_credit_note.sql
+  parity:
+  - billing.stg_credit_note
   assumptions:
   - A-001
   - A-002
@@ -1204,12 +1371,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_customer_account.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_customer_account.sql
+  parity:
+  - billing.stg_customer_account
   assumptions:
   - A-001
   - A-002
@@ -1225,12 +1397,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_gl_account.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_gl_account.sql
+  parity:
+  - billing.stg_gl_account
   assumptions:
   - A-001
   - A-002
@@ -1246,12 +1423,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_gl_journal_line.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_gl_journal_line.sql
+  parity:
+  - billing.stg_gl_journal_line
   assumptions:
   - A-001
   - A-002
@@ -1267,12 +1449,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_invoice_hdr.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_invoice_hdr.sql
+  parity:
+  - billing.stg_invoice_hdr
   assumptions:
   - A-001
   - A-002
@@ -1288,12 +1475,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_invoice_line.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_invoice_line.sql
+  parity:
+  - billing.stg_invoice_line
   assumptions:
   - A-001
   - A-002
@@ -1309,12 +1501,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_payment.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_payment.sql
+  parity:
+  - billing.stg_payment
   assumptions:
   - A-001
   - A-002
@@ -1330,12 +1527,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_plan_catalog.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_plan_catalog.sql
+  parity:
+  - billing.stg_plan_catalog
   assumptions:
   - A-001
   - A-002
@@ -1351,12 +1553,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_subscription.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_subscription.sql
+  parity:
+  - billing.stg_subscription
   assumptions:
   - A-001
   - A-002
@@ -1372,12 +1579,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_tax_rate.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_tax_rate.sql
+  parity:
+  - billing.stg_tax_rate
   assumptions:
   - A-001
   - A-002
@@ -1393,12 +1605,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_usage_daily.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_usage_daily.sql
+  parity:
+  - billing.stg_usage_daily
   assumptions:
   - A-001
   - A-002
@@ -1414,7 +1631,10 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/users_app_user.fl
   status: replaced_by_platform
   targets:
@@ -1648,11 +1868,23 @@ objects:
     sequence parity.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_config:SFX_BILLING.default_session_config
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_config:SFX_CONTENT.default_session_config
   status: pending
   targets: []
@@ -1719,47 +1951,152 @@ objects:
   notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
     (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_customer_account
+  - billing.infa_customer_account_errors
+  - billing.infa_customer_account_rejects
+  - billing.infa_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_gl_journal_line
+  - billing.infa_gl_journal_line_errors
+  - billing.infa_gl_journal_line_rejects
+  - billing.infa_gl_journal_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_BILLING.m_SFX_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_hdr
+  - billing.infa_invoice_hdr_errors
+  - billing.infa_invoice_hdr_rejects
+  - billing.infa_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_line
+  - billing.infa_invoice_line_errors
+  - billing.infa_invoice_line_rejects
+  - billing.infa_invoice_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_BILLING.m_SFX_PAYMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_payment
+  - billing.infa_payment_errors
+  - billing.infa_payment_rejects
+  - billing.infa_payment_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_customer_account
+  - billing.infa_stg_customer_account_errors
+  - billing.infa_stg_customer_account_rejects
+  - billing.infa_stg_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_invoice_hdr
+  - billing.infa_stg_invoice_hdr_errors
+  - billing.infa_stg_invoice_hdr_rejects
+  - billing.infa_stg_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_CONTENT.m_SFX_APP_USER
   status: converted
   targets:
@@ -1868,11 +2205,23 @@ objects:
     sequence parity.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_scheduler:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Scheduler
   status: pending
   targets: []
@@ -1933,47 +2282,152 @@ objects:
   notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
     (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_customer_account
+  - billing.infa_customer_account_errors
+  - billing.infa_customer_account_rejects
+  - billing.infa_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_gl_journal_line
+  - billing.infa_gl_journal_line_errors
+  - billing.infa_gl_journal_line_rejects
+  - billing.infa_gl_journal_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_BILLING.s_m_SFX_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_hdr
+  - billing.infa_invoice_hdr_errors
+  - billing.infa_invoice_hdr_rejects
+  - billing.infa_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_line
+  - billing.infa_invoice_line_errors
+  - billing.infa_invoice_line_rejects
+  - billing.infa_invoice_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_BILLING.s_m_SFX_PAYMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_payment
+  - billing.infa_payment_errors
+  - billing.infa_payment_rejects
+  - billing.infa_payment_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_customer_account
+  - billing.infa_stg_customer_account_errors
+  - billing.infa_stg_customer_account_rejects
+  - billing.infa_stg_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_invoice_hdr
+  - billing.infa_stg_invoice_hdr_errors
+  - billing.infa_stg_invoice_hdr_rejects
+  - billing.infa_stg_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_CONTENT.s_m_SFX_APP_USER
   status: converted
   targets:
@@ -2105,41 +2559,135 @@ objects:
   notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
     (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_customer_account
+  - billing.infa_stg_customer_account_errors
+  - billing.infa_stg_customer_account_rejects
+  - billing.infa_stg_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_source:SFX_BILLING.FF_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_invoice_hdr
+  - billing.infa_stg_invoice_hdr_errors
+  - billing.infa_stg_invoice_hdr_rejects
+  - billing.infa_stg_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_source:SFX_BILLING.FF_INVOICE_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_line
+  - billing.infa_invoice_line_errors
+  - billing.infa_invoice_line_rejects
+  - billing.infa_invoice_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_source:SFX_BILLING.FF_PAYMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_payment
+  - billing.infa_payment_errors
+  - billing.infa_payment_rejects
+  - billing.infa_payment_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_customer_account
+  - billing.infa_customer_account_errors
+  - billing.infa_customer_account_rejects
+  - billing.infa_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_source:SFX_BILLING.STG_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_gl_journal_line
+  - billing.infa_gl_journal_line_errors
+  - billing.infa_gl_journal_line_rejects
+  - billing.infa_gl_journal_line_transformation_rejects
+  - billing.infa_invoice_hdr
+  - billing.infa_invoice_hdr_errors
+  - billing.infa_invoice_hdr_rejects
+  - billing.infa_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_source:SFX_CONTENT.FF_APP_USER
   status: converted
   targets:
@@ -2282,47 +2830,152 @@ objects:
   notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
     (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_customer_account
+  - billing.infa_customer_account_errors
+  - billing.infa_customer_account_rejects
+  - billing.infa_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_BILLING.GL_JOURNAL_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_gl_journal_line
+  - billing.infa_gl_journal_line_errors
+  - billing.infa_gl_journal_line_rejects
+  - billing.infa_gl_journal_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_BILLING.INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_hdr
+  - billing.infa_invoice_hdr_errors
+  - billing.infa_invoice_hdr_rejects
+  - billing.infa_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_BILLING.INVOICE_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_line
+  - billing.infa_invoice_line_errors
+  - billing.infa_invoice_line_rejects
+  - billing.infa_invoice_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_BILLING.PAYMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_payment
+  - billing.infa_payment_errors
+  - billing.infa_payment_rejects
+  - billing.infa_payment_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_customer_account
+  - billing.infa_stg_customer_account_errors
+  - billing.infa_stg_customer_account_rejects
+  - billing.infa_stg_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_BILLING.STG_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_invoice_hdr
+  - billing.infa_stg_invoice_hdr_errors
+  - billing.infa_stg_invoice_hdr_rejects
+  - billing.infa_stg_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_CONTENT.APP_USER
   status: converted
   targets:
@@ -2425,29 +3078,77 @@ objects:
     sequence parity.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start
-  status: pending
-  targets: []
+  status: converted
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.dec_GL_POSTED
-  status: pending
-  targets: []
+  status: converted
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.em_GL_POSTING_ALERT
-  status: pending
-  targets: []
+  status: converted
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_task:SFX_BILLING.wklt_SFX_BILLING_STAGE.Start
-  status: pending
-  targets: []
+  status: converted
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_task:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Start
   status: pending
   targets: []
@@ -2466,11 +3167,23 @@ objects:
     sequence parity.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY
-  status: pending
-  targets: []
+  status: converted
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_workflow:SFX_CONTENT.wf_SFX_CONTENT_DAILY
   status: pending
   targets: []
@@ -2478,11 +3191,23 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE
-  status: pending
-  targets: []
+  status: converted
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: spark_config:etl/spark/conf/spark-defaults.conf
   status: pending
   targets: []
@@ -3196,17 +3921,27 @@ objects:
   - A-405
   notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_macro:SFX_BILLING.M_CURRENCY_TOTALS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/currency_totals.sql
+  parity:
+  - billing.currency_totals
+  assumptions:
+  - A-108
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_macro:SFX_BILLING.M_SUBSCRIPTION_PLANS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/subscription_plans.sql
+  parity:
+  - billing.subscription_plans
+  assumptions:
+  - A-108
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_macro:SFX_DOCUMENTS.M_STORAGE_TOTALS
   status: converted
   targets:
@@ -3244,11 +3979,21 @@ objects:
   - A-404
   notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_hdr.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_line.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_result.sql
+  parity:
+  - billing.monthly_invoice_hdr
+  - billing.monthly_invoice_line
+  - billing.monthly_invoice_result
+  assumptions:
+  - A-108
+  - A-109
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_procedure:SFX_USERS.P_ACTIVITY_DAILY
   status: converted
   targets:
@@ -3446,23 +4191,44 @@ objects:
   assumptions: []
   notes: Fresh exact fixture parity against the same legacy source population.
 - id: teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/account_hist_batch.sql
+  parity:
+  - billing.account_hist_batch
+  assumptions:
+  - A-100
+  - A-101
+  - A-104
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.BILLING_ADJ
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/billing_adj.sql
+  parity:
+  - billing.billing_adj
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.CREDIT_NOTE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/credit_note.sql
+  parity:
+  - billing.credit_note
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT
   status: converted
   targets:
@@ -3496,139 +4262,319 @@ objects:
   - A-035
   - A-038
   - A-045
-  notes: Measured output parity for the Type-1 account snapshot only.
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/customer_account_hist.sql
+  parity:
+  - billing.customer_account_hist
+  assumptions:
+  - A-100
+  - A-101
+  - A-104
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.GL_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/gl_account.sql
+  parity:
+  - billing.gl_account
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.GL_JOURNAL_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/gl_journal_line.sql
+  - lakehouse/dbt/models/gold/billing/monthly_gl_journal_line.sql
+  parity:
+  - billing.gl_journal_line
+  - billing.monthly_gl_journal_line
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  - A-108
+  - A-110
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_table:SFX_BILLING.INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/invoice_hdr.sql
+  - lakehouse/dbt/models/gold/billing/closed_invoice_hdr.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_hdr.sql
+  parity:
+  - billing.invoice_hdr
+  - billing.closed_invoice_hdr
+  - billing.monthly_invoice_hdr
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  - A-108
+  - A-109
+  - A-111
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_table:SFX_BILLING.INVOICE_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/invoice_line.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_line.sql
+  parity:
+  - billing.invoice_line
+  - billing.monthly_invoice_line
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  - A-108
+  - A-109
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_table:SFX_BILLING.PAYMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/payment.sql
+  parity:
+  - billing.payment
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.PLAN_CATALOG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/plan_catalog.sql
+  parity:
+  - billing.plan_catalog
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_BILLING_ADJ
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_billing_adj.sql
+  parity:
+  - billing.stg_billing_adj
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_CREDIT_NOTE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_credit_note.sql
+  parity:
+  - billing.stg_credit_note
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_customer_account.sql
+  parity:
+  - billing.stg_customer_account
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_GL_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_gl_account.sql
+  parity:
+  - billing.stg_gl_account
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_gl_journal_line.sql
+  parity:
+  - billing.stg_gl_journal_line
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_invoice_hdr.sql
+  parity:
+  - billing.stg_invoice_hdr
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_INVOICE_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_invoice_line.sql
+  parity:
+  - billing.stg_invoice_line
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_PAYMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_payment.sql
+  parity:
+  - billing.stg_payment
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_PLAN_CATALOG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_plan_catalog.sql
+  parity:
+  - billing.stg_plan_catalog
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_SUBSCRIPTION
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_subscription.sql
+  parity:
+  - billing.stg_subscription
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_TAX_RATE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_tax_rate.sql
+  parity:
+  - billing.stg_tax_rate
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_USAGE_DAILY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_usage_daily.sql
+  parity:
+  - billing.stg_usage_daily
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.SUBSCRIPTION
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/subscription.sql
+  parity:
+  - billing.subscription
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.TAX_RATE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/tax_rate.sql
+  parity:
+  - billing.tax_rate
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.USAGE_DAILY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/usage_daily.sql
+  parity:
+  - billing.usage_daily
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_DOCUMENTS.COLLAB_SESSION
   status: converted
   targets:
@@ -4041,29 +4987,49 @@ objects:
   notes: 'Audit-local external base-count/actor projections. TODO: swap to ref() of domain silver models
     once billing/documents/users merge; keep explicit cross-domain DAG edges.'
 - id: teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/v_account_invoices.sql
+  parity:
+  - billing.v_account_invoices
+  assumptions:
+  - A-108
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_view:SFX_BILLING.V_INVOICE_BASE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/v_invoice_base.sql
+  parity:
+  - billing.v_invoice_base
+  assumptions:
+  - A-108
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_view:SFX_BILLING.V_INVOICE_REVENUE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/v_invoice_revenue.sql
+  parity:
+  - billing.v_invoice_revenue
+  assumptions:
+  - A-108
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/v_subscription_plans.sql
+  parity:
+  - billing.v_subscription_plans
+  assumptions:
+  - A-108
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_view:SFX_DOCUMENTS.V_DOCUMENT_VERSIONS
   status: converted
   targets:

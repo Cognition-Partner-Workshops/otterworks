@@ -1,0 +1,26 @@
+{
+  "id": "billing.stg_invoice_line",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.STG_INVOICE_LINE"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT invoice_line_id, invoice_id, line_no, description, quantity, unit_price, line_amount FROM sfx_billing.stg_invoice_line"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.stg_invoice_line"
+  },
+  "keys": [
+    "invoice_line_id"
+  ],
+  "columns": [
+    "invoice_line_id",
+    "invoice_id",
+    "line_no",
+    "description",
+    "quantity",
+    "unit_price",
+    "line_amount"
+  ]
+}

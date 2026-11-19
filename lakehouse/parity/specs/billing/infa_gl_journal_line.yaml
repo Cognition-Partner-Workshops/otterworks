@@ -1,0 +1,34 @@
+{
+  "id": "billing.infa_gl_journal_line",
+  "description": "A-116..A-124: actual XML emulator in isolated PostgreSQL on identical landing/prior inputs; typed targets preserve NULL versus empty. Canonical ordinal retains duplicate multiplicity; writer and instrumented transformation rejects are independent surfaces.",
+  "legacy_objects": [
+    "informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE",
+    "informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE",
+    "informatica_target:SFX_BILLING.GL_JOURNAL_LINE",
+    "informatica_source:SFX_BILLING.STG_INVOICE_HDR"
+  ],
+  "legacy": {
+    "kind": "delta_table",
+    "path": "lakehouse/.data/{NS}/informatica/{business_date}/reference/delta/gl_journal_line"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "path": "lakehouse/.data/{NS}/informatica/{business_date}/delta/gl_journal_line"
+  },
+  "keys": [
+    "ordinal"
+  ],
+  "columns": [
+    "ordinal",
+    "journal_line_id",
+    "invoice_id",
+    "credit_note_id",
+    "gl_account_id",
+    "posting_dt",
+    "currency_cd",
+    "debit_amount",
+    "credit_amount",
+    "description"
+  ],
+  "normalize": {}
+}

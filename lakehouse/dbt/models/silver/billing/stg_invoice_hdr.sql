@@ -1,0 +1,21 @@
+select
+    cast(invoice_id as bigint) as invoice_id,
+    cast(customer_id as bigint) as customer_id,
+    cast(subscription_id as bigint) as subscription_id,
+    cast(invoice_dt as date) as invoice_dt,
+    cast(bill_dt as date) as bill_dt,
+    cast(period_start_dt as date) as period_start_dt,
+    case when length(currency_cd) > 200 then raise_error('staging currency_cd exceeds 200 characters') else currency_cd end as currency_cd,
+    cast(total_amount as decimal(14,2)) as total_amount,
+    case when length(invoice_number) > 200 then raise_error('staging invoice_number exceeds 200 characters') else invoice_number end as invoice_number,
+    cast(tax_rate_id as bigint) as tax_rate_id,
+    cast(subtotal_amount as decimal(14,2)) as subtotal_amount,
+    cast(tax_amount as decimal(14,2)) as tax_amount,
+    case when length(invoice_period) > 200 then raise_error('staging invoice_period exceeds 200 characters') else invoice_period end as invoice_period,
+    cast(period_key as integer) as period_key,
+    cast(prior_period_end_dt as date) as prior_period_end_dt,
+    cast(invoice_month as integer) as invoice_month,
+    case when length(period_closed_cd) > 200 then raise_error('staging period_closed_cd exceeds 200 characters') else period_closed_cd end as period_closed_cd,
+    cast(currency_control_total as decimal(14,2)) as currency_control_total
+from {{ source('bronze_billing', 'invoice_hdr') }}
+where _business_date = to_date('{{ env_var("BUSINESS_DATE") }}', 'yyyyMMdd')

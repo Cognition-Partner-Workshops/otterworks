@@ -1,0 +1,33 @@
+{
+  "id": "billing.plan_catalog",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.PLAN_CATALOG",
+    "bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT plan_id, plan_code, plan_name, monthly_fee, currency_cd FROM sfx_billing.plan_catalog"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.plan_catalog"
+  },
+  "keys": [
+    "plan_id"
+  ],
+  "columns": [
+    "plan_id",
+    "plan_code",
+    "plan_name",
+    "monthly_fee",
+    "currency_cd"
+  ],
+  "normalize": {
+    "plan_code": {
+      "rstrip": true
+    },
+    "currency_cd": {
+      "rstrip": true
+    }
+  }
+}

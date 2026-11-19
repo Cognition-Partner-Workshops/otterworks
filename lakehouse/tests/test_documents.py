@@ -37,7 +37,9 @@ def spark():
 
 def model(spark, name, day='20261109'):
     paths = list((ROOT / 'dbt/models').glob(f'*/documents/{name}.sql'))
-    macros = '\n'.join(path.read_text() for path in (ROOT / 'dbt/macros').glob('*.sql'))
+    macro_paths = [ROOT / 'dbt/macros/legacy_text.sql',
+                   *sorted((ROOT / 'dbt/macros').glob('documents_*.sql'))]
+    macros = '\n'.join(path.read_text() for path in macro_paths)
     def reference(target):
         model(spark, target, day).createOrReplaceTempView('documents_test_' + target)
         return 'documents_test_' + target

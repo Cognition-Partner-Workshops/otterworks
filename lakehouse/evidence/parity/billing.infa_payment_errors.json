@@ -1,0 +1,78 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "db86a5122c32983b905e92d893b0e4594e757aad",
+  "id": "billing.infa_payment_errors",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "informatica_mapping:SFX_BILLING.m_SFX_PAYMENT",
+    "informatica_session:SFX_BILLING.s_m_SFX_PAYMENT",
+    "informatica_target:SFX_BILLING.PAYMENT",
+    "informatica_source:SFX_BILLING.FF_PAYMENT"
+  ],
+  "results": {
+    "columns": [
+      "transformation_errors"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "transformation_errors": {
+          "count": 1,
+          "hash": "42058be36c56bb702770d37fd27d81f086e1de95bbd80c126a32eb1dba7243ce",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "transformation_errors": {
+          "count": 1,
+          "hash": "42058be36c56bb702770d37fd27d81f086e1de95bbd80c126a32eb1dba7243ce",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "transformation_errors": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 1,
+      "legacy": 1
+    }
+  },
+  "row_counts": {
+    "lakehouse": 1,
+    "legacy": 1
+  },
+  "spec_hash": "72cade6f9b6643bd0aaf9e4052c70721dc66b83bff26d4e5806fe4878f140b04",
+  "timestamp": "2026-11-19T11:19:31.026673+00:00"
+}

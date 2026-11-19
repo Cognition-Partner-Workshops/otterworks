@@ -1,0 +1,76 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "db86a5122c32983b905e92d893b0e4594e757aad",
+  "id": "billing.account_hist_batch",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH",
+    "bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq"
+  ],
+  "results": {
+    "columns": [
+      "business_dt"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "business_dt": {
+          "count": 1,
+          "hash": "5bc986eba5013351de9e2980bfffced7c6cd1b8c6f0519ade64c771dfdf512f7",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "business_dt": {
+          "count": 1,
+          "hash": "5bc986eba5013351de9e2980bfffced7c6cd1b8c6f0519ade64c771dfdf512f7",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "business_dt": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 1,
+      "legacy": 1
+    }
+  },
+  "row_counts": {
+    "lakehouse": 1,
+    "legacy": 1
+  },
+  "spec_hash": "3347efbcf7b432a50c2b7cae793de2aac748e9533066e5d82066063a3aa37df4",
+  "timestamp": "2026-11-19T11:19:21.345858+00:00"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "billing.file_currency_daily",
+  "legacy_objects": [
+    "bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq"
+  ],
+  "legacy": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing/{business_date}/currency_daily.psv",
+    "columns": [
+      "currency_cd",
+      "invoice_count",
+      "total_amount"
+    ],
+    "header": false
+  },
+  "lakehouse": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/exports/billing/{business_date}/currency_daily.psv",
+    "columns": [
+      "currency_cd",
+      "invoice_count",
+      "total_amount"
+    ],
+    "header": false
+  },
+  "keys": [
+    "currency_cd"
+  ],
+  "columns": [
+    "currency_cd",
+    "invoice_count",
+    "total_amount"
+  ],
+  "normalize": {
+    "currency_cd": {
+      "rstrip": true,
+      "case_fold": true
+    }
+  },
+  "description": "A-112: compare actual headerless emulator DATA/REPORT files as rows; ignore unspecified row order, declared CHAR padding and case-insensitive group spelling only. Nullable decimal fields retain exact scale-2/empty display; native REPORT layout is not certified."
+}

@@ -135,13 +135,13 @@ def validate(setup_map, strict=False):
     return checker.validate_coverage(coverage, inventory, specs, assumptions, evidence, strict)
 
 
-def test_seed_statuses_and_assumption_links():
+def test_repository_coverage_and_assumption_links():
     inventory = discover()
     coverage = checker.entries(ROOT / 'coverage/coverage.yaml', 'objects')
     assumptions = checker.entries(ROOT / 'assumptions/assumptions.yaml', 'assumptions')
     assert inventory.keys() == coverage.keys()
-    specs = discover_specs()
-    assert checker.validate_coverage(coverage, inventory, specs, assumptions, ROOT / 'evidence') == []
+    assert checker.validate_coverage(coverage, inventory, checker.discover_specs(),
+                                     assumptions, ROOT / 'evidence') == []
     for identity, entry in coverage.items():
         assert set(entry['assumptions']) == {key for key, assumption in assumptions.items()
                                             if identity in assumption['legacy_objects']}

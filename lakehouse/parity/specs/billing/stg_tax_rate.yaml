@@ -1,0 +1,24 @@
+{
+  "id": "billing.stg_tax_rate",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.STG_TAX_RATE"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT tax_rate_id, country_cd, region_cd, rate, effective_dt FROM sfx_billing.stg_tax_rate"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.stg_tax_rate"
+  },
+  "keys": [
+    "tax_rate_id"
+  ],
+  "columns": [
+    "tax_rate_id",
+    "country_cd",
+    "region_cd",
+    "rate",
+    "effective_dt"
+  ]
+}

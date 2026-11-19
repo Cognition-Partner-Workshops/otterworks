@@ -1,0 +1,51 @@
+{
+  "id": "billing.file_gl_trial_balance",
+  "legacy_objects": [
+    "bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq"
+  ],
+  "legacy": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing/{business_date}/gl_trial_balance.psv",
+    "columns": [
+      "account_number",
+      "account_name",
+      "debit_amount",
+      "credit_amount"
+    ],
+    "header": false
+  },
+  "lakehouse": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/exports/billing/{business_date}/gl_trial_balance.psv",
+    "columns": [
+      "account_number",
+      "account_name",
+      "debit_amount",
+      "credit_amount"
+    ],
+    "header": false
+  },
+  "keys": [
+    "account_number",
+    "account_name"
+  ],
+  "columns": [
+    "account_number",
+    "account_name",
+    "debit_amount",
+    "credit_amount"
+  ],
+  "normalize": {
+    "account_number": {
+      "rstrip": true,
+      "case_fold": true
+    },
+    "debit_amount": {
+      "numeric_scale": 2
+    },
+    "credit_amount": {
+      "numeric_scale": 2
+    }
+  },
+  "description": "A-112: compare actual headerless emulator DATA/REPORT files as rows; ignore unspecified row order, declared CHAR padding and decimal display scale only. Native REPORT layout is not certified."
+}

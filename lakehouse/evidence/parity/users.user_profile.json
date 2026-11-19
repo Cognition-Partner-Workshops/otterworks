@@ -1,10 +1,10 @@
 {
-  "NS": "users-after",
+  "NS": "sfx-d1110-after",
   "business_date": "20261109",
-  "git_dirty": false,
-  "git_sha": "9dcb6a5e67bb4bfcc64ef4caa00fb68aacf703cf",
+  "git_dirty": true,
+  "git_sha": "db86a5122c32983b905e92d893b0e4594e757aad",
   "id": "users.user_profile",
-  "legacy_NS": "users-before",
+  "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
     "teradata_table:SFX_USERS.USER_PROFILE",
     "bteq_script:warehouse/teradata/scripts/users/01_load_users.bteq"
@@ -140,5 +140,5 @@
     "legacy": 200
   },
   "spec_hash": "8d8e2413ee0681abb90a5ec799295e9fe4e23be338fe6c226f3ef04b18e24748",
-  "timestamp": "2026-11-19T08:14:56.117469+00:00"
+  "timestamp": "2026-11-19T11:20:14.193926+00:00"
 }

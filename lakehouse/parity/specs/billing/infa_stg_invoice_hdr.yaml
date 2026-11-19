@@ -1,0 +1,43 @@
+{
+  "id": "billing.infa_stg_invoice_hdr",
+  "description": "A-116..A-124: actual XML emulator in isolated PostgreSQL on identical landing/prior inputs; typed targets preserve NULL versus empty. Canonical ordinal retains duplicate multiplicity; writer and instrumented transformation rejects are independent surfaces.",
+  "legacy_objects": [
+    "informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR",
+    "informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR",
+    "informatica_target:SFX_BILLING.STG_INVOICE_HDR",
+    "informatica_source:SFX_BILLING.FF_INVOICE_HDR"
+  ],
+  "legacy": {
+    "kind": "delta_table",
+    "path": "lakehouse/.data/{NS}/informatica/{business_date}/reference/delta/stg_invoice_hdr"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "path": "lakehouse/.data/{NS}/informatica/{business_date}/delta/stg_invoice_hdr"
+  },
+  "keys": [
+    "ordinal"
+  ],
+  "columns": [
+    "ordinal",
+    "invoice_id",
+    "customer_id",
+    "subscription_id",
+    "invoice_dt",
+    "bill_dt",
+    "period_start_dt",
+    "currency_cd",
+    "total_amount",
+    "invoice_number",
+    "tax_rate_id",
+    "subtotal_amount",
+    "tax_amount",
+    "invoice_period",
+    "period_key",
+    "prior_period_end_dt",
+    "invoice_month",
+    "period_closed_cd",
+    "currency_control_total"
+  ],
+  "normalize": {}
+}

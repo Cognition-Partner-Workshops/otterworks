@@ -1,0 +1,37 @@
+{
+  "id": "billing.stg_invoice_hdr",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.STG_INVOICE_HDR"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT invoice_id, customer_id, subscription_id, invoice_dt, bill_dt, period_start_dt, currency_cd, total_amount, invoice_number, tax_rate_id, subtotal_amount, tax_amount, invoice_period, period_key, prior_period_end_dt, invoice_month, period_closed_cd, currency_control_total FROM sfx_billing.stg_invoice_hdr"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.stg_invoice_hdr"
+  },
+  "keys": [
+    "invoice_id"
+  ],
+  "columns": [
+    "invoice_id",
+    "customer_id",
+    "subscription_id",
+    "invoice_dt",
+    "bill_dt",
+    "period_start_dt",
+    "currency_cd",
+    "total_amount",
+    "invoice_number",
+    "tax_rate_id",
+    "subtotal_amount",
+    "tax_amount",
+    "invoice_period",
+    "period_key",
+    "prior_period_end_dt",
+    "invoice_month",
+    "period_closed_cd",
+    "currency_control_total"
+  ]
+}
