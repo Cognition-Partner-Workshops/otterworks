@@ -1,5 +1,7 @@
 """Plans REST handlers and legacy request/response adapters."""
 
+from urllib.parse import urlencode
+
 from flask import jsonify, redirect, request, url_for
 from werkzeug.exceptions import NotFound
 
@@ -83,6 +85,8 @@ def register(app, blueprint):
         elif len(parts) == 3 and parts[0] == "plans" and parts[2] in ("entitlement", "change"):
             resource = "entitlement" if parts[2] == "entitlement" else "subscriptions"
             successor = f"/api/v1/billing/tenants/{parts[1]}/{resource}"
+            if parts[2] == "entitlement":
+                successor += "?" + urlencode({"on": request.args.get("on", "2026-02-28")})
         if successor:
             response.headers["Deprecation"] = "true"
             response.headers["Link"] = f'<{successor}>; rel="successor-version"'

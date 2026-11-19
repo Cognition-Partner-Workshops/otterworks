@@ -39,19 +39,35 @@ def test_list(compare_requests):
 
 
 @pytest.mark.parametrize("on", ["2026-02-28", "2026-03-01"])
-def test_entitlement(compare_requests, on):
+def test_entitlement(compare_requests, client, on):
     old, new = compare_requests({"path": f"{LEGACY}/entitlement?on={on}"},
                                 {"path": f"{V1}/entitlement?on={on}"},
                                 renames=LEGACY_RENAMES,
                                 v1_body=lambda r: [r.json["data"]])
     assert new.json["data"]["tenant_id"] == TENANT
-    headers(old, f"/tenants/{TENANT}/entitlement")
+    headers(old, f"/tenants/{TENANT}/entitlement?on={on}")
+    successor = old.headers["Link"].split(">")[0][1:]
+    followed = client.get(successor)
+    assert followed.status_code == 200
+    assert followed.json == new.json
 
 
-def test_legacy_default(compare_requests):
-    compare_requests({"path": f"{LEGACY}/entitlement"},
+def test_legacy_default(compare_requests, client):
+    old, new = compare_requests({"path": f"{LEGACY}/entitlement"},
                      {"path": f"{V1}/entitlement?on=2026-02-28"},
                      renames=LEGACY_RENAMES, v1_body=lambda r: [r.json["data"]])
+    headers(old, f"/tenants/{TENANT}/entitlement?on=2026-02-28")
+    successor = old.headers["Link"].split(">")[0][1:]
+    followed = client.get(successor)
+    assert followed.status_code == 200
+    assert followed.json == new.json
+
+
+@pytest.mark.parametrize("on,encoded", [("", ""), ("bad&x=1", "bad%26x%3D1")])
+def test_entitlement_link_encoding(client, on, encoded):
+    response = client.get(f"{LEGACY}/entitlement", query_string={"on": on})
+    assert response.status_code == 500
+    headers(response, f"/tenants/{TENANT}/entitlement?on={encoded}")
 
 
 def test_change(compare_requests):
