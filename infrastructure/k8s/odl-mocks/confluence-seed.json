@@ -1,0 +1,16 @@
+[
+  {
+    "title": "REST API conventions",
+    "body": {
+      "representation": "storage",
+      "value": "<p>Summary of .agents/skills/rest-conventions/SKILL.md in OtterWorks. The billing OpenAPI contract (services/legacy-billing/openapi/billing-v1.yaml) is the source of truth.</p><ul><li>Public APIs use /api/v1/&lt;service-area&gt;; the gateway forwards the full path unchanged and billing requires JWT authentication.</li><li>Use plural, lower-case kebab-case resource nouns, at most two nesting levels, snake_case parameters and JSON fields. A resource's identifier is id; references keep resource_id. GET never changes state; send JSON request bodies and explicit required business inputs.</li><li>Use UUID strings, decimal strings for money, YYYY-MM-DD dates and RFC 3339 timestamps.</li><li>Return data envelopes; collections also have pagination with limit (default 50, range 1–200) and opaque cursor, ending with next_cursor null. Reads return 200, creation 201 with Location when addressable, deletion 204.</li><li>Errors use error.code, message and optional field details; clients branch on code. Distinguish invalid input (400), authentication (401), missing resources (404), conflicts (409), rejected database constraints (422), rate limiting (429 with Retry-After) and generic internal/upstream errors without SQL or stack traces.</li><li>Within v1 allow additive changes only; breaking changes need v2 while v1 remains available. Deprecated legacy routes keep exact bodies and status codes, adding Deprecation and successor-version Link headers.</li><li>Implement versioned handlers over the database entrypoints, with legacy routes as thin adapters. Contract tests compare fresh seeded states through explicitly declared renames and status mappings, including mutations and errors; run make billing-contract.</li></ul>"
+    }
+  },
+  {
+    "title": "Customer source mapping",
+    "body": {
+      "representation": "storage",
+      "value": "<p>The mapping work will fill this page in later.</p><p>Sources: Db2 CUSTMAST, Oracle ACCOUNTS and PostgreSQL crm.contacts → MongoDB target.</p><p>The customer document shape remains an open question. No mapping or document model has been decided.</p>"
+    }
+  }
+]

@@ -3,18 +3,35 @@
 Run `scripts/odl/deploy-mocks.sh` from any directory with AWS/EKS access.
 It preserves existing basic-auth Secrets and generates random credentials only
 when absent. Consumers read the `username` and `password` keys in
-`odl-mocks/{jira,pagerduty}-mock-basic-auth`; nginx uses the `auth` key.
+`odl-mocks/{jira,pagerduty,confluence}-mock-basic-auth`; nginx uses the `auth` key.
 Do not print these values or place them in shell command arguments/history.
+
+Use `scripts/odl/deploy-mocks.sh --only confluence` when updating Confluence
+independently. This requires the existing namespace, reads/creates only the
+Confluence credential Secret, and applies only Confluence-labeled resources.
+It never reads or reapplies the Jira Secret or redeploys Jira. All credential
+creation uses create-if-absent, never an update or apply of an existing Secret.
 
 The shared nginx ingress and wildcard default certificate serve:
 
 - https://jira-odl.demo.otterworks.app
 - https://pagerduty-odl.demo.otterworks.app
+- https://confluence-odl.demo.otterworks.app/wiki
+
+Confluence natively serves `/wiki`, `/wiki/api/v2` and `/wiki/rest/api`;
+the ingress preserves these paths without a rewrite and also authenticates
+the app's `/static` assets. `/wiki` redirects to the built-in OPS landing page
+(use `curl -L` to follow it). SQLite uses emptyDir and
+retains the built-in OPS and ENG spaces. A sidecar reconciles two ENG pages by
+exact title every ten seconds through the v2 API, restoring them after pod
+replacement without duplicating existing pages. The pages summarize
+`.agents/skills/rest-conventions/SKILL.md` and reserve customer source mapping.
+No VPC CNI or cluster-wide enforcement settings are changed; the existing
+cluster currently does not enforce these NetworkPolicies.
 
 External-dns owns the individual DNS records. Services are ClusterIP only.
-NetworkPolicies permit nginx access to both mocks and monitoring access to
-PagerDuty. Only the Jira pods in `odl-mocks` can reach the Devin webhook
-relay. The mock policies are not a tenant API access policy: consumers in another
+NetworkPolicies declare nginx access to all three mocks and monitoring access to
+PagerDuty. They are not a tenant API access policy: consumers in another
 namespace should use the authenticated public ingress.
 
 Jira state is in memory. A sidecar searches unique labels and reconciles the
@@ -34,15 +51,30 @@ reason. Because Jira's filter excludes unlabelled updates, a label removal
 cannot reset this fallback state unless the relay receives an unlabelled event.
 
 PagerDuty SQLite uses **emptyDir**, so incidents and other changes are
-lost and its built-in demo data **reseeds on pod restart**. Neither needs a PVC.
+lost and its built-in demo data **reseeds on pod restart**. None needs a PVC.
 
 Images were built without changing the mocks repository at commit
-`0fbc19b96a72611ecdb626b00bfc45efc5cd93f8`. Both images have that SHA tag and
+`0fbc19b96a72611ecdb626b00bfc45efc5cd93f8`. All three images have that SHA tag and
 `odl-1795112287` in the ECR repositories managed by
-`infrastructure/terraform/odl`. Their Python base was pulled from
-`mirror.gcr.io/library/python:3.12-slim` and retagged locally.
+`infrastructure/terraform/odl`. Jira and PagerDuty's Python base was pulled from
+`mirror.gcr.io/library/python:3.12-slim` and retagged locally; Confluence's
+Dockerfile uses that mirror directly.
 
 ## Shared Alertmanager
+
+The mock NetworkPolicies allow ingress only from `ingress-nginx` and
+`monitoring`; seed sidecars use localhost within their mock pod, not the Service.
+Apply policy-only updates with `kubectl apply -f
+infrastructure/k8s/odl-mocks/networkpolicy.yaml`. The relay policy separately
+permits only Jira pods in `odl-mocks` to reach
+`jira-devin-relay:8080`; no other same-namespace allowance is needed. The relay
+forwards incoming webhooks to its HTTPS upstream and does not call mock Services.
+
+These policies are declared but the shared cluster's VPC CNI runs with
+`--enable-network-policy=false`. Until enforcement is enabled, in-cluster
+callers can reach the mock Services without basic auth, which is enforced only
+at ingress. The mocks hold only synthetic demo data. This deployment does not
+change cluster-wide enforcement.
 
 No kube-prometheus-stack release values source was found under `demo-platform/`,
 `infrastructure/`, or `platform/`. The overlay is
@@ -51,7 +83,7 @@ No kube-prometheus-stack release values source was found under `demo-platform/`,
 With Python 3 and PyYAML installed, run `python scripts/odl/route-alerts.py`.
 It reads the current configuration only into memory, copies the existing Devin
 URL into `monitoring/alertmanager-devin-webhook` (`url`), and preserves all
-routes, unrelated configuration, webhook options, other receivers and Secret mounts.
+routes, existing configuration, webhook options, other receivers and Secret mounts.
 It adds PagerDuty Events v2 to the same `devin-oncall` receiver, with the seeded
 demo service's routing key held in `alertmanager-odl-pagerduty`. Both integrations
 therefore receive `page="devin"` alerts without changing the routing tree.

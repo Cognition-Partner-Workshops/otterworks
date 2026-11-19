@@ -1,13 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-kubectl apply -f "${ROOT}/infrastructure/k8s/odl-mocks/namespace.yaml"
-python3 - <<'PY'
+SCOPE=all
+if [ "$#" -ne 0 ]; then
+  [ "$#" -eq 2 ] && [ "$1" = --only ] && [ "$2" = confluence ] || {
+    echo "Usage: $0 [--only confluence]" >&2; exit 1;
+  }
+  SCOPE=confluence
+fi
+if [ "$SCOPE" = all ]; then
+  kubectl apply -f "${ROOT}/infrastructure/k8s/odl-mocks/namespace.yaml"
+else
+  kubectl get namespace odl-mocks >/dev/null
+fi
+python3 - "$SCOPE" <<'PY'
 import base64
 import json
 import os
 import secrets
 import subprocess
+import sys
 
 
 def exists(name):
@@ -30,13 +42,15 @@ def create_secret(name, values):
 
 
 relay = "jira-devin-webhook"
-if not exists(relay):
+if sys.argv[1] != "confluence" and not exists(relay):
     values = {key: os.environ.get(key) for key in ("DEVIN_JIRA_WEBHOOK_URL", "DEVIN_JIRA_WEBHOOK_SECRET")}
     if not all(values.values()):
         raise SystemExit(f"Set DEVIN_JIRA_WEBHOOK_URL and DEVIN_JIRA_WEBHOOK_SECRET to create {relay}")
     create_secret(relay, values)
 
-for name in ("jira-mock-basic-auth", "pagerduty-mock-basic-auth"):
+names = ("confluence-mock-basic-auth",) if sys.argv[1] == "confluence" else (
+    "jira-mock-basic-auth", "pagerduty-mock-basic-auth", "confluence-mock-basic-auth")
+for name in names:
     if exists(name):
         continue
     password = secrets.token_urlsafe(32)
@@ -45,7 +59,12 @@ for name in ("jira-mock-basic-auth", "pagerduty-mock-basic-auth"):
                             check=True).stdout.strip()
     create_secret(name, {"username": "odl", "password": password, "auth": "odl:" + hashed + "\n"})
 PY
-kubectl apply -k "${ROOT}/infrastructure/k8s/odl-mocks"
-kubectl -n odl-mocks rollout status deployment/jira-devin-relay --timeout=300s
-kubectl -n odl-mocks rollout status deployment/jira --timeout=300s
-kubectl -n odl-mocks rollout status deployment/pagerduty --timeout=300s
+if [ "$SCOPE" = confluence ]; then
+  kubectl apply -k "${ROOT}/infrastructure/k8s/odl-mocks" -l app=confluence
+else
+  kubectl apply -k "${ROOT}/infrastructure/k8s/odl-mocks"
+  kubectl -n odl-mocks rollout status deployment/jira-devin-relay --timeout=300s
+  kubectl -n odl-mocks rollout status deployment/jira --timeout=300s
+  kubectl -n odl-mocks rollout status deployment/pagerduty --timeout=300s
+fi
+kubectl -n odl-mocks rollout status deployment/confluence --timeout=300s

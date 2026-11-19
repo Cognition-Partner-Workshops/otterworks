@@ -1,6 +1,8 @@
 import importlib.util
 import io
 import json
+import subprocess
+import sys
 import unittest
 from contextlib import redirect_stdout
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -9,6 +11,8 @@ from threading import Thread
 from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
+
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -21,8 +25,68 @@ def load(name, path):
 
 
 seed = load("seed", "infrastructure/k8s/odl-mocks/seed.py")
+confluence = load("confluence_seed", "infrastructure/k8s/odl-mocks/confluence-seed.py")
 relay = load("relay", "infrastructure/k8s/odl-mocks/relay.py")
 routing = load("routing", "scripts/odl/route-alerts.py")
+
+
+class NetworkPolicyTests(unittest.TestCase):
+    def test_only_controller_and_monitoring_namespaces(self):
+        policies = list(yaml.safe_load_all(
+            (ROOT / "infrastructure/k8s/odl-mocks/networkpolicy.yaml").read_text()))
+        self.assertEqual({p["metadata"]["name"] for p in policies}, {"jira", "pagerduty", "confluence", "jira-devin-relay"})
+        for policy in policies:
+            if policy["metadata"]["name"] == "jira-devin-relay":
+                self.assertEqual(policy["spec"]["podSelector"], {"matchLabels": {"app": "jira-devin-relay"}})
+                self.assertEqual(policy["spec"]["ingress"], [{"from": [{"podSelector": {"matchLabels": {"app": "jira"}}}],
+                                                            "ports": [{"protocol": "TCP", "port": 8080}]}])
+                self.assertEqual(policy["metadata"]["namespace"], "odl-mocks")
+                self.assertEqual(policy["metadata"]["labels"]["run_token"], "odl-1795112287")
+                continue
+            self.assertEqual(policy["metadata"]["namespace"], "odl-mocks")
+            self.assertEqual(policy["metadata"]["labels"]["run_token"], "odl-1795112287")
+            self.assertEqual(policy["spec"]["podSelector"],
+                             {"matchLabels": {"app": policy["metadata"]["name"]}})
+            self.assertEqual(policy["spec"]["ingress"], [{"from": [
+                {"namespaceSelector": {"matchLabels": {"kubernetes.io/metadata.name": ns}}}
+                for ns in ("ingress-nginx", "monitoring")], "ports": [{"protocol": "TCP", "port": 8080}]}])
+
+
+class DeployTests(unittest.TestCase):
+    def run_credentials(self, scope, existing=True, create_status=0):
+        script = (ROOT / "scripts/odl/deploy-mocks.sh").read_text()
+        program = script.split("<<'PY'\n", 1)[1].split("\nPY\n", 1)[0]
+
+        def run(args, **kwargs):
+            if "get" in args:
+                return subprocess.CompletedProcess(args, 0, stdout="{}" if existing else "")
+            if args[0] == "openssl":
+                return subprocess.CompletedProcess(args, 0, stdout="test-hash")
+            return subprocess.CompletedProcess(args, create_status)
+
+        with patch.object(sys, "argv", ["-", scope]), patch.object(subprocess, "run", side_effect=run) as calls:
+            exec(compile(program, "deploy-mocks credentials", "exec"), {})
+        return calls.call_args_list
+
+    def test_existing_secrets_are_not_written(self):
+        calls = self.run_credentials("all")
+        self.assertEqual([call.args[0][5] for call in calls], [
+            "jira-devin-webhook", "jira-mock-basic-auth", "pagerduty-mock-basic-auth",
+            "confluence-mock-basic-auth"])
+        self.assertTrue(all("get" in call.args[0] for call in calls))
+
+    def test_confluence_scope_does_not_access_jira_or_relay(self):
+        calls = self.run_credentials("confluence")
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0].args[0][5], "confluence-mock-basic-auth")
+        with redirect_stdout(io.StringIO()):
+            calls = self.run_credentials("confluence", existing=False)
+        created = [json.loads(call.kwargs["input"]) for call in calls if "create" in call.args[0]]
+        self.assertEqual([obj["metadata"]["name"] for obj in created], ["confluence-mock-basic-auth"])
+
+    def test_secret_creation_failure(self):
+        with self.assertRaises(SystemExit):
+            self.run_credentials("confluence", existing=False, create_status=1)
 
 
 class SeedTests(unittest.TestCase):
@@ -63,6 +127,60 @@ class SeedTests(unittest.TestCase):
                              [(seed.WEBHOOK_PATH, seed.WEBHOOK)] * 2)
             self.assertEqual(output.getvalue().splitlines(), [
                 "registered Devin webhook 7", "registered Devin webhook 1"])
+
+
+class ConfluenceTests(unittest.TestCase):
+    def test_scoped_resources(self):
+        objects = list(yaml.safe_load_all(subprocess.check_output(
+            ["kubectl", "kustomize", str(ROOT / "infrastructure/k8s/odl-mocks")], text=True)))
+        scoped = [o for o in objects if o["metadata"]["labels"].get("app") == "confluence"]
+        self.assertEqual(len(scoped), 5)
+        self.assertEqual({o["kind"] for o in scoped},
+                         {"Deployment", "Service", "Ingress", "NetworkPolicy", "ConfigMap"})
+        self.assertTrue(all(o["metadata"]["labels"]["run_token"] == "odl-1795112287" for o in scoped))
+
+    def test_ingress_paths_and_secret(self):
+        objects = list(yaml.safe_load_all((ROOT / "infrastructure/k8s/odl-mocks/confluence.yaml").read_text()))
+        ingress = next(o for o in objects if o["kind"] == "Ingress")
+        self.assertEqual(ingress["metadata"]["annotations"]["nginx.ingress.kubernetes.io/auth-secret"],
+                         "confluence-mock-basic-auth")
+        rule = ingress["spec"]["rules"][0]
+        self.assertEqual(rule["host"], "confluence-odl.demo.otterworks.app")
+        self.assertEqual([p["path"] for p in rule["http"]["paths"]], ["/wiki", "/static"])
+
+    def test_missing_and_existing_pages(self):
+        page = {"title": "Example", "body": {"representation": "storage", "value": "<p>Example</p>"}}
+        with patch.object(confluence, "request", side_effect=[{"results": [{"id": "2"}]},
+                          {"results": []}, {"id": "203"}]) as call:
+            confluence.reconcile([page])
+            self.assertEqual(call.call_args.args, ("/pages", {"spaceId": "2", **page}))
+            self.assertEqual(call.call_args_list[1].args, ("/pages?space-id=2&title=Example",))
+        with patch.object(confluence, "request", side_effect=[{"results": [{"id": "2"}]},
+                          {"results": [{"id": "203"}]}]) as call:
+            confluence.reconcile([page])
+            self.assertEqual(call.call_count, 2)
+
+    def test_empty_and_errors(self):
+        with patch.object(confluence, "request") as call:
+            confluence.reconcile([])
+            call.assert_not_called()
+        for result in ({"results": []}, {"results": [{"id": "2"}, {"id": "3"}]}):
+            with patch.object(confluence, "request", return_value=result):
+                with self.assertRaises(ValueError):
+                    confluence.reconcile([{"title": "Example"}])
+        with patch.object(confluence, "request", side_effect=ConnectionError):
+            with self.assertRaises(ConnectionError):
+                confluence.reconcile([{"title": "Example"}])
+
+    def test_page_contract(self):
+        pages = json.loads((ROOT / "infrastructure/k8s/odl-mocks/confluence-seed.json").read_text())
+        self.assertEqual([p["title"] for p in pages], ["REST API conventions", "Customer source mapping"])
+        for page in pages:
+            self.assertEqual(page["body"]["representation"], "storage")
+        for term in ("/api/v1/", "snake_case", "decimal strings", "pagination", "contract"):
+            self.assertIn(term, pages[0]["body"]["value"])
+        for term in ("CUSTMAST", "ACCOUNTS", "crm.contacts", "MongoDB", "open question"):
+            self.assertIn(term, pages[1]["body"]["value"])
 
 
 class RelayTests(unittest.TestCase):
