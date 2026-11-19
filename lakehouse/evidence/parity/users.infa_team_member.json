@@ -2,7 +2,7 @@
   "NS": "users-after",
   "business_date": "20261109",
   "git_dirty": false,
-  "git_sha": "39d37413d413ca14fe38d24400298da0347e1cf9",
+  "git_sha": "9dcb6a5e67bb4bfcc64ef4caa00fb68aacf703cf",
   "id": "users.infa_team_member",
   "legacy_NS": "users-before",
   "legacy_objects": [
@@ -142,5 +142,5 @@
     "legacy": 400
   },
   "spec_hash": "2be1c649b1bc85dd4141d564bd75dbf4c704a5526a06a2f6e3d9dbcbe7cfbc3d",
-  "timestamp": "2026-11-19T08:11:38.318189+00:00"
+  "timestamp": "2026-11-19T08:14:41.055749+00:00"
 }
