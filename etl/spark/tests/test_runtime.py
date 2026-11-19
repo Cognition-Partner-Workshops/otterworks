@@ -42,6 +42,10 @@ class RuntimeTest(unittest.TestCase):
             services = json.loads(result.stdout)["services"]
             self.assertEqual(services["spark-init"]["entrypoint"],
                              ["python3", "/opt/sfx/spark/fixture/initialize.py"])
+            config_mount = next(mount for mount in services["spark-init"]["volumes"]
+                                if mount["target"] == "/opt/warehouse/run_config.py")
+            self.assertEqual(config_mount["source"], str(ROOT / "warehouse/run_config.py"))
+            self.assertTrue(config_mount["read_only"])
             self.assertEqual(services["spark-master"]["depends_on"]["spark-load"]["condition"],
                              "service_completed_successfully")
             self.assertEqual(services["spark-load"]["network_mode"], "service:sfx-tdemu")
