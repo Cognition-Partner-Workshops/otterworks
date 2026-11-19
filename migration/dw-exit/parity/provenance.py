@@ -346,12 +346,20 @@ def markdown(rows, evidence=None):
     documents = [r for r in rows if r['subject_area']=='documents']
     if not documents:
         return text
-    counts = {state:sum(r['status']==state for r in documents) for state in ('green','amber','red','retired')}
+    counts = {state:sum(r['status']==state for r in documents) for state in ('green','approved_deviation','amber','red','retired')}
     lines = ['\n## Documents parity provenance','',
-             f"Local DuckDB: **{counts['green']} green / {counts['amber']} amber / {counts['red']} red / {counts['retired']} retire candidates**, {len(documents)} total.",
+             f"Local DuckDB: **{counts['green']} green / {counts['approved_deviation']} approved deviation / {counts['amber']} amber / {counts['red']} red / {counts['retired']} retire candidates**, {len(documents)} total.",
              'Snowflake: **red/denied** — '+documents[0]['snowflake_reason']+'.',
              'Retire candidates are excluded from executable parity, not approved for deletion. Relation counts below sum within each proof leg; relations can repeat across legs.','']
     if evidence:
+        lines.extend(['### Owner-decision comparisons','',
+            '`approved_deviation` is not raw parity or pending confirmation. Every differing row must be in the independent decision scope and the complete converted result must match the approved expectation. Raw hashes and every differing row remain in the evidence. Unexplained differences remain red. Storage-derived deviations require amber and finance confirmation.',
+            '',
+            'Users/content DISPLAY_NAME is VARCHAR(200), checked against full input with raw legacy truncation retained (100 of 120 names). Audit summary IDs use stable date/key ordering with raw legacy IDs retained.', ''])
+        for decision in evidence.get('decisions',[]):
+            lines.append('- '+decision['new_behaviour']+' ('+decision['status']+').'+
+                         (' '+decision['confirmation'] if decision.get('confirmation') else ''))
+        lines.append('')
         lines.extend([documents_table(evidence),''])
     lines.extend(['| Object | Local | Counts | Hash delta | Diff samples | Source | Converted producers | Profiles |',
                   '|---|---|---:|---:|---:|---|---|---|'])

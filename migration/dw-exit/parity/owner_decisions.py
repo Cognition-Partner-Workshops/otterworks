@@ -14,6 +14,28 @@ def pending_confirmations():
             if decision.get('status') == 'approved-pending-confirmation']
 
 
+def apply_deviation(row, measurements, decisions):
+    failed = [value for value in measurements.values() if not value['passed']]
+    if row['status'] != 'red' or not failed:
+        return row
+    registered = {d.get('decision_id'):d for d in decisions if d.get('decision_id')}
+    proofs = [value.get('owner_decision',{}) for value in failed]
+    approvals = [registered.get(proof.get('decision_id'),{}) for proof in proofs]
+    if not all(proof.get('scope_valid') is True and
+               proof.get('approved_comparison',{}).get('passed') is True and
+               decision.get('status') in ('approved','approved-pending-confirmation')
+               for proof,decision in zip(proofs,approvals)):
+        return row
+    pending = [d for d in approvals if d['status']=='approved-pending-confirmation']
+    state = 'amber' if pending else 'approved_deviation'
+    row.update(measurement_status='red',status=state,local_duckdb=state,
+               decision_state='approved-pending-confirmation' if pending else 'approved',
+               reason='; '.join(dict.fromkeys(d['confirmation'] if pending and d in pending
+                   else d['new_behaviour'] for d in approvals)),
+               owner_decision_evidence=proofs)
+    return row
+
+
 def apply_confirmation(row, decisions):
     for decision in decisions:
         if row['name'] in decision.get('board_objects', []):

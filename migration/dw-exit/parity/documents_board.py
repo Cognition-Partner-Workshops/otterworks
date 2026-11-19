@@ -80,5 +80,6 @@ def object_measurements(manifest, evidence):
             status = result['status']
             reason = '; '.join(result['blockers']) or ('measured parity mismatch' if status=='red' else None)
         results[name] = {'status':status,'reason':reason,'measurements':measured,
+                         'decisions':evidence.get('decisions',[]) if not result.get('blockers') else [],
                          'metric_evidence':{relation:json_link(evidence_path,keys) for relation,keys in locations.items()}}
     return results

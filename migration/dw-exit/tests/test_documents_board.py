@@ -20,7 +20,7 @@ def test_documents_board_has_real_metrics_and_independent_denied_leg():
     preflight = json.loads((ROOT/'migration/dw-exit/parity/snowflake-preflight.json').read_text())
     board = object_board.build_board(manifest,subject_evidence={'documents':measured},preflight=preflight)
     summary = board['summary']['documents']
-    assert (summary['total'],summary['local_green'],summary['local_amber'],summary['local_red'],summary['retired'])==(59,45,1,9,4)
+    assert (summary['total'],summary['local_green'],summary['local_approved_deviation'],summary['local_amber'],summary['local_red'],summary['retired'])==(59,50,4,1,0,4)
     assert all(r['snowflake']=='red' and r['snowflake_reason']==preflight['reason'] for r in board['rows'])
     binary = next(r for r in board['rows'] if r['name']=='file_object_binary_extract')
     assert binary['row_count']=={'before':400,'after':400}
@@ -35,7 +35,16 @@ def test_documents_board_has_real_metrics_and_independent_denied_leg():
         if row['status']!='retired':
             assert p['converted'] and row['row_count'] is not None
     text = provenance.markdown(board['rows'],evidence)
-    assert '45 green / 1 amber / 9 red / 4 retire candidates' in text
+    assert '50 green / 4 approved deviation / 1 amber / 0 red / 4 retire candidates' in text
+    deviations = [r for r in board['rows'] if r['status']=='approved_deviation']
+    assert len(deviations)==4
+    for row in deviations:
+        assert row['measurement_status']=='red'
+        for proof in row['owner_decision_evidence']:
+            assert len(proof['scope_document_ids'])==50
+            assert proof['outside_scope_rows']==0
+            assert set(proof['mismatching_key_values']) <= set(proof['scope_key_values'])
+            assert proof['approved_comparison']['passed']
     assert 'spark_binary_two_date_history' in text
 
 

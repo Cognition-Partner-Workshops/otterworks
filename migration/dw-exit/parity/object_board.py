@@ -31,7 +31,7 @@ from parity.subjects import SUBJECTS
 from audit_outputs import outputs as audit_outputs
 from audit_outputs import artifacts as audit_artifacts
 from parity import local_content
-from parity.owner_decisions import apply_confirmation, pending_confirmations
+from parity.owner_decisions import apply_confirmation, apply_deviation, pending_confirmations
 
 
 def quote(name):
@@ -217,6 +217,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
             if detail:
                 row.update(status=detail['status'],reason=detail['reason'])
                 measured = detail['measurements']
+                apply_deviation(row, measured, detail.get('decisions',[]))
                 if measured:
                     row['row_count'] = {side:sum(r['row_count'][side] for r in measured.values()) for side in ('before','after')}
                     for field in ('column_profile','keyed_row_hash','sampled_differences','comparison_rules'):
@@ -323,6 +324,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     result['summary'] = dict(rows=len(objects), red=sum(r['status']=='red' for r in result['rows']),
         retire_verified=sum(r['status']=='retire_verified' for r in result['rows']),
         green=sum(r['status']=='green' for r in result['rows']), amber=sum(r['status']=='amber' for r in result['rows']), measured=sum(r['row_count'] is not None for r in result['rows']),
+        approved_deviation=sum(r['status']=='approved_deviation' for r in result['rows']),
         migrated=0, licence_remaining=total, licence_total=total,
         licence_by_system=dict(Counter(r['licence_dependency'] for r in result['rows'] if r['licence_dependency']!='none')))
     billing = [row for row in result['rows'] if row['subject_area'] == 'billing']
@@ -334,7 +336,8 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     if documents:
         counts = Counter(row['status'] for row in documents)
         result['summary']['documents'] = dict(total=len(documents),local_green=counts['green'],local_red=counts['red'],
-            local_amber=counts['amber'], retired=counts['retired'],local_duckdb='red' if counts['red'] else 'amber' if counts['amber'] else 'green',snowflake='red',snowflake_reason=snowflake_reason)
+            local_approved_deviation=counts['approved_deviation'],
+            local_amber=counts['amber'], retired=counts['retired'],local_duckdb='red' if counts['red'] else 'amber' if counts['amber'] else 'approved_deviation' if counts['approved_deviation'] else 'green',snowflake='red',snowflake_reason=snowflake_reason)
         result['summary']['retired'] = sum(row['status']=='retired' for row in result['rows'])
     audit = [row for row in result['rows'] if row['subject_area'] == 'audit']
     audit_green = sum(row['local_duckdb'] == 'green' for row in audit)

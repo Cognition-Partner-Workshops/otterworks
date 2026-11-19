@@ -18,6 +18,7 @@ from parity.ladder import identifier, local_compare
 from parity.local_billing import statements
 from parity.local_documents import CONVERSIONS, compare, execute, load_landing, merge_pc, render_pc, resultset
 from parity.object_board import source_snapshot
+from parity.documents_decisions import version_scope
 from warehouse.run_config import RunConfig
 
 
@@ -123,6 +124,7 @@ def prove(pre_path, landing, namespace, day):
         resultset(pre, after, day)
         contract = json.loads((CONVERSIONS.parent/'parity/documents.json').read_text())
         sql_results = compare(pre, after, [c for c in contract if '.DOCUMENTS.' in c['after']])
+        version_scope(pre, after, sql_results)
         load_landing(after, landing, day)
         tpt_results = {c['name']:local_compare(pre,after,'SFX_DOCUMENTS.'+c['name'],'DOCUMENTS.'+c['name'],sample_size=10000)
                        for c in contract if c['name'].startswith('STG_')}

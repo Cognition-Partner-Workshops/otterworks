@@ -532,13 +532,13 @@
     "etl/spark/.data/sfx-1119-before/landing/documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87"
   },
   "output_sha256": {
-    "etl/spark/.data/sfx-1119-before/lake/documents/file_object_binary_extract/run_date=2026-11-18/part-00000-9bf8a4be-266c-4939-8189-54c6a1b048ea.c000.snappy.parquet": "50a3b58f13110f7cf93ccd31ec1ecebc51052bcfc1c7012e696e511737203ef2",
-    "etl/spark/.data/sfx-1119-before/lake/documents/file_object_binary_extract/run_date=2026-11-19/part-00000-13df23ec-d703-470c-9e83-69abe8577bb1.c000.snappy.parquet": "63ef0621914ff3214ea45c1743a2d45fad8e305a130c791fd51c993a72011872"
+    "etl/spark/.data/sfx-1119-before/lake/documents/file_object_binary_extract/run_date=2026-11-18/part-00000-5462ddd3-a847-474a-bf0b-e455de69ead4.c000.snappy.parquet": "304a627923f929b915009d3cd395c0251135399348d379ebd0b17265ad4807f9",
+    "etl/spark/.data/sfx-1119-before/lake/documents/file_object_binary_extract/run_date=2026-11-19/part-00000-706ecbfb-fbb3-4c1c-860a-343133ca61a6.c000.snappy.parquet": "b94791bb68c895610ab7bd9ac0cb0b7a3e9f7570dd6b31705369e9135d7a7a21"
   },
   "execution_log_sha256": {
-    "etl/spark/.data/sfx-1119-before/logs/file_object_binary_extract.2026-11-18.log": "b5c1b92b5409bad7c1b632b801d3f010a65df1afd9087b83522628c8d156406e",
-    "etl/spark/.data/sfx-1119-before/logs/file_object_binary_extract.2026-11-19.log": "aac33ef609f1e5a643580bcc0f5a190a7f3cac5a7d4e85cbadea24bbbdf338c0",
-    "etl/spark/.data/sfx-1119-before/logs/file_object_binary_extract.log": "aac33ef609f1e5a643580bcc0f5a190a7f3cac5a7d4e85cbadea24bbbdf338c0"
+    "etl/spark/.data/sfx-1119-before/logs/file_object_binary_extract.2026-11-18.log": "00e762a4e568179cbc0838efffd92a74dacd7085cc21ea8f5117d02647993272",
+    "etl/spark/.data/sfx-1119-before/logs/file_object_binary_extract.2026-11-19.log": "24c4072190a21b7ba9c326da9f9ffe0e2e86d116b7465b9180167fdfa9121ea4",
+    "etl/spark/.data/sfx-1119-before/logs/file_object_binary_extract.log": "24c4072190a21b7ba9c326da9f9ffe0e2e86d116b7465b9180167fdfa9121ea4"
   },
   "conversion_sha256": {
     "warehouse/dbt/macros/documents_spark_udfs.sql": "febdaacec63681c09fa183b30b3a517a802bfdaa0df4cef41dbcfb1fca0be9d8",
