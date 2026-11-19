@@ -1,1 +1,0 @@
-8 1 * * * /opt/etl/spark/submit/audit_daily_summary.sh >> /var/log/etl/spark-audit_daily_summary.log 2>&1

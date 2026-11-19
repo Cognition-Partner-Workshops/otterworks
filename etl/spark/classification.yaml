@@ -32,8 +32,10 @@
   reason: "Builds team membership totals with left joins and grouped counts."
 - job: audit_daily_summary
   language: scala
-  target: dbt
-  reason: "Summarizes event dates and types with counts and distinct actor counts."
+  target: spark_standard_template
+  reason: "Summarizes event dates and types on the standard Spark template, preserving lake and PostgreSQL consumers because Snowflake was not measurable this run."
+  original_target: dbt
+  change_reason: "No SFX_1119 database/warehouse was available and the run guard blocks SFX_D1110; retain Spark with rerun-safe snapshot outputs."
 - job: audit_actor_activity_join
   language: python
   target: dbt
