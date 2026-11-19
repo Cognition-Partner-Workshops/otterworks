@@ -3,7 +3,7 @@
 The source of truth is `openapi/billing-v1.yaml` (OpenAPI 3.1). The gateway
 forwards `/api/v1/billing` unchanged to `LEGACY_BILLING_URL` (default
 `http://legacy-billing:8096`), behind its JWT middleware. No module's v1
-operations other than dunning are implemented yet. Unknown v1 paths already return the JSON
+operations are implemented yet. Unknown v1 paths already return the JSON
 error envelope; legacy routes retain their existing behavior, without new
 deprecation headers until converted into adapters.
 
