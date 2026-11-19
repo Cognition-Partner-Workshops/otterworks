@@ -230,7 +230,7 @@ jobs:
           distribution: temurin
           java-version: '25'
       - name: Install sbt
-        uses: sbt/setup-sbt@v1
+        uses: sbt/setup-sbt@7e114eae4f32ec3f93c851c2793376a77f384409 # v1
       - run: sbt compile
       - run: sbt test
 
