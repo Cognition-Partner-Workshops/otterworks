@@ -1,0 +1,41 @@
+{
+  "id": "billing.consumer_partner_transfer",
+  "legacy_objects": [
+    "consumer:partner-extract",
+    "bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq",
+    "consumer_script:consumers/partner-extract/bin/nightly_extract.sh",
+    "consumer_script:consumers/partner-extract/bin/postprocess.sh",
+    "consumer_script:consumers/partner-extract/bin/sftp_push.sh",
+    "cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed"
+  ],
+  "legacy": {
+    "kind": "json",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing_consumers/{business_date}/transfer.json",
+    "columns": [
+      "mode",
+      "destination",
+      "sha256",
+      "bytes"
+    ]
+  },
+  "lakehouse": {
+    "kind": "json",
+    "path": "lakehouse/.data/{NS}/exports/billing_partner/{business_date}/current/transfer.json",
+    "columns": [
+      "mode",
+      "destination",
+      "sha256",
+      "bytes"
+    ]
+  },
+  "keys": [
+    "destination"
+  ],
+  "columns": [
+    "mode",
+    "destination",
+    "sha256",
+    "bytes"
+  ],
+  "description": "Actual unchanged sftp_push.sh dry-run put destination and actual published CSV SHA256/bytes. Local path/key transcript differences are not partner payload. Live transfer is unsupported on both sides."
+}

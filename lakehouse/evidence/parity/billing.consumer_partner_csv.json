@@ -1,0 +1,80 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "id": "billing.consumer_partner_csv",
+  "legacy_NS": null,
+  "legacy_objects": [
+    "consumer:partner-extract",
+    "bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq",
+    "consumer_script:consumers/partner-extract/bin/nightly_extract.sh",
+    "consumer_script:consumers/partner-extract/bin/postprocess.sh",
+    "consumer_script:consumers/partner-extract/bin/sftp_push.sh",
+    "cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed"
+  ],
+  "results": {
+    "columns": [
+      "line"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "line": {
+          "count": 669,
+          "hash": "30fdc2bb0e14c13c80402582686ac905a225a819ba25ccbc6c4c824a005d8aee",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "line": {
+          "count": 669,
+          "hash": "30fdc2bb0e14c13c80402582686ac905a225a819ba25ccbc6c4c824a005d8aee",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "line": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 669,
+      "legacy": 669
+    }
+  },
+  "row_counts": {
+    "lakehouse": 669,
+    "legacy": 669
+  },
+  "spec_hash": "53b5f5941236b35653fd5d6eb6d1e2f91575e2f1a1358a63980873e8388284c7",
+  "timestamp": "2026-11-19T14:20:46.795635+00:00"
+}

@@ -1,0 +1,160 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "id": "billing.consumer_report_summary",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "consumer:report-service"
+  ],
+  "results": {
+    "columns": [
+      "period_id",
+      "invoiced_total",
+      "paid_total",
+      "ar_gl_balance",
+      "variance",
+      "parity_row"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "ar_gl_balance": {
+          "count": 1,
+          "hash": "285e9bb088274ad9a47dc23a149eb9d0b72ce222557e4d7cc4fbf433aed27ed3",
+          "null_count": 0,
+          "sum": "738175.99"
+        },
+        "invoiced_total": {
+          "count": 1,
+          "hash": "c84c4430bc07f4274be3623052c680ba16b4fb174cb9340a689c629095bd5a37",
+          "null_count": 0,
+          "sum": "739913.01"
+        },
+        "paid_total": {
+          "count": 1,
+          "hash": "cf752696ec91a1a09fee90a8df36b953faa232d06141bd205357713c099e7db7",
+          "null_count": 0,
+          "sum": "268853.38"
+        },
+        "parity_row": {
+          "count": 1,
+          "hash": "b2f20aabc7733a8428a890ff0b73366404673b03f845f266703f23be0a55857f",
+          "null_count": 0,
+          "sum": "1"
+        },
+        "period_id": {
+          "count": 1,
+          "hash": "ebfb2bef45193ea96e1ba7a1b7e6af052d0b9debbd5ffe80446fa1f4a66e7e5d",
+          "null_count": 0,
+          "sum": "202611"
+        },
+        "variance": {
+          "count": 1,
+          "hash": "e812cfece6d19bf998817700d7e3b9da8594f18f41a48fc46e86625c9d556fc6",
+          "null_count": 0,
+          "sum": "-267116.36"
+        }
+      },
+      "legacy": {
+        "ar_gl_balance": {
+          "count": 1,
+          "hash": "285e9bb088274ad9a47dc23a149eb9d0b72ce222557e4d7cc4fbf433aed27ed3",
+          "null_count": 0,
+          "sum": "738175.99"
+        },
+        "invoiced_total": {
+          "count": 1,
+          "hash": "c84c4430bc07f4274be3623052c680ba16b4fb174cb9340a689c629095bd5a37",
+          "null_count": 0,
+          "sum": "739913.01"
+        },
+        "paid_total": {
+          "count": 1,
+          "hash": "cf752696ec91a1a09fee90a8df36b953faa232d06141bd205357713c099e7db7",
+          "null_count": 0,
+          "sum": "268853.38"
+        },
+        "parity_row": {
+          "count": 1,
+          "hash": "b2f20aabc7733a8428a890ff0b73366404673b03f845f266703f23be0a55857f",
+          "null_count": 0,
+          "sum": "1"
+        },
+        "period_id": {
+          "count": 1,
+          "hash": "ebfb2bef45193ea96e1ba7a1b7e6af052d0b9debbd5ffe80446fa1f4a66e7e5d",
+          "null_count": 0,
+          "sum": "202611"
+        },
+        "variance": {
+          "count": 1,
+          "hash": "e812cfece6d19bf998817700d7e3b9da8594f18f41a48fc46e86625c9d556fc6",
+          "null_count": 0,
+          "sum": "-267116.36"
+        }
+      }
+    },
+    "mismatches": {
+      "ar_gl_balance": {
+        "count": 0,
+        "samples": []
+      },
+      "invoiced_total": {
+        "count": 0,
+        "samples": []
+      },
+      "paid_total": {
+        "count": 0,
+        "samples": []
+      },
+      "parity_row": {
+        "count": 0,
+        "samples": []
+      },
+      "period_id": {
+        "count": 0,
+        "samples": []
+      },
+      "variance": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 1,
+      "legacy": 1
+    }
+  },
+  "row_counts": {
+    "lakehouse": 1,
+    "legacy": 1
+  },
+  "spec_hash": "97738ce88f67f4910fd61a7ab3143e0bc3f114327305e29e55d4fa432dde4196",
+  "timestamp": "2026-11-19T14:14:43.698009+00:00"
+}

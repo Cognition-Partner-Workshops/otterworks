@@ -1,0 +1,131 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "id": "billing.consumer_partner_transfer",
+  "legacy_NS": null,
+  "legacy_objects": [
+    "consumer:partner-extract",
+    "bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq",
+    "consumer_script:consumers/partner-extract/bin/nightly_extract.sh",
+    "consumer_script:consumers/partner-extract/bin/postprocess.sh",
+    "consumer_script:consumers/partner-extract/bin/sftp_push.sh",
+    "cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed"
+  ],
+  "results": {
+    "columns": [
+      "mode",
+      "destination",
+      "sha256",
+      "bytes"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "bytes": {
+          "count": 1,
+          "hash": "6510b7da021e8b260de21dc29a58374bd13219b0f3931aa49a89b6b5c0006d9b",
+          "null_count": 0,
+          "sum": "42411"
+        },
+        "destination": {
+          "count": 1,
+          "hash": "3ee1abd2e7fd19bbdbbeeea4336e34fb8e6fa6cbff91cc5913e1dc5868a9a301",
+          "null_count": 0,
+          "sum": null
+        },
+        "mode": {
+          "count": 1,
+          "hash": "00a766dafb86beb7fe39f54191455ad60c58fc55e5e574254d611dcf3f5c1985",
+          "null_count": 0,
+          "sum": null
+        },
+        "sha256": {
+          "count": 1,
+          "hash": "c610672c515c3a65e7c6e9a10fe4105cfc9a3acc4784d15c38efed815532406b",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "bytes": {
+          "count": 1,
+          "hash": "6510b7da021e8b260de21dc29a58374bd13219b0f3931aa49a89b6b5c0006d9b",
+          "null_count": 0,
+          "sum": "42411"
+        },
+        "destination": {
+          "count": 1,
+          "hash": "3ee1abd2e7fd19bbdbbeeea4336e34fb8e6fa6cbff91cc5913e1dc5868a9a301",
+          "null_count": 0,
+          "sum": null
+        },
+        "mode": {
+          "count": 1,
+          "hash": "00a766dafb86beb7fe39f54191455ad60c58fc55e5e574254d611dcf3f5c1985",
+          "null_count": 0,
+          "sum": null
+        },
+        "sha256": {
+          "count": 1,
+          "hash": "c610672c515c3a65e7c6e9a10fe4105cfc9a3acc4784d15c38efed815532406b",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "bytes": {
+        "count": 0,
+        "samples": []
+      },
+      "destination": {
+        "count": 0,
+        "samples": []
+      },
+      "mode": {
+        "count": 0,
+        "samples": []
+      },
+      "sha256": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 1,
+      "legacy": 1
+    }
+  },
+  "row_counts": {
+    "lakehouse": 1,
+    "legacy": 1
+  },
+  "spec_hash": "ebca4f5a8dfd785bc977d8c10ad76d33276f60fd86fc0789507323e662e73afe",
+  "timestamp": "2026-11-19T14:20:46.866412+00:00"
+}

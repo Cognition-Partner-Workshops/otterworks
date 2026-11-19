@@ -38,17 +38,19 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: bi_artifact:consumers/bi/account_status.pq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
+  parity: ["billing.consumer_account_status","billing.consumer_workbook_feed"]
+  assumptions: ["A-131","A-132","A-133","A-134","A-135","A-136","A-137","A-138"]
+  verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+  notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
+  parity: ["billing.consumer_partner_raw","billing.consumer_partner_csv","billing.consumer_partner_transfer"]
+  assumptions: ["A-131","A-132","A-133","A-134","A-135","A-136","A-137","A-138"]
+  verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+  notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
   status: pending
   targets: []
@@ -401,65 +403,75 @@ objects:
   - A-305
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: consumer:admin-service
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
+  parity: ["billing.consumer_admin_summary","billing.consumer_admin_overdue"]
+  assumptions: ["A-131","A-132","A-133","A-134","A-135","A-136","A-137","A-138"]
+  verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+  notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: consumer:analytics-service
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
+  parity: ["billing.consumer_analytics_rollups"]
+  assumptions: ["A-131","A-132","A-133","A-134","A-135","A-136","A-137","A-138"]
+  verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+  notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: consumer:billing-service
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
+  parity: ["billing.consumer_billing_invoices","billing.consumer_invoice_csv"]
+  assumptions: ["A-131","A-132","A-133","A-134","A-135","A-136","A-137","A-138"]
+  verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+  notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: consumer:finance-account-workbook
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
+  parity: ["billing.consumer_account_status","billing.consumer_workbook_feed"]
+  assumptions: ["A-131","A-132","A-133","A-134","A-135","A-136","A-137","A-138"]
+  verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+  notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: consumer:legacy-billing
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
+  parity: ["billing.consumer_legacy_aging"]
+  assumptions: ["A-131","A-132","A-133","A-134","A-135","A-136","A-137","A-138"]
+  verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+  notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: consumer:partner-extract
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
+  parity: ["billing.consumer_partner_raw","billing.consumer_partner_csv","billing.consumer_partner_transfer"]
+  assumptions: ["A-131","A-132","A-133","A-134","A-135","A-136","A-137","A-138"]
+  verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+  notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: consumer:report-service
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
+  parity: ["billing.consumer_report_summary","billing.consumer_report_unreconciled"]
+  assumptions: ["A-131","A-132","A-133","A-134","A-135","A-136","A-137","A-138"]
+  verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+  notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: consumer_script:consumers/partner-extract/bin/nightly_extract.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
+  parity: ["billing.consumer_partner_raw","billing.consumer_partner_csv","billing.consumer_partner_transfer"]
+  assumptions: ["A-131","A-132","A-133","A-134","A-135","A-136","A-137","A-138"]
+  verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+  notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: consumer_script:consumers/partner-extract/bin/postprocess.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
+  parity: ["billing.consumer_partner_raw","billing.consumer_partner_csv","billing.consumer_partner_transfer"]
+  assumptions: ["A-131","A-132","A-133","A-134","A-135","A-136","A-137","A-138"]
+  verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+  notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: consumer_script:consumers/partner-extract/bin/sftp_push.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
+  parity: ["billing.consumer_partner_raw","billing.consumer_partner_csv","billing.consumer_partner_transfer"]
+  assumptions: ["A-131","A-132","A-133","A-134","A-135","A-136","A-137","A-138"]
+  verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
+  notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: cron_entry:etl/crontab#042e9e7fa551
   status: replaced_by_platform
   targets:
@@ -879,12 +891,12 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed
-  status: pending
-  targets: []
-  parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets: ["airflow:lakehouse_billing_partner_extract.run", "lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
+  parity: ["billing.consumer_partner_raw","billing.consumer_partner_csv","billing.consumer_partner_transfer"]
+  assumptions: ["A-037","A-131","A-132","A-133","A-134","A-135","A-136","A-137","A-138"]
+  verification: test:lakehouse/tests/test_billing_consumers.py::test_consumer_parameters_and_cron_replacement
+  notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/01_load_events
   status: converted
   targets:

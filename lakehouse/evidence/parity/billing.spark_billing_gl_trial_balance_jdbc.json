@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "e79f664018738ca8617570eff8eceb32dc8d7255",
+  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
   "id": "billing.spark_billing_gl_trial_balance_jdbc",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -243,5 +243,5 @@
     "legacy": 4
   },
   "spec_hash": "6f3c49f6b7a453c5486cfeee5bf0bf9d3e827ca452d4706611ff7b552b84bb83",
-  "timestamp": "2026-11-19T12:45:50.063068+00:00"
+  "timestamp": "2026-11-19T14:15:03.685173+00:00"
 }

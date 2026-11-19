@@ -1,0 +1,73 @@
+{
+  "id": "billing.consumer_report_unreconciled",
+  "legacy_objects": [
+    "consumer:report-service"
+  ],
+  "legacy": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing_consumers/{business_date}/report_unreconciled.jsonl",
+    "columns": [
+      "invoice_number",
+      "account_number",
+      "invoice_date",
+      "days_overdue",
+      "total_amount",
+      "paid",
+      "parity_row"
+    ]
+  },
+  "lakehouse": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/exports/billing_consumers/{business_date}/current/queries/report_unreconciled.jsonl",
+    "columns": [
+      "invoice_number",
+      "account_number",
+      "invoice_date",
+      "days_overdue",
+      "total_amount",
+      "paid",
+      "parity_row"
+    ]
+  },
+  "keys": [
+    "parity_row"
+  ],
+  "columns": [
+    "invoice_number",
+    "account_number",
+    "invoice_date",
+    "days_overdue",
+    "total_amount",
+    "paid",
+    "parity_row"
+  ],
+  "normalize": {
+    "invoice_number": {
+      "rstrip": true
+    },
+    "account_number": {
+      "rstrip": true
+    },
+    "invoice_date": {
+      "rstrip": true
+    },
+    "days_overdue": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "total_amount": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "paid": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "parity_row": {
+      "trim": true,
+      "numeric_scale": 0
+    }
+  },
+  "tolerance": {},
+  "description": "A-131..A-134: actual source SQL/emulator vs lakehouse-bound SQL, pinned clock. Canonically sorted comparison-only ordinal preserves duplicates and null rows. CHAR padding and declared code/group representatives normalized; ratios have 1e-6 absolute tolerance."
+}

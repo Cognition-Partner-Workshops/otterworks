@@ -1909,6 +1909,21 @@ dags:
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []
+
+  - id: export_billing_consumers
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.consumer_exports", "--business-date", "{business_date}"]
+    depends_on: [dbt_billing_reporting, export_billing_14_account_history_extract]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["consumer:billing-service","consumer:legacy-billing","consumer:admin-service","consumer:analytics-service","consumer:report-service","consumer:finance-account-workbook","bi_artifact:consumers/bi/account_status.pq","consumer:partner-extract","bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq","consumer_script:consumers/partner-extract/bin/nightly_extract.sh","consumer_script:consumers/partner-extract/bin/postprocess.sh","consumer_script:consumers/partner-extract/bin/sftp_push.sh"]
+  - id: parity_billing_consumers
+    kind: parity
+    specs: ["billing.consumer_billing_invoices","billing.consumer_legacy_aging","billing.consumer_admin_summary","billing.consumer_admin_overdue","billing.consumer_analytics_rollups","billing.consumer_report_summary","billing.consumer_report_unreconciled","billing.consumer_invoice_csv","billing.consumer_partner_raw","billing.consumer_partner_csv","billing.consumer_partner_transfer","billing.consumer_account_status","billing.consumer_workbook_feed"]
+    depends_on: [export_billing_consumers]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
 - id: lakehouse_users_spark
   schedule: '@daily'
   timezone: UTC
@@ -2866,6 +2881,39 @@ dags:
   - id: parity
     kind: parity
     specs: ["billing.spark_billing_churn_score_parquet"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_billing_partner_extract
+  schedule: '15 2 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/exports/billing/{business_date}/account_status_{business_date}.psv'
+    depends_on: []
+    timeout_seconds: 3600
+    poke_interval_seconds: 10
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.consumer_exports", "--business-date", "{business_date}", "--partner-only"]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["consumer:partner-extract","bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq","consumer_script:consumers/partner-extract/bin/nightly_extract.sh","consumer_script:consumers/partner-extract/bin/postprocess.sh","consumer_script:consumers/partner-extract/bin/sftp_push.sh","cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed"]
+  - id: parity
+    kind: parity
+    specs: ["billing.consumer_partner_raw","billing.consumer_partner_csv","billing.consumer_partner_transfer"]
     depends_on: [run]
     retries: 1
     retry_delay_seconds: 10

@@ -1,0 +1,57 @@
+{
+  "id": "billing.consumer_admin_summary",
+  "legacy_objects": [
+    "consumer:admin-service"
+  ],
+  "legacy": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing_consumers/{business_date}/admin_summary.jsonl",
+    "columns": [
+      "ar_open_balance",
+      "collections_30_days",
+      "dso",
+      "parity_row"
+    ]
+  },
+  "lakehouse": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/exports/billing_consumers/{business_date}/current/queries/admin_summary.jsonl",
+    "columns": [
+      "ar_open_balance",
+      "collections_30_days",
+      "dso",
+      "parity_row"
+    ]
+  },
+  "keys": [
+    "parity_row"
+  ],
+  "columns": [
+    "ar_open_balance",
+    "collections_30_days",
+    "dso",
+    "parity_row"
+  ],
+  "normalize": {
+    "ar_open_balance": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "collections_30_days": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "dso": {
+      "trim": true,
+      "numeric_scale": 6
+    },
+    "parity_row": {
+      "trim": true,
+      "numeric_scale": 0
+    }
+  },
+  "tolerance": {
+    "dso": 0.000001
+  },
+  "description": "A-131..A-134: actual source SQL/emulator vs lakehouse-bound SQL, pinned clock. Canonically sorted comparison-only ordinal preserves duplicates and null rows. CHAR padding and declared code/group representatives normalized; ratios have 1e-6 absolute tolerance."
+}
