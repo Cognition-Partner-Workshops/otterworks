@@ -1,10 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
-const selectedProjects = process.argv.filter((arg) => arg.startsWith("--project="));
-// The existing CI file-filtered Chromium commands must not require WebKit or mocks.
-const iosFlows = process.argv.some((arg) => arg.includes("ios-flows")) || process.argv.includes("webkit-iphone") || selectedProjects.some((arg) => /webkit-iphone|\*/.test(arg)) ||
-  (!process.argv.some((arg) => /e2e\/|--project/.test(arg)));
+const iosFlows = process.env.PW_IOS_FLOWS === "1";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -32,12 +29,12 @@ export default defineConfig({
       testIgnore: "**/ios-flows/**",
       use: { ...devices["Desktop Chrome"] },
     },
-    {
+    ...(iosFlows ? [{
       name: "webkit-iphone",
       testDir: "./e2e/ios-flows",
       workers: 1,
       use: { ...devices["iPhone 13"], baseURL: "http://127.0.0.1:3001" },
-    },
+    }] : []),
   ],
 
   ...(iosFlows

@@ -19,12 +19,15 @@ Browser counterpart (no Xcode required):
 ```sh
 npm ci
 npx playwright install webkit
-npx playwright test --project=webkit-iphone
+npm run test:e2e:iphone
 ```
 
 This project starts its own mock and Vite on port 3001. Web requests use Vite's
 API_GATEWAY_URL proxy because the web API client intentionally ignores the native
-VITE_API_BASE_URL override. Existing Chromium tests and CI commands stay separate.
+VITE_API_BASE_URL override. The npm script sets `PW_IOS_FLOWS=1`, which enables
+the `webkit-iphone` project and its mock/Vite servers. Without this switch the
+configuration exposes only Chromium and the original web server; existing
+Chromium tests and CI commands stay separate.
 
 ## Adding a flow
 
@@ -37,7 +40,7 @@ VITE_API_BASE_URL override. Existing Chromium tests and CI commands stay separat
   Document-save verification polls the backend instead of racing the HTTP save.
 * Add browser flows under `e2e/ios-flows/`. The fixture reset runs before each
   test; this suite is serial because the server state is shared.
-* Run the server contract test with `node --test mock-api/server.test.mjs`.
+* Run the server contract test with `npm run test:mock-api`.
 * Add realistic response shapes and fixtures to `mock-api/server.mjs`, matching
   `src/lib/api.ts`. Unknown routes return 404, never a catch-all success.
 * Credentials: `tester@example.com` / `HarborPass123!`. POST `/__reset` restores
