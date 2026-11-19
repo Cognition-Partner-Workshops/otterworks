@@ -1,0 +1,103 @@
+{{- if .Values.sync.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: operational-data-layer
+  labels:
+    {{- include "odl-sync.labels" . | nindent 4 }}
+    otterworks.io/scale-with-tenant: "true"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: operational-data-layer
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        {{- include "odl-sync.labels" . | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 180
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: operational-data-layer
+          image: {{ required "sync.image is required" .Values.sync.image | quote }}
+          command: [python, -m, odl_sync.api]
+          ports: [{name: http, containerPort: 8098}]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          env:
+            - {name: ODL_HOST, value: "0.0.0.0"}
+            - {name: ODL_PORT, value: "8098"}
+            - name: ODL_SYNC_INTERVAL_SECONDS
+              value: {{ .Values.sync.intervalSeconds | quote }}
+            - {name: DB2_HOST, value: db2-archive}
+            - {name: DB2_PORT, value: "50000"}
+            - {name: DB2_DATABASE, value: ODL}
+            - name: DB2_USER
+              valueFrom: {secretKeyRef: {name: db2-archive-credentials, key: DB2_USER}}
+            - name: DB2_PASSWORD
+              valueFrom: {secretKeyRef: {name: db2-archive-credentials, key: DB2_PASSWORD}}
+            - {name: ORACLE_DSN, value: "oracle:1521/FREEPDB1"}
+            - name: ORACLE_USER
+              valueFrom: {secretKeyRef: {name: odl-oracle, key: ORACLE_USER}}
+            - name: ORACLE_PASSWORD
+              valueFrom: {secretKeyRef: {name: odl-oracle, key: ORACLE_PASSWORD}}
+            - name: PGHOST
+              valueFrom: {secretKeyRef: {name: odl-postgres, key: DB_HOST}}
+            - name: PGPORT
+              valueFrom: {secretKeyRef: {name: odl-postgres, key: DB_PORT}}
+            - name: PGDATABASE
+              valueFrom: {secretKeyRef: {name: odl-postgres, key: DB_NAME}}
+            - name: PGUSER
+              valueFrom: {secretKeyRef: {name: odl-postgres, key: DB_USER}}
+            - name: PGPASSWORD
+              valueFrom: {secretKeyRef: {name: odl-postgres, key: DB_PASSWORD}}
+            - {name: MONGO_HOST, value: operational-data-layer-mongo}
+            - {name: MONGO_PORT, value: "27017"}
+            - {name: MONGO_DATABASE, value: odl}
+            - {name: MONGO_AUTH_SOURCE, value: odl}
+            - name: MONGO_USER
+              valueFrom: {secretKeyRef: {name: operational-data-layer-mongo, key: username}}
+            - name: MONGO_PASSWORD
+              valueFrom: {secretKeyRef: {name: operational-data-layer-mongo, key: password}}
+          startupProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            {{- toYaml .Values.sync.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: operational-data-layer
+  labels:
+    {{- include "odl-sync.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: operational-data-layer
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - {name: http, port: 8098, targetPort: http}
+{{- end }}

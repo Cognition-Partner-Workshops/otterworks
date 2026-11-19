@@ -1,0 +1,20 @@
+{{- if and .Values.sync.enabled .Values.sync.monitoring.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: operational-data-layer
+  labels:
+    {{- include "odl-sync.labels" . | nindent 4 }}
+    {{- with .Values.sync.monitoring.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: operational-data-layer
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+{{- end }}
