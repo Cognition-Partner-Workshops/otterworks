@@ -13,12 +13,21 @@ The shared nginx ingress and wildcard default certificate serve:
 
 External-dns owns the individual DNS records. Services are ClusterIP only.
 NetworkPolicies permit nginx access to both mocks and monitoring access to
-PagerDuty. They are not a tenant API access policy: consumers in another
+PagerDuty. Only the Jira pods in `odl-mocks` can reach the Devin webhook
+relay. The mock policies are not a tenant API access policy: consumers in another
 namespace should use the authenticated public ingress.
 
 Jira state is in memory. A sidecar searches unique labels and reconciles the
 three ConfigMap stories every ten seconds, including after container/pod
-restarts. PagerDuty SQLite uses **emptyDir**, so incidents and other changes are
+restarts. The sidecar also ensures Jira has a webhook for created and updated
+ENG issues with the `devin` label. It forwards through the ClusterIP service
+`jira-devin-relay`, which adds the upstream authentication header and logs the
+issue key and upstream status. For initial provisioning, supply
+`DEVIN_JIRA_WEBHOOK_URL` and `DEVIN_JIRA_WEBHOOK_SECRET` via the deployment
+script's environment. The script stores them in the `jira-devin-webhook`
+Kubernetes Secret and preserves that Secret on subsequent runs.
+
+PagerDuty SQLite uses **emptyDir**, so incidents and other changes are
 lost and its built-in demo data **reseeds on pod restart**. Neither needs a PVC.
 
 Images were built without changing the mocks repository at commit

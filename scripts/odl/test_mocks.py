@@ -1,8 +1,14 @@
 import importlib.util
+import io
 import json
 import unittest
+from contextlib import redirect_stdout
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from threading import Thread
 from unittest.mock import patch
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -15,6 +21,7 @@ def load(name, path):
 
 
 seed = load("seed", "infrastructure/k8s/odl-mocks/seed.py")
+relay = load("relay", "infrastructure/k8s/odl-mocks/relay.py")
 routing = load("routing", "scripts/odl/route-alerts.py")
 
 
@@ -46,6 +53,64 @@ class SeedTests(unittest.TestCase):
             self.assertIn("odl-seed", fields["labels"])
             self.assertIn("Acceptance criteria", fields["description"])
             self.assertTrue(3 <= fields["description"].count("- [ ]") <= 5)
+
+    def test_webhook_is_registered_once_and_reregistered_after_reset(self):
+        hook = {"id": 7, **seed.WEBHOOK}
+        with patch.object(seed, "request", side_effect=[[], hook, [hook], [], {**hook, "id": 1}]) as call:
+            with redirect_stdout(io.StringIO()) as output:
+                self.assertEqual([seed.reconcile_webhook() for _ in range(3)], [7, 7, 1])
+            self.assertEqual([c.args for c in call.call_args_list if len(c.args) == 2],
+                             [(seed.WEBHOOK_PATH, seed.WEBHOOK)] * 2)
+            self.assertEqual(output.getvalue().splitlines(), [
+                "registered Devin webhook 7", "registered Devin webhook 1"])
+
+
+class RelayTests(unittest.TestCase):
+    def start_server(self, handler):
+        server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(thread.join)
+        self.addCleanup(server.shutdown)
+        return server, f"http://127.0.0.1:{server.server_port}"
+
+    def test_delivery_bytes_secret_status_and_no_redirect(self):
+        received = []
+
+        class Upstream(BaseHTTPRequestHandler):
+            def log_message(self, format, *args):
+                pass
+
+            def do_POST(self):
+                received.append((self.path, self.headers.get("X-Webhook-Secret"),
+                                 self.headers.get("Content-Type"),
+                                 self.rfile.read(int(self.headers["Content-Length"]))))
+                if self.path == "/redirect":
+                    self.send_response(307)
+                    self.send_header("Location", "/unexpected")
+                else:
+                    self.send_response(202)
+                self.end_headers()
+
+        _, upstream = self.start_server(Upstream)
+        server, url = self.start_server(relay.Relay)
+        server.upstream_url = upstream + "/accept"
+        server.upstream_secret = "test-secret"
+        body = b'{ "issue": {"key": "ENG-7"}, "webhookEvent": "jira:issue_updated" }\n'
+        delivery = Request(url + "/webhook", data=body, headers={"Content-Type": "application/json"})
+        with redirect_stdout(io.StringIO()) as output:
+            with urlopen(delivery, timeout=3) as response:
+                self.assertEqual(response.status, 202)
+            server.upstream_url = upstream + "/redirect"
+            with self.assertRaises(HTTPError) as rejected:
+                urlopen(delivery, timeout=3)
+            self.assertEqual(rejected.exception.code, 502)
+            rejected.exception.close()
+        self.assertEqual(received, [(path, "test-secret", "application/json", body)
+                                    for path in ("/accept", "/redirect")])
+        self.assertEqual(output.getvalue().splitlines(), [
+            "issue=ENG-7 upstream_status=202", "issue=ENG-7 upstream_status=307"])
 
 
 class RoutingTests(unittest.TestCase):
