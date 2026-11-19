@@ -72,18 +72,6 @@ python -m runner listobjects   -f SFX_CONTENT
   (`$task.Status`, `$task.TgtFailedRows`, `$decision.Condition`). Each session logs target row counts before and after the
   load; a load that only appended rows on top of existing data is flagged as `WRT_8170`.
 
-## SnowConvert
-
-```sh
-make sfx-informatica-snowconvert NS=sfx-d1110-before [SNOWFLAKE_CONNECTION=<name>]
-```
-
-Runs SnowConvert AI (`scai init -l Teradata`, `scai code add`, `scai code convert`) on the `wf_*.XML` workflow
-exports, which satisfy `scai code add`'s one-workflow-per-file check. `scai` reads the Snowflake password only from
-`connections.toml`. The untouched output is copied to `snowconvert/<NS>/raw-output/` (git-ignored) with
-`init.log`, `add.log` and `convert.log`. Install `scai` with
-`curl -fsSL https://snowconvert.snowflake.com/storage/linux/prod/cli/install.sh | sh`.
-
 ## Tests
 
 `python -m pytest -q tests` from this directory. Integration tests create a fresh database on the server given by

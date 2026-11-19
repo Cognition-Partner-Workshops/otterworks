@@ -1,5 +1,7 @@
 # User crontab on the UTC batch host. Install manually after the landing feeds are scheduled.
 PATH=/usr/local/bin:/usr/bin:/bin
 NS=sfx-d1110-before
+TD_PG_PORT=55395
 TD_USER=svc_etl_billing
 15 1 * * * cd /opt/otterworks && flock -n warehouse/exports/teradata-daily.lock make sfx-teradata-run BUSINESS_DATE="$(date -u -d yesterday +\%Y\%m\%d)" >> warehouse/exports/teradata-daily.log 2>&1
+15 2 * * * cd /opt/otterworks && BTEQ_BIN=warehouse/teradata/bin/bteq bash consumers/partner-extract/bin/nightly_extract.sh "$(date -u -d yesterday +\%F)" "warehouse/exports/partner-invoices-$(date -u -d yesterday +\%F).csv" >> warehouse/exports/partner-extract.log 2>&1

@@ -6,7 +6,7 @@ from decimal import Decimal
 
 import psycopg
 from flask import Flask, jsonify, redirect, render_template, request, url_for
-from finance_warehouse import COLUMNS, ReceivablesWarehouse, SnowflakeReceivablesWarehouse
+from finance_warehouse import COLUMNS, ReceivablesWarehouse, TeradataReceivablesWarehouse
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 
 app = Flask(__name__)
@@ -17,7 +17,7 @@ csrf = CSRFProtect(app)
 app.config["FINANCE_WAREHOUSE_ENABLED"] = (
     os.getenv("FINANCE_WAREHOUSE_ENABLED", "true").lower() not in {"false", "0", "no", "off"}
 )
-app.extensions["finance_warehouse"] = SnowflakeReceivablesWarehouse()
+app.extensions["finance_warehouse"] = TeradataReceivablesWarehouse()
 
 
 @app.get("/api/csrf-token")

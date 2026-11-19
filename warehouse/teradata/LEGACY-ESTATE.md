@@ -2,9 +2,8 @@
 
 Run the Teradata emulator using the [warehouse quickstart](../README.md).
 The legacy path runs on the local PostgreSQL-backed Teradata emulator; it does not
-need Snowflake credentials. This branch inherited the Snowflake/dbt target and
-consumer cutover evidence from the DW exit demo. Those assets remain reference
-material here; the legacy chain below does not run them.
+need a cloud account. Informatica runs through its local PowerCenter emulator
+and Spark uses JDBC. Finance BI and the partner handoff consume batch files.
 
 ## Nightly finance reporting
 
@@ -18,15 +17,17 @@ material here; the legacy chain below does not run them.
    status to record one.
 3. The report step [exports an as-of rollup](scripts/billing/14_account_history_extract.bteq)
    to `warehouse/exports/account_status_YYYYMMDD.psv`. Import this headerless
-   pipe-delimited file in the Finance workbook as business date (ISO), status,
-   currency, account count; empty fields are unknown. The workbook consumes a
-   file, not a database connection. The whole dated extract is rebuilt on rerun.
+   pipe-delimited file in the [Finance workbook](../../consumers/bi/README.md) as
+   business date (ISO), status, currency, account count; empty fields are unknown.
+   The workbook consumes a file, not a database connection. The whole dated
+   extract is rebuilt on rerun.
 
 [The example crontab](jobs/crontab.example) is for a UTC batch host with the repo
 at `/opt/otterworks`. Bootstrap the local warehouse first so the virtualenv and
 `warehouse/exports` exist; arrange for yesterday's feeds to land before 01:15 UTC.
 Install the crontab manually as the batch user, adjusting the path and namespace.
-The local PG port follows the namespace. `TD_USER` is the BTEQ audit label, not
+The 02:15 job prepares a partner extract; adjust `TD_PG_PORT` if the namespace
+changes. `TD_USER` is the BTEQ audit label, not
 the PostgreSQL login. The example contains no secrets; never put passwords or
 private keys into crontab.
 
@@ -48,10 +49,10 @@ that day. There is no inferred account history before the first loaded feed.
 | --- | --- |
 | Batch I/O and compute | [FastLoad/TPT loader](bteq/load.py) replaces staging; [account reload](scripts/billing/01_load_accounts.bteq) and [monthly invoice procedure](procedures/monthly_invoice.sql) rewrite broad datasets. Measure scans and elapsed time with the chain's step timings and DBQL; move to keyed deltas and affected-period recomputation while preserving late corrections and balanced journals. |
 | Scheduling and recovery | [Daily chain](jobs/daily_chain) is a serial list of subprocesses and stops at the first failure. The cron sample is time-based and manual. Model explicit feed readiness, upstream dependencies, per-step retries and backfills instead of rerunning the whole chain. |
-| ETL maintenance and licensing | [PowerCenter exports and runner](../../etl/informatica/README.md) duplicate mapping logic across proprietary XML, parameter files, and the emulator; [licence inventory](../../etl/informatica/licence.yaml) identifies which features keep the runtime in use. Prioritize mapped jobs by dependency count and actual run frequency, and gate replacement on row/reject parity. |
+| ETL maintenance and licensing | [PowerCenter exports and runner](../../etl/informatica/README.md) duplicate mapping logic across proprietary XML, parameter files, and the emulator; [licence inventory](../../etl/informatica/licence.yaml) identifies which features keep the runtime in use. Prioritize mapped jobs by dependency count and actual run frequency, and check that replacements preserve accepted and rejected rows. |
 | Spark throughput | [Spark runtime](../../etl/spark/jobs/py/common/runtime.py) defaults to a single JDBC read partition and overwrite output. Use [recorded event logs](../../etl/spark/history/baseline.json) to select expensive jobs, then benchmark projected/filtered and partitioned reads and incremental writes. Do not size jobs off the small fixture alone. |
-| Analytics scans and semantics | [Overdue Looker PDT](../../consumers/bi/views/overdue_accounts.view.lkml) and the [partner extract](../../consumers/partner-extract/sql/partner_invoice_extract.sql) each aggregate payments by invoice. Test a shared, incrementally maintained balance model and freshness-driven refreshes against the existing contracts; preserve currency and aging semantics. |
-| Governance and retirement | [Consumer registry](../../consumers/registry.yaml) and [exit tooling](../exit/README.md) already inventory known readers and identify undeclared clients. Add owned table-to-report lineage for file consumers, file retention and access controls, and retire compatibility objects only when usage and contract evidence agree. Review [broad current/future compatibility grants](../snowflake/roles/05_compat_reads.sql) before moving the same access pattern to a modern shared platform. |
+| Analytics scans and semantics | The [partner BTEQ extract](../../consumers/partner-extract/sql/partner_invoice_extract.bteq) aggregates payments across the warehouse for one day's invoices. Test narrowing payment aggregation to eligible invoice keys, then compare a shared, incrementally maintained balance against the legacy outputs; preserve currency and aging semantics. |
+| Governance and retirement | Reconcile the [consumer registry](../../consumers/registry.yaml) with the [DBQL reader inventory](dbql/consumer_reads.bteq) to identify unmanaged connections. Add owned table-to-report lineage, retention and least-privilege controls for files that are no longer visible to the warehouse. |
 
 These are code-based opportunities, not measured savings. The committed DBQL
 fixture is synthetic. It includes the account-history rollout on the final

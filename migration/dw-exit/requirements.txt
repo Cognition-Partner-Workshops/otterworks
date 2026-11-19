@@ -1,3 +1,0 @@
--r ../../warehouse/requirements.txt
-snowflake-connector-python==3.12.4
-cryptography

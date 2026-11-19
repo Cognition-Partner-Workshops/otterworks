@@ -1,9 +1,0 @@
-{
-  "job": "audit_actor_activity_join",
-  "language": "python",
-  "target": "dbt",
-  "status": "snowflake",
-  "schedule": "9 1 * * *",
-  "profile": "small",
-  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job audit_actor_activity_join --select path:models/spark/audit_actor_activity_join"
-}

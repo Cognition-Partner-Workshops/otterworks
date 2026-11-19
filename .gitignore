@@ -108,7 +108,6 @@ __pycache__/
 .pytest_cache/
 
 # --- Misc ---
-warehouse/pipeline/landing/2026-11-10.csv
 *.bak
 *.tmp
 
@@ -125,12 +124,9 @@ incident/reports/
 !infrastructure/helm/tenant-values/**/eventing.env
 
 # legacy-portal replay evidence written by replay.py without --out
-warehouse/teradata/.snowconvert/
 services/legacy-portal/parity/out/
 services/legacy-portal-lambda/*/target/
 
 # --- PowerCenter emulation (etl/informatica) ---
 etl/informatica/.venv/
 etl/informatica/infa_shared/
-etl/informatica/snowconvert/
-migration/dw-exit/.runs/
