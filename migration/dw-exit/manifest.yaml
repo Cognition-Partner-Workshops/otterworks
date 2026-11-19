@@ -4070,7 +4070,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/audit_actor_activity_join.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.AUDIT_ACTOR_ACTIVITY_JOIN
   target_type: dbt_model
   target: spark__audit_actor_activity_join
   wave: 3
@@ -4079,6 +4080,8 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_artifacts:
+  - lake/audit/audit_actor_activity_join
 - id: na7a9d654bab3f884
   system: spark
   kind: spark_job
@@ -4088,7 +4091,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/audit_archive_resort.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.AUDIT_ARCHIVE_RESORT
   target_type: dbt_model
   target: spark__audit_archive_resort
   wave: 3
@@ -4097,6 +4101,8 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_artifacts:
+  - lake/audit/audit_archive_resort
 - id: n8966d99361db3a40
   system: spark
   kind: spark_job
@@ -4106,7 +4112,9 @@ objects:
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/AuditDailySummary.scala
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.AUDIT_DAILY_SUMMARY
+  - SFX_SPARK.AUDIT_DAILY_SUMMARY_JDBC
   target_type: dbt_model
   target: spark__audit_daily_summary
   wave: 3
@@ -4115,6 +4123,9 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_artifacts:
+  - lake/audit/audit_daily_summary
+  - jdbc:sfx_audit.SPARK_AUDIT_SUMMARY
 - id: nab9092239e992697
   system: spark
   kind: spark_job
@@ -4256,7 +4267,9 @@ objects:
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.COMPLIANCE_FLAG_RULES
+  - SFX_SPARK.COMPLIANCE_FLAG_RULES_JDBC
   target_type: dbt_model
   target: spark__compliance_flag_rules
   wave: 3
@@ -4265,6 +4278,9 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_artifacts:
+  - lake/audit/compliance_flag_rules
+  - jdbc:sfx_audit.SPARK_COMPLIANCE_REVIEW
 - id: nb1e649b467d1d68d
   system: spark
   kind: spark_job
@@ -4454,7 +4470,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/lake_compaction_audit.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.LAKE_COMPACTION_AUDIT
   target_type: dbt_model
   target: spark__lake_compaction_audit
   wave: 3
@@ -4463,6 +4480,8 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_artifacts:
+  - lake/audit/lake_compaction_audit
 - id: n46441ec8597bcf09
   system: spark
   kind: spark_job
