@@ -1,8 +1,9 @@
 {
   "job": "compliance_flag_rules",
   "language": "scala",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "29 3 * * *",
-  "profile": "small"
+  "profile": "small",
+  "class": "sfx.ComplianceFlagRules"
 }
