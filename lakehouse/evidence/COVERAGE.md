@@ -4,14 +4,14 @@ Inventory: 438. Validation errors: 0.
 
 | Kind | converted | replaced_by_platform | retired | pending | Total |
 |---|---:|---:|---:|---:|---:|
-| batch_runner | 1 | 0 | 0 | 3 | 4 |
+| batch_runner | 1 | 1 | 0 | 2 | 4 |
 | bi_artifact | 1 | 0 | 0 | 0 | 1 |
 | bteq_script | 29 | 0 | 0 | 0 | 29 |
 | consumer | 7 | 0 | 0 | 0 | 7 |
 | consumer_script | 3 | 0 | 0 | 0 | 3 |
-| cron_entry | 26 | 33 | 0 | 9 | 68 |
-| etl_config | 0 | 0 | 0 | 1 | 1 |
-| etl_script | 3 | 1 | 0 | 4 | 8 |
+| cron_entry | 26 | 34 | 0 | 8 | 68 |
+| etl_config | 0 | 1 | 0 | 0 | 1 |
+| etl_script | 4 | 4 | 0 | 0 | 8 |
 | fastload | 0 | 22 | 0 | 0 | 22 |
 | informatica_config | 0 | 2 | 0 | 2 | 4 |
 | informatica_mapping | 15 | 5 | 0 | 0 | 20 |
@@ -32,11 +32,11 @@ Inventory: 438. Validation errors: 0.
 | teradata_table | 89 | 0 | 0 | 0 | 89 |
 | teradata_view | 14 | 0 | 0 | 0 | 14 |
 | tpt | 10 | 10 | 0 | 0 | 20 |
-| **TOTAL** | 311 | 99 | 0 | 28 | 438 |
+| **TOTAL** | 312 | 105 | 0 | 21 | 438 |
 
 | ID | Sources | Status | Targets | Parity result | Assumptions |
 |---|---|---|---|---|---|
-| batch_runner:etl/run.sh | [etl/run.sh](../../etl/run.sh) | pending |  | — |  |
+| batch_runner:etl/run.sh | [etl/run.sh](../../etl/run.sh) | replaced_by_platform | lakehouse/runtime/external_settings.py | test:lakehouse/tests/test_external_runtime.py::test_shared_dispatch_allowlist_and_argv | A-416 |
 | batch_runner:etl/spark/run.sh | [etl/spark/run.sh](../../etl/spark/run.sh) | pending |  | — |  |
 | batch_runner:warehouse/teradata/jobs/daily_chain | [warehouse/teradata/jobs/daily_chain](../../warehouse/teradata/jobs/daily_chain) | pending |  | — | A-017, A-018, A-025, A-032, A-033, A-037, A-039, A-040, A-041, A-042, A-043, A-045, A-046, A-047 |
 | batch_runner:warehouse/teradata/jobs/reconcile | [warehouse/teradata/jobs/reconcile](../../warehouse/teradata/jobs/reconcile) | converted | silver_audit.shared_reconciliation, gold_audit.audit_recon_final, lakehouse/orchestration/pipeline.yaml#dbt_shared_reconcile | audit.shared_reconciliation: PASS; test:lakehouse/tests/test_billing_storage.py::test_storage_graph_and_base_exclusion | A-402 |
@@ -113,7 +113,7 @@ Inventory: 438. Validation errors: 0.
 | cron_entry:etl/crontab#d793014c2fb2 | [etl/crontab#L30](../../etl/crontab#L30) | replaced_by_platform | lakehouse_daily.audit_delta_optimize | test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies | A-037, A-408 |
 | cron_entry:etl/crontab#e913aaa5c3d7 | [etl/crontab#L15](../../etl/crontab#L15) | converted | lakehouse/runtime/documents_spark.py, lakehouse/dbt/models/silver/documents/spark_docs_share_activity.sql, lakehouse/orchestration/pipeline.yaml#lakehouse_docs_share_activity | documents.spark_docs_share_activity: PASS; test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements | A-037, A-210, A-215 |
 | cron_entry:etl/crontab#ed928bb7422d | [etl/crontab#L13](../../etl/crontab#L13) | replaced_by_platform | lakehouse/orchestration/pipeline.yaml#lakehouse_billing_usage_append_daily | billing.spark_billing_usage_append_daily_parquet: PASS, billing.spark_billing_usage_append_daily_jdbc: PASS; test:lakehouse/tests/test_billing_spark.py::test_billing_spark_cron_replacement | A-037, A-125, A-126, A-127, A-128, A-129, A-130 |
-| cron_entry:etl/crontab#f34723629b86 | [etl/crontab#L3](../../etl/crontab#L3) | pending |  | — | A-037 |
+| cron_entry:etl/crontab#f34723629b86 | [etl/crontab#L3](../../etl/crontab#L3) | replaced_by_platform | lakehouse/orchestration/pipeline.yaml#lakehouse_analytics_daily | test:lakehouse/tests/test_external_runtime.py::test_analytics_schedule_readiness_and_failure | A-037, A-414, A-415 |
 | cron_entry:etl/crontab#fd7befdb4e7d | [etl/crontab#L6](../../etl/crontab#L6) | converted | lakehouse/runtime/documents_external.py, lakehouse/orchestration/pipeline.yaml#lakehouse_storage_cleanup_daily | documents.external_cleanup_report: PASS, documents.external_cleanup_actions: PASS; test:lakehouse/tests/test_documents_external.py::test_documents_external_cron_replacements | A-037, A-224, A-225, A-227, A-228, A-229 |
 | cron_entry:warehouse/teradata/jobs/crontab.example#250f291ea0eb | [warehouse/teradata/jobs/crontab.example#L6](../../warehouse/teradata/jobs/crontab.example#L6) | pending |  | — | A-037 |
 | cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed | [warehouse/teradata/jobs/crontab.example#L7](../../warehouse/teradata/jobs/crontab.example#L7) | replaced_by_platform | airflow:lakehouse_billing_partner_extract.run, lakehouse/billing/consumer_queries.py, lakehouse/billing/consumer_exports.py, lakehouse/orchestration/pipeline.yaml | billing.consumer_partner_raw: PASS, billing.consumer_partner_csv: PASS, billing.consumer_partner_transfer: PASS; test:lakehouse/tests/test_billing_consumers.py::test_consumer_parameters_and_cron_replacement | A-037, A-131, A-132, A-133, A-134, A-135, A-136, A-137, A-138 |
@@ -148,12 +148,12 @@ Inventory: 438. Validation errors: 0.
 | cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/03_load_identity | [warehouse/teradata/jobs/daily_chain#L23](../../warehouse/teradata/jobs/daily_chain#L23) | pending |  | — | A-037 |
 | cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/04_load_events | [warehouse/teradata/jobs/daily_chain#L23](../../warehouse/teradata/jobs/daily_chain#L23) | pending |  | — | A-037 |
 | cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/10_activity_daily | [warehouse/teradata/jobs/daily_chain#L31](../../warehouse/teradata/jobs/daily_chain#L31) | pending |  | — | A-037 |
-| etl_config:etl/config.ini | [etl/config.ini](../../etl/config.ini) | pending |  | — |  |
-| etl_script:etl/scripts/analytics_daily.py | [etl/scripts/analytics_daily.py](../../etl/scripts/analytics_daily.py) | pending |  | — |  |
+| etl_config:etl/config.ini | [etl/config.ini](../../etl/config.ini) | replaced_by_platform | lakehouse/runtime/external.ini, lakehouse/runtime/external_settings.py | test:lakehouse/tests/test_external_runtime.py::test_ini_path_compatibility | A-416 |
+| etl_script:etl/scripts/analytics_daily.py | [etl/scripts/analytics_daily.py](../../etl/scripts/analytics_daily.py) | converted | lakehouse/runtime/analytics_daily.py, lakehouse/parity/analytics.py, lakehouse/orchestration/pipeline.yaml#lakehouse_analytics_daily | platform.analytics_summary: PASS, platform.analytics_hourly: PASS, platform.analytics_top_users: PASS, platform.analytics_report: PASS, platform.analytics_postgres: PASS | A-414, A-415, A-416 |
 | etl_script:etl/scripts/audit_archive_weekly.py | [etl/scripts/audit_archive_weekly.py](../../etl/scripts/audit_archive_weekly.py) | replaced_by_platform | lakehouse/audit/archive.py, lakehouse_audit_weekly.audit_weekly_archive | test:lakehouse/tests/test_audit_archive.py::test_archive_legacy_file_parity | A-407 |
-| etl_script:etl/scripts/bucket_owner.py | [etl/scripts/bucket_owner.py](../../etl/scripts/bucket_owner.py) | pending |  | — |  |
-| etl_script:etl/scripts/run_job.py | [etl/scripts/run_job.py](../../etl/scripts/run_job.py) | pending |  | — |  |
-| etl_script:etl/scripts/runtime_config.py | [etl/scripts/runtime_config.py](../../etl/scripts/runtime_config.py) | pending |  | — |  |
+| etl_script:etl/scripts/bucket_owner.py | [etl/scripts/bucket_owner.py](../../etl/scripts/bucket_owner.py) | replaced_by_platform | lakehouse/runtime/external_settings.py | test:lakehouse/tests/test_external_runtime.py::test_all_s3_entrypoints_reject_invalid_owner | A-416 |
+| etl_script:etl/scripts/run_job.py | [etl/scripts/run_job.py](../../etl/scripts/run_job.py) | replaced_by_platform | lakehouse/runtime/external_settings.py | test:lakehouse/tests/test_external_runtime.py::test_job_secret_json_and_least_privilege | A-416 |
+| etl_script:etl/scripts/runtime_config.py | [etl/scripts/runtime_config.py](../../etl/scripts/runtime_config.py) | replaced_by_platform | lakehouse/runtime/external_settings.py | test:lakehouse/tests/test_external_runtime.py::test_ini_and_required_secrets | A-416 |
 | etl_script:etl/scripts/search_reindex_weekly.py | [etl/scripts/search_reindex_weekly.py](../../etl/scripts/search_reindex_weekly.py) | converted | lakehouse/runtime/documents_external.py, lakehouse/orchestration/pipeline.yaml#lakehouse_search_reindex_weekly | documents.external_search_documents: PASS, documents.external_search_files: PASS, documents.external_search_actions: PASS | A-224, A-226, A-227, A-228, A-229 |
 | etl_script:etl/scripts/storage_cleanup_daily.py | [etl/scripts/storage_cleanup_daily.py](../../etl/scripts/storage_cleanup_daily.py) | converted | lakehouse/runtime/documents_external.py, lakehouse/orchestration/pipeline.yaml#lakehouse_storage_cleanup_daily | documents.external_cleanup_report: PASS, documents.external_cleanup_actions: PASS | A-224, A-225, A-227, A-228, A-229 |
 | etl_script:etl/scripts/user_activity_daily.py | [etl/scripts/user_activity_daily.py](../../etl/scripts/user_activity_daily.py) | converted | json:lakehouse/.data/{NS}/exports/reports/user-activity/latest/activity_report.json, json:lakehouse/.data/{NS}/exports/reports/user-activity/{iso_date}/activity_report.json, jsonl:lakehouse/.data/{NS}/exports/reports/user-activity/{iso_date}/user_summaries.jsonl | users.activity_latest: PASS, users.activity_report: PASS, users.activity_user_summaries: PASS | A-312, A-313, A-314 |

@@ -1,6 +1,6 @@
 # Migration assumptions
 
-Entries: 146. Validation errors: 0.
+Entries: 149. Validation errors: 0.
 
 ## A-001 — PSV empty fields and nulls
 
@@ -2629,3 +2629,57 @@ Entries: 146. Validation errors: 0.
 **verification:** test:lakehouse/tests/test_billing_storage.py::test_storage_month_boundaries_null_joins_and_replay
 
 **sources:** warehouse/teradata/scripts/documents/10_storage_monthly.bteq, warehouse/teradata/jobs/daily_chain, warehouse/teradata/macros/storage_totals.sql, warehouse/teradata/ddl/billing/00_tables.sql
+
+## A-414 — Analytics uses the scheduler business date and preserves legacy aggregation
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** etl_script:etl/scripts/analytics_daily.py, cron_entry:etl/crontab#f34723629b86
+
+**ambiguity:** Legacy processes wall-clock today while Airflow identifies the prior logical business date.
+
+**decision:** Use BUSINESS_DATE, logical date minus one, for DynamoDB filtering, artifact partitions and the daily upsert. Pin the unchanged oracle clock to that date at UTC midnight, including generated_at. Retain pandas field normalization, source concatenation without cross-source deduplication, stable top-100 ties, timestamp-offset hour extraction, 10000-message cap and three-consecutive-receive-error stop. Compare decoded gzip contents and aggregate data columns, excluding processing-time PostgreSQL updated_at.
+
+**rationale:** Outputs stay source-equivalent on identical inputs without comparing transport gzip timestamps or a database wall clock. Readiness must attest source completeness; the legacy bounded SQS extraction does not establish completeness itself.
+
+**verification:** platform.analytics_report
+
+**sources:** etl/scripts/analytics_daily.py, lakehouse/runtime/analytics_daily.py, lakehouse/parity/analytics.py
+
+## A-415 — Analytics writes precede queue acknowledgement and PostgreSQL failures fail the task
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** etl_script:etl/scripts/analytics_daily.py, cron_entry:etl/crontab#f34723629b86
+
+**ambiguity:** Legacy deletes messages before transformation and swallows PostgreSQL failures, permitting data loss and partial success.
+
+**decision:** Atomically journal the complete extraction before output writes in persistent namespace transactions/analytics. Replay the same extraction, overwrite deterministic S3 keys, upsert the daily database row, and acknowledge only after all four S3 writes and the database commit succeed. Fail on PostgreSQL or acknowledgement errors. Persist the written state before acknowledgement, refresh receipt handles on retry without adding new events, and retain completed journals. Suppress repeated delivery of a single SQS MessageId within extraction while retaining duplicates across SQS and DynamoDB.
+
+**rationale:** User-approved safer retry semantics preserve successful output values. S3 plus PostgreSQL has no cross-service transaction; readers may observe intermediate artifacts. Workers must share durable namespace storage and retain journals for replay. SQS remains an at-least-once service; no exactly-once transport claim is made.
+
+**verification:** test:lakehouse/tests/test_external_runtime.py::test_analytics_partial_failure_and_retry_idempotence
+
+**sources:** etl/scripts/analytics_daily.py, lakehouse/runtime/analytics_daily.py
+
+## A-416 — Shared external settings use job-scoped secrets and owner-guarded S3 calls
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** batch_runner:etl/run.sh, etl_config:etl/config.ini, etl_script:etl/scripts/run_job.py, etl_script:etl/scripts/runtime_config.py, etl_script:etl/scripts/bucket_owner.py, etl_script:etl/scripts/analytics_daily.py
+
+**ambiguity:** Legacy loads both runtime secrets into every job; native activity reporting reads staged files instead of live PostgreSQL and S3.
+
+**decision:** Allow only five named external jobs and dispatch with argv, never shell evaluation. Preserve INI sections and ETL_CONFIG_PATH; use lakehouse/runtime/external.ini by default. Support validated injected environment secrets or strictly validated Secrets Manager JSON, defaulting to otterworks/etl/job-name, with ETL_SECRET_ID override. Analytics receives only DB password; search receives only Meilisearch key; archive, cleanup and staged user activity require neither. Validate ASCII 12-digit owner before every S3-using entry point and send ExpectedBucketOwner on every S3 request, including inventory listing. Documents logical action parity excludes only the newly added inventory owner guard field; dedicated tests verify that guard.
+
+**rationale:** User-approved least privilege replaces broad secret distribution without rewriting domain adapters. Deployment must provision job-scoped secrets/IAM and durable analytics journals before unpausing. Existing injected-secret deployments remain compatible; no secrets are stored in INI or command argv.
+
+**verification:** test:lakehouse/tests/test_external_runtime.py::test_job_secret_json_and_least_privilege
+
+**sources:** etl/scripts/run_job.py, etl/scripts/runtime_config.py, etl/scripts/bucket_owner.py, etl/config.ini, etl/run.sh, lakehouse/runtime/external_settings.py

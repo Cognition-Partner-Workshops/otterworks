@@ -13,6 +13,24 @@ from lakehouse.runtime.layout import ROOT
 from lakehouse.runtime.platform import feed_path as platform_feed_path
 
 
+def test_analytics_paused_readiness_and_business_date():
+    bag = DagBag(dag_folder=str(ROOT / 'airflow/dags'), include_examples=False, safe_mode=False)
+    assert bag.import_errors == {}
+    dag = bag.dags['lakehouse_analytics_daily']
+    assert dag.is_paused_upon_creation and dag.schedule_interval == '0 2 * * *'
+    assert str(dag.timezone) == 'UTC' and dag.max_active_runs == dag.max_active_tasks == 1
+    sensor, task = dag.get_task('ready'), dag.get_task('analytics')
+    assert isinstance(sensor, FileSensor) and sensor.mode == 'reschedule'
+    assert task.upstream_task_ids == {'ready'} and task.trigger_rule == 'all_success'
+    assert task.retries == 1
+    logical = pendulum.datetime(2027, 1, 1, 2, tz='UTC')
+    for item in (sensor, task):
+        item.render_template_fields({'logical_date': logical}, jinja_env=dag.get_template_env())
+    assert sensor.filepath.endswith('/readiness/analytics/20261231.json')
+    argv = shlex.split(task.bash_command)
+    assert argv[argv.index('--business-date') + 1] == '20261231'
+
+
 def test_dagbag_contract_and_templates():
     bag = DagBag(dag_folder=str(ROOT / 'airflow/dags'), include_examples=False, safe_mode=False)
     assert bag.import_errors == {}

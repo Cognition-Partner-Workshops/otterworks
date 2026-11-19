@@ -12,6 +12,7 @@ from .ingest import business_date
 from .layout import data_root
 from .session import create_session
 from .users_exports import atomic_output
+from .external_settings import check_job, load_config
 
 
 SUMMARY_COLUMNS = (
@@ -115,6 +116,8 @@ def main():
     parser.add_argument('--business-date', required=True)
     parser.add_argument('--source', type=Path, required=True)
     args = parser.parse_args()
+    check_job('user_activity_daily.py')
+    load_config()
     day = business_date(args.business_date)
     spark = create_session()
     try:

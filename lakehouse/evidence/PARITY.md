@@ -176,6 +176,11 @@
 | [documents.v_document_versions](parity/documents.v_document_versions.json) | teradata_view:SFX_DOCUMENTS.V_DOCUMENT_VERSIONS | sfx-d1110-after | 20261109 | 500 | 450 | PASS |
 | [documents.v_search_history](parity/documents.v_search_history.json) | teradata_view:SFX_DOCUMENTS.V_SEARCH_HISTORY | sfx-d1110-after | 20261109 | 0 | 0 | PASS |
 | [documents.v_workspace_storage](parity/documents.v_workspace_storage.json) | teradata_view:SFX_DOCUMENTS.V_WORKSPACE_STORAGE | sfx-d1110-after | 20261109 | 500 | 450 | PASS |
+| [platform.analytics_hourly](parity/platform.analytics_hourly.json) | etl_script:etl/scripts/analytics_daily.py | sfx-d1110-after | 20261109 | 7 | 7 | PASS |
+| [platform.analytics_postgres](parity/platform.analytics_postgres.json) | etl_script:etl/scripts/analytics_daily.py | sfx-d1110-after | 20261109 | 7 | 7 | PASS |
+| [platform.analytics_report](parity/platform.analytics_report.json) | etl_script:etl/scripts/analytics_daily.py | sfx-d1110-after | 20261109 | 7 | 7 | PASS |
+| [platform.analytics_summary](parity/platform.analytics_summary.json) | etl_script:etl/scripts/analytics_daily.py | sfx-d1110-after | 20261109 | 7 | 7 | PASS |
+| [platform.analytics_top_users](parity/platform.analytics_top_users.json) | etl_script:etl/scripts/analytics_daily.py | sfx-d1110-after | 20261109 | 7 | 7 | PASS |
 | [platform.consumer_reads](parity/platform.consumer_reads.json) | bteq_script:warehouse/teradata/dbql/consumer_reads.bteq | sfx-d1110-after | 20261109 | 13 | 13 | PASS |
 | [platform.dbc_qrylog](parity/platform.dbc_qrylog.json) | teradata_table:DBC.DBC_QRYLOG | sfx-d1110-after | 20261109 | 8086 | 8086 | PASS |
 | [platform.dbc_qrylogobjects](parity/platform.dbc_qrylogobjects.json) | teradata_table:DBC.DBC_QRYLOGOBJECTS | sfx-d1110-after | 20261109 | 20451 | 20451 | PASS |

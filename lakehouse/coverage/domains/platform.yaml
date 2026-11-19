@@ -8,3 +8,10 @@ legacy_objects:
   - bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
   - batch_runner:warehouse/teradata/jobs/reconcile
   - cron_entry:warehouse/teradata/jobs/daily_chain#stage=jobs/reconcile
+  - etl_script:etl/scripts/analytics_daily.py
+  - cron_entry:etl/crontab#f34723629b86
+  - etl_script:etl/scripts/run_job.py
+  - etl_script:etl/scripts/runtime_config.py
+  - etl_script:etl/scripts/bucket_owner.py
+  - etl_config:etl/config.ini
+  - batch_runner:etl/run.sh

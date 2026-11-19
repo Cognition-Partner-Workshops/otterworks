@@ -3024,3 +3024,60 @@ dags:
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []
+
+- id: lakehouse_analytics_daily
+  schedule: '0 2 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/readiness/analytics/{business_date}.json'
+    depends_on: []
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    retries: 1
+    retry_delay_seconds: 30
+    legacy_objects: []
+  - id: analytics
+    kind: export
+    command: ['{python}', -m, lakehouse.runtime.external_settings, --job, analytics_daily.py, --business-date, '{business_date}', --ready, '{data_root}/readiness/analytics/{business_date}.json']
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 30
+    legacy_objects:
+    - etl_script:etl/scripts/analytics_daily.py
+    - cron_entry:etl/crontab#f34723629b86
+    - etl_script:etl/scripts/run_job.py
+    - etl_script:etl/scripts/runtime_config.py
+    - etl_script:etl/scripts/bucket_owner.py
+    - etl_config:etl/config.ini
+    - batch_runner:etl/run.sh
+
+- id: lakehouse_analytics_fixture
+  schedule: null
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: fixture
+    kind: export
+    command: ['{python}', -m, lakehouse.parity.analytics, --business-date, '{business_date}', --fixture, '{data_root}/fixtures/analytics/{business_date}.json', --generate]
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity
+    kind: parity
+    specs: [platform.analytics_summary, platform.analytics_hourly, platform.analytics_top_users, platform.analytics_report, platform.analytics_postgres]
+    depends_on: [fixture]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []

@@ -1,0 +1,92 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "2432e464296f1c69e94750410e0476864098899a",
+  "id": "platform.analytics_postgres",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "etl_script:etl/scripts/analytics_daily.py"
+  ],
+  "results": {
+    "columns": [
+      "scenario",
+      "payload"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "payload": {
+          "count": 7,
+          "hash": "54a39be1c5c35ec59188acb7bd3b06ac001bdc467bdce6eaa3b71efb5aec73a1",
+          "null_count": 2,
+          "sum": null
+        },
+        "scenario": {
+          "count": 7,
+          "hash": "0cfe2b9ad002c7e04bce2875e1a5ef4f574247fc6ca86b65d2f6d8487dd14130",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "payload": {
+          "count": 7,
+          "hash": "54a39be1c5c35ec59188acb7bd3b06ac001bdc467bdce6eaa3b71efb5aec73a1",
+          "null_count": 2,
+          "sum": null
+        },
+        "scenario": {
+          "count": 7,
+          "hash": "0cfe2b9ad002c7e04bce2875e1a5ef4f574247fc6ca86b65d2f6d8487dd14130",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "payload": {
+        "count": 0,
+        "samples": []
+      },
+      "scenario": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 7,
+      "legacy": 7
+    }
+  },
+  "row_counts": {
+    "lakehouse": 7,
+    "legacy": 7
+  },
+  "spec_hash": "8f89a3a479785bdb4f1d3edf8bf4f3cc18f8f4c3990a205a329ee85228c7b95e",
+  "timestamp": "2026-11-19T16:03:32.239012+00:00"
+}

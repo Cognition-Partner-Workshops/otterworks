@@ -1,10 +1,8 @@
 """Injectable documents maintenance tasks; live runs retain legacy side effects."""
 
 import argparse
-import configparser
 import json
 import os
-import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,28 +12,8 @@ import requests
 
 from .ingest import business_date
 from .layout import data_root
-
-
-def load_config():
-    path = Path(os.environ.get('ETL_CONFIG_PATH', '/opt/etl/config.ini'))
-    config = configparser.ConfigParser()
-    if not config.read(path):
-        raise RuntimeError(f'ETL configuration not found: {path}')
-    return config
-
-
-def required_secret(name):
-    value = os.environ.get(name)
-    if not value or not value.strip():
-        raise RuntimeError(f'Required ETL secret {name} is missing or empty')
-    return value
-
-
-def expected_bucket_owner():
-    owner = os.environ.get('ETL_S3_BUCKET_OWNER', '')
-    if not re.fullmatch(r'\d{12}', owner):
-        raise RuntimeError('ETL_S3_BUCKET_OWNER must be set to the 12-digit AWS account id that owns the ETL buckets')
-    return owner
+from .external_settings import (expected_bucket_owner, load_config, required_secret, settings,
+                                validate_bucket_owner)
 
 
 def poll(http, base, headers, response, seconds, timer):
@@ -136,10 +114,11 @@ def cleanup(config, aws, owner_provider=expected_bucket_owner, clock=datetime):
     quarantine = config.get('s3', 'quarantine_bucket')
     reports = config.get('s3', 'data_lake_bucket')
     day = clock.now(tz=timezone.utc).strftime('%Y-%m-%d')
-    owner = owner_provider()
+    owner = validate_bucket_owner(owner_provider())
     s3 = aws.client('s3', region_name=region)
     objects = []
-    for page in s3.get_paginator('list_objects_v2').paginate(Bucket=source, Prefix='files/'):
+    for page in s3.get_paginator('list_objects_v2').paginate(
+            Bucket=source, ExpectedBucketOwner=owner, Prefix='files/'):
         objects.extend(dict(key=obj['Key'], size=obj['Size'], last_modified=obj['LastModified'].isoformat())
                        for obj in page.get('Contents', []))
     table = aws.resource('dynamodb', region_name=region).Table('otterworks-file-metadata')
@@ -177,7 +156,7 @@ def cleanup(config, aws, owner_provider=expected_bucket_owner, clock=datetime):
         'savings': {'storage_freed_gb': round(savings, 4),
                     'estimated_monthly_savings_usd': round(savings * 0.023, 4)},
     }
-    owner = owner_provider()
+    owner = validate_bucket_owner(owner_provider())
     aws.client('s3', region_name=region).put_object(
         Bucket=reports, ExpectedBucketOwner=owner, Key=f'reports/storage-cleanup/{day}/report.json',
         Body=json.dumps(report, indent=2).encode('utf-8'))
@@ -190,9 +169,9 @@ def main():
     parser.add_argument('--business-date', required=True)
     args = parser.parse_args()
     business_date(args.business_date)
-    config = load_config()
+    config, secrets = settings(args.job + '.py', boto3)
     if args.job == 'search_reindex_weekly':
-        result = reindex(config, requests, required_secret('ETL_MEILISEARCH_API_KEY'))
+        result = reindex(config, requests, secrets['ETL_MEILISEARCH_API_KEY'])
     else:
         result = cleanup(config, boto3)
     output = data_root() / 'external_runs' / args.business_date

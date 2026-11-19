@@ -9,6 +9,7 @@ from decimal import Decimal
 import boto3
 
 from lakehouse.runtime.ingest import business_date
+from lakehouse.runtime.external_settings import settings, validate_bucket_owner
 
 
 def decimal_json(value):
@@ -32,6 +33,7 @@ def optional(call, **kwargs):
 
 
 def archive(table, s3, bucket, owner, day):
+    owner = validate_bucket_owner(owner)
     run_day = business_date(day)
     ds = run_day.isoformat()
     cutoff = (run_day - timedelta(days=90)).isoformat() + 'T00:00:00Z'
@@ -99,9 +101,10 @@ def main():
     parser.add_argument('--table', default='otterworks-audit-events')
     args = parser.parse_args()
     business_date(args.business_date)
-    if not args.bucket or not args.owner:
-        parser.error('AUDIT_ARCHIVE_BUCKET and AUDIT_ARCHIVE_OWNER must be configured')
-    region = os.environ.get('AWS_REGION', 'us-east-1')
+    config, _ = settings('audit_archive_weekly.py', boto3)
+    args.bucket = args.bucket or config.get('s3', 'archive_bucket')
+    args.owner = validate_bucket_owner(args.owner or os.environ.get('ETL_S3_BUCKET_OWNER', ''))
+    region = os.environ.get('AWS_REGION', config.get('aws', 'region'))
     archive(boto3.resource('dynamodb', region_name=region).Table(args.table),
             boto3.client('s3', region_name=region), args.bucket, args.owner, args.business_date)
 

@@ -101,6 +101,9 @@ def execute(side, job, scenario, document, config_path):
     if job == 'search_reindex_weekly':
         state = dict(outcome=outcome, indexes=http.indexes, actions=http.actions, elapsed=timer.elapsed)
     else:
+        for action in aws.actions:
+            if action['operation'] == 'list':
+                action.pop('ExpectedBucketOwner', None)
         state = dict(outcome=outcome, reports=aws.reports, actions=aws.actions,
                      objects=aws.objects, quarantine=aws.quarantine)
     return state, output.getvalue()
