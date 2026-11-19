@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+.safe-status-backdrop {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: white;
+  z-index: 60;
+}
+
 .safe-sidebar {
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
 }

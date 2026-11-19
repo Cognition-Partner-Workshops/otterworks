@@ -1,4 +1,5 @@
 import XCTest
+import UIKit
 
 class AppUITestCase: XCTestCase {
     let app = XCUIApplication()
@@ -223,6 +224,7 @@ final class AppUITests: AppUITestCase {
         wait(for: [toolbarVisible], timeout: 10)
         bold.tap()
         XCTAssertTrue(keyboard.exists)
+        assertStatusBarBackdrop()
         saveScreenshot("editor-keyboard")
         app.buttons["Save"].tap()
         let saved = expectation(description: "HTTP document save persisted")
@@ -240,6 +242,30 @@ final class AppUITests: AppUITestCase {
             }
         }
         wait(for: [saved], timeout: 10)
+    }
+
+    func assertStatusBarBackdrop() {
+        let image = XCUIScreen.main.screenshot().image
+        guard let cgImage = image.cgImage else { return XCTFail("Missing screenshot pixels") }
+        let width = cgImage.width
+        let height = cgImage.height
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        guard let context = CGContext(data: &pixels, width: width, height: height,
+                                      bitsPerComponent: 8, bytesPerRow: width * 4,
+                                      space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            return XCTFail("Cannot read screenshot pixels")
+        }
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        let scale = CGFloat(width) / app.frame.width
+        // Above the system clock/icons, the status-bar backdrop must be solid white.
+        for y in stride(from: 4, through: 16, by: 4) {
+            for x in 10..<Int(app.frame.width - 10) {
+                let offset = (Int(CGFloat(y) * scale) * width + Int(CGFloat(x) * scale)) * 4
+                XCTAssertTrue(pixels[offset] > 245 && pixels[offset + 1] > 245 && pixels[offset + 2] > 245,
+                              "Web content is visible through the status-bar backdrop at \(x),\(y)")
+            }
+        }
     }
 
     func testSearch() {
