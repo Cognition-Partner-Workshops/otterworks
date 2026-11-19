@@ -60,11 +60,13 @@ modules:
   - id: auth-service
     path: services/auth-service
     build: gradle
+    # Builds on JDK 25 with the Gradle 9.2.1 its own wrapper pins, independently of
+    # the ambient Gradle the other Gradle module is measured with.
     java_home:
-      - $JAVA_HOME_17_X64
-      - /usr/lib/jvm/java-17-openjdk-amd64
-    # The wrapper pins 8.6 but ships no gradle-wrapper.jar, so it only resolves where
-    # one has been generated; otherwise the pinned `gradle` on PATH measures it.
+      - $JAVA_HOME_25_X64
+      - /usr/lib/jvm/java-25-openjdk-amd64
+    # The checked-in wrapper (gradle-wrapper.jar included) pins 9.2.1 everywhere; the
+    # `gradle` on PATH is only a fallback for a machine that cannot fetch it.
     tool:
       - ./gradlew
       - gradle
