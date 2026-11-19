@@ -464,12 +464,23 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#69562b8e166b
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_external.py
+  - lakehouse/orchestration/pipeline.yaml#lakehouse_search_reindex_weekly
+  parity:
+  - documents.external_search_documents
+  - documents.external_search_files
+  - documents.external_search_actions
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-224
+  - A-226
+  - A-227
+  - A-228
+  - A-229
+  verification: test:lakehouse/tests/test_documents_external.py::test_documents_external_cron_replacements
+  notes: Injectable native task; unchanged legacy script parity against identical dated service fakes. Live external DAG starts paused.
 - id: cron_entry:etl/crontab#6cccad9ba92f
   status: converted
   targets:
@@ -746,12 +757,22 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#fd7befdb4e7d
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_external.py
+  - lakehouse/orchestration/pipeline.yaml#lakehouse_storage_cleanup_daily
+  parity:
+  - documents.external_cleanup_report
+  - documents.external_cleanup_actions
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-224
+  - A-225
+  - A-227
+  - A-228
+  - A-229
+  verification: test:lakehouse/tests/test_documents_external.py::test_documents_external_cron_replacements
+  notes: Injectable native task; unchanged legacy script parity against identical dated service fakes. Live external DAG starts paused.
 - id: cron_entry:warehouse/teradata/jobs/crontab.example#250f291ea0eb
   status: pending
   targets: []
@@ -1097,17 +1118,36 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: etl_script:etl/scripts/search_reindex_weekly.py
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_external.py
+  - lakehouse/orchestration/pipeline.yaml#lakehouse_search_reindex_weekly
+  parity:
+  - documents.external_search_documents
+  - documents.external_search_files
+  - documents.external_search_actions
+  assumptions:
+  - A-224
+  - A-226
+  - A-227
+  - A-228
+  - A-229
+  notes: Injectable native task; unchanged legacy script parity against identical dated service fakes. Live external DAG starts paused.
 - id: etl_script:etl/scripts/storage_cleanup_daily.py
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_external.py
+  - lakehouse/orchestration/pipeline.yaml#lakehouse_storage_cleanup_daily
+  parity:
+  - documents.external_cleanup_report
+  - documents.external_cleanup_actions
+  assumptions:
+  - A-224
+  - A-225
+  - A-227
+  - A-228
+  - A-229
+  notes: Injectable native task; unchanged legacy script parity against identical dated service fakes. Live external DAG starts paused.
 - id: etl_script:etl/scripts/user_activity_daily.py
   status: converted
   targets:

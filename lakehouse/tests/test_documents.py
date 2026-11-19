@@ -136,11 +136,13 @@ def test_storage_set_and_macro_boundaries(spark):
 
 def test_documents_graph_and_ownership():
     specs = {key: value for key, value in discover().items() if key.startswith('documents.')}
-    assert len(specs) == 40
+    assert len(specs) == 45
     nodes = {node['id']: node for dag in load().values() for node in dag['nodes']}
     for identity in specs:
         target = ('dbt_spark_' + identity.removeprefix('documents.spark_')
                   if identity.startswith('documents.spark_') else 'dbt_documents')
+        if identity.startswith('documents.external_'):
+            target = 'external_documents_fixture'
         assert nodes['parity_' + identity.replace('.', '_')]['depends_on'] == [target]
     owned = yaml.safe_load((ROOT / 'coverage/domains/documents.yaml').read_text())['legacy_objects']
     assert len(owned) == len(set(owned)) == 97

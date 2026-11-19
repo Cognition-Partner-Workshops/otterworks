@@ -52,9 +52,9 @@ def load(path=PIPELINE, inventory=None, specs=None):
         if dag['id'] in dags:
             raise ValueError('Duplicate DAG id: ' + dag['id'])
         schedule = dag.get('schedule')
-        timed_cron = isinstance(schedule, str) and re.fullmatch(r'[0-5]?\d (?:\*|[01]?\d|2[0-3]) \* \* \*', schedule)
+        timed_cron = isinstance(schedule, str) and re.fullmatch(r'[0-5]?\d (?:\*|[01]?\d|2[0-3]) \* \* (?:\*|[0-6])', schedule)
         if 'schedule' not in dag or not (schedule in (None, '@daily', '@hourly', '@weekly') or timed_cron) or dag.get('timezone') != 'UTC':
-            raise ValueError('DAG schedule must be @daily/@hourly, a daily/hourly clock cron or manual in UTC')
+            raise ValueError('DAG schedule must be @daily/@hourly, a daily/weekly/hourly clock cron or manual in UTC')
         business_date(dag.get('start_date'))
         if dag.get('catchup') is not True or dag.get('max_active_runs') != 1 or dag.get('max_active_tasks') != 1:
             raise ValueError('DAGs require catchup and one active run/task for embedded Derby')

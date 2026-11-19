@@ -1806,3 +1806,89 @@ dags:
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []
+
+- id: lakehouse_search_reindex_weekly
+  schedule: '0 4 * * 0'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: search_reindex_weekly
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_external, --job, search_reindex_weekly, --business-date, '{business_date}']
+    depends_on: []
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: ["etl_script:etl/scripts/search_reindex_weekly.py","cron_entry:etl/crontab#69562b8e166b"]
+
+- id: lakehouse_storage_cleanup_daily
+  schedule: '30 2 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: storage_cleanup_daily
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_external, --job, storage_cleanup_daily, --business-date, '{business_date}']
+    depends_on: []
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: ["etl_script:etl/scripts/storage_cleanup_daily.py","cron_entry:etl/crontab#fd7befdb4e7d"]
+
+- id: lakehouse_documents_external_fixture
+  schedule: null
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: external_documents_fixture
+    kind: export
+    command: ['{python}', '-m', lakehouse.parity.documents_external, --fixture, '{landing}/documents-external/{business_date}.json', --business-date, '{business_date}']
+    depends_on: []
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: []
+  - id: parity_documents_external_search_documents
+    kind: parity
+    spec: documents.external_search_documents
+    depends_on: [external_documents_fixture]
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: []
+  - id: parity_documents_external_search_files
+    kind: parity
+    spec: documents.external_search_files
+    depends_on: [external_documents_fixture]
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: []
+  - id: parity_documents_external_search_actions
+    kind: parity
+    spec: documents.external_search_actions
+    depends_on: [external_documents_fixture]
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: []
+  - id: parity_documents_external_cleanup_report
+    kind: parity
+    spec: documents.external_cleanup_report
+    depends_on: [external_documents_fixture]
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: []
+  - id: parity_documents_external_cleanup_actions
+    kind: parity
+    spec: documents.external_cleanup_actions
+    depends_on: [external_documents_fixture]
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: []

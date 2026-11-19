@@ -29,7 +29,9 @@ def test_pipeline_contract_and_staging_replacement():
                          'lakehouse_docs_share_activity', 'lakehouse_docs_search_log_parse',
                          'lakehouse_docs_tag_normalize', 'lakehouse_docs_folder_tree_walk',
                          'lakehouse_doc_share_graph_reach', 'lakehouse_collab_session_sessionize',
-                         'lakehouse_doc_version_diff_stats', 'lakehouse_file_object_binary_extract'} <= set(dags)
+                         'lakehouse_doc_version_diff_stats', 'lakehouse_file_object_binary_extract',
+                         'lakehouse_search_reindex_weekly', 'lakehouse_storage_cleanup_daily',
+                         'lakehouse_documents_external_fixture'} <= set(dags)
     daily = dags['lakehouse_daily']
     nodes = {node['id']: node for node in daily['nodes']}
     sensors = [n for n in nodes.values() if n['kind'] == 'feed_sensor' and not n.get('landing_prefix')]

@@ -1,0 +1,26 @@
+{
+  "id": "documents.external_cleanup_actions",
+  "legacy_objects": [
+    "etl_script:etl/scripts/storage_cleanup_daily.py",
+    "cron_entry:etl/crontab#fd7befdb4e7d"
+  ],
+  "legacy": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/external_parity/{business_date}/legacy/cleanup_actions.psv",
+    "header": true
+  },
+  "lakehouse": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/external_parity/{business_date}/lakehouse/cleanup_actions.psv",
+    "header": true
+  },
+  "keys": [
+    "scenario",
+    "identity"
+  ],
+  "columns": [
+    "scenario",
+    "identity",
+    "payload"
+  ]
+}

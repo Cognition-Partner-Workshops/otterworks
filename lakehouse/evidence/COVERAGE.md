@@ -114,7 +114,7 @@ Inventory: 438. Validation errors: 0.
 | cron_entry:etl/crontab#e913aaa5c3d7 | [etl/crontab#L15](../../etl/crontab#L15) | pending |  | — | A-037 |
 | cron_entry:etl/crontab#ed928bb7422d | [etl/crontab#L13](../../etl/crontab#L13) | pending |  | — | A-037 |
 | cron_entry:etl/crontab#f34723629b86 | [etl/crontab#L3](../../etl/crontab#L3) | pending |  | — | A-037 |
-| cron_entry:etl/crontab#fd7befdb4e7d | [etl/crontab#L6](../../etl/crontab#L6) | pending |  | — | A-037 |
+| cron_entry:etl/crontab#fd7befdb4e7d | [etl/crontab#L6](../../etl/crontab#L6) | converted | lakehouse/runtime/documents_external.py, lakehouse/orchestration/pipeline.yaml#lakehouse_storage_cleanup_daily | documents.external_cleanup_report: PASS, documents.external_cleanup_actions: PASS; test:lakehouse/tests/test_documents_external.py::test_documents_external_cron_replacements | A-037, A-224, A-225, A-227, A-228, A-229 |
 | cron_entry:warehouse/teradata/jobs/crontab.example#250f291ea0eb | [warehouse/teradata/jobs/crontab.example#L6](../../warehouse/teradata/jobs/crontab.example#L6) | pending |  | — | A-037 |
 | cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed | [warehouse/teradata/jobs/crontab.example#L7](../../warehouse/teradata/jobs/crontab.example#L7) | pending |  | — | A-037 |
 | cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/01_load_events | [warehouse/teradata/jobs/daily_chain#L28](../../warehouse/teradata/jobs/daily_chain#L28) | converted | silver_audit.audit_event | audit.audit_event: PASS; test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies | A-037, A-400, A-408 |

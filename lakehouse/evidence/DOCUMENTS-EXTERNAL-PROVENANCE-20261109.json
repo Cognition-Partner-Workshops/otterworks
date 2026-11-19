@@ -1,0 +1,17 @@
+{
+  "business_date": "20261109",
+  "fixture": "/home/ubuntu/repos/otterworks/warehouse/landing/documents-external/20261109.json",
+  "fixture_sha256": "9af92b3bb711261f40454ed0fc88ad9e0bb3ef68544c09bb0228500311c68a18",
+  "sources": {
+    "etl/scripts/search_reindex_weekly.py": "d2994a518a2059fd604f173e8cc6e68fe06e414fbc0b126f4ac50317d4e163d2",
+    "etl/scripts/storage_cleanup_daily.py": "99d73d9bfb115089e11bf0f7148226b18ec93f2b903342438dddd1580ed19203",
+    "etl/scripts/runtime_config.py": "c6a2202a0cc806badfd2924447fd4bf661f9b2e17540e3741aed3f42f236991b",
+    "etl/scripts/bucket_owner.py": "fa30eb3590595ff85e0fd6d924a2b52b7604905e3ae434bb775e3568baee32e4",
+    "lakehouse/runtime/documents_external.py": "6eb6cd22fde5c0fb69ca84512b235f513888d126eec28e0151d85f223728a519",
+    "lakehouse/parity/documents_external.py": "38954a37d1a2d508b504e8c27047a66bd7dba4a6649eba1b1b5f9300e7f935f5",
+    "lakehouse/parity/documents_external_fakes.py": "331e18a9d7ca6bdef0d10068e73702679ef76f14a59235f255738a25a8c577fb"
+  },
+  "python": "3.12.16 (main, Oct 30 2026, 04:40:57) [GCC 11.4.0]",
+  "clock": "2026-11-09T04:00:00+00:00",
+  "network": "none: strict in-process injected fakes"
+}
