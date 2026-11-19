@@ -157,8 +157,24 @@ final class AppUITests: AppUITestCase {
         assertText("Harbor report.txt")
         app.buttons["Upload"].tap()
         assertText("Drag & drop files here, or click to browse")
-        // The system Files picker has no seeded simulator provider. Browser tests
-        // exercise multipart upload; native tests keep the picker entry point honest.
+        let browse = element(.staticText, "Drag & drop files here, or click to browse")
+        reveal(browse)
+        browse.tap()
+        let photoLibrary = app.buttons["Photo Library"]
+        let chooseFile = app.collectionViews.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Choose File'")).firstMatch
+        XCTAssertTrue(photoLibrary.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(chooseFile.exists)
+        let picker = XCTAttachment(screenshot: app.screenshot())
+        picker.name = "Native upload source picker"
+        picker.lifetime = .keepAlways
+        add(picker)
+        chooseFile.tap()
+        let cancel = app.buttons["Cancel"].firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: 5), app.debugDescription)
+        cancel.tap()
+        XCTAssertTrue(cancel.waitForNonExistence(timeout: 5))
+        XCTAssertEqual(app.state, .runningForeground)
+        assertText("Drag & drop files here, or click to browse")
     }
 
     func testFileDetailDownloadButton() {
