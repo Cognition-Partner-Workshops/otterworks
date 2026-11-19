@@ -1,0 +1,83 @@
+name: IaC scan
+
+on:
+  pull_request:
+    paths:
+      - 'infrastructure/**'
+      - 'platform/**'
+      - '**/Dockerfile'
+      - '**/helm/**'
+      - '.github/workflows/iac-scan.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'infrastructure/**'
+      - 'platform/**'
+      - '**/Dockerfile'
+      - '**/helm/**'
+      - '.github/workflows/iac-scan.yml'
+  schedule:
+    - cron: '23 7 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: iac-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  trivy-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [infrastructure, platform, services, frontend, demo-platform, migration]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install Trivy
+        env:
+          VERSION: '0.76.2'
+        run: |
+          mkdir -p "$RUNNER_TEMP/trivy"
+          cd "$RUNNER_TEMP/trivy"
+          curl -fsSLO "https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-64bit.tar.gz"
+          curl -fsSLO "https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_checksums.txt"
+          sha256sum --check --ignore-missing "trivy_${VERSION}_checksums.txt"
+          tar xzf "trivy_${VERSION}_Linux-64bit.tar.gz" trivy
+          echo "$RUNNER_TEMP/trivy" >> "$GITHUB_PATH"
+      - name: Scan Terraform, Helm, Kubernetes and Dockerfiles
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          trivy config --severity CRITICAL --exit-code 0 --format json --output trivy.json \
+            --skip-dirs '**/node_modules' \
+            --helm-set 'image.tag=ci,image.repository=example.invalid/ci,namespaceToken=ci-before,expires=2026-12-01T00:00:00Z,owner=otterworks-demo,app=ci,costCenter=ci,awsAccountId=000000000000,secret.create=false,pv.volumeName=ci,pv.create=false,runId=ci,initJob.image.repository=example.invalid/ci,initJob.image.tag=ci' \
+            "$TARGET"
+          trivy convert --format sarif --output trivy-raw.sarif trivy.json
+          jq --arg root "file://${GITHUB_WORKSPACE}/${TARGET}/" \
+            '.runs[].originalUriBaseIds.ROOTPATH.uri = $root' trivy-raw.sarif > trivy.sarif
+          count="$(jq '[.Results[]?.Misconfigurations[]? | select(.Severity == "CRITICAL")] | length' trivy.json)"
+          echo "### ${TARGET}: ${count} CRITICAL IaC findings (informational baseline)" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$count" -gt 0 ]; then
+            echo "::warning::${TARGET}: ${count} CRITICAL IaC findings; enforcement deferred because the existing baseline contains findings."
+          fi
+      - uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        with:
+          sarif_file: trivy.sarif
+          category: trivy-config-${{ matrix.target }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: trivy-config-${{ matrix.target }}
+          path: |
+            trivy.json
+            trivy.sarif
+          if-no-files-found: warn

@@ -1,0 +1,144 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      github-actions-minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: npm
+    directories:
+      - /services/collab-service
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: pip
+    directories:
+      - /services/billing-service
+      - /services/document-service
+      - /services/legacy-billing/app
+      - /services/search-service
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      pip-minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: gomod
+    directory: /services/api-gateway
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      gomod-minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: cargo
+    directory: /services/file-service
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      cargo-minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: gradle
+    directories:
+      - /services/auth-service
+      - /services/notification-service
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      gradle-minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: maven
+    directories:
+      - /services/legacy-portal
+      - /services/legacy-portal-lambda/announcements
+      - /services/legacy-portal-lambda/feedback
+      - /services/legacy-portal-lambda/preferences
+      - /services/report-service
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      maven-minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: bundler
+    directory: /services/admin-service
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      bundler-minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: nuget
+    directories:
+      - /services/audit-service
+      - /services/audit-service/tests/AuditService.Tests
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      nuget-minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: docker
+    directories:
+      - /demo-platform/dashboard
+      - /demo-platform/otter-projects
+      - /demo-platform/runner
+      - /frontend/admin-dashboard
+      - /frontend/client-app
+      - /frontend/workbench
+      - /migration/job
+      - /platform/standards/examples/sample-service
+      - /services/admin-service
+      - /services/analytics-service
+      - /services/api-gateway
+      - /services/audit-service
+      - /services/auth-service
+      - /services/billing-service
+      - /services/collab-service
+      - /services/document-service
+      - /services/file-service
+      - /services/legacy-billing
+      - /services/legacy-portal
+      - /services/notification-service
+      - /services/report-service
+      - /services/search-service
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      docker-minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: terraform
+    directories:
+      - /infrastructure/terraform
+      - /infrastructure/terraform/azure
+      - /infrastructure/terraform/cloud-worker
+      - /infrastructure/terraform/demo-aws
+      - /infrastructure/terraform/legacy-portal-ec2
+      - /infrastructure/terraform/legacy-portal-serverless
+      - /infrastructure/terraform/modules/auth
+      - /infrastructure/terraform/modules/cache
+      - /infrastructure/terraform/modules/database
+      - /infrastructure/terraform/modules/irsa
+      - /infrastructure/terraform/modules/messaging
+      - /infrastructure/terraform/modules/monitoring
+      - /infrastructure/terraform/modules/search
+      - /infrastructure/terraform/modules/storage
+      - /platform/terraform
+      - /platform/terraform/modules/ecr
+      - /platform/terraform/modules/eks
+      - /platform/terraform/modules/vpc
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      terraform-minor-patch:
+        update-types: [minor, patch]
