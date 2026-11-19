@@ -25,6 +25,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { marginsApi } from "@/lib/api";
 import type { MarginRow } from "@/lib/api";
+import { isNativePlatform, saveTextToDevice } from "@/lib/native-files";
 
 const CHART_FROM_DAYS = 180;
 
@@ -138,11 +139,17 @@ function MarginsContent() {
   const onExportCsv = async () => {
     try {
       const csv = await marginsApi.exportCsv();
+      const fileName = `sku-margins-${margins?.asOfDate ?? "export"}.csv`;
+      if (isNativePlatform()) {
+        await saveTextToDevice(csv, fileName);
+        toast.success(`Saved ${fileName} to Files`);
+        return;
+      }
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `sku-margins-${margins?.asOfDate ?? "export"}.csv`;
+      a.download = fileName;
       document.body.appendChild(a);
       a.click();
       a.remove();

@@ -51,8 +51,14 @@ Collaboration deliberately returns WebSocket 503 (offline mode): editor tests
 verify HTTP save persistence, not multi-user Yjs synchronisation. Native upload
 currently asserts the picker entry point, as the simulator has no seeded Files
 provider; the WebKit counterpart exercises a real multipart upload. Native
-download only tests the button: the known blob-anchor/Filesystem persistence bug
-is not fixed by this harness. Browser tests assert the download event. The native
+file download and margins CSV export write to the app's Documents folder through
+Capacitor Filesystem and open the Share sheet (`src/lib/native-files.ts`); the
+tests dismiss the sheet and assert the copy in Files > On My iPhone > OtterWorks
+by name and byte size, deleting a stale copy first (Files' context menu never
+idles, so that cleanup costs about two minutes when a stale copy exists).
+Version download uses the same helper, but the file detail page shows no
+versions (`filesApi.get` maps `versions: []`), so it is unit-tested only.
+Browser tests assert the download event. The native
 API default (Android-only 10.0.2.2) is worked around only by build-time env vars.
 Do not fix application bugs in harness changes. Only add a named skip/expected
 failure for a confirmed application bug, not a query or interaction failure.
@@ -62,8 +68,7 @@ safe-area bug). Native navigation briefly rotates to landscape to operate the
 sidebar controls, waits for viewport layout, then returns to portrait. Login
 starts in portrait, dismisses the keyboard before submitting and normalises the
 viewport after input auto-zoom. `testPortraitMenuReopens` records the header regression as an
-expected failure; `testDownloadPersistsToFiles` is explicitly skipped until the
-Filesystem download fix lands. Navigation-only assertions can leave the sidebar
+expected failure. Navigation-only assertions can leave the sidebar
 open with `navigate("Files", dismissSidebar: false)`.
 
 The shared SwiftPM `Package.resolved` pins the Capacitor revision for reproducible
@@ -71,9 +76,8 @@ Xcode test builds; keep it in version control, unlike built web assets and repor
 
 ## Current native validation status
 
-The iPhone 17 / iOS 26.5 full run executes 11 tests with 1 skipped and 0 failures:
-9 ordinary passes, the documented safe-area expected failure and the Filesystem
-download skip above. All six previously failing flows pass without additional
+The iPhone 17 / iOS 26.5 full run executes 10 tests with 0 skipped and 0 failures:
+9 ordinary passes and the documented safe-area expected failure. All six previously failing flows pass without additional
 skips or expected failures. The mocked WebKit suite passes all 7 flows; it does
 not substitute for native validation. XCTest failures retain a screenshot and
 accessibility hierarchy in the result bundle for follow-up. Margins data can be

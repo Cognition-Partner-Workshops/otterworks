@@ -121,6 +121,64 @@ class AppUITestCase: XCTestCase {
             rotate(.portrait)
         }
     }
+
+    let filesApp = XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp")
+
+    /// Opens Files > On My iPhone > OtterWorks, the app's Documents folder.
+    func openAppFolderInFiles() {
+        filesApp.launch()
+        XCTAssertTrue(filesApp.tabBars.buttons["Browse"].waitForExistence(timeout: 10))
+        filesApp.tabBars.buttons["Browse"].tap()
+        let folder = filesApp.cells["OtterWorks, Container"]
+        let back = filesApp.navigationBars.buttons["BackButton"]
+        for _ in 0..<4 where !folder.waitForExistence(timeout: 2) {
+            let onPhone = filesApp.cells.staticTexts["On My iPhone"].firstMatch
+            if onPhone.exists { onPhone.tap() } else if back.exists { back.tap() } else { filesApp.tabBars.buttons["Browse"].tap() }
+        }
+        XCTAssertTrue(folder.waitForExistence(timeout: 5), filesApp.debugDescription)
+        folder.tap()
+        XCTAssertTrue(filesApp.buttons["OtterWorks, Actions Menu"].waitForExistence(timeout: 5), filesApp.debugDescription)
+    }
+
+    /// Files lists "Harbor report.txt" as a cell identified "Harbor report, txt".
+    func filesCell(_ fileName: String) -> XCUIElement {
+        let ext = (fileName as NSString).pathExtension
+        return filesApp.cells["\((fileName as NSString).deletingPathExtension), \(ext)"]
+    }
+
+    /// Deletes a copy left by an earlier run so the assertion below proves a fresh save.
+    func removeFromFiles(_ fileName: String) {
+        openAppFolderInFiles()
+        let cell = filesCell(fileName)
+        if cell.waitForExistence(timeout: 2) {
+            cell.press(forDuration: 1.2)
+            let delete = filesApp.buttons["Delete"].firstMatch
+            XCTAssertTrue(delete.waitForExistence(timeout: 5), filesApp.debugDescription)
+            delete.tap()
+            XCTAssertTrue(cell.waitForNonExistence(timeout: 5))
+        }
+        app.activate()
+        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
+    }
+
+    func assertSavedInFiles(_ fileName: String, bytes: Int, file: StaticString = #filePath, line: UInt = #line) {
+        openAppFolderInFiles()
+        let cell = filesCell(fileName)
+        XCTAssertTrue(cell.waitForExistence(timeout: 10), "\(fileName) not in Files: \(filesApp.debugDescription)", file: file, line: line)
+        XCTAssertTrue(cell.label.contains("\(bytes) bytes"), "Unexpected Files entry: \(cell.label)", file: file, line: line)
+        filesApp.terminate()
+    }
+
+    /// The native share sheet opens after the file is written; dismiss it to keep the saved copy.
+    func dismissShareSheet(file: StaticString = #filePath, line: UInt = #line) {
+        let sheet = app.otherElements["ActivityListView"]
+        XCTAssertTrue(sheet.waitForExistence(timeout: 10), "Share sheet did not open", file: file, line: line)
+        sheet.swipeDown(velocity: .fast)
+        if !sheet.waitForNonExistence(timeout: 3) {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.05)).tap()
+        }
+        XCTAssertTrue(sheet.waitForNonExistence(timeout: 5), "Share sheet did not close", file: file, line: line)
+    }
 }
 
 final class AppUITests: AppUITestCase {
@@ -133,8 +191,22 @@ final class AppUITests: AppUITestCase {
         }
     }
 
-    func testDownloadPersistsToFiles() throws {
-        throw XCTSkip("Known native download bug: blob-anchor downloads do not persist through Capacitor Filesystem; testFileDetailDownloadButton covers the entry point")
+    func openHarborReport() {
+        login()
+        navigate("Files")
+        let title = element(.staticText, "Harbor report.txt")
+        reveal(title)
+        title.doubleTap()
+        XCTAssertTrue(app.buttons["Download"].firstMatch.waitForExistence(timeout: 10))
+    }
+
+    func testDownloadPersistsToFiles() {
+        removeFromFiles("Harbor report.txt")
+        openHarborReport()
+        app.buttons["Download"].firstMatch.tap()
+        assertText("Saved Harbor report.txt to Files")
+        dismissShareSheet()
+        assertSavedInFiles("Harbor report.txt", bytes: 26)
     }
 
     func testBadPassword() {
@@ -159,19 +231,6 @@ final class AppUITests: AppUITestCase {
         assertText("Drag & drop files here, or click to browse")
         // The system Files picker has no seeded simulator provider. Browser tests
         // exercise multipart upload; native tests keep the picker entry point honest.
-    }
-
-    func testFileDetailDownloadButton() {
-        login()
-        navigate("Files")
-        let title = element(.staticText, "Harbor report.txt")
-        reveal(title)
-        title.doubleTap()
-        XCTAssertTrue(app.buttons["Download"].firstMatch.waitForExistence(timeout: 10))
-        app.buttons["Download"].firstMatch.tap()
-        // Known native bug: blob-anchor downloads are not persisted via Filesystem.
-        // Do not claim a saved file; the browser suite verifies the response payload.
-        assertText("Harbor report.txt")
     }
 
     func testDocumentEditing() {
@@ -226,13 +285,14 @@ final class AppUITests: AppUITestCase {
         assertText("Your voyage report is ready")
     }
 
-    func testMarginsExportEntryPoint() {
+    func testMarginsExportPersistsToFiles() {
+        removeFromFiles("sku-margins-2026-11-01.csv")
         login()
         navigate("Margins")
         assertText("HARBOR-01")
-        XCTAssertTrue(app.buttons["Export CSV"].exists)
         app.buttons["Export CSV"].tap()
-        reveal(element(.staticText, "HARBOR-01"))
-        assertText("HARBOR-01")
+        assertText("Saved sku-margins-2026-11-01.csv to Files")
+        dismissShareSheet()
+        assertSavedInFiles("sku-margins-2026-11-01.csv", bytes: 47)
     }
 }
