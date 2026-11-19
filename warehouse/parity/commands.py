@@ -22,6 +22,10 @@ from .inventory import BOOTSTRAP, ESTATE, ROOT, inventory, table_definitions, ta
 OUT = Path(__file__).parent / 'out'
 
 
+def runner_python():
+    return ESTATE / '.venv' / ('Scripts/python.exe' if sys.platform == 'win32' else 'bin/python')
+
+
 def build(mapping=None, folder=None, load_date=None):
     if os.environ.get('SNOWFLAKE_DATABASE') != DATABASE:
         raise ValueError(_run_render('SNOWFLAKE_DATABASE must be __RUN_DATABASE__'))
@@ -91,12 +95,12 @@ def before(row):
                 env = {k: v for k, v in os.environ.items() if not k.startswith('SNOWFLAKE_')}
                 env.update(TD_HOST=host, TD_PORT=str(port), TD_DB=database,
                            LANDING_DIR=str(ESTATE / 'tests/fixture/landing'), PMROOTDIR=str(runroot))
-                cmd = [str(ESTATE / '.venv/bin/python'), '-m', 'runner', 'startworkflow',
+                cmd = [str(runner_python()), '-m', 'runner', 'startworkflow',
                        '-f', row['folder'], row['workflow']]
                 subprocess.run(cmd, cwd=ESTATE, env=env, check=True)
                 # TEAM_MEMBER is deliberately disabled in the daily workflow.
                 if row['mapping'] == 'm_SFX_TEAM_MEMBER':
-                    subprocess.run([str(ESTATE / '.venv/bin/python'), '-m', 'runner',
+                    subprocess.run([str(runner_python()), '-m', 'runner',
                                     'startsession', '-f', row['folder'], '-w', row['workflow'],
                                     row['session']], cwd=ESTATE, env=env, check=True)
                 schema, table = target_relation(row['target_table']).lower().split('.')

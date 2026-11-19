@@ -45,7 +45,7 @@ def inventory_objects():
         objects.append((kind, 'SFX_BILLING.' + name, 'warehouse/teradata/' + source,
                         _run_render('__RUN_DATABASE__.BILLING.') + name))
     for path in sorted((ROOT / 'warehouse/teradata/scripts/billing').glob('*.bteq')):
-        objects.append(('bteq', path.stem, str(path.relative_to(ROOT)),
+        objects.append(('bteq', path.stem, path.relative_to(ROOT).as_posix(),
                         'migration/dw-exit/billing/' + ('10_load.sql' if path.stem[:2] <= '05' else
                         '40_close.sql' if path.stem.startswith('13') else '20_routines.sql')))
     for name, source in (

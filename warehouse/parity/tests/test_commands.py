@@ -14,6 +14,13 @@ from parity.harness import control_table
 from parity.inventory import target_relation
 
 
+@pytest.mark.parametrize('platform,relative', [('win32', 'Scripts/python.exe'), ('linux', 'bin/python')])
+def test_runner_python(monkeypatch, platform, relative):
+    from parity import commands
+    monkeypatch.setattr(commands.sys, 'platform', platform)
+    assert commands.runner_python() == commands.ESTATE / '.venv' / relative
+
+
 def test_normalisation():
     assert normal(Decimal('1.00')) == normal(1)
     assert normal(Decimal('123456789012345678901234567890.10'))[1] == '123456789012345678901234567890.1'
