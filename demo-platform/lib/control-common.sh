@@ -74,20 +74,26 @@ ctl_update_status() {
 }
 
 ctl_register_run_tenant() {
-  local id="$1" branch="$2" token="$3" now
+  local id="$1" branch="$2" token="$3" now item
   now="$(ctl_now)"
-  aws dynamodb put-item --table-name "${CONTROL_TABLE}" --region "${AWS_REGION}" \
-    --condition-expression 'attribute_not_exists(PK) OR run_token = :run' \
-    --expression-attribute-values "$(jq -n --arg token "$token" '{":run":{S:$token}}')" \
-    --item "$(jq -n --arg id "$id" --arg branch "$branch" --arg token "$token" --argjson now "$now" '
-      {PK:{S:("TENANT#"+$id)},SK:{S:"META"},id:{S:$id},status:{S:"deploying"},
+  item="$(jq -n --arg id "$id" --arg branch "$branch" --arg token "$token" --argjson now "$now" '
+      {id:{S:$id},status:{S:"deploying"},
        owner:{S:"otterworks-demo"},branch:{S:$branch},tier:{S:"A"},run_token:{S:$token},
        url:{S:("https://t-"+$id+".demo.otterworks.app")},
        api_url:{S:("https://api-t-"+$id+".demo.otterworks.app")},
        db_name:{S:("otterworks_"+($id|gsub("-";"_")))},namespace:{S:("otterworks-"+$id)},
        created_at:{N:($now|tostring)},checked_out_at:{N:($now|tostring)},
        expires_at:{N:(($now+315360000)|tostring)},last_seen_at:{N:($now|tostring)},
-       persistent:{BOOL:false}}')" >/dev/null
+       persistent:{BOOL:false}}')"
+  aws dynamodb update-item --table-name "${CONTROL_TABLE}" --region "${AWS_REGION}" \
+    --key "$(jq -n --arg id "$id" '{PK:{S:("TENANT#"+$id)},SK:{S:"META"}}')" \
+    --condition-expression 'attribute_not_exists(PK) OR run_token = :run_token' \
+    --update-expression "$(jq -r 'to_entries | map(
+      if (.key == "created_at" or .key == "checked_out_at" or .key == "expires_at" or .key == "persistent")
+      then "#"+.key+" = if_not_exists(#"+.key+", :"+.key+")"
+      else "#"+.key+" = :"+.key end) | "SET "+join(", ")' <<<"$item")" \
+    --expression-attribute-names "$(jq 'with_entries(.value = .key | .key = "#"+.key)' <<<"$item")" \
+    --expression-attribute-values "$(jq 'with_entries(.key = ":"+.key)' <<<"$item")" >/dev/null
 }
 
 # Mark a tenant active and record its resolved coordinates.

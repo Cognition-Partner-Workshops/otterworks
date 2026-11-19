@@ -25,13 +25,18 @@ aws() {
     def test_register(self):
         result, args = self.run_helper("ctl_register_run_tenant test-one branch run-123")
         self.assertEqual(result.returncode, 0, result.stderr)
-        item = json.loads(args[args.index("--item") + 1])
-        self.assertEqual(item["PK"], {"S": "TENANT#test-one"})
+        values = json.loads(args[args.index("--expression-attribute-values") + 1])
+        item = {key[1:]: value for key, value in values.items()}
+        self.assertEqual(json.loads(args[args.index("--key") + 1])["PK"], {"S": "TENANT#test-one"})
         self.assertEqual(item["status"], {"S": "deploying"})
         self.assertEqual(item["run_token"], {"S": "run-123"})
         self.assertEqual(item["db_name"], {"S": "otterworks_test_one"})
         self.assertEqual(int(item["expires_at"]["N"]) - int(item["created_at"]["N"]), 315360000)
-        self.assertIn("attribute_not_exists(PK) OR run_token = :run", args)
+        self.assertIn("attribute_not_exists(PK) OR run_token = :run_token", args)
+        update = args[args.index("--update-expression") + 1]
+        self.assertNotIn("pinned", update)
+        self.assertIn("#created_at = if_not_exists(#created_at, :created_at)", update)
+        self.assertEqual(args[:2], ["dynamodb", "update-item"])
 
     def test_missing_record(self):
         result, _ = self.run_helper("ctl_tenant_exists absent")

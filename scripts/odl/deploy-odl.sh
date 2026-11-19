@@ -24,7 +24,7 @@ export ODL_RDS_HOST="$RDS_HOST" ODL_RDS_PORT="$RDS_PORT" DB_USER
 [ -n "$ODL_RDS_HOST" ] || { echo "RDS endpoint unavailable" >&2; exit 1; }
 start=$SECONDS
 source "${ROOT}/demo-platform/lib/control-common.sh"
-ctl_register_run_tenant "$ID" "$(git -C "$ROOT" branch --show-current)" odl-1795112287
+ctl_register_run_tenant "$ID" "${ODL_CONTROL_BRANCH:-$(git -C "$ROOT" branch --show-current)}" odl-1795112287
 trap 'rc=$?; if [ "$rc" -ne 0 ]; then ctl_update_status "$ID" error || true; fi' EXIT
 "${ROOT}/scripts/deploy-tenant.sh" "$ID" --profile core --host-suffix demo.otterworks.app --ttl never &
 core_pid=$!
