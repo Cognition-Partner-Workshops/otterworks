@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.16'
+    id 'org.springframework.boot' version '4.1.2'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'com.diffplug.spotless' version '6.25.0'
     id 'jacoco'
@@ -18,8 +18,7 @@ repositories {
     mavenCentral()
 }
 
-ext['jackson-bom.version'] = '2.23.0'
-ext['tomcat.version'] = '10.1.62'
+ext['jackson-2-bom.version'] = '2.23.0'
 ext['log4j2.version'] = '2.26.1'
 ext['postgresql.version'] = '42.7.14'
 ext['h2.version'] = '2.5.252'
@@ -28,7 +27,7 @@ ext['lombok.version'] = '1.18.48'
 
 dependencies {
     // Spring Boot
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -41,22 +40,22 @@ dependencies {
 
     // Database
     runtimeOnly 'org.postgresql:postgresql'
-    implementation 'org.flywaydb:flyway-core:10.22.0'
-    runtimeOnly 'org.flywaydb:flyway-database-postgresql:10.22.0'
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql'
 
     // Observability
     implementation 'io.micrometer:micrometer-registry-prometheus'
     implementation 'io.opentelemetry:opentelemetry-api:1.68.0'
 
     // Logging
-    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+    implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
     // Testing
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'com.h2database:h2'
     testCompileOnly 'org.projectlombok:lombok'
