@@ -1,0 +1,30 @@
+{
+  "id": "platform.analytics_summary",
+  "legacy_objects": [
+    "etl_script:etl/scripts/analytics_daily.py"
+  ],
+  "description": "A-414/A-415: unchanged legacy script and native runtime on identical fake-service snapshots. Gzip transport headers and PostgreSQL processing-time updated_at are not logical outputs.",
+  "legacy": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/analytics_parity/{business_date}/legacy/summary.jsonl",
+    "columns": [
+      "scenario",
+      "payload"
+    ]
+  },
+  "lakehouse": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/analytics_parity/{business_date}/lakehouse/summary.jsonl",
+    "columns": [
+      "scenario",
+      "payload"
+    ]
+  },
+  "keys": [
+    "scenario"
+  ],
+  "columns": [
+    "scenario",
+    "payload"
+  ]
+}

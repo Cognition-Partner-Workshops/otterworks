@@ -1,0 +1,31 @@
+{
+  "id": "billing.usage_daily_effective",
+  "legacy_objects": [
+    "bteq_script:warehouse/teradata/scripts/documents/10_storage_monthly.bteq",
+    "cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/10_storage_monthly"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT usage_id, customer_id, subscription_id, usage_dt, units, usage_type FROM sfx_billing.usage_daily"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.usage_daily_effective"
+  },
+  "keys": [
+    "usage_id"
+  ],
+  "columns": [
+    "usage_id",
+    "customer_id",
+    "subscription_id",
+    "usage_dt",
+    "units",
+    "usage_type"
+  ],
+  "normalize": {
+    "usage_type": {
+      "rstrip": true
+    }
+  }
+}

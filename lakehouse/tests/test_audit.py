@@ -19,7 +19,7 @@ from warehouse.seed.columns import TABLES
 
 DAY = '20261109'
 MODELS = {path.stem: path for layer in ('silver', 'gold')
-          for path in (ROOT / 'dbt/models' / layer / 'audit').glob('*.sql')}
+          for path in (ROOT / 'dbt/models' / layer).glob('*/*.sql')}
 
 
 @pytest.fixture(scope='module')
@@ -37,14 +37,13 @@ def spark():
 
 
 class Models:
-    def __init__(self, spark, enabled=False):
+    def __init__(self, spark, enabled=False, day=DAY):
         self.spark = spark
         self.enabled = enabled
+        self.day = day
         self.built = set()
         for table in TABLES:
             self.feed(table.name.lower(), [])
-        spark.sql("select cast(null as bigint) as customer_id where false").createOrReplaceTempView(
-            'audit_test_customer_account')
 
     def feed(self, name, rows):
         table = next(t for t in TABLES if t.name.lower() == name)
@@ -60,9 +59,11 @@ class Models:
         environment = Environment(undefined=StrictUndefined)
         sql = environment.from_string(
             (ROOT / 'dbt/macros/legacy_text.sql').read_text()
-            + (ROOT / 'dbt/macros/audit_timestamp.sql').read_text() + MODELS[name].read_text()
+            + ''.join((ROOT / 'dbt/macros' / file).read_text() for file in (
+                'audit_timestamp.sql', 'documents_timestamp.sql', 'documents_stage_text.sql',
+                'documents_storage_totals.sql', 'users_snapshot.sql')) + MODELS[name].read_text()
         ).render(source=lambda domain, table: 'audit_source_' + table,
-                 ref=self.ref, env_var=lambda _: DAY, config=lambda **_: '',
+                 ref=self.ref, env_var=lambda _: self.day, config=lambda **_: '', execute=False,
                  var=lambda name, default: self.enabled)
         self.spark.sql(sql).createOrReplaceTempView(target)
         self.built.add(name)
@@ -80,7 +81,7 @@ def test_audit_empty_inputs(spark):
     for name in ('stg_audit_event', 'audit_summary_final', 'v_event_actors', 'm_archive_overview'):
         assert models.rows(name) == []
     counts = models.rows('audit_recon_final')
-    assert len(counts) == 37
+    assert len(counts) == 38
     assert all(row.source_count == row.target_count == row.difference_count == 0 for row in counts)
 
 
@@ -190,7 +191,8 @@ def test_external_monthly_invoice_case_insensitive_plan_join(spark):
 def test_audit_graph_dependencies_and_exports():
     nodes = {node['id']: node for node in load()['lakehouse_daily']['nodes']}
     assert set(nodes['dbt_audit']['depends_on']) == {
-        'bronze_audit', 'bronze_users', 'bronze_documents', 'dbt_billing'}
+        'bronze_audit', 'bronze_users', 'bronze_documents', 'dbt_billing', 'dbt_users',
+        'dbt_documents', 'dbt_storage_monthly', 'dbt_billing_reporting', 'dbt_shared_reconcile'}
     assert nodes['export_audit_reconciliation']['depends_on'] == ['dbt_audit']
     assert nodes['parity_audit_reconciliation_export']['depends_on'] == ['export_audit_reconciliation']
     for node in nodes.values():

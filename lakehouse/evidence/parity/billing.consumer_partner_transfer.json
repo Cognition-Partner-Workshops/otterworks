@@ -2,9 +2,9 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "billing.consumer_partner_transfer",
-  "legacy_NS": null,
+  "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
     "consumer:partner-extract",
     "bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq",
@@ -54,7 +54,7 @@
         },
         "sha256": {
           "count": 1,
-          "hash": "c610672c515c3a65e7c6e9a10fe4105cfc9a3acc4784d15c38efed815532406b",
+          "hash": "ebcc3dc91b9cee8d6f990a4147a5f2d8691de84e2bb1a53ad2c5f01a3e9f0032",
           "null_count": 0,
           "sum": null
         }
@@ -80,7 +80,7 @@
         },
         "sha256": {
           "count": 1,
-          "hash": "c610672c515c3a65e7c6e9a10fe4105cfc9a3acc4784d15c38efed815532406b",
+          "hash": "ebcc3dc91b9cee8d6f990a4147a5f2d8691de84e2bb1a53ad2c5f01a3e9f0032",
           "null_count": 0,
           "sum": null
         }
@@ -127,5 +127,5 @@
     "legacy": 1
   },
   "spec_hash": "ebca4f5a8dfd785bc977d8c10ad76d33276f60fd86fc0789507323e662e73afe",
-  "timestamp": "2026-11-19T14:20:46.866412+00:00"
+  "timestamp": "2026-11-19T18:01:55.949677+00:00"
 }

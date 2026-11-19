@@ -1,0 +1,347 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "platform.qrylogv",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_view:DBC.QRYLOGV"
+  ],
+  "results": {
+    "columns": [
+      "procid",
+      "collecttimestamp",
+      "queryid",
+      "username",
+      "defaultdatabase",
+      "appid",
+      "clientid",
+      "starttime",
+      "firstresptime",
+      "statementtype",
+      "statementgroup",
+      "querytext",
+      "numresultrows",
+      "ampcputime",
+      "totaliocount",
+      "errorcode",
+      "occurrence"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "ampcputime": {
+          "count": 8086,
+          "hash": "6e3de20e8b819235ccad287daff4c5de4f706de972db9953212726bf07140d7f",
+          "null_count": 0,
+          "sum": "29222.026045"
+        },
+        "appid": {
+          "count": 8086,
+          "hash": "1f8a29bbb6a2a5220d7927cd7ca1ba275413ab2ec850572f4d9c57d0b5de825b",
+          "null_count": 0,
+          "sum": null
+        },
+        "clientid": {
+          "count": 8086,
+          "hash": "b0cfbdebc92f0f9ddbe7f5e83d65335fefd1c3fb8796c6a2f00f73173af14a73",
+          "null_count": 0,
+          "sum": null
+        },
+        "collecttimestamp": {
+          "count": 8086,
+          "hash": "7aed8ab16f56c948b0d5aff12b7e95cc58bc4ed0339173acead4e3e1c78693dd",
+          "null_count": 0,
+          "sum": null
+        },
+        "defaultdatabase": {
+          "count": 8086,
+          "hash": "ff257f11109a09ffb83219547766adced2c9394c7bec6c7f5659fe645618cd9b",
+          "null_count": 0,
+          "sum": null
+        },
+        "errorcode": {
+          "count": 8086,
+          "hash": "5fe26597e344b3f17782ca4f4fa65edb80c745f54f128947ebd6dcc2d7b66197",
+          "null_count": 0,
+          "sum": "52575"
+        },
+        "firstresptime": {
+          "count": 8086,
+          "hash": "d210e8ac993057d5d0c40bc2792ff7f94646266cc1753585f9a148d4bac2ed9a",
+          "null_count": 0,
+          "sum": null
+        },
+        "numresultrows": {
+          "count": 8086,
+          "hash": "cd5919f9be55911c64683020ae1af1f466b1fced4982043480e7f6407b9cbffe",
+          "null_count": 0,
+          "sum": "70380705"
+        },
+        "occurrence": {
+          "count": 8086,
+          "hash": "c1cb4342b230df6d7397123df9ef1c3a1794f9f0c42ff2324ad7bb48a05fc04f",
+          "null_count": 0,
+          "sum": "32695741"
+        },
+        "procid": {
+          "count": 8086,
+          "hash": "f0fa2f8f8ed10a9c4d10a7fc3d33165f8b15af53c98ba1cb19a82535ae3f6fb7",
+          "null_count": 0,
+          "sum": "836898"
+        },
+        "queryid": {
+          "count": 8086,
+          "hash": "5de25a0dd5004d859787fc221d822a269d73bcf26a1ab90df5725aee9ff5db34",
+          "null_count": 0,
+          "sum": "897546032687655"
+        },
+        "querytext": {
+          "count": 8086,
+          "hash": "f2a898e37c8beee9efff846a96cd08d8df5e50bdfbf76d9c86d9af73c51ce4f3",
+          "null_count": 0,
+          "sum": null
+        },
+        "starttime": {
+          "count": 8086,
+          "hash": "6aca5c7e14f4bd34ca050135151953822bc4c76e5af4cf424cc7457c574948de",
+          "null_count": 0,
+          "sum": null
+        },
+        "statementgroup": {
+          "count": 8086,
+          "hash": "1a43185295bc8f09a4252d6f9410d8b9f6bf6afd00fcc6f795cf73355b163e29",
+          "null_count": 0,
+          "sum": null
+        },
+        "statementtype": {
+          "count": 8086,
+          "hash": "540803466db1f5b4082dd779be33aa71cdf2b5fe11f74d59bc2679644ad792f7",
+          "null_count": 0,
+          "sum": null
+        },
+        "totaliocount": {
+          "count": 8086,
+          "hash": "a3803b2ed041ecf23d89af9c101d1c0b2bc5cfb5247e8d6fc8a21ff192f980ea",
+          "null_count": 0,
+          "sum": "1016275570"
+        },
+        "username": {
+          "count": 8086,
+          "hash": "e4f22603d6d98a8f8f47438b8e40b7fce1667b1c19eaa889d1fb7eb2e557ebb1",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "ampcputime": {
+          "count": 8086,
+          "hash": "6e3de20e8b819235ccad287daff4c5de4f706de972db9953212726bf07140d7f",
+          "null_count": 0,
+          "sum": "29222.026045"
+        },
+        "appid": {
+          "count": 8086,
+          "hash": "1f8a29bbb6a2a5220d7927cd7ca1ba275413ab2ec850572f4d9c57d0b5de825b",
+          "null_count": 0,
+          "sum": null
+        },
+        "clientid": {
+          "count": 8086,
+          "hash": "b0cfbdebc92f0f9ddbe7f5e83d65335fefd1c3fb8796c6a2f00f73173af14a73",
+          "null_count": 0,
+          "sum": null
+        },
+        "collecttimestamp": {
+          "count": 8086,
+          "hash": "7aed8ab16f56c948b0d5aff12b7e95cc58bc4ed0339173acead4e3e1c78693dd",
+          "null_count": 0,
+          "sum": null
+        },
+        "defaultdatabase": {
+          "count": 8086,
+          "hash": "ff257f11109a09ffb83219547766adced2c9394c7bec6c7f5659fe645618cd9b",
+          "null_count": 0,
+          "sum": null
+        },
+        "errorcode": {
+          "count": 8086,
+          "hash": "5fe26597e344b3f17782ca4f4fa65edb80c745f54f128947ebd6dcc2d7b66197",
+          "null_count": 0,
+          "sum": "52575"
+        },
+        "firstresptime": {
+          "count": 8086,
+          "hash": "d210e8ac993057d5d0c40bc2792ff7f94646266cc1753585f9a148d4bac2ed9a",
+          "null_count": 0,
+          "sum": null
+        },
+        "numresultrows": {
+          "count": 8086,
+          "hash": "cd5919f9be55911c64683020ae1af1f466b1fced4982043480e7f6407b9cbffe",
+          "null_count": 0,
+          "sum": "70380705"
+        },
+        "occurrence": {
+          "count": 8086,
+          "hash": "c1cb4342b230df6d7397123df9ef1c3a1794f9f0c42ff2324ad7bb48a05fc04f",
+          "null_count": 0,
+          "sum": "32695741"
+        },
+        "procid": {
+          "count": 8086,
+          "hash": "f0fa2f8f8ed10a9c4d10a7fc3d33165f8b15af53c98ba1cb19a82535ae3f6fb7",
+          "null_count": 0,
+          "sum": "836898"
+        },
+        "queryid": {
+          "count": 8086,
+          "hash": "5de25a0dd5004d859787fc221d822a269d73bcf26a1ab90df5725aee9ff5db34",
+          "null_count": 0,
+          "sum": "897546032687655"
+        },
+        "querytext": {
+          "count": 8086,
+          "hash": "f2a898e37c8beee9efff846a96cd08d8df5e50bdfbf76d9c86d9af73c51ce4f3",
+          "null_count": 0,
+          "sum": null
+        },
+        "starttime": {
+          "count": 8086,
+          "hash": "6aca5c7e14f4bd34ca050135151953822bc4c76e5af4cf424cc7457c574948de",
+          "null_count": 0,
+          "sum": null
+        },
+        "statementgroup": {
+          "count": 8086,
+          "hash": "1a43185295bc8f09a4252d6f9410d8b9f6bf6afd00fcc6f795cf73355b163e29",
+          "null_count": 0,
+          "sum": null
+        },
+        "statementtype": {
+          "count": 8086,
+          "hash": "540803466db1f5b4082dd779be33aa71cdf2b5fe11f74d59bc2679644ad792f7",
+          "null_count": 0,
+          "sum": null
+        },
+        "totaliocount": {
+          "count": 8086,
+          "hash": "a3803b2ed041ecf23d89af9c101d1c0b2bc5cfb5247e8d6fc8a21ff192f980ea",
+          "null_count": 0,
+          "sum": "1016275570"
+        },
+        "username": {
+          "count": 8086,
+          "hash": "e4f22603d6d98a8f8f47438b8e40b7fce1667b1c19eaa889d1fb7eb2e557ebb1",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "ampcputime": {
+        "count": 0,
+        "samples": []
+      },
+      "appid": {
+        "count": 0,
+        "samples": []
+      },
+      "clientid": {
+        "count": 0,
+        "samples": []
+      },
+      "collecttimestamp": {
+        "count": 0,
+        "samples": []
+      },
+      "defaultdatabase": {
+        "count": 0,
+        "samples": []
+      },
+      "errorcode": {
+        "count": 0,
+        "samples": []
+      },
+      "firstresptime": {
+        "count": 0,
+        "samples": []
+      },
+      "numresultrows": {
+        "count": 0,
+        "samples": []
+      },
+      "occurrence": {
+        "count": 0,
+        "samples": []
+      },
+      "procid": {
+        "count": 0,
+        "samples": []
+      },
+      "queryid": {
+        "count": 0,
+        "samples": []
+      },
+      "querytext": {
+        "count": 0,
+        "samples": []
+      },
+      "starttime": {
+        "count": 0,
+        "samples": []
+      },
+      "statementgroup": {
+        "count": 0,
+        "samples": []
+      },
+      "statementtype": {
+        "count": 0,
+        "samples": []
+      },
+      "totaliocount": {
+        "count": 0,
+        "samples": []
+      },
+      "username": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 8086,
+      "legacy": 8086
+    }
+  },
+  "row_counts": {
+    "lakehouse": 8086,
+    "legacy": 8086
+  },
+  "spec_hash": "bf0b78f11c13c6978ba5dde32433a615faa24198d30d30e7c3f99610ccc1a698",
+  "timestamp": "2026-11-19T17:32:10.726520+00:00"
+}

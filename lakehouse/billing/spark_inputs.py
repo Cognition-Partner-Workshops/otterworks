@@ -9,9 +9,9 @@ import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from etl.spark.jobs.py.common.schemas import SCHEMAS
 from lakehouse.runtime.ingest import business_date
 from lakehouse.runtime.layout import ROOT, data_root
+from lakehouse.runtime.spark_schemas import SCHEMAS
 
 TABLES = ('PLAN_CATALOG', 'SUBSCRIPTION', 'INVOICE_HDR', 'INVOICE_LINE', 'PAYMENT',
           'GL_ACCOUNT', 'GL_JOURNAL_LINE', 'CREDIT_NOTE', 'USAGE_DAILY')

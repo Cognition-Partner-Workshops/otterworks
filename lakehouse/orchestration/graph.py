@@ -7,6 +7,7 @@ import yaml
 from lakehouse.coverage.inventory import discover
 from lakehouse.parity.spec import discover as discover_specs
 from lakehouse.runtime.layout import DOMAINS, ROOT, data_root
+from lakehouse.runtime.platform import FEEDS, feed_path as platform_feed_path
 from warehouse.seed.columns import TABLES
 
 PIPELINE = ROOT / 'orchestration/pipeline.yaml'
@@ -93,7 +94,9 @@ def load(path=PIPELINE, inventory=None, specs=None):
                     prefix.format(business_date='20261109')
                 except (KeyError, ValueError, IndexError, AttributeError) as exc:
                     raise ValueError('Invalid landing prefix') from exc
-                if not any(t.area == node['domain'] and t.name == node.get('table') for t in TABLES):
+                known = (node.get('table') in FEEDS if node['domain'] == 'platform' else
+                         any(t.area == node['domain'] and t.name == node.get('table') for t in TABLES))
+                if not known:
                     raise ValueError('Unknown feed table')
             if kind == 'artifact_sensor':
                 value = node.get('path')
@@ -111,6 +114,9 @@ def load(path=PIPELINE, inventory=None, specs=None):
                         raise ValueError(field + ' must be a positive integer')
             if kind == 'dbt' and (not isinstance(node.get('selector'), str) or not node['selector'].strip()):
                 raise ValueError('dbt requires selector')
+            if kind == 'dbt' and 'exclude' in node and (
+                    not isinstance(node['exclude'], str) or not node['exclude'].strip()):
+                raise ValueError('dbt requires nonempty exclude')
             if kind == 'parity':
                 selected = node.get('specs', [node.get('spec')])
                 if 'spec' in node and 'specs' in node:
@@ -134,6 +140,8 @@ def load(path=PIPELINE, inventory=None, specs=None):
 
 def feed_path(node, landing, day):
     business_date(day)
+    if node['domain'] == 'platform':
+        return platform_feed_path(node['table'])
     prefix = node.get('landing_prefix', '').format(business_date=day)
     return Path(landing).resolve() / prefix / node['domain'] / node['table'] / f'{day}.psv'
 

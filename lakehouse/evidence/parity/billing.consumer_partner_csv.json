@@ -2,9 +2,9 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "billing.consumer_partner_csv",
-  "legacy_NS": null,
+  "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
     "consumer:partner-extract",
     "bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq",
@@ -33,7 +33,7 @@
       "lakehouse": {
         "line": {
           "count": 669,
-          "hash": "30fdc2bb0e14c13c80402582686ac905a225a819ba25ccbc6c4c824a005d8aee",
+          "hash": "80c490352ca1eeaa72b3e008543550b738ef9e9fc2e25bee919c3480f588b70b",
           "null_count": 0,
           "sum": null
         }
@@ -41,7 +41,7 @@
       "legacy": {
         "line": {
           "count": 669,
-          "hash": "30fdc2bb0e14c13c80402582686ac905a225a819ba25ccbc6c4c824a005d8aee",
+          "hash": "80c490352ca1eeaa72b3e008543550b738ef9e9fc2e25bee919c3480f588b70b",
           "null_count": 0,
           "sum": null
         }
@@ -76,5 +76,5 @@
     "legacy": 669
   },
   "spec_hash": "53b5f5941236b35653fd5d6eb6d1e2f91575e2f1a1358a63980873e8388284c7",
-  "timestamp": "2026-11-19T14:20:46.795635+00:00"
+  "timestamp": "2026-11-19T18:01:55.862310+00:00"
 }

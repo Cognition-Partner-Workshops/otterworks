@@ -1,0 +1,177 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "platform.dbc_tablesv",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:DBC.DBC_TABLESV"
+  ],
+  "results": {
+    "columns": [
+      "databasename",
+      "tablename",
+      "tablekind",
+      "createtimestamp",
+      "lastaccesstimestamp",
+      "accesscount",
+      "occurrence"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "accesscount": {
+          "count": 113,
+          "hash": "093c6b436e563ab4e641436b479a91cd6d95db68f8df659a28edc00b436a9b81",
+          "null_count": 0,
+          "sum": "20451"
+        },
+        "createtimestamp": {
+          "count": 113,
+          "hash": "1be566c65988dc78c92fbed469e1a93f6cf5c61fdcc90772ca045d92261ddcda",
+          "null_count": 0,
+          "sum": null
+        },
+        "databasename": {
+          "count": 113,
+          "hash": "f61e82d78143daf1562f95a92e2936060f64cede82da50ea51c921e8b8e17b9d",
+          "null_count": 0,
+          "sum": null
+        },
+        "lastaccesstimestamp": {
+          "count": 113,
+          "hash": "525354d349be55af573be8fbcea255d87b683b8cf5decee2734d983a3b53f2e2",
+          "null_count": 0,
+          "sum": null
+        },
+        "occurrence": {
+          "count": 113,
+          "hash": "59c313e90695c43a628cb124fd9f3de58d0cc1cbba2f3f8931359df8965949ab",
+          "null_count": 0,
+          "sum": "6441"
+        },
+        "tablekind": {
+          "count": 113,
+          "hash": "c6bba3ae182c1bf18fcf0b038f1f75978ffd17362070599d062d583038b9dd21",
+          "null_count": 0,
+          "sum": null
+        },
+        "tablename": {
+          "count": 113,
+          "hash": "93c1bed2808f0ead393aabb3a8b976b7d8c8862013242d72722db73e9b12fc40",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "accesscount": {
+          "count": 113,
+          "hash": "093c6b436e563ab4e641436b479a91cd6d95db68f8df659a28edc00b436a9b81",
+          "null_count": 0,
+          "sum": "20451"
+        },
+        "createtimestamp": {
+          "count": 113,
+          "hash": "1be566c65988dc78c92fbed469e1a93f6cf5c61fdcc90772ca045d92261ddcda",
+          "null_count": 0,
+          "sum": null
+        },
+        "databasename": {
+          "count": 113,
+          "hash": "f61e82d78143daf1562f95a92e2936060f64cede82da50ea51c921e8b8e17b9d",
+          "null_count": 0,
+          "sum": null
+        },
+        "lastaccesstimestamp": {
+          "count": 113,
+          "hash": "525354d349be55af573be8fbcea255d87b683b8cf5decee2734d983a3b53f2e2",
+          "null_count": 0,
+          "sum": null
+        },
+        "occurrence": {
+          "count": 113,
+          "hash": "59c313e90695c43a628cb124fd9f3de58d0cc1cbba2f3f8931359df8965949ab",
+          "null_count": 0,
+          "sum": "6441"
+        },
+        "tablekind": {
+          "count": 113,
+          "hash": "c6bba3ae182c1bf18fcf0b038f1f75978ffd17362070599d062d583038b9dd21",
+          "null_count": 0,
+          "sum": null
+        },
+        "tablename": {
+          "count": 113,
+          "hash": "93c1bed2808f0ead393aabb3a8b976b7d8c8862013242d72722db73e9b12fc40",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "accesscount": {
+        "count": 0,
+        "samples": []
+      },
+      "createtimestamp": {
+        "count": 0,
+        "samples": []
+      },
+      "databasename": {
+        "count": 0,
+        "samples": []
+      },
+      "lastaccesstimestamp": {
+        "count": 0,
+        "samples": []
+      },
+      "occurrence": {
+        "count": 0,
+        "samples": []
+      },
+      "tablekind": {
+        "count": 0,
+        "samples": []
+      },
+      "tablename": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 113,
+      "legacy": 113
+    }
+  },
+  "row_counts": {
+    "lakehouse": 113,
+    "legacy": 113
+  },
+  "spec_hash": "6c27c092a926350be1f4c6b04af7252e59966c44100a3def4fce4578da7f491c",
+  "timestamp": "2026-11-19T17:32:08.438395+00:00"
+}

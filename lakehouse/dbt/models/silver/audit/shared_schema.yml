@@ -1,0 +1,14 @@
+version: 2
+models:
+  - name: shared_reconciliation
+    columns:
+      - name: recon_id
+        tests: [not_null, unique]
+      - name: business_dt
+        tests: [not_null]
+      - name: source_count
+        tests: [not_null]
+      - name: target_count
+        tests: [not_null]
+      - name: difference_count
+        tests: [not_null]

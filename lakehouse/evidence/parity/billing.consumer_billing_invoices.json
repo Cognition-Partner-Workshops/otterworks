@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "billing.consumer_billing_invoices",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -42,9 +42,9 @@
         },
         "amount_due": {
           "count": 667,
-          "hash": "7dc0e4d3a07f5eda7051ad3dee305c548d78eb2fae96823400f875018f9cc7ea",
+          "hash": "6f5bf5f81c45f6145beb932d01c7d12c82236da6ca28c77fd3f9d963f6f45fba",
           "null_count": 0,
-          "sum": "248725.39"
+          "sum": "248753.92"
         },
         "currency_cd": {
           "count": 667,
@@ -72,9 +72,9 @@
         },
         "open_balance": {
           "count": 667,
-          "hash": "434db5bf59ae759bb35209c89169b38b3913c1b9b5863d805071ec7599330010",
+          "hash": "a61c85d8391c9a5a1217eae3768bf5d52169529ed5fdcfde8e46de2e68ddab5b",
           "null_count": 0,
-          "sum": "156087.74"
+          "sum": "156116.27"
         },
         "parity_row": {
           "count": 667,
@@ -84,9 +84,9 @@
         },
         "tax_amt": {
           "count": 667,
-          "hash": "b08d723a2dc80cfd9ee86319aad4cc81212b5c86e07710f0fc8e362c0bbd6f1d",
+          "hash": "f9a21badcd06e5ccec84c7b490231187d563f62812311bb7569feacecd652d73",
           "null_count": 0,
-          "sum": "31472.60"
+          "sum": "31476.06"
         }
       },
       "legacy": {
@@ -98,9 +98,9 @@
         },
         "amount_due": {
           "count": 667,
-          "hash": "7dc0e4d3a07f5eda7051ad3dee305c548d78eb2fae96823400f875018f9cc7ea",
+          "hash": "6f5bf5f81c45f6145beb932d01c7d12c82236da6ca28c77fd3f9d963f6f45fba",
           "null_count": 0,
-          "sum": "248725.39"
+          "sum": "248753.92"
         },
         "currency_cd": {
           "count": 667,
@@ -128,9 +128,9 @@
         },
         "open_balance": {
           "count": 667,
-          "hash": "434db5bf59ae759bb35209c89169b38b3913c1b9b5863d805071ec7599330010",
+          "hash": "a61c85d8391c9a5a1217eae3768bf5d52169529ed5fdcfde8e46de2e68ddab5b",
           "null_count": 0,
-          "sum": "156087.74"
+          "sum": "156116.27"
         },
         "parity_row": {
           "count": 667,
@@ -140,9 +140,9 @@
         },
         "tax_amt": {
           "count": 667,
-          "hash": "b08d723a2dc80cfd9ee86319aad4cc81212b5c86e07710f0fc8e362c0bbd6f1d",
+          "hash": "f9a21badcd06e5ccec84c7b490231187d563f62812311bb7569feacecd652d73",
           "null_count": 0,
-          "sum": "31472.60"
+          "sum": "31476.06"
         }
       }
     },
@@ -207,5 +207,5 @@
     "legacy": 667
   },
   "spec_hash": "c1d339480aabf852455ec7bfd57bffcc0b9c19a4ad26a6868e8d3c05235d78e4",
-  "timestamp": "2026-11-19T14:14:43.511180+00:00"
+  "timestamp": "2026-11-19T18:01:55.668892+00:00"
 }

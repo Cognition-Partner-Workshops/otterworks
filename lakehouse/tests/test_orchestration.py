@@ -34,12 +34,13 @@ def test_pipeline_contract_and_staging_replacement():
                          'lakehouse_documents_external_fixture'} <= set(dags)
     daily = dags['lakehouse_daily']
     nodes = {node['id']: node for node in daily['nodes']}
-    sensors = [n for n in nodes.values() if n['kind'] == 'feed_sensor' and not n.get('landing_prefix')]
+    sensors = [n for n in nodes.values() if n['kind'] == 'feed_sensor'
+               and n['domain'] != 'platform' and not n.get('landing_prefix')]
     assert {(n['domain'], n['table']) for n in sensors} == {(t.area, t.name) for t in TABLES}
     assert len(sensors) == len(TABLES)
     for domain in ('billing', 'documents', 'users', 'audit'):
         bronze = nodes['bronze_' + domain]
-        assert set(bronze['depends_on']) == {n['id'] for n in sensors if n['domain'] == domain}
+        assert set(bronze['depends_on']) == {'initialize'} | {n['id'] for n in sensors if n['domain'] == domain}
         assert bronze['id'] in nodes['dbt_' + domain]['depends_on']
         assert set(nodes['dbt_' + domain]['depends_on']) <= nodes.keys()
         expected = 'path:models/silver/billing' if domain == 'billing' else 'tag:' + domain

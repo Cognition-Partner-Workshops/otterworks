@@ -1,4 +1,4 @@
-select * from {{ ref('invoice_line') }}
+select * from {{ ref('invoice_line_effective') }}
 where description is null or description not in ('Monthly subscription', 'Billing adjustment')
 union all
 select cast(300000000000 + h.invoice_id as bigint), h.invoice_id, 100,

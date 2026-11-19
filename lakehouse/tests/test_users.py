@@ -29,8 +29,8 @@ def test_users_graph_and_ownership(tmp_path, monkeypatch):
     warehouse = {n['id']: n for n in daily['nodes']}
     assert warehouse['export_users_team_counts']['depends_on'] == ['dbt_users']
     assert warehouse['infa_users_role_grant']['depends_on'] == ['infa_users_app']
-    assert warehouse['infa_users_login_team']['depends_on'] == ['infa_users_app']
-    assert set(warehouse['parity_users_informatica']['depends_on']) == {'infa_users_role_grant', 'infa_users_login_team'}
+    assert warehouse['infa_users_login_event']['depends_on'] == ['infa_users_app']
+    assert set(warehouse['parity_users_informatica']['depends_on']) == {'infa_users_role_grant', 'infa_users_login_event'}
     assert len(set(owned)) == len(owned)
     assert set(owned) <= inventory.keys()
     assert {key for key in inventory if ':SFX_USERS.' in key or
@@ -126,4 +126,6 @@ def test_informatica_delta_contract(spark, monkeypatch):
     events(spark, date(2026, 11, 9))
     assert {row.result_cd for row in spark.table('silver_users.infa_login_event').collect()} == {
         'SUCCESS', 'FAILED', 'LOCKED', 'MFA_FAILED'}
+    assert not spark.catalog.tableExists('silver_users.infa_team_member')
+    users_informatica.members(spark, date(2026, 11, 9))
     assert spark.table('silver_users.infa_team_member').count() == 0

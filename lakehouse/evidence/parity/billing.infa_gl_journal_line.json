@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "billing.infa_gl_journal_line",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -40,9 +40,9 @@
       "lakehouse": {
         "credit_amount": {
           "count": 6451,
-          "hash": "c13bf4ab2f5e4369821da58ab2554d2b2984585a5b62d651e129323838fa3a7b",
+          "hash": "6e82c32a3dd9ff07243347c12a3b9bb041bbff999853704fdf80de5f3d1a5cea",
           "null_count": 0,
-          "sum": "356338.20"
+          "sum": "356341.10"
         },
         "credit_note_id": {
           "count": 6451,
@@ -58,9 +58,9 @@
         },
         "debit_amount": {
           "count": 6451,
-          "hash": "f34cad5f906cac44eba482f85698676df231cd00a29a69d82cf1441567f3b699",
+          "hash": "b326e1cc8345e249fac04dd4227fd077141aa4ea7a76f7a2e6bc08e85e6a791e",
           "null_count": 0,
-          "sum": "356338.20"
+          "sum": "356341.10"
         },
         "description": {
           "count": 6451,
@@ -82,9 +82,9 @@
         },
         "journal_line_id": {
           "count": 6451,
-          "hash": "8ec486f1872f886616eb46c35278de75a00811dc3c0d5803374799f8583f7942",
+          "hash": "ad3ab902a14e68d7061a63cd096d9187bb84d6221e8c25ae1a706179906fe3ae",
           "null_count": 0,
-          "sum": "116345845720159305794"
+          "sum": "116345845720054189772"
         },
         "ordinal": {
           "count": 6451,
@@ -102,9 +102,9 @@
       "legacy": {
         "credit_amount": {
           "count": 6451,
-          "hash": "c13bf4ab2f5e4369821da58ab2554d2b2984585a5b62d651e129323838fa3a7b",
+          "hash": "6e82c32a3dd9ff07243347c12a3b9bb041bbff999853704fdf80de5f3d1a5cea",
           "null_count": 0,
-          "sum": "356338.20"
+          "sum": "356341.10"
         },
         "credit_note_id": {
           "count": 6451,
@@ -120,9 +120,9 @@
         },
         "debit_amount": {
           "count": 6451,
-          "hash": "f34cad5f906cac44eba482f85698676df231cd00a29a69d82cf1441567f3b699",
+          "hash": "b326e1cc8345e249fac04dd4227fd077141aa4ea7a76f7a2e6bc08e85e6a791e",
           "null_count": 0,
-          "sum": "356338.20"
+          "sum": "356341.10"
         },
         "description": {
           "count": 6451,
@@ -144,9 +144,9 @@
         },
         "journal_line_id": {
           "count": 6451,
-          "hash": "8ec486f1872f886616eb46c35278de75a00811dc3c0d5803374799f8583f7942",
+          "hash": "ad3ab902a14e68d7061a63cd096d9187bb84d6221e8c25ae1a706179906fe3ae",
           "null_count": 0,
-          "sum": "116345845720159305794"
+          "sum": "116345845720054189772"
         },
         "ordinal": {
           "count": 6451,
@@ -227,5 +227,5 @@
     "legacy": 6451
   },
   "spec_hash": "fef30b6d68e9dcc78c3db5eb18d2cdd24ee4c4bbd2c07d839b27622226bf0c2b",
-  "timestamp": "2026-11-19T14:14:47.140582+00:00"
+  "timestamp": "2026-11-19T18:02:22.513471+00:00"
 }

@@ -2,13 +2,12 @@ id: audit.reconciliation_export
 legacy_objects:
 - bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq
 - teradata_macro:SFX_AUDIT.M_RECON_TOTALS
-description: 'A-402/A-405: legacy macro query filters shared jobs/reconcile row; lakehouse exporter applies
-  the identical exclusion before atomic file publication. Numeric scale=0 parses headerless file integer
-  strings without tolerance; empty count fields encode SQL NULL.'
+description: 'A-402: complete reconciliation population including shared jobs/reconcile
+  row 21000000001; no ownership exclusions.'
 legacy:
   kind: postgres_sql
-  sql: select recon_id, source_count, target_count, difference_count from sfx_audit.audit_recon where
-    business_dt=to_date('{business_date}', 'YYYYMMDD') and recon_id <> 21000000001 order by recon_id
+  sql: select recon_id, source_count, target_count, difference_count from sfx_audit.audit_recon
+    where business_dt=to_date('{business_date}', 'YYYYMMDD') order by recon_id
 lakehouse:
   kind: file
   path: lakehouse/.data/{NS}/exports/{business_date}/reconciliation.psv

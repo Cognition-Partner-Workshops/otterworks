@@ -9,6 +9,10 @@ models:
     +materialized: table
     +file_format: delta
     silver:
+      platform:
+        +tags: [platform]
+        +schema: silver_platform
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/silver/platform"
       billing:
         +tags: [billing]
         +schema: silver_billing
@@ -26,6 +30,10 @@ models:
         +schema: silver_audit
         +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/silver/audit"
     gold:
+      platform:
+        +tags: [platform]
+        +schema: gold_platform
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/gold/platform"
       billing:
         +tags: [billing]
         +schema: gold_billing

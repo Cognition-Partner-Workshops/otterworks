@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "billing.consumer_report_summary",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -33,15 +33,15 @@
       "lakehouse": {
         "ar_gl_balance": {
           "count": 1,
-          "hash": "285e9bb088274ad9a47dc23a149eb9d0b72ce222557e4d7cc4fbf433aed27ed3",
+          "hash": "179b5c5f0ab3fb4c48a491153fd8503d2165feaaebdca64281b6b2e313d78074",
           "null_count": 0,
-          "sum": "738175.99"
+          "sum": "738280.13"
         },
         "invoiced_total": {
           "count": 1,
-          "hash": "c84c4430bc07f4274be3623052c680ba16b4fb174cb9340a689c629095bd5a37",
+          "hash": "1ad8634a55e2c0a5436826ce3c865844001c15269673ea198361679b32911897",
           "null_count": 0,
-          "sum": "739913.01"
+          "sum": "740016.9"
         },
         "paid_total": {
           "count": 1,
@@ -63,23 +63,23 @@
         },
         "variance": {
           "count": 1,
-          "hash": "e812cfece6d19bf998817700d7e3b9da8594f18f41a48fc46e86625c9d556fc6",
+          "hash": "d838ce33d36373a44f17e645763ce518700a5cdfe6a4901cff451aa016ee8ff3",
           "null_count": 0,
-          "sum": "-267116.36"
+          "sum": "-267116.61"
         }
       },
       "legacy": {
         "ar_gl_balance": {
           "count": 1,
-          "hash": "285e9bb088274ad9a47dc23a149eb9d0b72ce222557e4d7cc4fbf433aed27ed3",
+          "hash": "179b5c5f0ab3fb4c48a491153fd8503d2165feaaebdca64281b6b2e313d78074",
           "null_count": 0,
-          "sum": "738175.99"
+          "sum": "738280.13"
         },
         "invoiced_total": {
           "count": 1,
-          "hash": "c84c4430bc07f4274be3623052c680ba16b4fb174cb9340a689c629095bd5a37",
+          "hash": "1ad8634a55e2c0a5436826ce3c865844001c15269673ea198361679b32911897",
           "null_count": 0,
-          "sum": "739913.01"
+          "sum": "740016.9"
         },
         "paid_total": {
           "count": 1,
@@ -101,9 +101,9 @@
         },
         "variance": {
           "count": 1,
-          "hash": "e812cfece6d19bf998817700d7e3b9da8594f18f41a48fc46e86625c9d556fc6",
+          "hash": "d838ce33d36373a44f17e645763ce518700a5cdfe6a4901cff451aa016ee8ff3",
           "null_count": 0,
-          "sum": "-267116.36"
+          "sum": "-267116.61"
         }
       }
     },
@@ -156,5 +156,5 @@
     "legacy": 1
   },
   "spec_hash": "97738ce88f67f4910fd61a7ab3143e0bc3f114327305e29e55d4fa432dde4196",
-  "timestamp": "2026-11-19T14:14:43.698009+00:00"
+  "timestamp": "2026-11-19T18:01:55.950486+00:00"
 }

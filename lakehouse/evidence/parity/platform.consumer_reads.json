@@ -1,0 +1,160 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "platform.consumer_reads",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "bteq_script:warehouse/teradata/dbql/consumer_reads.bteq"
+  ],
+  "results": {
+    "columns": [
+      "username",
+      "appid",
+      "clientid",
+      "read_queries",
+      "reads_per_day",
+      "occurrence"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "appid": {
+          "count": 13,
+          "hash": "9bd429e94872b1131c975cd390aa05576cc7dc68ddbe710a47d643edf1f97c41",
+          "null_count": 0,
+          "sum": null
+        },
+        "clientid": {
+          "count": 13,
+          "hash": "adbadef726520d22c689f93efc4c6bd61c0c2fc66bf37b461aa9c10302774e46",
+          "null_count": 0,
+          "sum": null
+        },
+        "occurrence": {
+          "count": 13,
+          "hash": "62a618f5e2155f19e2c572d00c10eb1eea27d2ff22c2e989b472fcf11bc35349",
+          "null_count": 0,
+          "sum": "91"
+        },
+        "read_queries": {
+          "count": 13,
+          "hash": "c36ee703c18fcd51b8274ab0da245614a15aae069165b1f3ebd034a805fdf021",
+          "null_count": 0,
+          "sum": "2423"
+        },
+        "reads_per_day": {
+          "count": 13,
+          "hash": "53bafba17d952f093369b9e5d663164759077fc92033c32fdedca647dbda606d",
+          "null_count": 0,
+          "sum": "80.77"
+        },
+        "username": {
+          "count": 13,
+          "hash": "77e1a3ab2997f6776880edea25d2a6577fce8ec3d795017578ab98b7af59bdf2",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "appid": {
+          "count": 13,
+          "hash": "9bd429e94872b1131c975cd390aa05576cc7dc68ddbe710a47d643edf1f97c41",
+          "null_count": 0,
+          "sum": null
+        },
+        "clientid": {
+          "count": 13,
+          "hash": "adbadef726520d22c689f93efc4c6bd61c0c2fc66bf37b461aa9c10302774e46",
+          "null_count": 0,
+          "sum": null
+        },
+        "occurrence": {
+          "count": 13,
+          "hash": "62a618f5e2155f19e2c572d00c10eb1eea27d2ff22c2e989b472fcf11bc35349",
+          "null_count": 0,
+          "sum": "91"
+        },
+        "read_queries": {
+          "count": 13,
+          "hash": "c36ee703c18fcd51b8274ab0da245614a15aae069165b1f3ebd034a805fdf021",
+          "null_count": 0,
+          "sum": "2423"
+        },
+        "reads_per_day": {
+          "count": 13,
+          "hash": "53bafba17d952f093369b9e5d663164759077fc92033c32fdedca647dbda606d",
+          "null_count": 0,
+          "sum": "80.77"
+        },
+        "username": {
+          "count": 13,
+          "hash": "77e1a3ab2997f6776880edea25d2a6577fce8ec3d795017578ab98b7af59bdf2",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "appid": {
+        "count": 0,
+        "samples": []
+      },
+      "clientid": {
+        "count": 0,
+        "samples": []
+      },
+      "occurrence": {
+        "count": 0,
+        "samples": []
+      },
+      "read_queries": {
+        "count": 0,
+        "samples": []
+      },
+      "reads_per_day": {
+        "count": 0,
+        "samples": []
+      },
+      "username": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 13,
+      "legacy": 13
+    }
+  },
+  "row_counts": {
+    "lakehouse": 13,
+    "legacy": 13
+  },
+  "spec_hash": "b8ca3c8b4efe91034f9bc817d27b56f51b6522a2c7489f0b8528bdecb4447096",
+  "timestamp": "2026-11-19T17:31:53.887473+00:00"
+}

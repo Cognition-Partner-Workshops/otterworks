@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "billing.spark_billing_invoice_summary_daily_parquet",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -141,5 +141,5 @@
     "legacy": 3
   },
   "spec_hash": "594d0b777393b440d3d193719aab6596bba6faf73fc362a1a66c458b96eff50d",
-  "timestamp": "2026-11-19T14:15:05.154309+00:00"
+  "timestamp": "2026-11-19T16:24:32.995799+00:00"
 }

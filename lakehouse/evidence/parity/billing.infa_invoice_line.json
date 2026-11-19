@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "billing.infa_invoice_line",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -37,102 +37,102 @@
     "fingerprints": {
       "lakehouse": {
         "description": {
-          "count": 4184,
-          "hash": "b21a094aa77e5a0f32551499b18c6bd59ffd36447bc58da963ac9d4a76028df5",
+          "count": 4434,
+          "hash": "2d40fc5259b5ba63a4cfcee9b5469e04643307838cc615412b846f6c24dca93b",
           "null_count": 0,
           "sum": null
         },
         "invoice_id": {
-          "count": 4184,
-          "hash": "e9edd430c00a3eb0d4dedf41aa1e11f0605d19124089056784abd15002cde927",
+          "count": 4434,
+          "hash": "a62177595972a3816ba136730d97f974a9234c0dec241a4c182a03e220e7ab54",
           "null_count": 0,
-          "sum": "756004090484"
+          "sum": "1206004111859"
         },
         "invoice_line_id": {
-          "count": 4184,
-          "hash": "31a36cf8721ea56d08bbb76d2b1b2f2d3865327ac2ec8caff4f2af2367281b7a",
+          "count": 4434,
+          "hash": "610e4e9b0625ff2eb60e73281b58a5d6d2aff2cd79946b9020ec6c80eebcc115",
           "null_count": 0,
-          "sum": "665956004011284"
+          "sum": "669156004032659"
         },
         "line_amount": {
-          "count": 4184,
-          "hash": "5f95eec493e1341b439ca347808c437bc976e842ea897116d260e1b2bff6c84c",
+          "count": 4434,
+          "hash": "a335a36e22a9f7f9436aa63bdd5d06723164a3be07c767382d88101fc4a7f544",
           "null_count": 0,
-          "sum": "648419.61"
+          "sum": "648511.30"
         },
         "line_no": {
-          "count": 4184,
-          "hash": "ccd70b3e55ab572566fd5fd2c0e979f9f80d62243ee2d5efc4980edc7f9eb030",
+          "count": 4434,
+          "hash": "53f98d08c906307be7ad1022f44f07fd8cf1db171945aae0e7ac047d374fe1be",
           "null_count": 0,
-          "sum": "230400"
+          "sum": "455400"
         },
         "ordinal": {
-          "count": 4184,
-          "hash": "c8638d86127f9bad8ddd18d3db414b8372bfa4ff799d3b8d9034a3feba52ce27",
+          "count": 4434,
+          "hash": "9a03cbca20e1d97d5593d8a6570d902aee72a911f33f4bde8f715b7f1aaccf27",
           "null_count": 0,
-          "sum": "8755020"
+          "sum": "9832395"
         },
         "quantity": {
-          "count": 4184,
-          "hash": "f3b82ee878e28c100766f5fcd948ec7e6502d11c5c2dd2d137b4ba5d33509f48",
+          "count": 4434,
+          "hash": "8e83d8f8bf32b0ca4ecb560bcfb73b4b8f39fd68366c25bdc7ccddc99bd61049",
           "null_count": 0,
-          "sum": "4184"
+          "sum": "4434"
         },
         "unit_price": {
-          "count": 4184,
-          "hash": "5f95eec493e1341b439ca347808c437bc976e842ea897116d260e1b2bff6c84c",
+          "count": 4434,
+          "hash": "a335a36e22a9f7f9436aa63bdd5d06723164a3be07c767382d88101fc4a7f544",
           "null_count": 0,
-          "sum": "648419.61"
+          "sum": "648511.30"
         }
       },
       "legacy": {
         "description": {
-          "count": 4184,
-          "hash": "b21a094aa77e5a0f32551499b18c6bd59ffd36447bc58da963ac9d4a76028df5",
+          "count": 4434,
+          "hash": "2d40fc5259b5ba63a4cfcee9b5469e04643307838cc615412b846f6c24dca93b",
           "null_count": 0,
           "sum": null
         },
         "invoice_id": {
-          "count": 4184,
-          "hash": "e9edd430c00a3eb0d4dedf41aa1e11f0605d19124089056784abd15002cde927",
+          "count": 4434,
+          "hash": "a62177595972a3816ba136730d97f974a9234c0dec241a4c182a03e220e7ab54",
           "null_count": 0,
-          "sum": "756004090484"
+          "sum": "1206004111859"
         },
         "invoice_line_id": {
-          "count": 4184,
-          "hash": "31a36cf8721ea56d08bbb76d2b1b2f2d3865327ac2ec8caff4f2af2367281b7a",
+          "count": 4434,
+          "hash": "610e4e9b0625ff2eb60e73281b58a5d6d2aff2cd79946b9020ec6c80eebcc115",
           "null_count": 0,
-          "sum": "665956004011284"
+          "sum": "669156004032659"
         },
         "line_amount": {
-          "count": 4184,
-          "hash": "5f95eec493e1341b439ca347808c437bc976e842ea897116d260e1b2bff6c84c",
+          "count": 4434,
+          "hash": "a335a36e22a9f7f9436aa63bdd5d06723164a3be07c767382d88101fc4a7f544",
           "null_count": 0,
-          "sum": "648419.61"
+          "sum": "648511.30"
         },
         "line_no": {
-          "count": 4184,
-          "hash": "ccd70b3e55ab572566fd5fd2c0e979f9f80d62243ee2d5efc4980edc7f9eb030",
+          "count": 4434,
+          "hash": "53f98d08c906307be7ad1022f44f07fd8cf1db171945aae0e7ac047d374fe1be",
           "null_count": 0,
-          "sum": "230400"
+          "sum": "455400"
         },
         "ordinal": {
-          "count": 4184,
-          "hash": "c8638d86127f9bad8ddd18d3db414b8372bfa4ff799d3b8d9034a3feba52ce27",
+          "count": 4434,
+          "hash": "9a03cbca20e1d97d5593d8a6570d902aee72a911f33f4bde8f715b7f1aaccf27",
           "null_count": 0,
-          "sum": "8755020"
+          "sum": "9832395"
         },
         "quantity": {
-          "count": 4184,
-          "hash": "f3b82ee878e28c100766f5fcd948ec7e6502d11c5c2dd2d137b4ba5d33509f48",
+          "count": 4434,
+          "hash": "8e83d8f8bf32b0ca4ecb560bcfb73b4b8f39fd68366c25bdc7ccddc99bd61049",
           "null_count": 0,
-          "sum": "4184"
+          "sum": "4434"
         },
         "unit_price": {
-          "count": 4184,
-          "hash": "5f95eec493e1341b439ca347808c437bc976e842ea897116d260e1b2bff6c84c",
+          "count": 4434,
+          "hash": "a335a36e22a9f7f9436aa63bdd5d06723164a3be07c767382d88101fc4a7f544",
           "null_count": 0,
-          "sum": "648419.61"
+          "sum": "648511.30"
         }
       }
     },
@@ -184,14 +184,14 @@
     },
     "passed": true,
     "row_counts": {
-      "lakehouse": 4184,
-      "legacy": 4184
+      "lakehouse": 4434,
+      "legacy": 4434
     }
   },
   "row_counts": {
-    "lakehouse": 4184,
-    "legacy": 4184
+    "lakehouse": 4434,
+    "legacy": 4434
   },
   "spec_hash": "de43de362c2d378465d61eeb526e630b9f359753ac2b65083fd8d67c921bbbd6",
-  "timestamp": "2026-11-19T14:14:51.643058+00:00"
+  "timestamp": "2026-11-19T18:01:33.228630+00:00"
 }

@@ -11,6 +11,7 @@ from airflow.sensors.filesystem import FileSensor
 
 from lakehouse.orchestration.graph import PIPELINE, load, logical_business_date
 from lakehouse.runtime.layout import ROOT, data_root
+from lakehouse.runtime.platform import feed_path as platform_feed_path
 
 DAY = '{{ business_date(logical_date) }}'
 
@@ -32,7 +33,8 @@ def build_dags():
                 if node['kind'] in ('feed_sensor', 'artifact_sensor'):
                     if node['kind'] == 'feed_sensor':
                         prefix = node.get('landing_prefix', '').replace('{business_date}', DAY)
-                        path = landing / prefix / node['domain'] / node['table'] / (DAY + '.psv')
+                        path = (platform_feed_path(node['table']) if node['domain'] == 'platform' else
+                                landing / prefix / node['domain'] / node['table'] / (DAY + '.psv'))
                     else:
                         path = Path(node['path'].format(data_root=data_root(), business_date=DAY))
                     task = FileSensor(filepath=str(path), fs_conn_id='fs_default', mode='reschedule',

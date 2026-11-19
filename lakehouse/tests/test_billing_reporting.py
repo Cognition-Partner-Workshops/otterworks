@@ -52,6 +52,8 @@ def spark():
 
 
 def inputs(spark, rows):
+    spark.createDataFrame([], 'customer_id long, bytes_used long, object_count long').createOrReplaceTempView(
+        'report_m_storage_totals')
     kinds = {'B': T.LongType(), 'I': T.IntegerType(), 'D': T.DateType(),
              'N': T.DecimalType(14, 2), 'Q': T.DecimalType(7, 4)}
     for table in (t for t in TABLES if t.area == 'billing'):
@@ -67,6 +69,8 @@ def inputs(spark, rows):
 
 def build(spark, day='20261109'):
     models = {p.stem: p.read_text() for p in GOLD.glob('*.sql')}
+    models.update({name: (ROOT / 'dbt/models/silver/billing' / (name + '.sql')).read_text()
+                   for name in ('usage_daily_effective', 'invoice_line_effective')})
     result = {}
 
     def model(name):
@@ -75,7 +79,7 @@ def build(spark, day='20261109'):
         for dependency in re.findall(r"ref\('([^']+)'\)", models[name]):
             model(dependency)
         sql = Environment(undefined=StrictUndefined).from_string(models[name]).render(
-            ref=lambda n: 'report_' + n, env_var=lambda _: day)
+            ref=lambda n: 'report_' + n, env_var=lambda _: day, config=lambda **_: '')
         result[name] = spark.sql(sql)
         result[name].createOrReplaceTempView('report_' + name)
 
@@ -222,7 +226,8 @@ def test_billing_reporting_stage_replacement():
     nodes = {n['id']: n for n in load()['lakehouse_daily']['nodes']}
     assert nodes['dbt_billing']['selector'] == 'path:models/silver/billing'
     gold = nodes['dbt_billing_reporting']
-    assert gold['selector'] == 'path:models/gold/billing' and gold['depends_on'] == ['dbt_billing']
+    assert gold['selector'] == 'path:models/gold/billing'
+    assert gold['depends_on'] == ['dbt_billing', 'dbt_storage_monthly']
     names = ['10_subscription_report', '11_currency_daily', '12_invoice_monthly',
              '13_period_close', '14_account_history_extract']
     for i, name in enumerate(names):

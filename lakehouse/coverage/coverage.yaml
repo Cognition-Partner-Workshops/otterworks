@@ -1,42 +1,38 @@
 objects:
 - id: batch_runner:etl/run.sh
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: [lakehouse/runtime/external_settings.py]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-416]
+  verification: test:lakehouse/tests/test_external_runtime.py::test_shared_dispatch_allowlist_and_argv
+  notes: Explicit external-job allowlist, argv-only dispatch and shared settings replace the shell runner.
 - id: batch_runner:etl/spark/run.sh
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/orchestration/runner.py"]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-420]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_spark_registry_complete
+  notes: Specific responsibility verified by test_spark_registry_complete; semantic differences documented in A-420.
 - id: batch_runner:warehouse/teradata/jobs/daily_chain
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/orchestration/pipeline.yaml#lakehouse_daily"]
   parity: []
-  assumptions:
-  - A-017
-  - A-018
-  - A-025
-  - A-032
-  - A-033
-  - A-037
-  - A-039
-  - A-040
-  - A-041
-  - A-042
-  - A-043
-  - A-045
-  - A-046
-  - A-047
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-017, A-018, A-025, A-032, A-033, A-037, A-039, A-040, A-041, A-042, A-043, A-045, A-046, A-047, A-417]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_daily_chain_read_after_write_and_failure
+  notes: Specific responsibility verified by test_daily_chain_read_after_write_and_failure; semantic differences documented in A-417.
 - id: batch_runner:warehouse/teradata/jobs/reconcile
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_audit.shared_reconciliation
+  - gold_audit.audit_recon_final
+  - lakehouse/orchestration/pipeline.yaml#dbt_shared_reconcile
+  parity:
+  - audit.shared_reconciliation
+  assumptions:
+  - A-402
+  notes: Stage-specific shared landing conversion; no base silver mutation or output
+    exclusions.
+  verification: test:lakehouse/tests/test_billing_storage.py::test_storage_graph_and_base_exclusion
 - id: bi_artifact:consumers/bi/account_status.pq
   status: converted
   targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
@@ -52,11 +48,11 @@ objects:
   verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
   notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [gold_platform.consumer_reads, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.consumer_reads]
+  assumptions: [A-409, A-410, A-411]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: bteq_script:warehouse/teradata/scripts/audit/01_load_events.bteq
   status: converted
   targets:
@@ -192,7 +188,9 @@ objects:
   - A-103
   - A-105
   - A-106
-  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
+  - A-412
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure
+    boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq
   status: converted
   targets:
@@ -343,11 +341,20 @@ objects:
   - A-203
   notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: bteq_script:warehouse/teradata/scripts/documents/10_storage_monthly.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_billing.usage_daily_effective
+  - silver_billing.invoice_line_effective
+  - lakehouse/orchestration/pipeline.yaml#dbt_storage_monthly
+  - lakehouse/billing/storage.py
+  parity:
+  - billing.usage_daily_effective
+  - billing.invoice_line_effective
+  - billing.storage_monthly_export
+  assumptions:
+  - A-413
+  notes: Stage-specific shared landing conversion; no base silver mutation or output
+    exclusions.
 - id: bteq_script:warehouse/teradata/scripts/users/01_load_users.bteq
   status: converted
   targets:
@@ -860,12 +867,12 @@ objects:
   notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Pending data status until actual nine-surface parity PASS."
   verification: "test:lakehouse/tests/test_billing_spark.py::test_billing_spark_cron_replacement"
 - id: cron_entry:etl/crontab#f34723629b86
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: [lakehouse/orchestration/pipeline.yaml#lakehouse_analytics_daily]
   parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-037, A-414, A-415]
+  verification: test:lakehouse/tests/test_external_runtime.py::test_analytics_schedule_readiness_and_failure
+  notes: Paused 02:00 UTC analytics DAG with dated readiness attestation and failing writes.
 - id: cron_entry:etl/crontab#fd7befdb4e7d
   status: converted
   targets:
@@ -884,12 +891,12 @@ objects:
   verification: test:lakehouse/tests/test_documents_external.py::test_documents_external_cron_replacements
   notes: Injectable native task; unchanged legacy script parity against identical dated service fakes. Live external DAG starts paused.
 - id: cron_entry:warehouse/teradata/jobs/crontab.example#250f291ea0eb
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/airflow/dags/lakehouse_daily.py"]
   parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-037, A-418]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_daily_cadence_and_namespace_lock
+  notes: Specific responsibility verified by test_daily_cadence_and_namespace_lock; semantic differences documented in A-418.
 - id: cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed
   status: replaced_by_platform
   targets: ["airflow:lakehouse_billing_partner_extract.run", "lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
@@ -1168,33 +1175,50 @@ objects:
   - A-037
   notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/10_storage_monthly
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_billing.usage_daily_effective
+  - silver_billing.invoice_line_effective
+  - lakehouse/orchestration/pipeline.yaml#dbt_storage_monthly
+  - lakehouse/billing/storage.py
+  parity:
+  - billing.usage_daily_effective
+  - billing.invoice_line_effective
+  - billing.storage_monthly_export
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-413
+  notes: Stage-specific shared landing conversion; no base silver mutation or output
+    exclusions.
+  verification: test:lakehouse/tests/test_billing_storage.py::test_storage_graph_and_base_exclusion
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=generate
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/runtime/bootstrap.py"]
   parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-037, A-418]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_setup_and_fixture_generation
+  notes: Specific responsibility verified by test_setup_and_fixture_generation; semantic differences documented in A-418.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=jobs/reconcile
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_audit.shared_reconciliation
+  - gold_audit.audit_recon_final
+  - lakehouse/orchestration/pipeline.yaml#dbt_shared_reconcile
+  parity:
+  - audit.shared_reconciliation
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-402
+  notes: Stage-specific shared landing conversion; no base silver mutation or output
+    exclusions.
+  verification: test:lakehouse/tests/test_billing_storage.py::test_storage_graph_and_base_exclusion
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=setup
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/runtime/bootstrap.py"]
   parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-037, A-418]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_setup_and_fixture_generation
+  notes: Specific responsibility verified by test_setup_and_fixture_generation; semantic differences documented in A-418.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging
   status: replaced_by_platform
   targets:
@@ -1214,52 +1238,53 @@ objects:
   notes: All 42 staging feeds are readiness-gated and loaded by the four domain bronze nodes. Does not replace other daily-chain stages.
   verification: test:lakehouse/tests/test_orchestration.py::test_pipeline_contract_and_staging_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/01_load_users
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/orchestration/pipeline.yaml#dbt_users"]
   parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-037, A-417]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_daily_chain_read_after_write_and_failure
+  notes: Specific responsibility verified by test_daily_chain_read_after_write_and_failure; semantic differences documented in A-417.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/02_load_teams
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/orchestration/pipeline.yaml#dbt_users"]
   parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-037, A-417]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_daily_chain_read_after_write_and_failure
+  notes: Specific responsibility verified by test_daily_chain_read_after_write_and_failure; semantic differences documented in A-417.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/03_load_identity
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/orchestration/pipeline.yaml#dbt_users"]
   parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-037, A-417]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_daily_chain_read_after_write_and_failure
+  notes: Specific responsibility verified by test_daily_chain_read_after_write_and_failure; semantic differences documented in A-417.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/04_load_events
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/orchestration/pipeline.yaml#dbt_users"]
   parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-037, A-417]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_daily_chain_read_after_write_and_failure
+  notes: Specific responsibility verified by test_daily_chain_read_after_write_and_failure; semantic differences documented in A-417.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/10_activity_daily
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/orchestration/pipeline.yaml#dbt_users"]
   parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-037, A-417]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_daily_chain_read_after_write_and_failure
+  notes: Specific responsibility verified by test_daily_chain_read_after_write_and_failure; semantic differences documented in A-417.
 - id: etl_config:etl/config.ini
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: [lakehouse/runtime/external.ini, lakehouse/runtime/external_settings.py]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-416]
+  verification: test:lakehouse/tests/test_external_runtime.py::test_ini_path_compatibility
+  notes: Non-secret shared settings preserve section names and ETL_CONFIG_PATH overrides.
 - id: etl_script:etl/scripts/analytics_daily.py
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [lakehouse/runtime/analytics_daily.py, lakehouse/parity/analytics.py, lakehouse/orchestration/pipeline.yaml#lakehouse_analytics_daily]
+  parity: [platform.analytics_summary, platform.analytics_hourly, platform.analytics_top_users, platform.analytics_report, platform.analytics_postgres]
+  assumptions: [A-414, A-415, A-416]
+  notes: Five logical output surfaces compare unchanged source execution against identical injected services.
 - id: etl_script:etl/scripts/audit_archive_weekly.py
   status: replaced_by_platform
   targets:
@@ -1272,23 +1297,26 @@ objects:
     parity and empty/error/idempotency tests; A-407 documents intentional safety and metadata changes.
   verification: test:lakehouse/tests/test_audit_archive.py::test_archive_legacy_file_parity
 - id: etl_script:etl/scripts/bucket_owner.py
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: [lakehouse/runtime/external_settings.py]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-416]
+  verification: test:lakehouse/tests/test_external_runtime.py::test_all_s3_entrypoints_reject_invalid_owner
+  notes: ASCII 12-digit owner validation precedes every S3-using external job, including direct injectable entry points.
 - id: etl_script:etl/scripts/run_job.py
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: [lakehouse/runtime/external_settings.py]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-416]
+  verification: test:lakehouse/tests/test_external_runtime.py::test_job_secret_json_and_least_privilege
+  notes: Strict secret JSON validation with per-job key subsets and an explicit argv dispatch allowlist.
 - id: etl_script:etl/scripts/runtime_config.py
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: [lakehouse/runtime/external_settings.py]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-416]
+  verification: test:lakehouse/tests/test_external_runtime.py::test_ini_and_required_secrets
+  notes: Shared INI and nonblank secret checks are reused by external domain entry points.
 - id: etl_script:etl/scripts/search_reindex_weekly.py
   status: converted
   targets:
@@ -1898,17 +1926,19 @@ objects:
   notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
   verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_config:SFX_CONTENT.default_session_config
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/runtime/documents_informatica.py"]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-419]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_content_session_error_behavior
+  notes: Specific responsibility verified by test_content_session_error_behavior; semantic differences documented in A-419.
 - id: informatica_config:etl/informatica/config/connections.yaml#TD_SFX_EDW
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/runtime/session.py"]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-419]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_connection_uses_namespace_delta
+  notes: Specific responsibility verified by test_connection_uses_namespace_delta; semantic differences documented in A-419.
 - id: informatica_mapping:SFX_AUDIT.m_SFX_AUDIT_DAILY_SUMMARY
   status: replaced_by_platform
   targets:
@@ -2200,11 +2230,12 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_param:etl/informatica/params/sfx_d1110_daily.par
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/runtime/informatica_settings.py"]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-419]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_parameter_precedence
+  notes: Specific responsibility verified by test_parameter_precedence; semantic differences documented in A-419.
 - id: informatica_scheduler:SFX_AUDIT.wf_SFX_AUDIT_DAILY.Scheduler
   status: replaced_by_platform
   targets:
@@ -2235,11 +2266,12 @@ objects:
   notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
   verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_scheduler:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Scheduler
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/orchestration/pipeline.yaml#lakehouse_daily"]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-419]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_content_scheduler_replacement
+  notes: Specific responsibility verified by test_content_scheduler_replacement; semantic differences documented in A-419.
 - id: informatica_session:SFX_AUDIT.s_m_SFX_AUDIT_DAILY_SUMMARY
   status: replaced_by_platform
   targets:
@@ -2529,6 +2561,7 @@ objects:
   assumptions:
   - A-306
   - A-307
+  - A-419
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_source:SFX_AUDIT.AUDIT_EVENT
   status: replaced_by_platform
@@ -3162,11 +3195,12 @@ objects:
   notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
   verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_task:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Start
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/orchestration/pipeline.yaml#infa_users_app"]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-419]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_content_workflow_link_conditions
+  notes: Specific responsibility verified by test_content_workflow_link_conditions; semantic differences documented in A-419.
 - id: informatica_workflow:SFX_AUDIT.wf_SFX_AUDIT_DAILY
   status: replaced_by_platform
   targets:
@@ -3197,11 +3231,12 @@ objects:
   notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
   verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_workflow:SFX_CONTENT.wf_SFX_CONTENT_DAILY
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/orchestration/pipeline.yaml#lakehouse_daily"]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-419]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_content_workflow_link_conditions
+  notes: Specific responsibility verified by test_content_workflow_link_conditions; semantic differences documented in A-419.
 - id: informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE
   status: converted
   targets:
@@ -3221,11 +3256,12 @@ objects:
   notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
   verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: spark_config:etl/spark/conf/spark-defaults.conf
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/runtime/session.py"]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-420]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_spark_settings_replace_event_history
+  notes: Specific responsibility verified by test_spark_settings_replace_event_history; semantic differences documented in A-420.
 - id: spark_job:audit_actor_activity_join
   status: converted
   targets:
@@ -3565,29 +3601,33 @@ objects:
   - A-223
   notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_library:etl/spark/jobs/py/common/package.py
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/runtime/session.py"]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-420]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_common_package_imports
+  notes: Specific responsibility verified by test_common_package_imports; semantic differences documented in A-420.
 - id: spark_library:etl/spark/jobs/py/common/runtime.py
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/runtime/users_spark.py"]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-420]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_common_runtime_reads_and_write_modes
+  notes: Specific responsibility verified by test_common_runtime_reads_and_write_modes; semantic differences documented in A-420.
 - id: spark_library:etl/spark/jobs/py/common/schemas.py
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/runtime/spark_schemas.py", "lakehouse/billing/spark.py"]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-420]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_common_schemas_typed_reads
+  notes: Specific responsibility verified by test_common_schemas_typed_reads; semantic differences documented in A-420.
 - id: spark_library:etl/spark/scala/src/main/scala/sfx/BatchSupport.scala
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets: ["lakehouse/runtime/users_spark.py"]
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions: [A-420]
+  verification: test:lakehouse/tests/test_shared_estate.py::test_common_runtime_reads_and_write_modes
+  notes: Specific responsibility verified by test_common_runtime_reads_and_write_modes; semantic differences documented in A-420.
 - id: spark_submit:etl/spark/submit/audit_actor_activity_join.sh
   status: converted
   targets:
@@ -4016,23 +4056,23 @@ objects:
   - A-303
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:DBC.DBC_QRYLOG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [silver_platform.dbc_qrylog, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.dbc_qrylog]
+  assumptions: [A-409, A-410]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: teradata_table:DBC.DBC_QRYLOGOBJECTS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [silver_platform.dbc_qrylogobjects, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.dbc_qrylogobjects]
+  assumptions: [A-409, A-410]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: teradata_table:DBC.DBC_TABLESV
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [silver_platform.dbc_tablesv, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.dbc_tablesv]
+  assumptions: [A-409, A-410]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: teradata_table:SFX_AUDIT.ACCESS_REVIEW
   status: converted
   targets:
@@ -4586,7 +4626,9 @@ objects:
   - A-103
   - A-105
   - A-106
-  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
+  - A-412
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105
+    for cross-model failure/constraint limits.
 - id: teradata_table:SFX_DOCUMENTS.COLLAB_SESSION
   status: converted
   targets:
@@ -4962,23 +5004,23 @@ objects:
   - A-301
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_view:DBC.QRYLOGOBJECTSV
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [silver_platform.qrylogobjectsv, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.qrylogobjectsv]
+  assumptions: [A-409, A-410]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: teradata_view:DBC.QRYLOGV
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [silver_platform.qrylogv, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.qrylogv]
+  assumptions: [A-409, A-410]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: teradata_view:DBC.TABLESV
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [silver_platform.tablesv, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.tablesv]
+  assumptions: [A-409, A-410]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: teradata_view:SFX_AUDIT.V_CUSTOMER_RECON
   status: converted
   targets:

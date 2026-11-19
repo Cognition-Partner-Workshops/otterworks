@@ -79,6 +79,9 @@ def events(spark, day):
         bigint('login_id'), bigint('user_id'), F.to_timestamp('login_ts', 'yyyy-MM-dd HH:mm:ss').alias('login_ts'),
         code('result_cd'), code('client_type')).where(F.col('result_cd').isin('SUCCESS', 'FAILED', 'LOCKED', 'MFA_FAILED'))
     store(spark, logins, 'infa_login_event', 'login_id', merge=True)
+
+
+def members(spark, day):
     members = source(spark, 'team_member', day).select(
         bigint('team_member_id'), bigint('team_id'), bigint('user_id'), code('role_cd'),
         F.to_date('joined_dt', 'yyyy-MM-dd').alias('joined_dt'))
@@ -86,7 +89,7 @@ def events(spark, day):
 
 
 def main():
-    operations = {'app': app, 'roles': roles, 'events': events}
+    operations = {'app': app, 'roles': roles, 'events': events, 'members': members}
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--stage', choices=operations, required=True)
     parser.add_argument('--business-date', required=True)

@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "documents.spark_lake_compaction_documents",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -175,5 +175,5 @@
     "legacy": 68
   },
   "spec_hash": "b443b7bbe54c5babd91069788c742bec29c479ee9533ba4e3de3a9647a3ecd46",
-  "timestamp": "2026-11-19T14:15:31.675822+00:00"
+  "timestamp": "2026-11-19T16:25:01.043370+00:00"
 }

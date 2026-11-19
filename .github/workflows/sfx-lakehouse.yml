@@ -73,8 +73,8 @@ jobs:
           python=lakehouse/.venv/bin/python
           "$python" -m lakehouse.billing.consumer_reference --business-date "$BUSINESS_DATE"
           tables="$("$python" -c 'from warehouse.seed.columns import TABLES; print(" ".join(t.name for t in TABLES if t.area == "billing"))')"
-          "$python" -m lakehouse.runtime.ingest --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE" --tables $tables
-          "$python" -m lakehouse.runtime.dbt --select tag:billing
+          "$python" -m lakehouse.runtime.ingest --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE" --tables $tables STORAGE_USAGE_DAILY
+          "$python" -m lakehouse.runtime.dbt --select +tag:billing
           "$python" -m lakehouse.billing.informatica --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE"
           "$python" -m lakehouse.billing.informatica_reference --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE" --replay-next-run
       - name: Prepare the audit Spark oracle on the same headered landing
@@ -100,6 +100,7 @@ jobs:
       - name: Run the shared-input graph and parity
         run: |
           lakehouse/.venv/bin/python -m lakehouse.parity.documents_informatica_legacy --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE"
+          NS="$LEGACY_NS" PYTHONPATH=warehouse/teradata warehouse/.venv/bin/python -m dbql.load
           make sfx-lakehouse-run
       - name: Run the users Spark and activity-report parity graphs
         env:

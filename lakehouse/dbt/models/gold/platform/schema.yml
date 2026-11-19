@@ -1,0 +1,8 @@
+version: 2
+models:
+  - name: consumer_reads
+    columns:
+      - name: read_queries
+        tests: [not_null]
+      - name: reads_per_day
+        tests: [not_null]

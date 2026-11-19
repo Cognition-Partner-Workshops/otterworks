@@ -7,8 +7,8 @@ union all
 select 'summary export count' from {{ ref('audit_summary_final') }}
 where summary_id >= 10000000000 and (export_count <> 0 or event_count <= 0)
 union all
-select 'shared integration row' from {{ ref('audit_recon_final') }}
-where recon_id = 21000000001
+select 'shared reconciliation count'
+where (select count(*) from {{ ref('audit_recon_final') }} where recon_id = 21000000001) <> 1
 union all
 select 'event type width' from {{ ref('audit_event') }}
 where length(event_type) <> 12

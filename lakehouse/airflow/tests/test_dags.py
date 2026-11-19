@@ -10,6 +10,25 @@ from airflow.timetables.base import TimeRestriction
 
 from lakehouse.orchestration.graph import artifact_path, load, logical_business_date
 from lakehouse.runtime.layout import ROOT
+from lakehouse.runtime.platform import feed_path as platform_feed_path
+
+
+def test_analytics_paused_readiness_and_business_date():
+    bag = DagBag(dag_folder=str(ROOT / 'airflow/dags'), include_examples=False, safe_mode=False)
+    assert bag.import_errors == {}
+    dag = bag.dags['lakehouse_analytics_daily']
+    assert dag.is_paused_upon_creation and dag.schedule_interval == '0 2 * * *'
+    assert str(dag.timezone) == 'UTC' and dag.max_active_runs == dag.max_active_tasks == 1
+    sensor, task = dag.get_task('ready'), dag.get_task('analytics')
+    assert isinstance(sensor, FileSensor) and sensor.mode == 'reschedule'
+    assert task.upstream_task_ids == {'ready'} and task.trigger_rule == 'all_success'
+    assert task.retries == 1
+    logical = pendulum.datetime(2027, 1, 1, 2, tz='UTC')
+    for item in (sensor, task):
+        item.render_template_fields({'logical_date': logical}, jinja_env=dag.get_template_env())
+    assert sensor.filepath.endswith('/readiness/analytics/20261231.json')
+    argv = shlex.split(task.bash_command)
+    assert argv[argv.index('--business-date') + 1] == '20261231'
 
 
 def test_dagbag_contract_and_templates():
@@ -34,7 +53,9 @@ def test_dagbag_contract_and_templates():
             if node['kind'] in ('feed_sensor', 'artifact_sensor'):
                 assert isinstance(task, FileSensor)
                 assert Path(task.filepath).is_absolute()
-                if node['kind'] == 'feed_sensor':
+                if node['kind'] == 'feed_sensor' and node['domain'] == 'platform':
+                    assert Path(task.filepath) == platform_feed_path(node['table'])
+                elif node['kind'] == 'feed_sensor':
                     assert task.filepath.endswith('/' + node['table'] + '/20261109.psv')
                 else:
                     assert Path(task.filepath) == artifact_path(node, '20261109')
@@ -59,7 +80,7 @@ def test_audit_owned_schedule_and_dependencies():
     for dag in (daily, weekly):
         assert str(dag.timezone) == 'UTC' and dag.catchup
         assert dag.max_active_runs == dag.max_active_tasks == 1
-        assert not dag.is_paused_upon_creation
+        assert dag.is_paused_upon_creation == (dag.dag_id == 'lakehouse_daily')
     assert daily.get_task('dbt_audit').upstream_task_ids >= {
         'bronze_audit', 'bronze_users', 'bronze_documents', 'dbt_billing'}
     assert daily.get_task('audit_spark').upstream_task_ids == {'dbt_audit', 'bronze_users'}

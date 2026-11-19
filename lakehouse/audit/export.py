@@ -35,7 +35,7 @@ def main():
     try:
         rows = spark.sql(
             "select recon_id, source_count, target_count, difference_count "
-            "from gold_audit.m_recon_totals where recon_id <> 21000000001 order by recon_id"
+            "from gold_audit.m_recon_totals order by recon_id"
         ).toLocalIterator()
         publish(rows, args.output)
     finally:

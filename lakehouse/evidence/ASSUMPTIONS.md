@@ -1,6 +1,6 @@
 # Migration assumptions
 
-Entries: 141. Validation errors: 0.
+Entries: 153. Validation errors: 0.
 
 ## A-001 — PSV empty fields and nulls
 
@@ -2396,7 +2396,7 @@ Entries: 141. Validation errors: 0.
 
 **sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/audit/01_load_events.bteq, warehouse/teradata/scripts/audit/03_load_reviews.bteq, etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_STG_AUDIT_EVENT.XML, etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_EVENT.XML, etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_SECURITY_ALERT.XML, etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML
 
-## A-401 — Audit-local count projections until other domain models merge
+## A-401 — Audit counts follow real upstream domain models
 
 **status:** accepted
 
@@ -2404,29 +2404,29 @@ Entries: 141. Validation errors: 0.
 
 **legacy_objects:** bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq, teradata_table:SFX_AUDIT.AUDIT_RECON, teradata_view:SFX_AUDIT.V_EVENT_ACTORS
 
-**ambiguity:** Fetched remote branches and open lakehouse PRs expose only the foundation customer_account silver model; most external base models are absent.
+**ambiguity:** Audit-local typed projections previously duplicated external domain logic and could drift from published silver state.
 
-**decision:** Use ref(customer_account) now. For absent models use audit-local ephemeral typed bronze projections with the legacy row-selection rules, including latest document version, SET storage deduplication, user activity generation, monthly billing usage and invoice-line additions. Explicit DAG edges require all three bronze domains and dbt_billing. Swap these projections to domain ref() dependencies once their models merge.
+**decision:** Count domain ref() models, including user activity, current document versions and SET storage. Count usage_daily_effective after storage and monthly_invoice_line / closed_invoice_hdr after billing reports. Explicit graph dependencies gate audit on users, documents, storage and billing reporting.
 
-**rationale:** Counts must describe final base state rather than assume every base count equals staging. This does not claim ownership or full conversion of external domains.
+**rationale:** Counts must follow the actual post-report state counted by the legacy daily chain, not locally reimplemented approximations.
 
 **verification:** audit.audit_recon
 
 **sources:** warehouse/teradata/scripts/audit/11_reconciliation.bteq, warehouse/teradata/jobs/daily_chain, warehouse/teradata/procedures/activity_daily.sql, warehouse/teradata/scripts/documents/02_current_versions.bteq, warehouse/teradata/scripts/documents/05_load_sessions.bteq, warehouse/teradata/scripts/documents/10_storage_monthly.bteq, warehouse/teradata/procedures/monthly_invoice.sql
 
-## A-402 — Exclude the one shared reconciliation runner row
+## A-402 — Shared storage reconciliation is included in final audit publication
 
 **status:** accepted
 
 **risk:** low
 
-**legacy_objects:** bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq, teradata_table:SFX_AUDIT.AUDIT_RECON, teradata_view:SFX_AUDIT.V_CUSTOMER_RECON, teradata_macro:SFX_AUDIT.M_RECON_TOTALS
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq, teradata_table:SFX_AUDIT.AUDIT_RECON, teradata_view:SFX_AUDIT.V_CUSTOMER_RECON, teradata_macro:SFX_AUDIT.M_RECON_TOTALS, batch_runner:warehouse/teradata/jobs/reconcile, cron_entry:warehouse/teradata/jobs/daily_chain#stage=jobs/reconcile
 
-**ambiguity:** The full chain writes recon_id 21000000001 through shared jobs/reconcile; that responsibility is handed to integration.
+**ambiguity:** The daily chain invokes the generic reconciliation runner specifically for documents.STORAGE_USAGE_DAILY after report mutations.
 
-**decision:** Exclude exactly recon_id=21000000001 from both comparison populations and audit publication. Preserve every audit-generated 20000000001..20000000037 row and every other load row. Number the ordered multiset for the customer-recon view because it exposes no unique key.
+**decision:** Model the scheduled invocation as row 21000000001 with business day and customer_id=0, comparing the complete dated staging snapshot count with the SET target count. Replace any stale loaded instance, union the current row into final audit state and publish it without exclusions. General arbitrary --area/--table invocations are not newly implemented.
 
-**rationale:** User explicitly assigned shared runner output to integration; this is an ownership filter, not numerical tolerance or hidden mismatch.
+**rationale:** Both counts span all usage dates within the BUSINESS_DATE landing snapshot, matching the runner, whose SQL has no USAGE_DT predicate. Shared ownership is no longer a reason to omit an observable row.
 
 **verification:** audit.audit_recon
 
@@ -2476,11 +2476,11 @@ Entries: 141. Validation errors: 0.
 
 **legacy_objects:** bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq, teradata_macro:SFX_AUDIT.M_RECON_TOTALS
 
-**ambiguity:** Legacy exports a mutable reconciliation.psv with no header and rows ordered by recon ID; the file contains a shared runner row outside audit ownership.
+**ambiguity:** Legacy exports the complete reconciliation macro ordered by recon ID, including the shared runner row.
 
-**decision:** Publish the audit-owned macro projection as exports/<business_date>/reconciliation.psv, same four integer columns and ordering, excluding only A-402 shared ID. Write and fsync a same-directory temporary file then os.replace; failures preserve the previous publication and retries replace it. File parity compares the scoped legacy macro SQL to the published file.
+**decision:** Publish the complete macro projection as exports/<business_date>/reconciliation.psv, with four integer columns and recon ID ordering. Write and fsync a same-directory temporary file then os.replace; failures preserve the previous publication and retries replace it.
 
-**rationale:** Date scoping supports replay/backfill and atomic replacement avoids partial output; no claim is made to integration-owned file rows.
+**rationale:** Date scoping supports replay/backfill; atomic replacement avoids partial output. No shared reconciliation rows are omitted.
 
 **verification:** test:lakehouse/tests/test_audit.py::test_export_empty_retry_and_failure
 
@@ -2539,3 +2539,219 @@ Entries: 141. Validation errors: 0.
 **verification:** test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 
 **sources:** etl/crontab, warehouse/teradata/jobs/daily_chain, etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML, etl/informatica/params/sfx_d1110_daily.par
+
+## A-409 — Historical cross-domain DBQL snapshot inputs
+
+**status:** accepted
+
+**risk:** low
+
+**legacy_objects:** teradata_table:DBC.DBC_QRYLOG, teradata_table:DBC.DBC_QRYLOGOBJECTS, teradata_table:DBC.DBC_TABLESV, teradata_view:DBC.QRYLOGV, teradata_view:DBC.QRYLOGOBJECTSV, teradata_view:DBC.TABLESV, bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
+
+**ambiguity:** DBQL inputs are static historical CSVs, unlike the date-named warehouse PSV feeds; live Spark telemetry is not the same data.
+
+**decision:** Ingest exactly qrylog.csv, objectusage.csv and tablesv.csv used by the emulator DBQL loader. PLATFORM_DBQL_LANDING optionally selects an identical frozen directory for both engines. Tag snapshots with BUSINESS_DATE and filter models explicitly on it. Header-only files are valid empty inputs; missing or malformed feeds fail.
+
+**rationale:** Preserve historical query/catalog evidence without claiming future query instrumentation or regenerating shared input. Raw text casing, whitespace and duplicate object edges are retained. CSV empty strings remain text, matching the legacy copy loader; invalid typed values fail in ANSI casts.
+
+**verification:** test:lakehouse/tests/test_platform.py::test_empty_ingestion_retry_and_missing_feed
+
+**sources:** warehouse/teradata/dbql/load.py, warehouse/teradata/dbql/schema.sql
+
+## A-410 — DBQL ACCESS locking becomes Delta snapshot isolation
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** teradata_table:DBC.DBC_QRYLOG, teradata_table:DBC.DBC_QRYLOGOBJECTS, teradata_table:DBC.DBC_TABLESV, teradata_view:DBC.QRYLOGV, teradata_view:DBC.QRYLOGOBJECTSV, teradata_view:DBC.TABLESV, bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
+
+**ambiguity:** Teradata views use LOCKING ROW FOR ACCESS and the historical catalog has nullable or multiset keys.
+
+**decision:** Use ref-based views over dated Delta snapshots, not Teradata row locks. Compare full-column multisets using deterministic binary-ordered occurrence numbers, preserving duplicate and nullable rows. Key tests cover declared unique indexes without inventing non-null constraints on nullable catalog columns.
+
+**rationale:** Delta readers see a committed snapshot. A run requires immutable atomically published feeds; this is not a multi-file transaction or live engine metadata service. Production concurrent producer coordination is outside this historical import.
+
+**verification:** test:lakehouse/tests/test_platform.py::test_parity_multiset_preserves_duplicate_null_edges
+
+**sources:** warehouse/teradata/dbql/schema.sql, warehouse/teradata/dbql/load.py
+
+## A-411 — Parameterized historical consumer-read window and case groups
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
+
+**ambiguity:** Legacy fixes a 30-day timestamp window, groups NOT CASESPECIFIC usernames but CASESPECIFIC application/client IDs, and does not define display casing or order inside ties.
+
+**decision:** dbql_window_start and dbql_window_end vars default to the literal inclusive 2026-10-11 and exclusive 2026-11-10 timestamps. Preserve division by 30.00 even for overridden windows. Canonicalize username with lower/rtrim for its case-insensitive group; rtrim application/client IDs without case folding. Preserve raw casing in silver. Order counts descending then canonical username ascending NULLS LAST; order inside tied count/username groups is unspecified.
+
+**rationale:** The representative casing of a NOT CASESPECIFIC group is not stable. Canonical output makes it deterministic; the parity reader applies the same explicit representative rule only to the report, with no table normalization or numerical tolerance. ASCII fixture grouping is verified; full Teradata Unicode collation equivalence is not claimed.
+
+**verification:** test:lakehouse/tests/test_platform.py::test_consumer_window_case_grouping_and_order
+
+**sources:** warehouse/teradata/dbql/consumer_reads.bteq, warehouse/teradata/dbql/schema.sql, warehouse/teradata/bteq/runner.py
+
+## A-412 — Pre-storage usage parity is captured before monthly storage mutation
+
+**status:** accepted
+
+**risk:** low
+
+**legacy_objects:** teradata_table:SFX_BILLING.USAGE_DAILY, bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq
+
+**ambiguity:** The existing usage_daily model represents load-stage state but its parity reader used the mutable final legacy table.
+
+**decision:** Capture sfx_billing_parity.load_usage_daily alongside load_invoice_line before storage_monthly. Change only billing.usage_daily legacy SQL to read this stage-correct snapshot. Keep the base silver model unchanged. Compare usage_daily_effective against live final legacy usage.
+
+**rationale:** User approved stage-specific capture to avoid comparing 2000 pre-storage rows with 2250 post-storage rows. No source rows are filtered or numerical tolerances added.
+
+**verification:** billing.usage_daily
+
+**sources:** lakehouse/billing/fixture.py, warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/documents/10_storage_monthly.bteq
+
+## A-413 — Monthly storage is a billing stage between base loads and invoice reports
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/documents/10_storage_monthly.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/10_storage_monthly
+
+**ambiguity:** Storage deletes all prior STORAGE usage and Monthly storage lines, then later monthly billing mutates invoice lines again.
+
+**decision:** Keep base silver immutable. Rebuild usage_daily_effective and invoice_line_effective as deterministic full stage snapshots. Preserve null nonmatching delete predicates, SQL inner joins and MIN IDs, current calendar month [start,next_month), business-day usage date and DECIMAL(14,2) assignment rounding. Monthly billing consumes effective lines. Capture storage_invoice_line immediately after the storage script for parity; later generated subscription and adjustment rows belong to monthly_invoice_line. Atomically publish storage_monthly.psv from m_storage_totals.
+
+**rationale:** Pure stage projections replace destructive delete/insert without accumulating rows on replay. Separate snapshots preserve the actual daily_chain REPORTS order and null/rounding behavior.
+
+**verification:** test:lakehouse/tests/test_billing_storage.py::test_storage_month_boundaries_null_joins_and_replay
+
+**sources:** warehouse/teradata/scripts/documents/10_storage_monthly.bteq, warehouse/teradata/jobs/daily_chain, warehouse/teradata/macros/storage_totals.sql, warehouse/teradata/ddl/billing/00_tables.sql
+
+## A-414 — Analytics uses the scheduler business date and preserves legacy aggregation
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** etl_script:etl/scripts/analytics_daily.py, cron_entry:etl/crontab#f34723629b86
+
+**ambiguity:** Legacy processes wall-clock today while Airflow identifies the prior logical business date.
+
+**decision:** Use BUSINESS_DATE, logical date minus one, for DynamoDB filtering, artifact partitions and the daily upsert. Pin the unchanged oracle clock to that date at UTC midnight, including generated_at. Retain pandas field normalization, source concatenation without cross-source deduplication, stable top-100 ties, timestamp-offset hour extraction, 10000-message cap and three-consecutive-receive-error stop. Compare decoded gzip contents and aggregate data columns, excluding processing-time PostgreSQL updated_at.
+
+**rationale:** Outputs stay source-equivalent on identical inputs without comparing transport gzip timestamps or a database wall clock. Readiness must attest source completeness; the legacy bounded SQS extraction does not establish completeness itself.
+
+**verification:** platform.analytics_report
+
+**sources:** etl/scripts/analytics_daily.py, lakehouse/runtime/analytics_daily.py, lakehouse/parity/analytics.py
+
+## A-415 — Analytics writes precede queue acknowledgement and PostgreSQL failures fail the task
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** etl_script:etl/scripts/analytics_daily.py, cron_entry:etl/crontab#f34723629b86
+
+**ambiguity:** Legacy deletes messages before transformation and swallows PostgreSQL failures, permitting data loss and partial success.
+
+**decision:** Atomically journal the complete extraction before output writes in persistent namespace transactions/analytics. Replay the same extraction, overwrite deterministic S3 keys, upsert the daily database row, and acknowledge only after all four S3 writes and the database commit succeed. Fail on PostgreSQL or acknowledgement errors. Persist the written state before acknowledgement, refresh receipt handles on retry without adding new events, and retain completed journals. Suppress repeated delivery of a single SQS MessageId within extraction while retaining duplicates across SQS and DynamoDB.
+
+**rationale:** User-approved safer retry semantics preserve successful output values. S3 plus PostgreSQL has no cross-service transaction; readers may observe intermediate artifacts. Workers must share durable namespace storage and retain journals for replay. SQS remains an at-least-once service; no exactly-once transport claim is made.
+
+**verification:** test:lakehouse/tests/test_external_runtime.py::test_analytics_partial_failure_and_retry_idempotence
+
+**sources:** etl/scripts/analytics_daily.py, lakehouse/runtime/analytics_daily.py
+
+## A-416 — Shared external settings use job-scoped secrets and owner-guarded S3 calls
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** batch_runner:etl/run.sh, etl_config:etl/config.ini, etl_script:etl/scripts/run_job.py, etl_script:etl/scripts/runtime_config.py, etl_script:etl/scripts/bucket_owner.py, etl_script:etl/scripts/analytics_daily.py
+
+**ambiguity:** Legacy loads both runtime secrets into every job; native activity reporting reads staged files instead of live PostgreSQL and S3.
+
+**decision:** Allow only five named external jobs and dispatch with argv, never shell evaluation. Preserve INI sections and ETL_CONFIG_PATH; use lakehouse/runtime/external.ini by default. Support validated injected environment secrets or strictly validated Secrets Manager JSON, defaulting to otterworks/etl/job-name, with ETL_SECRET_ID override. Analytics receives only DB password; search receives only Meilisearch key; archive, cleanup and staged user activity require neither. Validate ASCII 12-digit owner before every S3-using entry point and send ExpectedBucketOwner on every S3 request, including inventory listing. Documents logical action parity excludes only the newly added inventory owner guard field; dedicated tests verify that guard.
+
+**rationale:** User-approved least privilege replaces broad secret distribution without rewriting domain adapters. Deployment must provision job-scoped secrets/IAM and durable analytics journals before unpausing. Existing injected-secret deployments remain compatible; no secrets are stored in INI or command argv.
+
+**verification:** test:lakehouse/tests/test_external_runtime.py::test_job_secret_json_and_least_privilege
+
+**sources:** etl/scripts/run_job.py, etl/scripts/runtime_config.py, etl/scripts/bucket_owner.py, etl/config.ini, etl/run.sh, lakehouse/runtime/external_settings.py
+
+## A-417 — Daily-chain serial order is relaxed to table read-after-write dependencies
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** batch_runner:warehouse/teradata/jobs/daily_chain, cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/01_load_users, cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/02_load_teams, cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/03_load_identity, cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/04_load_events, cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/10_activity_daily
+
+**ambiguity:** Legacy stops the entire serial chain on failure, while grouped dbt tasks and independent graph branches have different ordering.
+
+**decision:** Preserve read-after-write dependencies, including SQL routine and view lineage, rather than the total serial order. Grouped dbt selections remain intact, with internal ref ordering. Failed upstream tasks block dependents; independent branches continue. Reports billing/10_subscription_report and billing/11_currency_daily execute after storage, but their source-derived reads are SUBSCRIPTION/PLAN_CATALOG and INVOICE_HDR, disjoint from storage-mutated USAGE_DAILY and INVOICE_LINE.
+
+**rationale:** The responsibility test derives lineage from every CORE/REPORTS BTEQ stage and its SQL routines, maps every source stage to graph nodes, and injects an upstream failure. Existing PASS parity for billing.subscription_plans, billing.currency_totals, billing.file_subscription_plans and billing.file_currency_daily supports the unchanged report outputs; monthly reports retain effective-model dependencies.
+
+**verification:** test:lakehouse/tests/test_shared_estate.py::test_daily_chain_read_after_write_and_failure
+
+**sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/billing/10_subscription_report.bteq, warehouse/teradata/scripts/billing/11_currency_daily.bteq, warehouse/teradata/scripts/documents/10_storage_monthly.bteq, lakehouse/tests/legacy_dependencies.py, lakehouse/orchestration/pipeline.yaml
+
+## A-418 — Daily scheduling, namespace initialization and opt-in fixture bootstrap
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** cron_entry:warehouse/teradata/jobs/crontab.example#250f291ea0eb, cron_entry:warehouse/teradata/jobs/daily_chain#stage=setup, cron_entry:warehouse/teradata/jobs/daily_chain#stage=generate
+
+**ambiguity:** Host cron starts at 01:15 UTC and daily_chain normally generates fixtures and initializes Teradata; Airflow uses data intervals and persistent Delta namespaces.
+
+**decision:** Keep the UTC daily DAG paused, catchup enabled, max_active_runs and max_active_tasks at one, with local namespace flock protection. Use @daily logical dates minus one for BUSINESS_DATE rather than an 01:15 wall-clock start. Initialize namespace schemas before bronze ingestion. Move source-equivalent seeded fixture generation to the separate paused unscheduled lakehouse_fixture_bootstrap DAG, never scheduled daily. Propagate the exact legacy month/period variables, including leap-year and year-boundary encodings, to tasks.
+
+**rationale:** Catchup and manual bootstrap are explicit operations; overwriting real landing data must never be an automatic daily action. Bootstrap preserves the legacy 200000-row default, --rows, --seed (default 1110) and business-date controls; guide/Make smoke fixtures explicitly pass ROWS_PER_TABLE=2000. The file lease assumes one host or shared POSIX namespace storage; distributed workers require an external whole-run lease before activation.
+
+**verification:** test:lakehouse/tests/test_shared_estate.py::test_daily_cadence_and_namespace_lock
+
+**sources:** warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain, lakehouse/runtime/bootstrap.py, lakehouse/billing/calendar.py, lakehouse/orchestration/runner.py, lakehouse/orchestration/pipeline.yaml
+
+## A-419 — Content workflow links, disabled session and shared Informatica settings
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** informatica_workflow:SFX_CONTENT.wf_SFX_CONTENT_DAILY, informatica_task:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Start, informatica_scheduler:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Scheduler, informatica_config:SFX_CONTENT.default_session_config, informatica_config:etl/informatica/config/connections.yaml#TD_SFX_EDW, informatica_param:etl/informatica/params/sfx_d1110_daily.par, informatica_session:SFX_CONTENT.s_m_SFX_TEAM_MEMBER
+
+**ambiguity:** PowerCenter schedules at 02:15, shares Teradata credentials and defaults, and disables TEAM_MEMBER; grouped native operations use Delta and task-level retries.
+
+**decision:** Use the paused catchup UTC @daily graph instead of the 02:15 scheduler. Preserve success-only links; grouped STG_APP_USER then APP_USER and grouped STG_DOCUMENT then DOCUMENT then DOC_SHARE execute sequentially. The document group conservatively waits for both APP_USER and ROLE_GRANT, making DOC_SHARE an AND join. Schedule only LOGIN_EVENT, with TEAM_MEMBER available with parity in the separate paused unscheduled lakehouse_users_infa_team_manual DAG after daily bronze preparation. Keep global < workflow < session parameter precedence in the native resolver used by billing; preserve the checked-in defaults, with CLI business date overriding the fixture LOAD_DATE. TD_SFX_EDW is replaced by namespace-scoped bronze/silver/gold Delta databases, not copied JDBC credentials. Transport errors and SQL/write errors fail the task and block dependents; documents conversion continues after per-row transformation errors as Stop on errors=0 requires. Users missing/duplicate merge keys fail the task rather than silently reject, preserving the already-documented stricter writer contract.
+
+**rationale:** The tests read the XML links/defaults and parameter file, check the namespace connection mapping and exercise tolerant row errors versus fatal missing input/SQL errors. No lookup-cache, history-server, PowerCenter log-count or Teradata credential behavior is claimed; parameters affecting archived history retain the default-false gate and open A-403 limitations. Whole-task retries replace native session recovery and require idempotent domain writers.
+
+**verification:** test:lakehouse/tests/test_shared_estate.py::test_content_workflow_link_conditions
+
+**sources:** etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML, etl/informatica/config/connections.yaml, etl/informatica/params/sfx_d1110_daily.par, lakehouse/runtime/informatica_settings.py, lakehouse/runtime/informatica.par, lakehouse/runtime/users_informatica.py, lakehouse/runtime/documents_informatica.py, lakehouse/orchestration/pipeline.yaml
+
+## A-420 — Spark registry, import packaging, typed input and output publication responsibilities
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** batch_runner:etl/spark/run.sh, spark_config:etl/spark/conf/spark-defaults.conf, spark_library:etl/spark/jobs/py/common/package.py, spark_library:etl/spark/jobs/py/common/runtime.py, spark_library:etl/spark/jobs/py/common/schemas.py, spark_library:etl/spark/scala/src/main/scala/sfx/BatchSupport.scala
+
+**ambiguity:** Legacy uses Docker spark-submit, common.zip, inferred Scala schemas, Parquet/JDBC write modes, event logs and a Spark history server.
+
+**decision:** Map every registry job to its converted graph node and current-spec-hash PASS parity. Select jobs by paused DAG instead of legacy JOB/SPARK_JOBS shell variables; grouped users/audit jobs share a failure boundary. Import the lakehouse package via the pinned worker environment/PYTHONPATH, without common.zip or Scala assembly. Use explicit typed domain schemas and reject missing feeds; use Delta snapshot overwrite for users/audit and immutable atomic Parquet publication plus Delta JDBC copies for billing. Billing usage append remains delivery-aware, replay-safe accumulation rather than blind duplicate append. Retire Spark event-log/history-server storage, compression and polling settings; retain task stdout, task states and parity evidence instead. Local Spark uses UTC, ANSI SQL, two execution/shuffle threads and pinned Delta dependencies; this is not a distributed performance/log-history equivalence claim.
+
+**rationale:** Responsibility-specific named tests cover registry completeness, imports, typed reads, missing-feed failure, write modes and session configuration. Existing billing append/replay tests and each job's output parity remain authoritative for sink semantics. Typed inputs intentionally replace Scala inference; per-domain assumptions continue to describe retired duplicate sinks and explicit source contracts.
+
+**verification:** test:lakehouse/tests/test_shared_estate.py::test_spark_registry_complete
+
+**sources:** etl/spark/run.sh, etl/spark/jobs.txt, etl/spark/conf/spark-defaults.conf, etl/spark/jobs/py/common/package.py, etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/scala/src/main/scala/sfx/BatchSupport.scala, lakehouse/runtime/session.py, lakehouse/runtime/spark_schemas.py, lakehouse/tests/test_billing_spark.py, lakehouse/tests/test_shared_estate.py

@@ -1,0 +1,27 @@
+{
+  "id": "billing.invoice_line_effective",
+  "legacy_objects": [
+    "bteq_script:warehouse/teradata/scripts/documents/10_storage_monthly.bteq",
+    "cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/10_storage_monthly"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT invoice_line_id, invoice_id, line_no, description, quantity, unit_price, line_amount FROM sfx_billing_parity.storage_invoice_line"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.invoice_line_effective"
+  },
+  "keys": [
+    "invoice_line_id"
+  ],
+  "columns": [
+    "invoice_line_id",
+    "invoice_id",
+    "line_no",
+    "description",
+    "quantity",
+    "unit_price",
+    "line_amount"
+  ]
+}

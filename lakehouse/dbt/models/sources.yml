@@ -1,5 +1,11 @@
 version: 2
 sources:
+  - name: bronze_platform
+    schema: bronze_platform
+    tables:
+      - name: dbc_qrylog
+      - name: dbc_qrylogobjects
+      - name: dbc_tablesv
   - name: documents_spark_runtime
     schema: silver_documents
     tables:

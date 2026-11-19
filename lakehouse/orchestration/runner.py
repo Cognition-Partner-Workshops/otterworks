@@ -8,6 +8,7 @@ from pathlib import Path
 
 from lakehouse.runtime.layout import ROOT, data_root
 from warehouse.seed.columns import TABLES
+from lakehouse.billing.calendar import variables
 
 from .graph import artifact_path, business_date, feed_path, ordered
 
@@ -29,7 +30,9 @@ def namespace_lock():
 
 def task_environment(day):
     business_date(day)
-    env = dict(os.environ, BUSINESS_DATE=day, PYTHONPATH=str(ROOT.parent), SPARK_LOCAL_IP='127.0.0.1')
+    env = dict(os.environ, **{key: value for key, value in variables(
+        day, data_root() / 'exports' / day).items() if not key.startswith('TD_')},
+        PYTHONPATH=str(ROOT.parent), SPARK_LOCAL_IP='127.0.0.1')
     legacy_ns = env.setdefault('LEGACY_NS', 'sfx-d1110-before')
     if not env.get('TD_PG_DSN'):
         env.setdefault('TD_PG_PORT', str(54500 + zlib.crc32(legacy_ns.encode()) % 1000))
@@ -40,10 +43,13 @@ def command(node, landing, day):
     python = str(ROOT / '.venv/bin/python')
     base = [python, '-m']
     if node['kind'] == 'bronze_ingest':
+        if node['domain'] == 'platform':
+            return base + ['lakehouse.runtime.platform', '--business-date', day]
         tables = [t.name for t in TABLES if t.area == node['domain']]
         return base + ['lakehouse.runtime.ingest', '--landing', str(landing), '--business-date', day, '--tables', *tables]
     if node['kind'] == 'dbt':
-        return base + ['lakehouse.runtime.dbt', '--select', node['selector']]
+        return (base + ['lakehouse.runtime.dbt', '--select', node['selector']]
+                + (['--exclude', node['exclude']] if node.get('exclude') else []))
     if node['kind'] == 'parity':
         selected = node['specs'] if 'specs' in node else [node['spec']]
         return base + ['lakehouse.parity', 'run', '--spec', *selected, '--business-date', day]
