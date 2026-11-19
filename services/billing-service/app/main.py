@@ -12,7 +12,13 @@ from pydantic import BaseModel
 
 from app.config import settings
 from app.db import connect, migrate, reset
-from app.domain import catalog, change_plan, entitlement
+from app.domain import (
+    BackdatedPlanChangeError,
+    DuplicatePlanChangeError,
+    catalog,
+    change_plan,
+    entitlement,
+)
 from app.repository import PostgresPlansRepository
 
 
@@ -120,9 +126,11 @@ def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) 
                     for item in subscriptions
                 ],
             }
+    except BackdatedPlanChangeError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
     except psycopg.errors.ForeignKeyViolation as error:
         raise HTTPException(status_code=400, detail="invalid plan change") from error
-    except psycopg.errors.UniqueViolation as error:
+    except (DuplicatePlanChangeError, psycopg.errors.UniqueViolation) as error:
         raise HTTPException(
             status_code=409,
             detail="this plan change has already been requested",

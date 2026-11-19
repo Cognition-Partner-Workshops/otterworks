@@ -519,12 +519,15 @@ deploy_service() {
   fi
 
   log "Deploying ${service} (tag ${tag})..."
+  local renderer_args=()
+  [ -n "${HELM_POST_RENDERER:-}" ] && renderer_args=(--post-renderer "${HELM_POST_RENDERER}")
   helm upgrade --install "${service}" "${chart_dir}" \
     --namespace "${NS}" \
     --set image.repository="${ECR_REGISTRY}/${ECR_PREFIX}${service}" \
     --set image.tag="${tag}" \
     "${EXTRA_ARGS[@]}" \
     "${secret_args[@]}" \
+    "${renderer_args[@]}" \
     --timeout 4m \
     && local rc=0 || local rc=1
   [ -n "${secret_file}" ] && rm -f "${secret_file}"

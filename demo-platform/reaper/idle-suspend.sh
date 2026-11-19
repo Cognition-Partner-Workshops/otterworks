@@ -21,7 +21,7 @@
 #                               the clock, or a cycling controller would keep
 #                               idle tenants awake forever
 #   scaled up since last run -> just woken; reset the clock (see was_running)
-#   idle for IDLE_AFTER      -> scale every Deployment in the namespace to zero
+#   idle for IDLE_AFTER      -> scale Deployments and opted-in StatefulSets to zero
 #
 # Suspending preserves the namespace, config, secrets and the tenant's database
 # (RDS is external), so waking is `tenant-scale.sh <id> up` (which the dashboard
@@ -36,6 +36,8 @@
 # Sourced by reaper.sh; also runnable standalone.
 # ------------------------------------------------------------------------------
 set -uo pipefail
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/../../scripts/lib/tenant-workloads.sh"
 
 CONTROL_TABLE="${CONTROL_TABLE:-otterworks-demo-control}"
 AWS_REGION="${AWS_REGION:-us-east-1}"
@@ -118,10 +120,9 @@ record_running() {
   fi
 }
 
-# Number of Deployments currently running at least one replica.
+# Number of tenant-managed workloads with at least one desired replica.
 running_deployments() {
-  kubectl -n "$1" get deploy -o jsonpath='{range .items[*]}{.spec.replicas}{"\n"}{end}' 2>/dev/null \
-    | awk '$1 > 0 { n++ } END { print n + 0 }'
+  tenant_running_workloads "$1"
 }
 
 # Does the tenant have an injected chaos scenario running? Such a tenant is a
@@ -141,7 +142,7 @@ tenant_has_chaos() {
 suspend_tenant() {
   local id="$1" ns="$2"
   idle_log "suspending ${id}: no ingress requests for >= ${IDLE_AFTER_SECONDS}s"
-  if kubectl -n "${ns}" scale deployment --all --replicas=0 >/dev/null 2>&1; then
+  if tenant_scale_workloads "${ns}" 0 >/dev/null 2>&1; then
     ctl_audit "${id}" "suspend" "idle for ${IDLE_AFTER_SECONDS}s" 2>/dev/null || true
     return 0
   fi
@@ -199,7 +200,10 @@ suspend_idle_tenants() {
     since="$(printf '%s' "${item}" | jq -r '.Item.idle_since.N // empty')"
     was_running="$(printf '%s' "${item}" | jq -r '.Item.was_running.N // empty')"
 
-    running="$(running_deployments "${ns}")"
+    running="$(running_deployments "${ns}")" || {
+      idle_warn "cannot read workloads in ${ns}; skipping"
+      continue
+    }
     if [ "${running}" -eq 0 ]; then
       # Asleep: nothing to suspend. Record that, so the tenant coming back is
       # recognisable as a wake on a later pass.

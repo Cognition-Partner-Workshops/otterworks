@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: odl-source-settings
+  labels: {run_token: {{ .Values.runToken | quote }}}
+data:
+{{- range $key, $value := .Values.settings }}
+  {{ $key }}: {{ $value | quote }}
+{{- end }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: odl-source-loader
+  labels: {run_token: {{ .Values.runToken | quote }}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: odl-source-loader
+  labels: {run_token: {{ .Values.runToken | quote }}}
+rules:
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list]
+  - apiGroups: [""]
+    resources: [pods/exec]
+    resourceNames: [db2-archive-0]
+    verbs: [create, get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: odl-source-loader
+  labels: {run_token: {{ .Values.runToken | quote }}}
+subjects:
+  - kind: ServiceAccount
+    name: odl-source-loader
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: odl-source-loader}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oracle
+  labels: {run_token: {{ .Values.runToken | quote }}}
+spec:
+  type: ClusterIP
+  selector: {app: odl-oracle}
+  ports: [{name: oracle, port: 1521, targetPort: 1521}]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: oracle
+  labels: {run_token: {{ .Values.runToken | quote }}, otterworks.io/scale-with-tenant: "true"}
+spec:
+  serviceName: oracle
+  replicas: 1
+  selector:
+    matchLabels: {app: odl-oracle}
+  template:
+    metadata:
+      labels: {app: odl-oracle, run_token: {{ .Values.runToken | quote }}}
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 10
+      securityContext:
+        runAsUser: 54321
+        runAsGroup: 54321
+        fsGroup: 54321
+        fsGroupChangePolicy: OnRootMismatch
+      containers:
+        - name: oracle
+          image: {{ .Values.oracleImage | quote }}
+          env:
+            - {name: ORACLE_PASSWORD, valueFrom: {secretKeyRef: {name: odl-oracle, key: ORACLE_SYS_PASSWORD}}}
+            - {name: APP_USER, valueFrom: {secretKeyRef: {name: odl-oracle, key: ORACLE_USER}}}
+            - {name: APP_USER_PASSWORD, valueFrom: {secretKeyRef: {name: odl-oracle, key: ORACLE_PASSWORD}}}
+            - {name: TZ, value: America/New_York}
+          ports: [{containerPort: 1521}]
+          resources:
+            requests: {cpu: 500m, memory: 2Gi}
+            limits: {cpu: "2", memory: 4Gi}
+          startupProbe:
+            exec: {command: [/opt/oracle/healthcheck.sh]}
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 100
+          readinessProbe:
+            exec: {command: [/opt/oracle/healthcheck.sh]}
+            periodSeconds: 5
+            timeoutSeconds: 5
+          volumeMounts:
+            - {name: data, mountPath: /opt/oracle/oradata}
+      volumes:
+        - name: data
+          emptyDir: {sizeLimit: 20Gi}
+{{- range $source := list "db2" "oracle" "crm" }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: odl-seed-{{ $source }}
+  labels: {run_token: {{ $.Values.runToken | quote }}}
+spec:
+  backoffLimit: 1
+  activeDeadlineSeconds: 540
+  template:
+    {{- include "odl.loader" (dict "root" $ "source" $source) | nindent 4 }}
+{{- if ne $source "crm" }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: odl-refresh-{{ $source }}
+  labels: {run_token: {{ $.Values.runToken | quote }}, otterworks.io/scale-with-tenant: "true"}
+spec:
+  schedule: "* * * * *"
+  suspend: true
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      labels: {run_token: {{ $.Values.runToken | quote }}}
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 540
+      template:
+        {{- include "odl.loader" (dict "root" $ "source" $source) | nindent 8 }}
+{{- end }}
+{{- end }}

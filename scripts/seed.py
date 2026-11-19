@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["psycopg2-binary", "bcrypt"]
+# dependencies = ["psycopg2-binary", "bcrypt", "psycopg[binary]"]
 # ///
 """
 OtterWorks admin-service seed script.
@@ -20,6 +20,7 @@ import os
 import sys
 import uuid
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import bcrypt
 import psycopg2
@@ -417,6 +418,13 @@ def seed_audit_logs(cur) -> None:
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
+    if "--crm" in sys.argv[1:]:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "services/odl-sources"))
+        from odl_sources.generate import Settings
+        from odl_sources.load import load_with_retry
+        load_with_retry("postgres", Settings.environment())
+        return
+
     print("\nOtterWorks admin-service seed script")
     print(f"  Target: {DB_CONFIG['user']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['dbname']}\n")
 

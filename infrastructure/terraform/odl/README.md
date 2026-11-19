@@ -1,9 +1,10 @@
 # ODL ephemeral image repositories
 
-Independent state, shared by the ODL feature branches; never apply platform state
-for these repositories. All repositories inherit `run_token=odl-1795112287`,
-`Expires=2027-02-17T00:00:00Z`, owner and demo tags. Lifecycle policies keep ten
-images and inherit ownership through their repository (AWS cannot tag them).
+Independent state; does not apply platform or application infrastructure. AWS
+credentials must be supplied through the environment. Every repository inherits
+`run_token=odl-1795112287`, `Expires=2027-02-17T00:00:00Z`, owner and demo tags.
+ECR lifecycle policies inherit ownership through their repository (AWS does not
+support tagging lifecycle policies separately).
 
 To add only Confluence to an existing run without touching repositories from
 other feature branches:
@@ -19,9 +20,13 @@ terraform -chdir=infrastructure/terraform/odl apply \
 terraform -chdir=infrastructure/terraform/odl init -input=false
 terraform -chdir=infrastructure/terraform/odl plan -out=odl.tfplan
 terraform -chdir=infrastructure/terraform/odl apply odl.tfplan
-# Only after all ODL consumers have been removed:
+terraform -chdir=infrastructure/terraform/odl output repository_urls
+# Only after all ODL image consumers have been removed:
 terraform -chdir=infrastructure/terraform/odl destroy
 ```
 
-`force_delete` removes images on destroy. Do not commit state or plans. The mongo
-repository mirrors the official `mongo:8.0.16` image to avoid Docker Hub limits.
+`force_delete` removes images on destroy. Plans/state may contain sensitive
+infrastructure data: do not commit them.
+
+The mongo repository mirrors the official `mongo:8.0.16` image to avoid Docker
+Hub limits.

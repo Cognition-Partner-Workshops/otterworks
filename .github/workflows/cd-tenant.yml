@@ -127,6 +127,10 @@ jobs:
             echo "::notice::TENANT_PREFIX is set, so main is not deployed from this repository"
             deploy=false
           fi
+          if [ "${GITHUB_REF_NAME}" = "demo-odl" ] && [ -z "${TENANT_PREFIX}" ]; then
+            echo "::notice::ODL tenants are deployed with scripts/odl/deploy-odl.sh, not the standard full-profile runner"
+            deploy=false
+          fi
           echo "deploy=${deploy}" >> "$GITHUB_OUTPUT"
 
   build:
