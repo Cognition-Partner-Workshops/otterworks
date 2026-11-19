@@ -36,7 +36,7 @@ objects:
   - high complexity
   status: not_started
   output_relations:
-  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
+  - SFX_AUDIT_PC.AUDIT_DAILY_SUMMARY
 - id: n9912ea8ce8887d9a
   system: powercenter
   kind: mapping
@@ -54,7 +54,7 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.AUDIT_EVENT
+  - SFX_AUDIT_PC.AUDIT_EVENT
 - id: ncf58434800570afc
   system: powercenter
   kind: mapping
@@ -263,7 +263,7 @@ objects:
   - high complexity
   status: not_started
   output_relations:
-  - SFX_AUDIT.SECURITY_ALERT
+  - SFX_AUDIT_PC.SECURITY_ALERT
 - id: n2f5adf79707598c4
   system: powercenter
   kind: mapping
@@ -299,7 +299,7 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.STG_AUDIT_EVENT
+  - SFX_AUDIT_PC.STG_AUDIT_EVENT
 - id: n2949244725eedc48
   system: powercenter
   kind: mapping
@@ -407,7 +407,7 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
+  - SFX_AUDIT_PC.AUDIT_DAILY_SUMMARY
 - id: n871f62d3691a3f87
   system: powercenter
   kind: session
@@ -425,7 +425,7 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.AUDIT_EVENT
+  - SFX_AUDIT_PC.AUDIT_EVENT
 - id: nd28651dfba442ad6
   system: powercenter
   kind: session
@@ -624,7 +624,7 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.SECURITY_ALERT
+  - SFX_AUDIT_PC.SECURITY_ALERT
 - id: n3d22b7a534acc0bb
   system: powercenter
   kind: session
@@ -660,7 +660,7 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.STG_AUDIT_EVENT
+  - SFX_AUDIT_PC.STG_AUDIT_EVENT
 - id: n314aedf512c71123
   system: powercenter
   kind: session
@@ -750,11 +750,10 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
-  - SFX_AUDIT.AUDIT_EVENT
-  - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
-  - SFX_AUDIT.SECURITY_ALERT
-  - SFX_AUDIT.STG_AUDIT_EVENT
+  - SFX_AUDIT_PC.STG_AUDIT_EVENT
+  - SFX_AUDIT_PC.AUDIT_EVENT
+  - SFX_AUDIT_PC.AUDIT_DAILY_SUMMARY
+  - SFX_AUDIT_PC.SECURITY_ALERT
 - id: n04c6b6b63a36b7db
   system: powercenter
   kind: workflow
@@ -1221,7 +1220,8 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
-  output_relations: []
+  output_relations:
+  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
 - id: n978bec82e829a7bd
   system: teradata
   kind: bteq
@@ -1835,7 +1835,8 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
-  output_relations: []
+  output_relations:
+  - SFX_AUDIT.M_RECON_TOTALS_OUTPUT
 - id: nc70e3f09535ab2b8
   system: teradata
   kind: macro
