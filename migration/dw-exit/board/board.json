@@ -101,14 +101,96 @@
       "owner": "@otterworks/analytics",
       "subject_area": "users",
       "licence_dependency": "powercenter",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "output not materialized: USERS.APP_USER"
+      "row_count": {
+        "before": 120,
+        "after": 120
+      },
+      "column_profile": {
+        "SFX_USERS.APP_USER": {
+          "before": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.APP_USER": {
+          "keys": [
+            "USER_ID"
+          ],
+          "difference": 0,
+          "before": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "after": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.APP_USER": []
+      },
+      "reason": null
     },
     {
       "id": "n72218f3784bfa85d",
@@ -2013,14 +2095,96 @@
       "owner": "@otterworks/analytics",
       "subject_area": "users",
       "licence_dependency": "powercenter",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "output not materialized: USERS.APP_USER"
+      "row_count": {
+        "before": 120,
+        "after": 120
+      },
+      "column_profile": {
+        "SFX_USERS.APP_USER": {
+          "before": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.APP_USER": {
+          "keys": [
+            "USER_ID"
+          ],
+          "difference": 0,
+          "before": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "after": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.APP_USER": []
+      },
+      "reason": null
     },
     {
       "id": "nb292817d7dbbf313",
@@ -5439,7 +5603,7 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "output not materialized: USERS.APP_USER"
+      "reason": "output not materialized: USERS.USER_PROFILE"
     },
     {
       "id": "n8e844039a21420a5",
@@ -15437,14 +15601,96 @@
       "owner": "@otterworks/analytics",
       "subject_area": "users",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "output not materialized: USERS.APP_USER"
+      "row_count": {
+        "before": 120,
+        "after": 120
+      },
+      "column_profile": {
+        "SFX_USERS.APP_USER": {
+          "before": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.APP_USER": {
+          "keys": [
+            "USER_ID"
+          ],
+          "difference": 0,
+          "before": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "after": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.APP_USER": []
+      },
+      "reason": null
     },
     {
       "id": "n3e2eb63a0ecb2ec8",
@@ -18304,16 +18550,17 @@
     "local_target": "DuckDB",
     "conversions": [
       "billing/initial/10_load.sql",
-      "billing/initial/30_views.sql"
+      "billing/initial/30_views.sql",
+      "users/10_load.sql"
     ],
     "non_relational_objects": "declared output relations",
     "migration_state": "BEFORE"
   },
   "summary": {
     "rows": 252,
-    "red": 223,
-    "green": 29,
-    "measured": 59,
+    "red": 220,
+    "green": 32,
+    "measured": 62,
     "migrated": 0,
     "licence_remaining": 252,
     "licence_total": 252,

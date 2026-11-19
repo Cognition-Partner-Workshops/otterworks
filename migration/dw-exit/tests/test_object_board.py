@@ -1,3 +1,4 @@
+import datetime
 import importlib.util
 from pathlib import Path
 import sys
@@ -5,6 +6,7 @@ import subprocess
 
 import duckdb
 import pytest
+import sqlglot
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
@@ -159,3 +161,51 @@ def test_make_command_line_token_selects_namespace():
     output=subprocess.check_output(['make','-n','sfx-teradata-validate','RUN_TOKEN=sfx2220'],cwd=ROOT,text=True)
     assert 'sfx-2220-before' in output
     assert 'sfx-1119-before' not in output
+
+
+def usersBefore():
+    before=duckdb.connect()
+    before.execute('CREATE SCHEMA SFX_USERS')
+    before.execute('CREATE TABLE SFX_USERS.STG_APP_USER (USER_ID BIGINT, DISPLAY_NAME VARCHAR, EMAIL VARCHAR, STATUS_CD VARCHAR, CREATED_DT DATE)')
+    before.execute('CREATE TABLE SFX_USERS.APP_USER (USER_ID BIGINT, DISPLAY_NAME VARCHAR, EMAIL VARCHAR, STATUS_CD VARCHAR, CREATED_DT DATE)')
+    before.execute("INSERT INTO SFX_USERS.STG_APP_USER VALUES (1,?,?,'ACTIVE',DATE '2026-01-01'),(2,'b','b@x','ACTIVE',DATE '2026-01-02'),"
+                   "(2,'b','b@x','ACTIVE',DATE '2026-01-02'),(NULL,'n','n@x','ACTIVE',DATE '2026-01-03')",['d'*81,'e'*130])
+    return before
+
+
+def test_app_user_mapping_upserts_at_target_widths():
+    usersDir=board.EXTRA_AREAS['USERS']
+    names={'SFX_USERS.STG_APP_USER','SFX_USERS.APP_USER'}
+    before=usersBefore()
+    try:
+        after,ready,errors=board.materialize(before,names,usersDir.parent/'billing/initial',{'USERS':usersDir})
+        try:
+            assert not [name for name in errors if not name.startswith('BILLING.')]
+            assert 'USERS.APP_USER' in ready and 'USERS.STG_APP_USER' not in ready
+            expected=[(1,'d'*60,'e'*120,'ACTIVE      ',datetime.date(2026,1,1)),(2,'b','b@x','ACTIVE      ',datetime.date(2026,1,2))]
+            assert after.execute('SELECT * FROM USERS.APP_USER ORDER BY 1').fetchall()==expected
+            after.execute("INSERT INTO USERS.APP_USER VALUES (9,'kept','k@x','LOCKED      ',DATE '2025-01-01')")
+            after.execute("UPDATE USERS.APP_USER SET DISPLAY_NAME='stale' WHERE USER_ID=2")
+            statement=sqlglot.parse_one(RunConfig.from_env().render((usersDir/'10_load.sql').read_text()),read='snowflake')
+            for table in statement.find_all(sqlglot.exp.Table):
+                table.set('catalog',None)
+            after.execute(statement.sql(dialect='duckdb',comments=False))
+            assert after.execute('SELECT * FROM USERS.APP_USER ORDER BY 1').fetchall()==expected+[(9,'kept','k@x','LOCKED      ',datetime.date(2025,1,1))]
+        finally:
+            after.close()
+    finally:
+        before.close()
+
+
+def test_users_conversion_needs_its_staging_input():
+    usersDir=board.EXTRA_AREAS['USERS']
+    before=usersBefore()
+    try:
+        after,ready,errors=board.materialize(before,{'SFX_USERS.APP_USER'},usersDir.parent/'billing/initial',{'USERS':usersDir})
+        try:
+            assert 'USERS.APP_USER' not in ready
+            assert errors['USERS.APP_USER']=='conversion input not materialized'
+        finally:
+            after.close()
+    finally:
+        before.close()

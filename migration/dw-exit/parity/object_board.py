@@ -122,17 +122,23 @@ def source_snapshot(dsn, names):
     return connection, ready, errors
 
 
-def materialize(before, names, conversion_dir):
+def materialize(before, names, conversion_dir, extra_areas=None):
     after = duckdb.connect()
     ready, errors = set(), {}
-    after.execute('CREATE SCHEMA BILLING')
+    # Staging outside billing is a conversion input only; it is not reported as measured.
+    inputs = set()
+    areas = {'BILLING': conversion_dir, **(extra_areas or {})}
+    for area in areas:
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        after.execute('CREATE SCHEMA ' + quote(area))
     for name in sorted(names):
-        if not name.startswith('SFX_BILLING.'):
+        area = name.split('.')[0].removeprefix('SFX_')
+        if not name.startswith('SFX_') or area not in areas:
             continue
         table = name.split('.')[1]
         if table.startswith('V_'):
             continue
-        target = 'BILLING.'+table
+        target = area+'.'+table
         # DuckDB metadata and identifiers are local; relation()/quote() escape identifiers.
         # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         definitions = before.execute('DESCRIBE '+relation(name)).fetchall()
@@ -143,9 +149,13 @@ def materialize(before, names, conversion_dir):
             rows = before.execute('SELECT * FROM '+relation(name)).fetchall()
             if rows:
                 after.executemany(f'INSERT INTO {relation(target)} VALUES ({", ".join("?" for _ in definitions)})', rows)
-            ready.add(target)
-    for filename in ('10_load.sql', '30_views.sql'):
-        text = RunConfig.from_env().render((conversion_dir / filename).read_text())
+            (ready if area == 'BILLING' else inputs).add(target)
+    files = [(directory / filename, filename if area == 'BILLING' else area.lower()+'/'+filename)
+             for area, directory in areas.items() for filename in ('10_load.sql', '30_views.sql')]
+    for path, filename in files:
+        if not path.is_file():
+            continue
+        text = RunConfig.from_env().render(path.read_text())
         try:
             statements = sqlglot.parse(text, read='snowflake')
         except sqlglot.errors.ParseError:
@@ -162,14 +172,20 @@ def materialize(before, names, conversion_dir):
                 if not isinstance(query, exp.Query):
                     continue
                 references = {(t.db+'.'+t.name).upper() for t in query.find_all(exp.Table)}
-                if not references <= ready:
+                if not references <= ready | inputs:
                     errors[target] = 'conversion input not materialized'
                     continue
                 statement.set('properties', None)
             elif isinstance(statement, (exp.Insert, exp.Delete)):
                 target = statement.this.sql(dialect='duckdb', comments=False)
                 references = {(t.db+'.'+t.name).upper() for t in statement.expression.find_all(exp.Table)} if isinstance(statement, exp.Insert) else set()
-                if not references <= ready:
+                if not references <= ready | inputs:
+                    errors[target] = 'conversion input not materialized'
+                    continue
+            elif isinstance(statement, exp.Merge):
+                target = (statement.this.db+'.'+statement.this.name).upper()
+                references = {(t.db+'.'+t.name).upper() for t in statement.args['using'].find_all(exp.Table)}
+                if not references <= ready | inputs:
                     errors[target] = 'conversion input not materialized'
                     continue
             else:
@@ -184,6 +200,9 @@ def materialize(before, names, conversion_dir):
     return after, ready, errors
 
 
+EXTRA_AREAS = {'USERS': ROOT/'migration/dw-exit/users'}
+
+
 def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None):
     if target not in ('duckdb', 'snowflake'):
         raise ValueError('Unsupported parity target')
@@ -191,7 +210,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     result = wave_board(objects, counters or {})
     result.update(run_token=RunConfig.from_env().token, target=target, rows=[])
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
-        'local_target': 'DuckDB', 'conversions': ['billing/initial/10_load.sql','billing/initial/30_views.sql'],
+        'local_target': 'DuckDB', 'conversions': ['billing/initial/10_load.sql','billing/initial/30_views.sql','users/10_load.sql'],
         'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
     available, errors = set(available or ()), errors or {}
     for obj in objects:
@@ -254,7 +273,7 @@ def main():
             port = os.environ.get('TD_PG_PORT',str(54500+zlib.crc32(ns.encode())%1000))
             dsn = os.environ.get('BOARD_SOURCE_DSN',f'host=127.0.0.1 port={port} dbname=teradata user=postgres')
             before, source_ready, source_errors = source_snapshot(dsn,names)
-            after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing/initial')
+            after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing/initial',EXTRA_AREAS)
             errors.update(source_errors)
         payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters)
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
