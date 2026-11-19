@@ -1,8 +1,8 @@
 {
   "job": "docs_storage_by_owner",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "4 1 * * *",
   "profile": "small"
 }

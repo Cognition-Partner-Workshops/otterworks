@@ -16,8 +16,10 @@
   reason: "Selects the latest usage date and materializes its rows; all transformations are SQL."
 - job: docs_storage_by_owner
   language: python
-  target: dbt
-  reason: "Joins documents, files and users to aggregate storage by owner."
+  target: spark_standard_template
+  reason: "Keeps the existing Parquet full refresh on the shared Spark profile."
+  original_target: dbt
+  change_reason: "The sfx1119 Snowflake database and warehouse were unavailable to the run role, so the dbt candidate could not be measured."
 - job: docs_share_activity
   language: scala
   target: dbt

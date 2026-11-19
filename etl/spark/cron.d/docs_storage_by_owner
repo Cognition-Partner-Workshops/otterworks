@@ -1,1 +1,0 @@
-4 1 * * * /opt/etl/spark/submit/docs_storage_by_owner.sh >> /var/log/etl/spark-docs_storage_by_owner.log 2>&1
