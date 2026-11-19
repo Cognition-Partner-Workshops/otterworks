@@ -4,8 +4,10 @@
   reason: "Aggregates invoice headers and lines by customer and invoice date; the result is a relational summary."
 - job: billing_revenue_by_plan
   language: python
-  target: dbt
-  reason: "Joins invoice lines to the plan catalog and sums revenue per plan."
+  target: spark_standard_template
+  reason: "Keeps the daily revenue aggregation on its existing landing data and shared Spark profile."
+  original_target: dbt
+  change_reason: "Snowflake was not available in the run scope for a measured cutover."
 - job: billing_payment_aging
   language: python
   target: dbt

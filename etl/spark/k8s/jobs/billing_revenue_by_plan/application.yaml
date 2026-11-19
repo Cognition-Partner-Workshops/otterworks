@@ -16,7 +16,11 @@ spec:
   restartPolicy:
     type: "Never"
   dynamicAllocation:
-    enabled: false
+    enabled: true
+    initialExecutors: 1
+    minExecutors: 1
+    maxExecutors: 4
+    shuffleTrackingTimeout: 120000
   sparkConf:
     spark.eventLog.enabled: "true"
     spark.eventLog.compress: "true"
@@ -24,8 +28,17 @@ spec:
     spark.eventLog.dir: "/opt/spark-events"
     spark.driver.extraClassPath: "/opt/sfx/spark/.cache/jars/*"
     spark.executor.extraClassPath: "/opt/sfx/spark/.cache/jars/*"
-    spark.sql.shuffle.partitions: "16"
-    spark.sql.tungsten.enabled: "true"
+    spark.dynamicAllocation.executorIdleTimeout: "15s"
+    spark.dynamicAllocation.shuffleTracking.enabled: "true"
+    spark.shuffle.service.enabled: "false"
+    spark.sql.adaptive.enabled: "true"
+    spark.sql.adaptive.coalescePartitions.enabled: "true"
+    spark.sql.adaptive.skewJoin.enabled: "true"
+    spark.sql.adaptive.advisoryPartitionSizeInBytes: "134217728"
+    spark.sql.files.maxPartitionBytes: "134217728"
+    spark.sql.shuffle.partitions: "48"
+    spark.sql.sources.partitionOverwriteMode: "dynamic"
+    spark.task.maxFailures: "4"
   deps:
     pyFiles:
       - "local:///opt/sfx/spark/.cache/common.zip"
@@ -64,8 +77,8 @@ spec:
         mountPath: "/opt/spark-events"
         subPath: ".data/eventlogs"
   executor:
-    cores: 2
-    instances: 2
+    cores: 1
+    instances: 1
     memory: "1g"
     labels:
       otterworks.run-token: "sfx-d1110"
