@@ -25,7 +25,7 @@ from parity.semantics import columns as source_columns, numeric_type
 from parity.ladder import local_compare as compare
 from parity.provenance import provenance, markdown
 from parity import report_outputs, spark_billing
-from parity import local_audit, powercenter_audit
+from parity import local_audit, powercenter_audit, spark_audit
 
 
 def quote(name):
@@ -261,6 +261,9 @@ def main():
             spark_ready,spark_errors,spark_evidence = spark_billing.materialize(before,after,manifest['objects'],ns)
             ready.update(spark_ready)
             errors.update(spark_errors)
+            audit_spark_ready, audit_spark_errors, audit_spark_evidence = spark_audit.materialize(before,after,manifest['objects'],ns)
+            ready.update(audit_spark_ready)
+            errors.update(audit_spark_errors)
             audit_errors, audit_evidence = local_audit.materialize(before,after,source_ready,dsn,ready,
                 os.environ.get('BUSINESS_DATE','20261109'))
             errors.update(audit_errors)
@@ -272,6 +275,7 @@ def main():
             payload['spark_evidence'] = spark_evidence
             payload['audit_evidence'] = audit_evidence
             payload['audit_powercenter_evidence'] = pc_evidence
+            payload['audit_spark_evidence'] = audit_spark_evidence
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         readme = args.output.parent / 'README.md'
         if readme.exists():

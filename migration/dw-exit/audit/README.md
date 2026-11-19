@@ -1,7 +1,7 @@
 # Audit conversion
 
 No retire object is converted. The archive landing feed remains untouched for Spark.
-Spark conversion is deferred. Nothing here authorizes retirement, migration-state
+Spark models live under `warehouse/dbt/models/spark/<job>/`. Nothing here authorizes retirement, migration-state
 promotion, or live Snowflake execution.
 
 ## Execution paths
@@ -40,6 +40,26 @@ files. Mapping/session rows reference these isolated outputs, not batch outputs.
 Counts, profiles, keyed multiset hashes and samples use the shared ladder. Source
 rejections/logs are retained in board evidence; rejected source data is not silently
 removed from the conversion to force green.
+
+## Spark evidence
+
+The five audit Spark jobs materialize dbt tables in MART_SPARK. The actor join
+preserves the source's explicit skew-key expressions and inner joins. Archive
+resort and compaction preserve row multiplicity; their physical two-partition
+layout is not a Snowflake relational requirement. Compaction uses
+`ref('audit_daily_summary')`, not a copy of the source result.
+
+`parity/spark_audit.py` compares real legacy Parquet with the shipped models fed
+the same headered Spark landing PSVs (different schemas from batch audit feeds).
+The daily summary and compliance jobs also compare their actual JDBC outputs
+from the separate Spark PostgreSQL service, as independently declared board
+relations. `output_artifacts` records real lake and JDBC names in the generated
+manifest. Input hashes and freshness checks are retained in board evidence.
+
+Run the six billing jobs and five audit jobs after `make sfx-spark-up`, with
+`RUN_TOKEN=sfx1119 NS=sfx-1119-before ROWS_PER_TABLE=200`. Run
+`audit_daily_summary` before `lake_compaction_audit`; then regenerate the board
+with the documented Make target. No registry migration status is promoted.
 
 Local proof is not live Snowflake parity, cutover approval, complete incremental
 proof, or verification of mapping reject-file delivery on Snowflake.

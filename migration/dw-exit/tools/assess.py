@@ -16,6 +16,7 @@ from pathlib import Path
 
 import yaml
 from audit_outputs import outputs as audit_outputs
+from audit_outputs import artifacts as audit_artifacts
 
 ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / 'migration/dw-exit'
@@ -391,6 +392,8 @@ def build(root=None):
             risk_reasons=[], status='not_started'))
     for row in manifest:
         row['output_relations'] = audit_outputs(row)
+        if audit_artifacts(row):
+            row['output_artifacts'] = audit_artifacts(row)
     setup_only = sorted(name for name, qs in reads.items() if qs and all(q['StartTime'][:10] == '2026-08-12' for q in qs))
     cost = yaml.safe_load(_run_render((root / 'etl/informatica/licence.yaml').read_text()))['variables']
     counters = {'teradata_objects': {'remaining': len(catalog), 'target': 0}, 'powercenter_mappings': {'remaining': len(mapping_files), 'target': 0}, 'spark_executor_hours': {'remaining': 0, 'target': 0, 'status': 'no Spark estate on branch yet'}, 'powercenter_annual_cost': {'value': cost['ANNUAL_COST'], 'currency': cost['ANNUAL_COST_CURRENCY']}}

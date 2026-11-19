@@ -32,6 +32,11 @@ def audit_provenance(obj):
     converted = {}
     for relation in obj.get('output_relations', []):
         schema, table = relation.removeprefix('SFX_').split('.')
+        if obj.get('system') == 'spark':
+            directory = Path('warehouse/dbt/models/spark') / obj['name']
+            converted[relation] = [link(path.relative_to(ROOT), branch=branch)
+                                   for path in sorted((ROOT / directory).glob('*.sql'))]
+            continue
         entries = []
         for path in sorted((ROOT / 'migration/dw-exit/audit').glob('*.sql')):
             text = path.read_text()
@@ -39,7 +44,7 @@ def audit_provenance(obj):
             entries.extend(entry(path.relative_to(ROOT), text, match)
                            for match in re.finditer(pattern, text, re.S | re.I))
         converted[relation] = entries
-    if obj.get('target_type') == 'retire' or obj.get('system') == 'spark':
+    if obj.get('target_type') == 'retire':
         converted = {}
     elif obj.get('system') == 'powercenter' or obj['kind'] in ('macro', 'procedure') or obj['name'] == '10_summary_daily':
         name = obj['name'].split('.')[-1].upper()
@@ -55,8 +60,7 @@ def audit_provenance(obj):
     if source:
         source = link(source['file'], source['start_line'], source['end_line'], branch=branch)
     return {'source': [source] if source else [], 'converted': converted,
-            'conversion_note': 'Retirement proposed; no conversion' if obj.get('target_type') == 'retire' else
-                               'Spark conversion deferred' if obj.get('system') == 'spark' else None,
+            'conversion_note': 'Retirement proposed; no conversion' if obj.get('target_type') == 'retire' else None,
             'metrics': {key: link(value['file'], value['start_line'], value['end_line'], branch=branch)
                         for key, value in metric_links().items()}}
 
@@ -153,7 +157,7 @@ def markdown(rows):
     audit = [row for row in rows if row['subject_area'] == 'audit']
     if audit:
         lines += ['', '## Audit parity provenance', '',
-                  'Batch and isolated PowerCenter workflow outputs are separate evidence paths. Retirements and Spark remain unconverted.', '',
+                  'Batch, isolated PowerCenter, and actual Spark lake/JDBC outputs are separate evidence paths. Retirements remain unconverted.', '',
                   '| Object | Local DuckDB | Snowflake | Source | Converted producers | Metrics |', '|---|---|---|---|---|---|']
         for row in audit:
             p = row['provenance']
