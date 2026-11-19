@@ -4,6 +4,31 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
+.PHONY: sfx-lakehouse-up sfx-lakehouse-run sfx-lakehouse-test sfx-lakehouse-down sfx-lakehouse-validate
+SFX_LH_PY = lakehouse/.venv/bin/python
+SFX_LH_ENV = NS="$(NS)" BUSINESS_DATE="$(BUSINESS_DATE)" PYTHONPATH="$(CURDIR)" SPARK_LOCAL_IP=127.0.0.1
+
+sfx-lakehouse-validate:
+	@test -n "$(NS)" && [[ "$(NS)" =~ ^[a-z0-9][a-z0-9-]*$$ ]] || (echo "NS required: lowercase letters, digits or hyphens (e.g. sfx-d1110-after)" >&2; exit 2)
+
+lakehouse/.venv/.requirements: lakehouse/requirements.txt
+	python3 -m venv lakehouse/.venv
+	$(SFX_LH_PY) -m pip install -r lakehouse/requirements.txt
+	@touch $@
+
+sfx-lakehouse-up: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Bootstrap local lakehouse and deterministic landing files
+	$(SFX_LH_ENV) $(SFX_LH_PY) warehouse/seed/generate.py --rows "$(ROWS_PER_TABLE)" --seed 1110 --business-date "$(BUSINESS_DATE)" --out "lakehouse/.data/$(NS)/landing"
+
+sfx-lakehouse-run: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Ingest bronze and build the silver pilot
+	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.runtime.ingest --landing "lakehouse/.data/$(NS)/landing" --business-date "$(BUSINESS_DATE)"
+	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.runtime.dbt
+
+sfx-lakehouse-test: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Test lakehouse runtime and pilot
+	$(SFX_LH_ENV) $(SFX_LH_PY) -m pytest -q lakehouse/tests
+
+sfx-lakehouse-down: sfx-lakehouse-validate ## Remove only this namespace's local lakehouse data
+	rm -rf "lakehouse/.data/$(NS)"
+
 .PHONY: sfx-teradata-up sfx-teradata-run sfx-teradata-test sfx-teradata-down sfx-teradata-validate
 
 ROWS_PER_TABLE ?= 200000

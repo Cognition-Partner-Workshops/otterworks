@@ -1,0 +1,56 @@
+version: 2
+sources:
+  - name: bronze_billing
+    schema: bronze_billing
+    tables:
+      - name: customer_account
+      - name: plan_catalog
+      - name: subscription
+      - name: invoice_hdr
+      - name: invoice_line
+      - name: payment
+      - name: credit_note
+      - name: tax_rate
+      - name: usage_daily
+      - name: billing_adj
+      - name: gl_account
+      - name: gl_journal_line
+  - name: bronze_documents
+    schema: bronze_documents
+    tables:
+      - name: folder
+      - name: document
+      - name: doc_version
+      - name: doc_share
+      - name: doc_tag
+      - name: file_object
+      - name: doc_comment
+      - name: collab_session
+      - name: storage_usage_daily
+      - name: search_index_log
+  - name: bronze_users
+    schema: bronze_users
+    tables:
+      - name: app_user
+      - name: user_profile
+      - name: team
+      - name: team_member
+      - name: role_grant
+      - name: sso_identity
+      - name: login_event
+      - name: user_activity_daily
+      - name: user_pref
+      - name: user_status_hist
+  - name: bronze_audit
+    schema: bronze_audit
+    tables:
+      - name: audit_event
+      - name: audit_event_archive
+      - name: access_review
+      - name: retention_policy
+      - name: data_export_req
+      - name: compliance_flag
+      - name: security_alert
+      - name: legal_hold
+      - name: audit_daily_summary
+      - name: audit_recon

@@ -1,0 +1,14 @@
+name: otterworks_lakehouse
+version: '1.0'
+config-version: 2
+profile: otterworks_lakehouse
+model-paths: [models]
+macro-paths: [macros]
+models:
+  otterworks_lakehouse:
+    +materialized: table
+    +file_format: delta
+    silver:
+      billing:
+        +schema: silver_billing
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/silver/billing"
