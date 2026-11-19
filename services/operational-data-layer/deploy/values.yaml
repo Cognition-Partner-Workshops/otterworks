@@ -15,7 +15,7 @@ observability:
 sync:
   enabled: true
   image: 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks-odl/odl-sync:864279553
-  intervalSeconds: 300
+  intervalSeconds: 60
   resources:
     requests: {cpu: 250m, memory: 768Mi}
     limits: {cpu: "1", memory: 1536Mi}
