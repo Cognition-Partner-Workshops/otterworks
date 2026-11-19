@@ -154,7 +154,8 @@ def test_flatfile_reader_matches_quote_none_and_missing_fields(tmp_path):
 
 def test_informatica_graph_dependencies_and_distinct_models():
     nodes = {n['id']: n for n in load()['lakehouse_daily']['nodes']}
-    assert set(nodes['documents_informatica']['depends_on']) == {'bronze_users', 'bronze_documents'}
+    assert set(nodes['documents_informatica']['depends_on']) == {
+        'bronze_users', 'bronze_documents', 'infa_users_app', 'infa_users_role_grant'}
     assert {'documents_informatica', 'bronze_users'} <= set(nodes['dbt_documents']['depends_on'])
     assert len(nodes['documents_informatica']['legacy_objects']) == 12
 

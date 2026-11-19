@@ -87,7 +87,7 @@ def test_platform_graph_and_ownership(tmp_path, monkeypatch):
     monkeypatch.setenv('PLATFORM_DBQL_LANDING', str(tmp_path))
     nodes = {n['id']: n for n in graph.load()['lakehouse_daily']['nodes']}
     owned = yaml.safe_load((ROOT / 'coverage/domains/platform.yaml').read_text())['legacy_objects']
-    assert len(owned) == len(set(owned)) == 16
+    assert len(owned) == len(set(owned)) == 37
     scheduled = {identity for dag in graph.load().values() for node in dag['nodes']
                  for identity in node['legacy_objects']}
     assert set(owned) <= scheduled
@@ -95,7 +95,7 @@ def test_platform_graph_and_ownership(tmp_path, monkeypatch):
     sensors = {n['id'] for n in nodes.values()
                if n['kind'] == 'feed_sensor' and n['domain'] == 'platform'}
     assert len(sensors) == 3
-    assert set(nodes['bronze_platform']['depends_on']) == sensors
+    assert set(nodes['bronze_platform']['depends_on']) == sensors | {'initialize'}
     assert nodes['dbt_platform']['depends_on'] == ['bronze_platform']
     assert nodes['dbt_platform']['selector'] == 'tag:platform'
     assert nodes['parity_platform']['depends_on'] == ['dbt_platform']

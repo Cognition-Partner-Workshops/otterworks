@@ -40,7 +40,7 @@ def test_pipeline_contract_and_staging_replacement():
     assert len(sensors) == len(TABLES)
     for domain in ('billing', 'documents', 'users', 'audit'):
         bronze = nodes['bronze_' + domain]
-        assert set(bronze['depends_on']) == {n['id'] for n in sensors if n['domain'] == domain}
+        assert set(bronze['depends_on']) == {'initialize'} | {n['id'] for n in sensors if n['domain'] == domain}
         assert bronze['id'] in nodes['dbt_' + domain]['depends_on']
         assert set(nodes['dbt_' + domain]['depends_on']) <= nodes.keys()
         expected = 'path:models/silver/billing' if domain == 'billing' else 'tag:' + domain

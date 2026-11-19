@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "billing.consumer_admin_overdue",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -139,5 +139,5 @@
     "legacy": 10
   },
   "spec_hash": "77211edceb93575cfcb566d8880de38294412a508c64f061bfb0c62dbc8da8d9",
-  "timestamp": "2026-11-19T15:53:26.691151+00:00"
+  "timestamp": "2026-11-19T18:01:55.655693+00:00"
 }

@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "billing.consumer_partner_transfer",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -36,9 +36,9 @@
       "lakehouse": {
         "bytes": {
           "count": 1,
-          "hash": "313638b0cf680eab42abc926d92c3afeb0e9d9f18dab7401b52f34652bf31ded",
+          "hash": "6510b7da021e8b260de21dc29a58374bd13219b0f3931aa49a89b6b5c0006d9b",
           "null_count": 0,
-          "sum": "91"
+          "sum": "42411"
         },
         "destination": {
           "count": 1,
@@ -54,7 +54,7 @@
         },
         "sha256": {
           "count": 1,
-          "hash": "a10000f9226db034887558d1dddf852f9529e004149a9bb651b4a095426e289d",
+          "hash": "ebcc3dc91b9cee8d6f990a4147a5f2d8691de84e2bb1a53ad2c5f01a3e9f0032",
           "null_count": 0,
           "sum": null
         }
@@ -62,9 +62,9 @@
       "legacy": {
         "bytes": {
           "count": 1,
-          "hash": "313638b0cf680eab42abc926d92c3afeb0e9d9f18dab7401b52f34652bf31ded",
+          "hash": "6510b7da021e8b260de21dc29a58374bd13219b0f3931aa49a89b6b5c0006d9b",
           "null_count": 0,
-          "sum": "91"
+          "sum": "42411"
         },
         "destination": {
           "count": 1,
@@ -80,7 +80,7 @@
         },
         "sha256": {
           "count": 1,
-          "hash": "a10000f9226db034887558d1dddf852f9529e004149a9bb651b4a095426e289d",
+          "hash": "ebcc3dc91b9cee8d6f990a4147a5f2d8691de84e2bb1a53ad2c5f01a3e9f0032",
           "null_count": 0,
           "sum": null
         }
@@ -127,5 +127,5 @@
     "legacy": 1
   },
   "spec_hash": "ebca4f5a8dfd785bc977d8c10ad76d33276f60fd86fc0789507323e662e73afe",
-  "timestamp": "2026-11-19T15:53:26.843591+00:00"
+  "timestamp": "2026-11-19T18:01:55.949677+00:00"
 }

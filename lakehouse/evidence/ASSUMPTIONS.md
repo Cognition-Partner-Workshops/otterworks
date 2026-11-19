@@ -1,6 +1,6 @@
 # Migration assumptions
 
-Entries: 149. Validation errors: 0.
+Entries: 153. Validation errors: 0.
 
 ## A-001 — PSV empty fields and nulls
 
@@ -2683,3 +2683,75 @@ Entries: 149. Validation errors: 0.
 **verification:** test:lakehouse/tests/test_external_runtime.py::test_job_secret_json_and_least_privilege
 
 **sources:** etl/scripts/run_job.py, etl/scripts/runtime_config.py, etl/scripts/bucket_owner.py, etl/config.ini, etl/run.sh, lakehouse/runtime/external_settings.py
+
+## A-417 — Daily-chain serial order is relaxed to table read-after-write dependencies
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** batch_runner:warehouse/teradata/jobs/daily_chain, cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/01_load_users, cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/02_load_teams, cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/03_load_identity, cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/04_load_events, cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/10_activity_daily
+
+**ambiguity:** Legacy stops the entire serial chain on failure, while grouped dbt tasks and independent graph branches have different ordering.
+
+**decision:** Preserve read-after-write dependencies, including SQL routine and view lineage, rather than the total serial order. Grouped dbt selections remain intact, with internal ref ordering. Failed upstream tasks block dependents; independent branches continue. Reports billing/10_subscription_report and billing/11_currency_daily execute after storage, but their source-derived reads are SUBSCRIPTION/PLAN_CATALOG and INVOICE_HDR, disjoint from storage-mutated USAGE_DAILY and INVOICE_LINE.
+
+**rationale:** The responsibility test derives lineage from every CORE/REPORTS BTEQ stage and its SQL routines, maps every source stage to graph nodes, and injects an upstream failure. Existing PASS parity for billing.subscription_plans, billing.currency_totals, billing.file_subscription_plans and billing.file_currency_daily supports the unchanged report outputs; monthly reports retain effective-model dependencies.
+
+**verification:** test:lakehouse/tests/test_shared_estate.py::test_daily_chain_read_after_write_and_failure
+
+**sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/billing/10_subscription_report.bteq, warehouse/teradata/scripts/billing/11_currency_daily.bteq, warehouse/teradata/scripts/documents/10_storage_monthly.bteq, lakehouse/tests/legacy_dependencies.py, lakehouse/orchestration/pipeline.yaml
+
+## A-418 — Daily scheduling, namespace initialization and opt-in fixture bootstrap
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** cron_entry:warehouse/teradata/jobs/crontab.example#250f291ea0eb, cron_entry:warehouse/teradata/jobs/daily_chain#stage=setup, cron_entry:warehouse/teradata/jobs/daily_chain#stage=generate
+
+**ambiguity:** Host cron starts at 01:15 UTC and daily_chain normally generates fixtures and initializes Teradata; Airflow uses data intervals and persistent Delta namespaces.
+
+**decision:** Keep the UTC daily DAG paused, catchup enabled, max_active_runs and max_active_tasks at one, with local namespace flock protection. Use @daily logical dates minus one for BUSINESS_DATE rather than an 01:15 wall-clock start. Initialize namespace schemas before bronze ingestion. Move source-equivalent seeded fixture generation to the separate paused unscheduled lakehouse_fixture_bootstrap DAG, never scheduled daily. Propagate the exact legacy month/period variables, including leap-year and year-boundary encodings, to tasks.
+
+**rationale:** Catchup and manual bootstrap are explicit operations; overwriting real landing data must never be an automatic daily action. Bootstrap preserves the legacy 200000-row default, --rows, --seed (default 1110) and business-date controls; guide/Make smoke fixtures explicitly pass ROWS_PER_TABLE=2000. The file lease assumes one host or shared POSIX namespace storage; distributed workers require an external whole-run lease before activation.
+
+**verification:** test:lakehouse/tests/test_shared_estate.py::test_daily_cadence_and_namespace_lock
+
+**sources:** warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain, lakehouse/runtime/bootstrap.py, lakehouse/billing/calendar.py, lakehouse/orchestration/runner.py, lakehouse/orchestration/pipeline.yaml
+
+## A-419 — Content workflow links, disabled session and shared Informatica settings
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** informatica_workflow:SFX_CONTENT.wf_SFX_CONTENT_DAILY, informatica_task:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Start, informatica_scheduler:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Scheduler, informatica_config:SFX_CONTENT.default_session_config, informatica_config:etl/informatica/config/connections.yaml#TD_SFX_EDW, informatica_param:etl/informatica/params/sfx_d1110_daily.par, informatica_session:SFX_CONTENT.s_m_SFX_TEAM_MEMBER
+
+**ambiguity:** PowerCenter schedules at 02:15, shares Teradata credentials and defaults, and disables TEAM_MEMBER; grouped native operations use Delta and task-level retries.
+
+**decision:** Use the paused catchup UTC @daily graph instead of the 02:15 scheduler. Preserve success-only links; grouped STG_APP_USER then APP_USER and grouped STG_DOCUMENT then DOCUMENT then DOC_SHARE execute sequentially. The document group conservatively waits for both APP_USER and ROLE_GRANT, making DOC_SHARE an AND join. Schedule only LOGIN_EVENT, with TEAM_MEMBER available with parity in the separate paused unscheduled lakehouse_users_infa_team_manual DAG after daily bronze preparation. Keep global < workflow < session parameter precedence in the native resolver used by billing; preserve the checked-in defaults, with CLI business date overriding the fixture LOAD_DATE. TD_SFX_EDW is replaced by namespace-scoped bronze/silver/gold Delta databases, not copied JDBC credentials. Transport errors and SQL/write errors fail the task and block dependents; documents conversion continues after per-row transformation errors as Stop on errors=0 requires. Users missing/duplicate merge keys fail the task rather than silently reject, preserving the already-documented stricter writer contract.
+
+**rationale:** The tests read the XML links/defaults and parameter file, check the namespace connection mapping and exercise tolerant row errors versus fatal missing input/SQL errors. No lookup-cache, history-server, PowerCenter log-count or Teradata credential behavior is claimed; parameters affecting archived history retain the default-false gate and open A-403 limitations. Whole-task retries replace native session recovery and require idempotent domain writers.
+
+**verification:** test:lakehouse/tests/test_shared_estate.py::test_content_workflow_link_conditions
+
+**sources:** etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML, etl/informatica/config/connections.yaml, etl/informatica/params/sfx_d1110_daily.par, lakehouse/runtime/informatica_settings.py, lakehouse/runtime/informatica.par, lakehouse/runtime/users_informatica.py, lakehouse/runtime/documents_informatica.py, lakehouse/orchestration/pipeline.yaml
+
+## A-420 — Spark registry, import packaging, typed input and output publication responsibilities
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** batch_runner:etl/spark/run.sh, spark_config:etl/spark/conf/spark-defaults.conf, spark_library:etl/spark/jobs/py/common/package.py, spark_library:etl/spark/jobs/py/common/runtime.py, spark_library:etl/spark/jobs/py/common/schemas.py, spark_library:etl/spark/scala/src/main/scala/sfx/BatchSupport.scala
+
+**ambiguity:** Legacy uses Docker spark-submit, common.zip, inferred Scala schemas, Parquet/JDBC write modes, event logs and a Spark history server.
+
+**decision:** Map every registry job to its converted graph node and current-spec-hash PASS parity. Select jobs by paused DAG instead of legacy JOB/SPARK_JOBS shell variables; grouped users/audit jobs share a failure boundary. Import the lakehouse package via the pinned worker environment/PYTHONPATH, without common.zip or Scala assembly. Use explicit typed domain schemas and reject missing feeds; use Delta snapshot overwrite for users/audit and immutable atomic Parquet publication plus Delta JDBC copies for billing. Billing usage append remains delivery-aware, replay-safe accumulation rather than blind duplicate append. Retire Spark event-log/history-server storage, compression and polling settings; retain task stdout, task states and parity evidence instead. Local Spark uses UTC, ANSI SQL, two execution/shuffle threads and pinned Delta dependencies; this is not a distributed performance/log-history equivalence claim.
+
+**rationale:** Responsibility-specific named tests cover registry completeness, imports, typed reads, missing-feed failure, write modes and session configuration. Existing billing append/replay tests and each job's output parity remain authoritative for sink semantics. Typed inputs intentionally replace Scala inference; per-domain assumptions continue to describe retired duplicate sinks and explicit source contracts.
+
+**verification:** test:lakehouse/tests/test_shared_estate.py::test_spark_registry_complete
+
+**sources:** etl/spark/run.sh, etl/spark/jobs.txt, etl/spark/conf/spark-defaults.conf, etl/spark/jobs/py/common/package.py, etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/scala/src/main/scala/sfx/BatchSupport.scala, lakehouse/runtime/session.py, lakehouse/runtime/spark_schemas.py, lakehouse/tests/test_billing_spark.py, lakehouse/tests/test_shared_estate.py

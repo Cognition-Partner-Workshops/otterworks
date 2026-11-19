@@ -15,3 +15,24 @@ legacy_objects:
   - etl_script:etl/scripts/bucket_owner.py
   - etl_config:etl/config.ini
   - batch_runner:etl/run.sh
+  - batch_runner:etl/spark/run.sh
+  - batch_runner:warehouse/teradata/jobs/daily_chain
+  - cron_entry:warehouse/teradata/jobs/crontab.example#250f291ea0eb
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=generate
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=setup
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/01_load_users
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/02_load_teams
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/03_load_identity
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/04_load_events
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/10_activity_daily
+  - informatica_config:SFX_CONTENT.default_session_config
+  - informatica_config:etl/informatica/config/connections.yaml#TD_SFX_EDW
+  - informatica_param:etl/informatica/params/sfx_d1110_daily.par
+  - informatica_scheduler:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Scheduler
+  - informatica_task:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Start
+  - informatica_workflow:SFX_CONTENT.wf_SFX_CONTENT_DAILY
+  - spark_config:etl/spark/conf/spark-defaults.conf
+  - spark_library:etl/spark/jobs/py/common/package.py
+  - spark_library:etl/spark/jobs/py/common/runtime.py
+  - spark_library:etl/spark/jobs/py/common/schemas.py
+  - spark_library:etl/spark/scala/src/main/scala/sfx/BatchSupport.scala

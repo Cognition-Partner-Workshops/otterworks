@@ -80,7 +80,7 @@ def test_audit_owned_schedule_and_dependencies():
     for dag in (daily, weekly):
         assert str(dag.timezone) == 'UTC' and dag.catchup
         assert dag.max_active_runs == dag.max_active_tasks == 1
-        assert not dag.is_paused_upon_creation
+        assert dag.is_paused_upon_creation == (dag.dag_id == 'lakehouse_daily')
     assert daily.get_task('dbt_audit').upstream_task_ids >= {
         'bronze_audit', 'bronze_users', 'bronze_documents', 'dbt_billing'}
     assert daily.get_task('audit_spark').upstream_task_ids == {'dbt_audit', 'bronze_users'}

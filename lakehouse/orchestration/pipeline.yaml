@@ -6,7 +6,7 @@ dags:
   catchup: true
   max_active_runs: 1
   max_active_tasks: 1
-  paused: false
+  paused: true
   nodes:
   - id: feed_billing_customer_account
     kind: feed_sensor
@@ -461,7 +461,7 @@ dags:
   - id: bronze_platform
     kind: bronze_ingest
     domain: platform
-    depends_on: [feed_platform_dbc_qrylog, feed_platform_dbc_qrylogobjects, feed_platform_dbc_tablesv]
+    depends_on: [initialize, feed_platform_dbc_qrylog, feed_platform_dbc_qrylogobjects, feed_platform_dbc_tablesv]
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []
@@ -491,6 +491,7 @@ dags:
     kind: bronze_ingest
     domain: billing
     depends_on:
+    - initialize
     - feed_billing_customer_account
     - feed_billing_plan_catalog
     - feed_billing_subscription
@@ -571,6 +572,7 @@ dags:
     kind: bronze_ingest
     domain: documents
     depends_on:
+    - initialize
     - feed_documents_folder
     - feed_documents_document
     - feed_documents_doc_version
@@ -597,7 +599,7 @@ dags:
     - cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging
   - id: documents_informatica
     kind: export
-    depends_on: [bronze_documents, bronze_users]
+    depends_on: [bronze_documents, bronze_users, infa_users_app, infa_users_role_grant]
     retries: 1
     retry_delay_seconds: 10
     command: ['{python}', '-m', lakehouse.runtime.documents_informatica, --landing, '{landing}', --business-date, '{business_date}']
@@ -647,6 +649,7 @@ dags:
     domain: documents
     selector: tag:documents
     depends_on:
+    - dbt_users
     - bronze_documents
     - bronze_users
     - documents_informatica
@@ -667,6 +670,7 @@ dags:
     kind: bronze_ingest
     domain: users
     depends_on:
+    - initialize
     - feed_users_app_user
     - feed_users_user_profile
     - feed_users_team
@@ -701,6 +705,11 @@ dags:
     retry_delay_seconds: 10
     legacy_objects:
     - bteq_script:warehouse/teradata/scripts/users/01_load_users.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/01_load_users
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/02_load_teams
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/03_load_identity
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/04_load_events
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/10_activity_daily
     - bteq_script:warehouse/teradata/scripts/users/02_load_teams.bteq
     - bteq_script:warehouse/teradata/scripts/users/03_load_identity.bteq
     - bteq_script:warehouse/teradata/scripts/users/04_load_events.bteq
@@ -750,6 +759,12 @@ dags:
     retry_delay_seconds: 10
     legacy_objects:
     - informatica_session:SFX_CONTENT.s_m_SFX_STG_APP_USER
+    - informatica_workflow:SFX_CONTENT.wf_SFX_CONTENT_DAILY
+    - informatica_task:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Start
+    - informatica_scheduler:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Scheduler
+    - informatica_config:SFX_CONTENT.default_session_config
+    - informatica_config:etl/informatica/config/connections.yaml#TD_SFX_EDW
+    - informatica_param:etl/informatica/params/sfx_d1110_daily.par
     - informatica_session:SFX_CONTENT.s_m_SFX_APP_USER
   - id: infa_users_role_grant
     kind: export
@@ -759,7 +774,7 @@ dags:
     retry_delay_seconds: 10
     legacy_objects:
     - informatica_session:SFX_CONTENT.s_m_SFX_ROLE_GRANT
-  - id: infa_users_login_team
+  - id: infa_users_login_event
     kind: export
     command: ['{python}', '-m', 'lakehouse.runtime.users_informatica', '--stage', 'events', '--business-date', '{business_date}']
     depends_on: ["infa_users_app"]
@@ -767,11 +782,10 @@ dags:
     retry_delay_seconds: 10
     legacy_objects:
     - informatica_session:SFX_CONTENT.s_m_SFX_LOGIN_EVENT
-    - informatica_session:SFX_CONTENT.s_m_SFX_TEAM_MEMBER
   - id: parity_users_informatica
     kind: parity
-    specs: [users.infa_stg_app_user, users.infa_app_user, users.infa_role_grant, users.infa_login_event, users.infa_team_member]
-    depends_on: [infa_users_role_grant, infa_users_login_team]
+    specs: [users.infa_stg_app_user, users.infa_app_user, users.infa_role_grant, users.infa_login_event]
+    depends_on: [infa_users_role_grant, infa_users_login_event]
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []
@@ -779,6 +793,7 @@ dags:
     kind: bronze_ingest
     domain: audit
     depends_on:
+    - initialize
     - feed_audit_audit_event
     - feed_audit_audit_event_archive
     - feed_audit_access_review
@@ -819,7 +834,15 @@ dags:
     - dbt_shared_reconcile
     retries: 1
     retry_delay_seconds: 10
-    legacy_objects: []
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/audit/01_load_events.bteq
+    - bteq_script:warehouse/teradata/scripts/audit/02_load_controls.bteq
+    - bteq_script:warehouse/teradata/scripts/audit/03_load_reviews.bteq
+    - bteq_script:warehouse/teradata/scripts/audit/10_summary_daily.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/01_load_events
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/02_load_controls
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/03_load_reviews
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/10_summary_daily
   - id: parity_customer_account
     kind: parity
     spec: billing.customer_account
@@ -1579,6 +1602,7 @@ dags:
     retry_delay_seconds: 10
     legacy_objects:
     - bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/11_reconciliation
     command:
     - '{python}'
     - -m
@@ -1826,7 +1850,18 @@ dags:
     - bronze_users
     retries: 1
     retry_delay_seconds: 10
-    legacy_objects: []
+    legacy_objects:
+    - spark_job:audit_daily_summary
+    - spark_job:audit_actor_activity_join
+    - spark_job:audit_archive_resort
+    - spark_job:compliance_flag_rules
+    - spark_job:security_alert_anomaly
+    - batch_runner:etl/spark/run.sh
+    - spark_config:etl/spark/conf/spark-defaults.conf
+    - spark_library:etl/spark/jobs/py/common/package.py
+    - spark_library:etl/spark/jobs/py/common/runtime.py
+    - spark_library:etl/spark/jobs/py/common/schemas.py
+    - spark_library:etl/spark/scala/src/main/scala/sfx/BatchSupport.scala
     command:
     - '{python}'
     - -m
@@ -1839,7 +1874,7 @@ dags:
     - audit_spark
     retries: 1
     retry_delay_seconds: 10
-    legacy_objects: []
+    legacy_objects: [spark_job:lake_compaction_audit]
     command:
     - '{python}'
     - -m
@@ -2030,6 +2065,58 @@ dags:
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []
+  - id: initialize
+    kind: export
+    command: ['{python}', -m, lakehouse.runtime.bootstrap, --business-date, '{business_date}']
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - batch_runner:warehouse/teradata/jobs/daily_chain
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=setup
+    - cron_entry:warehouse/teradata/jobs/crontab.example#250f291ea0eb
+
+- id: lakehouse_fixture_bootstrap
+  schedule: null
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: generate
+    kind: export
+    command: ['{python}', -m, lakehouse.runtime.bootstrap, --landing, '{landing}', --business-date, '{business_date}']
+    depends_on: []
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: [cron_entry:warehouse/teradata/jobs/daily_chain#stage=generate]
+
+- id: lakehouse_users_infa_team_manual
+  schedule: null
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: members
+    kind: export
+    command: ['{python}', -m, lakehouse.runtime.users_informatica, --stage, members, --business-date, '{business_date}']
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: [informatica_session:SFX_CONTENT.s_m_SFX_TEAM_MEMBER]
+  - id: parity
+    kind: parity
+    specs: [users.infa_team_member]
+    depends_on: [members]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
 - id: lakehouse_users_spark
   schedule: '@daily'
   timezone: UTC

@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "billing.invoice_line_effective",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -174,5 +174,5 @@
     "legacy": 2250
   },
   "spec_hash": "037cf7e5d8bb163a883d96b43e016359f393aaf787b5837b7453072d65f6314a",
-  "timestamp": "2026-11-19T15:47:11.666802+00:00"
+  "timestamp": "2026-11-19T17:47:13.965722+00:00"
 }

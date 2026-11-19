@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "billing.infa_gl_journal_line",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -82,9 +82,9 @@
         },
         "journal_line_id": {
           "count": 6451,
-          "hash": "f78bbdb42a3d44f6111ffb521882c936af27532e919973b8abfa9875d9768930",
+          "hash": "ad3ab902a14e68d7061a63cd096d9187bb84d6221e8c25ae1a706179906fe3ae",
           "null_count": 0,
-          "sum": "116345845720019650643"
+          "sum": "116345845720054189772"
         },
         "ordinal": {
           "count": 6451,
@@ -144,9 +144,9 @@
         },
         "journal_line_id": {
           "count": 6451,
-          "hash": "f78bbdb42a3d44f6111ffb521882c936af27532e919973b8abfa9875d9768930",
+          "hash": "ad3ab902a14e68d7061a63cd096d9187bb84d6221e8c25ae1a706179906fe3ae",
           "null_count": 0,
-          "sum": "116345845720019650643"
+          "sum": "116345845720054189772"
         },
         "ordinal": {
           "count": 6451,
@@ -227,5 +227,5 @@
     "legacy": 6451
   },
   "spec_hash": "fef30b6d68e9dcc78c3db5eb18d2cdd24ee4c4bbd2c07d839b27622226bf0c2b",
-  "timestamp": "2026-11-19T15:53:27.775336+00:00"
+  "timestamp": "2026-11-19T18:02:22.513471+00:00"
 }

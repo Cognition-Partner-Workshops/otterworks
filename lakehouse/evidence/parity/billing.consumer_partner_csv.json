@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "billing.consumer_partner_csv",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -32,16 +32,16 @@
     "fingerprints": {
       "lakehouse": {
         "line": {
-          "count": 2,
-          "hash": "da09690aa46840571f8dafb666a2d2e139b9f3fc57439e7c18c65523d84adbda",
+          "count": 669,
+          "hash": "80c490352ca1eeaa72b3e008543550b738ef9e9fc2e25bee919c3480f588b70b",
           "null_count": 0,
           "sum": null
         }
       },
       "legacy": {
         "line": {
-          "count": 2,
-          "hash": "da09690aa46840571f8dafb666a2d2e139b9f3fc57439e7c18c65523d84adbda",
+          "count": 669,
+          "hash": "80c490352ca1eeaa72b3e008543550b738ef9e9fc2e25bee919c3480f588b70b",
           "null_count": 0,
           "sum": null
         }
@@ -67,14 +67,14 @@
     },
     "passed": true,
     "row_counts": {
-      "lakehouse": 2,
-      "legacy": 2
+      "lakehouse": 669,
+      "legacy": 669
     }
   },
   "row_counts": {
-    "lakehouse": 2,
-    "legacy": 2
+    "lakehouse": 669,
+    "legacy": 669
   },
   "spec_hash": "53b5f5941236b35653fd5d6eb6d1e2f91575e2f1a1358a63980873e8388284c7",
-  "timestamp": "2026-11-19T15:53:26.842361+00:00"
+  "timestamp": "2026-11-19T18:01:55.862310+00:00"
 }

@@ -3,7 +3,6 @@
 import argparse
 import ast
 import csv
-import configparser
 import datetime as dt
 import json
 import operator
@@ -19,6 +18,7 @@ from pyspark.sql import types as T
 from lakehouse.orchestration.graph import business_date
 from lakehouse.runtime.layout import ROOT, data_root
 from lakehouse.runtime.session import create_session
+from lakehouse.runtime.informatica_settings import resolve
 from warehouse.seed.columns import TABLES
 
 
@@ -310,14 +310,8 @@ def delta(spark, root, table, rows):
 
 
 def parameters():
-    config = configparser.ConfigParser(interpolation=None)
-    config.optionxform = str
-    with (ROOT.parent / 'etl/informatica/params/sfx_d1110_daily.par').open() as handle:
-        config.read_file(handle)
-    scope = 'SFX_BILLING.WF:wf_SFX_BILLING_DAILY'
-    currency = config[scope]['$$CURRENCY_DEFAULT']
-    rate = config[scope + '.ST:s_m_SFX_GL_JOURNAL_LINE'].get('$$SALES_TAX_RATE', config[scope]['$$SALES_TAX_RATE'])
-    return currency, rate
+    values = resolve('SFX_BILLING', 'wf_SFX_BILLING_DAILY', 's_m_SFX_GL_JOURNAL_LINE')
+    return values['$$CURRENCY_DEFAULT'], values['$$SALES_TAX_RATE']
 
 
 def run(spark, landing, day, destination, selected=None):

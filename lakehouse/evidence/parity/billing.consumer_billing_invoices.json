@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
   "id": "billing.consumer_billing_invoices",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -36,45 +36,45 @@
       "lakehouse": {
         "account_no": {
           "count": 667,
-          "hash": "04bac80092028076c926025f4de8f790d79e00b03a4d52b408ebf8a5cc3d39ec",
+          "hash": "8f8edb702cd8b6bf62845237d7290868376a497aeae21a991f95ddd8fac27042",
           "null_count": 0,
           "sum": null
         },
         "amount_due": {
           "count": 667,
-          "hash": "122f86dd38b02c913a6c56eb4a743ec1fd31dffcbff179408856f5963b551054",
+          "hash": "6f5bf5f81c45f6145beb932d01c7d12c82236da6ca28c77fd3f9d963f6f45fba",
           "null_count": 0,
-          "sum": "251435.91"
+          "sum": "248753.92"
         },
         "currency_cd": {
           "count": 667,
-          "hash": "57cffee35218db6e47cfd89c98a2926ed2a728f26ab15fa0971041e5bd3c606e",
+          "hash": "3a162c01b96db144e917dc0020a6dff9e90aa61454d9d56fa94e91a48a10fa54",
           "null_count": 0,
           "sum": null
         },
         "customer_name": {
           "count": 667,
-          "hash": "a19e03e5deb2e3b228185495a4382a943c640a5ec1f7525f3e92fcf31bcef651",
+          "hash": "a8e24ee2a56a55bbd1fa6660a033bfb787c5459af5f86ec99bfabdc0e3f552f3",
           "null_count": 0,
           "sum": null
         },
         "invoice_date": {
           "count": 667,
-          "hash": "bed88196593f7d3c7141bc872d9c001e965109f8c080f7e70044f4b734a7585e",
+          "hash": "7cf7557548fd93b0c92d48abb2a3eba5874d406ee80b24b1825ec5bb3f39faa2",
           "null_count": 0,
           "sum": null
         },
         "invoice_no": {
           "count": 667,
-          "hash": "ced5261cd955fe14d841a2d8942a4347ad2dafeaf7ec254f52607755fbfa3060",
+          "hash": "26672dd375e75e6df2d4a44379fa76dfb5c076fffca8e84f2cfc184b1e33afb5",
           "null_count": 0,
           "sum": null
         },
         "open_balance": {
           "count": 667,
-          "hash": "2908f8dd6a529b5730a3d01f5029bb03244da614979d9e8ef1aaf22ad3836d13",
+          "hash": "a61c85d8391c9a5a1217eae3768bf5d52169529ed5fdcfde8e46de2e68ddab5b",
           "null_count": 0,
-          "sum": "155137.42"
+          "sum": "156116.27"
         },
         "parity_row": {
           "count": 667,
@@ -84,53 +84,53 @@
         },
         "tax_amt": {
           "count": 667,
-          "hash": "1f112ad5a2e948d962a15a5ce1d374585cfd69aa3bdae447955e2d55fc82a26b",
+          "hash": "f9a21badcd06e5ccec84c7b490231187d563f62812311bb7569feacecd652d73",
           "null_count": 0,
-          "sum": "31827.66"
+          "sum": "31476.06"
         }
       },
       "legacy": {
         "account_no": {
           "count": 667,
-          "hash": "04bac80092028076c926025f4de8f790d79e00b03a4d52b408ebf8a5cc3d39ec",
+          "hash": "8f8edb702cd8b6bf62845237d7290868376a497aeae21a991f95ddd8fac27042",
           "null_count": 0,
           "sum": null
         },
         "amount_due": {
           "count": 667,
-          "hash": "122f86dd38b02c913a6c56eb4a743ec1fd31dffcbff179408856f5963b551054",
+          "hash": "6f5bf5f81c45f6145beb932d01c7d12c82236da6ca28c77fd3f9d963f6f45fba",
           "null_count": 0,
-          "sum": "251435.91"
+          "sum": "248753.92"
         },
         "currency_cd": {
           "count": 667,
-          "hash": "57cffee35218db6e47cfd89c98a2926ed2a728f26ab15fa0971041e5bd3c606e",
+          "hash": "3a162c01b96db144e917dc0020a6dff9e90aa61454d9d56fa94e91a48a10fa54",
           "null_count": 0,
           "sum": null
         },
         "customer_name": {
           "count": 667,
-          "hash": "a19e03e5deb2e3b228185495a4382a943c640a5ec1f7525f3e92fcf31bcef651",
+          "hash": "a8e24ee2a56a55bbd1fa6660a033bfb787c5459af5f86ec99bfabdc0e3f552f3",
           "null_count": 0,
           "sum": null
         },
         "invoice_date": {
           "count": 667,
-          "hash": "bed88196593f7d3c7141bc872d9c001e965109f8c080f7e70044f4b734a7585e",
+          "hash": "7cf7557548fd93b0c92d48abb2a3eba5874d406ee80b24b1825ec5bb3f39faa2",
           "null_count": 0,
           "sum": null
         },
         "invoice_no": {
           "count": 667,
-          "hash": "ced5261cd955fe14d841a2d8942a4347ad2dafeaf7ec254f52607755fbfa3060",
+          "hash": "26672dd375e75e6df2d4a44379fa76dfb5c076fffca8e84f2cfc184b1e33afb5",
           "null_count": 0,
           "sum": null
         },
         "open_balance": {
           "count": 667,
-          "hash": "2908f8dd6a529b5730a3d01f5029bb03244da614979d9e8ef1aaf22ad3836d13",
+          "hash": "a61c85d8391c9a5a1217eae3768bf5d52169529ed5fdcfde8e46de2e68ddab5b",
           "null_count": 0,
-          "sum": "155137.42"
+          "sum": "156116.27"
         },
         "parity_row": {
           "count": 667,
@@ -140,9 +140,9 @@
         },
         "tax_amt": {
           "count": 667,
-          "hash": "1f112ad5a2e948d962a15a5ce1d374585cfd69aa3bdae447955e2d55fc82a26b",
+          "hash": "f9a21badcd06e5ccec84c7b490231187d563f62812311bb7569feacecd652d73",
           "null_count": 0,
-          "sum": "31827.66"
+          "sum": "31476.06"
         }
       }
     },
@@ -207,5 +207,5 @@
     "legacy": 667
   },
   "spec_hash": "c1d339480aabf852455ec7bfd57bffcc0b9c19a4ad26a6868e8d3c05235d78e4",
-  "timestamp": "2026-11-19T15:53:26.698864+00:00"
+  "timestamp": "2026-11-19T18:01:55.668892+00:00"
 }
