@@ -6,10 +6,12 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
+@AutoConfigureObservability
 @ActiveProfiles("test")
 class MetricsConfigurationTest {
 
