@@ -1,6 +1,6 @@
 # Temurin JDK 25 build
 # Maven build instead of Gradle (matches legacy Java enterprise pattern)
-FROM maven:3.9-eclipse-temurin-25 AS builder
+FROM maven:3.9.11-eclipse-temurin-25 AS builder
 
 WORKDIR /app
 COPY pom.xml .
