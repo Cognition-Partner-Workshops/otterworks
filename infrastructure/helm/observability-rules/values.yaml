@@ -1,0 +1,4 @@
+labels:
+  release: prometheus
+dashboard:
+  enabled: true

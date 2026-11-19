@@ -42,6 +42,9 @@ management:
       path-mapping:
         prometheus: metrics
   metrics:
+    distribution:
+      slo:
+        http.server.requests: 500ms
     export:
       prometheus:
         enabled: true

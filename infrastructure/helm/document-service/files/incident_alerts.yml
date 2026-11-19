@@ -52,6 +52,7 @@ groups:
           scenario: n-plus-one
         annotations:
           summary: "Document list issues {{ $value | printf \"%.0f\" }} SQL statements per request"
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/incident/README.md#n-plus-one
 
       # ---- log-flood --------------------------------------------------------
       - alert: RequestLogVolumeNearFull

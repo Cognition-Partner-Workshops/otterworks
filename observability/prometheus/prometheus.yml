@@ -8,6 +8,7 @@ global:
     environment: development
 
 rule_files:
+  - slo_rules.yml
   - alerts.yml
   - recording_rules.yml
   - incident_alerts.yml
@@ -19,6 +20,11 @@ alerting:
             - alertmanager:9093
 
 scrape_configs:
+  - job_name: report-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["report-service:8091"]
+
   # -------------------------------------------------------
   # Prometheus self-monitoring
   # -------------------------------------------------------

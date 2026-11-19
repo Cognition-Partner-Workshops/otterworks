@@ -20,6 +20,11 @@ locals {
     "analytics-service",
     "admin-service",
     "audit-service",
+    "report-service",
+    "billing-service",
+    "legacy-billing",
+    "legacy-portal",
+    "legacy-portal-lambda",
     "web-app",
     "admin-dashboard",
   ]
