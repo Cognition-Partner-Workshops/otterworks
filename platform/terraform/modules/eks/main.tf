@@ -167,6 +167,7 @@ resource "aws_launch_template" "node_group" {
 
 resource "aws_eks_node_group" "default" {
   cluster_name    = aws_eks_cluster.main.name
+  version         = aws_eks_cluster.main.version
   node_group_name = "default"
   node_role_arn   = aws_iam_role.node_group.arn
   subnet_ids      = var.node_subnet_ids

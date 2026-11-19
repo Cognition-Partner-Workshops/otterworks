@@ -77,7 +77,7 @@ initJob:
   enabled: true
   scale: "1"                      # 0.01 for smoke tests
   seedImage: python:3.12-slim
-  kubectlImage: alpine/k8s:1.31.13
+  kubectlImage: alpine/k8s:1.35.10
   activeDeadlineSeconds: 5400
   ttlSecondsAfterFinished: 86400
   waitForDb2Seconds: 1800
