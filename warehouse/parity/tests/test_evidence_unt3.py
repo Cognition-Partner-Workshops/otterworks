@@ -8,7 +8,7 @@ from warehouse.run_config import render as _run_render
 from copy import deepcopy
 from datetime import datetime
 
-from jinja2 import Environment
+from warehouse.templating import dbt_environment
 import pytest
 
 from parity.evidence import cell, full_compare, replay_gate
@@ -93,7 +93,7 @@ def test_model_contract_and_shared_reject_predicates():
         def config(**kwargs):
             configs[model] = kwargs
             return ''
-        sql = Environment().from_string(_run_render((models / (model + '.sql')).read_text())).render(
+        sql = dbt_environment().from_string(_run_render((models / (model + '.sql')).read_text())).render(
             config=config, source=lambda *args: 'PC_SRC.AUDIT_EVENT',
             ref=lambda name: 'PC_AUDIT.STG_AUDIT_EVENT')
         assert 'where not (' + unt3.reject_predicate(mapping) + ')' in sql

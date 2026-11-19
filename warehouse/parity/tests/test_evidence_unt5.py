@@ -8,6 +8,7 @@ from collections import Counter
 from datetime import datetime
 
 import pytest
+from warehouse.templating import dbt_environment
 
 from parity import evidence_unt5 as u
 from parity.evidence import cell, full_compare
@@ -124,9 +125,8 @@ WRT_8350 Rejected rows (DD_REJECT/not permitted) written to reject file: 5''')
 
 
 def test_macro_guard_and_reject_projection():
-    from jinja2 import Environment
     macro = _run_render((u.ROOT / 'warehouse/dbt/macros/pc_audit_security_alert.sql').read_text())
-    module = Environment().from_string(macro).module
+    module = dbt_environment().from_string(macro).module
     sql = module.pc_audit_security_alert('MY_SOURCE')
     assert 'count(*) over (partition by ROUTE,ALERT_ID)' in sql
     assert 'max(ROUTE_COUNT) over ()' in sql

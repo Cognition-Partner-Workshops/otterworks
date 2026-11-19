@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 
 import pytest
+from warehouse.templating import dbt_environment
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'snowflake'))
 import pc_dag
@@ -68,12 +69,11 @@ def test_rejects_wrong_target_and_scope(tmp_path):
 
 
 def test_summary_task_replays_model_reconciliation(tmp_path):
-    from jinja2 import Environment
     import yaml
 
     model = Path(__file__).resolve().parents[2] / 'dbt/models/pc/audit/pc_audit__audit_daily_summary.sql'
     config = {}
-    Environment().from_string(_run_render(model.read_text())).render(
+    dbt_environment().from_string(_run_render(model.read_text())).render(
         config=lambda **kw: config.update(kw) or '', this=_run_render('__RUN_DATABASE__.PC_AUDIT.AUDIT_DAILY_SUMMARY'),
         ref=lambda name: _run_render('__RUN_DATABASE__.PC_AUDIT.AUDIT_EVENT'),
         var=lambda name, default: default, is_incremental=lambda: True)

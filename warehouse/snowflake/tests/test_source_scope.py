@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 import pytest
-from jinja2 import Environment
+from warehouse.templating import dbt_environment
 import yaml
 
 REPO = Path(__file__).resolve().parents[3]
@@ -45,6 +45,6 @@ def test_sources_default_to_profile_without_run_environment():
     for path in (PROJECT / 'models/pc').rglob('*.yml'):
         for source in yaml.safe_load(path.read_text()).get('sources', []):
             if source['name'] in SOURCE_NAMES:
-                database = Environment().from_string(source['database']).render(
+                database = dbt_environment().from_string(source['database']).render(
                     env_var=lambda key, default: default, target={'database': 'PROFILE_DATABASE'})
                 assert database == 'PROFILE_DATABASE'

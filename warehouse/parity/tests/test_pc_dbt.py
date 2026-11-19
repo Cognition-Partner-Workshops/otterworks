@@ -12,7 +12,7 @@ import subprocess
 import sys
 from types import SimpleNamespace
 
-from jinja2 import Environment
+from warehouse.templating import dbt_environment
 
 WAREHOUSE = Path(__file__).resolve().parents[2]
 
@@ -37,7 +37,7 @@ def test_pc_resolved_relations_and_comments(tmp_path):
         assert node['alias'] == 'PROBE'
         assert node['config']['post-hook'][0]['sql'] == '{{ pc_relation_comment() }}'
         materialized = node['config']['materialized']
-        module = Environment(extensions=['jinja2.ext.do']).from_string(
+        module = dbt_environment(extensions=['jinja2.ext.do']).from_string(
             _run_render((project / 'macros/pc_relation_comment.sql').read_text())).make_module({
                 'model': SimpleNamespace(config=SimpleNamespace(materialized=materialized)),
                 'this': _run_render(f'__RUN_DATABASE__.PC_{area.upper()}.PROBE')})
