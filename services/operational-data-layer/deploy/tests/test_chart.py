@@ -28,6 +28,7 @@ class ChartTests(unittest.TestCase):
         for obj in objects:
             self.assertEqual(obj["metadata"]["labels"]["run_token"], "odl-1795112287")
         sts = next(obj for obj in objects if obj["kind"] == "StatefulSet")
+        self.assertEqual(sts["metadata"]["labels"]["otterworks.io/scale-with-tenant"], "true")
         self.assertIn("emptyDir", sts["spec"]["template"]["spec"]["volumes"][1])
         container = sts["spec"]["template"]["spec"]["containers"][0]
         self.assertIn("--auth", container["args"])

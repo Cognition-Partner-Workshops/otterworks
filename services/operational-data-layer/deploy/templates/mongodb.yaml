@@ -55,6 +55,7 @@ metadata:
   name: {{ .Release.Name }}-mongo
   labels:
     {{- include "odl-target.labels" . | nindent 4 }}
+    otterworks.io/scale-with-tenant: "true"
 spec:
   serviceName: {{ .Release.Name }}-mongo
   replicas: 1

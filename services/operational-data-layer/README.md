@@ -62,6 +62,12 @@ outside the release before uninstalling if retaining a volume for reuse.
 Resources default to 100m/256Mi requested and 1 CPU/1Gi limited, with a 256Mi
 WiredTiger cache. Tune explicitly before loading a real projection.
 
+MongoDB remains a StatefulSet and opts into tenant scale-to-zero with
+`otterworks.io/scale-with-tenant: "true"`. This requires the scaler changes from
+the sources PR (#3288); merge that PR before using tenant suspension/wake.
+With the default emptyDir, MongoDB is empty after wake (apart from its app user)
+and is resyncable from the sources. The future sync service must rebuild it.
+
 The MongoDB NetworkPolicy permits only same-namespace pods on port 27017.
 Kubernetes policies are additive: the tenant baseline must exclude pods labeled
 `app.kubernetes.io/name=operational-data-layer-mongo` from its broader allowances.
