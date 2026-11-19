@@ -1,0 +1,904 @@
+openapi: 3.1.0
+info:
+  title: Billing v1
+  version: 1.0.0
+  description: Contract foundation only; module implementations are pending. Dates
+    use YYYY-MM-DD; monetary values preserve database decimal scale. Collection order
+    follows the database entrypoint.
+servers:
+- url: /api/v1/billing
+security:
+- bearerAuth: []
+paths:
+  /plans:
+    get:
+      operationId: plans_list
+      tags:
+      - plans
+      x-legacy-route: GET /plans
+      parameters:
+      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/cursor'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Plan'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      x-legacy-renames:
+        id: plan_id
+  /tenants/{tenant_id}/entitlement:
+    get:
+      operationId: plans_entitlement
+      tags:
+      - plans
+      x-legacy-route: GET /plans/{tenant_id}/entitlement
+      parameters:
+      - $ref: '#/components/parameters/tenant_id'
+      - $ref: '#/components/parameters/on'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Entitlement'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      x-legacy-renames:
+        status: subscription_status
+      description: Returns 404 when billing.fn_entitlement returns no row.
+  /tenants/{tenant_id}/subscriptions:
+    post:
+      operationId: plans_subscribe
+      tags:
+      - plans
+      x-legacy-route: POST /plans/{tenant_id}/change
+      parameters:
+      - $ref: '#/components/parameters/tenant_id'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Entitlement'
+          headers:
+            Location:
+              description: /api/v1/billing/tenants/{tenant_id}/entitlement?on={effective_on}
+              schema:
+                type: string
+                format: uri-reference
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionInput'
+      x-legacy-renames:
+        status: subscription_status
+      description: 'Returns the entitlement at effective_on. Unique violation: 409;
+        FK/check violation: 422.'
+  /tenants/{tenant_id}/rating:
+    get:
+      operationId: rating_preview
+      tags:
+      - rating
+      x-legacy-route: POST /api/rating/preview
+      parameters:
+      - $ref: '#/components/parameters/tenant_id'
+      - $ref: '#/components/parameters/period_start'
+      - $ref: '#/components/parameters/period_end'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Rating'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      description: Returns 404 when billing.fn_usage_rating returns no row.
+  /tenants/{tenant_id}/rating-periods:
+    post:
+      operationId: rating_finalize
+      tags:
+      - rating
+      x-legacy-route: POST /api/rating/finalize
+      parameters:
+      - $ref: '#/components/parameters/tenant_id'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/RatingPeriod'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PeriodInput'
+  /tenants/{tenant_id}/invoice-preview:
+    get:
+      operationId: invoicing_preview
+      tags:
+      - invoicing
+      x-legacy-route: GET /api/invoices/{tenant_id}/preview
+      parameters:
+      - $ref: '#/components/parameters/tenant_id'
+      - $ref: '#/components/parameters/period_start'
+      - $ref: '#/components/parameters/period_end'
+      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/cursor'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PreviewLine'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      x-legacy-renames:
+        number: line_no
+        type: line_type
+  /tenants/{tenant_id}/invoices:
+    post:
+      operationId: invoicing_issue
+      tags:
+      - invoicing
+      x-legacy-route: POST /api/invoices/{tenant_id}/issue
+      parameters:
+      - $ref: '#/components/parameters/tenant_id'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Invoice'
+          headers:
+            Location:
+              description: /api/v1/billing/invoices/{id}/lines
+              schema:
+                type: string
+                format: uri-reference
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PeriodInput'
+      description: Read id back from billing.invoices after issuing; do not derive
+        it in Flask.
+  /invoices/{invoice_id}/lines:
+    get:
+      operationId: invoicing_lines
+      tags:
+      - invoicing
+      x-legacy-route: GET /api/invoices/{invoice_id}/lines
+      parameters:
+      - $ref: '#/components/parameters/invoice_id'
+      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/cursor'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InvoiceLine'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      x-legacy-renames:
+        number: line_no
+        type: line_type
+  /overdue-invoices:
+    get:
+      operationId: dunning_overdue
+      tags:
+      - dunning
+      x-legacy-route: GET /api/dunning/overdue
+      parameters:
+      - $ref: '#/components/parameters/as_of'
+      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/cursor'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OverdueInvoice'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      x-legacy-renames:
+        id: invoice_id
+  /dunning-schedules:
+    post:
+      operationId: dunning_schedule
+      tags:
+      - dunning
+      x-legacy-route: POST /api/dunning/schedule
+      parameters: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DunningSchedule'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AsOfInput'
+  /suspensions:
+    post:
+      operationId: dunning_suspend
+      tags:
+      - dunning
+      x-legacy-route: POST /api/dunning/suspend
+      parameters: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Suspension'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AsOfInput'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          properties:
+            code:
+              type: string
+              enum:
+              - invalid_request
+              - unauthorized
+              - not_found
+              - method_not_allowed
+              - conflict
+              - unprocessable
+              - internal
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: object
+                required:
+                - field
+                - issue
+                properties:
+                  field:
+                    type: string
+                  issue:
+                    type: string
+    Pagination:
+      type: object
+      required:
+      - limit
+      - next_cursor
+      properties:
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 200
+        next_cursor:
+          type:
+          - string
+          - 'null'
+    Plan:
+      type: object
+      required:
+      - id
+      - code
+      - tier
+      - monthly_fee
+      - included_units
+      - overage_rate
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        tier:
+          type: string
+        monthly_fee:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]+$
+          description: Decimal string preserving the database scale.
+        included_units:
+          type: integer
+        overage_rate:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]+$
+          description: Decimal string preserving the database scale.
+    Entitlement:
+      type: object
+      required:
+      - tenant_id
+      - plan_code
+      - tier
+      - monthly_fee
+      - included_units
+      - status
+      - effective_on
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        plan_code:
+          type: string
+        tier:
+          type: string
+        monthly_fee:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]+$
+          description: Decimal string preserving the database scale.
+        included_units:
+          type: integer
+        status:
+          type: string
+        effective_on:
+          type: string
+          format: date
+    Rating:
+      type: object
+      required:
+      - tenant_id
+      - period_start
+      - period_end
+      - used_units
+      - quota_units
+      - rollover_units
+      - billable_units
+      - first_tier_units
+      - second_tier_units
+      - overage_amount
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        used_units:
+          type: integer
+        quota_units:
+          type: integer
+        rollover_units:
+          type: integer
+        billable_units:
+          type: integer
+        first_tier_units:
+          type: integer
+        second_tier_units:
+          type: integer
+        overage_amount:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]+$
+          description: Decimal string preserving the database scale.
+    PreviewLine:
+      type: object
+      required:
+      - number
+      - type
+      - description
+      - amount
+      - tax_amount
+      - credit_applied
+      - total
+      properties:
+        number:
+          type: integer
+        type:
+          type: string
+        description:
+          type: string
+        amount:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]+$
+          description: Decimal string preserving the database scale.
+        tax_amount:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]+$
+          description: Decimal string preserving the database scale.
+        credit_applied:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]+$
+          description: Decimal string preserving the database scale.
+        total:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]+$
+          description: Decimal string preserving the database scale.
+    InvoiceLine:
+      type: object
+      required:
+      - number
+      - type
+      - description
+      - amount
+      properties:
+        number:
+          type: integer
+        type:
+          type: string
+        description:
+          type: string
+        amount:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]+$
+          description: Decimal string preserving the database scale.
+    OverdueInvoice:
+      type: object
+      required:
+      - id
+      - tenant_id
+      - total
+      - days_overdue
+      - tenant_status
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        total:
+          type: string
+          pattern: ^-?[0-9]+\.[0-9]+$
+          description: Decimal string preserving the database scale.
+        days_overdue:
+          type: integer
+        tenant_status:
+          type: string
+    SubscriptionInput:
+      type: object
+      required:
+      - plan_id
+      - effective_on
+      properties:
+        plan_id:
+          type: string
+          format: uuid
+        effective_on:
+          type: string
+          format: date
+    PeriodInput:
+      type: object
+      required:
+      - period_start
+      - period_end
+      properties:
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+    AsOfInput:
+      type: object
+      required:
+      - as_of
+      properties:
+        as_of:
+          type: string
+          format: date
+    RatingPeriod:
+      type: object
+      required:
+      - tenant_id
+      - period_start
+      - period_end
+      - status
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        status:
+          const: finalized
+          type: string
+    Invoice:
+      type: object
+      required:
+      - id
+      - tenant_id
+      - period_start
+      - period_end
+      - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        status:
+          const: issued
+          type: string
+    DunningSchedule:
+      type: object
+      required:
+      - as_of
+      - status
+      properties:
+        as_of:
+          type: string
+          format: date
+        status:
+          const: scheduled
+          type: string
+    Suspension:
+      type: object
+      required:
+      - as_of
+      - status
+      properties:
+        as_of:
+          type: string
+          format: date
+        status:
+          const: suspended
+          type: string
+  parameters:
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 50
+        minimum: 1
+        maximum: 200
+    cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+      description: Opaque cursor returned by the previous page; malformed cursors
+        return 400.
+    tenant_id:
+      name: tenant_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    invoice_id:
+      name: invoice_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    'on':
+      name: 'on'
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+    period_start:
+      name: period_start
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+    period_end:
+      name: period_end
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+    as_of:
+      name: as_of
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+  responses:
+    '400':
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '404':
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '405':
+      description: Method not allowed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '409':
+      description: Conflict (unique violation)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '422':
+      description: Unprocessable (foreign key or check violation)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

@@ -63,6 +63,8 @@ func Metrics(next http.Handler) http.Handler {
 func normalizePath(path string) string {
 	// Keep top-level route prefix for grouping
 	switch {
+	case path == "/api/v1/billing" || len(path) >= len("/api/v1/billing/") && path[:len("/api/v1/billing/")] == "/api/v1/billing/":
+		return "/api/v1/billing"
 	case len(path) >= len("/api/v1/auth") && path[:len("/api/v1/auth")] == "/api/v1/auth":
 		return "/api/v1/auth"
 	case len(path) >= len("/api/v1/files") && path[:len("/api/v1/files")] == "/api/v1/files":

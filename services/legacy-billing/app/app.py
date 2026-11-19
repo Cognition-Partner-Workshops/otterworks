@@ -5,6 +5,7 @@ from decimal import Decimal
 
 import psycopg
 from flask import Flask, jsonify, redirect, render_template, request, url_for
+from v1 import init_app
 
 app = Flask(__name__)
 
@@ -145,3 +146,6 @@ def schedule_dunning():
 def suspend_overdue():
     execute("CALL billing.sp_suspend_overdue(%s)", (request.form["as_of"],))
     return jsonify(status="suspended")
+
+
+init_app(app)
