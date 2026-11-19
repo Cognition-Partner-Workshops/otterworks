@@ -4,6 +4,8 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier, stage
+from psycopg import sql
 
 import argparse
 import csv
@@ -70,27 +72,30 @@ def load(day, step="load", schema="RAW_BILLING", warehouse=_run_render("__RUN_DA
     usage_date = f"TRY_TO_DATE({columns['USAGE_DATE']})"
     with connect(step, warehouse) as connection:
         with connection.cursor() as cursor:
-            cursor.execute(_run_render(f"""CREATE FILE FORMAT IF NOT EXISTS {FORMAT}
+            cursor.execute(compose("""CREATE FILE FORMAT IF NOT EXISTS {}
                 TYPE=CSV SKIP_HEADER=1 FIELD_OPTIONALLY_ENCLOSED_BY='"'
                 EMPTY_FIELD_AS_NULL=TRUE ERROR_ON_COLUMN_COUNT_MISMATCH=FALSE
-                COMMENT='__RUN_TOKEN__ pipeline feed'"""))
-            cursor.execute(f"PUT 'file://{path}' {STAGE}/ AUTO_COMPRESS=FALSE OVERWRITE=TRUE")
+                COMMENT=%s""", identifier(FORMAT)), (_run_render('__RUN_TOKEN__ pipeline feed'),))
+            cursor.execute(compose('PUT %s {} AUTO_COMPRESS=FALSE OVERWRITE=TRUE', stage(STAGE + '/')),
+                           (path.resolve().as_uri(),))
             cursor.execute("BEGIN")
             try:
-                cursor.execute(f"DELETE FROM {schema}.USAGE_DAILY WHERE _SRC_FILE=%s", (source_file(day),))
-                cursor.execute(f"""COPY INTO {schema}.USAGE_DAILY
+                cursor.execute(compose('DELETE FROM {} WHERE _SRC_FILE=%s', identifier(schema + '.USAGE_DAILY')), (source_file(day),))
+                # Projection fragments contain only fixed SQL and generated integer field positions.
+                projection = sql.SQL(',').join(map(sql.SQL, (
+                    number('USAGE_DAILY_ID'), number('CUSTOMER_ID'), usage_date,
+                    number('QUANTITY'), money('UNIT_PRICE'), money('AMOUNT'),
+                    columns['CURRENCY_CODE'], f"TRY_TO_TIMESTAMP_NTZ({columns['CREATED_AT']})",
+                    f"IFF({columns['IS_ACTIVE']} IN ('Y','N'),{columns['IS_ACTIVE']},NULL)",
+                    '%s', 'CURRENT_TIMESTAMP()', number('USAGE_DAILY_ID'), usage_date, number('QUANTITY'))))
+                cursor.execute(compose("""COPY INTO {}
                 (USAGE_DAILY_ID,CUSTOMER_ID,USAGE_DATE,QUANTITY,UNIT_PRICE,AMOUNT,
                  CURRENCY_CODE,CREATED_AT,IS_ACTIVE,_SRC_FILE,_LOADED_AT,
                  USAGE_ID,USAGE_DT,UNITS)
-                FROM (SELECT {number('USAGE_DAILY_ID')},{number('CUSTOMER_ID')},{usage_date},
-                      {number('QUANTITY')},{money('UNIT_PRICE')},{money('AMOUNT')},
-                      {columns['CURRENCY_CODE']},TRY_TO_TIMESTAMP_NTZ({columns['CREATED_AT']}),
-                      IFF({columns['IS_ACTIVE']} IN ('Y','N'),{columns['IS_ACTIVE']},NULL),
-                      '{source_file(day)}',CURRENT_TIMESTAMP(),{number('USAGE_DAILY_ID')},
-                      {usage_date},{number('QUANTITY')}
-                      FROM {STAGE}/)
-                FILES=('{day.isoformat()}.csv') FILE_FORMAT=(FORMAT_NAME='{FORMAT}')
-                ON_ERROR=ABORT_STATEMENT FORCE=TRUE""")
+                FROM (SELECT {} FROM {})
+                FILES=(%s) FILE_FORMAT=(FORMAT_NAME=%s)
+                ON_ERROR=ABORT_STATEMENT FORCE=TRUE""", identifier(schema + '.USAGE_DAILY'), projection, stage(STAGE + '/')),
+                    (source_file(day), day.isoformat() + '.csv', FORMAT))
                 result_columns = [col[0].lower() for col in cursor.description]
                 results = [dict(zip(result_columns, row)) for row in cursor.fetchall()]
                 cursor.execute("COMMIT")
@@ -109,7 +114,7 @@ def reset(day):
         with connection.cursor() as cursor:
             cursor.execute("DELETE FROM RAW_BILLING.USAGE_DAILY WHERE _SRC_FILE=%s", (source_file(day),))
             print("reset rows_deleted:", cursor.rowcount, flush=True)
-            cursor.execute(f"REMOVE {STAGE}/{day.isoformat()}.csv")
+            cursor.execute(compose('REMOVE {}', stage(STAGE + '/' + day.isoformat() + '.csv')))
     (ROOT / "landing" / f"{day.isoformat()}.csv").unlink(missing_ok=True)
     build()
 

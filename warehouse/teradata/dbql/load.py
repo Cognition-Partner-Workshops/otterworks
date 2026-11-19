@@ -3,13 +3,12 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier
 
 import argparse
 import csv
 from pathlib import Path
 import re
-
-from psycopg import sql
 
 from bteq.parser import commands
 from bteq.runner import Runner
@@ -41,9 +40,9 @@ def load_history(runner, root=ROOT):
                 reader = csv.reader(handle)
                 if next(reader, None) != list(columns):
                     raise ValueError(f'{filename}: unexpected CSV header')
-                identifier = sql.Identifier('dbc', target)
-                runner.conn.execute(sql.SQL('TRUNCATE TABLE {}').format(identifier))
-                with runner.conn.cursor().copy(sql.SQL('COPY {} FROM STDIN').format(identifier)) as copy:
+                relation = identifier('dbc.' + target, dialect='postgres')
+                runner.conn.execute(compose('TRUNCATE TABLE {}', relation))
+                with runner.conn.cursor().copy(compose('COPY {} FROM STDIN', relation)) as copy:
                     for row in reader:
                         if len(row) != len(columns):
                             raise ValueError(f'{filename}: wrong field count at row {count+1}')

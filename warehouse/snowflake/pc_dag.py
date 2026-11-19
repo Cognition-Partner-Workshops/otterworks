@@ -4,6 +4,8 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier
+from psycopg import sql
 
 import argparse
 import json
@@ -70,10 +72,10 @@ def task_tag(folder):
 def create_sql(folder, step, tasks):
     schema = _run_render('__RUN_DATABASE__.PC_') + folder
     after = step.get('after', [])
-    deps = (' AFTER ' + ', '.join(schema + '.' + tasks[n]['task'] for n in after)) if after else ''
-    tag = task_tag(folder).replace("'", "''")
-    return (_run_render(f"CREATE TASK IF NOT EXISTS {schema}.{step['task']} WAREHOUSE=__RUN_DATABASE___TRANSFORM_WH"
-            f" COMMENT='{COMMENT}' QUERY_TAG='{tag}'{deps} AS {step['sql']}"))
+    deps = sql.Composed([sql.SQL(' AFTER '), sql.SQL(', ').join(
+        identifier(schema + '.' + tasks[n]['task']) for n in after)]) if after else sql.SQL('')
+    return compose('CREATE TASK IF NOT EXISTS {} WAREHOUSE={} COMMENT=%s QUERY_TAG=%s{} AS EXECUTE IMMEDIATE %s',
+                   identifier(schema + '.' + step['task']), identifier(_run_render('__RUN_DATABASE___TRANSFORM_WH')), deps)
 
 
 def suspend(cursor, folder, tasks):
@@ -81,10 +83,10 @@ def suspend(cursor, folder, tasks):
     errors = []
     for step in tasks.values():
         try:
-            cursor.execute(f"ALTER TASK {schema}.{step['task']} SUSPEND")
+            cursor.execute(compose('ALTER TASK {} SUSPEND', identifier(schema + '.' + step['task'])))
         except Exception as error:
             errors.append(str(error))
-    states = records(cursor, f'SHOW TASKS IN SCHEMA {schema}')
+    states = records(cursor, compose('SHOW TASKS IN SCHEMA {}', identifier(schema)))
     expected = {s['task'] for s in tasks.values()}
     actual = {r['name']: r['state'].lower() for r in states if r['name'] in expected}
     for name, state in sorted(actual.items()):
@@ -95,24 +97,26 @@ def suspend(cursor, folder, tasks):
 
 def deploy(cursor, folder, tasks):
     schema = _run_render('__RUN_DATABASE__.PC_') + folder
-    cursor.execute(f"CREATE SCHEMA IF NOT EXISTS {schema} COMMENT='{COMMENT}'")
+    cursor.execute(compose('CREATE SCHEMA IF NOT EXISTS {} COMMENT=%s', identifier(schema)), (COMMENT,))
     # Suspend existing graph before altering root or dependency relationships.
-    existing = records(cursor, f'SHOW TASKS IN SCHEMA {schema}')
+    existing = records(cursor, compose('SHOW TASKS IN SCHEMA {}', identifier(schema)))
     names = {t['task'] for t in tasks.values()}
     for row in existing:
         if row['name'] in names:
-            cursor.execute(f"ALTER TASK {schema}.{row['name']} SUSPEND")
+            cursor.execute(compose('ALTER TASK {} SUSPEND', identifier(schema + '.' + row['name'])))
     try:
         for step in tasks.values():
-            cursor.execute(create_sql(folder, step, tasks))
-            cursor.execute(f"ALTER TASK {schema}.{step['task']} MODIFY AS {step['sql']}")
-            cursor.execute(_run_render(f"ALTER TASK {schema}.{step['task']} SET WAREHOUSE=__RUN_DATABASE___TRANSFORM_WH COMMENT='{COMMENT}' QUERY_TAG=%s"), (task_tag(folder),))
-            current = records(cursor, f"SHOW TASKS LIKE '{step['task']}' IN SCHEMA {schema}")
+            cursor.execute(create_sql(folder, step, tasks), (COMMENT, task_tag(folder), step['sql']))
+            cursor.execute(compose('ALTER TASK {} MODIFY AS EXECUTE IMMEDIATE %s', identifier(schema + '.' + step['task'])), (step['sql'],))
+            cursor.execute(compose('ALTER TASK {} SET WAREHOUSE={} COMMENT=%s QUERY_TAG=%s',
+                                  identifier(schema + '.' + step['task']), identifier(_run_render('__RUN_DATABASE___TRANSFORM_WH'))), (COMMENT, task_tag(folder)))
+            current = records(cursor, compose('SHOW TASKS LIKE %s IN SCHEMA {}', identifier(schema)), (step['task'],))
             predecessors = json.loads(next(r['predecessors'] for r in current if r['name'] == step['task']))
             for predecessor in predecessors:
-                cursor.execute(f"ALTER TASK {schema}.{step['task']} REMOVE AFTER {predecessor}")
+                cursor.execute(compose('ALTER TASK {} REMOVE AFTER {}', identifier(schema + '.' + step['task']), identifier(predecessor)))
             if step.get('after'):
-                cursor.execute(f"ALTER TASK {schema}.{step['task']} ADD AFTER " + ', '.join(schema + '.' + tasks[n]['task'] for n in step['after']))
+                cursor.execute(compose('ALTER TASK {} ADD AFTER {}', identifier(schema + '.' + step['task']),
+                                      sql.SQL(', ').join(identifier(schema + '.' + tasks[n]['task']) for n in step['after'])))
     finally:
         suspend(cursor, folder, tasks)
 
@@ -126,14 +130,14 @@ def run_once(cursor, folder, root, tasks, timeout=180, load_date=None, build=Non
         if build:
             build()
         if load_date:
-            cursor.execute("ALTER TASK IDENTIFIER(%s) SET CONFIG=%s",
-                           (f"{schema}.{tasks[root]['task']}", json.dumps({'load_date': load_date})))
+            cursor.execute(compose('ALTER TASK {} SET CONFIG=%s', identifier(schema + '.' + tasks[root]['task'])),
+                           (json.dumps({'load_date': load_date}),))
         for name, step in reversed(list(tasks.items())):
             if name != root:
-                cursor.execute(f"ALTER TASK {schema}.{step['task']} RESUME")
+                cursor.execute(compose('ALTER TASK {} RESUME', identifier(schema + '.' + step['task'])))
         cursor.execute('SELECT CURRENT_TIMESTAMP()')
         since = cursor.fetchone()[0]
-        cursor.execute(f"EXECUTE TASK {schema}.{tasks[root]['task']}")
+        cursor.execute(compose('EXECUTE TASK {}', identifier(schema + '.' + tasks[root]['task'])))
         deadline = time.monotonic() + timeout
         while True:
             history = records(cursor, _run_render('''SELECT NAME,STATE,ERROR_MESSAGE,GRAPH_RUN_GROUP_ID

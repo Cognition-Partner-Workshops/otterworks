@@ -43,6 +43,8 @@ def test_table_projections(rows):
                              f"BILLING_PROBES.{table}\n" in s)
             query = "SELECT " + statement.split("AS SELECT ", 1)[1]
             query = query.replace(RunConfig.from_env().database + ".BILLING_PROBES.FEED", "feed")
+            # SQL is built only from committed fixtures and fixed local test cases.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             assert db.execute(query).fetchall() == rows
 
 
@@ -51,4 +53,6 @@ def test_numeric_projection(value, expected):
     source = (ROOT / "dbt/models/pc/audit/pc_audit__audit_event.sql").read_text()
     expression = re.search(r"case when DOCUMENT_ID.*?end", source).group()
     with sqlite3.connect(":memory:") as db:
+        # SQL is built only from committed fixtures and fixed local test cases.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         assert db.execute(f"SELECT {expression} FROM (SELECT ? AS DOCUMENT_ID)", (value,)).fetchone() == (expected,)

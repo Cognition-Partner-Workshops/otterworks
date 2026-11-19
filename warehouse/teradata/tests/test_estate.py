@@ -3,6 +3,7 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier
 
 import io
 import csv
@@ -14,7 +15,6 @@ import uuid
 from pathlib import Path
 
 import psycopg
-from psycopg import sql
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -28,14 +28,14 @@ from bteq.setup import setup
 @pytest.fixture
 def estate(td):
     name = 'estate_' + uuid.uuid4().hex
-    td.conn.execute(sql.SQL('CREATE DATABASE {}').format(sql.Identifier(name)))
+    td.conn.execute(compose('CREATE DATABASE {}', identifier(name, dialect='postgres')))
     runner = Runner(connection=psycopg.connect(td.conn.info.dsn, dbname=name), output=io.StringIO())
     try:
         setup(runner)
         yield runner
     finally:
         runner.conn.close()
-        td.conn.execute(sql.SQL('DROP DATABASE {}').format(sql.Identifier(name)))
+        td.conn.execute(compose('DROP DATABASE {}', identifier(name, dialect='postgres')))
 
 
 def test_generate_setup_load(estate, tmp_path):
@@ -49,7 +49,7 @@ def test_generate_setup_load(estate, tmp_path):
         with path.open() as handle:
             expected = sum(1 for _ in handle)
         target = table.database.lower() + '.stg_' + table.name.lower()
-        actual = estate.conn.execute(sql.SQL('SELECT count(*) FROM {}').format(sql.Identifier(*target.split('.')))).fetchone()[0]
+        actual = estate.conn.execute(compose('SELECT count(*) FROM {}', identifier(target, dialect='postgres'))).fetchone()[0]
         assert actual == counts[target] == expected == table.count(2000) + extra_count(table.name)
         core = table.database.lower() + '.' + table.name.lower()
         metadata = estate.conn.execute('SELECT is_set FROM sfx_td.tables WHERE name=%s', (core,)).fetchone()
@@ -58,7 +58,7 @@ def test_generate_setup_load(estate, tmp_path):
     setup(estate)
     assert load_all(estate, tmp_path) == counts
     for target, count in counts.items():
-        assert estate.conn.execute(sql.SQL('SELECT count(*) FROM {}').format(sql.Identifier(*target.split('.')))).fetchone()[0] == count
+        assert estate.conn.execute(compose('SELECT count(*) FROM {}', identifier(target, dialect='postgres'))).fetchone()[0] == count
     estate.execute('INSERT INTO SFX_DOCUMENTS.STORAGE_USAGE_DAILY SELECT * FROM SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY')
     assert estate.errorcode == 0, estate.output.getvalue()
     assert estate.activitycount == counts['sfx_documents.stg_storage_usage_daily'] - 50
@@ -143,7 +143,7 @@ def test_daily_chain(estate, tmp_path):
     assert estate.conn.execute('SELECT difference_count FROM sfx_audit.audit_recon WHERE recon_id=21000000001').fetchone() == (50,)
     assert estate.conn.execute("SELECT kind,count(*) FROM sfx_td.routines GROUP BY kind ORDER BY kind").fetchall() == [('MACRO', 6), ('PROCEDURE', 4)]
     for table in ('sfx_users.user_pref', 'sfx_documents.search_index_log', 'sfx_audit.audit_event_archive'):
-        assert estate.conn.execute('SELECT count(*) FROM ' + table).fetchone() == (0,)
+        assert estate.conn.execute(compose('SELECT count(*) FROM {}', identifier(table, dialect='postgres'))).fetchone() == (0,)
     again = subprocess.run(command + ['--reuse-landing'], env=environment, text=True, capture_output=True, timeout=120)
     assert again.returncode == 0, again.stdout + again.stderr
     assert estate.conn.execute('SELECT count(*),sum(debit_amount),sum(credit_amount) FROM sfx_billing.gl_journal_line').fetchone() == snapshot

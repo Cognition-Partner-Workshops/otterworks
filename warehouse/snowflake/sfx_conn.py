@@ -4,6 +4,7 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier
 from warehouse.run_config import RunConfig
 
 import json
@@ -72,16 +73,13 @@ def suspend_all():
         with conn.cursor() as cur:
             for warehouse in WORKLOADS.values():
                 try:
-                    # Warehouse names come only from the repository-owned workload map.
-                    # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-                    cur.execute(f"ALTER WAREHOUSE {warehouse} SUSPEND")
+                    cur.execute(compose('ALTER WAREHOUSE {} SUSPEND', identifier(warehouse)))
                     print(f"{warehouse}: suspended")
                 except ProgrammingError as error:
                     if "already suspended" not in str(error).lower():
                         if error.errno != 90064:
                             raise
-                        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-                        cur.execute(f"SHOW WAREHOUSES LIKE '{warehouse}'")
+                        cur.execute('SHOW WAREHOUSES LIKE %s', (warehouse,))
                         columns = [column[0] for column in cur.description]
                         states = [dict(zip(columns, row)) for row in cur.fetchall()]
                         if len(states) != 1 or states[0]["state"] != "SUSPENDED":

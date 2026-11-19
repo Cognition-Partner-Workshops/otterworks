@@ -84,7 +84,7 @@ def test_landing_refresh(tmp_path, monkeypatch, count):
     monkeypatch.setattr(spark_landing, "inspect_files", lambda *args: ([], count, "digest"))
     assert spark_landing.load(tmp_path) == [("SPARK_RAW_BILLING.PLAN_CATALOG", count, count)]
     sql = [call.args[0] for call in cursor.execute.call_args_list]
-    assert any("INSERT OVERWRITE INTO SPARK_RAW_BILLING.PLAN_CATALOG" in statement for statement in sql)
+    assert any('INSERT OVERWRITE INTO "SPARK_RAW_BILLING"."PLAN_CATALOG"' in statement for statement in sql)
     assert "DROP TABLE IF EXISTS" in sql[-1]
 
 
@@ -92,7 +92,7 @@ def test_landing_load_error(tmp_path, monkeypatch):
     connection = MagicMock()
     cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
     cursor.fetchall.return_value = [(name,) for name, _ in spark_landing.SCHEMAS["PLAN_CATALOG"]]
-    def execute(sql):
+    def execute(sql, params=None):
         if sql.startswith("COPY INTO"):
             raise RuntimeError("copy failed")
     cursor.execute.side_effect = execute
@@ -148,7 +148,8 @@ def test_registry_dispatch(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize('primary,legacy', [('sfx2220', None), (None, "sfx-d1110-test'quote")])
-def test_snowpark_runner(tmp_path, monkeypatch, primary, legacy):
+@pytest.mark.parametrize('database', ['"SFX_TEST"', '"Mixed_Case"'])
+def test_snowpark_runner(tmp_path, monkeypatch, primary, legacy, database):
     for name, value in [('RUN_TOKEN', primary), ('SNOWFLAKE_RUN_TOKEN', legacy)]:
         if value is None:
             monkeypatch.delenv(name, raising=False)
@@ -163,13 +164,16 @@ def test_snowpark_runner(tmp_path, monkeypatch, primary, legacy):
     connect = MagicMock()
     monkeypatch.setattr(runner, "connect", connect)
     session = MagicMock()
+    active = session.configs.return_value.create.return_value.__enter__.return_value
+    active.get_current_database.return_value = database
     monkeypatch.setattr("snowflake.snowpark.Session.builder", session)
     assert runner.run("example") == 42
     assert connect.call_args.kwargs["job"] == "example"
     active = session.configs.return_value.create.return_value.__enter__.return_value
     assert json.loads(active.query_tag)["job"] == "example"
     assert json.loads(active.query_tag)["act"] == "spark"
-    assert any('SET TAG' in call.args[0] and _run_render("= '__RUN_TOKEN__'") in call.args[0]
+    assert active.sql.call_args.args[0].startswith(f'ALTER TABLE {database}."MART_SPARK"."EXAMPLE"')
+    assert any('SET TAG' in call.args[0] and call.kwargs['params'] == [_run_render('__RUN_TOKEN__')]
                for call in active.sql.call_args_list)
     cursor = connect.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
     statement, params = cursor.execute.call_args.args

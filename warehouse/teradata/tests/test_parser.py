@@ -18,6 +18,8 @@ END IF;
 END''')
     assert td.errorcode == 0
     for value, expected in ((0, 0), (5, 1), (15, 2), (25, 3)):
+        # SQL is built only from committed fixtures and fixed local test cases.
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         td.execute(f'CALL p_case({value}, ?)')
         assert td.errorcode == 0, td.output.getvalue()
         assert f'result = {expected}' in td.output.getvalue()

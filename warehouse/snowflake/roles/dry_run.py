@@ -4,6 +4,7 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier
 
 import argparse
 from pathlib import Path
@@ -112,9 +113,7 @@ def has_create_role(cursor):
         if current in visited:
             continue
         visited.add(current)
-        # Server-returned role name is quoted as a Snowflake identifier.
-        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        cursor.execute('SHOW GRANTS TO ROLE "' + current.replace('"', '""') + '"')
+        cursor.execute(compose('SHOW GRANTS TO ROLE {}', identifier(current, qualified=False, preserve_case=True)))
         columns = [col[0].lower() for col in cursor.description]
         grants = [dict(zip(columns, row)) for row in cursor.fetchall()]
         if any(row.get("privilege", "").upper() == "CREATE ROLE"

@@ -3,6 +3,7 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier
 
 import argparse
 import csv
@@ -73,11 +74,12 @@ def load_control(runner, path, variables=None):
     actual = tuple(name for name, _ in metadata)
     if control.columns != actual:
         raise ValueError('Control file column order differs from the target DDL')
-    target = sql.Identifier(*control.target.split('.'))
+    target = identifier(control.target, dialect='postgres')
     count = 0
     with control.path.open(newline='', encoding='utf-8') as handle, runner.conn.transaction():
-        runner.conn.execute(sql.SQL('TRUNCATE TABLE {}').format(target))
-        statement = sql.SQL('COPY {} ({}) FROM STDIN').format(target, sql.SQL(',').join(map(sql.Identifier, control.columns)))
+        runner.conn.execute(compose('TRUNCATE TABLE {}', target))
+        statement = compose('COPY {} ({}) FROM STDIN', target,
+                            sql.SQL(',').join(identifier(c, dialect='postgres', qualified=False) for c in control.columns))
         with runner.conn.cursor().copy(statement) as copy:
             for row in csv.reader(handle, delimiter=control.delimiter):
                 if len(row) != len(control.columns):

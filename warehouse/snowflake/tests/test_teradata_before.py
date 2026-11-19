@@ -28,7 +28,7 @@ class Connection:
         self.queries.append(sql)
         if self.error:
             raise RuntimeError('source unavailable')
-        table = sql.rsplit('.', 1)[-1]
+        table = sql.rsplit('.', 1)[-1].strip('"').upper()
         columns = {'INVOICE_HDR': ['invoice_id', 'invoice_dt', 'total_amount', 'due_date'],
                    'INVOICE_LINE': ['invoice_line_id', 'invoice_id', 'description'],
                    'GL_JOURNAL_LINE': ['journal_line_id', 'invoice_id', 'posting_dt', 'currency_cd']}[table]
@@ -45,7 +45,7 @@ def test_export_processed_values_headers_and_billing_only(tmp_path):
     connection = Connection()
     prepared = export_tables(connection, tmp_path, '20261109')
     assert [r[1] for r in prepared] == list(TABLES)
-    assert connection.queries == [f'SELECT * FROM SFX_BILLING.{name}' for name in TABLES]
+    assert connection.queries == [f'SELECT * FROM "sfx_billing"."{name.lower()}"' for name in TABLES]
     rows = {}
     for area, table, path, count in prepared:
         with gzip.open(path, 'rt', newline='') as stream:
@@ -64,7 +64,7 @@ def test_export_processed_values_headers_and_billing_only(tmp_path):
     assert cursor.commands.count('BEGIN') == cursor.commands.count('COMMIT') == 1
     assert not any('TRUNCATE' in sql for sql in cursor.commands)
     assert all('/teradata-before/billing/' in sql for sql in cursor.commands if sql.startswith('PUT'))
-    assert all("FILES=('20261109.psv.gz')" in sql for sql in cursor.commands if sql.startswith('COPY'))
+    assert all('FILES=(%s)' in sql for sql in cursor.commands if sql.startswith('COPY'))
 
 
 def test_export_empty_and_error_do_not_load(tmp_path):
@@ -97,8 +97,12 @@ def test_v008_dates_and_revenue_normal_empty_and_sources():
         db.create_function('DATEADD', 3, lambda unit, days, value: (date.fromisoformat(value) + timedelta(days=days)).isoformat() if value else None)
         db.create_function('TO_CHAR', 2, lambda value, pattern: value[:7] if value else None)
         for schema in ('RAW_BILLING', 'COMPAT'):
+            # SQL is built only from committed fixtures and fixed local test cases.
+            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             db.execute(f"attach database ':memory:' as {schema}")
         for table in ('INVOICE_HDR', 'CUSTOMER_ACCOUNT', 'CREDIT_NOTE'):
+            # SQL is built only from committed fixtures and fixed local test cases.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             db.execute(f'create table RAW_BILLING.{table} (' + ','.join(c + ' NUMERIC' for c in contract[table]) + ')')
         db.execute('create table COMPAT.ACCOUNT (CUSTOMER_ID NUMERIC)')
         db.executemany('insert into COMPAT.ACCOUNT values (?)', [(1,), (2,), (3,)])
@@ -106,6 +110,8 @@ def test_v008_dates_and_revenue_normal_empty_and_sources():
         db.executemany('insert into RAW_BILLING.INVOICE_HDR (INVOICE_ID,CUSTOMER_ID,INVOICE_DT,DUE_DATE,TOTAL_AMOUNT,CURRENCY_CD) values (?,?,?,?,?,?)',
                        [(1, 1, '2026-11-09', '2026-12-31', 10, 'usd'), (2, 2, '2026-11-09', None, 20, 'USD '), (3, 3, '2026-11-09', None, 30, 'USD')])
         query = views['INVOICE'].replace('DATEADD(day,', "DATEADD('day',")
+        # SQL is built only from committed fixtures and fixed local test cases.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute('create table COMPAT.INVOICE as ' + query)
         assert db.execute('select DUE_DATE from COMPAT.INVOICE order by INVOICE_ID').fetchall() == [('2026-12-31',), ('2026-11-24',), ('2026-12-09',)]
         revenue_rows = [('USD', '2026-11', 2, 50), ('usd', '2026-11', 1, 10)]

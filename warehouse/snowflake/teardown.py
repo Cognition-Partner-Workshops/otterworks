@@ -5,6 +5,7 @@ from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
 from warehouse.run_config import render as _run_render
 from warehouse.run_config import RunConfig
+from warehouse.sql import compose, identifier
 
 import argparse
 from dataclasses import dataclass
@@ -22,7 +23,7 @@ PROVISIONED = {
 
 
 def quote(name):
-    return '"' + name.replace('"', '""') + '"'
+    return identifier(name, qualified=False, preserve_case=True).as_string()
 
 
 def tagged(name, comment, token):
@@ -178,9 +179,7 @@ def cleanup(cursor, token, dry_run=False, include_provisioned=False, suspend_onl
                    and removable(obj, token)]
         for obj in orphans:
             print(f'EXECUTE DROP DATABASE IF EXISTS {obj.sql_name} CASCADE;')
-            # Discovered server object; sql_name quotes and escapes each identifier part.
-            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-            cursor.execute(f'DROP DATABASE IF EXISTS {obj.sql_name} CASCADE')
+            cursor.execute(compose('DROP DATABASE IF EXISTS {} CASCADE', identifier(obj.parts[0], qualified=False, preserve_case=True)))
         if orphans:
             remaining, more_denied = discover(cursor, token, dropped_users)
             remaining_denied += more_denied

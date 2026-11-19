@@ -4,6 +4,7 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier
 
 import argparse
 import csv
@@ -31,7 +32,7 @@ def export_tables(connection, destination, date):
     result = []
     for table in TABLES:
         with connection.cursor() as cursor:
-            cursor.execute(f'SELECT * FROM SFX_BILLING.{table}')
+            cursor.execute(compose('SELECT * FROM {}', identifier('SFX_BILLING.' + table, dialect='postgres')))
             columns = [c[0].upper() for c in cursor.description]
             aliases = {key: ALIASES[key] for key in TABLE_ALIASES[table]
                        if key not in columns and ALIASES[key] in columns}

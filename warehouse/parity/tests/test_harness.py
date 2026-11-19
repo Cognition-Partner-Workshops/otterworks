@@ -49,10 +49,10 @@ def test_setup_control_ddl(monkeypatch):
     monkeypatch.setenv('PC_CONTROL_TABLE', 'MAPPINGS')
     monkeypatch.setattr(harness, 'connection', lambda *args: Cursor())
     harness.setup()
-    control = [sql for sql in statements if _run_render('__RUN_DATABASE__.MIGRATION_CONTROL') in sql]
+    control = [sql for sql in statements if _run_render('"__RUN_DATABASE__"."MIGRATION_CONTROL"') in sql]
     assert len(control) == 22
     assert control[0] == harness.control_ddl()
-    assert control[1] == (_run_render('ALTER TABLE __RUN_DATABASE__.MIGRATION_CONTROL.MAPPINGS '
+    assert control[1] == (_run_render('ALTER TABLE "__RUN_DATABASE__"."MIGRATION_CONTROL"."MAPPINGS" '
                           'ADD COLUMN IF NOT EXISTS OWNER_EFFORT VARCHAR'))
     assert all(sql == harness.merge_sql() for sql in control[2:])
 
@@ -88,7 +88,7 @@ def test_empty_repository(tmp_path):
 
 
 def test_sql_and_tags():
-    assert f"COMMENT = '{COMMENT}'" in control_ddl()
+    assert 'COMMENT = %s' in control_ddl()
     sql = merge_sql()
     assert 'WHEN MATCHED AND t.owner_effort IS NULL' in sql
     assert 'UPDATE SET t.owner_effort=s.owner_effort' in sql
@@ -116,7 +116,7 @@ def test_owners():
     class Cursor:
         def execute(self, sql, params):
             assert sql == 'SELECT FOLDER, OWNER_EFFORT FROM IDENTIFIER(%s) WHERE MAPPING=%s'
-            assert params == (_run_render('__RUN_DATABASE__.MIGRATION_CONTROL.MAPPINGS'), 'm_SFX_PAYMENT')
+            assert params == (_run_render('"__RUN_DATABASE__"."MIGRATION_CONTROL"."MAPPINGS"'), 'm_SFX_PAYMENT')
         def fetchall(self):
             return [('SFX_BILLING', 'act3-workflow')]
     require_owner(Cursor(), 'm_SFX_PAYMENT')

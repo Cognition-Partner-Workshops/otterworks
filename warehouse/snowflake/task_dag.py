@@ -4,6 +4,7 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier
 
 import argparse
 import json
@@ -32,9 +33,7 @@ def suspend_tasks(cursor, steps):
     errors = []
     for step in steps.values():
         try:
-            # Task names are regex-validated by step_map before dispatch.
-            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-            cursor.execute(f"ALTER TASK ORCH.{step['task']} SUSPEND")
+            cursor.execute(compose('ALTER TASK {} SUSPEND', identifier('ORCH.' + step['task'])))
         except Exception as error:
             errors.append(str(error))
     states = records(cursor, 'SHOW TASKS IN SCHEMA ORCH')
@@ -55,20 +54,16 @@ def run_once(cursor, timeout=180, poll_seconds=2):
     complete = False
     try:
         suspend_tasks(cursor, steps)
-        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        cursor.execute(f'ALTER TASK ORCH.{root} SET CONFIG = %s',
+        cursor.execute(compose('ALTER TASK {} SET CONFIG = %s', identifier('ORCH.' + root)),
                        (json.dumps({'run_id': run_id}),))
         for step in steps.values():
-            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-            cursor.execute(f"ALTER TASK ORCH.{step['task']} SET QUERY_TAG = %s", (tag,))
+            cursor.execute(compose('ALTER TASK {} SET QUERY_TAG = %s', identifier('ORCH.' + step['task'])), (tag,))
         for name, step in reversed(list(steps.items())):
             if name != 'start':
-                # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-                cursor.execute(f"ALTER TASK ORCH.{step['task']} RESUME")
+                cursor.execute(compose('ALTER TASK {} RESUME', identifier('ORCH.' + step['task'])))
         cursor.execute('SELECT CURRENT_TIMESTAMP()')
         since = cursor.fetchone()[0]
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        cursor.execute(f'EXECUTE TASK ORCH.{root}')
+        cursor.execute(compose('EXECUTE TASK {}', identifier('ORCH.' + root)))
         deadline = time.monotonic() + timeout
         while True:
             history = records(cursor, _run_render('''SELECT NAME, STATE, SCHEDULED_TIME,

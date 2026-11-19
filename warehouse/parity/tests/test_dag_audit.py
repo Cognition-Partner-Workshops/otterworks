@@ -47,7 +47,7 @@ def test_generated_dag_matches_workflow(tmp_path):
     assert not any('ARCHIVE' in n for n in tasks)
     for name, task in tasks.items():
         sql = pc_dag.create_sql(folder, task, tasks)
-        assert 'SCHEDULE' not in sql and _run_render('WAREHOUSE=__RUN_DATABASE___TRANSFORM_WH') in sql
+        assert 'SCHEDULE' not in sql and _run_render('WAREHOUSE="__RUN_DATABASE___TRANSFORM_WH"') in sql
         assert 'PC_FX_UNT9' not in sql
         if name != 'START':
             assert _run_render('__RUN_DATABASE__.PC_AUDIT.') + name in task['sql']

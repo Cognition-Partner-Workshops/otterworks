@@ -3,6 +3,7 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier
 
 import argparse
 import re
@@ -28,8 +29,9 @@ def extend_table(runner, statement, name):
     for definition in split(definitions, ','):
         column = definition.split()[0].lower()
         if column not in existing and column not in ('unique', 'constraint'):
-            runner.conn.execute(sql.SQL('ALTER TABLE {} ADD COLUMN ' + definition).format(
-                sql.Identifier(*name.lower().split('.'))))
+            # The translated column definition is SQL from the committed DDL scripts.
+            runner.conn.execute(compose('ALTER TABLE {} ADD COLUMN {}',
+                identifier(name, dialect='postgres'), sql.SQL(definition)))
     after()
 
 

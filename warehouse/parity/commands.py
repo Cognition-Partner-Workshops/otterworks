@@ -4,6 +4,8 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier as sql_identifier, stage as sql_stage
+from psycopg import sql
 
 import csv
 import json
@@ -46,8 +48,7 @@ def build(mapping=None, folder=None, load_date=None):
 
 
 def identifier(value):
-    if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', value):
-        raise ValueError(f'Invalid identifier: {value}')
+    sql_identifier(value, qualified=False)
     return value.upper()
 
 
@@ -84,7 +85,7 @@ def before(row):
     OUT.mkdir(exist_ok=True)
     runroot = OUT / database
     with psycopg.connect(dbname='postgres', **params) as admin:
-        admin.execute(f'CREATE DATABASE {database}')
+        admin.execute(compose('CREATE DATABASE {}', sql_identifier(database, dialect='postgres')))
         try:
             with psycopg.connect(dbname=database, **params) as pg:
                 pg.execute(_run_render(BOOTSTRAP.read_text()))
@@ -103,7 +104,7 @@ def before(row):
                 cols = pg.execute('''SELECT column_name, data_type, character_maximum_length,
                     numeric_precision, numeric_scale FROM information_schema.columns
                     WHERE table_schema=%s AND table_name=%s ORDER BY ordinal_position''', (schema, table)).fetchall()
-                data = pg.execute(f'SELECT * FROM {identifier(schema)}.{identifier(table)}').fetchall()
+                data = pg.execute(compose('SELECT * FROM {}', sql_identifier(schema + '.' + table, dialect='postgres'))).fetchall()
                 types = []
                 for name, dtype, length, precision, scale in cols:
                     if dtype in ('bigint', 'integer', 'smallint'):
@@ -120,7 +121,7 @@ def before(row):
                         sf = 'BOOLEAN'
                     else:
                         raise ValueError(f'Unsupported PostgreSQL type: {dtype}')
-                    types.append(identifier(name) + ' ' + sf)
+                    types.append(sql.Composed([sql_identifier(name), sql.SQL(' ' + sf)]))
                 path = runroot / 'target.csv'
                 path.parent.mkdir(exist_ok=True)
                 with path.open('w', newline='') as f:
@@ -128,14 +129,15 @@ def before(row):
                     writer.writerows([[r'\N' if v is None else v for v in rec] for rec in data])
                 with connection('load', 'before', row['mapping']) as conn, conn.cursor() as cur:
                     table = relation(row['before_table'])
-                    cur.execute(f"CREATE OR REPLACE TABLE {table} ({', '.join(types)}) COMMENT='{COMMENT}'")
+                    cur.execute(compose('CREATE OR REPLACE TABLE {} ({}) COMMENT=%s', sql_identifier(table), sql.SQL(', ').join(types)), (COMMENT,))
                     stage = DATABASE + '.PC_BEFORE.CAPTURE_STAGE'
-                    cur.execute(f"CREATE STAGE IF NOT EXISTS {stage} COMMENT='{COMMENT}'")
-                    cur.execute(f"PUT '{path.resolve().as_uri()}' @{stage}/{database}/ AUTO_COMPRESS=FALSE OVERWRITE=TRUE")
-                    cur.execute(f"""COPY INTO {table} FROM @{stage}/{database}/ FILES=('target.csv')
+                    cur.execute(compose('CREATE STAGE IF NOT EXISTS {} COMMENT=%s', sql_identifier(stage)), (COMMENT,))
+                    location = sql_stage(stage + '/' + database + '/')
+                    cur.execute(compose('PUT %s {} AUTO_COMPRESS=FALSE OVERWRITE=TRUE', location), (path.resolve().as_uri(),))
+                    cur.execute(compose("""COPY INTO {} FROM {} FILES=('target.csv')
                         FILE_FORMAT=(TYPE=CSV FIELD_OPTIONALLY_ENCLOSED_BY='"' NULL_IF=('\\\\N')
-                        EMPTY_FIELD_AS_NULL=FALSE ESCAPE_UNENCLOSED_FIELD=NONE) FORCE=TRUE""")
-                    cur.execute(f'SELECT COUNT(*) FROM {table}')
+                        EMPTY_FIELD_AS_NULL=FALSE ESCAPE_UNENCLOSED_FIELD=NONE) FORCE=TRUE""", sql_identifier(table), location))
+                    cur.execute(compose('SELECT COUNT(*) FROM {}', sql_identifier(table)))
                     count = cur.fetchone()[0]
                     if count != len(data):
                         raise RuntimeError('BEFORE upload rowcount mismatch')
@@ -144,11 +146,11 @@ def before(row):
                                rerun_duplicates=None, parity_query_tag=None))
                 print(f"BEFORE {row['mapping']}: {count} rows -> {table}")
         finally:
-            admin.execute(f'DROP DATABASE {database} WITH (FORCE)')
+            admin.execute(compose('DROP DATABASE {} WITH (FORCE)', sql_identifier(database, dialect='postgres')))
 
 
 def fetch(cur, table):
-    cur.execute(f'SELECT * FROM {relation(table)}')
+    cur.execute(compose('SELECT * FROM {}', sql_identifier(relation(table))))
     columns = [c[0].upper() for c in cur.description]
     return columns, [dict(zip(columns, r)) for r in cur.fetchall()]
 
@@ -168,7 +170,7 @@ def parity(row, sample):
     with connection('parity', 'parity', row['mapping']) as conn, conn.cursor() as cur:
         after = relation(row['after_table'])
         _, schema, table = after.split('.')
-        cur.execute(f'SELECT COUNT(*) FROM {DATABASE}.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=%s AND TABLE_NAME=%s', (schema, table))
+        cur.execute(compose('SELECT COUNT(*) FROM {} WHERE TABLE_SCHEMA=%s AND TABLE_NAME=%s', sql_identifier(DATABASE + '.INFORMATION_SCHEMA.TABLES')), (schema, table))
         if not cur.fetchone()[0]:
             save(row, dict(after_rows=None, rowcount_match=False, keyed_hash_match=False,
                            parity_error='AFTER missing', rerun_duplicates=None))
@@ -208,9 +210,10 @@ def idempotence(row):
                         '--mapping', row['mapping']], check=True)
         with connection('parity', 'idempotence', row['mapping']) as conn, conn.cursor() as cur:
             table = relation(row['after_table'])
-            cur.execute(f'SELECT COUNT(*) FROM {table}')
+            cur.execute(compose('SELECT COUNT(*) FROM {}', sql_identifier(table)))
             counts.append(cur.fetchone()[0])
-            cur.execute(f"SELECT COALESCE(SUM(n-1),0) FROM (SELECT COUNT(*) n FROM {table} GROUP BY {', '.join(keys)} HAVING COUNT(*)>1)")
+            cur.execute(compose('SELECT COALESCE(SUM(n-1),0) FROM (SELECT COUNT(*) n FROM {} GROUP BY {} HAVING COUNT(*)>1)',
+                                sql_identifier(table), sql.SQL(', ').join(map(sql_identifier, keys))))
             duplicates = cur.fetchone()[0]
     result = dict(run1_rows=counts[0], run2_rows=counts[1], rerun_duplicates=int(duplicates))
     # Refresh hashes after the final build, not from a pre-build snapshot.
@@ -220,13 +223,13 @@ def idempotence(row):
 
 
 def mark_sql():
-    return f'''MERGE INTO {control_table()} t USING (SELECT %s FOLDER, %s MAPPING, %s OWNER_EFFORT) s
+    return compose('''MERGE INTO {} t USING (SELECT %s FOLDER, %s MAPPING, %s OWNER_EFFORT) s
         ON t.FOLDER=s.FOLDER AND t.MAPPING=s.MAPPING
         WHEN MATCHED AND t.OWNER_EFFORT=s.OWNER_EFFORT THEN UPDATE SET
         BEFORE_ROWS=%s, AFTER_ROWS=%s, ROWCOUNT_MATCH=%s, KEYED_HASH_MATCH=%s,
         SAMPLED_DIFFS=PARSE_JSON(%s), RUN1_ROWS=%s, RUN2_ROWS=%s, RERUN_DUPLICATES=%s,
         STATUS=%s, AMBER_REASON=%s, PR_URL=COALESCE(%s,t.PR_URL), PARITY_QUERY_TAG=%s,
-        VERIFIED_AT=IFF(%s='VERIFIED',IFF(t.STATUS='VERIFIED',COALESCE(t.VERIFIED_AT,CURRENT_TIMESTAMP()),CURRENT_TIMESTAMP()),NULL)'''
+        VERIFIED_AT=IFF(%s='VERIFIED',IFF(t.STATUS='VERIFIED',COALESCE(t.VERIFIED_AT,CURRENT_TIMESTAMP()),CURRENT_TIMESTAMP()),NULL)''', sql_identifier(control_table()))
 
 
 def mark(row, args):
