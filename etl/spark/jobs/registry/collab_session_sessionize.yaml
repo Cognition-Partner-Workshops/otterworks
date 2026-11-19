@@ -1,8 +1,8 @@
 {
   "job": "collab_session_sessionize",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "24 3 * * *",
   "profile": "small"
 }

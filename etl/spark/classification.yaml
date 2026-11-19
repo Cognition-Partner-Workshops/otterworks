@@ -104,10 +104,10 @@
   reason: "Performs bounded breadth-first expansion over document-sharing edges with visited-node tracking."
 - job: collab_session_sessionize
   language: python
-  target: dbt
-  reason: "Splits timestamps per user and document only when the gap exceeds 1800 seconds, expressible with LAG, a cumulative session number and grouped MIN/MAX."
-  original_target: snowpark_python
-  change_reason: "The Python loop only sorts timestamps and detects strict inactivity gaps, with no other state or business rules, so equivalent SQL windows preserve its session boundaries."
+  target: spark_standard_template
+  reason: "Retains strict 1800-second session boundaries on the standard small Spark profile with rerun-safe dated output."
+  original_target: dbt
+  change_reason: "Snowflake compute is not available to this run's role; use the measurable local Spark template without moving landing data or changing session semantics."
 - job: doc_version_diff_stats
   language: python
   target: snowpark_python
