@@ -1,8 +1,8 @@
 {
   "job": "users_login_useragent_parse",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "13 2 * * *",
   "profile": "small"
 }
