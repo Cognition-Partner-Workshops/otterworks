@@ -24,6 +24,7 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ShareDialog } from "@/components/files/share-dialog";
 import { TextFilePreview, PdfFilePreview, ImageFilePreview } from "@/components/files/file-preview";
 import { filesApi, authApi } from "@/lib/api";
+import { downloadUrlInBrowser, isNativePlatform, saveUrlToDevice, versionFileName } from "@/lib/native-files";
 import { formatFileSize, formatRelativeTime, getInitials, generateColor } from "@/lib/utils";
 
 export default function FileDetailPage() {
@@ -158,14 +159,13 @@ function FileDetailContent() {
               setIsDownloading(true);
               try {
                 const downloadUrl = await filesApi.getDownloadUrl(file.id);
-                const a = document.createElement("a");
-                a.href = downloadUrl;
-                a.download = file.name;
-                a.rel = "noopener";
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                toast.success(`Downloading ${file.name}`);
+                if (isNativePlatform()) {
+                  await saveUrlToDevice(downloadUrl, file.name);
+                  toast.success(`Saved ${file.name} to Files`);
+                } else {
+                  downloadUrlInBrowser(downloadUrl, file.name);
+                  toast.success(`Downloading ${file.name}`);
+                }
               } catch {
                 toast.error("Download failed. Please try again.");
               } finally {
@@ -244,6 +244,14 @@ function FileDetailContent() {
                     </div>
                     <a
                       href={version.downloadUrl}
+                      onClick={(e) => {
+                        if (!isNativePlatform()) return;
+                        e.preventDefault();
+                        const name = versionFileName(file.name, version.versionNumber);
+                        saveUrlToDevice(version.downloadUrl, name)
+                          .then(() => toast.success(`Saved ${name} to Files`))
+                          .catch(() => toast.error("Download failed. Please try again."));
+                      }}
                       className="text-sm text-otter-600 hover:underline"
                     >
                       Download
