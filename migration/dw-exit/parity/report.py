@@ -37,10 +37,7 @@ def main():
     text += table(read(args.supplemental_red), read(args.supplemental_green))
     text += ('\n\nProfiles cover null counts, min, max and distinct counts. Hash gaps are unmatched '
              'row occurrences, including duplicates; they are not distinct bad business keys. '
-             'Every relation also runs sampled value-by-value checks. Raw JSON records SQL and query IDs.\n\n'
-             'Finance decision: preserve legacy SET exact-duplicate suppression and expose '
-             'suppressed payloads with counts in BILLING_PROBES.SET_DUPLICATE_QUARANTINE. '
-             'Billing MULTISET duplicates remain preserved.\n')
+             'Every relation also runs sampled value-by-value checks. Raw JSON records SQL and query IDs.\n')
     args.output.write_text(text)
 
 

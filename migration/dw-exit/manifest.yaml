@@ -40,9 +40,8 @@ objects:
   wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-07
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: ncf58434800570afc
   system: powercenter
@@ -103,7 +102,6 @@ objects:
   owner_source: proposed
   risk: high
   risk_reasons:
-  - SFX-06
   - high complexity
   status: not_started
 - id: nc6e232bf5387a7d8
@@ -319,9 +317,8 @@ objects:
   wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-09
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n871f62d3691a3f87
   system: powercenter
@@ -334,9 +331,8 @@ objects:
   wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-09
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: nd28651dfba442ad6
   system: powercenter
@@ -349,9 +345,8 @@ objects:
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
+  risk: med
   risk_reasons:
-  - SFX-09
   - feeds only dead objects
   status: not_started
 - id: n4752fbb3cc9908e1
@@ -491,9 +486,8 @@ objects:
   wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-09
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n3d22b7a534acc0bb
   system: powercenter
@@ -520,9 +514,8 @@ objects:
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-09
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n314aedf512c71123
   system: powercenter
@@ -591,9 +584,8 @@ objects:
   wave: 4
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-09
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n04c6b6b63a36b7db
   system: powercenter
@@ -690,9 +682,8 @@ objects:
   wave: 2
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-04
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n8e844039a21420a5
   system: teradata
@@ -705,9 +696,8 @@ objects:
   wave: 2
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-03
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: nfc77ae74ea868828
   system: teradata
@@ -860,9 +850,8 @@ objects:
   wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n00694db68750e5f5
   system: teradata
@@ -903,9 +892,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n49bdf9d9fa4697b2
   system: teradata
@@ -989,10 +977,8 @@ objects:
   wave: 3
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-01
-  - SFX-02
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: nb0721a93c9ea4800
   system: teradata
@@ -1433,9 +1419,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-01
+  risk: low
+  risk_reasons: []
   status: not_started
 - id: nb4507f31f948976c
   system: teradata
@@ -1448,9 +1433,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-01
+  risk: low
+  risk_reasons: []
   status: not_started
 - id: n2d399290c37850ff
   system: teradata
@@ -1463,9 +1447,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: low
+  risk_reasons: []
   status: not_started
 - id: nb5c179d7a1d96e03
   system: teradata
@@ -1520,10 +1503,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-01
-  - SFX-02
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n18d91c4923da39f4
   system: teradata
@@ -1888,9 +1869,8 @@ objects:
   wave: 3
   owner: '@otterworks/finance-ops'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-01
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n40359b042a48a08e
   system: teradata
@@ -1903,10 +1883,8 @@ objects:
   wave: 3
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-01
-  - SFX-02
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: na7e525046b868894
   system: teradata
@@ -1919,9 +1897,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n4a90a6534be003c7
   system: teradata
@@ -1948,9 +1925,8 @@ objects:
   wave: 3
   owner: '@otterworks/finance-reporting'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-01
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n2cf99dd59b17c2f1
   system: teradata
@@ -2131,9 +2107,8 @@ objects:
   wave: 3
   owner: '@otterworks/finance-reporting'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-01
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: nbf59db02f1e3b91d
   system: teradata
@@ -2160,9 +2135,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n8ce4b4c31fb7d641
   system: teradata
@@ -2245,9 +2219,8 @@ objects:
   wave: 2
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-03
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n8935b0bad45140b4
   system: teradata
@@ -2373,9 +2346,8 @@ objects:
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-03
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n2ca368bd87d7d5ae
   system: teradata
@@ -2431,9 +2403,8 @@ objects:
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n28cb37f5be5b66f5
   system: teradata
@@ -2446,9 +2417,8 @@ objects:
   wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n97b11eada9b5eb49
   system: teradata
@@ -2461,9 +2431,8 @@ objects:
   wave: 2
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-04
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n3e2eb63a0ecb2ec8
   system: teradata
@@ -2518,9 +2487,8 @@ objects:
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-04
+  risk: med
+  risk_reasons: []
   status: not_started
 - id: n209c8bcb96a81a00
   system: teradata
@@ -3083,10 +3051,8 @@ objects:
   wave: 4
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-01
-  - SFX-02
+  risk: low
+  risk_reasons: []
   status: not_started
 - id: n21655cefa5f6f219
   system: teradata

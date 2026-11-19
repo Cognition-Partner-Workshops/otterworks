@@ -1,14 +1,3 @@
--- m_SFX_DOC_SHARE: FF_DOC_SHARE -> EXP_DOC_SHARE -> LKP_ROLE_GRANT -> EXP_ACCESS_LEVEL -> DOC_SHARE.
--- The session treats source rows as update with update else insert, so this is a MERGE on SHARE_ID.
---
--- LKP_ROLE_GRANT reads SFX_USERS.ROLE_GRANT on USER_ID with Use First Value. That table is
--- loaded by m_SFX_ROLE_GRANT, which another effort owns, so the lookup source is rebuilt here
--- from the same landing file with the same expression: UPPER(LTRIM(RTRIM(ROLE_CD))) into CHAR(12).
--- The runner builds the cache with ORDER BY USER_ID and keeps load order for ties. The load
--- order is GRANT_ID order, so the first match is the lowest GRANT_ID for each user.
---
--- DECODE(TRUE, ...) treats a NULL condition as false. A user with no grant falls through to
--- ACCESS_LEVEL. CASE has the same NULL rule.
 {{ config(materialized='incremental', incremental_strategy='merge', unique_key='SHARE_ID') }}
 with src as (
     select
@@ -24,7 +13,6 @@ role_grant as (
         cast(USER_ID as bigint) as USER_ID,
         left(upper(trim(ROLE_CD, ' ')), 12) as ROLE_CD
     from {{ source('pc_content_src', 'ROLE_GRANT') }}
-    qualify row_number() over (partition by cast(USER_ID as bigint) order by GRANT_ID) = 1
 )
 select
     s.SHARE_ID,

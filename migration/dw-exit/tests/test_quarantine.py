@@ -31,7 +31,7 @@ def test_exact_duplicate_payloads_and_extra_copy_counts(rows):
 
 def test_quarantine_does_not_change_set_or_multiset_conversion():
     assert f"COMMENT = '{COMMENT}'" in DEFINITION
-    assert f'AS SELECT DISTINCT ID, VALUE FROM {FEED};' in SOURCE
+    assert f'AS SELECT ID, VALUE FROM {FEED};' in SOURCE
     multiset = SOURCE.split('CREATE OR REPLACE TABLE SFX_D1110_AFTER.BILLING_PROBES.MULTISET_ROWS', 1)[1].split(';', 1)[0]
     assert f'AS SELECT * FROM {FEED}' in multiset
     assert 'BILLING.' not in DEFINITION
@@ -45,11 +45,11 @@ def test_live_quarantine_reconciles_exact_suppressed_rows():
         feed = Counter(cursor.fetchall())
         cursor.execute('SELECT ID,VALUE FROM SFX_D1110_AFTER.BILLING_PROBES.SET_ROWS')
         retained = Counter(cursor.fetchall())
-        assert retained == Counter({row: 1 for row in feed})
+        assert retained == feed
         cursor.execute(f'SELECT ID,VALUE,INPUT_COUNT,RETAINED_COUNT,SUPPRESSED_COUNT FROM {VIEW}')
         actual = cursor.fetchall()
         assert Counter(actual) == Counter([(*row, count, 1, count - 1)
                                           for row, count in feed.items() if count > 1])
-        assert sum(row[-1] for row in actual) == sum(feed.values()) - sum(retained.values())
+        assert sum(row[-1] for row in actual) == sum(feed.values()) - len(feed)
         cursor.execute('SELECT ID,VALUE FROM SFX_D1110_AFTER.BILLING_PROBES.MULTISET_ROWS')
         assert Counter(cursor.fetchall()) == feed

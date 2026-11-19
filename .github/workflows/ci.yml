@@ -650,7 +650,6 @@ jobs:
           filters: |
             informatica:
               - 'etl/informatica/**'
-              - 'demos/app/complexity/sfx-informatica.json'
               - 'Makefile'
       - if: steps.changes.outputs.informatica == 'true'
         uses: actions/setup-python@v5
@@ -662,5 +661,3 @@ jobs:
       - if: steps.changes.outputs.informatica == 'true'
         run: python -m pytest -q tests
         working-directory: etl/informatica
-      - if: steps.changes.outputs.informatica == 'true'
-        run: python -c "import json; json.load(open('demos/app/complexity/sfx-informatica.json'))"

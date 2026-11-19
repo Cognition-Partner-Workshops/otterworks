@@ -1,10 +1,8 @@
 {
   "job": "docs_event_export_hourly",
   "language": "python",
-  "target": "dbt",
-  "status": "snowflake",
+  "target": "spark",
+  "status": "legacy",
   "schedule": "18 * * * *",
-  "profile": "small",
-  "ingest": ["documents.DOCUMENT"],
-  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_event_export_hourly --select path:models/spark/docs_event_export_hourly"
+  "profile": "small"
 }

@@ -1,17 +1,4 @@
-"""PowerCenter transformation-language expressions.
-
-Expressions are parsed once and compiled into Python closures that take a
-port-value dict.  Null handling follows the Integration Service defaults:
-
-* arithmetic and comparison with a NULL operand yield NULL;
-* AND / OR / NOT use three-valued logic;
-* a condition that evaluates to NULL is treated as FALSE by IIF, Filter,
-  Router and DECODE(TRUE, ...);
-* ``||`` treats a NULL operand as an empty string, and returns NULL only
-  when both operands are NULL;
-* IIF without a false value returns 0 for a numeric true value, an empty
-  string for a string true value and NULL for a date.
-"""
+"""PowerCenter transformation-language expressions."""
 
 from __future__ import annotations
 
@@ -264,7 +251,6 @@ def parse(text: str) -> Node:
 
 
 def truthy(v) -> bool:
-    """Condition semantics: NULL and zero are FALSE."""
     if v is None:
         return False
     if isinstance(v, str):

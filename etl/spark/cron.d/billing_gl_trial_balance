@@ -1,0 +1,1 @@
+10 2 * * * /opt/etl/spark/submit/billing_gl_trial_balance.sh >> /var/log/etl/spark-billing_gl_trial_balance.log 2>&1

@@ -8,7 +8,7 @@ x-spark: &spark
     SPARK_CONF_DIR: /opt/sfx/spark/conf
     TD_JDBC_URL: jdbc:postgresql://sfx-tdemu:5432/sfx_teradata
     TD_JDBC_USER: etl_batch
-    TD_JDBC_PASSWORD: etl_batch_dev
+    TD_JDBC_PASSWORD: Fake-sfx1119-jdbc
   volumes:
     - ./etl/spark:/opt/sfx/spark:ro
     - ./etl/spark/.data/${NS:-sfx-d1110-before}:/opt/sfx/spark/.data:ro
@@ -17,9 +17,43 @@ x-spark: &spark
     - ./etl/spark/.data/${NS:-sfx-d1110-before}/eventlogs:/opt/spark-events
     - ./etl/spark/.cache/${NS:-sfx-d1110-before}:/opt/sfx/spark/.cache
 services:
+  spark-init:
+    image: mirror.gcr.io/library/spark:3.5.3-scala2.12-java17-python3-ubuntu
+    pull_policy: never
+    user: "0:0"
+    entrypoint: ["python3", "/opt/sfx/spark/fixture/initialize.py"]
+    environment:
+      ROWS_PER_TABLE: ${ROWS_PER_TABLE:-200000}
+    volumes:
+      - ./etl/spark:/opt/sfx/spark:ro
+      - ./etl/spark/.data/${NS:-sfx-d1110-before}:/opt/runtime
+      - ${LANDING_DIR:-./etl/spark/.data/${NS:-sfx-d1110-before}/landing}:/opt/landing
+      - ./etl/spark/.cache/${NS:-sfx-d1110-before}:/opt/sfx/spark/.cache
+  spark-load:
+    image: mirror.gcr.io/library/postgres:16
+    pull_policy: never
+    network_mode: service:sfx-tdemu
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        psql -h 127.0.0.1 -U etl_batch -d sfx_teradata -v ON_ERROR_STOP=1 -v "password=$$PGPASSWORD" <<'SQL'
+        ALTER ROLE etl_batch PASSWORD :'password';
+        SQL
+        exec psql -h sfx-tdemu -U etl_batch -d sfx_teradata -v ON_ERROR_STOP=1 -f /opt/runtime/load.sql
+    environment:
+      PGPASSWORD: Fake-sfx1119-jdbc
+    volumes:
+      - ./etl/spark/.data/${NS:-sfx-d1110-before}:/opt/runtime:ro
+    depends_on:
+      sfx-tdemu:
+        condition: service_healthy
   spark-master:
     <<: *spark
     hostname: spark-master
+    depends_on:
+      spark-load:
+        condition: service_completed_successfully
     command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master", "--host", "spark-master"]
     ports:
       - "127.0.0.1:${SFX_SPARK_MASTER_PORT:-7077}:7077"
@@ -48,6 +82,9 @@ services:
     <<: *worker
   spark-history:
     <<: *spark
+    depends_on:
+      spark-init:
+        condition: service_completed_successfully
     command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.history.HistoryServer"]
     ports:
       - "${SFX_SPARK_HISTORY_PORT:-18080}:18080"
@@ -64,7 +101,10 @@ services:
     environment:
       POSTGRES_DB: sfx_teradata
       POSTGRES_USER: etl_batch
-      POSTGRES_PASSWORD: etl_batch_dev
+      POSTGRES_PASSWORD: Fake-sfx1119-jdbc
+    depends_on:
+      spark-init:
+        condition: service_completed_successfully
     ports:
       - "127.0.0.1:${SFX_TDEMU_PORT:-55432}:5432"
     volumes:

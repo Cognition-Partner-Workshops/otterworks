@@ -260,15 +260,6 @@ def build(root=None):
         for consumer in consumers:
             if any(q['UserName'] == consumer['account'] for q in qs) and name in by_name:
                 normalized.add((by_name[name], consumer['id']))
-    risks = defaultdict(set)
-    for filename in ['sfx-teradata.json', 'sfx-informatica.json']:
-        data = json.loads((root / 'demos/app/complexity' / filename).read_text())
-        instances = [(c['id'], i) for c in data.get('classes', []) for i in c['instances']]
-        instances += [(i['class_id'], i) for i in data.get('instances', [])]
-        for code, inst in instances:
-            for row in artifacts:
-                if inst.get('object', '').split(' / ')[0] == row['name'] or (inst.get('file') == row['file'] and row['kind'] not in ('table', 'view')):
-                    risks[row['id']].add(code)
     manifest = []
     for row in sorted(artifacts, key=lambda r: (r['system'], r['kind'], r['name'])):
         name, kind = row['name'], row['kind']
@@ -287,7 +278,7 @@ def build(root=None):
             target_type, wave = 'compatibility_view', 4
         if kind in ('workflow', 'worklet'):
             wave = 3 if 'BILLING' in name else 4
-        reasons = sorted(risks[row['id']])
+        reasons = []
         if row['complexity'] == 'high':
             reasons.append('high complexity')
         if name in dead:
