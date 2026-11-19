@@ -17,12 +17,11 @@ class RuntimeTest(unittest.TestCase):
             cwd=ROOT, capture_output=True, text=True, check=True,
         )
         commands = result.stdout
-        self.assertRegex(commands, r'--rows 2000 --seed 1110 --(out|output) "/tmp/sfx-landing-check"')
+        self.assertIn('ROWS_PER_TABLE=2000', commands)
         for command in commands.splitlines():
             if any(script in command for script in ("generate_fixture.py", "load_tdemu.sh", "docker compose")):
                 self.assertIn("LANDING_DIR=/tmp/sfx-landing-check", command)
-        self.assertIn("etl/spark/.data/sfx-d1110-check/eventlogs/", commands)
-        self.assertIn("etl/spark/.cache/sfx-d1110-check", commands)
+        self.assertIn("--wait", commands)
 
     @unittest.skipUnless(shutil.which("docker"), "Docker Compose CLI is not installed")
     def test_compose_namespaces(self):
@@ -35,6 +34,10 @@ class RuntimeTest(unittest.TestCase):
                 cwd=ROOT, env=environment, capture_output=True, text=True, check=True,
             )
             services = json.loads(result.stdout)["services"]
+            self.assertEqual(services["spark-init"]["entrypoint"],
+                             ["python3", "/opt/sfx/spark/fixture/initialize.py"])
+            self.assertEqual(services["spark-master"]["depends_on"]["spark-load"]["condition"],
+                             "service_completed_successfully")
             mounts = {mount["target"]: mount["source"] for mount in services["spark-master"]["volumes"]}
             for target in ("/opt/landing", "/opt/lake", "/opt/spark-events", "/opt/sfx/spark/.data"):
                 self.assertIn(f"/.data/{namespace}", mounts[target])

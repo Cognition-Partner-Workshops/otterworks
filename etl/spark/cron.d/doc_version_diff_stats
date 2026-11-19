@@ -1,0 +1,1 @@
+25 3 * * * /opt/etl/spark/submit/doc_version_diff_stats.sh >> /var/log/etl/spark-doc_version_diff_stats.log 2>&1
