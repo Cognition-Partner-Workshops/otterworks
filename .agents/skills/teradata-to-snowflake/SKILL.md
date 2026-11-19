@@ -62,6 +62,18 @@ credentials; it is not needed for local DuckDB checks.
 
 ## Conversion rules
 
+- DBQL TablesV counts all READ/WRITE/EXECUTE usage and supplies a never-accessed timestamp / ACCOUNT_USAGE read/write aggregate differs / preserve the mismatch pending owner contract; do not silently copy the historical default / `parity/dbc_retire.py`, `dbc/10_account_usage.sql`, `warehouse/teradata/dbql/generate.py`.
+- DBQL records process, client, CPU, IO and collection metadata / QUERY_HISTORY cannot project equivalent values / expose unavailable fields as NULL and retain red parity pending owner decisions; QUERY_TAG as AppID is only a local assumption / `dbc/10_account_usage.sql`, `parity/dbc_retire.py`.
+- DBQL ObjectUsage includes writes and executes / direct read flatten loses write usage / union ACCESS_HISTORY.OBJECTS_MODIFIED as WRITE; retain unsupported EXECUTE and M/P attribution as an explicit owner decision / `dbc/10_account_usage.sql`, `parity/dbc_retire.py`.
+- Snowflake FLATTEN over an object array / sqlglot DuckDB UNNEST lowering is invalid / lower only the shipped FLATTEN table function to DuckDB json_each before transpilation / `parity/dbc_retire.py`.
+- Snowflake VARIANT scalar ::VARCHAR unquotes strings / DuckDB JSON cast retains quotes and breaks object joins / lower shipped objectName/objectDomain scalar extraction to json_extract_string for local proof / `parity/dbc_retire.py`.
+- Partial catalog equivalence / full-shape red hides correct mapped fields / add a separately labelled mapped-column ladder with explicit supported row scope, never promoting full-object status from it / `parity/dbc_retire.py`.
+
+Retire evidence: DBC setup-date COUNT(*) reads are not proof of deletion safety. Compare
+current DBQL reads with inventory and pinned BEFORE_STATE, scan services/etl callers,
+retain emulator drift separately, and require owner approval. Local ACCOUNT_USAGE
+emulation is an assumption; no live Snowflake connection is needed or implied.
+
 - Teradata CHAR(n) pads stored values / string-only row hash gaps / store target strings unpadded and ignore trailing spaces only for source-DDL-declared CHAR outputs (including view lineage), recording affected columns; all other values exact / `billing/15_storage.sql`, `parity/semantics.py`, `parity/ladder.py`.
 - Teradata NOT CASESPECIFIC equality / missing plan joins and split currency groups / use `COLLATE 'en-ci-rtrim'` on corresponding target columns and portable `UPPER(RTRIM())` plan joins; live collation compatibility remains unverified / `billing/00_tables.sql`, `20_routines.sql`, `30_views.sql`.
 - Unconstrained NUMERIC aggregate metadata / rounded BEFORE totals / derive decimal scale from actual source values rather than defaulting missing scale to zero; reject unsupported precision instead of silently rounding / `parity/semantics.py`, `parity/object_board.py`, `billing/capture.py`.

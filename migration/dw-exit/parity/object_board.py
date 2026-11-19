@@ -24,7 +24,7 @@ from parity.local_billing import execute
 from parity.semantics import columns as source_columns, numeric_type
 from parity.ladder import local_compare as compare
 from parity.provenance import provenance, markdown
-from parity import report_outputs, spark_billing
+from parity import report_outputs, spark_billing, dbc_retire
 
 
 def quote(name):
@@ -170,13 +170,17 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         'local_target': 'DuckDB', 'conversions': ['billing/'+s for s in ('10_load.sql','15_storage.sql','20_routines.sql','30_views.sql','40_close.sql')],
         'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
     available, errors = set(available or ()), errors or {}
+    dbc = dbc_retire.materialize() if target == 'duckdb' and any(o['subject_area']=='dbc' for o in objects) else None
+    dbc_callers = dbc_retire.callers() if dbc is not None else []
     for obj in objects:
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
         row.update(status='red', migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'),
                    row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
         if obj['subject_area'] == 'billing':
             row['provenance'] = provenance(obj)
-        if obj['system'] == 'spark' and not any(name.startswith('SFX_SPARK.') for name in obj.get('output_relations', [])):
+        if obj['subject_area'] == 'dbc' and dbc is not None:
+            row.update(dbc_retire.measure(obj, dbc, dbc_callers))
+        elif obj['system'] == 'spark' and not any(name.startswith('SFX_SPARK.') for name in obj.get('output_relations', [])):
             if obj.get('source') and (ROOT / obj['source']).is_file():
                 row.update(source=obj['source'], source_ref=obj.get('source_ref'))
                 row['reason'] = 'Spark source available; output not materialized locally'
@@ -211,6 +215,8 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                        snowflake='red', snowflake_reason=snowflake_reason,
                        snowflake_preflight=preflight)
         result['rows'].append(row)
+    if dbc is not None:
+        dbc.close()
     total = sum(r['licence_dependency_count'] for r in result['rows'])
     result['summary'] = dict(rows=len(objects), red=sum(r['status']=='red' for r in result['rows']),
         green=sum(r['status']=='green' for r in result['rows']), measured=sum(r['row_count'] is not None for r in result['rows']),
@@ -259,7 +265,7 @@ def main():
         readme = args.output.parent / 'README.md'
         if readme.exists():
             text = readme.read_text().split('\n## Billing parity provenance')[0]
-            readme.write_text(text.rstrip()+'\n'+markdown(payload['rows']))
+            readme.write_text(text.rstrip()+'\n'+markdown(payload['rows'])+dbc_retire.markdown(payload['rows']))
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
         if before is not None:
