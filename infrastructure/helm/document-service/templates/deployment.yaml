@@ -10,6 +10,7 @@ metadata:
     platform/team: otterworks
 spec:
   replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   {{- with .Values.strategy }}
   strategy:
     {{- toYaml . | nindent 4 }}

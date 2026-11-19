@@ -10,6 +10,9 @@ metadata:
     platform/team: otterworks
 spec:
   replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  strategy:
+    {{- toYaml .Values.strategy | nindent 4 }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ .Chart.Name }}
