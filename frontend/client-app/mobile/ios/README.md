@@ -8,8 +8,8 @@ bash mobile/ios/scripts/run-ui-tests.sh
 IOS_DESTINATION='platform=iOS Simulator,name=iPhone 17' bash mobile/ios/scripts/run-ui-tests.sh -only-testing:AppUITests/AppUITests/testSearch
 ```
 
-The runner installs npm dependencies, owns a mock on loopback port 4010, builds
-web assets with native API/collaboration URL overrides, syncs Capacitor and runs
+The runner installs npm dependencies, owns a mock on localhost port 8080, builds
+web assets with empty API/collaboration overrides to exercise the defaults, syncs Capacitor and runs
 the shared App scheme. It stops the mock even if tests fail. Do not run the
 browser and native suites simultaneously: both reset the same in-memory state.
 Generated public assets and Capacitor config are intentionally not committed.
@@ -53,7 +53,8 @@ currently asserts the picker entry point, as the simulator has no seeded Files
 provider; the WebKit counterpart exercises a real multipart upload. Native
 download only tests the button: the known blob-anchor/Filesystem persistence bug
 is not fixed by this harness. Browser tests assert the download event. The native
-API default (Android-only 10.0.2.2) is worked around only by build-time env vars.
+API default is exercised by `testDefaultLocalBackendLogin`, which signs in and
+loads a backend file fixture.
 Do not fix application bugs in harness changes. Only add a named skip/expected
 failure for a confirmed application bug, not a query or interaction failure.
 
@@ -69,10 +70,28 @@ open with `navigate("Files", dismissSidebar: false)`.
 The shared SwiftPM `Package.resolved` pins the Capacitor revision for reproducible
 Xcode test builds; keep it in version control, unlike built web assets and reports.
 
+## Network configuration
+
+Native development defaults are `http://localhost:8080/api/v1` and
+`ws://localhost:8085` on iOS Simulator, and `http://10.0.2.2:8080/api/v1`
+and `ws://10.0.2.2:8085` on Android Emulator. Web keeps the same-origin
+`/api/v1` proxy and uses `ws://localhost:8085` (or `wss` on HTTPS pages).
+
+For physical devices and production builds, set `VITE_API_BASE_URL` to an
+accessible HTTPS API URL (including `/api/v1`) and `VITE_COLLAB_WS_URL` to
+an accessible WSS endpoint **before** `npm run build && npx cap sync ios`.
+Nonempty overrides win on native; the web API still uses its same-origin proxy.
+Simulator localhost refers to the Mac; physical-device localhost does not.
+
+Only Debug enables ATS `NSAllowsLocalNetworking`, via Info.plist preprocessing
+and `debug.xcconfig`. Release omits the ATS dictionary and keeps default ATS;
+no arbitrary-load exception is enabled. The UI runner always uses Debug and
+empty build-time overrides (also masking any local .env URL values).
+
 ## Current native validation status
 
-The iPhone 17 / iOS 26.5 full run executes 11 tests with 1 skipped and 0 failures:
-9 ordinary passes, the documented safe-area expected failure and the Filesystem
+The iPhone 17 / iOS 26.5 full run executes 12 tests with 1 skipped and 0 failures:
+10 ordinary passes, the documented safe-area expected failure and the Filesystem
 download skip above. All six previously failing flows pass without additional
 skips or expected failures. The mocked WebKit suite passes all 7 flows; it does
 not substitute for native validation. XCTest failures retain a screenshot and

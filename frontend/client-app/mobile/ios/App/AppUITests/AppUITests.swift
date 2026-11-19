@@ -55,7 +55,7 @@ class AppUITestCase: XCTestCase {
         continueAfterFailure = false
         app.terminate()
         let done = expectation(description: "Reset mock")
-        var request = URLRequest(url: URL(string: "http://127.0.0.1:4010/__reset")!)
+        var request = URLRequest(url: URL(string: "http://localhost:8080/__reset")!)
         request.httpMethod = "POST"
         URLSession.shared.dataTask(with: request) { _, response, error in
             XCTAssertNil(error)
@@ -124,6 +124,11 @@ class AppUITestCase: XCTestCase {
 }
 
 final class AppUITests: AppUITestCase {
+    func testDefaultLocalBackendLogin() {
+        login()
+        assertText("Harbor report.txt")
+    }
+
     func testPortraitMenuReopens() {
         login()
         navigate("Files")
@@ -188,7 +193,7 @@ final class AppUITests: AppUITestCase {
         editor.typeText(" Native voyage edit")
         app.buttons["Save"].tap()
         let saved = expectation(description: "HTTP document save persisted")
-        var request = URLRequest(url: URL(string: "http://127.0.0.1:4010/api/v1/documents/doc-1")!)
+        var request = URLRequest(url: URL(string: "http://localhost:8080/api/v1/documents/doc-1")!)
         request.setValue("Bearer mock", forHTTPHeaderField: "Authorization")
         Task {
             for _ in 0..<40 {
