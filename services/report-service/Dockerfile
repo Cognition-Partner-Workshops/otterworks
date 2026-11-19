@@ -11,7 +11,7 @@ COPY src/ src/
 RUN mvn package -DskipTests -B
 
 # Temurin JRE 25 runtime
-FROM eclipse-temurin:25-jre
+FROM eclipse-temurin:25-jre-noble
 
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 

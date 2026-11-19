@@ -120,13 +120,6 @@
             <version>${commons-text.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.openjdk.nashorn</groupId>
-            <artifactId>nashorn-core</artifactId>
-            <version>15.7</version>
-            <scope>runtime</scope>
-        </dependency>
-
         <!-- LEGACY: Commons IO 2.6 (outdated) -->
         <dependency>
             <groupId>commons-io</groupId>

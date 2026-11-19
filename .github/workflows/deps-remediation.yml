@@ -28,13 +28,14 @@ jobs:
       - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
         with:
           version: latest
-      # 21 and 17 first so $JAVA_HOME_21_X64 (the legacy-portal Lambda modules) and
-      # $JAVA_HOME_17_X64 (the Gradle modules) exist, then 11 as the ambient JDK the
-      # other Maven modules build on.
+      # 25 supplies $JAVA_HOME_25_X64 for modules upgraded to JDK 25; 21 and 17
+      # support modules still pinned to them. Keep 11 last as the ambient JDK so
+      # entries not upgraded on a given branch still resolve their pinned JDK.
       - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
         with:
           distribution: temurin
           java-version: |
+            25
             21
             17
             11
