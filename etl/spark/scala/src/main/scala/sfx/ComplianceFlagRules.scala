@@ -7,7 +7,9 @@ object ComplianceFlagRules {
   def main(args: Array[String]): Unit = {
     val spark = BatchSupport.session("compliance_flag_rules")
     val result = transform(BatchSupport.landing(spark, "audit", "COMPLIANCE_FLAG"))
-    BatchSupport.save(result, "audit", "compliance_flag_rules", Some("sfx_audit.SPARK_COMPLIANCE_REVIEW"))
+    val runDate = sys.env.getOrElse("SFX_RUN_DATE", java.time.LocalDate.now(java.time.ZoneOffset.UTC).toString)
+    BatchSupport.savePartition(result, "audit", "compliance_flag_rules", runDate)
+    BatchSupport.saveJdbcRefresh(result, "sfx_audit.SPARK_COMPLIANCE_REVIEW")
     spark.stop()
   }
 

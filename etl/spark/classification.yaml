@@ -128,5 +128,7 @@
   reason: "Parses nested preference JSON with Python error handling and extracts selected fields."
 - job: compliance_flag_rules
   language: scala
-  target: snowpark_python
+  target: spark_standard_template
+  original_target: snowpark_python
+  change_reason: "Snowflake run-scoped compute is unavailable; retain Spark on the measured standard template."
   reason: "Evaluates severity and status rules per partition to assign review dispositions."

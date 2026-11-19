@@ -1,1 +1,0 @@
-29 3 * * * /opt/etl/spark/submit/compliance_flag_rules.sh >> /var/log/etl/spark-compliance_flag_rules.log 2>&1

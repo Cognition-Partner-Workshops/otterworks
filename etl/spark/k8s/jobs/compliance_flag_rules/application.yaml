@@ -16,15 +16,30 @@ spec:
   restartPolicy:
     type: "Never"
   dynamicAllocation:
-    enabled: false
+    enabled: true
+    initialExecutors: 1
+    minExecutors: 1
+    maxExecutors: 4
   sparkConf:
+    spark.sql.adaptive.enabled: "true"
+    spark.sql.adaptive.coalescePartitions.enabled: "true"
+    spark.sql.adaptive.skewJoin.enabled: "true"
+    spark.sql.adaptive.advisoryPartitionSizeInBytes: "134217728"
+    spark.dynamicAllocation.shuffleTracking.enabled: "true"
+    spark.shuffle.service.enabled: "false"
+    spark.dynamicAllocation.executorIdleTimeout: "15s"
+    spark.dynamicAllocation.shuffleTracking.timeout: "120s"
+    spark.cores.max: "4"
+    spark.sql.files.maxPartitionBytes: "134217728"
+    spark.sql.sources.partitionOverwriteMode: "dynamic"
+    spark.task.maxFailures: "4"
     spark.eventLog.enabled: "true"
     spark.eventLog.compress: "true"
     spark.eventLog.compression.codec: "zstd"
     spark.eventLog.dir: "/opt/spark-events"
     spark.driver.extraClassPath: "/opt/sfx/spark/.cache/jars/*"
     spark.executor.extraClassPath: "/opt/sfx/spark/.cache/jars/*"
-    spark.sql.shuffle.partitions: "8"
+    spark.sql.shuffle.partitions: "48"
   volumes:
     - name: "workspace"
       persistentVolumeClaim:
@@ -41,11 +56,10 @@ spec:
       - name: "TD_JDBC_USER"
         value: "etl_batch"
       - name: "TD_JDBC_PASSWORD"
-        value: "Fake-sfx1119-jdbc"
-      - name: "AWS_ACCESS_KEY_ID"
-        value: "Fake-sfx1119-access"
-      - name: "AWS_SECRET_ACCESS_KEY"
-        value: "Fake-sfx1119-secret"
+        valueFrom:
+          secretKeyRef:
+            name: "sfx-d1110-jdbc"
+            key: "password"
     volumeMounts:
       - name: "workspace"
         mountPath: "/opt/sfx/spark"
@@ -62,7 +76,7 @@ spec:
         subPath: ".data/eventlogs"
   executor:
     cores: 1
-    instances: 2
+    instances: 1
     memory: "1g"
     labels:
       otterworks.run-token: "sfx-d1110"
@@ -72,11 +86,10 @@ spec:
       - name: "TD_JDBC_USER"
         value: "etl_batch"
       - name: "TD_JDBC_PASSWORD"
-        value: "Fake-sfx1119-jdbc"
-      - name: "AWS_ACCESS_KEY_ID"
-        value: "Fake-sfx1119-access"
-      - name: "AWS_SECRET_ACCESS_KEY"
-        value: "Fake-sfx1119-secret"
+        valueFrom:
+          secretKeyRef:
+            name: "sfx-d1110-jdbc"
+            key: "password"
     volumeMounts:
       - name: "workspace"
         mountPath: "/opt/sfx/spark"
