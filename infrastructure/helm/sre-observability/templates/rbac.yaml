@@ -1,0 +1,73 @@
+{{- if .Values.triage.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sre-triage
+  namespace: monitoring
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-triage
+rules:
+  - apiGroups: [""]
+    resources: [pods, pods/log, nodes, namespaces, events, services, endpoints, persistentvolumeclaims, persistentvolumes, replicationcontrollers]
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [deployments, replicasets, daemonsets, statefulsets, controllerrevisions]
+    verbs: [get, list, watch]
+  - apiGroups: [batch]
+    resources: [jobs, cronjobs]
+    verbs: [get, list, watch]
+  - apiGroups: [events.k8s.io]
+    resources: [events]
+    verbs: [get, list, watch]
+  - apiGroups: [discovery.k8s.io]
+    resources: [endpointslices]
+    verbs: [get, list, watch]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses, networkpolicies]
+    verbs: [get, list, watch]
+  - apiGroups: [monitoring.coreos.com]
+    resources: [prometheuses, prometheusagents, prometheusrules, servicemonitors, podmonitors, probes, scrapeconfigs, alertmanagers, alertmanagerconfigs, thanosrulers]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name }}-triage
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Release.Name }}-triage
+subjects:
+  - kind: ServiceAccount
+    name: sre-triage
+    namespace: monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Name }}-query
+  namespace: monitoring
+rules:
+  - apiGroups: [""]
+    resources: [services/proxy]
+    resourceNames: ["http:prometheus-prometheus:9090", "http:prometheus-alertmanager:9093", "http:prometheus-grafana:80", "http:jaeger:16686"]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Release.Name }}-query
+  namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Release.Name }}-query
+subjects:
+  - kind: ServiceAccount
+    name: sre-triage
+    namespace: monitoring
+{{- end }}

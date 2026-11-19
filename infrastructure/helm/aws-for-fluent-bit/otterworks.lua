@@ -1,5 +1,5 @@
--- Routes api-gateway and ingress-nginx access log records to their tenant's
--- CloudWatch log group and drops everything else.
+-- Routes application container logs and ingress-nginx access logs to their
+-- tenant's CloudWatch log group and drops everything else.
 --
 -- api-gateway records already carry method, route, status, duration_ms and
 -- client (services/api-gateway/internal/middleware/logging.go). ingress-nginx
@@ -44,10 +44,9 @@ function route_record(tag, timestamp, record)
   local container = k8s["container_name"]
   local namespace
 
-  if container == "api-gateway" then
+  if container ~= nil and string.match(k8s["namespace_name"] or "", "^otterworks%-") ~= nil then
     namespace = k8s["namespace_name"]
-    if record["route"] == nil then return -1, 0, 0 end -- startup / non-access lines
-    record["cw_container"] = "api-gateway"
+    record["cw_container"] = container
   elseif container == "controller" and k8s["namespace_name"] == "ingress-nginx" then
     namespace = record["namespace"]
     if namespace == nil or record["request_time"] == nil then return -1, 0, 0 end

@@ -33,6 +33,18 @@ variable "log_retention_days" {
   default     = 7
 }
 
+variable "db_performance_insights_enabled" {
+  description = "Enable Performance Insights on the shared PostgreSQL instance"
+  type        = bool
+  default     = true
+}
+
+variable "db_performance_insights_retention_period" {
+  description = "Performance Insights retention days (7 uses the free retention tier)"
+  type        = number
+  default     = 7
+}
+
 variable "meilisearch_master_key" {
   description = "MeiliSearch master key (required for production)"
   type        = string

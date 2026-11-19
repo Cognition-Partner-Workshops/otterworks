@@ -1,0 +1,3 @@
+{{- if ne .Release.Namespace "monitoring" }}
+{{- fail "sre-observability must be installed once in monitoring" }}
+{{- end }}

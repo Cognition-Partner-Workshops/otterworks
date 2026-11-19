@@ -1,0 +1,34 @@
+{{- if .Values.alerting.webhook.enabled }}
+{{- if not .Values.alerting.webhook.headerRelay }}
+{{- fail "AlertmanagerConfig lacks custom HTTP headers: use a Bearer-to-X-Webhook-Secret relay and set alerting.webhook.headerRelay=true" }}
+{{- end }}
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: {{ .Release.Name }}
+  namespace: monitoring
+spec:
+  route:
+    receiver: sre-webhook
+    matchers:
+      - name: team
+        value: sre
+        matchType: '='
+    groupBy: [alertname, affected_namespace]
+    groupWait: {{ .Values.alerting.groupWait }}
+    groupInterval: {{ .Values.alerting.groupInterval }}
+    repeatInterval: {{ .Values.alerting.repeatInterval }}
+  receivers:
+    - name: sre-webhook
+      webhookConfigs:
+        - urlSecret:
+            name: {{ .Values.alerting.webhook.secretName }}
+            key: {{ .Values.alerting.webhook.urlKey }}
+          sendResolved: true
+          httpConfig:
+            authorization:
+              type: Bearer
+              credentials:
+                name: {{ .Values.alerting.webhook.secretName }}
+                key: {{ .Values.alerting.webhook.authorizationKey }}
+{{- end }}
