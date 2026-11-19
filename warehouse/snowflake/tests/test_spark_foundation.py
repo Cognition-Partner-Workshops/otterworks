@@ -142,7 +142,7 @@ def test_registry_dispatch(tmp_path, monkeypatch):
 
 
 def test_snowpark_runner(tmp_path, monkeypatch):
-    monkeypatch.setenv('RUN_TOKEN', 'sfx1119')
+    monkeypatch.delenv('RUN_TOKEN', raising=False)
     monkeypatch.setenv('SNOWFLAKE_RUN_TOKEN', "sfx-d1110-test'quote")
     spec = importlib.util.spec_from_file_location("spark_runner", ROOT.parent / "snowpark/run_job.py")
     runner = importlib.util.module_from_spec(spec)

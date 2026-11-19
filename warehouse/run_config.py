@@ -6,18 +6,23 @@ from pathlib import Path
 import re
 import shlex
 
+TOKEN_PATTERN = re.compile(r"sfx-?[a-z0-9]+(?:-[a-z0-9]+)*")
+
 
 @dataclass(frozen=True)
 class RunConfig:
     token: str = "sfx1119"
 
     def __post_init__(self):
-        if not re.fullmatch(r"sfx-?[a-z0-9]+(?:-[a-z0-9]+)*", self.token):
+        if not TOKEN_PATTERN.fullmatch(self.token):
             raise ValueError("RUN_TOKEN must be a lowercase sfx-prefixed identifier")
 
     @classmethod
     def from_env(cls):
-        return cls(os.environ.get("RUN_TOKEN", os.environ.get("SNOWFLAKE_RUN_TOKEN", "sfx1119")))
+        if "RUN_TOKEN" in os.environ:
+            return cls(os.environ["RUN_TOKEN"])
+        legacy = os.environ.get("SNOWFLAKE_RUN_TOKEN", "")
+        return cls(legacy) if TOKEN_PATTERN.fullmatch(legacy) else cls()
 
     @property
     def suffix(self):

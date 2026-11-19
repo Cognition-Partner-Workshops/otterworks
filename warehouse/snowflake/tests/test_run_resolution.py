@@ -15,6 +15,9 @@ from warehouse.run_config import RunConfig
 @pytest.mark.parametrize("current,legacy,expected", [
     (None, None, "sfx1119"),
     (None, "sfx-d1110", "sfx-d1110"),
+    (None, "sfx-d1110-test'quote", "sfx1119"),
+    (None, "", "sfx1119"),
+    (None, "free-text attribution", "sfx1119"),
     ("sfx2220", None, "sfx2220"),
     ("sfx2220", "sfx-d1110", "sfx2220"),
     ("sfx2220", "sfx-d1110-test'quote", "sfx2220"),
@@ -39,11 +42,10 @@ def test_query_tag_and_ledger_resolve_the_same_run(monkeypatch, capsys, current,
     assert json.loads(capsys.readouterr().out)["recent_tagged_queries"] == 0
 
 
-@pytest.mark.parametrize("key,value", [("RUN_TOKEN", ""), ("SNOWFLAKE_RUN_TOKEN", ""),
-                                       ("SNOWFLAKE_RUN_TOKEN", "invalid")])
-def test_invalid_resolved_token_is_rejected(monkeypatch, key, value):
+@pytest.mark.parametrize("value", ["", "invalid", "sfx1119'quote"])
+def test_invalid_resolved_token_is_rejected(monkeypatch, value):
     monkeypatch.delenv("RUN_TOKEN", raising=False)
     monkeypatch.delenv("SNOWFLAKE_RUN_TOKEN", raising=False)
-    monkeypatch.setenv(key, value)
+    monkeypatch.setenv("RUN_TOKEN", value)
     with pytest.raises(ValueError, match="RUN_TOKEN"):
         RunConfig.from_env()
