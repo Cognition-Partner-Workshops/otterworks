@@ -120,7 +120,7 @@ def hashes():
              ROOT / 'warehouse/dbt/models/pc/content/pc_content__role_grant.sql',
              ROOT / 'warehouse/dbt/models/pc/content/unt7_role.yml',
              ROOT / 'warehouse/parity/mappings/sfx_content.yml',
-             ROOT / 'warehouse/parity/tests/test_evidence_unt7.py', ROOT / 'warehouse/parity/UNT7.md']
+             ROOT / 'warehouse/parity/tests/test_evidence_unt7.py']
     paths += list((ROOT / 'warehouse/dbt/models/pc/content/unt7_fixture').glob('*.sql'))
     paths += list((ESTATE / 'runner').glob('*.py'))
     paths += [BOOTSTRAP, ESTATE / 'repository/SFX_CONTENT/mappings/m_SFX_ROLE_GRANT.XML',

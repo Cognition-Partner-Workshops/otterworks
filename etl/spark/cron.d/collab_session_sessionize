@@ -1,0 +1,1 @@
+24 3 * * * /opt/etl/spark/submit/collab_session_sessionize.sh >> /var/log/etl/spark-collab_session_sessionize.log 2>&1

@@ -66,4 +66,4 @@ jobs:
             --config p/default --config p/owasp-top-ten --config p/security-audit \
             --metrics off --error --baseline-commit "$base" \
             etl/spark docker-compose.spark.yml etl/crontab Makefile \
-            .github/workflows/sfx-spark.yml demos/app/complexity/sfx-spark.json
+            .github/workflows/sfx-spark.yml

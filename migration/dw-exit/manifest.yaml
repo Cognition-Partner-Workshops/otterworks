@@ -50,9 +50,8 @@ objects:
   wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-07
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_AUDIT.AUDIT_EVENT
@@ -129,7 +128,6 @@ objects:
   owner_source: proposed
   risk: high
   risk_reasons:
-  - SFX-06
   - high complexity
   status: not_started
   output_relations:
@@ -405,9 +403,8 @@ objects:
   wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-09
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_AUDIT.AUDIT_DAILY_SUMMARY
@@ -424,9 +421,8 @@ objects:
   wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-09
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_AUDIT.AUDIT_EVENT
@@ -443,9 +439,8 @@ objects:
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
+  risk: med
   risk_reasons:
-  - SFX-09
   - feeds only dead objects
   status: not_started
   output_relations:
@@ -625,9 +620,8 @@ objects:
   wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-09
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_AUDIT.SECURITY_ALERT
@@ -662,9 +656,8 @@ objects:
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-09
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_AUDIT.STG_AUDIT_EVENT
@@ -753,9 +746,8 @@ objects:
   wave: 4
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-09
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_AUDIT.AUDIT_DAILY_SUMMARY
@@ -903,9 +895,8 @@ objects:
   wave: 2
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-04
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_USERS.APP_USER
@@ -923,9 +914,8 @@ objects:
   wave: 2
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-03
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_DOCUMENTS.DOC_VERSION
@@ -1137,9 +1127,8 @@ objects:
   wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_DOCUMENTS.COLLAB_SESSION
@@ -1192,9 +1181,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_BILLING.INVOICE_LINE
@@ -1299,10 +1287,8 @@ objects:
   wave: 3
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-01
-  - SFX-02
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_BILLING.INVOICE_HDR
@@ -1859,9 +1845,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-01
+  risk: low
+  risk_reasons: []
   status: not_started
   output_relations: []
 - id: nb4507f31f948976c
@@ -1877,9 +1862,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-01
+  risk: low
+  risk_reasons: []
   status: not_started
   output_relations: []
 - id: n2d399290c37850ff
@@ -1895,9 +1879,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: low
+  risk_reasons: []
   status: not_started
   output_relations: []
 - id: nb5c179d7a1d96e03
@@ -1966,10 +1949,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-01
-  - SFX-02
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_BILLING.GL_JOURNAL_LINE
@@ -2440,9 +2421,8 @@ objects:
   wave: 3
   owner: '@otterworks/finance-ops'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-01
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_BILLING.GL_JOURNAL_LINE
@@ -2459,10 +2439,8 @@ objects:
   wave: 3
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-01
-  - SFX-02
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_BILLING.INVOICE_HDR
@@ -2479,9 +2457,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_BILLING.INVOICE_LINE
@@ -2516,9 +2493,8 @@ objects:
   wave: 3
   owner: '@otterworks/finance-reporting'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-01
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_BILLING.PLAN_CATALOG
@@ -2751,9 +2727,8 @@ objects:
   wave: 3
   owner: '@otterworks/finance-reporting'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-01
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_BILLING.SUBSCRIPTION
@@ -2788,9 +2763,8 @@ objects:
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_BILLING.USAGE_DAILY
@@ -2897,9 +2871,8 @@ objects:
   wave: 2
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-03
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_DOCUMENTS.DOC_VERSION
@@ -3061,9 +3034,8 @@ objects:
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-03
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_DOCUMENTS.STG_DOC_VERSION
@@ -3135,9 +3107,8 @@ objects:
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY
@@ -3154,9 +3125,8 @@ objects:
   wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-05
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_DOCUMENTS.STORAGE_USAGE_DAILY
@@ -3173,9 +3143,8 @@ objects:
   wave: 2
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-04
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_USERS.APP_USER
@@ -3246,9 +3215,8 @@ objects:
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: high
-  risk_reasons:
-  - SFX-04
+  risk: med
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_USERS.STG_APP_USER
@@ -3971,10 +3939,8 @@ objects:
   wave: 4
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
-  risk: high
-  risk_reasons:
-  - SFX-01
-  - SFX-02
+  risk: low
+  risk_reasons: []
   status: not_started
   output_relations:
   - SFX_BILLING.V_INVOICE_REVENUE
@@ -4096,7 +4062,7 @@ objects:
   subject_area: audit
   licence_dependency: spark
   source: etl/spark/jobs/py/audit_actor_activity_join.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__audit_actor_activity_join
@@ -4114,7 +4080,7 @@ objects:
   subject_area: audit
   licence_dependency: spark
   source: etl/spark/jobs/py/audit_archive_resort.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__audit_archive_resort
@@ -4132,7 +4098,7 @@ objects:
   subject_area: audit
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/AuditDailySummary.scala
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__audit_daily_summary
@@ -4150,7 +4116,7 @@ objects:
   subject_area: billing
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_churn_score.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__billing_churn_score
@@ -4168,7 +4134,7 @@ objects:
   subject_area: billing
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_gl_trial_balance.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__billing_gl_trial_balance
@@ -4186,7 +4152,7 @@ objects:
   subject_area: billing
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_invoice_summary_daily.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__billing_invoice_summary_daily
@@ -4204,7 +4170,7 @@ objects:
   subject_area: billing
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_payment_aging.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__billing_payment_aging
@@ -4222,7 +4188,7 @@ objects:
   subject_area: billing
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_revenue_by_plan.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__billing_revenue_by_plan
@@ -4240,7 +4206,7 @@ objects:
   subject_area: billing
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_usage_append_daily.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__billing_usage_append_daily
@@ -4258,7 +4224,7 @@ objects:
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/collab_session_sessionize.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__collab_session_sessionize
@@ -4276,7 +4242,7 @@ objects:
   subject_area: audit
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__compliance_flag_rules
@@ -4294,7 +4260,7 @@ objects:
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/doc_share_graph_reach.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__doc_share_graph_reach
@@ -4312,7 +4278,7 @@ objects:
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/doc_version_diff_stats.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__doc_version_diff_stats
@@ -4330,7 +4296,7 @@ objects:
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/docs_event_export_hourly.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__docs_event_export_hourly
@@ -4348,7 +4314,7 @@ objects:
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/docs_folder_legacy_report.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__docs_folder_legacy_report
@@ -4366,7 +4332,7 @@ objects:
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/docs_folder_tree_walk.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__docs_folder_tree_walk
@@ -4384,7 +4350,7 @@ objects:
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/docs_search_log_parse.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__docs_search_log_parse
@@ -4402,7 +4368,7 @@ objects:
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/DocsShareActivity.scala
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__docs_share_activity
@@ -4420,7 +4386,7 @@ objects:
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/docs_storage_by_owner.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__docs_storage_by_owner
@@ -4438,7 +4404,7 @@ objects:
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/docs_tag_normalize.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__docs_tag_normalize
@@ -4456,7 +4422,7 @@ objects:
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/file_object_binary_extract.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__file_object_binary_extract
@@ -4474,7 +4440,7 @@ objects:
   subject_area: audit
   licence_dependency: spark
   source: etl/spark/jobs/py/lake_compaction_audit.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__lake_compaction_audit
@@ -4492,7 +4458,7 @@ objects:
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__lake_compaction_documents
@@ -4510,7 +4476,7 @@ objects:
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/security_alert_anomaly.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__security_alert_anomaly
@@ -4528,7 +4494,7 @@ objects:
   subject_area: users
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/TeamGraphComponents.scala
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__team_graph_components
@@ -4546,7 +4512,7 @@ objects:
   subject_area: users
   licence_dependency: spark
   source: etl/spark/jobs/py/user_pref_json_flatten.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__user_pref_json_flatten
@@ -4564,7 +4530,7 @@ objects:
   subject_area: users
   licence_dependency: spark
   source: etl/spark/jobs/py/users_active_daily.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__users_active_daily
@@ -4582,7 +4548,7 @@ objects:
   subject_area: users
   licence_dependency: spark
   source: etl/spark/jobs/py/users_login_useragent_parse.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__users_login_useragent_parse
@@ -4600,7 +4566,7 @@ objects:
   subject_area: users
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/UsersRiskScore.scala
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__users_risk_score
@@ -4618,7 +4584,7 @@ objects:
   subject_area: users
   licence_dependency: spark
   source: etl/spark/jobs/py/users_team_rollup.py
-  source_ref: devin/sfx1119-spark-baseline
+  source_ref: demo-snowflake-dw-exit
   output_relations: []
   target_type: dbt_model
   target: spark__users_team_rollup

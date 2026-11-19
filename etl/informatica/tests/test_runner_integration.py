@@ -45,7 +45,6 @@ def test_daily_batch_loads_every_area(warehouse):
     assert q(warehouse, "select count(*) from sfx_billing.gl_journal_line where gl_account_id is null")[0][0] == 0
     assert q(warehouse, "select count(*) from sfx_documents.document")[0][0] == 154   # unknown owner filtered
     assert q(warehouse, "select count(*) from sfx_users.login_event")[0][0] == 412     # unknown outcomes dropped
-    # trailing CHAR blanks are trimmed and two-argument IIF yields 0 for missing keys
     assert q(warehouse, "select count(*) from sfx_audit.audit_event where customer_id is null")[0][0] == 0
     assert q(warehouse, "select count(*) from sfx_audit.audit_event where customer_id = 0")[0][0] > 0
     assert q(warehouse, "select count(*) from sfx_documents.doc_share where access_level = 'OWNER'")[0][0] > 0

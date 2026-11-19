@@ -62,15 +62,12 @@ python -m runner listobjects   -f SFX_CONTENT
   ports, default values), Filter, Lookup (connected and `:LKP` unconnected, cached, `Use First Value` / `Use Last Value` /
   `Report Error`), Aggregator, Router (user groups plus `DEFAULT`), Update Strategy (`DD_INSERT`, `DD_UPDATE`,
   `DD_DELETE`, `DD_REJECT`, forward rejected rows) and Sequence Generator (state kept between runs).
-- Expressions follow PowerCenter null handling: a NULL condition is false in `IIF`/`DECODE(TRUE, …)`/Filter/Router,
-  two-argument `IIF` returns 0, empty string or NULL by type, `||` treats NULL as empty, `NVL`, `ISNULL`, `LTRIM`,
-  `RTRIM`, `TO_DATE`, `ADD_TO_DATE`, `DECODE` and the usual string, date and numeric functions.
+- Expressions support string, date and numeric functions.
 - Writers honour `Treat source rows as`, `Insert`, `Update as Update`, `Update else Insert`, `Truncate target table
-  option`, `Pre SQL` and write rejected rows to `$PMBadFileDir`. CHAR values read from the database lose trailing pad
-  blanks.
+  option`, `Pre SQL` and write rejected rows to `$PMBadFileDir`.
 - Workflows run Start, Session, Worklet, Decision and Email tasks along `WORKFLOWLINK` conditions
   (`$task.Status`, `$task.TgtFailedRows`, `$decision.Condition`). Each session logs target row counts before and after the
-  load; a load that only appended rows on top of existing data is flagged as `WRT_8170`.
+  load.
 
 ## SnowConvert
 

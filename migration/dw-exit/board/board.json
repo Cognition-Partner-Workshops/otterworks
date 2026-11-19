@@ -17743,7 +17743,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/audit_actor_activity_join.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "na7a9d654bab3f884",
@@ -17760,7 +17762,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/audit_archive_resort.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "n8966d99361db3a40",
@@ -17777,7 +17781,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/scala/src/main/scala/sfx/AuditDailySummary.scala",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nab9092239e992697",
@@ -17794,7 +17800,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/billing_churn_score.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nc69cdf8b5dc1cf48",
@@ -17811,7 +17819,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/billing_gl_trial_balance.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "n30eea7b5e4b0f036",
@@ -17828,7 +17838,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/billing_invoice_summary_daily.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "n59a3415908e5a5c3",
@@ -17845,7 +17857,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/billing_payment_aging.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nc272de5514b12dd4",
@@ -17862,7 +17876,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/billing_revenue_by_plan.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "n217068cf70e21f45",
@@ -17879,7 +17895,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/billing_usage_append_daily.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nda318831425979ea",
@@ -17896,7 +17914,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/collab_session_sessionize.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "n6b4402f4aec586b1",
@@ -17913,7 +17933,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nb1e649b467d1d68d",
@@ -17930,7 +17952,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/doc_share_graph_reach.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "n73fc2c67175df7a7",
@@ -17947,7 +17971,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/doc_version_diff_stats.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "n9e1cde11f1fcdf14",
@@ -17964,7 +17990,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/docs_event_export_hourly.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "n62c507a6ebeca788",
@@ -17981,7 +18009,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/docs_folder_legacy_report.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nc7caadea569fe6a7",
@@ -17998,7 +18028,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/docs_folder_tree_walk.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nacb901d117c72988",
@@ -18015,7 +18047,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/docs_search_log_parse.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "n99294cb574316a26",
@@ -18032,7 +18066,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/scala/src/main/scala/sfx/DocsShareActivity.scala",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nb17a88119e3df908",
@@ -18049,7 +18085,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/docs_storage_by_owner.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "n2e6e7921f1c1a457",
@@ -18066,7 +18104,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/docs_tag_normalize.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "n42b4ed91f0a96d32",
@@ -18083,7 +18123,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/file_object_binary_extract.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nb4c259fa9770ac59",
@@ -18100,7 +18142,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/lake_compaction_audit.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "n46441ec8597bcf09",
@@ -18117,7 +18161,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nf3b5c3eaa1bc272c",
@@ -18134,7 +18180,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/security_alert_anomaly.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nc6160237cc5eb2cf",
@@ -18151,7 +18199,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/scala/src/main/scala/sfx/TeamGraphComponents.scala",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nadfca1251f9b6a28",
@@ -18168,7 +18218,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/user_pref_json_flatten.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nccade0800035b66b",
@@ -18185,7 +18237,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/users_active_daily.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "n1d48699afd1ffdb6",
@@ -18202,7 +18256,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/users_login_useragent_parse.py",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nb8c305d5ee549186",
@@ -18219,7 +18275,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/scala/src/main/scala/sfx/UsersRiskScore.scala",
+      "source_ref": "demo-snowflake-dw-exit"
     },
     {
       "id": "nc71a4f6251d9ca10",
@@ -18236,7 +18294,9 @@
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "source on Spark baseline PR"
+      "reason": "Spark source available; output not materialized locally",
+      "source": "etl/spark/jobs/py/users_team_rollup.py",
+      "source_ref": "demo-snowflake-dw-exit"
     }
   ],
   "measurement_contract": {

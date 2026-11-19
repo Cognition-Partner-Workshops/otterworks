@@ -199,7 +199,11 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         row.update(status='red', migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'),
                    row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
         if obj['system'] == 'spark':
-            row['reason'] = 'source on Spark baseline PR'
+            if obj.get('source') and (ROOT / obj['source']).is_file():
+                row.update(source=obj['source'], source_ref=obj.get('source_ref'))
+                row['reason'] = 'Spark source available; output not materialized locally'
+            else:
+                row['reason'] = 'source on Spark baseline PR'
         elif target == 'snowflake':
             row['reason'] = 'Snowflake target selected; execution disabled'
         elif not obj.get('output_relations'):

@@ -1,0 +1,1 @@
+13 2 * * * /opt/etl/spark/submit/users_login_useragent_parse.sh >> /var/log/etl/spark-users_login_useragent_parse.log 2>&1

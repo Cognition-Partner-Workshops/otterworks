@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-import shlex
 import subprocess
 import tempfile
 import unittest
@@ -24,14 +23,10 @@ class MakefileLandingTest(unittest.TestCase):
                 up = dry_run("sfx-spark-up", env, args)
                 for line in up:
                     self.assertNotIn("LANDING_DIR=" + str(REPO), line)
-                self.assertTrue(any(f"LANDING_DIR={landing} " in line and "load_tdemu.sh" in line for line in up))
+                self.assertTrue(any(f"LANDING_DIR={landing} " in line and "docker compose" in line for line in up))
                 self.assertTrue(any(f"LANDING_DIR={landing} " in line for line in dry_run("sfx-spark-run", env, args)))
-                generator = next(line for line in up if "--seed 1110" in line)
-                self.assertIn(landing, generator)
-                command = shlex.split(generator)
-                command = command[command.index("python3"):]
-                subprocess.run(command, cwd=REPO, check=True, capture_output=True, text=True)
-                self.assertTrue(any(Path(landing).glob("*/*/*.psv")))
+                self.assertTrue(any("ROWS_PER_TABLE=20" in line for line in up))
+                self.assertFalse(any("warehouse/seed/generate.py" in line for line in up))
 
 
 if __name__ == "__main__":

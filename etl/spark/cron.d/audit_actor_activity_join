@@ -1,0 +1,1 @@
+9 1 * * * /opt/etl/spark/submit/audit_actor_activity_join.sh >> /var/log/etl/spark-audit_actor_activity_join.log 2>&1

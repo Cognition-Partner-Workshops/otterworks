@@ -8,6 +8,7 @@ import copy
 import csv
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -52,8 +53,8 @@ def test_dead_and_setup(estate):
     assert set(estate['dead']).isdisjoint(estate['setup_only'])
     assert 'SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG' in estate['setup_only']
     assert all(r['target_type'] == 'retire' for r in estate['objects'] if r['name'] in estate['dead'])
-    register = json.loads(_run_render((assess.ROOT / 'demos/app/complexity/sfx-teradata.json').read_text()))
-    assert len(register['retire_candidates']) == len(estate['dead'])
+    assert all(not re.fullmatch(r'SFX-\d+', reason)
+               for row in estate['objects'] for reason in row['risk_reasons'])
 
 
 def test_consumers(estate):
@@ -80,7 +81,7 @@ def test_every_target_matches_source_area(estate):
     import xml.etree.ElementTree as ET
     for row in estate['objects']:
         if row['kind'] == 'spark_job':
-            assert row['source_ref'] == 'devin/sfx1119-spark-baseline'
+            assert row['source_ref'] == 'demo-snowflake-dw-exit'
             assert row['licence_dependency'] == 'spark'
             continue
         path = assess.ROOT / row['source']

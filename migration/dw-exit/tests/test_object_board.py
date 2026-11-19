@@ -79,6 +79,18 @@ def test_measurement_error_and_column_mismatch(relations):
     assert row['row_count'] is None
 
 
+def test_merged_spark_sources_are_linked_without_fabricating_outputs(tmp_path, monkeypatch):
+    monkeypatch.setattr(board, 'ROOT', tmp_path)
+    (tmp_path / 'job.py').touch()
+    row = board.build_board({'objects': [obj(system='spark', licence_dependency='spark',
+        source='job.py', source_ref='demo-snowflake-dw-exit')]})['rows'][0]
+    assert row['source'] == 'job.py'
+    assert row['source_ref'] == 'demo-snowflake-dw-exit'
+    assert row['status'] == 'red'
+    assert row['reason'] == 'Spark source available; output not materialized locally'
+    assert all(row[field] is None for field in ('row_count', 'column_profile', 'keyed_row_hash', 'sampled_differences'))
+
+
 def test_empty_manifest_and_snowflake_plan(relations):
     assert board.build_board({'objects':[]})['summary']['rows']==0
     row=board.build_board({'objects':[obj()]},target='snowflake')['rows'][0]
@@ -137,7 +149,7 @@ def test_manifest_fields_and_spark_references():
     assert len(objects)==252
     spark=[r for r in objects if r['system']=='spark']
     assert len(spark)==30 and len({r['source'] for r in spark})==30
-    assert all(r['source_ref']=='devin/sfx1119-spark-baseline' for r in spark)
+    assert all(r['source_ref']=='demo-snowflake-dw-exit' for r in spark)
     assert all(r['licence_dependency'] in {'teradata','powercenter','spark','none'} and r['subject_area'] and r['wave'] and r['owner'] for r in objects)
     assert all(r['status']=='not_started' for r in objects)
     assert estate['counters']['licence_dependencies']['remaining']==252

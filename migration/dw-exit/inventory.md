@@ -173,7 +173,7 @@ DBQL window 2026-08-12 through 2026-11-09 inclusive.
 }
 ```
 
-30 Spark jobs referenced from devin/sfx1119-spark-baseline; source code is not copied.
+30 Spark jobs linked to merged sources on demo-snowflake-dw-exit.
 
 Scan evidence for every DBQL reader:
 

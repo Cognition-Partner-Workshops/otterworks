@@ -266,15 +266,6 @@ def build(root=None):
         for consumer in consumers:
             if any(q['UserName'] == consumer['account'] for q in qs) and name in by_name:
                 normalized.add((by_name[name], consumer['id']))
-    risks = defaultdict(set)
-    for filename in ['sfx-teradata.json', 'sfx-informatica.json']:
-        data = json.loads(_run_render((root / 'demos/app/complexity' / filename).read_text()))
-        instances = [(c['id'], i) for c in data.get('classes', []) for i in c['instances']]
-        instances += [(i['class_id'], i) for i in data.get('instances', [])]
-        for code, inst in instances:
-            for row in artifacts:
-                if inst.get('object', '').split(' / ')[0] == row['name'] or (inst.get('file') == row['file'] and row['kind'] not in ('table', 'view')):
-                    risks[row['id']].add(code)
     manifest = []
     for row in sorted(artifacts, key=lambda r: (r['system'], r['kind'], r['name'])):
         name, kind = row['name'], row['kind']
@@ -293,7 +284,7 @@ def build(root=None):
             target_type, wave = 'compatibility_view', 4
         if kind in ('workflow', 'worklet'):
             wave = 3 if 'BILLING' in name else 4
-        reasons = sorted(risks[row['id']])
+        reasons = []
         if row['complexity'] == 'high':
             reasons.append('high complexity')
         if name in dead:
@@ -384,7 +375,7 @@ def build(root=None):
         artifacts[-1]['system'] = 'spark'
         manifest.append(dict(id=node, system='spark', kind='spark_job', name=job['name'],
             complexity='medium', subject_area=job['subject_area'], licence_dependency='spark',
-            source=job['source'], source_ref='devin/sfx1119-spark-baseline',
+            source=job['source'], source_ref='demo-snowflake-dw-exit',
             output_relations=[], target_type='dbt_model', target='spark__'+job['name'],
             wave=3, owner='@otterworks/data-platform', owner_source='proposed', risk='med',
             risk_reasons=[], status='not_started'))
@@ -415,7 +406,7 @@ def main():
     (OUT / 'board/board.json').write_text(json.dumps(b, indent=2) + '\n')
     summary = {'by_kind': dict(sorted(Counter(r['kind'] for r in data['artifacts']).items())), 'total': len(data['artifacts']), 'loc_total': sum(r['loc'] for r in data['artifacts']), 'complexity': dict(Counter(r['complexity'] for r in data['artifacts'])), 'dead': data['dead'], 'setup_only_reads_not_dead': data['setup_only'], 'not_in_warehouse_etl': [u for u, v in data['scans'].items() if not v['warehouse_etl_hits']], 'not_in_any_repo_code': [u for u, v in data['scans'].items() if not v['repo_hits']], 'waves': b['waves'], 'licence_counters': data['counters']}
     summary['dead_dependents'] = data['dead_dependents']
-    (OUT / 'inventory.md').write_text('# Inventory\n\nDBQL window 2026-08-12 through 2026-11-09 inclusive.\n\n```json\n' + json.dumps(summary, indent=2) + '\n```\n\n30 Spark jobs referenced from devin/sfx1119-spark-baseline; source code is not copied.\n\nScan evidence for every DBQL reader:\n\n```json\n' + json.dumps(data['scans'], indent=2) + '\n```\n')
+    (OUT / 'inventory.md').write_text('# Inventory\n\nDBQL window 2026-08-12 through 2026-11-09 inclusive.\n\n```json\n' + json.dumps(summary, indent=2) + '\n```\n\n30 Spark jobs linked to merged sources on demo-snowflake-dw-exit.\n\nScan evidence for every DBQL reader:\n\n```json\n' + json.dumps(data['scans'], indent=2) + '\n```\n')
     lines = ['# Lineage', '', '```mermaid', 'flowchart LR']
     groups = defaultdict(list)
     for r in data['artifacts']:

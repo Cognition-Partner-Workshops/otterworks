@@ -1,8 +1,8 @@
 {
   "job": "lake_compaction_audit",
   "language": "python",
-  "target": "retired",
-  "status": "retired",
-  "schedule": null,
+  "target": "spark",
+  "status": "legacy",
+  "schedule": "20 3 * * *",
   "profile": "small"
 }

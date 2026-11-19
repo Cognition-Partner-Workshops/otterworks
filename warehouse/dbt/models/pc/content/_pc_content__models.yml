@@ -27,7 +27,7 @@ models:
               to: ref('pc_content__app_user')
               field: USER_ID
   - name: pc_content__doc_share
-    description: m_SFX_DOC_SHARE. Shares with access level from the first role grant, upserted on SHARE_ID.
+    description: m_SFX_DOC_SHARE. Shares upserted on SHARE_ID.
     columns:
       - name: SHARE_ID
         tests: [not_null, unique]

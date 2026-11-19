@@ -1,0 +1,91 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: "SparkApplication"
+metadata:
+  name: "sfx-d1110-users-risk-score"
+  namespace: "sfx-d1110-before"
+  labels:
+    otterworks.run-token: "sfx-d1110"
+spec:
+  type: "Scala"
+  mainClass: "sfx.UsersRiskScore"
+  mode: "cluster"
+  image: "mirror.gcr.io/library/spark:3.5.3-scala2.12-java17-python3-ubuntu"
+  imagePullPolicy: "IfNotPresent"
+  mainApplicationFile: "local:///opt/sfx/spark/.cache/sfx-spark-jobs.jar"
+  sparkVersion: "3.5.3"
+  restartPolicy:
+    type: "Never"
+  dynamicAllocation:
+    enabled: false
+  sparkConf:
+    spark.eventLog.enabled: "true"
+    spark.eventLog.compress: "true"
+    spark.eventLog.compression.codec: "zstd"
+    spark.eventLog.dir: "/opt/spark-events"
+    spark.driver.extraClassPath: "/opt/sfx/spark/.cache/jars/*"
+    spark.executor.extraClassPath: "/opt/sfx/spark/.cache/jars/*"
+    spark.sql.shuffle.partitions: "8"
+  volumes:
+    - name: "workspace"
+      persistentVolumeClaim:
+        claimName: "sfx-d1110-workspace"
+  driver:
+    cores: 1
+    memory: "1g"
+    serviceAccount: "sfx-d1110-spark"
+    labels:
+      otterworks.run-token: "sfx-d1110"
+    env:
+      - name: "TD_JDBC_URL"
+        value: "jdbc:postgresql://sfx-tdemu:5432/sfx_teradata"
+      - name: "TD_JDBC_USER"
+        value: "etl_batch"
+      - name: "TD_JDBC_PASSWORD"
+        valueFrom:
+          secretKeyRef:
+            name: "sfx-d1110-jdbc"
+            key: "password"
+    volumeMounts:
+      - name: "workspace"
+        mountPath: "/opt/sfx/spark"
+        readOnly: true
+      - name: "workspace"
+        mountPath: "/opt/landing"
+        subPath: ".data/landing"
+        readOnly: true
+      - name: "workspace"
+        mountPath: "/opt/lake"
+        subPath: ".data/lake"
+      - name: "workspace"
+        mountPath: "/opt/spark-events"
+        subPath: ".data/eventlogs"
+  executor:
+    cores: 2
+    instances: 2
+    memory: "1g"
+    labels:
+      otterworks.run-token: "sfx-d1110"
+    env:
+      - name: "TD_JDBC_URL"
+        value: "jdbc:postgresql://sfx-tdemu:5432/sfx_teradata"
+      - name: "TD_JDBC_USER"
+        value: "etl_batch"
+      - name: "TD_JDBC_PASSWORD"
+        valueFrom:
+          secretKeyRef:
+            name: "sfx-d1110-jdbc"
+            key: "password"
+    volumeMounts:
+      - name: "workspace"
+        mountPath: "/opt/sfx/spark"
+        readOnly: true
+      - name: "workspace"
+        mountPath: "/opt/landing"
+        subPath: ".data/landing"
+        readOnly: true
+      - name: "workspace"
+        mountPath: "/opt/lake"
+        subPath: ".data/lake"
+      - name: "workspace"
+        mountPath: "/opt/spark-events"
+        subPath: ".data/eventlogs"
