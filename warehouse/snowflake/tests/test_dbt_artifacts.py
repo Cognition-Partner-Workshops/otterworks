@@ -29,7 +29,9 @@ def project(tmp_path, monkeypatch):
 def test_execution_artifacts_outlive_rendered_project(project, monkeypatch, failed):
     rendered = []
 
-    def execute(command, **kwargs):
+    def execute(args, **kwargs):
+        command = args
+        assert kwargs['shell'] is False
         path = Path(command[command.index('--project-dir') + 1])
         rendered.append(path)
         assert (path / 'models/example.sql').read_text() == "select 'SFX_2220' as name"
@@ -60,3 +62,12 @@ def test_no_artifacts_fabricated(project, monkeypatch):
     assert not (project / 'target/run_results.json').exists()
     assert not (project / 'logs/dbt.log').exists()
     assert not list((project / 'target').glob('sfx2220-*'))
+
+
+@pytest.mark.parametrize('selection', ['', 'billing; touch injected', '$(touch injected)', 'billing\n--help'])
+def test_selection_rejected_before_execution(project, monkeypatch, selection):
+    monkeypatch.setattr(sys, 'argv', ['run_dbt.py', 'build', '--select', selection])
+    monkeypatch.setattr(run_dbt.subprocess, 'run', lambda *a, **k: pytest.fail('invalid selection executed'))
+    with pytest.raises(SystemExit) as error:
+        run_dbt.main()
+    assert error.value.code == 2

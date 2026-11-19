@@ -115,7 +115,7 @@ def test_billing_decision_checks_batch_date():
 def test_dbt_build_receives_load_date(monkeypatch):
     import run_dbt
     seen = []
-    monkeypatch.setattr(run_dbt.subprocess, 'run', lambda command, **kw: seen.append(command))
+    monkeypatch.setattr(run_dbt.subprocess, 'run', lambda args, **kw: seen.append(args))
     monkeypatch.setenv('SNOWFLAKE_PRIVATE_KEY', 'test-only')
     monkeypatch.setenv('SFX_COMMIT', 'test')
     monkeypatch.setattr(sys, 'argv', ['run_dbt.py', 'build', '--select', 'path:models/pc/billing',

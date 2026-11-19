@@ -5,6 +5,7 @@ from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
 from warehouse.run_config import render as _run_render
 from warehouse.run_config import RunConfig
+from warehouse.process import executable
 
 import argparse
 import json
@@ -28,6 +29,8 @@ def main():
     parser.add_argument("--select", dest="selection", default="staging.billing")
     parser.add_argument("--load-date")
     args = parser.parse_args()
+    if not re.fullmatch(r'[A-Za-z0-9_.*:+/@,= -]+', args.selection):
+        parser.error('Invalid dbt selection')
     if args.load_date is not None and not re.fullmatch(r"[0-9]{8}", args.load_date):
         parser.error("--load-date must be YYYYMMDD")
     env = os.environ.copy()
@@ -63,7 +66,7 @@ def main():
             destination = project / relative
             destination.parent.mkdir(parents=True,exist_ok=True)
             destination.write_text(config.render(path.read_text()))
-    command = [str(Path(sys.executable).with_name("dbt")), args.command,
+    command = [executable(str(Path(sys.executable).with_name("dbt")), r'dbt'), args.command,
                "--project-dir", str(project), "--profiles-dir", str(project),
                "--target-path", str(target), "--log-path", str(source_project / 'logs')]
     if args.command == "build":
@@ -72,10 +75,8 @@ def main():
     if args.load_date:
         variables["load_date"] = args.load_date
     command += ["--vars", json.dumps(variables)]
-    # Fixed adjacent dbt executable and argv; secret-bearing environment is intentionally inherited.
-    # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
     try:
-        subprocess.run(command, env=env, check=True)
+        subprocess.run(args=command, shell=False, env=env, check=True)
     finally:
         rendered.cleanup()
 

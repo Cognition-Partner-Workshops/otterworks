@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -45,6 +46,11 @@ def file_shared(owner: str, recipient: str) -> dict[str, object]:
 
 
 def publish_command(topic: str, region: str, body: str) -> list[str]:
+    if not re.fullmatch(r'[a-z]{2,4}(?:-[a-z0-9]+)+-[0-9]+', region):
+        raise ValueError('Invalid AWS region')
+    if not re.fullmatch(r'arn:(?:aws|aws-us-gov|aws-cn):sns:' + re.escape(region)
+                        + r':[0-9]{12}:[A-Za-z0-9_-]+(?:\.fifo)?', topic):
+        raise ValueError('Invalid SNS topic ARN')
     attributes = json.dumps({"demoSource": {"DataType": "String", "StringValue": DEMO_SOURCE}})
     return [
         "aws", "sns", "publish",
@@ -80,7 +86,7 @@ def main() -> int:
             print("+ " + shlex.join(cmd), file=sys.stderr)
             message_id = "dry-run"
         else:
-            result = subprocess.run(cmd, capture_output=True, text=True)  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
+            result = subprocess.run(args=cmd, shell=False, capture_output=True, text=True)
             if result.returncode != 0:
                 print(result.stderr.strip(), file=sys.stderr)
                 return result.returncode

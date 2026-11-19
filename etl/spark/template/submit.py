@@ -26,6 +26,8 @@ def arguments(job):
     if entry["language"] == "python":
         args += ["--py-files", str(ROOT / ".cache/common.zip"), str(ROOT / "jobs/py" / f"{job}.py")]
     elif entry["language"] == "scala":
+        if not re.fullmatch(r'[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*', entry['class']):
+            raise ValueError('Invalid Spark class')
         args += ["--class", entry["class"], str(ROOT / ".cache/sfx-spark-jobs.jar")]
     else:
         raise ValueError("Unsupported language")
@@ -36,6 +38,4 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         sys.exit("Usage: submit.sh <job>")
     command = arguments(sys.argv[1])
-    # Fixed Spark executable; job is validated and arguments come from the reviewed registry.
-    # nosemgrep: python.lang.security.audit.dangerous-os-exec-tainted-env-args.dangerous-os-exec-tainted-env-args
-    os.execv(command[0], command)
+    os.execv("/opt/spark/bin/spark-submit", command)

@@ -19,7 +19,8 @@ class ComplianceFlagRulesTest(unittest.TestCase):
         handler = next(node.value for node in module.body if isinstance(node, ast.Assign)
                        and any(isinstance(target, ast.Name) and target.id == "DISPOSITION_HANDLER"
                                for target in node.targets))
-        exec(ast.literal_eval(handler), namespace)
+        # The handler is a literal in this fixed, reviewed repository module, not caller input.
+        exec(ast.literal_eval(handler), namespace)  # nosemgrep: python.lang.security.audit.exec-detected.exec-detected
         disposition = namespace["disposition"]
         for status, severity, expected in (
             ("closed", 7000, "resolved"),

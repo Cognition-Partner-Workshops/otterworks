@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shlex
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -22,9 +23,11 @@ def run(job):
     if entry["status"] != "snowflake" or not entry.get("command", "").strip():
         raise ValueError("Job must have snowflake status and a command")
     env = {**os.environ, "SFX_SPARK_JOB": job}
-    # Commands are reviewed repository code, never caller-provided shell text.
-    # nosemgrep: python.lang.security.audit.subprocess-shell-true.subprocess-shell-true
-    return subprocess.run(entry["command"], shell=True, cwd=ROOT, env=env, check=True)
+    command = shlex.split(entry['command'])
+    if (not command or not re.fullmatch(r'[A-Za-z0-9_./ -]+', command[0])
+            or command[0].startswith('-')):
+        raise ValueError('Invalid registry executable path')
+    return subprocess.run(args=command, shell=False, cwd=ROOT, env=env, check=True)
 
 
 if __name__ == "__main__":

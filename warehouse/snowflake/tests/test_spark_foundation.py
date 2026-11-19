@@ -139,12 +139,40 @@ def test_registry_dispatch(tmp_path, monkeypatch):
     monkeypatch.setattr(run_spark_job.subprocess, "run", execute)
     run_spark_job.run("example")
     assert execute.call_args.kwargs["env"]["SFX_SPARK_JOB"] == "example"
+    assert execute.call_args.kwargs['args'] == ['echo', 'example']
+    assert execute.call_args.kwargs['shell'] is False
     for entry in ({"status": "legacy"}, {"status": "retired"}, {"status": "snowflake", "command": ""}):
         path.write_text(json.dumps(entry))
         with pytest.raises(ValueError):
             run_spark_job.run("example")
     with pytest.raises(ValueError):
         run_spark_job.run("../bad")
+
+
+def test_registry_metacharacters_are_literal_arguments(tmp_path, monkeypatch):
+    registry = tmp_path / 'etl/spark/jobs/registry'
+    registry.mkdir(parents=True)
+    marker = tmp_path / 'injected'
+    (registry / 'example.yaml').write_text(json.dumps({
+        'status': 'snowflake', 'command': f'echo safe; touch {marker}',
+    }))
+    monkeypatch.setattr(run_spark_job, 'ROOT', tmp_path)
+    result = run_spark_job.run('example')
+    assert result.args == ['echo', 'safe;', 'touch', str(marker)]
+    assert not marker.exists()
+
+
+@pytest.mark.parametrize('command', ["echo 'unterminated", "'echo;touch' injected", "''", '   '])
+def test_invalid_registry_command_does_not_execute(tmp_path, monkeypatch, command):
+    registry = tmp_path / 'etl/spark/jobs/registry'
+    registry.mkdir(parents=True)
+    (registry / 'example.yaml').write_text(json.dumps({'status': 'snowflake', 'command': command}))
+    monkeypatch.setattr(run_spark_job, 'ROOT', tmp_path)
+    execute = MagicMock()
+    monkeypatch.setattr(run_spark_job.subprocess, 'run', execute)
+    with pytest.raises(ValueError):
+        run_spark_job.run('example')
+    execute.assert_not_called()
 
 
 @pytest.mark.parametrize('primary,legacy', [('sfx2220', None), (None, "sfx-d1110-test'quote")])

@@ -49,9 +49,22 @@ class TemplateTest(unittest.TestCase):
                     submit.arguments("inactive")
 
     def test_invalid_submission(self):
-        for job in ("", "../unknown", "missing"):
+        for job in ("", "../unknown", "missing", 'job;touch injected', '$(touch injected)'):
             with self.assertRaises((ValueError, FileNotFoundError)):
                 submit.arguments(job)
+
+    def test_invalid_scala_class(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            registry = root / 'jobs/registry'
+            registry.mkdir(parents=True)
+            path = registry / 'scala_example.yaml'
+            for name in ('', 'sfx.Example;touch injected', '--conf', 'sfx.Example\nmalicious'):
+                path.write_text(json.dumps({
+                    'status': 'template', 'language': 'scala', 'profile': 'small', 'class': name,
+                }))
+                with patch.object(submit, 'ROOT', root), self.assertRaises(ValueError):
+                    submit.arguments('scala_example')
 
     def test_jdbc_transaction(self):
         for empty in (False, True):
