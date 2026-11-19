@@ -30,18 +30,46 @@
         <!-- LEGACY: SpringFox 3.0 (dead project). Upgrade target: springdoc-openapi 2.x -->
         <springfox.version>3.0.0</springfox.version>
         <!-- LEGACY: Apache POI 4.1.2 (2020). Upgrade target: 5.2+ -->
-        <poi.version>4.1.2</poi.version>
+        <poi.version>5.5.1</poi.version>
         <!-- LEGACY: iText 5.5.13.3 (AGPL, pre-license-change). Upgrade target: OpenPDF or iText 7+ -->
-        <itext.version>5.5.13.3</itext.version>
-        <!-- LEGACY: Commons Lang 2.6 (EOL). Upgrade target: commons-lang3 -->
-        <commons-lang.version>2.6</commons-lang.version>
+        <itext.version>5.5.13.7</itext.version>
         <!-- LEGACY: Commons IO 2.6 (2018). Upgrade target: 2.15+ -->
-        <commons-io.version>2.6</commons-io.version>
+        <commons-io.version>2.22.0</commons-io.version>
         <!-- LEGACY: Guava 28.0 (2019, many CVEs). Upgrade target: 33+ -->
-        <guava.version>28.0-jre</guava.version>
+        <guava.version>33.8.0-jre</guava.version>
         <!-- Commons Text 1.9 — report banner/footer interpolation -->
         <commons-text.version>1.9</commons-text.version>
+        <postgresql.version>42.7.14</postgresql.version>
+        <spring-framework.version>5.3.39</spring-framework.version>
+        <spring-security.version>5.8.16</spring-security.version>
+        <hibernate.version>5.6.15.Final</hibernate.version>
+        <h2.version>2.2.224</h2.version>
+        <tomcat.version>9.0.124</tomcat.version>
+        <jackson-bom.version>2.23.0</jackson-bom.version>
+        <logback.version>1.2.13</logback.version>
+        <commons-lang3.version>3.20.0</commons-lang3.version>
+        <log4j2.version>2.26.1</log4j2.version>
+        <json-path.version>2.10.0</json-path.version>
+        <assertj.version>3.27.7</assertj.version>
+        <xmlunit2.version>2.11.0</xmlunit2.version>
+        <snakeyaml.version>2.7</snakeyaml.version>
+        <micrometer.version>1.17.2</micrometer.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+                <version>1.11.0</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.classgraph</groupId>
+                <artifactId>classgraph</artifactId>
+                <version>4.8.200</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- Spring Boot starters -->
@@ -91,7 +119,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>12.6.1.jre8</version>
+            <version>12.10.2.jre8</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -121,11 +149,11 @@
             <version>${itext.version}</version>
         </dependency>
 
-        <!-- LEGACY: Commons Lang 2 (EOL since 2012) -->
+        <!-- Commons Lang utilities -->
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>${commons-lang.version}</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
         </dependency>
 
         <!-- Commons Text — report banner and footer interpolation -->
@@ -153,13 +181,14 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.13</version>
+            <version>4.5.14</version>
         </dependency>
 
         <!-- Observability (also legacy versions) -->
         <dependency>
             <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
+            <artifactId>micrometer-registry-prometheus-simpleclient</artifactId>
+            <version>${micrometer.version}</version>
         </dependency>
 
         <!-- LEGACY: OpenCSV 4.6 (2018). Upgrade target: 5.9+ -->
