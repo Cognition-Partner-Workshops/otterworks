@@ -391,7 +391,7 @@ def build(root=None):
         manifest.append(dict(id=node, system='spark', kind='spark_job', name=job['name'],
             complexity='medium', subject_area=job['subject_area'], licence_dependency='spark',
             source=job['source'], source_ref='demo-snowflake-dw-exit',
-            output_relations=['SFX_SPARK.'+job['name'].upper()] if job['name'].startswith('billing_') else [], target_type='dbt_model', target='spark__'+job['name'],
+            output_relations=['SFX_SPARK.'+job['name'].upper()] if job['subject_area'] in ('billing','users') else [], target_type='dbt_model', target='spark__'+job['name'],
             wave=3, owner='@otterworks/data-platform', owner_source='proposed', risk='med',
             risk_reasons=[], status='not_started'))
     setup_only = sorted(name for name, qs in reads.items() if qs and all(q['StartTime'][:10] == '2026-08-12' for q in qs))

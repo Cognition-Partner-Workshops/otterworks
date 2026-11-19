@@ -24,7 +24,7 @@ from parity.local_billing import execute
 from parity.semantics import columns as source_columns, numeric_type
 from parity.ladder import local_compare as compare
 from parity.provenance import provenance, markdown
-from parity import report_outputs, spark_billing, pc_users
+from parity import report_outputs, spark_billing, spark_users, pc_users
 from parity.subjects import SUBJECTS
 
 
@@ -221,7 +221,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 row[field] = None if measurement is None else (measurement[field] if field == 'row_count' else
                     {'SFX_USERS.'+pc_users.MAPPINGS[mapping]:measurement[field]})
             if mapping == 'm_SFX_APP_USER':
-                row.update(status='red',reason='APP_USER remains stopped; isolated dbt mapping proof does not clear the escalated truncation decision')
+                row.update(status='red',reason='Held on APP_USER display-name truncation decision; isolated PC/dbt proof has hash_difference=0 and does not clear the escalation' if measurement and measurement['keyed_row_hash']['difference'] == 0 else 'Held on APP_USER display-name truncation decision; see independent PC/dbt proof for current measurements')
         if obj['subject_area'] in SUBJECTS:
             row.update(local_duckdb=row['status'] if target == 'duckdb' else 'red',
                        snowflake='red', snowflake_reason=snowflake_reason,
@@ -286,6 +286,10 @@ def main():
             spark_ready,spark_errors,spark_evidence = spark_billing.materialize(before,after,manifest['objects'],ns)
             ready.update(spark_ready)
             errors.update(spark_errors)
+            users_ready,users_errors,users_evidence = spark_users.materialize(before,after,manifest['objects'],ns)
+            ready.update(users_ready)
+            errors.update(users_errors)
+            spark_evidence.update(users_evidence)
         pc_results = None
         pc_evidence = None
         if args.target == 'duckdb' and manifest['objects'] and (pc_users.OUT/'capture.json').exists():

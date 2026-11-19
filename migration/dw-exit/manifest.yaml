@@ -4510,7 +4510,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/TeamGraphComponents.scala
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.TEAM_GRAPH_COMPONENTS
   target_type: dbt_model
   target: spark__team_graph_components
   wave: 3
@@ -4528,7 +4529,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/user_pref_json_flatten.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.USER_PREF_JSON_FLATTEN
   target_type: dbt_model
   target: spark__user_pref_json_flatten
   wave: 3
@@ -4546,7 +4548,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/users_active_daily.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.USERS_ACTIVE_DAILY
   target_type: dbt_model
   target: spark__users_active_daily
   wave: 3
@@ -4564,7 +4567,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/users_login_useragent_parse.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.USERS_LOGIN_USERAGENT_PARSE
   target_type: dbt_model
   target: spark__users_login_useragent_parse
   wave: 3
@@ -4582,7 +4586,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/UsersRiskScore.scala
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.USERS_RISK_SCORE
   target_type: dbt_model
   target: spark__users_risk_score
   wave: 3
@@ -4600,7 +4605,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/users_team_rollup.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.USERS_TEAM_ROLLUP
   target_type: dbt_model
   target: spark__users_team_rollup
   wave: 3

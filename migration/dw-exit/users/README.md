@@ -5,8 +5,8 @@ Stages execute `10_load.sql` → `20_routines.sql` → `30_views.sql`.
 resultset is measured as `SFX_USERS.M_TEAM_COUNTS_OUTPUT`; `10_activity_daily`
 also declares `SFX_USERS.USER_ACTIVITY_DAILY`. PowerCenter rows now use independent
 runner-versus-dbt proofs described below; the BTEQ relation measurement is retained
-as supplementary evidence. Spark conversion and the four retirement decisions
-remain deferred.
+as supplementary evidence. The six kept Spark jobs have independent landing/lake
+proofs below. The four Teradata retirement decisions remain deferred.
 
 ## Stopped object: APP_USER implicit truncation
 
@@ -113,3 +113,65 @@ Both STG mapping/session rows remain red. Neither conversion nor source was chan
   tests separately exercise update/insert and unmatched-row retention. Duplicate
   lookup keys were not generated, so multiple-match behavior is not empirically
   proven. BTEQ deletes all then inserts (`01_load_users.bteq:4–8`).
+
+## Users Spark landing/lake proof
+
+All six actual jobs ran through `make sfx-spark-run RUN_TOKEN=sfx1119
+NS=sfx1119-before ROWS_PER_TABLE=200 JOB=<name>` after pulling the configured
+Spark 3.5.3 mirror image and running `make sfx-spark-up` with the same scope.
+Spark fixture initialization had changed generated host log ownership to UID 185;
+ownership of that ignored logs directory was restored to the host user before
+execution. No Spark source, submission configuration or conversion was changed.
+The Scala compiler's deprecation warning is from the existing source/API, not a
+missing environment dependency; the jobs all completed successfully.
+
+`parity/spark_users.py` loads the same Spark landing PSV schemas (not the different
+Teradata/PowerCenter PSV schemas), reads the actual lake Parquet and compares via
+the ordinary exact ladder. `users_active_daily` and `users_team_rollup` execute
+their shipped dbt SELECTs. The other four execute extracted shipped Python UDF
+bodies and projections from `warehouse/snowpark/`; the graph job executes its
+shipped UDTF process/end_partition body. Those existing Snowpark implementations
+are measured alternatives; manifest `target_type: dbt_model` assignments are
+unchanged, and no duplicate dbt models were invented.
+
+| Job | Actual / converted count | Hash difference |
+|---|---:|---:|
+| team_graph_components | 200 / 200 | 0 |
+| user_pref_json_flatten | 200 / 200 | 0 |
+| users_active_daily | 7 / 7 | 0 |
+| users_login_useragent_parse | 200 / 200 | 0 |
+| users_risk_score | 200 / 200 | 0 |
+| users_team_rollup | 200 / 200 | 0 |
+
+All profiles agree and sampled differences are empty. No float tolerance,
+rounding, string normalization or algorithmic convergence was added to force
+these results. Tests cover populated/empty results, malformed JSON, missing-key
+empty strings and Python stringification, unmatched browser `Other`, null risk
+inputs, a graph longer than six hops, isolated/self-only members, stale/missing
+Parquet and unsupported conversion bodies. The generated board declares all six
+lake relations and includes source/conversion/ladder provenance and
+`spark_evidence` landing hashes. Snowflake remains denied with 002003.
+
+`user_pref_json_flatten` deliberately still reads the kept `users/USER_PREF`
+landing feed, with PREF_JSON (`etl/spark/jobs/py/user_pref_json_flatten.py:7–19`).
+This is not the retired Teradata USER_PREF's PREF_NAME/PREF_VALUE schema. Retiring
+those Teradata tables is not permission to remove this landing feed or job.
+
+### JDBC side outputs and consumers
+
+`UsersRiskScore.scala:12` also overwrites `sfx_users.SPARK_RISK_SCORE` via
+`BatchSupport.scala:91–98`; `users_team_rollup.py:10` overwrites
+`sfx_users.SPARK_TEAM_ROLLUP` via `common/runtime.py:51–56`. Both actual tables were
+queried in the local Spark PostgreSQL emulator (port 55432): each has 200 rows,
+and exact ladder comparisons against its lake output have hash difference 0.
+These side tables are not separate manifest objects/output declarations or named
+consumer-registry entries. The rollup dbt schema description names its JDBC table;
+the risk Snowpark module docstring names its JDBC table. Repository-wide reference
+search found no readers beyond those producer/descriptive references; local
+PostgreSQL view definitions also contain no readers. External consumers were not
+queried, so their absence is not established.
+
+Spark startup regenerated billing landing too, so its six actual jobs were rerun
+to preserve freshness evidence. The append-mode billing usage lake output was
+archived as `billing_usage_append_daily-pre-step-c` before its clean initial-build
+rerun, avoiding mixed-run files; no billing code/comparison rules were changed.

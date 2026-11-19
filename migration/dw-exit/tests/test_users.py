@@ -82,7 +82,7 @@ def test_users_declarations_and_provenance_exclude_retirement():
     assert len(objects) == 55
     for obj in objects:
         if obj['system'] == 'spark':
-            assert obj['output_relations'] == []
+            assert obj['output_relations'] == ['SFX_SPARK.'+obj['name'].upper()]
             continue
         assert obj['output_relations']
         p = provenance.provenance(obj)
