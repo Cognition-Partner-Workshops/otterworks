@@ -88,7 +88,9 @@ jobs:
             JOB="$job" bash etl/spark/run.sh
           done
       - name: Run the shared-input graph and parity
-        run: make sfx-lakehouse-run
+        run: |
+          lakehouse/.venv/bin/python -m lakehouse.parity.documents_informatica_legacy --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE"
+          make sfx-lakehouse-run
       - name: Run the users Spark and activity-report parity graphs
         env:
           SPARK_LOCAL_IP: '127.0.0.1'

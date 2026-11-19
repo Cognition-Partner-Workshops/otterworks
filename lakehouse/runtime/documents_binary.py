@@ -3,6 +3,8 @@
 import hashlib
 import re
 from io import BytesIO
+# document_text rejects DTDs and external entities before parsing their content.
+# nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
 from xml.parsers import expat
 from zipfile import BadZipFile, ZipFile
 

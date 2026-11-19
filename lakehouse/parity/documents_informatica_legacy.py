@@ -26,13 +26,18 @@ def run(landing, day):
         settings = source.info.get_parameters()
         with psycopg.connect(**{**settings, 'dbname': 'postgres'}, autocommit=True) as admin:
             if not admin.execute('SELECT 1 FROM pg_database WHERE datname = %s', (database,)).fetchone():
+                # Identifiers are quoted by psycopg, not interpolated as SQL text.
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 admin.execute(sql.SQL('CREATE DATABASE {}').format(sql.Identifier(database)))
         with psycopg.connect(**{**settings, 'dbname': database}) as target:
             target.execute((ROOT.parent / 'etl/informatica/tests/fixture/bootstrap.sql').read_text())
             for table in ('sfx_documents.stg_document', 'sfx_documents.document', 'sfx_documents.doc_share',
                           'sfx_users.app_user', 'sfx_users.role_grant'):
+                # Fixed table names are quoted by psycopg.
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 target.execute(sql.SQL('TRUNCATE {}').format(sql.Identifier(*table.split('.'))))
                 if table.startswith('sfx_users.'):
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     rows = source.execute(sql.SQL('SELECT * FROM {}').format(sql.Identifier(*table.split('.')))).fetchall()
                     with target.cursor().copy(sql.SQL('COPY {} FROM STDIN').format(sql.Identifier(*table.split('.')))) as writer:
                         for row in rows:
@@ -59,6 +64,8 @@ def run(landing, day):
         print(f'legacy.informatica.{name}: read={stats.rows_read} written={stats.rows_written} rejected={stats.rows_rejected}')
     with psycopg.connect(**{**settings, 'dbname': database}) as target:
         for name, columns in [('stg_document', DOCUMENT), ('document', DOCUMENT), ('doc_share', SHARE)]:
+            # Fixed column and table names are quoted by psycopg.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             rows = target.execute(sql.SQL('SELECT {} FROM {}').format(
                 sql.SQL(', ').join(map(sql.Identifier, columns)), sql.Identifier('sfx_documents', name))).fetchall()
             with (root / (name + '.psv')).open('w', newline='') as handle:
