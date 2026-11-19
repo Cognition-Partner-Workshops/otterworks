@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import runpy
 from decimal import Decimal
 from pathlib import Path
 
@@ -368,7 +369,8 @@ def test_unload01_fixture_records_decode_through_job_copybooks(name: str) -> Non
     assert len(raw) == lrecl * count, f"{name}: {len(raw)} bytes is not {count} x LRECL {lrecl}"
     del_rows = [line.split("|") for line in (UNLOAD_FIXTURES / f"{name}.del").read_text().splitlines() if line]
     assert len(del_rows) == count
-    complexity = json.loads((REPO_ROOT / "demos" / "app" / "complexity-manifest.json").read_text())
+    load_demo = runpy.run_path(str(REPO_ROOT / "demos" / "app" / "complexity_manifest.py"))["load_demo"]
+    complexity = load_demo(REPO_ROOT / "demos" / "app" / "complexity-manifest.json", "legacy-data-migration")
     classes = {c["id"]: c for c in complexity["classes"]}
     # Field-level conversion rejects (MIG-01..03); MIG-06 is a LOAD reject too but only against the target.
     load_rejects = {

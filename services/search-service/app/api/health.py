@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import os
+
 import structlog
 from flask import Blueprint, current_app, jsonify
 from prometheus_client import (
+    CollectorRegistry,
     Counter,
     Histogram,
     generate_latest,
+    multiprocess,
 )
 
 logger = structlog.get_logger()
@@ -62,8 +66,12 @@ def readiness() -> tuple:
 @health_bp.route("/metrics")
 def metrics() -> tuple:
     """Prometheus metrics endpoint."""
+    registry = None
+    if os.environ.get("PROMETHEUS_MULTIPROC_DIR"):
+        registry = CollectorRegistry()
+        multiprocess.MultiProcessCollector(registry)
     return (
-        generate_latest(),
+        generate_latest(registry) if registry is not None else generate_latest(),
         200,
         {"Content-Type": "text/plain; charset=utf-8"},
     )
