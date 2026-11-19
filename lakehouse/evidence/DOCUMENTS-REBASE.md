@@ -62,3 +62,25 @@ documents.v_workspace_storage: PASS {'legacy': 500, 'lakehouse': 450}
 The warning remains the existing dbt datetime.utcnow deprecation. No additional
 Airflow execution or other-domain runtime parity was requested/run in this step.
 Logs: `/home/ubuntu/documents-rebase-{coverage,parity,test}.log`.
+
+## Subsequent audit integration rebase
+
+Rebased onto `79091e67f` from `origin/demo-data-platform-after`. Preserved
+audit DAGs/nodes, upstream non-owned coverage and assumptions (source-level
+comparison passed). Kept upstream boto3 pin and weekly schedule support alongside
+documents clients and cron support. Combined audit Spark CI setup with the
+documents Informatica oracle preparation. Regenerated shared evidence markdown.
+
+Post-rebase checks (all exit 0):
+
+```text
+Assumptions: 102 entries, 0 errors
+Coverage: 438 inventory objects, 438 map entries, 0 errors
+Pipeline: 19 DAGs, 185 tasks, valid
+documents: 97 owned objects, zero pending
+246 passed, 1 warning in 141.72s (0:02:21)
+```
+
+All 45 documents parity specs PASS, retaining zero mismatches for the three
+tie-aware comparisons. Logs:
+`/home/ubuntu/documents-ci-rebase-{test,parity}.log`.
