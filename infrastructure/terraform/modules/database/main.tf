@@ -9,8 +9,7 @@ locals {
     Project = var.project
   }
 
-  postgres_identifier  = "${var.project}-postgres-${var.environment}"
-  postgres_log_exports = ["postgresql", "upgrade"]
+  postgres_identifier = "${var.project}-postgres-${var.environment}"
 }
 
 # --- RDS Subnet Group ---
@@ -54,7 +53,7 @@ resource "aws_security_group" "rds" {
 # --- RDS PostgreSQL ---
 
 resource "aws_cloudwatch_log_group" "postgres" { # nosemgrep: terraform.aws.security.aws-cloudwatch-log-group-unencrypted.aws-cloudwatch-log-group-unencrypted
-  for_each = var.environment == "dev" ? toset(local.postgres_log_exports) : toset([])
+  for_each = var.environment == "dev" ? toset(["postgresql", "upgrade"]) : toset([])
 
   name              = "/aws/rds/instance/${local.postgres_identifier}/${each.key}"
   retention_in_days = var.dev_log_retention_days
@@ -86,7 +85,7 @@ resource "aws_db_instance" "postgres" {
 
   backup_retention_period = var.environment == "dev" ? 1 : 7
 
-  enabled_cloudwatch_logs_exports = local.postgres_log_exports
+  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 
   depends_on = [aws_cloudwatch_log_group.postgres]
 
