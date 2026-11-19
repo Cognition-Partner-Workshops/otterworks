@@ -6,19 +6,20 @@ from sqlglot import exp
 
 from warehouse.run_config import render
 from .connection import validate_date
+from .subjects import SUBJECTS
 
 
 STAGES = ('10_load.sql', '15_storage.sql', '20_routines.sql', '30_views.sql', '40_close.sql')
 
 
-def statements(path, business_date):
+def statements(path, business_date, procedure='P_MONTHLY_INVOICE'):
     business_date = validate_date(business_date)
     text = render(path.read_text()).replace('${BUSINESS_DATE}', business_date)
     if path.name == '20_routines.sql':
         bodies = re.findall(r'CREATE OR REPLACE PROCEDURE\s+\S+\.(\w+)\s*\(.*?\$\$(.*?)\$\$;', text, re.S | re.I)
-        monthly = [body for name, body in bodies if name.upper() == 'P_MONTHLY_INVOICE']
+        monthly = [body for name, body in bodies if name.upper() == procedure]
         if len(monthly) != 1:
-            raise ValueError('Expected one P_MONTHLY_INVOICE body')
+            raise ValueError('Expected one '+procedure+' body')
         text = monthly[0].split('BEGIN', 1)[1]
         text = re.sub(r'run_day\s*:=\s*TO_DATE\(p_day,\s*\x27YYYYMMDD\x27\);', '', text, flags=re.I)
         text = re.sub(r'n\s*:=\s*SQLROWCOUNT;', '', text, flags=re.I)
@@ -54,13 +55,13 @@ def statements(path, business_date):
         yield statement
 
 
-def execute(after, conversion_dir, ready, business_date):
+def execute(after, conversion_dir, ready, business_date, subject='billing'):
     errors = {}
     failed = False
-    for filename in STAGES:
+    for filename in SUBJECTS[subject]['stages']:
         path = conversion_dir / filename
         try:
-            for statement in statements(path, business_date):
+            for statement in statements(path, business_date, SUBJECTS[subject]['procedure']):
                 after.execute(statement.sql(dialect='duckdb', comments=False))
                 if isinstance(statement, (exp.Create, exp.Insert)):
                     target = statement.this.this if isinstance(statement.this, exp.Schema) else statement.this

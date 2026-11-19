@@ -1167,7 +1167,9 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
-  output_relations: []
+  output_relations:
+  - SFX_USERS.USER_ACTIVITY_DAILY
+  - SFX_USERS.M_TEAM_COUNTS_OUTPUT
 - id: na532938d4b40bb58
   system: teradata
   kind: bteq
@@ -1905,7 +1907,8 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
-  output_relations: []
+  output_relations:
+  - SFX_USERS.M_TEAM_COUNTS_OUTPUT
 - id: n1e025701f054c8fd
   system: teradata
   kind: procedure

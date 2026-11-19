@@ -3,6 +3,8 @@ import ast
 from pathlib import Path
 import re
 
+from .subjects import SUBJECTS
+
 ROOT = Path(__file__).resolve().parents[3]
 BRANCH = 'devin/sfx1119-billing-parity'
 BASE = 'https://github.com/Cognition-Partner-Workshops/otterworks/blob/' + BRANCH + '/'
@@ -31,22 +33,23 @@ def source_link(obj):
 
 def converted_links(relation):
     table = relation.split('.')[-1]
+    subject = 'users' if relation.startswith('SFX_USERS.') else 'billing'
     if relation.startswith('SFX_SPARK.'):
         paths = list((ROOT/'warehouse/dbt/models/spark'/table.lower()).glob('*.sql'))
         snowpark = ROOT/'warehouse/snowpark'/f'{table.lower()}.py'
         if snowpark.is_file():
             paths.append(snowpark)
         return [link(path.relative_to(ROOT)) for path in sorted(paths)]
-    if table in ('M_SUBSCRIPTION_PLANS_OUTPUT', 'M_CURRENCY_TOTALS_OUTPUT'):
-        path = Path('migration/dw-exit/billing/20_routines.sql')
+    if table in ('M_SUBSCRIPTION_PLANS_OUTPUT', 'M_CURRENCY_TOTALS_OUTPUT', 'M_TEAM_COUNTS_OUTPUT'):
+        path = Path('migration/dw-exit')/subject/'20_routines.sql'
         text = (ROOT/path).read_text()
         pattern = r'CREATE OR REPLACE PROCEDURE\s+\S+\.'+table.removesuffix('_OUTPUT')+r'\s*\(.*?\$\$.*?\$\$;'
         return [link(path, text.count('\n',0,m.start())+1, text.count('\n',0,m.end())+1)
                 for m in re.finditer(pattern, text, re.S | re.I)]
     links = []
-    for path in sorted((ROOT / 'migration/dw-exit/billing').glob('[0-4][0-9]_*.sql')):
+    for path in sorted((ROOT / 'migration/dw-exit'/subject).glob('[0-4][0-9]_*.sql')):
         text = path.read_text()
-        pattern = r'(?:INSERT\s+INTO|UPDATE|MERGE\s+INTO|CREATE\s+OR\s+REPLACE\s+(?:TABLE|VIEW))\s+__RUN_DATABASE__\.BILLING\.'+re.escape(table)+r'\b'
+        pattern = r'(?:INSERT\s+INTO|UPDATE|MERGE\s+INTO|CREATE\s+OR\s+REPLACE\s+(?:TABLE|VIEW))\s+__RUN_DATABASE__\.'+subject.upper()+r'\.'+re.escape(table)+r'\b'
         for match in re.finditer(pattern,text,re.I):
             end = text.find(';',match.end())
             links.append(link(path.relative_to(ROOT),text.count('\n',0,match.start())+1,text.count('\n',0,end if end >= 0 else len(text))+1))
@@ -60,11 +63,11 @@ def metric_links():
             for metric,function in [('counts','local_compare'),('profiles','local_measure'),('hashes','local_compare')]}
 
 
-def provenance(obj):
+def _provenance(obj):
     outputs = obj.get('output_relations', [])
     converted = {name:converted_links(name) for name in outputs}
     source = ROOT / obj.get('source', '')
-    if source.is_file() and not any(converted.values()):
+    if source.is_file() and not any(converted.values()) and obj.get('target_type') != 'retire':
         text = source.read_text()
         routines = set(re.findall(r'(?:EXEC|CALL)\s+SFX_BILLING\.(\w+)', text, re.I))
         if obj['kind'] in ('macro', 'procedure'):
@@ -86,20 +89,31 @@ def provenance(obj):
             'metrics': metric_links()}
 
 
-def markdown(rows):
-    billing = [row for row in rows if row['subject_area'] == 'billing']
+def provenance(obj):
+    result = _provenance(obj)
+    if obj.get('subject_area') == 'users':
+        for entry in result['source'] + list(result['metrics'].values()) + [e for entries in result['converted'].values() for e in entries]:
+            entry['url'] = entry['url'].replace(BRANCH, 'devin/sfx1119-users-migration')
+    return result
+
+
+def markdown(rows, subject='billing'):
+    billing = [row for row in rows if row['subject_area'] == subject]
     green = sum(row['local_duckdb'] == 'green' for row in billing)
-    lines = ['\n## Billing parity provenance', '',
+    lines = ['\n## '+subject.title()+' parity provenance', '',
              f'Local DuckDB: {green} green / {len(billing)-green} red (including unmeasured outputs).',
-             'Snowflake: **red** — '+(billing[0]['snowflake_reason'] if billing else 'No billing evidence')+'.',
+             'Snowflake: **red** — '+(billing[0]['snowflake_reason'] if billing else 'No '+subject+' evidence')+'.',
              'These are separate evidence legs; local green does not imply live Snowflake parity.', '',
              '| Object | Local DuckDB | Snowflake | Source | Converted producers | Metrics |', '|---|---|---|---|---|---|']
     def anchors(entries):
         return '<br>'.join(f"[{e['file']}:{e['start_line']}–{e['end_line']}]({e['url']})" for e in entries)
     for row in rows:
-        if row['subject_area'] != 'billing':
+        if row['subject_area'] != subject:
             continue
         p = row['provenance']
         converted = [entry for entries in p['converted'].values() for entry in entries]
         lines.append(f"| {row['name']} | {row['local_duckdb']} | {row['snowflake']} | {anchors(p['source'])} | {anchors(converted) or p['conversion_note'] or 'Not materialized'} | {anchors(p['metrics'].values())} |")
-    return '\n'.join(lines)+'\n'
+    text = '\n'.join(lines)+'\n'
+    if subject == 'billing':
+        text += ''.join(markdown(rows, area) for area in SUBJECTS if area != 'billing')
+    return text

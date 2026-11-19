@@ -379,6 +379,12 @@ def build(root=None):
         }
         if row['name'] in billing_reports:
             row['output_relations'] = ['SFX_BILLING.'+name for name in billing_reports[row['name']]]
+        users_reports = {
+            '10_activity_daily': ['SFX_USERS.USER_ACTIVITY_DAILY', 'SFX_USERS.M_TEAM_COUNTS_OUTPUT'],
+            'SFX_USERS.M_TEAM_COUNTS': ['SFX_USERS.M_TEAM_COUNTS_OUTPUT'],
+        }
+        if row['name'] in users_reports:
+            row['output_relations'] = users_reports[row['name']]
     for job in json.loads((Path(__file__).parent / 'spark_objects.json').read_text()):
         node = add('spark_job', job['name'], job['source'], '')
         artifacts[-1]['system'] = 'spark'
