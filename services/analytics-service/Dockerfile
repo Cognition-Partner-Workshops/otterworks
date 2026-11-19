@@ -8,7 +8,7 @@ RUN sbt update || true
 COPY src ./src
 RUN sbt assembly
 
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:17.0.21_9-jre-jammy
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /app/target/scala-3.4.0/analytics-service-assembly-*.jar app.jar

@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builder
+FROM mcr.microsoft.com/dotnet/sdk:8.0.428 AS builder
 
 WORKDIR /app
 COPY *.csproj ./
@@ -9,7 +9,7 @@ RUN dotnet publish -c Release -o /out
 
 # glibc-based runtime: the IBM Db2 .NET provider (Net.IBM.Data.Db2-lnx) ships native
 # libraries that do not load on musl/Alpine.
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:8.0.34
 RUN apt-get update && apt-get install -y --no-install-recommends curl libxml2 libicu72 \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
