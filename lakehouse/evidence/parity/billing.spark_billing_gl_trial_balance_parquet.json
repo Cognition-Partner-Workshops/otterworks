@@ -1,0 +1,247 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "e79f664018738ca8617570eff8eceb32dc8d7255",
+  "id": "billing.spark_billing_gl_trial_balance_parquet",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "spark_job:billing_gl_trial_balance",
+    "spark_submit:etl/spark/submit/billing_gl_trial_balance.sh",
+    "cron_entry:etl/crontab#146d93841612"
+  ],
+  "results": {
+    "columns": [
+      "gl_account_id",
+      "account_code",
+      "account_name",
+      "account_type",
+      "period",
+      "currency_code",
+      "debits",
+      "credits",
+      "net",
+      "credit_note_adjustments",
+      "parity_row"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "account_code": {
+          "count": 4,
+          "hash": "509cd46ed17cda5b97a5795207c70bba18a43c1ef13836d44b80c9117a9c5486",
+          "null_count": 0,
+          "sum": null
+        },
+        "account_name": {
+          "count": 4,
+          "hash": "2756eab106fa8fb4df22edb560b10bb4deae17b97cce700fe334fe3d30b7e306",
+          "null_count": 2,
+          "sum": null
+        },
+        "account_type": {
+          "count": 4,
+          "hash": "437561c8a9e4dc9ec1f895878999ae0c671316c2128206ce73fdd54f9003d2d9",
+          "null_count": 0,
+          "sum": null
+        },
+        "credit_note_adjustments": {
+          "count": 4,
+          "hash": "9a37714fe64635ffe739c9ee2c0c1591f79ac2fb4df3f5a051e9a3d9adfe46fd",
+          "null_count": 0,
+          "sum": "-3"
+        },
+        "credits": {
+          "count": 4,
+          "hash": "b616bf839ea85119c06797f49c51843343b34f4615fde0792dd180155202b874",
+          "null_count": 0,
+          "sum": "3"
+        },
+        "currency_code": {
+          "count": 4,
+          "hash": "010a3c5bf717e581c65734ec74bb930c52d1b32627d60c95d3ad7f659da11a33",
+          "null_count": 1,
+          "sum": null
+        },
+        "debits": {
+          "count": 4,
+          "hash": "746943e69611b75a1189a775bbce6763f1d2633e209f0795d4abcebf88aa9153",
+          "null_count": 0,
+          "sum": "14"
+        },
+        "gl_account_id": {
+          "count": 4,
+          "hash": "8f7e9ada09f79013afaa0d55138bbb586a6e17c456cb81ec844a41d8535dc60e",
+          "null_count": 0,
+          "sum": "6"
+        },
+        "net": {
+          "count": 4,
+          "hash": "f25662e83214bbbfb45bd46e51a2341769613a06bc7f1df4b57b7fdf0aa42bcb",
+          "null_count": 0,
+          "sum": "3"
+        },
+        "parity_row": {
+          "count": 4,
+          "hash": "a04cea6e778eb38b881fdb3d7a5219fdfd20ad8730d3f6d06b9293adae7f9eb2",
+          "null_count": 0,
+          "sum": "10"
+        },
+        "period": {
+          "count": 4,
+          "hash": "0ead6168fce6b2b32427c2600b5fe1cd11d92a51343e670bff3752cc30c7c71b",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "account_code": {
+          "count": 4,
+          "hash": "509cd46ed17cda5b97a5795207c70bba18a43c1ef13836d44b80c9117a9c5486",
+          "null_count": 0,
+          "sum": null
+        },
+        "account_name": {
+          "count": 4,
+          "hash": "2756eab106fa8fb4df22edb560b10bb4deae17b97cce700fe334fe3d30b7e306",
+          "null_count": 2,
+          "sum": null
+        },
+        "account_type": {
+          "count": 4,
+          "hash": "437561c8a9e4dc9ec1f895878999ae0c671316c2128206ce73fdd54f9003d2d9",
+          "null_count": 0,
+          "sum": null
+        },
+        "credit_note_adjustments": {
+          "count": 4,
+          "hash": "9a37714fe64635ffe739c9ee2c0c1591f79ac2fb4df3f5a051e9a3d9adfe46fd",
+          "null_count": 0,
+          "sum": "-3"
+        },
+        "credits": {
+          "count": 4,
+          "hash": "b616bf839ea85119c06797f49c51843343b34f4615fde0792dd180155202b874",
+          "null_count": 0,
+          "sum": "3"
+        },
+        "currency_code": {
+          "count": 4,
+          "hash": "010a3c5bf717e581c65734ec74bb930c52d1b32627d60c95d3ad7f659da11a33",
+          "null_count": 1,
+          "sum": null
+        },
+        "debits": {
+          "count": 4,
+          "hash": "746943e69611b75a1189a775bbce6763f1d2633e209f0795d4abcebf88aa9153",
+          "null_count": 0,
+          "sum": "14"
+        },
+        "gl_account_id": {
+          "count": 4,
+          "hash": "8f7e9ada09f79013afaa0d55138bbb586a6e17c456cb81ec844a41d8535dc60e",
+          "null_count": 0,
+          "sum": "6"
+        },
+        "net": {
+          "count": 4,
+          "hash": "f25662e83214bbbfb45bd46e51a2341769613a06bc7f1df4b57b7fdf0aa42bcb",
+          "null_count": 0,
+          "sum": "3"
+        },
+        "parity_row": {
+          "count": 4,
+          "hash": "a04cea6e778eb38b881fdb3d7a5219fdfd20ad8730d3f6d06b9293adae7f9eb2",
+          "null_count": 0,
+          "sum": "10"
+        },
+        "period": {
+          "count": 4,
+          "hash": "0ead6168fce6b2b32427c2600b5fe1cd11d92a51343e670bff3752cc30c7c71b",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "account_code": {
+        "count": 0,
+        "samples": []
+      },
+      "account_name": {
+        "count": 0,
+        "samples": []
+      },
+      "account_type": {
+        "count": 0,
+        "samples": []
+      },
+      "credit_note_adjustments": {
+        "count": 0,
+        "samples": []
+      },
+      "credits": {
+        "count": 0,
+        "samples": []
+      },
+      "currency_code": {
+        "count": 0,
+        "samples": []
+      },
+      "debits": {
+        "count": 0,
+        "samples": []
+      },
+      "gl_account_id": {
+        "count": 0,
+        "samples": []
+      },
+      "net": {
+        "count": 0,
+        "samples": []
+      },
+      "parity_row": {
+        "count": 0,
+        "samples": []
+      },
+      "period": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 4,
+      "legacy": 4
+    }
+  },
+  "row_counts": {
+    "lakehouse": 4,
+    "legacy": 4
+  },
+  "spec_hash": "886d9b02a21cf341d0a9e6b061bd9bdb5f530c711a9b607d202b6eec2a0b2542",
+  "timestamp": "2026-11-19T12:45:50.464940+00:00"
+}

@@ -2595,6 +2595,7 @@ dags:
     retries: 0
     retry_delay_seconds: 0
     legacy_objects: []
+
   - id: parity_documents_external_search_documents
     kind: parity
     spec: documents.external_search_documents
@@ -2629,4 +2630,243 @@ dags:
     depends_on: [external_documents_fixture]
     retries: 0
     retry_delay_seconds: 0
+    legacy_objects: []
+- id: lakehouse_billing_invoice_summary_daily
+  schedule: '0 1 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  paused: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  nodes:
+  - id: validate_inputs
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.billing.spark_inputs, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects: []
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/billing_spark_inputs/{business_date}.json'
+    timeout_seconds: 60
+    poke_interval_seconds: 1
+    depends_on: [validate_inputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ['{python}', '-m', lakehouse.billing.spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, billing_invoice_summary_daily]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:billing_invoice_summary_daily","spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh","cron_entry:etl/crontab#d223b2edaac1"]
+  - id: parity
+    kind: parity
+    specs: ["billing.spark_billing_invoice_summary_daily_parquet","billing.spark_billing_invoice_summary_daily_jdbc"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_billing_revenue_by_plan
+  schedule: '1 1 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  paused: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  nodes:
+  - id: validate_inputs
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.billing.spark_inputs, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects: []
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/billing_spark_inputs/{business_date}.json'
+    timeout_seconds: 60
+    poke_interval_seconds: 1
+    depends_on: [validate_inputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ['{python}', '-m', lakehouse.billing.spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, billing_revenue_by_plan]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:billing_revenue_by_plan","spark_submit:etl/spark/submit/billing_revenue_by_plan.sh","cron_entry:etl/crontab#8018504ce246"]
+  - id: parity
+    kind: parity
+    specs: ["billing.spark_billing_revenue_by_plan_parquet"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_billing_payment_aging
+  schedule: '2 1 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  paused: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  nodes:
+  - id: validate_inputs
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.billing.spark_inputs, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects: []
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/billing_spark_inputs/{business_date}.json'
+    timeout_seconds: 60
+    poke_interval_seconds: 1
+    depends_on: [validate_inputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ['{python}', '-m', lakehouse.billing.spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, billing_payment_aging]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:billing_payment_aging","spark_submit:etl/spark/submit/billing_payment_aging.sh","cron_entry:etl/crontab#2ec3f6dad69f"]
+  - id: parity
+    kind: parity
+    specs: ["billing.spark_billing_payment_aging_parquet"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_billing_usage_append_daily
+  schedule: '3 1 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  paused: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  nodes:
+  - id: validate_inputs
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.billing.spark_inputs, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects: []
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/billing_spark_inputs/{business_date}.json'
+    timeout_seconds: 60
+    poke_interval_seconds: 1
+    depends_on: [validate_inputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ['{python}', '-m', lakehouse.billing.spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, billing_usage_append_daily]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:billing_usage_append_daily","spark_submit:etl/spark/submit/billing_usage_append_daily.sh","cron_entry:etl/crontab#ed928bb7422d"]
+  - id: parity
+    kind: parity
+    specs: ["billing.spark_billing_usage_append_daily_parquet","billing.spark_billing_usage_append_daily_jdbc"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_billing_gl_trial_balance
+  schedule: '10 2 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  paused: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  nodes:
+  - id: validate_inputs
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.billing.spark_inputs, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects: []
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/billing_spark_inputs/{business_date}.json'
+    timeout_seconds: 60
+    poke_interval_seconds: 1
+    depends_on: [validate_inputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ['{python}', '-m', lakehouse.billing.spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, billing_gl_trial_balance]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:billing_gl_trial_balance","spark_submit:etl/spark/submit/billing_gl_trial_balance.sh","cron_entry:etl/crontab#146d93841612"]
+  - id: parity
+    kind: parity
+    specs: ["billing.spark_billing_gl_trial_balance_parquet","billing.spark_billing_gl_trial_balance_jdbc"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_billing_churn_score
+  schedule: '15 2 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  paused: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  nodes:
+  - id: validate_inputs
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.billing.spark_inputs, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects: []
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/billing_spark_inputs/{business_date}.json'
+    timeout_seconds: 60
+    poke_interval_seconds: 1
+    depends_on: [validate_inputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ['{python}', '-m', lakehouse.billing.spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, billing_churn_score]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:billing_churn_score","spark_submit:etl/spark/submit/billing_churn_score.sh","cron_entry:etl/crontab#5f21c41e60ca"]
+  - id: parity
+    kind: parity
+    specs: ["billing.spark_billing_churn_score_parquet"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
     legacy_objects: []

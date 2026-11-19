@@ -1,0 +1,31 @@
+{
+  "id": "billing.spark_billing_invoice_summary_daily_parquet",
+  "legacy_objects": [
+    "spark_job:billing_invoice_summary_daily",
+    "spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh",
+    "cron_entry:etl/crontab#d223b2edaac1"
+  ],
+  "legacy": {
+    "kind": "spark_sql",
+    "sql": "SELECT * FROM gold_billing.legacy_billing_invoice_summary_daily_parquet"
+  },
+  "lakehouse": {
+    "kind": "spark_sql",
+    "sql": "SELECT * FROM gold_billing.billing_invoice_summary_daily_parquet"
+  },
+  "keys": [
+    "parity_row"
+  ],
+  "columns": [
+    "customer_id",
+    "invoice_date",
+    "line_count",
+    "amount",
+    "parity_row"
+  ],
+  "normalize": {
+    "parity_row": {
+      "numeric_scale": 0
+    }
+  }
+}

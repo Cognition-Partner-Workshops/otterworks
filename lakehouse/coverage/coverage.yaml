@@ -503,12 +503,12 @@ objects:
   verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
   notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: cron_entry:etl/crontab#146d93841612
-  status: pending
-  targets: []
-  parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  status: "replaced_by_platform"
+  targets: ["lakehouse/orchestration/pipeline.yaml#lakehouse_billing_gl_trial_balance"]
+  parity: ["billing.spark_billing_gl_trial_balance_parquet","billing.spark_billing_gl_trial_balance_jdbc"]
+  assumptions: ["A-037","A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Pending data status until actual nine-surface parity PASS."
+  verification: "test:lakehouse/tests/test_billing_spark.py::test_billing_spark_cron_replacement"
 - id: cron_entry:etl/crontab#21215b59c160
   status: replaced_by_platform
   targets:
@@ -521,12 +521,12 @@ objects:
     DAG. Includes explicit users input edge and success gating; no independent legacy runner.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#2ec3f6dad69f
-  status: pending
-  targets: []
-  parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  status: "replaced_by_platform"
+  targets: ["lakehouse/orchestration/pipeline.yaml#lakehouse_billing_payment_aging"]
+  parity: ["billing.spark_billing_payment_aging_parquet"]
+  assumptions: ["A-037","A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Pending data status until actual nine-surface parity PASS."
+  verification: "test:lakehouse/tests/test_billing_spark.py::test_billing_spark_cron_replacement"
 - id: cron_entry:etl/crontab#33854636d6ba
   status: replaced_by_platform
   targets:
@@ -555,12 +555,12 @@ objects:
   verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_second_cron_replacements
   notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: cron_entry:etl/crontab#5f21c41e60ca
-  status: pending
-  targets: []
-  parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  status: "replaced_by_platform"
+  targets: ["lakehouse/orchestration/pipeline.yaml#lakehouse_billing_churn_score"]
+  parity: ["billing.spark_billing_churn_score_parquet"]
+  assumptions: ["A-037","A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Pending data status until actual nine-surface parity PASS."
+  verification: "test:lakehouse/tests/test_billing_spark.py::test_billing_spark_cron_replacement"
 - id: cron_entry:etl/crontab#69562b8e166b
   status: converted
   targets:
@@ -619,12 +619,12 @@ objects:
   verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
   notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: cron_entry:etl/crontab#8018504ce246
-  status: pending
-  targets: []
-  parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  status: "replaced_by_platform"
+  targets: ["lakehouse/orchestration/pipeline.yaml#lakehouse_billing_revenue_by_plan"]
+  parity: ["billing.spark_billing_revenue_by_plan_parquet"]
+  assumptions: ["A-037","A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Pending data status until actual nine-surface parity PASS."
+  verification: "test:lakehouse/tests/test_billing_spark.py::test_billing_spark_cron_replacement"
 - id: cron_entry:etl/crontab#817f451e90ab
   status: converted
   targets:
@@ -767,12 +767,12 @@ objects:
     DAG. Includes explicit users input edge and success gating; no independent legacy runner.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#d223b2edaac1
-  status: pending
-  targets: []
-  parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  status: "replaced_by_platform"
+  targets: ["lakehouse/orchestration/pipeline.yaml#lakehouse_billing_invoice_summary_daily"]
+  parity: ["billing.spark_billing_invoice_summary_daily_parquet","billing.spark_billing_invoice_summary_daily_jdbc"]
+  assumptions: ["A-037","A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Pending data status until actual nine-surface parity PASS."
+  verification: "test:lakehouse/tests/test_billing_spark.py::test_billing_spark_cron_replacement"
 - id: cron_entry:etl/crontab#d28d753c053a
   status: replaced_by_platform
   targets:
@@ -841,12 +841,12 @@ objects:
   verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
   notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: cron_entry:etl/crontab#ed928bb7422d
-  status: pending
-  targets: []
-  parity: []
-  assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  status: "replaced_by_platform"
+  targets: ["lakehouse/orchestration/pipeline.yaml#lakehouse_billing_usage_append_daily"]
+  parity: ["billing.spark_billing_usage_append_daily_parquet","billing.spark_billing_usage_append_daily_jdbc"]
+  assumptions: ["A-037","A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Pending data status until actual nine-surface parity PASS."
+  verification: "test:lakehouse/tests/test_billing_spark.py::test_billing_spark_cron_replacement"
 - id: cron_entry:etl/crontab#f34723629b86
   status: pending
   targets: []
@@ -3248,41 +3248,41 @@ objects:
   notes: Fresh same-landing fixture parity. A-406 limits the Z-score floating-reduction tolerance and
     retires duplicate Parquet/JDBC sinks in favor of Delta.
 - id: spark_job:billing_churn_score
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: "converted"
+  targets: ["lakehouse/billing/spark.py","lakehouse/.data/<NS>/billing_spark/billing_churn_score/current"]
+  parity: ["billing.spark_billing_churn_score_parquet"]
+  assumptions: ["A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Nine actual Parquet/JDBC surfaces PASS on the immutable shared Spark bundle; no BTEQ outputs or consumers are retargeted."
 - id: spark_job:billing_gl_trial_balance
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: "converted"
+  targets: ["lakehouse/billing/spark.py","lakehouse/.data/<NS>/billing_spark/billing_gl_trial_balance/current"]
+  parity: ["billing.spark_billing_gl_trial_balance_parquet","billing.spark_billing_gl_trial_balance_jdbc"]
+  assumptions: ["A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Nine actual Parquet/JDBC surfaces PASS on the immutable shared Spark bundle; no BTEQ outputs or consumers are retargeted."
 - id: spark_job:billing_invoice_summary_daily
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: "converted"
+  targets: ["lakehouse/billing/spark.py","lakehouse/.data/<NS>/billing_spark/billing_invoice_summary_daily/current"]
+  parity: ["billing.spark_billing_invoice_summary_daily_parquet","billing.spark_billing_invoice_summary_daily_jdbc"]
+  assumptions: ["A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Nine actual Parquet/JDBC surfaces PASS on the immutable shared Spark bundle; no BTEQ outputs or consumers are retargeted."
 - id: spark_job:billing_payment_aging
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: "converted"
+  targets: ["lakehouse/billing/spark.py","lakehouse/.data/<NS>/billing_spark/billing_payment_aging/current"]
+  parity: ["billing.spark_billing_payment_aging_parquet"]
+  assumptions: ["A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Nine actual Parquet/JDBC surfaces PASS on the immutable shared Spark bundle; no BTEQ outputs or consumers are retargeted."
 - id: spark_job:billing_revenue_by_plan
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: "converted"
+  targets: ["lakehouse/billing/spark.py","lakehouse/.data/<NS>/billing_spark/billing_revenue_by_plan/current"]
+  parity: ["billing.spark_billing_revenue_by_plan_parquet"]
+  assumptions: ["A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Nine actual Parquet/JDBC surfaces PASS on the immutable shared Spark bundle; no BTEQ outputs or consumers are retargeted."
 - id: spark_job:billing_usage_append_daily
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: "converted"
+  targets: ["lakehouse/billing/spark.py","lakehouse/.data/<NS>/billing_spark/billing_usage_append_daily/current"]
+  parity: ["billing.spark_billing_usage_append_daily_parquet","billing.spark_billing_usage_append_daily_jdbc"]
+  assumptions: ["A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Nine actual Parquet/JDBC surfaces PASS on the immutable shared Spark bundle; no BTEQ outputs or consumers are retargeted."
 - id: spark_job:collab_session_sessionize
   status: converted
   targets:
@@ -3613,41 +3613,41 @@ objects:
     retires duplicate Parquet/JDBC sinks in favor of Delta.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: spark_submit:etl/spark/submit/billing_churn_score.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: "converted"
+  targets: ["lakehouse/billing/spark.py","lakehouse/.data/<NS>/billing_spark/billing_churn_score/current"]
+  parity: ["billing.spark_billing_churn_score_parquet"]
+  assumptions: ["A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Nine actual Parquet/JDBC surfaces PASS on the immutable shared Spark bundle; no BTEQ outputs or consumers are retargeted."
 - id: spark_submit:etl/spark/submit/billing_gl_trial_balance.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: "converted"
+  targets: ["lakehouse/billing/spark.py","lakehouse/.data/<NS>/billing_spark/billing_gl_trial_balance/current"]
+  parity: ["billing.spark_billing_gl_trial_balance_parquet","billing.spark_billing_gl_trial_balance_jdbc"]
+  assumptions: ["A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Nine actual Parquet/JDBC surfaces PASS on the immutable shared Spark bundle; no BTEQ outputs or consumers are retargeted."
 - id: spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: "converted"
+  targets: ["lakehouse/billing/spark.py","lakehouse/.data/<NS>/billing_spark/billing_invoice_summary_daily/current"]
+  parity: ["billing.spark_billing_invoice_summary_daily_parquet","billing.spark_billing_invoice_summary_daily_jdbc"]
+  assumptions: ["A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Nine actual Parquet/JDBC surfaces PASS on the immutable shared Spark bundle; no BTEQ outputs or consumers are retargeted."
 - id: spark_submit:etl/spark/submit/billing_payment_aging.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: "converted"
+  targets: ["lakehouse/billing/spark.py","lakehouse/.data/<NS>/billing_spark/billing_payment_aging/current"]
+  parity: ["billing.spark_billing_payment_aging_parquet"]
+  assumptions: ["A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Nine actual Parquet/JDBC surfaces PASS on the immutable shared Spark bundle; no BTEQ outputs or consumers are retargeted."
 - id: spark_submit:etl/spark/submit/billing_revenue_by_plan.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: "converted"
+  targets: ["lakehouse/billing/spark.py","lakehouse/.data/<NS>/billing_spark/billing_revenue_by_plan/current"]
+  parity: ["billing.spark_billing_revenue_by_plan_parquet"]
+  assumptions: ["A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Nine actual Parquet/JDBC surfaces PASS on the immutable shared Spark bundle; no BTEQ outputs or consumers are retargeted."
 - id: spark_submit:etl/spark/submit/billing_usage_append_daily.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: "converted"
+  targets: ["lakehouse/billing/spark.py","lakehouse/.data/<NS>/billing_spark/billing_usage_append_daily/current"]
+  parity: ["billing.spark_billing_usage_append_daily_parquet","billing.spark_billing_usage_append_daily_jdbc"]
+  assumptions: ["A-125","A-126","A-127","A-128","A-129","A-130"]
+  notes: "Spark feed/JDBC semantics are independent from BTEQ; see BILLING-SPARK.md. Nine actual Parquet/JDBC surfaces PASS on the immutable shared Spark bundle; no BTEQ outputs or consumers are retargeted."
 - id: spark_submit:etl/spark/submit/collab_session_sessionize.sh
   status: converted
   targets:

@@ -1,0 +1,128 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "e79f664018738ca8617570eff8eceb32dc8d7255",
+  "id": "billing.spark_billing_revenue_by_plan_parquet",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "spark_job:billing_revenue_by_plan",
+    "spark_submit:etl/spark/submit/billing_revenue_by_plan.sh",
+    "cron_entry:etl/crontab#8018504ce246"
+  ],
+  "results": {
+    "columns": [
+      "plan_id",
+      "plan_name",
+      "revenue",
+      "parity_row"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "parity_row": {
+          "count": 2,
+          "hash": "56ae21dd2f93fa9148291dafa7427488ef740c7e6f3e5832e600b15f4d0cb749",
+          "null_count": 0,
+          "sum": "3"
+        },
+        "plan_id": {
+          "count": 2,
+          "hash": "56ae21dd2f93fa9148291dafa7427488ef740c7e6f3e5832e600b15f4d0cb749",
+          "null_count": 0,
+          "sum": "3"
+        },
+        "plan_name": {
+          "count": 2,
+          "hash": "0846b87108362ca5fca96130978188b7695304e7fe9647acac33b8fcb40ac6fc",
+          "null_count": 1,
+          "sum": null
+        },
+        "revenue": {
+          "count": 2,
+          "hash": "b0bca67ff55a16d87913db27fb79d7c11569f35928953dd75942ae820d0e5da8",
+          "null_count": 0,
+          "sum": "5"
+        }
+      },
+      "legacy": {
+        "parity_row": {
+          "count": 2,
+          "hash": "56ae21dd2f93fa9148291dafa7427488ef740c7e6f3e5832e600b15f4d0cb749",
+          "null_count": 0,
+          "sum": "3"
+        },
+        "plan_id": {
+          "count": 2,
+          "hash": "56ae21dd2f93fa9148291dafa7427488ef740c7e6f3e5832e600b15f4d0cb749",
+          "null_count": 0,
+          "sum": "3"
+        },
+        "plan_name": {
+          "count": 2,
+          "hash": "0846b87108362ca5fca96130978188b7695304e7fe9647acac33b8fcb40ac6fc",
+          "null_count": 1,
+          "sum": null
+        },
+        "revenue": {
+          "count": 2,
+          "hash": "b0bca67ff55a16d87913db27fb79d7c11569f35928953dd75942ae820d0e5da8",
+          "null_count": 0,
+          "sum": "5"
+        }
+      }
+    },
+    "mismatches": {
+      "parity_row": {
+        "count": 0,
+        "samples": []
+      },
+      "plan_id": {
+        "count": 0,
+        "samples": []
+      },
+      "plan_name": {
+        "count": 0,
+        "samples": []
+      },
+      "revenue": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 2,
+      "legacy": 2
+    }
+  },
+  "row_counts": {
+    "lakehouse": 2,
+    "legacy": 2
+  },
+  "spec_hash": "171e0581f88c027257a4eddae7a81916826f3a4342e49d1ed99e42a3206fb740",
+  "timestamp": "2026-11-19T12:45:51.325613+00:00"
+}

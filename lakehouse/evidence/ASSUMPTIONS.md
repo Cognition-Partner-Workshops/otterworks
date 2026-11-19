@@ -1,6 +1,6 @@
 # Migration assumptions
 
-Entries: 127. Validation errors: 0.
+Entries: 133. Validation errors: 0.
 
 ## A-001 — PSV empty fields and nulls
 
@@ -1297,6 +1297,114 @@ Entries: 127. Validation errors: 0.
 **verification:** test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 
 **sources:** etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML, etl/informatica/runner/engine.py, etl/informatica/runner/workflow.py, etl/informatica/runner/expr.py, etl/informatica/params/sfx_d1110_daily.par
+
+## A-125 — Billing Spark alternate wildcard contract
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** spark_job:billing_invoice_summary_daily, spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh, cron_entry:etl/crontab#d223b2edaac1, spark_job:billing_revenue_by_plan, spark_submit:etl/spark/submit/billing_revenue_by_plan.sh, cron_entry:etl/crontab#8018504ce246, spark_job:billing_payment_aging, spark_submit:etl/spark/submit/billing_payment_aging.sh, cron_entry:etl/crontab#2ec3f6dad69f, spark_job:billing_usage_append_daily, spark_submit:etl/spark/submit/billing_usage_append_daily.sh, cron_entry:etl/crontab#ed928bb7422d, spark_job:billing_gl_trial_balance, spark_submit:etl/spark/submit/billing_gl_trial_balance.sh, cron_entry:etl/crontab#146d93841612, spark_job:billing_churn_score, spark_submit:etl/spark/submit/billing_churn_score.sh, cron_entry:etl/crontab#5f21c41e60ca
+
+**ambiguity:** Headered Spark feeds differ from warehouse columns and may contain multiple dates. Payment aging reads JDBC, not CSV.
+
+**decision:** Use a separate billing-spark/YYYYMMDD bundle with all nine table schemas, exact header/file set and SHA256 manifest. Both engines consume every wildcard PSV. The isolated reference JDBC PAYMENT/INVOICE_HDR tables are loaded from those same files; converted aging reads their frozen file snapshot. Never use billing BTEQ tables for these jobs.
+
+**rationale:** The actual common/schemas.py types and complete multi-file delivery determine inputs; readiness is checked before and after execution. Invalid numeric CSV values retain native permissive null parsing; JDBC snapshots must be valid PostgreSQL typed values.
+
+**verification:** test:lakehouse/tests/test_billing_spark.py::test_billing_spark_input_contract
+
+**sources:** etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/jobs/py/billing_invoice_summary_daily.py, etl/spark/jobs/py/billing_revenue_by_plan.py, etl/spark/jobs/py/billing_payment_aging.py, etl/spark/jobs/py/billing_usage_append_daily.py, etl/spark/jobs/py/billing_gl_trial_balance.py, etl/spark/jobs/py/billing_churn_score.py, etl/crontab, etl/spark/submit/billing_invoice_summary_daily.sh, etl/spark/submit/billing_revenue_by_plan.sh, etl/spark/submit/billing_payment_aging.sh, etl/spark/submit/billing_usage_append_daily.sh, etl/spark/submit/billing_gl_trial_balance.sh, etl/spark/submit/billing_churn_score.sh
+
+## A-126 — Billing Spark expression and bag semantics
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** spark_job:billing_invoice_summary_daily, spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh, cron_entry:etl/crontab#d223b2edaac1, spark_job:billing_revenue_by_plan, spark_submit:etl/spark/submit/billing_revenue_by_plan.sh, cron_entry:etl/crontab#8018504ce246, spark_job:billing_payment_aging, spark_submit:etl/spark/submit/billing_payment_aging.sh, cron_entry:etl/crontab#2ec3f6dad69f, spark_job:billing_usage_append_daily, spark_submit:etl/spark/submit/billing_usage_append_daily.sh, cron_entry:etl/crontab#ed928bb7422d, spark_job:billing_gl_trial_balance, spark_submit:etl/spark/submit/billing_gl_trial_balance.sh, cron_entry:etl/crontab#146d93841612, spark_job:billing_churn_score, spark_submit:etl/spark/submit/billing_churn_score.sh, cron_entry:etl/crontab#5f21c41e60ca
+
+**ambiguity:** SQL joins, nullable keys, decimal aggregates, UDF doubles and max-date filtering must not be replaced by BTEQ meanings.
+
+**decision:** Preserve native inner/left joins, duplicate multiplicity, SUM nulls, GL null-key nonmatches, separate SUM(debit-credit), case-sensitive closed status, Python math.exp, and latest USAGE_DATE across all files even when different from BUSINESS_DATE. Use ANSI=false as native Spark. Parity orders every output column and assigns a row number only in comparison views, retaining nulls and exact duplicate counts.
+
+**rationale:** All six original PySpark scripts execute independently in the oracle; no reference transformation is reimplemented or imported into converted transformations.
+
+**verification:** test:lakehouse/tests/test_billing_spark.py::test_billing_spark_transformations
+
+**sources:** etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/jobs/py/billing_invoice_summary_daily.py, etl/spark/jobs/py/billing_revenue_by_plan.py, etl/spark/jobs/py/billing_payment_aging.py, etl/spark/jobs/py/billing_usage_append_daily.py, etl/spark/jobs/py/billing_gl_trial_balance.py, etl/spark/jobs/py/billing_churn_score.py, etl/crontab, etl/spark/submit/billing_invoice_summary_daily.sh, etl/spark/submit/billing_revenue_by_plan.sh, etl/spark/submit/billing_payment_aging.sh, etl/spark/submit/billing_usage_append_daily.sh, etl/spark/submit/billing_gl_trial_balance.sh, etl/spark/submit/billing_churn_score.sh
+
+## A-127 — Billing Spark physical output separation
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** spark_job:billing_invoice_summary_daily, spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh, cron_entry:etl/crontab#d223b2edaac1, spark_job:billing_revenue_by_plan, spark_submit:etl/spark/submit/billing_revenue_by_plan.sh, cron_entry:etl/crontab#8018504ce246, spark_job:billing_payment_aging, spark_submit:etl/spark/submit/billing_payment_aging.sh, cron_entry:etl/crontab#2ec3f6dad69f, spark_job:billing_usage_append_daily, spark_submit:etl/spark/submit/billing_usage_append_daily.sh, cron_entry:etl/crontab#ed928bb7422d, spark_job:billing_gl_trial_balance, spark_submit:etl/spark/submit/billing_gl_trial_balance.sh, cron_entry:etl/crontab#146d93841612, spark_job:billing_churn_score, spark_submit:etl/spark/submit/billing_churn_score.sh, cron_entry:etl/crontab#5f21c41e60ca
+
+**ambiguity:** Three jobs write both Parquet and JDBC; neither those JDBC schemas nor these feed meanings are the BTEQ outputs.
+
+**decision:** Keep six raw Parquet outputs and three separately persisted Delta replacements for native JDBC outputs, with nine independent actual-output parity specs. No legacy database or downstream consumer is retargeted. Each output exposes a gold_billing comparison view with an added parity-only row number.
+
+**rationale:** Isolated native JDBC target tables and Parquet files are read separately. Consumer cutover and live JDBC publication are not part of this step.
+
+**verification:** billing.spark_billing_gl_trial_balance_jdbc
+
+**sources:** etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/jobs/py/billing_invoice_summary_daily.py, etl/spark/jobs/py/billing_revenue_by_plan.py, etl/spark/jobs/py/billing_payment_aging.py, etl/spark/jobs/py/billing_usage_append_daily.py, etl/spark/jobs/py/billing_gl_trial_balance.py, etl/spark/jobs/py/billing_churn_score.py, etl/crontab, etl/spark/submit/billing_invoice_summary_daily.sh, etl/spark/submit/billing_revenue_by_plan.sh, etl/spark/submit/billing_payment_aging.sh, etl/spark/submit/billing_usage_append_daily.sh, etl/spark/submit/billing_gl_trial_balance.sh, etl/spark/submit/billing_churn_score.sh
+
+## A-128 — Billing usage delivery idempotence versus native append
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** spark_job:billing_invoice_summary_daily, spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh, cron_entry:etl/crontab#d223b2edaac1, spark_job:billing_revenue_by_plan, spark_submit:etl/spark/submit/billing_revenue_by_plan.sh, cron_entry:etl/crontab#8018504ce246, spark_job:billing_payment_aging, spark_submit:etl/spark/submit/billing_payment_aging.sh, cron_entry:etl/crontab#2ec3f6dad69f, spark_job:billing_usage_append_daily, spark_submit:etl/spark/submit/billing_usage_append_daily.sh, cron_entry:etl/crontab#ed928bb7422d, spark_job:billing_gl_trial_balance, spark_submit:etl/spark/submit/billing_gl_trial_balance.sh, cron_entry:etl/crontab#146d93841612, spark_job:billing_churn_score, spark_submit:etl/spark/submit/billing_churn_score.sh, cron_entry:etl/crontab#5f21c41e60ca
+
+**ambiguity:** The native usage job appends duplicates on every invocation, including a replay.
+
+**decision:** Treat business date plus immutable input/code signature as a delivery. Append a new delivery once, preserve duplicates within it, and make identical retries no-ops in both Parquet and Delta. Reject a changed completed append delivery. Distinct business-date deliveries append even if MAX(USAGE_DATE) is unchanged. Non-append jobs overwrite their current snapshot and permit explicit older-date reruns.
+
+**rationale:** The requested retry idempotence intentionally differs from raw native replay; baseline parity compares one invocation. Tests cover native duplicate rows, identical replay, later delivery, old-date replay and changed-delivery rejection.
+
+**verification:** test:lakehouse/tests/test_billing_spark.py::test_billing_spark_append_replay_and_atomic_recovery
+
+**sources:** etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/jobs/py/billing_invoice_summary_daily.py, etl/spark/jobs/py/billing_revenue_by_plan.py, etl/spark/jobs/py/billing_payment_aging.py, etl/spark/jobs/py/billing_usage_append_daily.py, etl/spark/jobs/py/billing_gl_trial_balance.py, etl/spark/jobs/py/billing_churn_score.py, etl/crontab, etl/spark/submit/billing_invoice_summary_daily.sh, etl/spark/submit/billing_revenue_by_plan.sh, etl/spark/submit/billing_payment_aging.sh, etl/spark/submit/billing_usage_append_daily.sh, etl/spark/submit/billing_gl_trial_balance.sh, etl/spark/submit/billing_churn_score.sh
+
+## A-129 — Billing Spark cron and submit replacement
+
+**status:** open
+
+**risk:** med
+
+**legacy_objects:** spark_job:billing_invoice_summary_daily, spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh, cron_entry:etl/crontab#d223b2edaac1, spark_job:billing_revenue_by_plan, spark_submit:etl/spark/submit/billing_revenue_by_plan.sh, cron_entry:etl/crontab#8018504ce246, spark_job:billing_payment_aging, spark_submit:etl/spark/submit/billing_payment_aging.sh, cron_entry:etl/crontab#2ec3f6dad69f, spark_job:billing_usage_append_daily, spark_submit:etl/spark/submit/billing_usage_append_daily.sh, cron_entry:etl/crontab#ed928bb7422d, spark_job:billing_gl_trial_balance, spark_submit:etl/spark/submit/billing_gl_trial_balance.sh, cron_entry:etl/crontab#146d93841612, spark_job:billing_churn_score, spark_submit:etl/spark/submit/billing_churn_score.sh, cron_entry:etl/crontab#5f21c41e60ca
+
+**ambiguity:** Six submit wrappers carry cluster resource settings and environment/credential behavior alongside six independent cron times.
+
+**decision:** Replace scheduling with six paused UTC DAGs at the exact original minute/hour. Validate input manifests before readiness, run, then parity. Preserve one active run/task, namespace serialization and retries. Start at the foundation date; earlier dates require explicit backfill. Local two-thread Spark replaces executor/shuffle tuning; do not reproduce embedded wrapper credentials. Supply managed credentials at consumer cutover.
+
+**rationale:** Named tests verify all six cadences and success edges. Native jobs are invoked directly, not wrappers with cluster-specific paths and credential exports. Production sizing, actual scheduler activation and live credential/JDBC wiring remain unverified.
+
+**verification:** test:lakehouse/tests/test_billing_spark.py::test_billing_spark_cron_replacement
+
+**sources:** etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/jobs/py/billing_invoice_summary_daily.py, etl/spark/jobs/py/billing_revenue_by_plan.py, etl/spark/jobs/py/billing_payment_aging.py, etl/spark/jobs/py/billing_usage_append_daily.py, etl/spark/jobs/py/billing_gl_trial_balance.py, etl/spark/jobs/py/billing_churn_score.py, etl/crontab, etl/spark/submit/billing_invoice_summary_daily.sh, etl/spark/submit/billing_revenue_by_plan.sh, etl/spark/submit/billing_payment_aging.sh, etl/spark/submit/billing_usage_append_daily.sh, etl/spark/submit/billing_gl_trial_balance.sh, etl/spark/submit/billing_churn_score.sh
+
+## A-130 — Billing Spark publication and recovery boundary
+
+**status:** open
+
+**risk:** high
+
+**legacy_objects:** spark_job:billing_invoice_summary_daily, spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh, cron_entry:etl/crontab#d223b2edaac1, spark_job:billing_revenue_by_plan, spark_submit:etl/spark/submit/billing_revenue_by_plan.sh, cron_entry:etl/crontab#8018504ce246, spark_job:billing_payment_aging, spark_submit:etl/spark/submit/billing_payment_aging.sh, cron_entry:etl/crontab#2ec3f6dad69f, spark_job:billing_usage_append_daily, spark_submit:etl/spark/submit/billing_usage_append_daily.sh, cron_entry:etl/crontab#ed928bb7422d, spark_job:billing_gl_trial_balance, spark_submit:etl/spark/submit/billing_gl_trial_balance.sh, cron_entry:etl/crontab#146d93841612, spark_job:billing_churn_score, spark_submit:etl/spark/submit/billing_churn_score.sh, cron_entry:etl/crontab#5f21c41e60ca
+
+**ambiguity:** Legacy Parquet and JDBC writes can fail independently; append replay may duplicate the successful half.
+
+**decision:** Write immutable Parquet and Delta version directories, validate the original manifest again and atomically replace one POSIX current symlink after both outputs finish. Persist delivery state inside the committed version. Re-register comparison views on retry. Keep failed/orphan versions for inspection. Use the namespace-serialized orchestrator; direct billing CLI calls also take an exclusive billing lock.
+
+**rationale:** Injected commit/input failures prove the previous two-surface publication survives and retry succeeds. This is a local-filesystem contract, not object-store/distributed transaction equivalence. Comparison-view DDL is separately retryable, full-history append rewrites grow over time, orphan cleanup and production-scale recovery remain operational risks.
+
+**verification:** test:lakehouse/tests/test_billing_spark.py::test_billing_spark_append_replay_and_atomic_recovery
+
+**sources:** etl/spark/jobs/py/common/runtime.py, etl/spark/jobs/py/common/schemas.py, etl/spark/jobs/py/billing_invoice_summary_daily.py, etl/spark/jobs/py/billing_revenue_by_plan.py, etl/spark/jobs/py/billing_payment_aging.py, etl/spark/jobs/py/billing_usage_append_daily.py, etl/spark/jobs/py/billing_gl_trial_balance.py, etl/spark/jobs/py/billing_churn_score.py, etl/crontab, etl/spark/submit/billing_invoice_summary_daily.sh, etl/spark/submit/billing_revenue_by_plan.sh, etl/spark/submit/billing_payment_aging.sh, etl/spark/submit/billing_usage_append_daily.sh, etl/spark/submit/billing_gl_trial_balance.sh, etl/spark/submit/billing_churn_score.sh
 
 ## A-200 — Deterministic latest version timestamp ties
 
