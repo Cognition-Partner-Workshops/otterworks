@@ -6,6 +6,17 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 
+WEBHOOK_PATH = "/rest/webhooks/1.0/webhook"
+WEBHOOK = {
+    "name": "ODL Devin Jira relay",
+    "url": "http://jira-devin-relay.odl-mocks.svc.cluster.local:8080/webhook",
+    "jqlFilter": "project = ENG AND labels = devin",
+    "events": ["jira:issue_created", "jira:issue_updated"],
+    "enabled": True,
+    "excludeBody": False,
+}
+
+
 def request(path, payload=None):
     data = None if payload is None else json.dumps(payload).encode()
     req = Request("http://127.0.0.1:8080" + path, data=data,
@@ -24,11 +35,21 @@ def reconcile(issues):
             print("seeded", result["key"], label, flush=True)
 
 
+def reconcile_webhook():
+    for hook in request(WEBHOOK_PATH):
+        if all(hook.get(key) == value for key, value in WEBHOOK.items()):
+            return hook["id"]
+    hook = request(WEBHOOK_PATH, WEBHOOK)
+    print("registered Devin webhook", hook["id"], flush=True)
+    return hook["id"]
+
+
 def main():
     issues = json.loads(Path("/seed/seed.json").read_text())
     while True:
         try:
             reconcile(issues)
+            reconcile_webhook()
         except (HTTPError, URLError, TimeoutError, ConnectionError, ValueError, KeyError) as error:
             print("seed retry:", type(error).__name__, flush=True)
         time.sleep(10)

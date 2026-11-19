@@ -6,6 +6,7 @@ This matrix captures the primary API endpoints used to design and expand the bla
 
 | Prefix | Service | Notes |
 | --- | --- | --- |
+| `/api/v1/billing` | Legacy billing | Versioned REST contract; JWT required; full path forwarded unchanged to `LEGACY_BILLING_URL` (default `http://legacy-billing:8096`). Module implementations pending. |
 | `/api/v1/auth` | Auth service | Registration, login, profile, refresh, logout, admin user listing. |
 | `/api/v1/files` | File service | File upload, metadata, download, versions, trash/restore, share. |
 | `/api/v1/documents` | Document service | Document CRUD, versions, export, comments, template instantiation. |

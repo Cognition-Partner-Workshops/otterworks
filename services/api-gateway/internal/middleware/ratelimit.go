@@ -71,8 +71,11 @@ func (rl *RateLimiter) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip := extractIP(r)
 		if !rl.Allow(ip) {
-			w.Header().Set("Content-Type", "application/json")
 			w.Header().Set("Retry-After", "1")
+			if WriteBillingError(w, r, http.StatusTooManyRequests, "rate_limited", "rate limit exceeded") {
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusTooManyRequests)
 			json.NewEncoder(w).Encode(map[string]string{
 				"error": "rate limit exceeded",
