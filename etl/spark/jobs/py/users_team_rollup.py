@@ -14,12 +14,15 @@ def main():
 SELECT t.TEAM_ID, t.TEAM_NAME, COUNT(m.USER_ID) MEMBERS
 FROM TEAM t LEFT JOIN TEAM_MEMBER m ON t.TEAM_ID = m.TEAM_ID
 LEFT JOIN APP_USER u ON m.USER_ID = u.USER_ID GROUP BY t.TEAM_ID, t.TEAM_NAME
-""")
-        save_partition(result, "users", "users_team_rollup", run_date)
-        root = Path(os.environ.get("LAKE_DIR", "/opt/lake")) / "users/users_team_rollup"
-        for path in root.glob("*.parquet"):
-            path.unlink()
-        save_jdbc_refresh(result, "sfx_users.SPARK_TEAM_ROLLUP")
+""").coalesce(2).cache()
+        try:
+            save_partition(result, "users", "users_team_rollup", run_date)
+            root = Path(os.environ.get("LAKE_DIR", "/opt/lake")) / "users/users_team_rollup"
+            for path in root.glob("*.parquet"):
+                path.unlink()
+            save_jdbc_refresh(result, "sfx_users.SPARK_TEAM_ROLLUP")
+        finally:
+            result.unpersist()
     finally:
         spark.stop()
 
