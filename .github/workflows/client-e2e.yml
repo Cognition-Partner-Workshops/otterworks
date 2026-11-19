@@ -28,6 +28,10 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Run landing page specs
         run: npx playwright test e2e/landing.spec.ts
+      - name: Run search no-results regression specs
+        run: npx playwright test e2e/search.spec.ts --grep "Search no-results regression" --retries=0
+      - name: Repeat the CPU-throttled search check
+        run: npx playwright test e2e/search.spec.ts --grep "reaches no results on a CPU-throttled browser" --repeat-each=10 --retries=0
       - name: Run mocked margins spec
         run: npx playwright test e2e/margins.spec.ts --grep "renders a mocked SKU row" --repeat-each=10
       - name: Upload Playwright artifacts
