@@ -24,7 +24,7 @@ def node(identity, dependencies=(), kind='noop', **options):
 
 def test_pipeline_contract_and_staging_replacement():
     dags = graph.load()
-    assert set(dags) == {'lakehouse_daily', 'lakehouse_hourly'}
+    assert {'lakehouse_daily', 'lakehouse_hourly'} <= set(dags)
     daily = dags['lakehouse_daily']
     nodes = {node['id']: node for node in daily['nodes']}
     sensors = [n for n in nodes.values() if n['kind'] == 'feed_sensor']

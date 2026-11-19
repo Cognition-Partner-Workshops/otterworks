@@ -1,0 +1,126 @@
+{
+  "NS": "users-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "d48c11e07c4315a30d5a4eee747e2e7426d15a42",
+  "id": "users.activity_user_summaries",
+  "legacy_NS": "users-before",
+  "legacy_objects": [
+    "etl_script:etl/scripts/user_activity_daily.py"
+  ],
+  "results": {
+    "columns": [
+      "user_id",
+      "total_actions",
+      "active_days",
+      "actions_by_type"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "actions_by_type": {
+          "count": 4,
+          "hash": "6dabdf857d24311f04a4317327b63dc7fc9c002c79d0a0591022655238835706",
+          "null_count": 0,
+          "sum": null
+        },
+        "active_days": {
+          "count": 4,
+          "hash": "82085a776636fb60dc0bddfca6b0ac04bda3dcdb32e16bc1b43580bffdeb690b",
+          "null_count": 0,
+          "sum": "5"
+        },
+        "total_actions": {
+          "count": 4,
+          "hash": "548b7ab684c300098ec4ad8f39ae073e6fec09b81c8578f1dd0d480091c3a26c",
+          "null_count": 0,
+          "sum": "21"
+        },
+        "user_id": {
+          "count": 4,
+          "hash": "82931eb9a6c49798050af90fbd929ab6c6131b94853ca9c2384263c4a046f5df",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "actions_by_type": {
+          "count": 4,
+          "hash": "6dabdf857d24311f04a4317327b63dc7fc9c002c79d0a0591022655238835706",
+          "null_count": 0,
+          "sum": null
+        },
+        "active_days": {
+          "count": 4,
+          "hash": "82085a776636fb60dc0bddfca6b0ac04bda3dcdb32e16bc1b43580bffdeb690b",
+          "null_count": 0,
+          "sum": "5"
+        },
+        "total_actions": {
+          "count": 4,
+          "hash": "548b7ab684c300098ec4ad8f39ae073e6fec09b81c8578f1dd0d480091c3a26c",
+          "null_count": 0,
+          "sum": "21"
+        },
+        "user_id": {
+          "count": 4,
+          "hash": "82931eb9a6c49798050af90fbd929ab6c6131b94853ca9c2384263c4a046f5df",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "actions_by_type": {
+        "count": 0,
+        "samples": []
+      },
+      "active_days": {
+        "count": 0,
+        "samples": []
+      },
+      "total_actions": {
+        "count": 0,
+        "samples": []
+      },
+      "user_id": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 4,
+      "legacy": 4
+    }
+  },
+  "row_counts": {
+    "lakehouse": 4,
+    "legacy": 4
+  },
+  "spec_hash": "6e0de94f64c86bfd53041577af7db8a33712dfb2d4df5d2cb7f3f288a1c7495d",
+  "timestamp": "2026-11-19T08:07:48.565153+00:00"
+}

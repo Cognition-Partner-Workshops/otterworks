@@ -46,6 +46,8 @@ make sfx-lakehouse-parity NS="$NS" LEGACY_NS="$LEGACY_NS" BUSINESS_DATE="$BUSINE
 
 The graph includes its declared parity tasks; `sfx-lakehouse-parity` additionally
 runs **all** specs, including newly added ones not yet wired into the graph.
+See [users fixture setup](USERS.md) for the extra inputs required by the users
+Spark, Informatica and activity-report oracles.
 `TD_PG_*` overrides are honored. Default emulator port derives from `LEGACY_NS`,
 never lakehouse `NS`. Do not regenerate shared landing between the two engines.
 
@@ -90,7 +92,7 @@ Supported kinds:
 | `feed_sensor` | `domain`, `table`, `timeout_seconds`, `poke_interval_seconds` |
 | `bronze_ingest` | `domain` (all seed tables in that domain) |
 | `dbt` | `domain`, `selector` (dbt `--select` expression) |
-| `parity` | `spec` (one existing spec ID) |
+| `parity` | `spec` (one existing spec ID) or `specs` (a list of IDs) |
 | `export` | `command` (trusted argv list, not shell text) |
 | `noop` | Only for explicitly unconverted placeholders |
 

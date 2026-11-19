@@ -1,0 +1,42 @@
+version: 2
+models:
+  - name: app_user
+    columns:
+      - name: user_id
+        data_tests: [not_null, unique]
+  - name: user_profile
+    columns:
+      - name: profile_id
+        data_tests: [not_null, unique]
+  - name: team
+    columns:
+      - name: team_id
+        data_tests: [not_null, unique]
+  - name: team_member
+    columns:
+      - name: team_member_id
+        data_tests: [not_null, unique]
+  - name: role_grant
+    columns:
+      - name: grant_id
+        data_tests: [not_null, unique]
+  - name: sso_identity
+    columns:
+      - name: identity_id
+        data_tests: [not_null, unique]
+  - name: login_event
+    columns:
+      - name: login_id
+        data_tests: [not_null, unique]
+  - name: user_activity_daily
+    columns:
+      - name: activity_id
+        data_tests: [not_null, unique]
+  - name: user_pref
+    columns:
+      - name: pref_id
+        data_tests: [not_null, unique]
+  - name: user_status_hist
+    columns:
+      - name: status_history_id
+        data_tests: [not_null, unique]

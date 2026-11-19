@@ -1,0 +1,11 @@
+id: users.user_pref_json_flatten
+legacy_objects:
+  - spark_job:user_pref_json_flatten
+legacy:
+  kind: parquet
+  path: lakehouse/.data/{NS}/oracle/spark/users/user_pref_json_flatten
+lakehouse:
+  kind: delta_table
+  table: gold_users.user_pref_json_flatten
+keys: [user_pref_id]
+columns: [user_pref_id, user_id, pref_json, theme, notifications, locale]

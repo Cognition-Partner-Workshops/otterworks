@@ -1,0 +1,13 @@
+id: users.stg_user_status_hist
+legacy_objects:
+  - teradata_table:SFX_USERS.STG_USER_STATUS_HIST
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.stg_user_status_hist
+lakehouse:
+  kind: spark_sql
+  sql: >-
+    SELECT CAST(status_history_id AS bigint) AS status_history_id, CAST(user_id AS bigint) AS user_id, CAST(status_cd AS string) AS status_cd, CAST(valid_from AS date) AS valid_from, CAST(valid_to AS date) AS valid_to
+    FROM bronze_users.user_status_hist WHERE _business_date = to_date('{business_date}', 'yyyyMMdd')
+keys: [status_history_id]
+columns: [status_history_id, user_id, status_cd, valid_from, valid_to]

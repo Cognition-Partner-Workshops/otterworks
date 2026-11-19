@@ -1,0 +1,143 @@
+{
+  "NS": "users-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "d48c11e07c4315a30d5a4eee747e2e7426d15a42",
+  "id": "users.stg_app_user",
+  "legacy_NS": "users-before",
+  "legacy_objects": [
+    "teradata_table:SFX_USERS.STG_APP_USER"
+  ],
+  "results": {
+    "columns": [
+      "user_id",
+      "display_name",
+      "email",
+      "status_cd",
+      "created_dt"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "created_dt": {
+          "count": 300,
+          "hash": "8e86563f10a86e88722cab3b48baf596e5fdc21f0ea99c96b4666f5cba209f8c",
+          "null_count": 0,
+          "sum": null
+        },
+        "display_name": {
+          "count": 300,
+          "hash": "1feaed7fa71d7626ca2f6209dc43f61fec025e75d1c292881706c310ed87d911",
+          "null_count": 0,
+          "sum": null
+        },
+        "email": {
+          "count": 300,
+          "hash": "fc87d57c286e8a4b6526d6736b66e1e4bbfee07af4fea2e822cabe1743d39371",
+          "null_count": 0,
+          "sum": null
+        },
+        "status_cd": {
+          "count": 300,
+          "hash": "b1b4f4d97daccd3f58cf361a1b7b60a48103139c9e201e2970710559f9dc44b7",
+          "null_count": 0,
+          "sum": null
+        },
+        "user_id": {
+          "count": 300,
+          "hash": "3699c71a4e83b253cf96101903b4fa9ce84dbc808ea0d46823395ae1198bf45b",
+          "null_count": 0,
+          "sum": "900000025150"
+        }
+      },
+      "legacy": {
+        "created_dt": {
+          "count": 300,
+          "hash": "8e86563f10a86e88722cab3b48baf596e5fdc21f0ea99c96b4666f5cba209f8c",
+          "null_count": 0,
+          "sum": null
+        },
+        "display_name": {
+          "count": 300,
+          "hash": "1feaed7fa71d7626ca2f6209dc43f61fec025e75d1c292881706c310ed87d911",
+          "null_count": 0,
+          "sum": null
+        },
+        "email": {
+          "count": 300,
+          "hash": "fc87d57c286e8a4b6526d6736b66e1e4bbfee07af4fea2e822cabe1743d39371",
+          "null_count": 0,
+          "sum": null
+        },
+        "status_cd": {
+          "count": 300,
+          "hash": "b1b4f4d97daccd3f58cf361a1b7b60a48103139c9e201e2970710559f9dc44b7",
+          "null_count": 0,
+          "sum": null
+        },
+        "user_id": {
+          "count": 300,
+          "hash": "3699c71a4e83b253cf96101903b4fa9ce84dbc808ea0d46823395ae1198bf45b",
+          "null_count": 0,
+          "sum": "900000025150"
+        }
+      }
+    },
+    "mismatches": {
+      "created_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "display_name": {
+        "count": 0,
+        "samples": []
+      },
+      "email": {
+        "count": 0,
+        "samples": []
+      },
+      "status_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "user_id": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 300,
+      "legacy": 300
+    }
+  },
+  "row_counts": {
+    "lakehouse": 300,
+    "legacy": 300
+  },
+  "spec_hash": "711557aeb91fa594f9f9cb37da4c3bb83c0d7f7308b5fb20c2122e11cd6d8e3b",
+  "timestamp": "2026-11-19T08:04:31.710737+00:00"
+}

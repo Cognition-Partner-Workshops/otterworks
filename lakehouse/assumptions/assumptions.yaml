@@ -1394,3 +1394,295 @@ assumptions:
   - warehouse/teradata/jobs/daily_chain
   - etl/crontab
   - lakehouse/orchestration/pipeline.yaml
+- id: A-300
+  title: Warehouse snapshots and state
+  legacy_objects: &id001
+  - teradata_table:SFX_USERS.APP_USER
+  - teradata_table:SFX_USERS.LOGIN_EVENT
+  - teradata_table:SFX_USERS.ROLE_GRANT
+  - teradata_table:SFX_USERS.SSO_IDENTITY
+  - teradata_table:SFX_USERS.TEAM
+  - teradata_table:SFX_USERS.TEAM_MEMBER
+  - teradata_table:SFX_USERS.USER_ACTIVITY_DAILY
+  - teradata_table:SFX_USERS.USER_PROFILE
+  - teradata_table:SFX_USERS.USER_STATUS_HIST
+  ambiguity: Do repeated dates accumulate or overwrite working tables?
+  decision: Filter to the requested bronze partition; rebuild final snapshots like the date chain. Keep older
+    inputs in bronze, not final snapshots.
+  rationale: Legacy BTEQ deletes the final tables before each reload.
+  risk: med
+  verification: users.app_user
+  status: accepted
+  sources:
+  - warehouse/teradata/ddl/users/00_tables.sql
+- id: A-301
+  title: Warehouse string types and case
+  legacy_objects: *id001
+  ambiguity: Teradata and the emulator differ in CHAR padding and native truncation.
+  decision: Cast SQL types, apply legacy CHAR widths and UPPER only where applicable, compare fixed-width values
+    without trailing ASCII spaces.
+  rationale: Only fixed-width padding is normalized; variable-width data is preserved.
+  risk: med
+  verification: users.app_user
+  status: accepted
+  sources:
+  - warehouse/teradata/ddl/users/00_tables.sql
+- id: A-302
+  title: Unloaded warehouse preference target
+  legacy_objects:
+  - fastload:warehouse/teradata/load/fastload/users_user_pref.fl
+  - teradata_table:SFX_USERS.STG_USER_PREF
+  - teradata_table:SFX_USERS.USER_PREF
+  - teradata_view:SFX_USERS.V_USER_SETTINGS
+  ambiguity: FastLoad stages preferences but no users BTEQ INSERT populates USER_PREF.
+  decision: Expose a schema-correct empty warehouse snapshot and settings view; keep loaded STG_USER_PREF and
+    the independent Spark JSON outputs.
+  rationale: Avoid fabricating a warehouse promotion rule; equality of empty finals does not verify a future
+    load.
+  risk: high
+  verification: users.stg_user_pref
+  status: open
+  sources:
+  - warehouse/teradata/ddl/users/00_tables.sql
+  - warehouse/teradata/ddl/users/10_views.sql
+  - warehouse/teradata/load/fastload/users_user_pref.fl
+- id: A-303
+  title: Derived activity identifier reservation
+  legacy_objects:
+  - bteq_script:warehouse/teradata/scripts/users/10_activity_daily.bteq
+  - teradata_procedure:SFX_USERS.P_ACTIVITY_DAILY
+  - teradata_table:SFX_USERS.USER_ACTIVITY_DAILY
+  ambiguity: The procedure deletes IDs at or above ten billion, then reports an OUT count.
+  decision: Reserve that range, count all logins for the requested date, set document_count to zero, and compare
+    persisted rows without exposing a procedure-style OUT parameter.
+  rationale: The BTEQ call has no downstream dependency on the OUT value.
+  risk: med
+  verification: users.user_activity_daily
+  status: accepted
+  sources:
+  - warehouse/teradata/ddl/users/00_tables.sql
+  - warehouse/teradata/procedures/activity_daily.sql
+  - warehouse/teradata/scripts/users/10_activity_daily.bteq
+- id: A-304
+  title: View comparison retains duplicates
+  legacy_objects:
+  - teradata_view:SFX_USERS.V_TEAM_MEMBERS
+  - teradata_view:SFX_USERS.V_USER_SETTINGS
+  ambiguity: Views expose no unique occurrence ID and repeat tuples for duplicate links.
+  decision: Assign a deterministic occurrence for comparison only, sorted by the full tuple using explicit
+    null ordering and binary collation.
+  rationale: This preserves bag multiplicity without adding columns to consumers.
+  risk: low
+  verification: users.v_team_members
+  status: accepted
+  sources:
+  - warehouse/teradata/ddl/users/10_views.sql
+- id: A-305
+  title: Team count extract order and date
+  legacy_objects:
+  - bteq_script:warehouse/teradata/scripts/users/10_activity_daily.bteq
+  - teradata_macro:SFX_USERS.M_TEAM_COUNTS
+  ambiguity: The macro accepts an unused day argument, has no ORDER BY, and the emulator writes an undated
+    file.
+  decision: Rebuild the macro against the requested warehouse snapshot, emit a sorted, date-scoped PSV, and
+    compare rows keyed by team ID to the legacy BTEQ file generated for that date.
+  rationale: The data is unchanged; order becomes deterministic and the oracle file must come from the matching
+    run.
+  risk: med
+  verification: users.team_counts
+  status: accepted
+  sources:
+  - warehouse/teradata/macros/team_counts.sql
+  - warehouse/teradata/scripts/users/10_activity_daily.bteq
+- id: A-306
+  title: Informatica and BTEQ writer separation
+  legacy_objects: &id002
+  - informatica_mapping:SFX_CONTENT.m_SFX_APP_USER
+  - informatica_mapping:SFX_CONTENT.m_SFX_LOGIN_EVENT
+  - informatica_mapping:SFX_CONTENT.m_SFX_ROLE_GRANT
+  - informatica_mapping:SFX_CONTENT.m_SFX_STG_APP_USER
+  - informatica_mapping:SFX_CONTENT.m_SFX_TEAM_MEMBER
+  - informatica_session:SFX_CONTENT.s_m_SFX_APP_USER
+  - informatica_session:SFX_CONTENT.s_m_SFX_LOGIN_EVENT
+  - informatica_session:SFX_CONTENT.s_m_SFX_ROLE_GRANT
+  - informatica_session:SFX_CONTENT.s_m_SFX_STG_APP_USER
+  - informatica_session:SFX_CONTENT.s_m_SFX_TEAM_MEMBER
+  - informatica_source:SFX_CONTENT.FF_APP_USER
+  - informatica_source:SFX_CONTENT.FF_LOGIN_EVENT
+  - informatica_source:SFX_CONTENT.FF_ROLE_GRANT
+  - informatica_source:SFX_CONTENT.FF_TEAM_MEMBER
+  - informatica_source:SFX_CONTENT.STG_APP_USER
+  - informatica_target:SFX_CONTENT.APP_USER
+  - informatica_target:SFX_CONTENT.LOGIN_EVENT
+  - informatica_target:SFX_CONTENT.ROLE_GRANT
+  - informatica_target:SFX_CONTENT.STG_APP_USER
+  - informatica_target:SFX_CONTENT.TEAM_MEMBER
+  ambiguity: Both paths write overlapping table names, but one normalizes/upserts where the other reloads.
+  decision: Keep distinct silver targets and a separate legacy oracle database; integration must choose cutover
+    ownership where two writers target the same logical entity.
+  rationale: Fixture equivalence in each path does not establish precedence or safe dual writes.
+  risk: high
+  verification: users.infa_app_user
+  status: open
+  sources:
+  - etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_APP_USER.XML
+  - etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_LOGIN_EVENT.XML
+  - etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_ROLE_GRANT.XML
+  - etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_STG_APP_USER.XML
+  - etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_TEAM_MEMBER.XML
+  - etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
+- id: A-307
+  title: Informatica update and lookup keys
+  legacy_objects: *id002
+  ambiguity: PowerCenter update strategy, reject handling, and post-session state are not relational query
+    outputs.
+  decision: Preserve truncate versus merge and classify login outcomes. Use non-null unique merge keys; fail
+    a batch rather than publishing partial DTM rejects. Run new dates in order against matching state.
+  rationale: Delta transactions prevent ambiguous duplicate updates; row counts alone do not prove production
+    reject thresholds or replay semantics.
+  risk: high
+  verification: test:lakehouse/tests/test_users.py::test_informatica_delta_contract
+  status: open
+  sources:
+  - etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_APP_USER.XML
+  - etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_LOGIN_EVENT.XML
+  - etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_ROLE_GRANT.XML
+  - etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_STG_APP_USER.XML
+  - etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_TEAM_MEMBER.XML
+  - etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
+- id: A-308
+  title: Spark input and publication contracts
+  legacy_objects:
+  - spark_job:team_graph_components
+  - spark_job:user_pref_json_flatten
+  - spark_job:users_active_daily
+  - spark_job:users_login_useragent_parse
+  - spark_job:users_risk_score
+  - spark_job:users_team_rollup
+  - spark_submit:etl/spark/submit/team_graph_components.sh
+  - spark_submit:etl/spark/submit/user_pref_json_flatten.sh
+  - spark_submit:etl/spark/submit/users_active_daily.sh
+  - spark_submit:etl/spark/submit/users_login_useragent_parse.sh
+  - spark_submit:etl/spark/submit/users_risk_score.sh
+  - spark_submit:etl/spark/submit/users_team_rollup.sh
+  ambiguity: Spark and warehouse feeds use different columns, dates and source widths; some Spark jobs dual-write.
+  decision: Stage a separate business-day Spark landing bundle with the same per-file schemas. Gold overwrites
+    the current snapshot; both JDBC copies compare to their common Delta output.
+  rationale: This eliminates duplicate writes in the demo. Real JDBC readers require a catalog cutover, and
+    out-of-order historical snapshots must use a separate namespace.
+  risk: high
+  verification: users.users_team_rollup_jdbc
+  status: open
+  sources:
+  - etl/spark/jobs.txt
+  - etl/spark/submit/team_graph_components.sh
+  - etl/spark/submit/user_pref_json_flatten.sh
+  - etl/spark/submit/users_active_daily.sh
+  - etl/spark/submit/users_login_useragent_parse.sh
+  - etl/spark/submit/users_risk_score.sh
+  - etl/spark/submit/users_team_rollup.sh
+- id: A-309
+  title: Scala risk model numeric boundary
+  legacy_objects:
+  - spark_job:users_risk_score
+  ambiguity: Legacy Spark passes a LONG count into an Int Scala UDF and uses Java floating arithmetic.
+  decision: Emulate signed Int narrowing and compare only risk_score with absolute tolerance 1e-14.
+  rationale: Integer inputs and identities still require exact equality; only JVM arithmetic is tolerant.
+  risk: med
+  verification: users.users_risk_score
+  status: accepted
+  sources:
+  - etl/spark/jobs.txt
+- id: A-310
+  title: Graph components and malformed input
+  legacy_objects:
+  - spark_job:team_graph_components
+  ambiguity: Duplicate membership edges and orphan team IDs coexist in the source graph.
+  decision: Take the minimum team ID through shared users until convergence, retain isolated and membership-only
+    teams, reject null identifiers.
+  rationale: This avoids materializing all team pairs while preserving the legacy result and failure for null
+    IDs.
+  risk: med
+  verification: test:lakehouse/tests/test_users.py::test_users_spark_edges
+  status: accepted
+  sources:
+  - etl/spark/jobs.txt
+- id: A-311
+  title: Browser and JSON boundary
+  legacy_objects:
+  - spark_job:users_login_useragent_parse
+  - spark_job:user_pref_json_flatten
+  ambiguity: Legacy user-agent parsing returns the first browser token; JSON flattening stringifies nested
+    Python values.
+  decision: Preserve browser precedence, Other fallback, Python stringification, and null for malformed JSON
+    rather than returning inferred JSON types.
+  rationale: The output remains comparable to the original Python paths.
+  risk: low
+  verification: test:lakehouse/tests/test_users.py::test_users_spark_edges
+  status: accepted
+  sources:
+  - etl/spark/jobs.txt
+- id: A-312
+  title: Activity report inputs and consumers
+  legacy_objects: &id003
+  - etl_script:etl/scripts/user_activity_daily.py
+  ambiguity: The report uses analytics PostgreSQL and S3, not warehouse login activity, and the repo has no
+    registered users BI or partner extract.
+  decision: Use a staged analytics-summary Parquet snapshot and the same dated gzip JSONL keys. Publish the
+    three file outputs locally; live S3 publication, upstream staging and admin-reader cutover remain integration
+    work.
+  rationale: The legacy report runs with real PostgreSQL query semantics and a local S3 double, not production
+    credentials or services.
+  risk: high
+  verification: users.activity_report
+  status: open
+  sources:
+  - etl/scripts/user_activity_daily.py
+- id: A-313
+  title: Activity report window, ranking and errors
+  legacy_objects: *id003
+  ambiguity: The SQL window is inclusive of day minus 30; object reads use 30 day offsets and legacy catches
+    all S3/JSON failures.
+  decision: Keep both windows, one contribution per source record, stable first-seen ranking, and skip absent
+    optional objects; fail malformed or inaccessible input. Require one non-null summary per date.
+  rationale: Avoid publishing partial reports after hidden upstream errors. Empty user output omits JSONL and
+    removes a stale copy on retry.
+  risk: med
+  verification: users.activity_user_summaries
+  status: accepted
+  sources:
+  - etl/scripts/user_activity_daily.py
+- id: A-314
+  title: Activity timestamp and latest publication
+  legacy_objects: *id003
+  ambiguity: Legacy stamps wall time and can move latest backwards during historical replay.
+  decision: Use UTC business-date midnight for generated_at, exclude that field from parity, and preserve highest
+    published date for latest. Date-specific writes stage and rename each file.
+  rationale: Deterministic fixtures and one-active-run scheduling make retry predictable; multi-file object-store
+    atomicity is not claimed.
+  risk: med
+  verification: test:lakehouse/tests/test_users.py::test_report_publication_is_idempotent
+  status: accepted
+  sources:
+  - etl/scripts/user_activity_daily.py
+- id: A-315
+  title: Users schedule regrouping
+  legacy_objects:
+  - cron_entry:etl/crontab#042e9e7fa551
+  - cron_entry:etl/crontab#8256b4d51699
+  - cron_entry:etl/crontab#9d492d3cabc6
+  - cron_entry:etl/crontab#a1a53c82cfb3
+  - cron_entry:etl/crontab#b8eef1610f31
+  - cron_entry:etl/crontab#bb89194e6e7e
+  - cron_entry:etl/crontab#d28d753c053a
+  ambiguity: Six Spark schedules run separately and the users report starts at 05:00 on the original batch
+    host.
+  decision: Group the Spark jobs in one paused UTC daily graph and schedule the report in a separate paused
+    daily graph. Use prior UTC business date with one retry and compare each output only after publication.
+  rationale: Demo backfills and task dependencies replace exact clock-time scheduling; the integration cutover
+    must confirm feed SLAs and DAG activation.
+  risk: high
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
+  status: open
+  sources:
+  - etl/crontab

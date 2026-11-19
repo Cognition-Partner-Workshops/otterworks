@@ -63,8 +63,26 @@ jobs:
           warehouse/.venv/bin/python -m bteq.setup
           warehouse/.venv/bin/python -m bteq.load --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE"
           warehouse/.venv/bin/python warehouse/teradata/jobs/daily_chain --reuse-landing --rows "$ROWS_PER_TABLE" --business-date "$BUSINESS_DATE"
+      - name: Run the users Informatica oracle
+        run: |
+          make lakehouse/.venv/.requirements
+          lakehouse/.venv/bin/python -m lakehouse.tests.users_infa_oracle --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE"
       - name: Run the shared-input graph and pilot parity
         run: make sfx-lakehouse-run
+      - name: Run the users Spark and activity-report parity graphs
+        env:
+          SPARK_LOCAL_IP: '127.0.0.1'
+          TD_JDBC_URL: jdbc:postgresql://127.0.0.1:5432/users_infa
+          TD_JDBC_USER: postgres
+        run: |
+          landing="lakehouse/.data/$NS/users-extra"
+          python etl/spark/fixture/generate_fixture.py --rows 70 --seed 1110 --output "$landing/spark/$BUSINESS_DATE"
+          bash lakehouse/tests/users_spark_oracle.sh "$landing/spark/$BUSINESS_DATE"
+          python=lakehouse/.venv/bin/python
+          "$python" -m lakehouse.tests.users_activity_oracle --source "$landing/activity" --business-date "$BUSINESS_DATE"
+          for dag in lakehouse_users_spark lakehouse_users_activity; do
+            "$python" -m lakehouse.orchestration run --dag "$dag" --landing "$landing" --business-date "$BUSINESS_DATE"
+          done
       - name: Validate coverage and assumptions
         run: make sfx-lakehouse-coverage
       - name: Test the lakehouse

@@ -1,0 +1,12 @@
+id: users.users_risk_score
+legacy_objects:
+  - spark_job:users_risk_score
+legacy:
+  kind: parquet
+  path: lakehouse/.data/{NS}/oracle/spark/users/users_risk_score
+lakehouse:
+  kind: delta_table
+  table: gold_users.users_risk_score
+keys: [user_activity_id]
+columns: [user_activity_id, user_id, activity_date, login_count, action_count, risk_score]
+tolerance: {risk_score: 1.0e-14}

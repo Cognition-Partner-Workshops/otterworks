@@ -1,0 +1,11 @@
+id: users.users_login_useragent_parse
+legacy_objects:
+  - spark_job:users_login_useragent_parse
+legacy:
+  kind: parquet
+  path: lakehouse/.data/{NS}/oracle/spark/users/users_login_useragent_parse
+lakehouse:
+  kind: delta_table
+  table: gold_users.users_login_useragent_parse
+keys: [login_event_id]
+columns: [login_event_id, user_id, event_at, ip_address, user_agent, raw_line, browser]

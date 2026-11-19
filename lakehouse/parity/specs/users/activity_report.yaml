@@ -1,0 +1,13 @@
+id: users.activity_report
+legacy_objects:
+  - etl_script:etl/scripts/user_activity_daily.py
+legacy:
+  kind: json
+  path: lakehouse/.data/{NS}/oracle/activity/reports/user-activity/{iso_date}/activity_report.json
+  columns: [report_date, report_type, lookback_days, trends, daily_summaries, user_summaries, top_users]
+lakehouse:
+  kind: json
+  path: lakehouse/.data/{NS}/exports/reports/user-activity/{iso_date}/activity_report.json
+  columns: [report_date, report_type, lookback_days, trends, daily_summaries, user_summaries, top_users]
+keys: [report_date]
+columns: [report_date, report_type, lookback_days, trends, daily_summaries, user_summaries, top_users]
