@@ -32,7 +32,15 @@ services:
   spark-load:
     image: mirror.gcr.io/library/postgres:16
     pull_policy: never
-    entrypoint: ["psql", "-h", "sfx-tdemu", "-U", "etl_batch", "-d", "sfx_teradata", "-v", "ON_ERROR_STOP=1", "-f", "/opt/runtime/load.sql"]
+    network_mode: service:sfx-tdemu
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        psql -h 127.0.0.1 -U etl_batch -d sfx_teradata -v ON_ERROR_STOP=1 -v "password=$$PGPASSWORD" <<'SQL'
+        ALTER ROLE etl_batch PASSWORD :'password';
+        SQL
+        exec psql -h sfx-tdemu -U etl_batch -d sfx_teradata -v ON_ERROR_STOP=1 -f /opt/runtime/load.sql
     environment:
       PGPASSWORD: Fake-sfx1119-jdbc
     volumes:

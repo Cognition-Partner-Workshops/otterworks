@@ -38,6 +38,12 @@ class RuntimeTest(unittest.TestCase):
                              ["python3", "/opt/sfx/spark/fixture/initialize.py"])
             self.assertEqual(services["spark-master"]["depends_on"]["spark-load"]["condition"],
                              "service_completed_successfully")
+            self.assertEqual(services["spark-load"]["network_mode"], "service:sfx-tdemu")
+            loader = services["spark-load"]["entrypoint"]
+            self.assertEqual(loader[:2], ["/bin/sh", "-ec"])
+            self.assertIn("psql -h 127.0.0.1", loader[2])
+            self.assertIn("ALTER ROLE etl_batch PASSWORD :'password';", loader[2])
+            self.assertIn("exec psql -h sfx-tdemu", loader[2])
             mounts = {mount["target"]: mount["source"] for mount in services["spark-master"]["volumes"]}
             for target in ("/opt/landing", "/opt/lake", "/opt/spark-events", "/opt/sfx/spark/.data"):
                 self.assertIn(f"/.data/{namespace}", mounts[target])
