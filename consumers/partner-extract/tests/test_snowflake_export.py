@@ -42,13 +42,26 @@ class ConnectionTests(unittest.TestCase):
                 self.assertEqual(kwargs['schema'], 'COMPAT')
                 self.assertEqual(kwargs['role'], 'test-ROLE')
                 self.assertEqual(kwargs['authenticator'], 'SNOWFLAKE_JWT')
-                self.assertEqual(kwargs['session_parameters'], {
-                    'TIMEZONE': 'UTC',
-                    'QUERY_TAG': '{"run":"sfx-d1110","act":"consumers","consumer":"partner-extract"}',
-                })
-                self.assertEqual(json.loads(kwargs['session_parameters']['QUERY_TAG']), {
-                    'run': 'sfx-d1110', 'act': 'consumers', 'consumer': 'partner-extract'
-                })
+                self.assertEqual(kwargs['session_parameters']['TIMEZONE'], 'UTC')
+                tag = json.loads(kwargs['session_parameters']['QUERY_TAG'])
+                self.assertEqual({key: tag[key] for key in (
+                    'run', 'run_token', 'workload', 'phase', 'act', 'consumer')}, {
+                    'run': 'sfx1119', 'run_token': 'sfx1119', 'workload': 'parity',
+                    'phase': 'export', 'act': 'consumers', 'consumer': 'partner-extract'})
+                self.assertTrue(tag['commit'])
+                self.assertTrue(tag['run_id'])
+
+    def test_tag_resolves_run_at_connection_time(self):
+        for scope, expected in (({'RUN_TOKEN': 'sfx2220'}, 'sfx2220'),
+                                ({'SNOWFLAKE_RUN_TOKEN': 'sfx-d1110'}, 'sfx-d1110'),
+                                ({'RUN_TOKEN': 'sfx3330', 'SNOWFLAKE_RUN_TOKEN': 'sfx-d1110'}, 'sfx3330'),
+                                ({'SNOWFLAKE_RUN_TOKEN': "free-text'quote"}, 'sfx1119')):
+            with self.subTest(scope=scope), patch.dict('os.environ', {**self.env, **scope}, clear=True), \
+                    patch.dict('sys.modules', self.modules):
+                exporter.connect()
+                tag = json.loads(self.connector.connect.call_args.kwargs['session_parameters']['QUERY_TAG'])
+                self.assertEqual(tag['run'], expected)
+                self.assertEqual(tag['run_token'], expected)
 
     def test_missing_or_empty_credentials(self):
         for key in self.env:

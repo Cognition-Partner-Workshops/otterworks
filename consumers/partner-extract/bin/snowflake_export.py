@@ -1,12 +1,21 @@
 #!/usr/bin/env python3
 """Export the nightly report with key-pair authentication."""
 from datetime import date
+import json
 import os
 from pathlib import Path
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from warehouse.query_tags import query_tag as session_tag
+
 ROOT = Path(__file__).resolve().parents[1]
-QUERY_TAG = '{"run":"sfx-d1110","act":"consumers","consumer":"partner-extract"}'
+
+
+def query_tag():
+    tag = json.loads(session_tag('parity', 'export', {'act': 'consumers', 'consumer': 'partner-extract'}))
+    tag['run'] = tag['run_token']
+    return json.dumps(tag, separators=(',', ':'))
 
 
 def connect():
@@ -31,7 +40,7 @@ def connect():
         ),
         database="SFX_D1110_AFTER", schema="COMPAT",
         authenticator="SNOWFLAKE_JWT", paramstyle="pyformat",
-        session_parameters={"QUERY_TAG": QUERY_TAG, "TIMEZONE": "UTC"},
+        session_parameters={"QUERY_TAG": query_tag(), "TIMEZONE": "UTC"},
     )
 
 
