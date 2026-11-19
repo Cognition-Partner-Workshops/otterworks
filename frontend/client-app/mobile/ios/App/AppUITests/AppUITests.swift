@@ -126,10 +126,39 @@ class AppUITestCase: XCTestCase {
 final class AppUITests: AppUITestCase {
     func testPortraitMenuReopens() {
         login()
-        navigate("Files")
-        XCTExpectFailure("Known safe-area bug: portrait Open menu is beneath the iOS status bar") {
-            app.buttons["Open menu"].tap()
-            XCTAssertTrue(app.links["Files"].waitForExistence(timeout: 3))
+        navigate("Dashboard")
+        let menu = element(.button, "Open menu")
+        XCTAssertGreaterThanOrEqual(menu.frame.minY, app.frame.minY + 44)
+        menu.tap()
+        XCTAssertTrue(element(.link, "Files").waitForExistence(timeout: 3))
+        let close = element(.button, "Toggle sidebar")
+        XCTAssertGreaterThanOrEqual(close.frame.minY, app.frame.minY + 44)
+        XCTAssertTrue(close.isHittable)
+        saveScreenshot("portrait-home")
+    }
+
+    func saveScreenshot(_ name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    func testLandscapeSafeArea() {
+        login()
+        navigate("Dashboard")
+        for orientation in [UIDeviceOrientation.landscapeLeft, .landscapeRight] {
+            rotate(orientation)
+            let menu = element(.button, "Open menu")
+            XCTAssertGreaterThanOrEqual(menu.frame.minX, app.frame.minX + 40)
+            let help = element(.link, "Help")
+            XCTAssertLessThanOrEqual(help.frame.maxX, app.frame.maxX - 40)
+            menu.tap()
+            let close = element(.button, "Toggle sidebar")
+            XCTAssertTrue(close.isHittable)
+            XCTAssertGreaterThanOrEqual(element(.link, "Dashboard").frame.minX, app.frame.minX + 40)
+            saveScreenshot("landscape-safe-area")
+            close.tap()
         }
     }
 
@@ -186,6 +215,15 @@ final class AppUITests: AppUITestCase {
         editor.tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
         editor.typeText(" Native voyage edit")
+        let bold = element(.button, "Bold")
+        let keyboard = app.keyboards.firstMatch
+        let toolbarVisible = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            bold.exists && bold.isHittable && bold.frame.maxY <= keyboard.frame.minY && bold.frame.minY >= self.app.frame.minY + 44
+        }, object: nil)
+        wait(for: [toolbarVisible], timeout: 10)
+        bold.tap()
+        XCTAssertTrue(keyboard.exists)
+        saveScreenshot("editor-keyboard")
         app.buttons["Save"].tap()
         let saved = expectation(description: "HTTP document save persisted")
         var request = URLRequest(url: URL(string: "http://127.0.0.1:4010/api/v1/documents/doc-1")!)

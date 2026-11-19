@@ -22,12 +22,12 @@ export function AppShell({ children }: AppShellProps) {
 
       <div
         className={cn(
-          "flex min-h-screen flex-col transition-all duration-200",
+          "safe-shell flex min-h-screen flex-col transition-all duration-200",
           sidebarOpen ? "lg:ml-64" : "lg:ml-16"
         )}
       >
         {/* Top utility bar */}
-        <header className="sticky top-0 z-30 bg-white border-b border-gray-300 h-12">
+        <header className="safe-header sticky top-0 z-30 bg-white border-b border-gray-300">
           <div className="flex items-center justify-between h-full px-3 lg:px-4">
             <div className="flex items-center gap-3 flex-1">
               <button

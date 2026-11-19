@@ -57,6 +57,30 @@ export function CollaborativeEditor({ documentId, initialContent, onUpdate }: Co
   const [isSynced, setIsSynced] = useState(false);
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [keyboardTop, setKeyboardTop] = useState<number | null>(null);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const update = () => {
+      const editing = containerRef.current?.contains(document.activeElement);
+      const keyboardVisible = window.innerHeight - viewport.height > 150;
+      setKeyboardTop(editing && keyboardVisible
+        ? viewport.offsetTop + viewport.height
+        : null);
+    };
+    viewport.addEventListener("resize", update);
+    viewport.addEventListener("scroll", update);
+    document.addEventListener("focusin", update);
+    document.addEventListener("focusout", update);
+    return () => {
+      viewport.removeEventListener("resize", update);
+      viewport.removeEventListener("scroll", update);
+      document.removeEventListener("focusin", update);
+      document.removeEventListener("focusout", update);
+    };
+  }, []);
 
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("otter_access_token") : null;
@@ -155,9 +179,15 @@ export function CollaborativeEditor({ documentId, initialContent, onUpdate }: Co
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div ref={containerRef} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center gap-1 px-4 py-2 border-b border-gray-200 bg-gray-50 flex-wrap">
+      <div
+        role="toolbar"
+        aria-label="Document formatting"
+        className={cn("editor-toolbar flex items-center gap-1 px-4 py-2 border-b border-gray-200 bg-gray-50 flex-wrap", keyboardTop !== null && "editor-toolbar-keyboard")}
+        style={keyboardTop !== null ? { top: keyboardTop, transform: "translateY(-100%)" } : undefined}
+        onMouseDown={(event) => event.preventDefault()}
+      >
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive("bold")}
