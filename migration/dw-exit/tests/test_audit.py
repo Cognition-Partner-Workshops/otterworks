@@ -6,6 +6,7 @@ import duckdb
 import pytest
 
 from parity import local_audit as audit
+from parity.object_board import relation_contract
 from parity.provenance import audit_branch, provenance
 from parity.semantics import columns
 
@@ -81,30 +82,27 @@ def test_invalid_date_and_missing_input_fail_closed(target):
 
 @pytest.fixture
 def pc(target):
-    target.execute('CREATE SCHEMA AUDIT_PC')
-    for table in audit.PC_TABLES:
-        target.execute('CREATE TABLE AUDIT_PC.' + table + ' AS SELECT * FROM AUDIT.' + table + ' WHERE FALSE')
-    target.execute('CREATE SEQUENCE AUDIT_PC.SUMMARY_SEQ START 50001')
+    target.execute('CREATE SEQUENCE AUDIT.SUMMARY_SEQ START 50001')
     return target
 
 
 def test_converted_powercenter_workflow_empty(pc):
-    audit.execute(pc, 'CALL X.AUDIT_PC.WF_SFX_AUDIT_DAILY()', '20261109')
-    assert all(pc.execute('SELECT COUNT(*) FROM AUDIT_PC.' + table).fetchone() == (0,) for table in audit.PC_TABLES)
+    audit.execute(pc, 'CALL X.AUDIT.WF_SFX_AUDIT_DAILY()', '20261109')
+    assert all(pc.execute('SELECT COUNT(*) FROM AUDIT.' + table).fetchone() == (0,) for table in audit.PC_TABLES)
 
 
 def test_converted_powercenter_transformations_and_routing(pc):
     pc.execute("INSERT INTO AUDIT.STG_AUDIT_EVENT VALUES (1,2,0,-1,'2026-11-09 01:02:03',' doc_export ','')")
     pc.execute("INSERT INTO AUDIT.STG_SECURITY_ALERT VALUES (1,2,3,'2026-11-09','high','open'),(2,2,3,'2026-11-09','low','open'),(3,2,3,'2026-11-09','unknown','open')")
-    audit.execute(pc, 'CALL X.AUDIT_PC.WF_SFX_AUDIT_DAILY()', '20261109')
-    assert pc.execute('SELECT DOCUMENT_ID,CUSTOMER_ID,EVENT_TYPE,DETAILS FROM AUDIT_PC.AUDIT_EVENT').fetchall() == [(None,None,'DOC_EXPORT','DOC_EXPORT by user 2')]
-    assert pc.execute('SELECT SUMMARY_ID,EVENT_COUNT,EXPORT_COUNT FROM AUDIT_PC.AUDIT_DAILY_SUMMARY').fetchall() == [(50001,1,1)]
-    assert pc.execute('SELECT ALERT_ID,STATUS_CD FROM AUDIT_PC.SECURITY_ALERT ORDER BY ALERT_ID').fetchall() == [(1,'ESCALATED'),(2,'OPEN')]
-    audit.execute(pc, 'CALL X.AUDIT_PC.S_M_SFX_SECURITY_ALERT()', '20261109')
-    assert pc.execute('SELECT COUNT(*) FROM AUDIT_PC.SECURITY_ALERT').fetchone() == (2,)
-    pc.execute("UPDATE AUDIT_PC.STG_AUDIT_EVENT SET DETAILS='changed'")
-    audit.execute(pc, 'CALL X.AUDIT_PC.S_M_SFX_AUDIT_EVENT()', '20261109')
-    assert pc.execute('SELECT EVENT_ID,DETAILS FROM AUDIT_PC.AUDIT_EVENT').fetchall() == [(1,'changed')]
+    audit.execute(pc, 'CALL X.AUDIT.WF_SFX_AUDIT_DAILY()', '20261109')
+    assert pc.execute('SELECT DOCUMENT_ID,CUSTOMER_ID,EVENT_TYPE,DETAILS FROM AUDIT.AUDIT_EVENT').fetchall() == [(None,None,'DOC_EXPORT','DOC_EXPORT by user 2')]
+    assert pc.execute('SELECT SUMMARY_ID,EVENT_COUNT,EXPORT_COUNT FROM AUDIT.AUDIT_DAILY_SUMMARY').fetchall() == [(50001,1,1)]
+    assert pc.execute('SELECT ALERT_ID,STATUS_CD FROM AUDIT.SECURITY_ALERT ORDER BY ALERT_ID').fetchall() == [(1,'ESCALATED'),(2,'OPEN')]
+    audit.execute(pc, 'CALL X.AUDIT.S_M_SFX_SECURITY_ALERT()', '20261109')
+    assert pc.execute('SELECT COUNT(*) FROM AUDIT.SECURITY_ALERT').fetchone() == (2,)
+    pc.execute("UPDATE AUDIT.STG_AUDIT_EVENT SET DETAILS='changed'")
+    audit.execute(pc, 'CALL X.AUDIT.S_M_SFX_AUDIT_EVENT()', '20261109')
+    assert pc.execute('SELECT EVENT_ID,DETAILS FROM AUDIT.AUDIT_EVENT').fetchall() == [(1,'changed')]
 
 
 @pytest.mark.parametrize('populated', [False, True])
@@ -130,8 +128,8 @@ def test_generic_reconcile_write_precedes_bteq_counts(target):
     assert target.execute('SELECT COUNT(*) FROM AUDIT.AUDIT_RECON').fetchone() == (38,)
 
 
-def test_mapping_outputs_are_not_batch_outputs_and_retire_spark_unchanged():
-    objects = assess.build()['objects']
+def test_mapping_outputs_use_core_tables_and_retire_spark_unchanged():
+    objects = relation_contract(assess.build()['objects'])
     audit_objects = [obj for obj in objects if obj['subject_area'] == 'audit']
     assert len(audit_objects) == 57
     for obj in audit_objects:
@@ -141,13 +139,13 @@ def test_mapping_outputs_are_not_batch_outputs_and_retire_spark_unchanged():
             continue
         assert obj['output_relations']
         if obj['system'] == 'powercenter':
-            assert all(name.startswith('SFX_AUDIT_PC.') for name in obj['output_relations'])
+            assert all(name.startswith('SFX_AUDIT.') for name in obj['output_relations'])
         evidence = provenance(obj)
         assert any(evidence['converted'].values()), obj['name']
         assert all('/' + audit_branch() + '/' in item['url'] for item in evidence['source'])
     billing = next(obj for obj in objects if obj['name'] == 'SFX_BILLING.CUSTOMER_ACCOUNT')
     assert '/devin/sfx1119-billing-parity/' in provenance(billing)['source'][0]['url']
-    assert columns('SFX_AUDIT_PC.AUDIT_EVENT') == columns('SFX_AUDIT.AUDIT_EVENT')
+    assert columns('SFX_AUDIT.AUDIT_EVENT')
 
 
 def test_audit_error_does_not_clear_billing_evidence(target):

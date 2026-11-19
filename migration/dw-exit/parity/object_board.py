@@ -28,6 +28,8 @@ from parity import report_outputs, spark_billing, dbc_retire, documents_board
 from parity import local_audit, powercenter_audit, spark_audit
 from parity import spark_users, pc_users, retirement_users
 from parity.subjects import SUBJECTS
+from audit_outputs import outputs as audit_outputs
+from audit_outputs import artifacts as audit_artifacts
 from parity import local_content
 
 
@@ -159,7 +161,25 @@ def materialize(before, names, conversion_dir, business_date='20261109', subject
     return after, ready, errors
 
 
-def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, preflight=None, subject_evidence=None, pc_results=None, content_available=None):
+def relation_contract(objects):
+    rows = []
+    for obj in objects:
+        row = dict(obj)
+        if obj['subject_area'] == 'audit':
+            row['output_relations'] = audit_outputs(obj)
+            if audit_artifacts(obj):
+                row['output_artifacts'] = audit_artifacts(obj)
+        elif obj['subject_area'] == 'users' and obj['system'] == 'spark':
+            row['output_relations'] = ['SFX_SPARK.'+obj['name'].upper()]
+        elif obj['name'] == 'SFX_USERS.M_TEAM_COUNTS':
+            row['output_relations'] = ['SFX_USERS.M_TEAM_COUNTS_OUTPUT']
+        elif obj['name'] == '10_activity_daily':
+            row['output_relations'] = ['SFX_USERS.USER_ACTIVITY_DAILY','SFX_USERS.M_TEAM_COUNTS_OUTPUT']
+        rows.append(row)
+    return rows
+
+
+def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, preflight=None, subject_evidence=None, pc_results=None, content_available=None, audit_pc_results=None):
     if target not in ('duckdb', 'snowflake'):
         raise ValueError('Unsupported parity target')
     if preflight is not None and (preflight.get('run_token') != RunConfig.from_env().token
@@ -168,7 +188,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
             or preflight.get('capture_run') is not False or preflight.get('prove_run') is not False):
         raise ValueError('Expected a denied, unexecuted preflight for the current run scope')
     snowflake_reason = preflight['reason'] if preflight else 'No live Snowflake evidence; capture/prove not run'
-    objects = manifest['objects']
+    objects = relation_contract(manifest['objects'])
     result = wave_board(objects, counters or {})
     result.update(run_token=RunConfig.from_env().token, target=target, rows=[])
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
@@ -249,6 +269,26 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                         row['reason'] = (local_content.PENDING if differing == ['SFX_USERS.STG_APP_USER']
                                          else 'measured parity mismatch: '+', '.join(differing))
         mapping = obj['name'].removeprefix('s_')
+        if obj['subject_area'] == 'content' and (subject_evidence or {}).get('content'):
+            measured = subject_evidence['content']
+            row['relation_results'] = measured
+            row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
+            differing = [name for name,r in measured.items() if not r['passed']]
+            row['reason'] = None if not differing else (local_content.PENDING if differing == ['SFX_USERS.STG_APP_USER'] else 'measured parity mismatch: '+', '.join(differing))
+            row['row_count'] = {side:sum(r['row_count'][side] for r in measured.values()) for side in ('before','after')}
+            for field in ('column_profile','keyed_row_hash','sampled_differences','comparison_rules'):
+                row[field] = {name:r[field] for name,r in measured.items()}
+        if obj['subject_area'] == 'audit' and obj['system'] == 'powercenter' and obj['target_type'] != 'retire':
+            measured = {name:(audit_pc_results or {}).get('measurements',{}).get(name) for name in obj['output_relations']}
+            if target == 'duckdb' and measured and all(measured.values()):
+                row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
+                row['reason'] = None if row['status'] == 'green' else 'PowerCenter audit measured parity mismatch'
+                row['row_count'] = {side:sum(r['row_count'][side] for r in measured.values()) for side in ('before','after')}
+                for field in ('column_profile','keyed_row_hash','sampled_differences','comparison_rules'):
+                    row[field] = {name:r[field] for name,r in measured.items()}
+            else:
+                row.update(status='red',reason='PowerCenter audit proof unavailable',row_count=None,
+                           column_profile=None,keyed_row_hash=None,sampled_differences=None)
         if target == 'duckdb' and obj['subject_area'] == 'users' and obj['kind'] in ('mapping','session') and pc_results is not None:
             proof = pc_results[mapping]
             row['bteq_relation_measurement'] = {k: row.get(k) for k in
@@ -317,6 +357,7 @@ def main():
     parser.add_argument('--snowflake-preflight',type=Path,default=ROOT/'migration/dw-exit/parity/snowflake-preflight.json')
     args = parser.parse_args()
     manifest = yaml.safe_load(args.manifest.read_text())
+    manifest['objects'] = relation_contract(manifest['objects'])
     preflight = json.loads(args.snowflake_preflight.read_text()) if args.snowflake_preflight.is_file() else None
     from assess import build
     counters = build()['counters']
@@ -334,8 +375,14 @@ def main():
             before, source_ready, source_errors = source_snapshot(dsn,names)
             after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing',os.environ.get('BUSINESS_DATE','20261109'))
             errors.update(source_errors)
-            content_ready,content_errors,content_evidence = local_content.materialize(
-                before,after,dsn,ns,source_snapshot,os.environ.get('BUSINESS_DATE','20261109'))
+            with duckdb.connect() as content_before, duckdb.connect() as content_after:
+                for source in local_content.OUTPUTS:
+                    local_content.clone(before,content_before,source,source)
+                content_ready,content_errors,content_evidence = local_content.materialize(
+                    content_before,content_after,dsn,ns,source_snapshot,os.environ.get('BUSINESS_DATE','20261109'))
+                if content_ready:
+                    subject_evidence['content'] = {source:compare(content_before,content_after,source,source.removeprefix('SFX_'))
+                                                   for source in local_content.OUTPUTS}
             errors.update(content_errors)
             if not errors.get('*'):
                 errors.update(report_outputs.materialize(before,after,dsn,ready,os.environ.get('BUSINESS_DATE','20261109')))
@@ -363,7 +410,7 @@ def main():
             audit_errors, audit_evidence = local_audit.materialize(before,after,source_ready,dsn,ready,
                 os.environ.get('BUSINESS_DATE','20261109'))
             errors.update(audit_errors)
-            pc_errors, pc_evidence = powercenter_audit.materialize(before,after,dsn,ready,
+            pc_errors, audit_pc_evidence = powercenter_audit.materialize(before,after,dsn,ready,
                 os.environ.get('BUSINESS_DATE','20261109'))
             errors.update(pc_errors)
             users_ready,users_errors,users_evidence = spark_users.materialize(before,after,manifest['objects'],ns)
@@ -377,18 +424,18 @@ def main():
                 pc_results, pc_evidence = pc_users.proofs(ns,ROOT/'warehouse/landing',os.environ.get('BUSINESS_DATE','20261109'))
             except (OSError,ValueError,duckdb.Error) as error:
                 pc_results = {m:dict(status='red',reason='PC evidence unavailable: '+str(error),measurement=None) for m in pc_users.MAPPINGS}
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight,subject_evidence=subject_evidence,pc_results=pc_results,content_available=content_ready if args.target == 'duckdb' and manifest['objects'] else None)
+        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight,subject_evidence=subject_evidence,pc_results=pc_results,content_available=content_ready if args.target == 'duckdb' and manifest['objects'] else None,audit_pc_results=audit_pc_evidence if args.target == 'duckdb' and manifest['objects'] else None)
         if pc_evidence is not None:
             payload['powercenter_evidence'] = pc_evidence
         if args.target == 'duckdb' and manifest['objects']:
             payload['spark_evidence'] = spark_evidence
             payload['audit_evidence'] = audit_evidence
-            payload['audit_powercenter_evidence'] = pc_evidence
+            payload['audit_powercenter_evidence'] = audit_pc_evidence
             payload['audit_spark_evidence'] = audit_spark_evidence
+            payload['content_evidence'] = content_evidence
         if documents_evidence is not None:
             payload['documents_evidence'] = {'file':'migration/dw-exit/documents/evidence.json',
                 'binary_replay':'migration/dw-exit/documents/spark-replay.json'}
-            payload['content_evidence'] = content_evidence
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         readme = args.output.parent / 'README.md'
         if readme.exists():

@@ -133,7 +133,8 @@ def prove(pre_path, landing, namespace, day):
         boundary = shared_storage(pre,day)
         downstream = shared_storage(pre,day,snapshot_storage=True)
         decisions = json.loads((CONVERSIONS/'decisions.json').read_text())
-        blocked = {r for d in decisions for r in d['blocks']}
+        pending = [d for d in decisions if d.get('status') != 'approved']
+        blocked = {r for d in pending for r in d['blocks']}
         manifest = yaml.safe_load((CONVERSIONS.parent/'manifest.yaml').read_text())
         object_rows = []
         for obj in manifest['objects']:
@@ -144,7 +145,7 @@ def prove(pre_path, landing, namespace, day):
             if obj['system'] == 'powercenter':
                 name = obj['name'].removeprefix('s_').removeprefix('m_SFX_')
                 measured = {name:pc_results[name]}
-                blockers = [d['object'] for d in decisions if 'powercenter.'+obj['name'] in d['blocks']]
+                blockers = [d['object'] for d in pending if 'powercenter.'+obj['name'] in d['blocks']]
             else:
                 outputs = obj['output_relations'] or ['SFX_DOCUMENTS.M_STORAGE_TOTALS_OUTPUT']
                 measured = {r.split('.')[-1]:sql_results[r.split('.')[-1]] for r in outputs if r.startswith('SFX_DOCUMENTS.')}

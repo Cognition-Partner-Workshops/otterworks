@@ -7,7 +7,7 @@ import duckdb
 import pytest
 
 import assess
-from parity import provenance, spark_billing, spark_users
+from parity import object_board, provenance, spark_billing, spark_users
 from parity.ladder import local_compare
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -75,7 +75,7 @@ def test_shipped_dbt_matches_source_sql(name,populated):
 
 
 def test_users_spark_declarations_and_provenance():
-    objects = {obj['name']:obj for obj in assess.build()['objects']}
+    objects = {obj['name']:obj for obj in object_board.relation_contract(assess.build()['objects'])}
     for name in JOBS:
         obj = objects[name]
         assert obj['output_relations'] == ['SFX_SPARK.'+name.upper()]

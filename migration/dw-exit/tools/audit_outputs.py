@@ -21,7 +21,7 @@ def outputs(obj):
         return ['SFX_SPARK.' + name.upper()] + (['SFX_SPARK.' + name.upper() + '_JDBC'] if name in SPARK_JDBC else [])
     if obj['system'] == 'powercenter':
         tables = PC_TABLES if obj['kind'] == 'workflow' else (obj['name'].upper().split('M_SFX_', 1)[1],)
-        return ['SFX_AUDIT_PC.' + table for table in tables]
+        return ['SFX_AUDIT.' + table for table in tables]
     if obj['name'] == '10_summary_daily':
         return ['SFX_AUDIT.AUDIT_DAILY_SUMMARY']
     if obj['name'] == 'SFX_AUDIT.M_RECON_TOTALS':

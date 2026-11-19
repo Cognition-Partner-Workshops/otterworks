@@ -54,7 +54,10 @@ def test_generated_procedure_is_owned_selects_and_matches_xml():
     assert 'LANGUAGE SQL' in text and 'OPS.WF_SFX_CONTENT_DAILY()' in text
     assert 'EXCEPTION' not in text
     for name in compiler.STEPS:
-        assert compiler.select(name) in text
+        assert 'CALL '+compiler.session_target(name)+'();' in text
+        area = 'documents' if name in compiler.DOCUMENTS else 'users'
+        assert compiler.select(name) in compiler.generate_sessions(area)
+        assert compiler.generate_sessions(area) == (ROOT/'migration/dw-exit'/area/'52_sessions.sql').read_text()
     flow = ElementTree.parse(ROOT/local_content.XML).find('.//WORKFLOW')
     enabled = {t.get('NAME').removeprefix('s_m_SFX_') for t in flow.findall('TASKINSTANCE')
                if t.get('TASKTYPE') == 'Session' and t.get('ISENABLED') == 'YES'}
@@ -173,3 +176,21 @@ def test_content_task_dag_preserves_both_links():
     assert dag['DOC_SHARE']['after'] == ['DOCUMENT','ROLE_GRANT']
     assert dag['FINISH']['after'] == ['DOC_SHARE','LOGIN_EVENT']
     assert 'TEAM_MEMBER' not in dag
+    for name in compiler.STEPS:
+        assert dag[name]['sql'] == 'CALL '+compiler.session_target(name)+'()'
+
+
+def test_unknown_area_session_fails_closed(tmp_path):
+    path = tmp_path/'workflow.sql'
+    path.write_text(compiler.generate().replace(compiler.session_target('APP_USER'), 'X.OPS.UNKNOWN'))
+    with pytest.raises(ValueError, match='Unknown content session'):
+        list(local_content.statements(path))
+
+
+def test_manifest_users_session_targets_exist():
+    manifest = yaml.safe_load((ROOT/'migration/dw-exit/manifest.yaml').read_text())
+    for obj in manifest['objects']:
+        if obj['subject_area'] == 'users' and obj['kind'] == 'session':
+            model = ROOT/'warehouse/dbt/models/users'/(obj['target']+'.sql')
+            assert model.is_file()
+            assert ('OPS.'+obj['target'].upper()+'()') in compiler.generate_sessions('users')

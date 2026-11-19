@@ -130,8 +130,7 @@ def test_procedure_bodies_match_executed_sql():
     bodies = re.findall(r'-- OPS\.\w+[^\n]*\n(.*?)(?=\n-- OPS\.|\Z)',load,re.S)
     procedures = (documents.CONVERSIONS/'11_procedures.sql').read_text()
     assert len(bodies)==5 and all(body.strip() in procedures for body in bodies)
-    assert 'ORDER BY VERSION_TS DESC)' in load
-    assert 'VERSION_TS DESC,' not in load
+    assert 'ORDER BY VERSION_TS DESC, VERSION_NO DESC)' in load
 
 
 @pytest.mark.parametrize('populated',[True,False])
@@ -174,7 +173,7 @@ def test_pc_merge_preserves_filtered_existing_owner_and_empty():
         assert c.execute('SELECT COUNT(*) FROM PC_CONTENT.DOCUMENT').fetchone()[0] == 1
 
 
-def test_pc_effective_access_and_ambiguous_lookup_error():
+def test_pc_effective_access_highest_privilege():
     with duckdb.connect() as c:
         c.execute('CREATE SCHEMA PC_SRC')
         c.execute('CREATE SCHEMA PC_CONTENT')
@@ -187,10 +186,23 @@ def test_pc_effective_access_and_ambiguous_lookup_error():
         documents.merge_pc(c,'DOC_SHARE',query,'SHARE_ID')
         assert c.execute('SELECT ACCESS_LEVEL FROM PC_CONTENT.DOC_SHARE ORDER BY SHARE_ID').fetchall()==[('OWNER',),('EDIT',),('VIEW',)]
         c.execute("INSERT INTO PC_SRC.ROLE_GRANT VALUES (1,'EDITOR')")
-        assert c.execute(query).fetchmany(100).__len__() == 4
-        with pytest.raises(ValueError,match='Ambiguous/null'):
-            documents.merge_pc(c,'DOC_SHARE',query,'SHARE_ID')
+        c.execute("INSERT INTO PC_SRC.ROLE_GRANT VALUES (2,'READER'),(2,'EDITOR'),(3,'READER'),(3,'ADMIN')")
+        documents.merge_pc(c,'DOC_SHARE',query,'SHARE_ID')
+        assert c.execute('SELECT ACCESS_LEVEL FROM PC_CONTENT.DOC_SHARE ORDER BY SHARE_ID').fetchall()==[('OWNER',),('EDIT',),('OWNER',)]
         assert c.execute('SELECT COUNT(*) FROM PC_CONTENT.DOC_SHARE').fetchone()[0] == 3
+        c.execute('DELETE FROM PC_SRC.DOC_SHARE')
+        assert c.execute(query).fetchall() == []
+
+
+@pytest.mark.parametrize('reverse',[False,True])
+def test_latest_version_ties_choose_highest_number(connections,reverse):
+    before,after = connections
+    rows = [(10,1,1,'2026-11-09 12:00:00',100,'a'),
+            (11,1,2,'2026-11-09 12:00:00',200,'b'),
+            (12,1,9,'2026-11-08 12:00:00',300,'c')]
+    before.executemany('INSERT INTO SFX_DOCUMENTS.STG_DOC_VERSION VALUES (?,?,?,?,?,?)',list(reversed(rows)) if reverse else rows)
+    assert not documents.execute(after,before)[1]
+    assert after.execute('SELECT VERSION_ID,VERSION_NO FROM DOCUMENTS.DOC_VERSION').fetchall() == [(11,2)]
 
 
 def test_pc_template_fails_closed(tmp_path):

@@ -15,8 +15,6 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 import yaml
-from audit_outputs import outputs as audit_outputs
-from audit_outputs import artifacts as audit_artifacts
 
 ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / 'migration/dw-exit'
@@ -381,25 +379,15 @@ def build(root=None):
         }
         if row['name'] in billing_reports:
             row['output_relations'] = ['SFX_BILLING.'+name for name in billing_reports[row['name']]]
-        users_reports = {
-            '10_activity_daily': ['SFX_USERS.USER_ACTIVITY_DAILY', 'SFX_USERS.M_TEAM_COUNTS_OUTPUT'],
-            'SFX_USERS.M_TEAM_COUNTS': ['SFX_USERS.M_TEAM_COUNTS_OUTPUT'],
-        }
-        if row['name'] in users_reports:
-            row['output_relations'] = users_reports[row['name']]
     for job in json.loads((Path(__file__).parent / 'spark_objects.json').read_text()):
         node = add('spark_job', job['name'], job['source'], '')
         artifacts[-1]['system'] = 'spark'
         manifest.append(dict(id=node, system='spark', kind='spark_job', name=job['name'],
             complexity='medium', subject_area=job['subject_area'], licence_dependency='spark',
             source=job['source'], source_ref='demo-snowflake-dw-exit',
-            output_relations=['SFX_SPARK.'+job['name'].upper()] if job['subject_area'] in ('billing','users') else [], target_type='dbt_model', target='spark__'+job['name'],
+            output_relations=['SFX_SPARK.'+job['name'].upper()] if job['name'].startswith('billing_') else [], target_type='dbt_model', target='spark__'+job['name'],
             wave=3, owner='@otterworks/data-platform', owner_source='proposed', risk='med',
             risk_reasons=[], status='not_started'))
-    for row in manifest:
-        row['output_relations'] = audit_outputs(row)
-        if audit_artifacts(row):
-            row['output_artifacts'] = audit_artifacts(row)
     setup_only = sorted(name for name, qs in reads.items() if qs and all(q['StartTime'][:10] == '2026-08-12' for q in qs))
     cost = yaml.safe_load(_run_render((root / 'etl/informatica/licence.yaml').read_text()))['variables']
     counters = {'teradata_objects': {'remaining': len(catalog), 'target': 0}, 'powercenter_mappings': {'remaining': len(mapping_files), 'target': 0}, 'spark_executor_hours': {'remaining': 0, 'target': 0, 'status': 'no Spark estate on branch yet'}, 'powercenter_annual_cost': {'value': cost['ANNUAL_COST'], 'currency': cost['ANNUAL_COST_CURRENCY']}}

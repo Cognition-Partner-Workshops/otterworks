@@ -12,8 +12,6 @@ ROOT = Path(__file__).resolve().parents[3]
 @lru_cache(maxsize=None)
 def columns(relation):
     name = relation.upper()
-    if name.startswith('SFX_AUDIT_PC.'):
-        name = name.replace('SFX_AUDIT_PC.', 'SFX_AUDIT.', 1)
     if '.' not in name:
         name = 'SFX_BILLING.' + name
     for path in sorted((ROOT / 'warehouse/teradata/ddl').rglob('*.sql')):

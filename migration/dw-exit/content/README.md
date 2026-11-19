@@ -2,9 +2,12 @@
 
 `workflow.sql` ships `__RUN_DATABASE__.OPS.WF_SFX_CONTENT_DAILY()` as Snowflake
 Scripting. Generate it with `warehouse/.venv/bin/python migration/dw-exit/content/convert.py`.
-The compiler renders the existing owned dbt model SELECTs and macros; it does not
-invoke dbt materializations or rewrite their mapping expressions. The regression
-test requires the checked-in SQL to match those sources.
+The workflow calls the area-owned session targets in `users/52_sessions.sql` and
+`documents/52_sessions.sql`. The compiler renders their existing owned dbt SELECTs
+and macros without rewriting mapping expressions. The regression test requires
+all three generated files to match those sources. Deploy the two session files
+before the workflow or task DAG. The five users dbt session aliases also retain
+the approved manifest target names, including standalone TEAM_MEMBER.
 
 The caller supplies typed `USERS` and `DOCUMENTS` target tables and typed landing
 tables in `PC_SRC` (`APP_USER`, `ROLE_GRANT`, `LOGIN_EVENT`, `DOCUMENT`, `DOC_SHARE`).

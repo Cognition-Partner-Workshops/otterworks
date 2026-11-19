@@ -22,7 +22,7 @@ def portable(text, business_date):
     business_date = validate_date(business_date)
     text = render(text).replace('${BUSINESS_DATE}', business_date)
     text = re.sub(r'\bCOLLATE\s+\x27en-ci-rtrim\x27', '', text, flags=re.I)
-    text = re.sub(r'\w+\.AUDIT_PC\.SUMMARY_SEQ\.NEXTVAL', "NEXTVAL('AUDIT_PC.SUMMARY_SEQ')", text, flags=re.I)
+    text = re.sub(r'\w+\.AUDIT\.SUMMARY_SEQ\.NEXTVAL', "NEXTVAL('AUDIT.SUMMARY_SEQ')", text, flags=re.I)
     for statement in sqlglot.parse(text, read='snowflake'):
         if statement is None:
             continue
@@ -131,16 +131,17 @@ def report(before, after, dsn, business_date, ready):
 def materialize(before, after, source_ready, dsn, ready, business_date='20261109', landing_dir=None):
     errors, evidence = {}, {}
     try:
-        after.execute('CREATE SCHEMA AUDIT')
+        after.execute('CREATE SCHEMA IF NOT EXISTS AUDIT')
         execute(after, (SQL / '00_tables.sql').read_text(), business_date)
         evidence['landing'] = landing(after, business_date, landing_dir or ROOT / 'warehouse/landing')
         evidence['external_inputs'] = []
         for schema in ('USERS', 'DOCUMENTS'):
-            after.execute('CREATE SCHEMA ' + schema)
+            after.execute('CREATE SCHEMA IF NOT EXISTS ' + schema)
             for source in sorted(source_ready):
                 if source.startswith('SFX_' + schema + '.'):
                     target = source.removeprefix('SFX_')
-                    copy_relation(before, after, source, target)
+                    if not after.execute('SELECT COUNT(*) FROM information_schema.tables WHERE upper(table_schema)=? AND upper(table_name)=?', target.split('.')).fetchone()[0]:
+                        copy_relation(before, after, source, target)
                     evidence['external_inputs'].append(source)
         evidence['billing_inputs'] = 'existing converted BILLING relations; not copied from source'
         for filename in STAGES:

@@ -52,6 +52,13 @@ s......                                                                  [100%]
 
 ## Differences, attempted disproofs, and decisions
 
+**Integration update:** the owner approved highest-privilege share roles
+(ADMIN > EDITOR > other) and highest VERSION_NO on equal latest VERSION_TS.
+Converted SQL/dbt and local regression proofs implement both. These deliberately
+differ from legacy first-match/arbitrary behavior. The original measurements and
+unresolved notes below are historical; `decisions.json` records current approvals.
+Raw legacy comparisons are not rewritten to green by these approvals.
+
 1. **SET storage deduplication — unresolved.** Source DDL declares CREATE SET TABLE; the PostgreSQL Teradata runner implements whole-row UNIQUE NULLS NOT DISTINCT with ON CONFLICT DO NOTHING. Same frozen staging: 300 rows, 250 distinct; source core: 250; plain target: 300. To disprove an ingestion/count artifact, independent TPT projection replay matches all 300 staging rows with zero hash delta. Every one of the 50 core hash differences is one extra exact duplicate, not a changed payload. SET behavior is encoded in DDL and `warehouse/teradata/tests/test_estate.py` (explicit minus-50 assertions), but no documents owner-approved billing dedupe policy was found. Existing `set_table_semantics.sql` explicitly requires distinct/keep_all; no approval was inferred from engine behavior. **Question:** discard exact duplicates or retain for charging?
    - Macro: same 70 customers but 50 doubled customer totals → hash delta 100.
    - Shared USAGE_DAILY: 270/270 but 50 changed storage rows → delta 100.

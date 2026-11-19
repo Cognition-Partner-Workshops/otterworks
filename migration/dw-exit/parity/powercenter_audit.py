@@ -4,6 +4,7 @@ from pathlib import Path
 import tempfile
 import uuid
 
+import duckdb
 import psycopg
 from psycopg import sql
 
@@ -12,6 +13,7 @@ from etl.informatica.runner.engine import MappingRun
 from etl.informatica.runner.repo import Repository
 from etl.informatica.runner.sesslog import Log
 from . import local_audit as audit
+from .ladder import local_compare
 
 
 class IsolatedConnection(Connection):
@@ -25,16 +27,20 @@ class IsolatedConnection(Connection):
 
 def materialize(before, after, dsn, ready, business_date, landing_dir=None):
     errors, evidence = {}, {}
-    targets = ['AUDIT_PC.' + name for name in audit.PC_TABLES]
+    targets = ['AUDIT.' + name for name in audit.PC_TABLES]
+    baseline = before
+    before, after = duckdb.connect(), duckdb.connect()
     work = audit.ROOT / 'migration/dw-exit/.runs/audit-powercenter'
     work.mkdir(parents=True, exist_ok=True)
     try:
-        after.execute('CREATE SCHEMA AUDIT_PC')
-        before.execute('CREATE SCHEMA SFX_AUDIT_PC')
+        after.execute('CREATE SCHEMA AUDIT')
+        before.execute('CREATE SCHEMA SFX_AUDIT')
+        audit.execute(after, (audit.SQL/'00_tables.sql').read_text(), business_date)
+        audit.landing(after, business_date, landing_dir or audit.ROOT/'warehouse/landing')
         for name in audit.PC_TABLES:
-            after.execute('CREATE TABLE AUDIT_PC.' + name + ' AS SELECT * FROM AUDIT.' + name + ' WHERE FALSE')
-            before.execute('CREATE TABLE SFX_AUDIT_PC.' + name + ' AS SELECT * FROM SFX_AUDIT.' + name + ' WHERE FALSE')
-        after.execute('CREATE SEQUENCE AUDIT_PC.SUMMARY_SEQ START 50001')
+            audit.copy_relation(baseline, before, 'SFX_AUDIT.'+name, 'SFX_AUDIT.'+name)
+            before.execute('DELETE FROM SFX_AUDIT.'+name)
+        after.execute('CREATE SEQUENCE AUDIT.SUMMARY_SEQ START 50001')
         repo = Repository(str(audit.ROOT / 'etl/informatica/repository/SFX_AUDIT'))
         schema = 'audit_parity_' + uuid.uuid4().hex
         with tempfile.TemporaryDirectory(dir=work) as directory, psycopg.connect(dsn) as source:
@@ -56,21 +62,25 @@ def materialize(before, after, dsn, ready, business_date, landing_dir=None):
                 evidence[session_name] = {'rows_read': stats.rows_read, 'rows_written': stats.rows_written,
                                           'rows_rejected': stats.rows_rejected, 'first_error': stats.first_error,
                                           'log': log.lines}
-            audit.execute(after, 'CALL __RUN_DATABASE__.AUDIT_PC.WF_SFX_AUDIT_DAILY();', business_date)
+            audit.execute(after, 'CALL __RUN_DATABASE__.AUDIT.WF_SFX_AUDIT_DAILY();', business_date)
             for name in audit.PC_TABLES:
                 rows = source.execute(sql.SQL('SELECT * FROM {}.{}').format(
                     sql.Identifier(schema), sql.Identifier(name.lower()))).fetchall()
                 if rows:
-                    before.executemany('INSERT INTO SFX_AUDIT_PC.' + name + ' VALUES (' +
+                    before.executemany('INSERT INTO SFX_AUDIT.' + name + ' VALUES (' +
                                        ','.join('?' for _ in rows[0]) + ')', rows)
-                ready.add('AUDIT_PC.' + name)
-            old = before.execute('SELECT SUMMARY_DT,CUSTOMER_ID,EVENT_COUNT,EXPORT_COUNT FROM SFX_AUDIT_PC.AUDIT_DAILY_SUMMARY').fetchall()
-            new = after.execute('SELECT SUMMARY_DT,CUSTOMER_ID,EVENT_COUNT,EXPORT_COUNT FROM AUDIT_PC.AUDIT_DAILY_SUMMARY').fetchall()
+            evidence['measurements'] = {('SFX_AUDIT.'+name):local_compare(before,after,'SFX_AUDIT.'+name,'AUDIT.'+name)
+                                        for name in audit.PC_TABLES}
+            old = before.execute('SELECT SUMMARY_DT,CUSTOMER_ID,EVENT_COUNT,EXPORT_COUNT FROM SFX_AUDIT.AUDIT_DAILY_SUMMARY').fetchall()
+            new = after.execute('SELECT SUMMARY_DT,CUSTOMER_ID,EVENT_COUNT,EXPORT_COUNT FROM AUDIT.AUDIT_DAILY_SUMMARY').fetchall()
             evidence['summary_non_identity_multiset_matches'] = Counter(old) == Counter(new)
             source.rollback()
         evidence['isolation'] = 'fresh empty targets and sequence state; temporary schema rolled back; same landing PSVs'
     except Exception as error:
         for target in targets:
-            ready.discard(target)
             errors[target] = 'PowerCenter audit proof failed: ' + type(error).__name__ + ': ' + str(error)
+        evidence['error'] = str(error)
+    finally:
+        before.close()
+        after.close()
     return errors, evidence

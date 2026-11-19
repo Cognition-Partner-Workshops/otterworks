@@ -7,8 +7,6 @@ from functools import lru_cache
 import subprocess
 from urllib.parse import quote
 
-from .subjects import SUBJECTS
-
 ROOT = Path(__file__).resolve().parents[3]
 BRANCH = 'devin/sfx1119-billing-parity'
 BASE = 'https://github.com/Cognition-Partner-Workshops/otterworks/blob/' + BRANCH + '/'
@@ -19,7 +17,8 @@ BRANCHES = {name:values['branch'] for name,values in SUBJECTS.items()}
 def link(path, start=1, end=None, subject='billing', branch=None):
     path = Path(path)
     end = end or max(1, len((ROOT / path).read_text().splitlines()))
-    base = BASE if branch is None else 'https://github.com/Cognition-Partner-Workshops/otterworks/blob/' + quote(branch, safe='/') + '/'
+    branch = branch or BRANCHES.get(subject, BRANCH)
+    base = 'https://github.com/Cognition-Partner-Workshops/otterworks/blob/' + quote(branch, safe='/') + '/'
     return {'file': path.as_posix(), 'start_line': start, 'end_line': end,
             'url': f'{base}{path.as_posix()}#L{start}-L{end}'}
 
@@ -222,7 +221,7 @@ def billing_markdown(rows, subject='billing'):
         converted = [entry for entries in p['converted'].values() for entry in entries]
         lines.append(f"| {row['name']} | {row['local_duckdb']} | {row['snowflake']} | {anchors(p['source'])} | {anchors(converted) or p['conversion_note'] or 'Not materialized'} | {anchors(p['metrics'].values())} |")
     audit = [row for row in rows if row['subject_area'] == 'audit']
-    if audit:
+    if audit and subject == 'billing':
         lines += ['', '## Audit parity provenance', '',
                   'Batch, isolated PowerCenter, and actual Spark lake/JDBC outputs are separate evidence paths. Retirements remain unconverted.', '',
                   '| Object | Local DuckDB | Snowflake | Source | Converted producers | Metrics |', '|---|---|---|---|---|---|']
@@ -232,7 +231,7 @@ def billing_markdown(rows, subject='billing'):
             lines.append(f"| {row['name']} | {row['local_duckdb']} | {row['snowflake']} | {anchors(p['source'])} | {anchors(converted) or p['conversion_note'] or 'Not materialized'} | {anchors(p['metrics'].values())} |")
     text = '\n'.join(lines)+'\n'
     if subject == 'billing':
-        text += ''.join(billing_markdown(rows, area) for area in SUBJECTS if area != 'billing')
+        text += billing_markdown(rows, 'users') + content_markdown(rows)
     return text
 
 

@@ -54,7 +54,17 @@ def statements(path=PROCEDURE):
     match = re.fullmatch(r'.*?\$\$\s*BEGIN\s*(.*?)\s*RETURN \'SUCCEEDED\';\s*END;\s*\$\$;\s*', text, re.S)
     if not match:
         raise ValueError('Unsupported content Scripting wrapper')
-    for statement in sqlglot.parse(match[1], read='snowflake'):
+    body = match[1]
+    sessions = {}
+    for area in ('users', 'documents'):
+        text = render((ROOT/'migration/dw-exit'/area/'52_sessions.sql').read_text())
+        sessions.update(re.findall(r'CREATE OR REPLACE PROCEDURE\s+(\S+)\(\).*?\$\$\s*BEGIN\s*(.*?)\s*RETURN \'SUCCEEDED\';\s*END;\s*\$\$;', text, re.S))
+    def expand(call):
+        if call[1] not in sessions:
+            raise ValueError('Unknown content session: '+call[1])
+        return sessions[call[1]]
+    body = re.sub(r'CALL\s+(\S+)\(\);', expand, body)
+    for statement in sqlglot.parse(body, read='snowflake'):
         if not isinstance(statement, (exp.Insert, exp.Merge, exp.TruncateTable)):
             raise ValueError('Unsupported content statement: ' + type(statement).__name__)
         for table in statement.find_all(exp.Table):

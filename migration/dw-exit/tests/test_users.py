@@ -78,7 +78,7 @@ def test_team_counts_uses_shipped_macro_and_counts_member_ids_not_users():
 
 def test_users_declarations_and_provenance_exclude_retirement():
     estate = assess.build()
-    objects = [o for o in estate['objects'] if o['subject_area'] == 'users']
+    objects = [o for o in object_board.relation_contract(estate['objects']) if o['subject_area'] == 'users']
     assert len(objects) == 55
     for obj in objects:
         if obj['system'] == 'spark':
