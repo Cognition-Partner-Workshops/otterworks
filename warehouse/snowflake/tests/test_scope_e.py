@@ -44,9 +44,13 @@ def test_compat_shapes_normal_and_empty():
         db.create_function('TO_CHAR', 2, lambda value, pattern: value[:7] if value else None)
         db.execute("attach database ':memory:' as COMPAT")
         for area in ('billing', 'users'):
+            # SQL is built only from committed fixtures and fixed local test cases.
+            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             db.execute(f"attach database ':memory:' as RAW_{area.upper()}")
             for table, columns in spec[area].items():
                 declaration = ','.join(f'{c} NUMERIC' for c in columns)
+                # SQL is built only from committed fixtures and fixed local test cases.
+                # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 db.execute(f'create table RAW_{area.upper()}.{table} ({declaration})')
                 with (ROOT / 'fixtures/landing' / area / table / '20261101.psv').open() as stream:
                     rows = list(csv.reader(stream, delimiter='|'))[1:]
@@ -65,16 +69,24 @@ def test_compat_shapes_normal_and_empty():
             else:
                 assert columns == ['CUSTOMER_ID', 'USAGE_DATE', 'CURRENCY_CODE', 'QUANTITY', 'AMOUNT']
         for name in ('ACCOUNT', 'INVOICE'):
+            # SQL is built only from committed fixtures and fixed local test cases.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             db.execute(f'create table COMPAT.{name} as ' + views[name])
         for name in additional - {'INVOICE_REVENUE'}:
             cursor = db.execute(views[name])
             assert cursor.fetchall()
+            # SQL is built only from committed fixtures and fixed local test cases.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             db.execute(f'create table COMPAT.{name} as ' + views[name])
         assert db.execute(views['INVOICE_REVENUE']).fetchall() == db.execute(views['V_INVOICE_REVENUE']).fetchall()
         for area in ('billing', 'users'):
             for table in spec[area]:
+                # SQL is built only from committed fixtures and fixed local test cases.
+                # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 db.execute(f'delete from RAW_{area.upper()}.{table}')
         for name in ('ACCOUNT', 'INVOICE', 'V_INVOICE_REVENUE'):
+            # SQL is built only from committed fixtures and fixed local test cases.
+            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             db.execute(f'delete from COMPAT.{name}')
         assert all(db.execute(query).fetchall() == [] for query in views.values())
     assert 'GRANT SELECT ON FUTURE VIEWS' not in sql
@@ -158,7 +170,7 @@ def test_dag_success_timeout_and_failure_cleanup(monkeypatch, outcome):
     else:
         with pytest.raises(TimeoutError if outcome == 'empty' else RuntimeError):
             task_dag.run_once(cursor)
-    sql = [s for s, _ in cursor.calls]
+    sql = [s.replace('"', '') for s, _ in cursor.calls]
     assert 'ALTER TASK ORCH.DAG_START RESUME' not in sql
     assert sql.count('ALTER TASK ORCH.DAG_START SUSPEND') == 2
     for step in steps.values():

@@ -100,11 +100,26 @@ def test_load_replaces_only_its_source_and_builds(monkeypatch, results):
     load_daily.load(load_daily.GOOD_DATE)
     calls = cursor.execute.call_args_list
     assert calls[2].args == ("BEGIN",)
-    assert calls[3].args == ("DELETE FROM RAW_BILLING.USAGE_DAILY WHERE _SRC_FILE=%s",
+    assert calls[3].args == ('DELETE FROM "RAW_BILLING"."USAGE_DAILY" WHERE _SRC_FILE=%s',
                             ("pipeline/2026-11-09.csv",))
     assert "ON_ERROR=ABORT_STATEMENT FORCE=TRUE" in calls[4].args[0]
     assert calls[5].args == ("COMMIT",)
     build.assert_called_once()
+
+
+def test_source_file_value_is_bound(monkeypatch):
+    connection = MagicMock()
+    cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
+    cursor.description = [('rows_loaded',)]
+    cursor.fetchall.return_value = []
+    monkeypatch.setattr(load_daily, 'connect', Mock(return_value=connection))
+    malicious = "feed.csv'); DROP TABLE RAW_BILLING.USAGE_DAILY; --"
+    monkeypatch.setattr(load_daily, 'source_file', lambda day: malicious)
+    load_daily.load(load_daily.GOOD_DATE, no_build=True)
+    delete, copy = cursor.execute.call_args_list[3:5]
+    assert delete.args[1] == (malicious,)
+    assert copy.args[1][0] == malicious
+    assert malicious not in delete.args[0] and malicious not in copy.args[0]
 
 
 def test_reset_removes_only_break_file(tmp_path, monkeypatch):
@@ -177,7 +192,7 @@ def test_header_only_reordered_feed_and_clone_target(tmp_path, monkeypatch, caps
     connector.assert_called_once_with("backfill", _run_render("__RUN_DATABASE___TRANSFORM_WH"))
     cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
     sql = cursor.execute.call_args_list[4].args[0]
-    assert _run_render("COPY INTO RAW_BILLING___RUN_DATABASE___BACKFILL.USAGE_DAILY") in sql
+    assert _run_render('COPY INTO "RAW_BILLING___RUN_DATABASE___BACKFILL"."USAGE_DAILY"') in sql
     assert "TRY_TO_NUMBER($10),TRY_TO_NUMBER($9),TRY_TO_DATE($8)" in sql
     assert "TRY_TO_DECIMAL(REGEXP_REPLACE($5, '[^0-9.+-]', ''),12,2)" in sql
     assert "ignored extra columns: DISCOUNT_CODE" in capsys.readouterr().out
@@ -293,7 +308,7 @@ def test_fixture_end_to_end_good_then_break(tmp_path, monkeypatch, capsys):
 
         def execute(self, sql, params=None):
             if sql.startswith("PUT"):
-                self.day = "2026-11-10" if "2026-11-10.csv" in sql else "2026-11-09"
+                self.day = "2026-11-10" if "2026-11-10.csv" in params[0] else "2026-11-09"
             elif sql.startswith("DELETE"):
                 self.days.pop(Path(params[0]).stem, None)
             elif sql.startswith("COPY"):

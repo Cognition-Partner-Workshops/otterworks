@@ -4,6 +4,8 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier
+from psycopg import sql
 
 import argparse
 import importlib.util
@@ -33,15 +35,18 @@ def run(job):
             session.query_tag = query_tag("snowpark", "spark-job", job=job)
             result = module.run(session)
             database = session.get_current_database()
-            relation = f'{database}."MART_SPARK"."{job.upper()}"'
-            # Database comes from Snowpark (quoted); job is validated above.
-            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-            session.sql(_run_render(f"ALTER TABLE {relation} SET TAG {database}.GOVERNANCE.SFX_RUN = '__RUN_TOKEN__'")).collect()
+            quoted_database = database.startswith('"') and database.endswith('"')
+            if quoted_database:
+                database = database[1:-1]
+            database = identifier(database, qualified=False, preserve_case=quoted_database)
+            relation = sql.Composed([database, sql.SQL('.'), identifier('MART_SPARK.' + job.upper())])
+            session.sql(compose('ALTER TABLE {} SET TAG {} = ?', relation,
+                                sql.Composed([database, sql.SQL('.'), identifier('GOVERNANCE.SFX_RUN')])),
+                        params=[_run_render('__RUN_TOKEN__')]).collect()
             token = os.environ.get("RUN_TOKEN", _run_render("__RUN_TOKEN__"))
             # The shared connector uses pyformat, while Session.sql params require qmark.
             with connection.cursor() as cursor:
-                # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-                cursor.execute(f"COMMENT ON TABLE {relation} IS %s",
+                cursor.execute(compose('COMMENT ON TABLE {} IS %s', relation),
                                (token + ' Spark output ' + job,))
             return result
 

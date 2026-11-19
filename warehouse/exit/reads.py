@@ -85,6 +85,8 @@ def snowflake(since, until, phase='reads'):
                 if not source.startswith('TABLE'):
                     query += ' WHERE START_TIME >= %s AND START_TIME < %s'
                     params = (timestamp(since), timestamp(until))
+                # Both source clauses and the projection are fixed literals in this function.
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 cur.execute(query, params)
                 batch = cur.fetchall()
                 if source.startswith('TABLE') and len(batch) >= 10000:

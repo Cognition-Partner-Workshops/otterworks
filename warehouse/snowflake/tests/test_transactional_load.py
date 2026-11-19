@@ -12,13 +12,14 @@ class TransactionCursor:
     description = [('status',), ('rows_loaded',), ('errors_seen',)]
 
     def __init__(self, fail_at=None, result=None, rows=3):
-        self.commands, self.copies = [], 0
+        self.commands, self.calls, self.copies = [], [], 0
         self.fail_at, self.result, self.rows = fail_at, result, rows
         self.data = {f'RAW_BILLING.{table}': ['original'] for table in load.SPEC['billing']}
         self.pending = None
 
-    def execute(self, sql):
+    def execute(self, sql, params=None):
         self.commands.append(sql)
+        self.calls.append((sql, params))
         if sql == 'BEGIN':
             self.pending = deepcopy(self.data)
         elif sql == 'ROLLBACK':
@@ -26,14 +27,14 @@ class TransactionCursor:
         elif sql == 'COMMIT':
             self.data, self.pending = self.pending, None
         elif sql.startswith('DELETE FROM'):
-            self.pending[sql.split()[-1]] = []
+            self.pending[sql.split()[-1].replace('"', '')] = []
         elif sql.startswith('COPY'):
             self.copies += 1
             if self.copies == self.fail_at:
                 raise RuntimeError('injected COPY failure')
-            self.pending[sql.split()[2]].extend(['replacement'] * self.rows)
+            self.pending[sql.split()[2].replace('"', '')].extend(['replacement'] * self.rows)
         elif sql.startswith('SELECT COUNT'):
-            self.count = len(self.pending[sql.split()[-1]])
+            self.count = len(self.pending[sql.split()[-1].replace('"', '')])
 
     def fetchall(self):
         if self.result is not None and self.copies == 2:
@@ -100,7 +101,8 @@ def test_replace_success_forces_every_copy_and_commits_once(tmp_path):
     assert 'ROLLBACK' not in cursor.commands
     copies = [sql for sql in cursor.commands if sql.startswith('COPY')]
     assert len(copies) == 3
-    assert all('FORCE=TRUE' in sql and "FILES=('20261109.psv.gz')" in sql for sql in copies)
+    assert all('FORCE=TRUE' in sql and 'FILES=(%s)' in sql for sql in copies)
+    assert all(params == ('20261109.psv.gz',) for sql, params in cursor.calls if sql.startswith('COPY'))
     assert all(cursor.data['RAW_BILLING.' + t] == ['replacement'] * 3
                for t in ('INVOICE_HDR', 'INVOICE_LINE', 'GL_JOURNAL_LINE'))
 
@@ -134,10 +136,9 @@ def test_fixture_multiple_dates_delete_once_and_copy_explicit_files(tmp_path, mo
     entries = load.prepare_fixtures(tmp_path, ['billing'])
     cursor = TransactionCursor()
     load.load_seed(cursor, entries, truncate=True, stage_prefix='fixtures')
-    assert cursor.commands.count('DELETE FROM RAW_BILLING.INVOICE_HDR') == 1
+    assert cursor.commands.count('DELETE FROM "RAW_BILLING"."INVOICE_HDR"') == 1
     assert cursor.data['RAW_BILLING.INVOICE_HDR'] == ['replacement'] * 6
-    assert len([sql for sql in cursor.commands if sql.startswith('COPY') and "FILES=('20261109.psv')" in sql]) == 1
-    assert len([sql for sql in cursor.commands if sql.startswith('COPY') and "FILES=('20261110.psv')" in sql]) == 1
+    assert [params for sql, params in cursor.calls if sql.startswith('COPY')] == [('20261109.psv',), ('20261110.psv',)]
     assert len(load.prepare_fixtures(tmp_path, ['billing'], '20261109')) == 1
     with pytest.raises(FileNotFoundError, match='No landing files'):
         load.prepare_fixtures(tmp_path, ['billing'], '20261111')

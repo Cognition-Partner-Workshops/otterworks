@@ -70,7 +70,7 @@ def test_loader_does_not_create_schema(tmp_path, monkeypatch):
     cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
     cursor.fetchall.return_value = [(name,) for name, _ in spark_landing.SCHEMAS['PLAN_CATALOG']]
     cursor.fetchone.return_value = (1,)
-    def execute(sql):
+    def execute(sql, params=None):
         if 'CREATE SCHEMA' in sql:
             raise PermissionError('loader has no CREATE SCHEMA')
     cursor.execute.side_effect = execute

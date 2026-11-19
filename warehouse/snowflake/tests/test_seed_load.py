@@ -91,10 +91,11 @@ class Cursor:
     description = [('status',), ('rows_loaded',), ('errors_seen',)]
 
     def __init__(self, rows=3, fail=False):
-        self.rows, self.fail, self.commands = rows, fail, []
+        self.rows, self.fail, self.commands, self.calls = rows, fail, [], []
 
     def execute(self, command, params=None):
         self.commands.append(command)
+        self.calls.append((command, params))
         if self.fail and command.startswith('PUT'):
             raise RuntimeError('upload failed')
 
@@ -110,7 +111,7 @@ def test_seed_copy_truncate_and_error(tmp_path, capsys):
     cur = Cursor()
     load_seed(cur, prepared, truncate=True)
     assert 'billing | INVOICE_HDR | 3 | 3' in capsys.readouterr().out
-    assert cur.commands[1:3] == ['BEGIN', 'DELETE FROM RAW_BILLING.INVOICE_HDR']
+    assert cur.commands[1:3] == ['BEGIN', 'DELETE FROM "RAW_BILLING"."INVOICE_HDR"']
     assert 'MATCH_BY_COLUMN_NAME=CASE_INSENSITIVE' in cur.commands[3]
     assert 'ON_ERROR=ABORT_STATEMENT' in cur.commands[3]
     assert 'FORCE=TRUE' in cur.commands[3]
@@ -136,9 +137,10 @@ def test_seed_copy_repeat_and_date_isolation(tmp_path, monkeypatch, capsys):
             self.count = 0
 
         def execute(self, command, params=None):
-            super().execute(command)
+            super().execute(command, params)
             if command.startswith('COPY'):
-                stage, filename = re.search(r"FROM (\S+) FILES=\('([^']+)'\)", command).groups()
+                stage = re.search(r'FROM (\S+) FILES=\(%s\)', command).group(1)
+                filename = params[0]
                 assert stage.endswith('/' + filename[:8] + '/')
                 key = stage + filename
                 self.description = [('status',), ('rows_loaded',)]
@@ -171,7 +173,9 @@ def test_seed_copy_repeat_and_date_isolation(tmp_path, monkeypatch, capsys):
     copies = [sql for sql in cur.commands if sql.startswith('COPY')]
     assert copies[0] == copies[1]
     assert '/seed/billing/INVOICE_HDR/20261109/' in copies[0]
-    assert "FILES=('20261109.psv.gz')" in copies[0]
+    assert 'FILES=(%s)' in copies[0]
+    assert [params[0] for sql, params in cur.calls if sql.startswith('COPY')] == [
+        '20261109.psv.gz', '20261109.psv.gz', '20261110.psv.gz']
     assert '20261109' not in copies[2]
     assert all('OVERWRITE=TRUE' in sql for sql in cur.commands if sql.startswith('PUT'))
 

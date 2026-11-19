@@ -21,13 +21,37 @@ def test_dag_sql():
     folder, root, tasks = pc_dag.load('sfx_billing', FIXTURE)
     assert folder == 'BILLING' and root == 'START'
     sql = pc_dag.create_sql(folder, tasks['PAYMENT'], tasks)
-    assert _run_render('__RUN_DATABASE__.PC_BILLING.__RUN_DATABASE___PC_BILLING_PAYMENT') in sql
-    assert _run_render('AFTER __RUN_DATABASE__.PC_BILLING.__RUN_DATABASE___PC_BILLING_START') in sql
-    assert _run_render("COMMENT='run_token=__RUN_TOKEN__ expires=2026-11-24'") in sql
-    assert _run_render('WAREHOUSE=__RUN_DATABASE___TRANSFORM_WH') in sql
+    assert _run_render('"__RUN_DATABASE__"."PC_BILLING"."__RUN_DATABASE___PC_BILLING_PAYMENT"') in sql
+    assert _run_render('AFTER "__RUN_DATABASE__"."PC_BILLING"."__RUN_DATABASE___PC_BILLING_START"') in sql
+    assert 'COMMENT=%s QUERY_TAG=%s' in sql
+    assert 'AS EXECUTE IMMEDIATE %s' in sql
+    assert _run_render('WAREHOUSE="__RUN_DATABASE___TRANSFORM_WH"') in sql
     tag = json.loads(pc_dag.task_tag(folder))
     assert all(tag[k] == v for k, v in dict(run=_run_render('__RUN_TOKEN__'), act='scale', step='dag', folder='BILLING').items())
     assert 'SCHEDULE' not in sql and 'RESUME' not in sql
+
+
+def test_deploy_binds_task_body_and_rejects_invalid_identifiers(monkeypatch):
+    from unittest.mock import Mock
+
+    folder, _, tasks = pc_dag.load('billing', FIXTURE)
+    payload = "SELECT 'value'; -- task SQL, not part of CREATE TASK syntax"
+    tasks['START']['sql'] = payload
+
+    def records(cursor, statement, params=()):
+        if 'LIKE %s' in statement:
+            return [dict(name=params[0], predecessors='[]')]
+        return [dict(name=step['task'], state='suspended') for step in tasks.values()]
+
+    monkeypatch.setattr(pc_dag, 'records', records)
+    cursor = Mock()
+    pc_dag.deploy(cursor, folder, tasks)
+    creates = [call.args for call in cursor.execute.call_args_list if call.args[0].startswith('CREATE TASK')]
+    assert len(creates) == len(tasks)
+    assert creates[0][1] == (pc_dag.COMMENT, pc_dag.task_tag(folder), payload)
+    assert payload not in creates[0][0]
+    with pytest.raises(ValueError, match='Invalid identifier'):
+        pc_dag.create_sql(folder, dict(task='bad; DROP SCHEMA other', sql='SELECT 1'), tasks)
 
 
 @pytest.mark.parametrize('change', ['cycle', 'warehouse', 'name', 'empty'])
@@ -88,9 +112,8 @@ def test_run_once_builds_then_sets_batch_date(monkeypatch):
     config = next(i for i, sql in enumerate(names) if 'SET CONFIG' in sql)
     started = next(i for i, sql in enumerate(names) if sql.startswith('EXECUTE TASK'))
     assert names.index('BUILD') < config < started
-    assert names[config] == 'ALTER TASK IDENTIFIER(%s) SET CONFIG=%s'
-    assert calls[config][1][0] == _run_render('__RUN_DATABASE__.PC_BILLING.__RUN_DATABASE___PC_BILLING_START')
-    assert json.loads(calls[config][1][1]) == {'load_date': '20261110'}
+    assert names[config] == _run_render('ALTER TASK "__RUN_DATABASE__"."PC_BILLING"."__RUN_DATABASE___PC_BILLING_START" SET CONFIG=%s')
+    assert json.loads(calls[config][1][0]) == {'load_date': '20261110'}
 
 
 def test_failed_build_skips_graph(monkeypatch):

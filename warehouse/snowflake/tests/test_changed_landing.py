@@ -29,7 +29,8 @@ class FileCursor:
     def execute(self, sql, params=None):
         self.commands.append(sql)
         if sql.startswith('PUT'):
-            uri, stage = re.search(r"PUT '([^']+)' (@\S+)", sql).groups()
+            uri = params[0]
+            stage = re.search(r'PUT %s (@\S+)', sql).group(1)
             path = Path(unquote(urlparse(uri).path))
             key = stage.split('/', 1)[1] + path.name
             if key not in self.staged or 'OVERWRITE=TRUE' in sql:
@@ -44,7 +45,8 @@ class FileCursor:
             key = params[1]
             self.data.pop(key, None)
         elif sql.startswith('COPY'):
-            stage, name = re.search(r"FROM (@\S+) FILES=\('([^']+)'\)", sql).groups()
+            stage = re.search(r'FROM (@\S+) FILES=\(%s\)', sql).group(1)
+            name = params[0]
             self.copy(stage.split('/', 1)[1] + name, 'FORCE=TRUE' in sql)
         elif sql.startswith('CALL'):
             loaded = sum(self.copy(k, False) for k in self.staged)

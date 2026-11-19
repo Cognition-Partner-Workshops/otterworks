@@ -4,6 +4,7 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier, stage as sql_stage
 
 import argparse
 import csv
@@ -96,12 +97,12 @@ def load_seed(cur, prepared, area='all', truncate=False, stage_prefix='seed'):
             raise ValueError(f'Invalid prepared seed filename: {path.name}')
         stage = (f'@LANDING.LANDING_STAGE/{source_area}/{table}/' if stage_prefix is None else
                  f'@LANDING.LANDING_STAGE/{stage_prefix}/{source_area}/{table}/{match.group(1)}/')
-        uri = path.resolve().as_uri().replace("'", "''")
-        uploads.append(f"PUT '{uri}' {stage} AUTO_COMPRESS=FALSE OVERWRITE=TRUE")
+        uri = path.resolve().as_uri()
+        uploads.append((compose('PUT %s {} AUTO_COMPRESS=FALSE OVERWRITE=TRUE', sql_stage(stage)), (uri,)))
         plans.append((relation, stage, path.name, expected))
         labels[relation] = f'{source_area}.{table}' if stage_prefix is None else f'{source_area} | {table}'
-    for upload in uploads:
-        cur.execute(upload)
+    for upload, params in uploads:
+        cur.execute(upload, params)
     for row in copy_tables(cur, plans, replace=truncate):
         if stage_prefix is None:
             print(f"{labels[row['table']]}: {row['rows_loaded']} rows loaded")
@@ -127,17 +128,17 @@ def copy_tables(cur, plans, replace=False):
     try:
         if replace:
             for relation in totals:
-                cur.execute(f'DELETE FROM {relation}')
+                cur.execute(compose('DELETE FROM {}', identifier(relation)))
         for relation, stage, filename, expected in plans:
             if not replace:
                 source_file = stage.split('/', 1)[1] + filename
-                cur.execute('DELETE FROM IDENTIFIER(%s) WHERE _SRC_FILE=%s', (relation, source_file))
-            cur.execute(f'COPY INTO {relation} FROM {stage}'
-                        f" FILES=('{filename}')"
+                cur.execute('DELETE FROM IDENTIFIER(%s) WHERE _SRC_FILE=%s', (identifier(relation).as_string(), source_file))
+            cur.execute(compose('COPY INTO {} FROM {}'
+                        ' FILES=(%s)'
                         ' FILE_FORMAT=(FORMAT_NAME=LANDING.PSV_HEADER)'
                         ' MATCH_BY_COLUMN_NAME=CASE_INSENSITIVE'
                         ' INCLUDE_METADATA=(_SRC_FILE=METADATA$FILENAME,_LOADED_AT=METADATA$START_SCAN_TIME)'
-                        ' ON_ERROR=ABORT_STATEMENT FORCE=TRUE')
+                        ' ON_ERROR=ABORT_STATEMENT FORCE=TRUE', identifier(relation), sql_stage(stage)), (filename,))
             columns = [c[0].lower() for c in cur.description]
             copied = [dict(zip(columns, row)) for row in cur.fetchall()]
             statuses = [str(row.get('status', '')).upper() for row in copied]
@@ -148,7 +149,7 @@ def copy_tables(cur, plans, replace=False):
                 raise RuntimeError(f'{relation}: expected {expected} rows, COPY loaded {loaded}')
             loaded_totals[relation] += loaded
         for relation, expected in totals.items():
-            cur.execute(f'SELECT COUNT(*) FROM {relation}')
+            cur.execute(compose('SELECT COUNT(*) FROM {}', identifier(relation)))
             count = cur.fetchone()[0]
             if replace and count != expected:
                 raise RuntimeError(f'{relation}: expected {expected} rows, count={count}')

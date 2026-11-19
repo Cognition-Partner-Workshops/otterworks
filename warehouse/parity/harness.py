@@ -4,6 +4,8 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier, stage as sql_stage
+from psycopg import sql
 
 import json
 import os
@@ -37,7 +39,7 @@ def owner_effort(row):
 
 
 def require_owner(cursor, mapping, owner='act3-workflow', folder=None):
-    cursor.execute('SELECT FOLDER, OWNER_EFFORT FROM IDENTIFIER(%s) WHERE MAPPING=%s', (control_table(), mapping))
+    cursor.execute('SELECT FOLDER, OWNER_EFFORT FROM IDENTIFIER(%s) WHERE MAPPING=%s', (identifier(control_table()).as_string(), mapping))
     rows = cursor.fetchall()
     if len(rows) != 1 or rows[0][-1] != owner:
         raise ValueError(f'Mapping ownership mismatch: {mapping} (requested {owner})')
@@ -57,24 +59,25 @@ def connection(workload, step, mapping=None):
 
 
 def control_ddl():
-    return f"""CREATE TABLE IF NOT EXISTS {control_table()} (
+    return compose("""CREATE TABLE IF NOT EXISTS {} (
         FOLDER VARCHAR, MAPPING VARCHAR, WORKFLOW VARCHAR, SESSION_NAME VARCHAR,
         SOURCE_OBJECTS VARCHAR, TARGET_TABLE VARCHAR, DBT_MODEL VARCHAR, PATTERNS VARCHAR,
         BEFORE_ROWS NUMBER, AFTER_ROWS NUMBER, ROWCOUNT_MATCH BOOLEAN, KEYED_HASH_MATCH BOOLEAN,
         SAMPLED_DIFFS VARIANT, RUN1_ROWS NUMBER, RUN2_ROWS NUMBER, RERUN_DUPLICATES NUMBER,
         STATUS VARCHAR DEFAULT 'PENDING', AMBER_REASON VARCHAR, PR_URL VARCHAR,
         PARITY_QUERY_TAG VARCHAR, VERIFIED_AT TIMESTAMP_TZ, OWNER_EFFORT VARCHAR
-    ) COMMENT = '{COMMENT}'"""
+    ) COMMENT = %s""", identifier(control_table()))
 
 
 def merge_sql():
-    columns = ', '.join(DESCRIPTIVE)
-    select = ', '.join('%s AS ' + c for c in DESCRIPTIVE)
-    return f"""MERGE INTO {control_table()} t USING (SELECT {select}) s
+    columns = sql.SQL(', ').join(map(identifier, DESCRIPTIVE))
+    select = sql.SQL(', ').join(sql.Composed([sql.SQL('%s AS '), identifier(c)]) for c in DESCRIPTIVE)
+    return compose("""MERGE INTO {} t USING (SELECT {}) s
         ON t.folder=s.folder AND t.mapping=s.mapping
         WHEN MATCHED AND t.owner_effort IS NULL THEN UPDATE SET t.owner_effort=s.owner_effort
-        WHEN NOT MATCHED THEN INSERT ({columns}, STATUS)
-        VALUES ({', '.join('s.' + c for c in DESCRIPTIVE)}, 'PENDING')"""
+        WHEN NOT MATCHED THEN INSERT ({}, STATUS)
+        VALUES ({}, 'PENDING')""", identifier(control_table()), select, columns,
+                   sql.SQL(', ').join(identifier('s.' + c) for c in DESCRIPTIVE))
 
 
 def source_plan(landing):
@@ -101,37 +104,40 @@ def setup(landing=None, skip_control=False):
                        _run_render(BOOTSTRAP.read_text()), re.S)
     with connection("load", "setup") as conn, conn.cursor() as cur:
         for schema in ("PC_SRC", "PC_BEFORE", "PC_BILLING", "PC_CONTENT", "PC_AUDIT"):
-            cur.execute(f"CREATE SCHEMA IF NOT EXISTS {DATABASE}.{schema} COMMENT = '{COMMENT}'")
+            cur.execute(compose('CREATE SCHEMA IF NOT EXISTS {} COMMENT = %s', identifier(DATABASE + '.' + schema)), (COMMENT,))
         stage = DATABASE + ".PC_SRC.LANDING_STAGE"
-        cur.execute(f"CREATE STAGE IF NOT EXISTS {stage} COMMENT = '{COMMENT}'")
+        cur.execute(compose('CREATE STAGE IF NOT EXISTS {} COMMENT = %s', identifier(stage)), (COMMENT,))
         for table, body, path in plan:
             relation = DATABASE + '.PC_SRC.' + table
-            cur.execute(f"CREATE TABLE IF NOT EXISTS {relation} ({body}) COMMENT = '{COMMENT}'")
-            uri = path.resolve().as_uri().replace("'", "''")
-            cur.execute(f"PUT '{uri}' @{stage}/{table}/ AUTO_COMPRESS=FALSE OVERWRITE=TRUE")
-            cur.execute(f"TRUNCATE TABLE {relation}")
-            cur.execute(f"""COPY INTO {relation} FROM @{stage}/{table}/
+            # Column definitions are SQL from the committed bootstrap, not runtime data.
+            cur.execute(compose('CREATE TABLE IF NOT EXISTS {} ({}) COMMENT = %s', identifier(relation), sql.SQL(body)), (COMMENT,))
+            uri = path.resolve().as_uri()
+            location = sql_stage(stage + '/' + table + '/')
+            cur.execute(compose('PUT %s {} AUTO_COMPRESS=FALSE OVERWRITE=TRUE', location), (uri,))
+            cur.execute(compose('TRUNCATE TABLE {}', identifier(relation)))
+            cur.execute(compose("""COPY INTO {} FROM {}
                 FILES = ('20261109.psv') FILE_FORMAT = (TYPE=CSV FIELD_DELIMITER='|'
                 SKIP_HEADER=0 FIELD_OPTIONALLY_ENCLOSED_BY=NONE EMPTY_FIELD_AS_NULL=TRUE
-                NULL_IF=('') ESCAPE_UNENCLOSED_FIELD=NONE) FORCE=TRUE ON_ERROR=ABORT_STATEMENT""")
-            cur.execute(f"SELECT COUNT(*) FROM {relation}")
+                NULL_IF=('') ESCAPE_UNENCLOSED_FIELD=NONE) FORCE=TRUE ON_ERROR=ABORT_STATEMENT""", identifier(relation), location))
+            cur.execute(compose('SELECT COUNT(*) FROM {}', identifier(relation)))
             print(f"PC_SRC.{table}: {cur.fetchone()[0]} rows")
         for source, insert in seeds:
             table = source.split('.')[1]
             if table in landing_sources():
                 raise ValueError(f"Seed and landing collision: {table}")
             relation = DATABASE + '.PC_SRC.' + table
-            cur.execute(f"CREATE TABLE IF NOT EXISTS {relation} ({definitions[source]}) COMMENT = '{COMMENT}'")
-            cur.execute(f"TRUNCATE TABLE {relation}")
-            cur.execute(f"INSERT INTO {relation} {insert}")
-            cur.execute(f"SELECT COUNT(*) FROM {relation}")
+            # Definitions and seed INSERT clauses come only from the committed bootstrap.
+            cur.execute(compose('CREATE TABLE IF NOT EXISTS {} ({}) COMMENT = %s', identifier(relation), sql.SQL(definitions[source])), (COMMENT,))
+            cur.execute(compose('TRUNCATE TABLE {}', identifier(relation)))
+            cur.execute(compose('INSERT INTO {} {}', identifier(relation), sql.SQL(insert)))
+            cur.execute(compose('SELECT COUNT(*) FROM {}', identifier(relation)))
             print(f"PC_SRC.{table}: {cur.fetchone()[0]} rows (bootstrap reference seed)")
         if skip_control:
             print('Control setup skipped; PC_SRC load complete')
             return
         try:
-            cur.execute(control_ddl())
-            cur.execute(f'ALTER TABLE {control_table()} ADD COLUMN IF NOT EXISTS OWNER_EFFORT VARCHAR')
+            cur.execute(control_ddl(), (COMMENT,))
+            cur.execute(compose('ALTER TABLE {} ADD COLUMN IF NOT EXISTS OWNER_EFFORT VARCHAR', identifier(control_table())))
             for row in rows:
                 values = [row['folder'], row['mapping'], row['workflow'], row['session'],
                           json.dumps(row['source_objects']), row['target_table'], row['dbt_model'],
@@ -145,7 +151,7 @@ def setup(landing=None, skip_control=False):
 
 def licence():
     with connection("ops", "licence") as conn, conn.cursor() as cur:
-        cur.execute(f"SELECT OWNER_EFFORT, STATUS, COUNT(*) FROM {control_table()} GROUP BY OWNER_EFFORT, STATUS")
+        cur.execute(compose('SELECT OWNER_EFFORT, STATUS, COUNT(*) FROM {} GROUP BY OWNER_EFFORT, STATUS', identifier(control_table())))
         records = cur.fetchall()
     counts = {}
     owners = {}

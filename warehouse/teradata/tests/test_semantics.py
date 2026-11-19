@@ -3,6 +3,7 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
 from warehouse.run_config import render as _run_render
+from warehouse.sql import compose, identifier
 
 import datetime
 
@@ -213,4 +214,4 @@ def test_database_ddl(td):
     name = td.conn.execute('SELECT current_schema()').fetchone()[0] + '_other'
     ok(td, f'CREATE DATABASE {name} FROM DBC AS PERM=0')
     ok(td, f'DATABASE {name}')
-    td.conn.execute('DROP SCHEMA ' + name)
+    td.conn.execute(compose('DROP SCHEMA {}', identifier(name, dialect='postgres')))

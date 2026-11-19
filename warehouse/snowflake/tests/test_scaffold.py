@@ -124,7 +124,7 @@ def test_suspend_already_suspended(monkeypatch, capsys):
         def __exit__(self, *args):
             pass
 
-        def execute(self, query):
+        def execute(self, query, params=None):
             if query.startswith("ALTER"):
                 raise ProgrammingError(msg="Invalid state", errno=90064)
 
