@@ -1,8 +1,8 @@
 {
   "job": "user_pref_json_flatten",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "28 3 * * *",
   "profile": "small"
 }
