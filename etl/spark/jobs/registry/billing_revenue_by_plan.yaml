@@ -1,8 +1,8 @@
 {
   "job": "billing_revenue_by_plan",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "1 1 * * *",
   "profile": "small"
 }
