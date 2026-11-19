@@ -1,8 +1,8 @@
 {
   "job": "doc_share_graph_reach",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "23 3 * * *",
   "profile": "small"
 }

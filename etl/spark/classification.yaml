@@ -100,8 +100,8 @@
   reason: "Propagates component labels iteratively across a team-membership graph."
 - job: doc_share_graph_reach
   language: python
-  target: snowpark_python
-  reason: "Performs bounded breadth-first expansion over document-sharing edges with visited-node tracking."
+  target: spark_standard_template
+  reason: "Bounded four-hop breadth-first expansion over document-sharing edges; runs on the standard template because the run's Snowflake database and warehouse are not provisioned, so Snowpark could not be measured."
 - job: collab_session_sessionize
   language: python
   target: dbt
