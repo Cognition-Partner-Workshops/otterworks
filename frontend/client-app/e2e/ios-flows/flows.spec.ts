@@ -24,6 +24,18 @@ test("bad password is rejected", async ({ page }) => {
   await expect(page).toHaveURL(/login/);
 });
 
+test("LocalStack image preview loads through the configured storage origin", async ({ page }) => {
+  await login(page);
+  await navigate(page, "Files");
+  await page.getByText("Harbor preview.svg", { exact: true }).dblclick();
+  const image = page.getByRole("img", { name: "Harbor preview.svg preview loaded", exact: true });
+  await expect(image).toBeVisible();
+  await expect(image).toHaveJSProperty("naturalWidth", 240);
+  await expect(image).toHaveAttribute("src", "http://127.0.0.1:4010/download/preview-1");
+  await expect(page.getByText("Image preview not available", { exact: true })).toHaveCount(0);
+  await page.screenshot({ path: "test-results/storage-preview-iphone.png" });
+});
+
 test("login and sidebar pages", async ({ page }) => {
   await login(page);
   await expect(page.getByText("Harbor report.txt").first()).toBeVisible();

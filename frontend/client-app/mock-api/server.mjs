@@ -6,6 +6,7 @@ let state;
 let contents;
 function reset() {
   contents = new Map([['file-1', Buffer.from('Harbor report mock content')]]);
+  contents.set('preview-1', Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="160"><rect width="240" height="160" fill="#0d9488"/><text x="20" y="85" fill="white" font-size="24">Harbor preview</text></svg>'));
   state = {
     profile: { id: 'tester', email: 'tester@example.com', displayName: 'Harbor Tester' },
     files: [{ id: 'file-1', name: 'Harbor report.txt', mimeType: 'text/plain', sizeBytes: 25, ownerId: 'tester', folderId: null, createdAt: now, updatedAt: now }],
@@ -14,6 +15,7 @@ function reset() {
     notifications: [{ id: 'notice-1', type: 'system', title: 'Harbor update', message: 'Your voyage report is ready', read: false, createdAt: now }],
     settings: { notificationEmail: true, notificationInApp: true, notificationDesktop: false, theme: 'light', language: 'en' },
   };
+  state.files.push({ ...state.files[0], id: 'preview-1', name: 'Harbor preview.svg', mimeType: 'image/svg+xml', sizeBytes: contents.get('preview-1').length });
 }
 reset();
 const paginate = (data) => ({ data, items: data, total: data.length, page: 1, pageSize: 50, hasMore: false });
@@ -68,7 +70,8 @@ const server = http.createServer(async (req, res) => {
   if (/^\/files\/[^/]+\/download$/.test(path)) {
     const id = path.split('/')[2];
     if (!contents.has(id)) return send({ message: 'File not found' }, 404);
-    return send({ url: `http://127.0.0.1:${port}/download/${id}`, expiresInSecs: 3600 });
+    const host = id === 'preview-1' ? 'localstack:4566' : `127.0.0.1:${port}`;
+    return send({ url: `http://${host}/download/${id}`, expiresInSecs: 3600 });
   }
   if (path.startsWith('/download/')) {
     const file = state.files.find(f => f.id === path.split('/')[2]);
