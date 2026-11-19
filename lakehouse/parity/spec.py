@@ -66,7 +66,7 @@ def load_spec(path):
         if 'missing_is_empty' in side and (kind != 'jsonl' or type(side['missing_is_empty']) is not bool):
             raise ValueError('Only JSONL readers support boolean missing_is_empty')
         if 'database' in side and (kind != 'postgres_sql'
-                                   or not re.fullmatch(r'[a-z][a-z0-9_]*', str(side['database']))):
+                                   or not re.fullmatch(r'[a-z][a-z0-9_]*', str(side['database']).replace('{NS}', 'namespace'))):
             raise ValueError('Only PostgreSQL readers support a lowercase database override')
     return spec
 

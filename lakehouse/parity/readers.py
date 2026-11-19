@@ -50,8 +50,9 @@ class Readers:
             return rows, names
         if kind == 'postgres_sql':
             database = side.get('database')
-            connection = (postgres_connection(database.format(NS=os.environ['NS']))
-                          if database else postgres_connection())
+            if database and '{NS}' in database:
+                database = database.format(NS=os.environ['NS'])
+            connection = postgres_connection(database) if database else postgres_connection()
             with connection as conn:
                 conn.read_only = True
                 with conn.cursor() as cursor:

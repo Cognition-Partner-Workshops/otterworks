@@ -212,6 +212,41 @@ def test_csv_reader_and_errors(tmp_path, monkeypatch):
         Readers.validate_columns(['id', 'id'])
 
 
+@pytest.mark.parametrize('database,valid', [
+    ('users_infa', True), ('lakehouse_documents_infa_{NS}', True),
+    ('', False), (None, False), ('UPPER', False), ('../unsafe', False), ('db_{OTHER}', False),
+])
+def test_postgres_database_override_spec(tmp_path, database, valid):
+    spec = copy.deepcopy(discover()['billing.customer_account'][1])
+    spec['legacy']['database'] = database
+    path = tmp_path / 'database.yaml'
+    path.write_text(json.dumps(spec))
+    if valid:
+        assert load_spec(path)['legacy']['database'] == database
+    else:
+        with pytest.raises(ValueError, match='database override'):
+            load_spec(path)
+
+
+@pytest.mark.parametrize('database,expected', [
+    ('users_infa', 'users_infa'), ('lakehouse_documents_infa_{NS}', 'lakehouse_documents_infa_test-parity'),
+])
+def test_postgres_reader_database_override(monkeypatch, database, expected):
+    monkeypatch.delenv('NS', raising=False)
+    if '{NS}' in database:
+        monkeypatch.setenv('NS', 'test-parity')
+    calls = []
+
+    def connect(name):
+        calls.append(name)
+        raise StopIteration
+
+    monkeypatch.setattr('lakehouse.parity.readers.postgres_connection', connect)
+    with pytest.raises(StopIteration):
+        Readers('20261109').read({'kind': 'postgres_sql', 'database': database, 'sql': 'select 1'})
+    assert calls == [expected]
+
+
 def test_postgres_environment_precedence(monkeypatch):
     for name in ('DSN', 'HOST', 'PORT', 'DB', 'USER', 'PASSWORD'):
         monkeypatch.delenv('TD_PG_' + name, raising=False)
