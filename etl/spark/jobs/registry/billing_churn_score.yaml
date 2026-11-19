@@ -1,8 +1,8 @@
 {
   "job": "billing_churn_score",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "15 2 * * *",
   "profile": "small"
 }
