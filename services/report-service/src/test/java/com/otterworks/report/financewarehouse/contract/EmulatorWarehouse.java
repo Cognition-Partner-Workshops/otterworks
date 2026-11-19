@@ -15,7 +15,33 @@ class EmulatorWarehouse implements ContractWarehouse {
     private final String target;
 
     EmulatorWarehouse(String target) {
+        if (!Arrays.asList("teradata-emulator", "snowflake-semantics").contains(target)) {
+            throw new IllegalArgumentException("Unsupported bridge target");
+        }
         this.target = target;
+    }
+
+    static List<String> command(String python, String bridge, String target, String query, boolean record) {
+        if (!python.matches("[A-Za-z0-9_./ -]+")
+                || !new File(python).getName().matches("python(?:[0-9]+(?:\\.[0-9]+)*)?")) {
+            throw new IllegalArgumentException("Invalid Python executable path");
+        }
+        if (python.contains("/") && !(new File(python).isFile() && new File(python).canExecute())) {
+            throw new IllegalArgumentException("Python path must name an executable file");
+        }
+        if (!bridge.matches("[A-Za-z0-9_./ -]+") || !bridge.endsWith(".py") || !new File(bridge).isFile()) {
+            throw new IllegalArgumentException("Invalid contract bridge path");
+        }
+        if (!Arrays.asList("teradata-emulator", "snowflake-semantics").contains(target)
+                || !query.matches("[a-z][a-z0-9-]*")) {
+            throw new IllegalArgumentException("Invalid contract target or query");
+        }
+        List<String> command = new ArrayList<>(Arrays.asList(python, bridge,
+                "--target", target, "--query", query));
+        if (record) {
+            command.addAll(Arrays.asList("--record", "contract/recorded/teradata/" + query + ".json"));
+        }
+        return command;
     }
 
     @Override
@@ -23,16 +49,13 @@ class EmulatorWarehouse implements ContractWarehouse {
         String query = ReplayWarehouse.queryName(sql);
         String python = System.getenv().getOrDefault("CONTRACT_KIT_PYTHON", "python3");
         String bridge = System.getenv().getOrDefault("CONTRACT_KIT_BRIDGE", "../../consumers/contract-kit/bridge.py");
-        List<String> command = new ArrayList<>(Arrays.asList(python, bridge,
-                "--target", target, "--query", query));
-        if ("true".equals(System.getenv("CONTRACT_RECORD"))) {
-            command.addAll(Arrays.asList("--record", "contract/recorded/teradata/" + query + ".json"));
-        }
+        List<String> command = command(python, bridge, target, query, "true".equals(System.getenv("CONTRACT_RECORD")));
         File output = File.createTempFile("finance-contract-", ".json");
         File error = File.createTempFile("finance-contract-", ".log");
         Process process = null;
         try {
-            ProcessBuilder builder = new ProcessBuilder(command).redirectOutput(output).redirectError(error);
+            ProcessBuilder builder = new ProcessBuilder().redirectOutput(output).redirectError(error);
+            builder.command().addAll(command);
             builder.environment().put("TD_USER", "svc_exit_parity");
             process = builder.start();
             try (java.io.OutputStream input = process.getOutputStream()) {

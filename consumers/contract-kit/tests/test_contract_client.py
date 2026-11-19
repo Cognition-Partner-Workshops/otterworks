@@ -1,5 +1,6 @@
 import json
 import subprocess
+from unittest.mock import Mock
 
 import pytest
 
@@ -45,3 +46,36 @@ def test_unknown_target_and_missing_replay(tmp_path, monkeypatch):
     monkeypatch.setenv("WAREHOUSE_CONTRACT_TARGET", "replay")
     with pytest.raises(FileNotFoundError):
         execute("SEL 1", tmp_path, "absent")
+
+
+@pytest.mark.parametrize('python', ['', 'python3;touch injected', '/bin/sh', 'python3 -c code'])
+def test_python_override_is_validated(tmp_path, monkeypatch, python):
+    monkeypatch.setenv('CONTRACT_KIT_PYTHON', python)
+    monkeypatch.setenv('WAREHOUSE_CONTRACT_TARGET', 'teradata-emulator')
+    run = Mock()
+    monkeypatch.setattr(subprocess, 'run', run)
+    with pytest.raises(ValueError, match='Python'):
+        execute('SEL 1', tmp_path, 'safe')
+    run.assert_not_called()
+
+
+@pytest.mark.parametrize('query', ['', '../escape', 'sample;touch injected', '--record'])
+def test_query_name_is_validated(tmp_path, monkeypatch, query):
+    run = Mock()
+    monkeypatch.setattr(subprocess, 'run', run)
+    with pytest.raises(ValueError, match='query name'):
+        execute('SEL 1', tmp_path, query)
+    run.assert_not_called()
+
+
+def test_data_is_stdin_not_shell_input(tmp_path, monkeypatch):
+    monkeypatch.setenv('WAREHOUSE_CONTRACT_TARGET', 'teradata-emulator')
+    run = Mock(return_value=subprocess.CompletedProcess([], 0, '{"rows":[]}', ''))
+    monkeypatch.setattr(subprocess, 'run', run)
+    value = "'; touch injected; #"
+    assert execute('SEL ?', tmp_path, 'safe', [value]) == {'rows': []}
+    kwargs = run.call_args.kwargs
+    assert kwargs['shell'] is False
+    assert kwargs['args'][-2:] == ['--query', 'safe']
+    assert value not in kwargs['args']
+    assert kwargs['input'] == bind('SEL ?', [value])

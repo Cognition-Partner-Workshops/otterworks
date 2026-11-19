@@ -19,14 +19,26 @@ module ContractWarehouse
   # contract/legacy/ to the contract-kit emulator bridge for parity runs.
   class EmulatorWarehouse
     def query(sql, _binds = [])
-      query = QUERIES.fetch(sql)
+      query = QUERIES.find { |statement, _name| statement == sql }&.last
+      raise KeyError, 'Unknown contract SQL' unless query
       recorded = File.join(ROOT, 'recorded', 'teradata', "#{query}.json")
       target = ENV.fetch('WAREHOUSE_CONTRACT_TARGET', 'teradata-emulator')
       if target == 'replay'
         data = JSON.parse(File.read(recorded))
       else
+        unless %w[teradata-emulator snowflake-semantics].include?(target)
+          raise ArgumentError, 'Unsupported bridge target'
+        end
         bridge = File.expand_path('../../../consumers/contract-kit/bridge.py', ROOT)
-        command = [ENV.fetch('CONTRACT_KIT_PYTHON', 'python3'), bridge,
+        python = ENV.fetch('CONTRACT_KIT_PYTHON', 'python3')
+        unless python.match?(%r{\A[A-Za-z0-9_./ -]+\z}) &&
+               File.basename(python).match?(/\Apython(?:[0-9]+(?:\.[0-9]+)*)?\z/)
+          raise ArgumentError, 'Invalid Python executable path'
+        end
+        if python.include?('/') && !(File.file?(python) && File.executable?(python))
+          raise ArgumentError, 'Python path must name an executable file'
+        end
+        command = [[python, python], bridge,
                    '--target', target, '--query', query]
         command += ['--record', recorded] if ENV['CONTRACT_RECORD'] == 'true'
         legacy_sql = File.read(File.join(ROOT, 'legacy', "#{query}.sql"))

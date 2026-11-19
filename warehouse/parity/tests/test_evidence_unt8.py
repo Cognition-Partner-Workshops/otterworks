@@ -3,6 +3,7 @@ import sys as _run_sys
 from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
 from warehouse.run_config import render as _run_render
+from warehouse.process import executable
 
 from collections import Counter
 from datetime import date
@@ -112,19 +113,29 @@ def test_generated_unicode_is_reproducible():
         assert interpreter, (
             f'Committed macro uses Unicode {recorded_version}; runtime uses Unicode '
             f'{unicodedata.unidata_version}; set UNT8_UNICODE_PYTHON to a matching interpreter')
+        interpreter = executable(interpreter, r'python(?:[0-9]+(?:\.[0-9]+)*)?')
         version = subprocess.check_output(
-            [interpreter, '-c', 'import unicodedata; print(unicodedata.unidata_version)'], text=True).strip()
+            args=[interpreter, '-c', 'import unicodedata; print(unicodedata.unidata_version)'],
+            shell=False, text=True).strip()
         assert version == recorded_version, (
             f'UNT8_UNICODE_PYTHON uses Unicode {version}; committed macro requires {recorded_version}')
-        generated = subprocess.check_output([
+        generated = subprocess.check_output(args=[
             interpreter, '-c',
             'import runpy, sys; sys.stdout.buffer.write(runpy.run_path(sys.argv[1])["macro"]().encode("utf-8"))',
-            str(u.FIXTURES / 'generate_unicode.py')])
+            str(u.FIXTURES / 'generate_unicode.py')], shell=False)
         assert (u.ROOT / 'warehouse/dbt/macros/unt8_python_unicode.sql').read_bytes() == generated
     else:
         assert actual == module.macro()
     assert 'chr(28)' in actual and 'chr(133)' in actual and 'chr(12288)' in actual
     assert '"\\u00df":"SS"' in actual
+
+
+def test_unicode_interpreter_rejects_shell_input(monkeypatch, tmp_path):
+    monkeypatch.setattr(unicodedata, 'unidata_version', 'different')
+    monkeypatch.setenv('UNT8_UNICODE_PYTHON', 'python3; touch ' + str(tmp_path / 'injected'))
+    monkeypatch.setattr(subprocess, 'check_output', lambda *a, **k: pytest.fail('unsafe interpreter executed'))
+    with pytest.raises(ValueError, match='executable path'):
+        test_generated_unicode_is_reproducible()
 
 
 def test_models_are_incremental_single_key_no_refresh():
