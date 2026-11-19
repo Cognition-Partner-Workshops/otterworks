@@ -4,6 +4,7 @@ from collections import Counter
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import sys
 import zlib
@@ -122,7 +123,49 @@ def source_snapshot(dsn, names):
     return connection, ready, errors
 
 
-def materialize(before, names, conversion_dir):
+# Output relation -> (dbt model, {ref name: legacy relation that feeds it}).
+DBT_MODELS = {
+    'AUDIT.AUDIT_EVENT': ('warehouse/dbt/models/pc/audit/pc_audit__audit_event.sql',
+                          {'pc_audit__stg_audit_event': 'SFX_AUDIT.STG_AUDIT_EVENT'}),
+}
+
+
+def render_model(text, refs):
+    """Render the Jinja subset the PC models use: set, config and ref."""
+    variables = dict(re.findall(r'\{%-?\s*set\s+(\w+)\s*=\s*"(.*?)"\s*-?%\}', text, flags=re.S))
+    text = re.sub(r'\{%.*?%\}|\{\{\s*config\(.*?\)\s*\}\}', '', text, flags=re.S)
+    text = re.sub(r"\{\{\s*ref\('([^']+)'\)\s*\}\}", lambda m: relation(refs[m.group(1)]), text)
+    text = re.sub(r'\{\{\s*(\w+)\s*\}\}', lambda m: variables[m.group(1)], text)
+    if '{{' in text or '{%' in text:
+        raise ValueError('unsupported Jinja')
+    return text
+
+
+def materialize_models(before, after, names, ready, errors, models):
+    """Build dbt model outputs from the legacy relations that feed them."""
+    for target, (path, refs) in sorted(models.items()):
+        source = 'SFX_' + target
+        if source not in names:
+            continue
+        if not set(refs.values()) <= names:
+            errors[target] = 'conversion input not materialized'
+            continue
+        try:
+            query = sqlglot.transpile(render_model((ROOT / path).read_text(), refs), read='snowflake', write='duckdb')[0]
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+            definitions = before.execute('DESCRIBE ' + relation(source)).fetchall()
+            columns, rows = definitions and [c[0] for c in definitions], before.execute(query).fetchall()
+            after.execute('CREATE SCHEMA IF NOT EXISTS ' + quote(target.split('.')[0]))
+            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+            after.execute(f'CREATE TABLE {relation(target)} ({", ".join(quote(c[0])+" "+c[1] for c in definitions)})')
+            if rows:
+                after.executemany(f'INSERT INTO {relation(target)} VALUES ({", ".join("?" for _ in columns)})', rows)
+            ready.add(target)
+        except (duckdb.Error, sqlglot.errors.SqlglotError, KeyError, ValueError, OSError) as error:
+            errors[target] = 'conversion failed: ' + (str(error).splitlines() or [type(error).__name__])[0]
+
+
+def materialize(before, names, conversion_dir, models=None):
     after = duckdb.connect()
     ready, errors = set(), {}
     after.execute('CREATE SCHEMA BILLING')
@@ -181,6 +224,7 @@ def materialize(before, names, conversion_dir):
             except duckdb.Error as error:
                 ready.discard(target)
                 errors[target] = 'conversion failed: '+str(error).splitlines()[0]
+    materialize_models(before, after, names, ready, errors, DBT_MODELS if models is None else models)
     return after, ready, errors
 
 
@@ -191,7 +235,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     result = wave_board(objects, counters or {})
     result.update(run_token=RunConfig.from_env().token, target=target, rows=[])
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
-        'local_target': 'DuckDB', 'conversions': ['billing/initial/10_load.sql','billing/initial/30_views.sql'],
+        'local_target': 'DuckDB', 'conversions': ['billing/initial/10_load.sql','billing/initial/30_views.sql']+sorted(path for path,_ in DBT_MODELS.values()),
         'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
     available, errors = set(available or ()), errors or {}
     for obj in objects:
