@@ -1,3 +1,4 @@
+import base64
 import importlib.util
 import io
 import json
@@ -307,27 +308,129 @@ class RoutingTests(unittest.TestCase):
                 routing.pagerduty_routing_key()
 
     def config(self):
-        return {"route": {"receiver": "null", "routes": [{"receiver": "other"}]},
+        return {"route": {"receiver": "null", "routes": [
+                    {"receiver": "other", "matchers": ['namespace="other"'], "continue": True},
+                    {"receiver": "devin-oncall", "matchers": ['page="devin"'], "group_wait": "5s"}]},
+                "inhibit_rules": [{"equal": ["namespace"]}],
                 "receivers": [{"name": "other", "webhook_configs": [{"url": "http://example.invalid"}]},
                               {"name": "devin-oncall", "webhook_configs": [
-                                  {"url": "https://example.invalid", "send_resolved": False}]}]}
+                                  {"url": "https://example.invalid", "send_resolved": False}],
+                               "pagerduty_configs": [{"url": routing.EVENTS_URL,
+                                   "routing_key_file": routing.KEY_FILE, "send_resolved": True,
+                                   "severity": "error", "description": "preserve this"}]}]}
 
     def test_preserves_routes_other_receivers_and_is_idempotent(self):
         original = self.config()
-        updated, url = routing.updated_config(original)
-        self.assertEqual(url, "https://example.invalid")
-        self.assertEqual(original["route"], updated["route"])
-        self.assertEqual(original["receivers"][0], updated["receivers"][0])
-        self.assertIn("url", original["receivers"][1]["webhook_configs"][0])
-        again, url = routing.updated_config(updated)
-        self.assertIsNone(url)
-        self.assertEqual(updated, again)
+        updated = routing.updated_config(original)
+        self.assertEqual(updated, routing.updated_config(updated))
+        self.assertEqual(original["receivers"], updated["receivers"][:-1])
+        self.assertEqual(original["route"]["routes"], [r for r in updated["route"]["routes"]
+                                                     if r["receiver"] != routing.RECEIVER])
+        self.assertEqual(original["inhibit_rules"], updated["inhibit_rules"])
+        receiver = updated["receivers"][-1]
+        self.assertEqual(receiver["pagerduty_configs"], original["receivers"][-1]["pagerduty_configs"])
+        self.assertEqual(receiver["webhook_configs"], [{"url_file": routing.URL_FILE, "send_resolved": True,
+            "http_config": {"http_headers": {"X-Webhook-Secret": {"files": [routing.HEADER_FILE]}}}}])
+        self.assertEqual(updated["route"]["routes"][1], {"receiver": routing.RECEIVER,
+            "matchers": ['page="devin"', 'namespace="otterworks-odl"'], "group_wait": "5s"})
         self.assertNotIn("example.invalid", json.dumps(routing.structure(updated)))
+
+    def test_refuses_conflicting_or_partial_odl_routing(self):
+        for part in ("route", "receiver", "position"):
+            config = routing.updated_config(self.config())
+            if part == "route":
+                config["route"]["routes"][1]["matchers"] = ['page="devin"']
+            elif part == "receiver":
+                config["receivers"][-1]["webhook_configs"][0]["url_file"] = "/unexpected"
+            else:
+                config["route"]["routes"].reverse()
+            with self.subTest(part=part), self.assertRaises(ValueError):
+                routing.updated_config(config)
+        config = self.config()
+        config["receivers"][-1].pop("pagerduty_configs")
+        with self.assertRaises(ValueError):
+            routing.updated_config(config)
 
     def test_missing_or_ambiguous_receiver_rejected(self):
         for receivers in ([], [{"name": "devin-oncall", "webhook_configs": []}]):
             with self.assertRaises(ValueError):
                 routing.updated_config({"receivers": receivers})
+
+
+class WebhookSecretTests(unittest.TestCase):
+    def values(self):
+        return {"DEVIN_ALERT_WEBHOOK_URL": "https://example.invalid/test-hook",
+                "DEVIN_ALERT_WEBHOOK_SECRET": "fixture-header"}
+
+    def test_create_update_and_idempotence(self):
+        values = self.values()
+        with patch.dict(routing.os.environ, values, clear=True), \
+                patch.object(routing.subprocess, "check_output", return_value=""), \
+                patch.object(routing, "write_secret") as write:
+            routing.ensure_webhook_secret()
+        obj = write.call_args.args[0]
+        self.assertTrue(write.call_args.kwargs["create"])
+        self.assertEqual(obj["metadata"]["labels"]["run_token"], routing.RUN_TOKEN)
+        self.assertEqual(base64.b64decode(obj["data"]["url"]).decode(), values["DEVIN_ALERT_WEBHOOK_URL"])
+        obj["metadata"].update({"resourceVersion": "42", "labels": {"other": "keep"}})
+        with patch.dict(routing.os.environ, values, clear=True), \
+                patch.object(routing.subprocess, "check_output", return_value=json.dumps(obj)), \
+                patch.object(routing, "write_secret") as write:
+            routing.ensure_webhook_secret()
+        current = write.call_args.args[0]
+        self.assertEqual(current["metadata"]["resourceVersion"], "42")
+        self.assertEqual(current["metadata"]["labels"]["other"], "keep")
+        for env in ({}, values):
+            with patch.dict(routing.os.environ, env, clear=True), \
+                    patch.object(routing.subprocess, "check_output", return_value=json.dumps(current)), \
+                    patch.object(routing, "write_secret") as write:
+                routing.ensure_webhook_secret()
+                write.assert_not_called()
+        with patch.dict(routing.os.environ, {**values, "DEVIN_ALERT_WEBHOOK_SECRET": "rotated-fixture"}, clear=True), \
+                patch.object(routing.subprocess, "check_output", return_value=json.dumps(current)), \
+                patch.object(routing, "write_secret") as write:
+            routing.ensure_webhook_secret()
+        self.assertEqual(base64.b64decode(write.call_args.args[0]["data"]["secret"]).decode(), "rotated-fixture")
+        self.assertEqual(write.call_args.args[0]["metadata"], current["metadata"])
+
+    def test_missing_partial_and_invalid_inputs(self):
+        for values in ({}, {"DEVIN_ALERT_WEBHOOK_URL": "https://example.invalid"},
+                       {**self.values(), "DEVIN_ALERT_WEBHOOK_URL": "http://example.invalid"},
+                       {**self.values(), "DEVIN_ALERT_WEBHOOK_SECRET": "bad\nheader"},
+                       {**self.values(), "DEVIN_ALERT_WEBHOOK_URL": "https://[invalid"}):
+            with self.subTest(keys=list(values)), patch.dict(routing.os.environ, values, clear=True), \
+                    patch.object(routing.subprocess, "check_output", return_value=""), \
+                    patch.object(routing, "write_secret") as write, self.assertRaises(ValueError):
+                routing.ensure_webhook_secret()
+            write.assert_not_called()
+
+    def test_secret_write_failure_does_not_expose_payload(self):
+        with patch.object(routing.subprocess, "run", return_value=subprocess.CompletedProcess(
+                [], 1, stdout="sensitive fixture", stderr="sensitive fixture")), \
+                self.assertRaisesRegex(RuntimeError, "output withheld") as error:
+            routing.write_secret({"metadata": {"name": "fixture"}, "data": {"url": "sensitive fixture"}})
+        self.assertNotIn("sensitive fixture", str(error.exception))
+
+    def test_invalid_existing_data_and_explicit_empty_credentials(self):
+        for data in (None, {}, {"url": "invalid base64"}, {"url": "/w==", "secret": "eA=="}):
+            with self.subTest(data=data), patch.dict(routing.os.environ, {}, clear=True), \
+                    patch.object(routing.subprocess, "check_output", return_value=json.dumps({"data": data})), \
+                    patch.object(routing, "write_secret") as write, self.assertRaises(ValueError):
+                routing.ensure_webhook_secret()
+            write.assert_not_called()
+        with patch.dict(routing.os.environ, {"DEVIN_ALERT_WEBHOOK_URL": "", "DEVIN_ALERT_WEBHOOK_SECRET": ""}, clear=True), \
+                patch.object(routing, "write_secret") as write, self.assertRaises(ValueError):
+            routing.ensure_webhook_secret()
+        write.assert_not_called()
+
+    def test_secret_updates_use_merge_patch_without_command_line_values(self):
+        obj = {"metadata": {"name": "fixture"}, "data": {"url": "fixture-value"}}
+        with patch.object(routing.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as run:
+            routing.write_secret(obj)
+        self.assertEqual(run.call_args.args[0], ["kubectl", "-n", "monitoring", "patch", "secret", "fixture",
+                                                "--type=merge", "--patch-file=/dev/stdin"])
+        self.assertEqual(json.loads(run.call_args.kwargs["input"]), obj)
+        self.assertTrue(run.call_args.kwargs["capture_output"])
 
 
 if __name__ == "__main__":
