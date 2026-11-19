@@ -1,8 +1,8 @@
 {
   "job": "docs_folder_tree_walk",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "21 3 * * *",
   "profile": "small"
 }
