@@ -45,7 +45,7 @@ No kube-prometheus-stack release values source was found under `demo-platform/`,
 With Python 3 and PyYAML installed, run `python scripts/odl/route-alerts.py`.
 It reads the current configuration only into memory, copies the existing Devin
 URL into `monitoring/alertmanager-devin-webhook` (`url`), and preserves all
-routes, Bofa configuration, webhook options, other receivers and Secret mounts.
+routes, unrelated configuration, webhook options, other receivers and Secret mounts.
 It adds PagerDuty Events v2 to the same `devin-oncall` receiver, with the seeded
 demo service's routing key held in `alertmanager-odl-pagerduty`. Both integrations
 therefore receive `page="devin"` alerts without changing the routing tree.
