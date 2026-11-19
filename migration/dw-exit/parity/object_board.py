@@ -153,9 +153,15 @@ def materialize(before, names, conversion_dir, business_date='20261109'):
     return after, ready, errors
 
 
-def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None):
+def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, preflight=None):
     if target not in ('duckdb', 'snowflake'):
         raise ValueError('Unsupported parity target')
+    if preflight is not None and (preflight.get('run_token') != RunConfig.from_env().token
+            or preflight.get('database') != RunConfig.from_env().database
+            or preflight.get('status') != 'red' or not preflight.get('reason')
+            or preflight.get('capture_run') is not False or preflight.get('prove_run') is not False):
+        raise ValueError('Expected a denied, unexecuted preflight for the current run scope')
+    snowflake_reason = preflight['reason'] if preflight else 'No live Snowflake evidence; capture/prove not run'
     objects = manifest['objects']
     result = wave_board(objects, counters or {})
     result.update(run_token=RunConfig.from_env().token, target=target, rows=[])
@@ -199,12 +205,21 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
                 if row['status'] == 'red':
                     row['reason'] = 'measured parity mismatch'
+        if obj['subject_area'] == 'billing':
+            row.update(local_duckdb=row['status'] if target == 'duckdb' else 'red',
+                       snowflake='red', snowflake_reason=snowflake_reason,
+                       snowflake_preflight=preflight)
         result['rows'].append(row)
     total = sum(r['licence_dependency_count'] for r in result['rows'])
     result['summary'] = dict(rows=len(objects), red=sum(r['status']=='red' for r in result['rows']),
         green=sum(r['status']=='green' for r in result['rows']), measured=sum(r['row_count'] is not None for r in result['rows']),
         migrated=0, licence_remaining=total, licence_total=total,
         licence_by_system=dict(Counter(r['licence_dependency'] for r in result['rows'] if r['licence_dependency']!='none')))
+    billing = [row for row in result['rows'] if row['subject_area'] == 'billing']
+    local_green = sum(row['local_duckdb'] == 'green' for row in billing)
+    result['summary']['billing'] = dict(local_duckdb='green' if billing and local_green == len(billing) else 'red',
+        local_green=local_green, local_red=len(billing)-local_green,
+        snowflake='red', snowflake_reason=snowflake_reason)
     return result
 
 
@@ -213,8 +228,10 @@ def main():
     parser.add_argument('--manifest',type=Path,default=ROOT/'migration/dw-exit/manifest.yaml')
     parser.add_argument('--output',type=Path,default=ROOT/'migration/dw-exit/board/board.json')
     parser.add_argument('--target',choices=['duckdb','snowflake'],default=os.environ.get('PARITY_TARGET','duckdb'))
+    parser.add_argument('--snowflake-preflight',type=Path,default=ROOT/'migration/dw-exit/parity/snowflake-preflight.json')
     args = parser.parse_args()
     manifest = yaml.safe_load(args.manifest.read_text())
+    preflight = json.loads(args.snowflake_preflight.read_text()) if args.snowflake_preflight.is_file() else None
     from assess import build
     counters = build()['counters']
     before = after = None
@@ -228,7 +245,7 @@ def main():
             before, source_ready, source_errors = source_snapshot(dsn,names)
             after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing',os.environ.get('BUSINESS_DATE','20261109'))
             errors.update(source_errors)
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters)
+        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight)
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         readme = args.output.parent / 'README.md'
         if readme.exists():

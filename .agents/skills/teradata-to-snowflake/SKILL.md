@@ -1,6 +1,6 @@
 ---
 name: teradata-to-snowflake
-description: Start and verify the local warehouse, PowerCenter, Spark, dbt and DuckDB tooling.
+description: Run warehouse tooling and prove Teradata-to-Snowflake conversions with local and live parity evidence.
 ---
 
 # Local estate mechanics
@@ -59,6 +59,55 @@ The dbt test target includes an offline parse. Its project and artifacts are und
 SQL generation prints to stdout and does not open a target connection.
 `make sfx-snowflake-dbt` runs a live build and requires separately provisioned target
 credentials; it is not needed for local DuckDB checks.
+
+## Conversion rules
+
+- Teradata CHAR(n) pads stored values / string-only row hash gaps / store target strings unpadded and ignore trailing spaces only for source-DDL-declared CHAR outputs (including view lineage), recording affected columns; all other values exact / `billing/15_storage.sql`, `parity/semantics.py`, `parity/ladder.py`.
+- Teradata NOT CASESPECIFIC equality / missing plan joins and split currency groups / use `COLLATE 'en-ci-rtrim'` on corresponding target columns and portable `UPPER(RTRIM())` plan joins; live collation compatibility remains unverified / `billing/00_tables.sql`, `20_routines.sql`, `30_views.sql`.
+- Unconstrained NUMERIC aggregate metadata / rounded BEFORE totals / derive decimal scale from actual source values rather than defaulting missing scale to zero; reject unsupported precision instead of silently rounding / `parity/semantics.py`, `parity/object_board.py`, `billing/capture.py`.
+- Teradata DATE-to-INTEGER encoding plus 19000000 / incorrect period keys / construct `YEAR(date)*10000+MONTH(date)*100+DAY(date)` rather than elapsed days / `billing/40_close.sql`.
+- Teradata explicit date FORMAT / wrong or session-dependent invoice period / use `TO_CHAR(date, 'YYYY-MM')`, never a substring of session-default date display / `billing/30_views.sql`, `40_close.sql`.
+- Source GL replacement is month-scoped / missing historical journal rows / delete only `[month_start,next_month_start)` before posting / `billing/20_routines.sql`, from `warehouse/teradata/scripts/billing/12_invoice_monthly.bteq`.
+- Source journal IDs include run month and a credit-note offset / journal key/hash gaps / preserve `YYYYMM*1000000000000` and the separate credit reversal offset / `billing/20_routines.sql`.
+- Source account load also inserts staging journals / unavailable or missing GL outputs / preserve the staging insert with its posting-date NOT EXISTS guard / `billing/10_load.sql`, from `warehouse/teradata/scripts/billing/01_load_accounts.bteq:20–21`.
+- Source daily_chain runs storage, monthly billing and close after loads / incomplete invoice lines, totals, usage and close fields / execute fixed `10→15→20→30→40`, extracting the shipped procedure body rather than copying logic / `parity/local_billing.py`, `parity/object_board.py`.
+
+Paths above are relative to `migration/dw-exit/` unless beginning with `warehouse/`.
+
+## Parity proof for a subject area
+
+Use the Run scope exports above and `warehouse/.venv/bin/python`. Billing is the current
+subject-area implementation; other areas need their own relation manifest and conversions.
+
+```sh
+make sfx-manifest-board NS="$NS" BOARD_ROWS=200 PARITY_TARGET=duckdb
+make sfx-billing-test
+# Only after read-only access preflight succeeds and no frozen baseline exists:
+make sfx-billing-capture NS="$NS" BUSINESS_DATE=20261109
+make sfx-billing-prove CANDIDATE=fixed BUSINESS_DATE=20261109
+```
+
+Use the same business date as the local BEFORE chain. Capture writes a frozen baseline;
+do not recapture over an existing token baseline. Prove writes target objects. Neither
+command is read-only. Do not run `sfx-billing-promote` without owner sign-off.
+
+Live evidence lands under `migration/dw-exit/.runs/`: `capture.json`, `deploy-fixed.json`
+and `billing-fixed.json` (relation counts, profiles, multiset hash deltas and query IDs).
+The generated `board/board.json` and `board/README.md` preserve separate local DuckDB and
+Snowflake states. Local green is not live parity, mapping execution or cutover approval.
+Billing row provenance links open the source artifact, converted producer statements and
+ladder count/profile/hash implementation on the work branch, with derived `#Lx-Ly` ranges.
+Unavailable outputs stay red; candidate links do not mean those candidates were executed.
+
+**Grant gotcha:** the provisioned role is token-scoped. Bind `SNOWFLAKE_ACCOUNT`,
+`SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`, `SNOWFLAKE_PRIVATE_KEY`, `SNOWFLAKE_DATABASE` securely,
+then read-only check database existence and `SHOW GRANTS ON DATABASE <run_database>` before
+capture. Login success does not establish database access. For `RUN_TOKEN=sfx1119`,
+`SFX_D1110_ROLE` received error `002003` on `SFX_1119`; capture/prove were not run.
+Do not create the database, switch tokens or reuse another token's namespace to work around
+this. The recorded denial in `parity/snowflake-preflight.json` is consumed by the board
+generator (`--snowflake-preflight` selects another recorded denial); mismatched run scopes
+are rejected. The board does not perform live proof or infer live success from this file.
 
 ## Local failure feed
 

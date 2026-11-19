@@ -363,6 +363,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -611,6 +626,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -947,6 +977,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -1141,6 +1186,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -1336,6 +1396,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -1598,6 +1673,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -1917,6 +2007,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -2206,6 +2311,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -2454,6 +2574,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -2790,6 +2925,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -2984,6 +3134,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -3179,6 +3344,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -3441,6 +3621,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -3760,6 +3955,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -5068,6 +5278,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -5669,6 +5894,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -6164,6 +6404,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -6415,6 +6670,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -6938,6 +7208,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -7407,6 +7692,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -7596,6 +7896,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -7894,6 +8209,21 @@
             "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-billing-parity/migration/dw-exit/parity/ladder.py#L38-L62"
           }
         }
+      },
+      "local_duckdb": "red",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -7969,6 +8299,21 @@
             "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-billing-parity/migration/dw-exit/parity/ladder.py#L38-L62"
           }
         }
+      },
+      "local_duckdb": "red",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -8052,6 +8397,21 @@
             "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-billing-parity/migration/dw-exit/parity/ladder.py#L38-L62"
           }
         }
+      },
+      "local_duckdb": "red",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -8388,6 +8748,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -8648,6 +9023,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -8830,6 +9220,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -9024,6 +9429,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -9170,6 +9590,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -9364,6 +9799,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -9666,6 +10116,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -9836,6 +10301,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -10006,6 +10486,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -10152,6 +10647,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -10310,6 +10820,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -10456,6 +10981,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -10614,6 +11154,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -10876,6 +11431,21 @@
             "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-billing-parity/migration/dw-exit/parity/ladder.py#L38-L62"
           }
         }
+      },
+      "local_duckdb": "red",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -10934,6 +11504,21 @@
             "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-billing-parity/migration/dw-exit/parity/ladder.py#L38-L62"
           }
         }
+      },
+      "local_duckdb": "red",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -11630,6 +12215,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -12153,6 +12753,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -12343,6 +12958,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -12547,6 +13177,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -12703,6 +13348,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -12917,6 +13577,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -13253,6 +13928,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -13447,6 +14137,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -13625,6 +14330,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -13780,6 +14500,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -13938,6 +14673,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -14120,6 +14870,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -14314,6 +15079,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -14460,6 +15240,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -14654,6 +15449,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -14956,6 +15766,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -15126,6 +15951,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -15296,6 +16136,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -15442,6 +16297,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -15600,6 +16470,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -15746,6 +16631,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -15904,6 +16804,21 @@
           "trailing_pad_insensitive": [],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -16070,6 +16985,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -16224,6 +17154,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -16396,6 +17341,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -17610,6 +18570,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -17770,6 +18745,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -17907,6 +18897,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -18043,6 +19048,21 @@
           ],
           "other_columns": "exact"
         }
+      },
+      "local_duckdb": "green",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
       }
     },
     {
@@ -18245,7 +19265,22 @@
         }
       },
       "source": "etl/spark/jobs/py/billing_churn_score.py",
-      "source_ref": "demo-snowflake-dw-exit"
+      "source_ref": "demo-snowflake-dw-exit",
+      "local_duckdb": "red",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
+      }
     },
     {
       "id": "nc69cdf8b5dc1cf48",
@@ -18305,7 +19340,22 @@
         }
       },
       "source": "etl/spark/jobs/py/billing_gl_trial_balance.py",
-      "source_ref": "demo-snowflake-dw-exit"
+      "source_ref": "demo-snowflake-dw-exit",
+      "local_duckdb": "red",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
+      }
     },
     {
       "id": "n30eea7b5e4b0f036",
@@ -18365,7 +19415,22 @@
         }
       },
       "source": "etl/spark/jobs/py/billing_invoice_summary_daily.py",
-      "source_ref": "demo-snowflake-dw-exit"
+      "source_ref": "demo-snowflake-dw-exit",
+      "local_duckdb": "red",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
+      }
     },
     {
       "id": "n59a3415908e5a5c3",
@@ -18425,7 +19490,22 @@
         }
       },
       "source": "etl/spark/jobs/py/billing_payment_aging.py",
-      "source_ref": "demo-snowflake-dw-exit"
+      "source_ref": "demo-snowflake-dw-exit",
+      "local_duckdb": "red",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
+      }
     },
     {
       "id": "nc272de5514b12dd4",
@@ -18485,7 +19565,22 @@
         }
       },
       "source": "etl/spark/jobs/py/billing_revenue_by_plan.py",
-      "source_ref": "demo-snowflake-dw-exit"
+      "source_ref": "demo-snowflake-dw-exit",
+      "local_duckdb": "red",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
+      }
     },
     {
       "id": "n217068cf70e21f45",
@@ -18545,7 +19640,22 @@
         }
       },
       "source": "etl/spark/jobs/py/billing_usage_append_daily.py",
-      "source_ref": "demo-snowflake-dw-exit"
+      "source_ref": "demo-snowflake-dw-exit",
+      "local_duckdb": "red",
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+      "snowflake_preflight": {
+        "run_token": "sfx1119",
+        "role": "SFX_D1110_ROLE",
+        "database": "SFX_1119",
+        "status": "red",
+        "error_code": "002003",
+        "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+        "visible_database_count": 0,
+        "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+        "capture_run": false,
+        "prove_run": false
+      }
     },
     {
       "id": "nda318831425979ea",
@@ -18972,6 +20082,13 @@
       "powercenter": 44,
       "teradata": 178,
       "spark": 30
+    },
+    "billing": {
+      "local_duckdb": "red",
+      "local_green": 63,
+      "local_red": 11,
+      "snowflake": "red",
+      "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run"
     }
   }
 }

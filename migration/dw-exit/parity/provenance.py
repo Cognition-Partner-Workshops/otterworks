@@ -75,7 +75,13 @@ def provenance(obj):
 
 
 def markdown(rows):
-    lines = ['\n## Billing parity provenance', '', '| Object | Status | Source | Converted producers | Metrics |', '|---|---|---|---|---|']
+    billing = [row for row in rows if row['subject_area'] == 'billing']
+    green = sum(row['local_duckdb'] == 'green' for row in billing)
+    lines = ['\n## Billing parity provenance', '',
+             f'Local DuckDB: {green} green / {len(billing)-green} red (including unmeasured outputs).',
+             'Snowflake: **red** — '+(billing[0]['snowflake_reason'] if billing else 'No billing evidence')+'.',
+             'These are separate evidence legs; local green does not imply live Snowflake parity.', '',
+             '| Object | Local DuckDB | Snowflake | Source | Converted producers | Metrics |', '|---|---|---|---|---|---|']
     def anchors(entries):
         return '<br>'.join(f"[{e['file']}:{e['start_line']}–{e['end_line']}]({e['url']})" for e in entries)
     for row in rows:
@@ -83,5 +89,5 @@ def markdown(rows):
             continue
         p = row['provenance']
         converted = [entry for entries in p['converted'].values() for entry in entries]
-        lines.append(f"| {row['name']} | {row['status']} | {anchors(p['source'])} | {anchors(converted) or p['conversion_note'] or 'Not materialized'} | {anchors(p['metrics'].values())} |")
+        lines.append(f"| {row['name']} | {row['local_duckdb']} | {row['snowflake']} | {anchors(p['source'])} | {anchors(converted) or p['conversion_note'] or 'Not materialized'} | {anchors(p['metrics'].values())} |")
     return '\n'.join(lines)+'\n'
