@@ -73,6 +73,15 @@ kubectl -n otterworks-<ID> patch networkpolicy tenant-isolation --type=merge -p 
   '{"spec":{"podSelector":{"matchExpressions":[{"key":"app.kubernetes.io/name","operator":"NotIn","values":["operational-data-layer-mongo"]}]}}}'
 ```
 
+## Known gaps
+
+The shared cluster's VPC CNI runs with `--enable-network-policy=false`, so the
+MongoDB NetworkPolicy is declared but not enforced. Cross-namespace MongoDB TCP
+access was observed; MongoDB authentication is still required. Enforcement was
+deliberately left off because enabling it activates existing policies
+cluster-wide: 18 policies across 14 namespaces at the isolation audit. No CNI
+settings are changed by this scaffold.
+
 ## Metrics contract
 
 The future service must expose Prometheus text/OpenMetrics at `/metrics`.
