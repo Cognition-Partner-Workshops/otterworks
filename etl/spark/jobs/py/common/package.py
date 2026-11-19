@@ -13,6 +13,8 @@ root = Path(__file__).resolve().parents[3]
 cache = root / ".cache" / os.environ.get("NS", _run_render("__BEFORE_NAMESPACE__"))
 cache.mkdir(parents=True, exist_ok=True)
 with ZipFile(cache / "common.zip", "w", ZIP_DEFLATED) as archive:
+    archive.writestr('warehouse/__init__.py', '')
+    archive.write(root.parents[1] / 'warehouse/run_config.py', 'warehouse/run_config.py')
     for path in sorted((root / "jobs" / "py" / "common").glob("*.py")):
         if path.name != "package.py":
             archive.write(path, "common/" + path.name)

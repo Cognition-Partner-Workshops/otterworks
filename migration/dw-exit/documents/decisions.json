@@ -19,5 +19,19 @@
     "new_behaviour": "Existing pc_content__doc_share joins every matching role. The local merge guard rejects duplicate SHARE_IDs instead of choosing a role. Seeded 20-row ROLE_GRANT has unique USER_IDs, so this is a synthetic error-case difference, not an observed seeded mismatch.",
     "question": "Which role wins for users with multiple grants? Preserve first cached match or choose an explicit role precedence? Existing dbt model is unchanged.",
     "blocks": ["powercenter.m_SFX_DOC_SHARE", "powercenter.s_m_SFX_DOC_SHARE"]
+  },
+  {
+    "object": "security_alert_anomaly JDBC publication",
+    "old_behaviour": "Actual legacy job writes lake/audit/security_alert_anomaly and also overwrites JDBC sfx_audit.SPARK_ALERT_ANOMALY through common.runtime.save. Its manifest subject is documents although its input and both outputs are audit.",
+    "new_behaviour": "Manifest-target dbt model computes the lake rowset in MART_SPARK but does not publish a JDBC table or an approved COMPAT replacement. That additional relation is declared but unavailable, not inferred from lake parity.",
+    "question": "Who owns the audit JDBC publication, and should its callers move to the manifest Snowflake model or require an explicit compatibility publisher?",
+    "blocks": ["spark.security_alert_anomaly"]
+  },
+  {
+    "object": "file_object_binary_extract partition history",
+    "old_behaviour": "main calls drop_unpartitioned then save_partition for one run_date. Cleanup retains older run_date= directories; nonempty writes dynamically overwrite only the current partition. Existing historical partitions therefore survive.",
+    "new_behaviour": "The manifest-target table model and local proof compute the selected current run_date only. A table rebuild would replace history, not preserve older partitions. Actual fixture has one run_date and matches 200/200; multi-date retention is not established by that result.",
+    "question": "Preserve all historical run_date snapshots, or approve a current-snapshot-only target? No retention policy or incremental materialization has been guessed.",
+    "blocks": ["spark.file_object_binary_extract"]
   }
 ]

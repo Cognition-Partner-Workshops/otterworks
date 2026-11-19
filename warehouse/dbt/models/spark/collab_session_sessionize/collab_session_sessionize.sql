@@ -1,3 +1,4 @@
+{{ config(materialized='table', alias='spark__collab_session_sessionize') }}
 with previous_events as (
     select
         USER_ID,

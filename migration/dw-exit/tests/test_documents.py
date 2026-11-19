@@ -116,7 +116,8 @@ def test_resultset_errors_no_partial_output(connections,tmp_path,failure):
 
 def test_contract_keys_and_all_manifest_routes():
     contract = json.loads((documents.CONVERSIONS.parent/'parity/documents.json').read_text())
-    assert len(contract) == 23 and all(r['keys'] for r in contract)
+    assert len([r for r in contract if '.TD_DOCUMENTS_BASELINE.' in r['before']]) == 23
+    assert all(r['keys'] for r in contract)
     routes = json.loads((documents.CONVERSIONS/'objects.json').read_text())
     assert len(routes) == 42
     assert all((ROOT/r['conversion']).is_file() for r in routes)

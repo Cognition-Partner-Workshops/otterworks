@@ -1,6 +1,6 @@
-# Documents Step 2a — sfx1119 local proof
+# Documents — sfx1119 local proof (Steps 2a and 2b)
 
-**32 green / 10 red objects**, out of 46 non-Spark documents objects minus four retire candidates = **42 in scope**. Local DuckDB only, namespace `sfx-1119-before`, business date `20261109`. No Snowflake connection, object creation, Spark conversion/execution, board changes, or billing behavior edits.
+**Step 2a: 32 green / 10 red objects**, out of 46 non-Spark documents objects minus four retire candidates = **42 in scope**. Local DuckDB only, namespace `sfx-1119-before`, business date `20261109`. No Snowflake connection, object creation, board changes, or billing behavior edits. Step 2b Spark results follow below; its separate Spark fixture has 200 rows per input table.
 
 **Not deploy/cutover approval.** The SQL includes diagnostic candidates for unresolved objects. In particular, storage's plain insert preserves duplicates and is intentionally red, not an approved keep-all decision. Do not deploy the chain until owners answer `decisions.json`.
 
@@ -31,7 +31,7 @@ Session logs under `etl/informatica/infa_shared/sfx-1119-before/SessLogs` show:
 - s_m_SFX_DOCUMENT: read 90, written/updated 90, rejected 0.
 - s_m_SFX_DOC_SHARE: read 100, written/updated 100, rejected 0.
 
-Do **not** overwrite the pre-PC snapshot by capturing after those mappings. To create a fresh frozen snapshot on a fresh run, use `parity.object_board.source_snapshot` immediately after the Teradata daily chain and before the PC run: include all documents contract relations except derived M_STORAGE_TOTALS_OUTPUT, SFX_USERS.APP_USER / ROLE_GRANT, and SFX_BILLING.USAGE_DAILY / INVOICE_LINE / SUBSCRIPTION / INVOICE_HDR; then DuckDB EXPORT DATABASE to a new persistent run directory. The report output is materialized by the proof from the actual source macro body.
+Do **not** overwrite the pre-PC snapshot by capturing after those mappings. To create a fresh frozen snapshot on a fresh run, use `parity.object_board.source_snapshot` immediately after the Teradata daily chain and before the PC run: take only the 23 Step 2a contract entries whose before schema is TD_DOCUMENTS_BASELINE (not the added Spark entries), excluding derived M_STORAGE_TOTALS_OUTPUT; also include SFX_USERS.APP_USER / ROLE_GRANT, and SFX_BILLING.USAGE_DAILY / INVOICE_LINE / SUBSCRIPTION / INVOICE_HDR. Then DuckDB EXPORT DATABASE to a new persistent run directory. The report output is materialized by the proof from the actual source macro body.
 
 Run the existing frozen proof:
 ```sh
@@ -168,3 +168,88 @@ Red decisions override a matching measurement. All profiles, full checksums and 
 | shared_billing_boundary | INVOICE_LINE | 564 | 564 | 0 | green |
 | shared_billing_with_candidate_storage | USAGE_DAILY | 270 | 270 | 100 | red |
 | shared_billing_with_candidate_storage | INVOICE_LINE | 564 | 564 | 60 | red |
+
+## Step 2b — documents-assigned Spark jobs
+
+**13 actual legacy jobs succeeded; all 13 lake rowsets match, with zero hash delta and identical column profiles. Object gate: 11 green / 2 red.** Binary history and audit JDBC publication remain owner decisions despite matching current lake rows. The three Step 2a decisions above are unchanged; two decisions were appended, not resolved by guessing.
+
+All manifest `target_type` values are `dbt_model`. Models are under `warehouse/dbt/models/spark/<job>/<job>.sql`, with explicit aliases **`MART_SPARK.spark__<job>`**, exactly the manifest target. Python UDF pre-hooks in `warehouse/dbt/macros/documents_spark_udfs.sql` ship the actual legacy function bodies; local execution extracts those shipped bodies, not a second hand-written approximation. Tests compare their ASTs to the legacy functions. Recursive SQL replaces bounded RDD walks; Scala share-activity SQL is preserved, and compaction selects from the shipped hourly model using dbt `ref`.
+
+The approved manifest is **unchanged** and still lacks all 13 `output_relations`. `parity/documents.json` now declares 13 keyed lake relations plus the additional, unavailable JDBC target. `spark_jobs.json` records each manifest target, source, input relation, owner/provenance, model path, dependency, keys and known data callers. The 23 Step 2a relations remain present. No board integration or existing billing model/adapter changes were made. `ladder.local_compare` gained optional contract keys; its existing default first-column hashes and behavior are preserved and regression-tested.
+
+### Per-job evidence and data callers
+
+Counts are actual Parquet → shipped conversion; **every row below has hash delta 0** and no sampled row differences. The key is the comparison key, not an assertion that the legacy source enforces uniqueness. Full multiset hashes preserve duplicate multiplicity. All thirteen manifest owners are **`@otterworks/data-platform`, `owner_source: proposed`**.
+
+| Job | Before → after | Contract keys | Gate | External business-data caller found |
+|---|---:|---|---|---|
+| collab_session_sessionize | 200 → 200 | USER_ID, DOCUMENT_ID, SESSION_NUMBER | green | none |
+| doc_share_graph_reach | 5 → 5 | USER_ID | green | none |
+| doc_version_diff_stats | 200 → 200 | DOC_VERSION_ID | green | none |
+| docs_event_export_hourly | 200 → 200 | DOCUMENT_ID | green | lake_compaction_documents, `etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala` |
+| docs_folder_legacy_report | 200 → 200 | FOLDER_ID | green | none; legacy cron disabled |
+| docs_folder_tree_walk | 200 → 200 | FOLDER_ID | green | none |
+| docs_search_log_parse | 200 → 200 | SEARCH_INDEX_LOG_ID | green | none; still reads SEARCH_INDEX_LOG landing, not core |
+| docs_share_activity | 150 → 150 | OWNER_USER_ID, PERMISSION | green | none |
+| docs_storage_by_owner | 50 → 50 | USER_ID, EMAIL | green | none |
+| docs_tag_normalize | 200 → 200 | DOC_TAG_ID | green | none |
+| file_object_binary_extract | 200 → 200 | FILE_OBJECT_ID, RUN_DATE | **red — history policy** | none |
+| lake_compaction_documents | 200 → 200 | DOCUMENT_ID | green | none |
+| security_alert_anomaly | 200 → 200 | ALERT_ID | **red — JDBC publication** | none in repository; also publishes JDBC output |
+
+Caller search covered consumers/registry.yaml, consumers/reports and consumer sources, services, Teradata, PowerCenter, and other Spark jobs. No consumers-registry/report references to these output names were found. Absence in this repository is not proof of no external consumers. All jobs have their own registry, submit script, k8s application and cron.d entry, plus entries in `etl/crontab`; these are execution callers, not downstream rowset consumers. `docs_folder_legacy_report` cron entries are commented out; it was run explicitly for this request, not re-enabled.
+
+No `.github/CODEOWNERS` rule assigns Spark paths to a different owner, and no consumer-registry row supplies a competing output owner. Thus proposed ownership is **not CODEOWNERS-confirmed**. A real cross-owner input is `docs_storage_by_owner`: users.APP_USER maps to users' `SFX_USERS.APP_USER`, whose manifest owner is `@otterworks/analytics` (DBQL readership), unlike the job's proposed data-platform owner. `security_alert_anomaly` is documents-assigned but reads audit.SECURITY_ALERT and writes **lake/audit**, not lake/documents; its JDBC output is audit too. SECURITY_ALERT's manifest owner is also proposed data-platform, so this is a subject-area/shared-table concern rather than a demonstrated conflicting team assignment.
+
+`etl/spark/classification.yaml` is a different, conflicting classification and was not edited: folder report and compaction are classified retired; graph reach, version diff, folder walk, search parse, tag normalization and anomaly are Snowpark; binary extraction is spark_standard_template. The migration manifest decides this step: all 13 received its dbt target, including the two classified retired. Existing registry statuses, launchers, classification, consumers and schedules were left unchanged.
+
+### Red gates, causal evidence, and attempted disproofs
+
+1. **Binary packaging fixed without changing extraction.** `common/binary_documents.py` imports warehouse.run_config. Both archive builders (`common/package.py` and fixture `initialize.py`) previously included common modules only. They now add only an empty warehouse/__init__.py and the existing run_config.py. The actual job subsequently produced `BINARY_OUTPUT_ROWS=200 RUN_DATE=2026-11-19`. Isolated `python -I` tests of each builder import the zipped binary helper without the checkout on sys.path, ruling out accidental host-package resolution. No parsing, filters, defaults, grouping or error handling were changed.
+2. **Binary partition history — new owner decision; seeded lake parity green, object red.** The actual job called `drop_unpartitioned` then `save_partition` for 2026-11-19. Reachable cleanup preserves run_date directories, and nonempty runtime writes use dynamic partition overwrite; the table candidate is a current-run snapshot, not historical accumulation. A regression executes the shipped cleanup against two synthetic date directories and confirms both survive. The actual fixture contains only one date, so the 200/200 zero-delta result cannot disprove the history discrepancy. No multi-date actual Spark replay was performed, and no history policy was selected. The candidate requires explicit `documents_spark_run_date`; it does not silently substitute a business date. The macro permits project parsing without a value but fails compilation of an executed binary model without one. Local proof binds the date from the successful legacy run log. A raw BINARY `spark_documents_binary.FILE_OBJECT_BLOBS` relation is declared for its file bytes; live provisioning/loading is unverified.
+3. **Audit JDBC publication — new owner decision; seeded lake parity green, object red.** `security_alert_anomaly.main` calls `common.runtime.save(..., 'audit', ..., 'sfx_audit.SPARK_ALERT_ANOMALY')`; save writes Parquet then overwrites JDBC. A separate read-only query of the correct Spark PostgreSQL service found **200 rows** and the columns ALERT_ID, USER_ID, SCORE, Z_SCORE in sfx_audit.spark_alert_anomaly. This rules out a merely dead optional write path in this run. The manifest model has matching 200-row lake semantics but no approved JDBC/compatibility publisher. That extra output is declared red with target counts/hashes unavailable, not inferred equal from the lake. No in-repository consumer was found; external use/retirement or compatibility publication requires an owner answer.
+
+There were **no seeded row differences to normalize**. Initial adapter plumbing errors (DuckDB JSON type registration and quoted relation identifiers) were diagnosed and fixed before successful measurements. No rounding tolerance, filter, default, dedupe or altered UDF was introduced to make a comparison pass.
+
+### Conversion rules learned and unproven boundaries
+
+- Spark string outputs are compared exactly, including case, whitespace, binary SHA-256 and Python exception strings; no Teradata CHAR-padding rule is applied to Spark strings. Python regex Unicode behavior, null handling, `difflib.SequenceMatcher`, PDF/DOCX/ZIP decoding and malformed-content handling stay in the shipped Python UDF bodies.
+- Session split is **strictly greater than 1800 seconds**, including fractional seconds; a microsecond boundary regression prevents truncation. RDD graph joins can match null keys, unlike ordinary SQL `=`; the recursive model preserves that, seed user 1, visited/minimum distance, cycles and four hops. Folder walking preserves the 20-iteration cap and Python's zero-parent truthiness rather than silently repairing it.
+- Hourly export's nonnegative modulo bucket and hive partition column survive logical comparison. Binary run_date is a string in the legacy rowset; DuckDB hive date inference is cast back to VARCHAR before comparing. Physical directory layout, number of files, compaction coalesce(4), sorting/distribution and compression are **not** established by row parity.
+- This is initial/full-snapshot row parity on the Spark landing fixture, not the earlier Teradata/PowerCenter fixture and not live Snowflake parity. Append/replay/idempotence, incremental changes, retained binary run history, late arrivals, multiple equal VERSION_NUMBER lag winners, conflicting duplicate parent IDs, failure atomicity, large/external blobs and runtime Snowflake UDF/dbt execution remain unverified. Binary history and JDBC publication are explicit red gates, not permission to deploy.
+- No Snowflake connection or object creation was attempted. No Spark cutover, retire approval or board regeneration is implied.
+
+### Reproduction and checks
+
+The actual stack was started with:
+```sh
+make sfx-spark-up NS=sfx-1119-before ROWS_PER_TABLE=200
+```
+Then `make sfx-spark-run NS=sfx-1119-before JOB=<job>` was run separately for each of the thirteen jobs above, with hourly export before compaction. Actual logs and Parquet remain under `etl/spark/.data/sfx-1119-before/{logs,lake}`. Do not regenerate landing after these runs and then reuse their outputs.
+
+```sh
+RUN_TOKEN=sfx1119 warehouse/.venv/bin/python migration/dw-exit/parity/spark_documents.py \
+  --namespace sfx-1119-before --output migration/dw-exit/.runs/documents-spark.json
+warehouse/.venv/bin/python -m pytest -q migration/dw-exit/tests
+make sfx-spark-test
+```
+
+The adapter fails closed per object on missing inputs, missing nested Parquet/logs, failed execution logs, output older than any of its landing inputs, or compaction older than its upstream lake output. A downstream candidate requires upstream parity first. Binary output is restricted to the successful log's run partition; old historical partitions are not pooled into the current-run comparison. The durable `evidence.json` Spark section contains landing/upstream/output/log/code SHA-256s, executed converted queries, complete counts/profiles/keyed multiset hashes and difference samples. Source and target are separate in-memory DuckDB connections. JSON status, not the driver's zero exit for a completed red report, is the gate.
+
+Final checks (including billing regressions and synthetic missing/stale/failed-output, partition, UDF and packaging cases):
+```text
+........................................................................ [ 42%]
+...........................ssssssssssssssssssss......................ss. [ 85%]
+s.......................                                                 [100%]
+145 passed, 23 skipped in 11.66s
+
+Ran 54 tests in 35.923s
+
+OK
+LOCAL_JOBS billing_revenue_by_plan docs_tag_normalize user_pref_json_flatten: OK (2000 rows)
+SCALA_IDS IntegerType, LongType (>2^31), empty inputs and missing columns: OK
+python3 etl/spark/history/compute_baseline.py --check
+Baseline matches 30 applications.
+```
+
+Spark tests emitted optional native-Hadoop/hostname fallback and socket ResourceWarnings; they did not fail. The Java 17/uv/PySpark environment was checked and is loaded. Live Snowflake dbt parsing/materialization, external blob ingestion and Python UDF registration remain unverified.

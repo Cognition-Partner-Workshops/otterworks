@@ -9157,6 +9157,2108 @@
         "powercenter.m_SFX_DOC_SHARE",
         "powercenter.s_m_SFX_DOC_SHARE"
       ]
+    },
+    {
+      "object": "security_alert_anomaly JDBC publication",
+      "old_behaviour": "Actual legacy job writes lake/audit/security_alert_anomaly and also overwrites JDBC sfx_audit.SPARK_ALERT_ANOMALY through common.runtime.save. Its manifest subject is documents although its input and both outputs are audit.",
+      "new_behaviour": "Manifest-target dbt model computes the lake rowset in MART_SPARK but does not publish a JDBC table or an approved COMPAT replacement. That additional relation is declared but unavailable, not inferred from lake parity.",
+      "question": "Who owns the audit JDBC publication, and should its callers move to the manifest Snowflake model or require an explicit compatibility publisher?",
+      "blocks": [
+        "spark.security_alert_anomaly"
+      ]
+    },
+    {
+      "object": "file_object_binary_extract partition history",
+      "old_behaviour": "main calls drop_unpartitioned then save_partition for one run_date. Cleanup retains older run_date= directories; nonempty writes dynamically overwrite only the current partition. Existing historical partitions therefore survive.",
+      "new_behaviour": "The manifest-target table model and local proof compute the selected current run_date only. A table rebuild would replace history, not preserve older partitions. Actual fixture has one run_date and matches 200/200; multi-date retention is not established by that result.",
+      "question": "Preserve all historical run_date snapshots, or approve a current-snapshot-only target? No retention policy or incremental materialization has been guessed.",
+      "blocks": [
+        "spark.file_object_binary_extract"
+      ]
     }
-  ]
+  ],
+  "spark": {
+    "namespace": "sfx-1119-before",
+    "target": "duckdb",
+    "snowflake": "not attempted",
+    "jobs": {
+      "collab_session_sessionize": {
+        "status": "green",
+        "measurement": {
+          "row_count": {
+            "before": 200,
+            "after": 200
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "SESSION_NUMBER": {
+                "nulls": 0,
+                "min": 1,
+                "max": 1,
+                "distinct": 1
+              },
+              "START_AT": {
+                "nulls": 0,
+                "min": "2026-01-06 01:13:03",
+                "max": "2026-11-09 00:24:00",
+                "distinct": 200
+              },
+              "END_AT": {
+                "nulls": 0,
+                "min": "2026-01-06 01:13:03",
+                "max": "2026-11-09 00:24:00",
+                "distinct": 200
+              }
+            },
+            "after": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "SESSION_NUMBER": {
+                "nulls": 0,
+                "min": 1,
+                "max": 1,
+                "distinct": 1
+              },
+              "START_AT": {
+                "nulls": 0,
+                "min": "2026-01-06 01:13:03",
+                "max": "2026-11-09 00:24:00",
+                "distinct": 200
+              },
+              "END_AT": {
+                "nulls": 0,
+                "min": "2026-01-06 01:13:03",
+                "max": "2026-11-09 00:24:00",
+                "distinct": 200
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "USER_ID",
+              "DOCUMENT_ID",
+              "SESSION_NUMBER"
+            ],
+            "difference": 0,
+            "before": "262f1871ec4f5ecd042d83633253a66b7fb73d858c0b09e83c22c298a6c8a986",
+            "after": "262f1871ec4f5ecd042d83633253a66b7fb73d858c0b09e83c22c298a6c8a986",
+            "key_policy": "contract keys; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        },
+        "blockers": [],
+        "target": "spark__collab_session_sessionize",
+        "legacy_output": "etl/spark/.data/sfx-1119-before/lake/documents/collab_session_sessionize",
+        "run_date": null,
+        "landing_sha256": {
+          "etl/spark/.data/sfx-1119-before/landing/documents/COLLAB_SESSION/20261109.psv": "5067f453fbe638122fb95debc2157311a7c09c7ae8f132cde11bfc391cf618a0"
+        },
+        "upstream_sha256": {},
+        "output_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/documents/collab_session_sessionize/part-00000-84dbf8cf-3cf3-4335-a0e4-8506b5c2fe6c-c000.snappy.parquet": "d13ce42b1438e3cfb3bb296a26ba5dc34b92649dcbf6b2de6a654f2abd071ac4",
+          "etl/spark/.data/sfx-1119-before/lake/documents/collab_session_sessionize/part-00002-84dbf8cf-3cf3-4335-a0e4-8506b5c2fe6c-c000.snappy.parquet": "c79fe9eaaf7c1d2ad06b680c45029dc13d9bc84caa2a1370e0c56cbfdc35de88",
+          "etl/spark/.data/sfx-1119-before/lake/documents/collab_session_sessionize/part-00004-84dbf8cf-3cf3-4335-a0e4-8506b5c2fe6c-c000.snappy.parquet": "2d94ebbd9c0c66397c29d3df949059f9239d90f2b7db09e32ce04fd87451898b"
+        },
+        "execution_log_sha256": {
+          "etl/spark/.data/sfx-1119-before/logs/collab_session_sessionize.log": "1ff921e21f9512488fae4689eff334f6c0157bbd08cd6a2bab303d21ddea00c4"
+        },
+        "conversion_sha256": {
+          "warehouse/dbt/macros/documents_spark_udfs.sql": "c1ff660bd154e5458a609f70063927a2401add2cfc0eef2f07f1fedabf01de18",
+          "warehouse/dbt/models/spark/collab_session_sessionize/collab_session_sessionize.sql": "c1aaa090ed1033c4978dabb0cab23af60dff1bc855e0258094d0f621841d856c"
+        },
+        "legacy_code_sha256": {
+          "etl/spark/jobs/py/collab_session_sessionize.py": "3d8298bdc92c0f0ef2b66e34de806c13e7f623f93dc8cff2d9b5d7ab00798e13",
+          "etl/spark/jobs/py/common/binary_documents.py": "6929b25a2d70d52afbe2dfe14359d055c8bad76364e7c93688f8560f00c56c8e",
+          "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f"
+        },
+        "query": "WITH previous_events AS (SELECT USER_ID, DOCUMENT_ID, EVENT_AT, LAG(EVENT_AT) OVER (PARTITION BY USER_ID, DOCUMENT_ID ORDER BY EVENT_AT) AS PREVIOUS_EVENT_AT FROM SPARK_INPUT.COLLAB_SESSION), session_boundaries AS (SELECT USER_ID, DOCUMENT_ID, EVENT_AT, CASE WHEN PREVIOUS_EVENT_AT IS NULL OR DATE_DIFF('MICROSECOND', PREVIOUS_EVENT_AT, EVENT_AT) > 1800000000 THEN 1 ELSE 0 END AS NEW_SESSION FROM previous_events), numbered_events AS (SELECT USER_ID, DOCUMENT_ID, EVENT_AT, SUM(NEW_SESSION) OVER (PARTITION BY USER_ID, DOCUMENT_ID ORDER BY EVENT_AT range BETWEEN UNBOUNDED preceding AND CURRENT ROW) AS SESSION_NUMBER FROM session_boundaries) SELECT USER_ID, DOCUMENT_ID, SESSION_NUMBER, MIN(EVENT_AT) AS START_AT, MAX(EVENT_AT) AS END_AT FROM numbered_events GROUP BY USER_ID, DOCUMENT_ID, SESSION_NUMBER",
+        "build": "initial snapshot; selected binary run partition only; no incremental replay",
+        "inputs": [
+          "documents.COLLAB_SESSION"
+        ],
+        "shared_input": false
+      },
+      "doc_share_graph_reach": {
+        "status": "green",
+        "measurement": {
+          "row_count": {
+            "before": 5,
+            "after": 5
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 5,
+                "distinct": 5
+              },
+              "DISTANCE": {
+                "nulls": 0,
+                "min": 0,
+                "max": 4,
+                "distinct": 5
+              }
+            },
+            "after": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 5,
+                "distinct": 5
+              },
+              "DISTANCE": {
+                "nulls": 0,
+                "min": 0,
+                "max": 4,
+                "distinct": 5
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "USER_ID"
+            ],
+            "difference": 0,
+            "before": "5f0d2d3cce39547123264f907d9c16d5d6990cb025c8560db02190f38fa2b8fe",
+            "after": "5f0d2d3cce39547123264f907d9c16d5d6990cb025c8560db02190f38fa2b8fe",
+            "key_policy": "contract keys; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        },
+        "blockers": [],
+        "target": "spark__doc_share_graph_reach",
+        "legacy_output": "etl/spark/.data/sfx-1119-before/lake/documents/doc_share_graph_reach",
+        "run_date": null,
+        "landing_sha256": {
+          "etl/spark/.data/sfx-1119-before/landing/documents/DOC_SHARE/20261109.psv": "e9277e192fcd5c4b71e675868cd95a0279c6b08baec99bfb35f90fa89e48c17f"
+        },
+        "upstream_sha256": {},
+        "output_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/documents/doc_share_graph_reach/part-00000-c53e8146-61b0-4927-b040-2a0081641515-c000.snappy.parquet": "13610dbb2e9ca0bd86cf408eecee2f32dc89c3481e06608836abd26118459362",
+          "etl/spark/.data/sfx-1119-before/lake/documents/doc_share_graph_reach/part-00001-c53e8146-61b0-4927-b040-2a0081641515-c000.snappy.parquet": "04fe2020221f7f9460d08b0a6a2a0237a0e10db5c34ec53ff59a1b4aa0907b50",
+          "etl/spark/.data/sfx-1119-before/lake/documents/doc_share_graph_reach/part-00002-c53e8146-61b0-4927-b040-2a0081641515-c000.snappy.parquet": "af5cd72c2792a78800c53adc03340209681efa7bdea0ec4bfc08f3a73c5c61c0",
+          "etl/spark/.data/sfx-1119-before/lake/documents/doc_share_graph_reach/part-00003-c53e8146-61b0-4927-b040-2a0081641515-c000.snappy.parquet": "31988c0c18bcf42b443dee191122994dd3a0977ba2fe571ba97d196ddf08ef11"
+        },
+        "execution_log_sha256": {
+          "etl/spark/.data/sfx-1119-before/logs/doc_share_graph_reach.log": "2ce53318aaa19aa40d6e0672ba9ac96a2125be53f32f082cca61e1cd2f9be25e"
+        },
+        "conversion_sha256": {
+          "warehouse/dbt/macros/documents_spark_udfs.sql": "c1ff660bd154e5458a609f70063927a2401add2cfc0eef2f07f1fedabf01de18",
+          "warehouse/dbt/models/spark/doc_share_graph_reach/doc_share_graph_reach.sql": "b68e5231c0aca7b2f87732b6c169434fc6e9acd10a2b548d7766fbccc3f97625"
+        },
+        "legacy_code_sha256": {
+          "etl/spark/jobs/py/common/binary_documents.py": "6929b25a2d70d52afbe2dfe14359d055c8bad76364e7c93688f8560f00c56c8e",
+          "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f",
+          "etl/spark/jobs/py/doc_share_graph_reach.py": "0b3a67b2549199cf1d8e5ff063e55704905c11f44bc678c1b3638d23fe013a54"
+        },
+        "query": "WITH RECURSIVE paths(USER_ID, DISTANCE) AS (SELECT CAST(1 AS BIGINT), 0 UNION ALL SELECT s.SHARED_WITH_USER_ID, p.DISTANCE + 1 FROM paths AS p JOIN SPARK_INPUT.DOC_SHARE AS s ON s.OWNER_USER_ID IS NOT DISTINCT FROM p.USER_ID WHERE p.DISTANCE < 4) SELECT USER_ID, MIN(DISTANCE) AS DISTANCE FROM paths GROUP BY USER_ID",
+        "build": "initial snapshot; selected binary run partition only; no incremental replay",
+        "inputs": [
+          "documents.DOC_SHARE"
+        ],
+        "shared_input": false
+      },
+      "doc_version_diff_stats": {
+        "status": "green",
+        "measurement": {
+          "row_count": {
+            "before": 200,
+            "after": 200
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "DOC_VERSION_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 67,
+                "distinct": 67
+              },
+              "VERSION_NUMBER": {
+                "nulls": 0,
+                "min": 1,
+                "max": 3,
+                "distinct": 3
+              },
+              "BODY": {
+                "nulls": 0,
+                "min": "Adrian Alvarez reviewed the Larkspur Engineering operating plan. Revision 1: confirm the service schedule, reconcile usage charges, and obtain finance approval before 01 September 2026.",
+                "max": "Theo Tanaka reviewed the Willowmere Research operating plan. Revision 1: confirm the service schedule, reconcile usage charges, and obtain finance approval before 16 June 2026.",
+                "distinct": 200
+              },
+              "CREATED_AT": {
+                "nulls": 0,
+                "min": "2026-01-06 01:13:03",
+                "max": "2026-11-09 00:24:00",
+                "distinct": 200
+              },
+              "PREVIOUS_BODY": {
+                "nulls": 67,
+                "min": "Adrian Alvarez reviewed the Larkspur Engineering operating plan. Revision 1: confirm the service schedule, reconcile usage charges, and obtain finance approval before 01 September 2026.",
+                "max": "Theo Tanaka reviewed the Willowmere Research operating plan. Revision 1: confirm the service schedule, reconcile usage charges, and obtain finance approval before 16 June 2026.",
+                "distinct": 133
+              },
+              "SIMILARITY": {
+                "nulls": 0,
+                "min": 0.0,
+                "max": 0.88,
+                "distinct": 97
+              }
+            },
+            "after": {
+              "DOC_VERSION_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 67,
+                "distinct": 67
+              },
+              "VERSION_NUMBER": {
+                "nulls": 0,
+                "min": 1,
+                "max": 3,
+                "distinct": 3
+              },
+              "BODY": {
+                "nulls": 0,
+                "min": "Adrian Alvarez reviewed the Larkspur Engineering operating plan. Revision 1: confirm the service schedule, reconcile usage charges, and obtain finance approval before 01 September 2026.",
+                "max": "Theo Tanaka reviewed the Willowmere Research operating plan. Revision 1: confirm the service schedule, reconcile usage charges, and obtain finance approval before 16 June 2026.",
+                "distinct": 200
+              },
+              "CREATED_AT": {
+                "nulls": 0,
+                "min": "2026-01-06 01:13:03",
+                "max": "2026-11-09 00:24:00",
+                "distinct": 200
+              },
+              "PREVIOUS_BODY": {
+                "nulls": 67,
+                "min": "Adrian Alvarez reviewed the Larkspur Engineering operating plan. Revision 1: confirm the service schedule, reconcile usage charges, and obtain finance approval before 01 September 2026.",
+                "max": "Theo Tanaka reviewed the Willowmere Research operating plan. Revision 1: confirm the service schedule, reconcile usage charges, and obtain finance approval before 16 June 2026.",
+                "distinct": 133
+              },
+              "SIMILARITY": {
+                "nulls": 0,
+                "min": 0.0,
+                "max": 0.88,
+                "distinct": 97
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "DOC_VERSION_ID"
+            ],
+            "difference": 0,
+            "before": "cf10262b82c00072a1372d00638759026aa6ba0cb4e4deb3647cc0f2fb86fe6e",
+            "after": "cf10262b82c00072a1372d00638759026aa6ba0cb4e4deb3647cc0f2fb86fe6e",
+            "key_policy": "contract keys; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        },
+        "blockers": [],
+        "target": "spark__doc_version_diff_stats",
+        "legacy_output": "etl/spark/.data/sfx-1119-before/lake/documents/doc_version_diff_stats",
+        "run_date": null,
+        "landing_sha256": {
+          "etl/spark/.data/sfx-1119-before/landing/documents/DOC_VERSION/20261109.psv": "bf4c8bfad45f1223215167a1cf2da7397b3f6d155840cc5df631348957adb6ea"
+        },
+        "upstream_sha256": {},
+        "output_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/documents/doc_version_diff_stats/part-00000-30a23fda-03e8-467d-ac48-14d3ea98e458-c000.snappy.parquet": "44e2a100543b6b1c8c7fc7453471de080d1545cd9e5e1350224528cc73ce2dfe"
+        },
+        "execution_log_sha256": {
+          "etl/spark/.data/sfx-1119-before/logs/doc_version_diff_stats.log": "b9a8cab3de338fc619f295ae4d3b33e8b10422a0b0128444e5e981b45fbe9f36"
+        },
+        "conversion_sha256": {
+          "warehouse/dbt/macros/documents_spark_udfs.sql": "c1ff660bd154e5458a609f70063927a2401add2cfc0eef2f07f1fedabf01de18",
+          "warehouse/dbt/models/spark/doc_version_diff_stats/doc_version_diff_stats.sql": "5a3b5fb109cfaa8e84a0d4aab2101ee4a9e8e8557bb66d1a0759d7914811f52d"
+        },
+        "legacy_code_sha256": {
+          "etl/spark/jobs/py/common/binary_documents.py": "6929b25a2d70d52afbe2dfe14359d055c8bad76364e7c93688f8560f00c56c8e",
+          "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f",
+          "etl/spark/jobs/py/doc_version_diff_stats.py": "0792f5d6185f7344de47863d542f2b85bfa298c389acc7d7be43585fdc6608ec"
+        },
+        "query": "WITH versions AS (SELECT *, LAG(BODY) OVER (PARTITION BY DOCUMENT_ID ORDER BY VERSION_NUMBER) AS PREVIOUS_BODY FROM SPARK_INPUT.DOC_VERSION) SELECT DOC_VERSION_ID, DOCUMENT_ID, VERSION_NUMBER, BODY, CREATED_AT, PREVIOUS_BODY, DOCS_SIMILARITY(PREVIOUS_BODY, BODY) AS SIMILARITY FROM versions",
+        "build": "initial snapshot; selected binary run partition only; no incremental replay",
+        "inputs": [
+          "documents.DOC_VERSION"
+        ],
+        "shared_input": false
+      },
+      "docs_event_export_hourly": {
+        "status": "green",
+        "measurement": {
+          "row_count": {
+            "before": 200,
+            "after": 200
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "OWNER_USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 50,
+                "distinct": 50
+              },
+              "FOLDER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 25,
+                "distinct": 25
+              },
+              "TITLE": {
+                "nulls": 0,
+                "min": "Access certification - Feb 2026",
+                "max": "Services agreement - Sep 2026",
+                "distinct": 30
+              },
+              "CREATED_AT": {
+                "nulls": 0,
+                "min": "2026-01-06 01:13:03",
+                "max": "2026-11-09 00:24:00",
+                "distinct": 200
+              },
+              "STATUS": {
+                "nulls": 0,
+                "min": "archived",
+                "max": "published",
+                "distinct": 3
+              },
+              "EXPORT_BUCKET": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              }
+            },
+            "after": {
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "OWNER_USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 50,
+                "distinct": 50
+              },
+              "FOLDER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 25,
+                "distinct": 25
+              },
+              "TITLE": {
+                "nulls": 0,
+                "min": "Access certification - Feb 2026",
+                "max": "Services agreement - Sep 2026",
+                "distinct": 30
+              },
+              "CREATED_AT": {
+                "nulls": 0,
+                "min": "2026-01-06 01:13:03",
+                "max": "2026-11-09 00:24:00",
+                "distinct": 200
+              },
+              "STATUS": {
+                "nulls": 0,
+                "min": "archived",
+                "max": "published",
+                "distinct": 3
+              },
+              "EXPORT_BUCKET": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "DOCUMENT_ID"
+            ],
+            "difference": 0,
+            "before": "0a9528511e0ccd9dc07daa4f43c59e68a0be10903ea0a3a12b2645a421c62565",
+            "after": "0a9528511e0ccd9dc07daa4f43c59e68a0be10903ea0a3a12b2645a421c62565",
+            "key_policy": "contract keys; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        },
+        "blockers": [],
+        "target": "spark__docs_event_export_hourly",
+        "legacy_output": "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=1",
+        "run_date": null,
+        "landing_sha256": {
+          "etl/spark/.data/sfx-1119-before/landing/documents/DOCUMENT/20261109.psv": "43b38c30e254ee747f4f623ac582d02027bab91117279ee516c1f85e4cb1fd45"
+        },
+        "upstream_sha256": {},
+        "output_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=1/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "bb5a541335a75ed27bfd146bd934bd69a0b26e425c5338c7488c5bb182e81486",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=10/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "46e71d351040b0f7d198d08901dbbb3ee956494365e4899895f8cd94a147c725",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=100/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "9eef60474fadc7c30ecce4251a6104c46408313b6a73e16c88d0fa1fd1018528",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=101/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "fe75c42ba6246852757f040127aea65b71cef90a20ed9fd36435de5ad2d2d4cd",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=102/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "770aaef46eef5a7574518e4eca16ced99a09e0486cb15e349de94e8f0582e06a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=103/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5d63ee4f0c456257daf1cbf0c26400f71fc3576c1f963ef8a602e546fcfbc918",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=104/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "53b3d69eac60454796153d176e833a1ec6a26d9a7da19f2254317155be3aa2b2",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=105/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "338b389756eb7dcc55212a3e17d5fb2a7c9077f6f3d82fb4757111abedb4a6a5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=106/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "af122f607a9f7a43687df006986ccb6c8fc8dece0c38313cdfa87bafd8e96fbd",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=107/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "de48b5b65dcd85fe0dbacd22121e1727dcdf11f62d15f51d3b8d56171cbeb773",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=108/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d8922677a5aebe20a1959f3805b3e3433b0ca74ff08733b0215c31e8bb88ef46",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=109/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "b48b70e655855fe430dea08709e8d9a11113f4325db4153bed561c296bdc0226",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=11/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "70e36741bc0ced0f4ef59a6d2b9dcc0f2c2c4d6a2ebf7cbfdad3aa9316f7951f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=110/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d9770c098ec4c2dec779727c42d53d8750a9872b6c28b6475769b994d6dc1d5c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=111/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "372e73df8dde2675054baa5dd0c845f1ef1a7ef86ab702e574ca7feedc3ef3a5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=112/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a8ea2e88209cd24e60534def77faad0330a90baeae17affb4492db6f96ba487a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=113/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ad2e128b1d7975f1831219ef4bf3b5fc369fe9bae0196dd17b9e24c1e75fe20a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=114/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c9a8f28337845168a0b1c2a827c2cd7343236850c27c5f5aa4566665abc3eb9f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=115/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5ee52bca440c92a931c3a2503646ac07a89f0878824bb193cea4628e1def9e5f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=116/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2597bbe918ac180240d1df4f5bb1d38753c1fad37d788a74a4fae46ae2834a85",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=117/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "f5999b8e6973b115057e4f7b41b74a08009a13a29545d4d4a363ed2256231df7",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=118/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a1f94b28e2f2babce298aa7301295f6f5e716a7e11b9252252156d2a32f82e58",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=119/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7d665694b0fb3bd4d93674909f7631713da4f8e2fd5450b94c0f424eb181422e",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=12/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6debc33501788b484c72631336a8bcc9efe767a02e983608cdba2d1fb54ed5bf",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=120/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c53c55faf3cc09d3328a70cd8140e4fb3dd0a3613f01210d7d999293e2fa0aba",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=121/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "208473bb24bf0adc36c39e01c88a6cd64328f7c9b12a548a1e73182526fc8e4f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=122/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "17ae1142f0c70509a1a190ba3af31e03c9104d0880c8d139b27f9c02ae2a51ec",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=123/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6a55b4a2d8c0db7f136585ef98bd5a934c5d255f253f961477a0dfade3550f65",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=124/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "98c4a8aba1c3b53c42ad33a320d1fee92a29b0dff2255e2a596eab7648ec7281",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=125/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "eeba6cf0a163e2ea347b8ec9740901c8b2e34fe38b2f5aedbd5fa3bd55d82641",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=126/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5b9fbf91cea51c0e92f638c58d334294c668127962c8147ae2877ce8e2720b0d",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=127/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "e3ca9e7e6a7803e156a649a290bb1d2d4ce57a625602c9cebcb86acc071ceade",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=128/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a9a10604f52a50e77c614f99428f66efa0e3bee8e7802ca513497343bb782f14",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=129/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d4eeae385a90eb59616123b0b8f79d57b8510db9dbef80bda6fc4b1915738fa6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=13/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2db8dcd6ad5953ce0a12f61f75b1915027a2262c30f7dace01aaeefb4aff4730",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=130/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "968921b12a18c2ce6509581cc0fafbcc036783007f451bb54cbdfbb6516dceec",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=131/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "43679e8a9ebf9d694d31007e529bb541eeebee108555242f64c667341da019bc",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=132/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "afde6c331800186f8738d24844b6caef2ed1174c796802a24b20d1aa220fdb83",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=133/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "821ae3ce9df8662676d252cf50356a9f871a1149df58f485cc0a2532954a3c45",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=134/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "53c5be3170e40051eeb5699bc15229289d4c3a8b534b968bb48cb9311ddf2bba",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=135/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "28e18c99b8c9e2e4982f779aaaf3ea73859bc67706d59e356493422e6a106e4c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=136/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4635afb42253c2cfd587ccd3e6305f8e183ee157a420fcde7b0b5bc0a20c9f7d",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=137/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "60b83d11d78cc3938b9a6675cca59a375731b1c847453f5756ee2e23c552b4f1",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=138/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c86d8f9ec5e06dfb3380c5362b952d7b22d3ae296f8db7f200760473c4df80ba",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=139/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ff8a9f6944f791bc36781dbda7b314fc8edec4354a280da3175aae2b02887853",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=14/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "81a0b27b0816d314d6ec7ebcab4a1a3b35006ffe6ec95d0559ce1461772124cc",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=140/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "0c079c8ac94773776e6edd4ee51ef12a868c0dc74adfa9228c04904c6e3e56bc",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=141/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c77e761fa07e5fd6927168064c16a174846eff247c1c85510e2c54e770c91973",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=142/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "e835ffb5546914a56b723a5847d62caf9fdb0c7b1153c660080f6bb02584d69f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=143/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "8b8309488d7e6600163c3ad8916aa9025ae903dd33b01921bde481e154504262",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=144/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "cf72774c2408ec99c76d3f6e0fd8c62b0b726f5ba26311bc0ae8654fe0ba40e9",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=145/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ececeadefeab129c7b0b2f30ef4cb5175e8546db3cc27635ee9f8fcb1a666f33",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=146/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5ad45afa9d85a7302f97a8c17942262ae272408bd43f2d81f4c95981348b8a88",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=147/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "dd6bfb9d2953edd01f5d423fb272b56e543890828fc2c4e6f3922c99af6bffb4",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=148/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c878895d69e8bc84bb278fcb7810a14f116fdc1b5554b5ca3b6598624af9ec31",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=149/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "78bbf52c770a16e48a08a49ed431403a1e268aa0c78b263e0e21422f33fe34ea",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=15/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d4de70688248954decb4fa1cf07f14b07197f2326f8050c7515e22961539faa9",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=150/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "570e813c070f8220ae000070cd4b3abdeac72404315494406944126cc591c85b",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=151/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d812a05024185358991b1cfa824f19634ac7013eac9e3fae37918ad762f37479",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=152/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "1d44c41a860750146874ce9749fb6cdde53265512382c07509bff27f4830b927",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=153/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "50f27f26f791c847f399af64f1508850e14b545678fc06001c3d2ca733c80e16",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=154/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2436fe8acac39938c0d8c0be4154aaef3fd970f10cab86d592c18dd3e4065b0d",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=155/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "08a54ff8179f03007744bfda39828d55f80b82647fe11c296495087a1ac227af",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=156/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6660dc8a5e1649d89417bf6c5910b819ccf3c3f8c9ca7ff64d04d9fb6f7203b6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=157/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "fea4a32d64606082185e2f8cdde95062ebcbafd02a0c022e9f1cdcc48728b442",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=158/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7220017e61ef9ad767b2fc5bba3d302efe0368376e86360379924912e4f79c8a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=159/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5d9684dcb47d495fc48f3f3c614a8ee99c68cb224f2c68f32a79863ffb74165c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=16/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "22f92f144dfae20420157bfcbb0320a3eea7ff66021131990acb1d9e5cf09979",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=160/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "54a0d168b5e1d1caec62dca9a1bbff2c1fb8c6e3659617979cc9d50963603c67",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=161/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "932257d37d51d7d9a01e492d1bae6d0857cf46a6c7350090321de34c1a35655d",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=162/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "110a7aece4345f2c97e0263d7be0b7f0830d34ed00cd597b5345e400a3eff007",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=163/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4151bd7c515f05b5c711c53efef8a64cdb5fb39f4d651f21d7fa348f76fdd722",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=164/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "94aa29c35fbd5c4e79db2138b73644101366e64c4cf26cc9c2c4d0e8105fcbed",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=165/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4d3f93610fe5a406713078a538c5a171a7bac1719f6437605d6245c5a69cfb54",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=166/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "978623b272953acc12629bf23a2d096ea3206dbbc2e29db9bb7e6c789b239488",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=167/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d82c476e911e83afaedd45cc6f199825970d350e15585189d9ed1c0087db5c6c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=168/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7d3244b5ee2c2c9c4c3d41c3d83b313b54e391fa16d8b1458a839826dfd92ca1",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=169/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c09810066005f5720c872ffb17e53d5638b146a282698a6f531408835a13c3cd",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=17/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5f3979b0a70fcd8aed1ae59778f204465ecbf1703f4fdae002cacda6c0831eef",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=170/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "568b7622b17d397ee3afc6a8edf7be39519f2f50b55494dbc2a5c79c801af540",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=171/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "07fe98957e1849925280e53b98db82e7407dceb269e5c733f4a2d9da03bde476",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=172/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a7954cae2bb3126553dba8d94292802b6e21cdeebf6bd77aa375f35c1c6380ac",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=173/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5c54e6a0e44150982fa8e1d9bd858382b36512bf0ce816cab18442dc3246676c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=174/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "9fae922762d83d24dcd9e663030a09a726c68c37dacd869dafbeef08a1001d93",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=175/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4ac6933662ff00bf22ccf79185f563419c7665225647c3e1499ecf9a1f36223f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=176/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "60abfb8a3acacd129afa1552315018c584be4b01b0abd1c6b2c24523c54beaac",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=177/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "dfa97db3e4e6a1d27eec5bd2803748fadfadfe6cf2c0ef35b28d8f0fc10c5591",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=178/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "f9d3dbbba18eb20402aa2f88947ad500d8cd35424aae9e7bc195f75bafac87d5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=179/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "671d5e6fe7775bd74664cae9b361fb6e62292b4cddc903a9b0e82d70c38c0d3f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=18/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6e2d3aac56c69fc71a7ba0884643046b1f8b17c4881027b7ba7b2cfc483fb3c9",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=180/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "553ea06d6fa9e11c0ba750d64f746fb710c5dfdf3af9576c5818183d1c023baa",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=181/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ee8fd1b6238190ec37878f697e309515cc8072bf42f7d821ea2fb4618db892f3",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=182/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "dfa51a454a7bf84b42f56ad319e86c6fdbf2d5d17af057d6113eb9a298c3d36f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=183/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "34819ba2ff48ac494a665358db71702fc8903131c95154d12d33e1f31fed5b7f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=184/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "84423e349db1077abcdee58c21384dcf5a69893153a6bc3e7e928a5103aa9d91",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=185/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d5fdd05c15fa7c6c459588ef158481cc948b1373996d9d0f6ee31521fb9666f0",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=186/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "dae8c0a1396518d7252e3c54fc91509e071a224004275db93ca3365b9503e797",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=187/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a111607dd3cd89f94d7a16d7adcbab9110ecb5709ed39259256778a7e12d2bed",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=188/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "3be38aff7e58e5941113a050de03301d6d14bf234d6194a1660b9c6bbcd60eeb",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=189/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a230a770f0d182b0b0cc4d7cb7413e9614a928aae9de2487952d679121f99ab5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=19/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5a8f46bc084aa17df7e05d05764c20226edb28a851c80a91827358b33acda522",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=190/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2dd698a3190267cedaa31986bc1888a3d0facc98077c95ecee8fa6064fc52dce",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=191/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5f4bd3bc94b90f19fee80d2eddc48b6952c76be3dac2618655465d38c7678cab",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=192/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "49688cf024a5ccc45973c4feb8e76b4d49274a49b73d84e2a108cfb7d03fee34",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=193/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6fd42e3a8b6e45352e946c33a83f338bedb4e031e8bd51964db76998d8f66d34",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=194/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "472a740583e55e2a0beca104e2c1b423d7bf82f44c2b65aed61cc9273f750759",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=195/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "0432e6fea7f1fd71298c8065b8ed8a14532c50009a9b52b277197031caf2ba54",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=196/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2f3bce5ffa0aa27f34193748ea689f18d67f8d372bd662eaf26b255e8f3d041a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=197/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "fcc0f08086cf9a63def3a9cb77d6e64da876b7a044e0598dd9c7ab30c8cf97a7",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=198/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "021721dd6034b82d7b47cb879e0d2b9b241fb034416a8051fe9ce8e75b09cfa0",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=199/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "e432b64d2bb428a3a4700cd9e555b753e48cd7fc882cdbb69f9b9c2d867117bb",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=2/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "788f7dceaae983c184655228bdcf16aca7add3fff7855d33f71bdef055117812",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=20/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a60e575eefd61b25d13791f0ba43756179c4cfe6ca40592cb39c2af60028ab60",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=200/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "9d48472039a966b2384f1d1b7b7371b5c2857d5b1a6e3d5a6caa521caeb38f97",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=21/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "0d40c8e80519d73d8b905454549b81e844e8764d9e9f0935b2b18adca809e68d",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=22/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "3a6ecc9351ee5dfc64939694848cbd0a8c7d54e6b14f6da7405eae9d03dfb7fd",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=23/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "3edb0dc8c4655204f8d248074a5ef16a3b750609a7227361ec939f959f38ccaa",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=24/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a6aaab72bfe0f40522a1e255f5dced6b2c66b4a900369703339bc508b9b5a43a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=25/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c909dfd1a9a288f4df06489875c204e8e3b95e24064b3e9f33d3cebe404a74f6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=26/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4c3d6086c33039a230ae5b73c45bd47215ccc128cc04a30ed8169ffdec27546e",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=27/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ca6c37d1d57ab665fc8b9d172cadd09f82a5d9e69792714994362eb8944fd826",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=28/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "20dd86cdcd78164644ccfe29fa4427fc573a947caed5aa7cf82aaa798c897d88",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=29/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "48fcd6fe7acb91a003a6734dd3f7fefdaeb71f932f310bbbea84d4b36553feec",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=3/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "0d0ba0136c53693f4f00809b944f57b0d33e648dfa2176721edc57bca26128d4",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=30/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d6d1a40f93490aeba2e4b3d303521cfa6d42817b22d5fc0e03308a5266054270",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=31/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "395aaf0d02cbb5ce581c723b0d8b18ef074d3d306c97da2a1fa454773d457c82",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=32/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "459954caeb2aab2f42b4ec24aed4b03c46206e9ddd8827ad0452e3a31fe3e6a6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=33/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ed67585cdd63e4f5135c37c641f91e5016b6e17d7561b6b0bf2812f6fea9c9cb",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=34/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "0844381e629622be53d8b67a5b8bebc55d7a79f0e4d00f1e382662eb59d9fc76",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=35/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "83342169937f4aec41d2d1e131c632a67ecfc07ec6f2d337f677244fe667ce5b",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=36/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "88e561aecc8c68d0fbd62f07852c73445029ffcf55b152e71ac5afc5fea3ad40",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=37/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "247e52fe2dd734a4132fc27abb45084c05af065b08b74342292bdf85fbc8d3f6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=38/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d668058f3588ce7702403cf2f9145c6b51aadb3325b1bc26b38c048751855821",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=39/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "f069ccba9b86b6016460ba62f5209fe1f1de8abb5939ffdca96f46f85f26d371",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=4/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "8d65fcae0048f32efa8bed9977120f4ae42476fb0f064da302f60b303eb43d64",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=40/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "1cec35e5142f1715f067aea9c293ae570811af0eaa383c69996db71cc907be3f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=41/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c9a04e04e301f73bdfb6974d70bb2411c2fdf513e884271114234f1dd3dff1d1",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=42/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4e4e3c88bf99af3efe4427299b3929b6417dab43e671981afc5dbc2be9501d31",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=43/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "13472c9735bf8ebb035684a88d572c7912a052cc2edc9ba05d335228787025c6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=44/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "e8e24a3d9a4c13f3bdd9b016b7a201b1b1e5a19a2138ad2c03f82ccc7bb90ef4",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=45/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4fe088801218f6b51b9486873ba7fced81a7c19efc863901e639a1ce6e50ef79",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=46/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a5aea8f21dd647a58269464026e5659c84764d74464bee6dcc364a10dfb32ef5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=47/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "294a7bf0b65b3cd690736bc4d35911203cf098dc5aa4e711280577428fa852a2",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=48/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "945c7a56b9573a2175aa1a2452e581cdbc9d218c07e2c1e315490421a14660f4",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=49/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "51f8c4a77a32de21278c113515c386aafb66af40fee586517a171b8ab4523100",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=5/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "3a2f2867891ffca467e05a1abbb26eae462ffd20257d6065e35de8ac522fdc8b",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=50/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "0dda405561df150e9ba79324ce4fc7f1c320cdf9e32e41b09ca6956b050d0100",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=51/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "1955302fd99a1782c37cb59d9c28e93438494e2b528722884780f6f3822cfb89",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=52/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "78d3ea49a19e2c10638b65daf361c5d2a0f23404d7b948ae5703648d8345906b",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=53/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "410ac8f1996b0cfe7791a188cbffb72a35977ac7f82273b7116a4c3cd4cd273a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=54/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "70818269a13a4729f2f4cddcb2d67c6108f0a477a98863e45111390692912ba8",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=55/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "70b68b0e30a0c6949b182ca17d0651cd9379538b2079f8ab7aae5aa89869a056",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=56/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2298ee21a06528e96d0cb630564d6c80fd80245d4fcc1c5d7cad06560a7b3a6d",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=57/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "bd996c5c1590577d4e2369deea55e2dd99d431e0d77b1d297f343ccf085f2be7",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=58/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4a5d4fff5c8cb4f73b3b6aa982157eae1256b8e36da17908cfbc159a8221046f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=59/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7fd84cff2b0c70f3d8a84f18795fbcc863400ed02e335439f1dcd5b3856b3bca",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=6/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "bbf37190c014b855cc2add0c9b024eae9eda326d72cca23ce7420c4bd8faddc7",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=60/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "148dc321fa8493bdca757292655db45a019a20ff052f594f4b8e1f0910300b61",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=61/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ca6e11864721e6d93bf6d853fda81c13e6aacdbd9e642ceab1561158936d4dc0",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=62/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "3c3140fc447af7bcca5714d24e0434ffc96e6a21f771d02df799c953cf1ddd77",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=63/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6e42d653781994af9f3a1f9c1e5f280bd2b8a19f2f70f979faa48c04d9120ca2",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=64/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "1e85df8503c870489c91fb46c3a1d1748c72e1701b6211e81fd54a9e25109da0",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=65/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c718906e3664f9d29a64d2e8bf8a6e4f87271122a1ff9eb41350d64063f561f5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=66/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "bc788db50e3f2b29c8bddb91fd30563d7248827f5b63ce45abaa13928dcdcdd6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=67/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "562c9f85e735e94355442be50910657831bb2e8aa6e572cd76da8ec6214d85be",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=68/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "9c5f3dd5fe6888a26e75c6fd25a6984251f6e3b3024be54cdfdb8064f28d74b7",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=69/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6205b1a516348cf1485dce4c07c5b398854c7aee9c4a75cbefd4745b9dbda0c2",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=7/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7f91a8f17560bff122803912c7b21ab215ce5237ff747eb6c13bd2b9689ca81f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=70/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "625ae67b371b5ffdb242474cfa658c0cc9f99d5b5f1b071d61d89fe3aa562956",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=71/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "f0c32c32c106f88058898d5266e73b614068d7899656e9702b1bc787dd4e1a1a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=72/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "aa1dc34f0e4147c0ff1726adfb15055c1e8f6b97843978af901f6dfea9af7291",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=73/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "125eda885252d3cf60d3660a8c5f768ad7b14dade8c3c7afb30060e28d0f5c96",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=74/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "18456b2a76c7e2920ca112fe5553c475d937a042244bcd0403e1b448494f9d8c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=75/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6c17ebe835168ad5c5dcec604911068fda190c82774c552fc894557c7cac76d0",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=76/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "520616a181132d3c20bb3930143f3cae6a07f60e397c034492498085e8d8f170",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=77/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6bbb507f1d833653b0082bc05a30be2c264b6d6fda687ebc9fc9e8b0c2d97aa2",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=78/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2e9fd9382511a44057c2111e9b5482fea4e83cb271bf6d034381f45a9e7a9639",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=79/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "8bedb9290578497440bcead69e403ead637a3a7e21265acc9520413df448f71b",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=8/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2438bf4af33c364f6a793cca5680fbb18b98cd6b6d67593d73c5255ae17b8991",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=80/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "410c388d2344073398252687343b840fb57f3915ac1d317c4e091f8bb1073be1",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=81/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "563dc1bcfe94b0df17c2bad3766dabe94be635e36679b2d8ae741c4a29471a75",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=82/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "8eed4e13bb556b6f128d7bbec0a1c4bead8d61d0f0b09564ae7d1bd3e4d3a769",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=83/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4ff86de60d2d4b17b87f53fed6602bb0dd149e40b1b196c42ba16d3d7c393de8",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=84/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ddfff9fa91cbac947f10cd1260a83c345eeb377bb48efaeea3d527a6fa1e484c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=85/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "1f6fac78aa02f07c6260d4ff45d9493554c36c708d9f1fcbfc002b599b8cec78",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=86/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "8b27d1e3ccebcb97902a0493896107eab46ea38659b055389874ab8a1189923c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=87/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "06622367872876f72ecf502c5c3896b8dec96c154b3296881cb0475acd7dc7b5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=88/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "35e3e60b9bcbe82ea63453633e7fee74696ad015b4ab58e2bd08f0c020a958ad",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=89/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "3f8cd6798b327dda648f4512ddd047a8e30090b251ec2a0b27f12c73281db1dc",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=9/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7234508b25ef27128d5c4c80810780a3c4cd0cc9631a18f9c08ffedc647c38aa",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=90/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "e795e0124541a266f1efb7d99667dc2831ec767df830d54716fa87bd671d81f3",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=91/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "790bcf95d50d08b3e9352c7024e62660c1fee0905c1794338c80a980db5d09cc",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=92/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4b092475d6eda01909b90dae4d842d3aa9a7040861f7ffdbd3919f46dbfe33d2",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=93/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "b9c012cfa3a02452863c1afe79de388078953e2712f8e7e9a72b5b3745ab81e0",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=94/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "79d646bf06c8c54e5591e3b8f88c50a4ec1a3264cb24aefea5b03d3534eb4920",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=95/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "aed4ff46450a9d92c096a9fc140bf7f1092cf8d3cb41026217ceb0a66ad37c5e",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=96/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "50fcc4253e286f9d6abdcf629e4da22b29af7edf439547f544dfaec362fbe12b",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=97/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7b656f2c0f39488542fd55b17574372ca46d9b4f5703bda6fb27cf84d32d435c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=98/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "166acc80e4a80f2b40fd6955ebd2bd7913ae97d1fad62ee3f3b4745807e48a5c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=99/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "53c80e107da0215bf43c6339a041258418e2ed8288eedcdd8846e84101ae4eaf"
+        },
+        "execution_log_sha256": {
+          "etl/spark/.data/sfx-1119-before/logs/docs_event_export_hourly.log": "4723a7eccaab4e5f5c0b9131754be630a41081f9ce99d8088c11fe7894c88a56"
+        },
+        "conversion_sha256": {
+          "warehouse/dbt/macros/documents_spark_udfs.sql": "c1ff660bd154e5458a609f70063927a2401add2cfc0eef2f07f1fedabf01de18",
+          "warehouse/dbt/models/spark/docs_event_export_hourly/docs_event_export_hourly.sql": "1e67a42513815492109038ea9ff0f6089571ae0cfeb5a90dc8c8c5bcabe00d56"
+        },
+        "legacy_code_sha256": {
+          "etl/spark/jobs/py/common/binary_documents.py": "6929b25a2d70d52afbe2dfe14359d055c8bad76364e7c93688f8560f00c56c8e",
+          "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f",
+          "etl/spark/jobs/py/docs_event_export_hourly.py": "aab97d7b0e9679613e1e05140c9dc619f0f3c20d523b3bc9f36f275e7001a8b0"
+        },
+        "query": "/* Replaces the Spark lake output documents/docs_event_export_hourly */ /* (parquet partitioned by EXPORT_BUCKET); the bucket is now a column. */ SELECT DOCUMENT_ID, OWNER_USER_ID, FOLDER_ID, TITLE, CREATED_AT, STATUS, (DOCUMENT_ID % 10000 + 10000) % 10000 AS EXPORT_BUCKET /* Spark pmod: non-negative remainder for negative ids. */ FROM SPARK_INPUT.DOCUMENT",
+        "build": "initial snapshot; selected binary run partition only; no incremental replay",
+        "inputs": [
+          "documents.DOCUMENT"
+        ],
+        "shared_input": false
+      },
+      "docs_folder_legacy_report": {
+        "status": "green",
+        "measurement": {
+          "row_count": {
+            "before": 200,
+            "after": 200
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "FOLDER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "FOLDER_NAME": {
+                "nulls": 0,
+                "min": "Board materials",
+                "max": "Vendor contracts",
+                "distinct": 6
+              },
+              "PARENT_FOLDER_ID": {
+                "nulls": 1,
+                "min": 1,
+                "max": 100,
+                "distinct": 100
+              },
+              "DOCUMENTS": {
+                "nulls": 0,
+                "min": 0,
+                "max": 8,
+                "distinct": 2
+              }
+            },
+            "after": {
+              "FOLDER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "FOLDER_NAME": {
+                "nulls": 0,
+                "min": "Board materials",
+                "max": "Vendor contracts",
+                "distinct": 6
+              },
+              "PARENT_FOLDER_ID": {
+                "nulls": 1,
+                "min": 1,
+                "max": 100,
+                "distinct": 100
+              },
+              "DOCUMENTS": {
+                "nulls": 0,
+                "min": 0,
+                "max": 8,
+                "distinct": 2
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "FOLDER_ID"
+            ],
+            "difference": 0,
+            "before": "40ba70b4430e670aad913000d046c38527e400de051435701dcf2529f390abd3",
+            "after": "40ba70b4430e670aad913000d046c38527e400de051435701dcf2529f390abd3",
+            "key_policy": "contract keys; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        },
+        "blockers": [],
+        "target": "spark__docs_folder_legacy_report",
+        "legacy_output": "etl/spark/.data/sfx-1119-before/lake/documents/docs_folder_legacy_report",
+        "run_date": null,
+        "landing_sha256": {
+          "etl/spark/.data/sfx-1119-before/landing/documents/DOCUMENT/20261109.psv": "43b38c30e254ee747f4f623ac582d02027bab91117279ee516c1f85e4cb1fd45",
+          "etl/spark/.data/sfx-1119-before/landing/documents/FOLDER/20261109.psv": "7cba157423fc8e11bdce56f33eebdaca5090073dd77697c59629c413354a7412"
+        },
+        "upstream_sha256": {},
+        "output_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_folder_legacy_report/part-00000-05caba75-d977-48d0-b3c5-792b82ea7da0-c000.snappy.parquet": "0cb5bce64df5917ac29d91015a7c5998a7f5bda5ca8de0f3850e95af95ec2398"
+        },
+        "execution_log_sha256": {
+          "etl/spark/.data/sfx-1119-before/logs/docs_folder_legacy_report.log": "f10d23a2a01c4327b4ec67af01019a9a309f282c235498721c10881bb2aae4fc"
+        },
+        "conversion_sha256": {
+          "warehouse/dbt/macros/documents_spark_udfs.sql": "c1ff660bd154e5458a609f70063927a2401add2cfc0eef2f07f1fedabf01de18",
+          "warehouse/dbt/models/spark/docs_folder_legacy_report/docs_folder_legacy_report.sql": "846f824f668b7874892d4daaa30c32b0dae0f1637839dd2cfefd2e242c0cb8e5"
+        },
+        "legacy_code_sha256": {
+          "etl/spark/jobs/py/common/binary_documents.py": "6929b25a2d70d52afbe2dfe14359d055c8bad76364e7c93688f8560f00c56c8e",
+          "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f",
+          "etl/spark/jobs/py/docs_folder_legacy_report.py": "8cd6799e7bba1e9a3b09f05af52d3fe2896ed62a8033efc8a4751a0a8153f830"
+        },
+        "query": "SELECT f.FOLDER_ID, f.FOLDER_NAME, f.PARENT_FOLDER_ID, COUNT(d.DOCUMENT_ID) AS DOCUMENTS FROM SPARK_INPUT.FOLDER AS f LEFT JOIN SPARK_INPUT.DOCUMENT AS d ON f.FOLDER_ID = d.FOLDER_ID GROUP BY f.FOLDER_ID, f.FOLDER_NAME, f.PARENT_FOLDER_ID",
+        "build": "initial snapshot; selected binary run partition only; no incremental replay",
+        "inputs": [
+          "documents.FOLDER",
+          "documents.DOCUMENT"
+        ],
+        "shared_input": false
+      },
+      "docs_folder_tree_walk": {
+        "status": "green",
+        "measurement": {
+          "row_count": {
+            "before": 200,
+            "after": 200
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "FOLDER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "ROOT_FOLDER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 1,
+                "distinct": 1
+              },
+              "DEPTH": {
+                "nulls": 0,
+                "min": 0,
+                "max": 7,
+                "distinct": 8
+              }
+            },
+            "after": {
+              "FOLDER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "ROOT_FOLDER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 1,
+                "distinct": 1
+              },
+              "DEPTH": {
+                "nulls": 0,
+                "min": 0,
+                "max": 7,
+                "distinct": 8
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "FOLDER_ID"
+            ],
+            "difference": 0,
+            "before": "30ff05eb38971bb600cd6e6097a4354bcf6dfabb9e81a975fcd40ed458ac1845",
+            "after": "30ff05eb38971bb600cd6e6097a4354bcf6dfabb9e81a975fcd40ed458ac1845",
+            "key_policy": "contract keys; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        },
+        "blockers": [],
+        "target": "spark__docs_folder_tree_walk",
+        "legacy_output": "etl/spark/.data/sfx-1119-before/lake/documents/docs_folder_tree_walk",
+        "run_date": null,
+        "landing_sha256": {
+          "etl/spark/.data/sfx-1119-before/landing/documents/FOLDER/20261109.psv": "7cba157423fc8e11bdce56f33eebdaca5090073dd77697c59629c413354a7412"
+        },
+        "upstream_sha256": {},
+        "output_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_folder_tree_walk/part-00000-652f1bcb-1458-4534-b108-19d67a0e66ce-c000.snappy.parquet": "46ad75bf6f207d870bafb54844baaef8ce7d92c867cbb033da1803a18b53c650"
+        },
+        "execution_log_sha256": {
+          "etl/spark/.data/sfx-1119-before/logs/docs_folder_tree_walk.log": "f4f0553e60adb1581c838bb499eb599680cba808e849791c0d7c7a09f250d2b5"
+        },
+        "conversion_sha256": {
+          "warehouse/dbt/macros/documents_spark_udfs.sql": "c1ff660bd154e5458a609f70063927a2401add2cfc0eef2f07f1fedabf01de18",
+          "warehouse/dbt/models/spark/docs_folder_tree_walk/docs_folder_tree_walk.sql": "90da1c45d750a3feff7c373d2eed9aa51b8408837442857c9c7553c639b264a3"
+        },
+        "legacy_code_sha256": {
+          "etl/spark/jobs/py/common/binary_documents.py": "6929b25a2d70d52afbe2dfe14359d055c8bad76364e7c93688f8560f00c56c8e",
+          "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f",
+          "etl/spark/jobs/py/docs_folder_tree_walk.py": "746609244f8cd0ca13d52d70bbd495aaeb495a7f811afbfd28a21db5aae6fef8"
+        },
+        "query": "WITH RECURSIVE paths(FOLDER_ID, ROOT_FOLDER_ID, DEPTH, STEP) AS (SELECT FOLDER_ID, FOLDER_ID, 0, 0 FROM SPARK_INPUT.FOLDER UNION ALL SELECT p.FOLDER_ID, COALESCE(NULLIF(f.PARENT_FOLDER_ID, 0), p.ROOT_FOLDER_ID), p.DEPTH + CASE WHEN NOT f.PARENT_FOLDER_ID IS NULL THEN 1 ELSE 0 END, p.STEP + 1 FROM paths AS p LEFT JOIN SPARK_INPUT.FOLDER AS f ON f.FOLDER_ID IS NOT DISTINCT FROM p.ROOT_FOLDER_ID WHERE p.STEP < 20) SELECT FOLDER_ID, ROOT_FOLDER_ID, DEPTH FROM paths WHERE STEP = 20",
+        "build": "initial snapshot; selected binary run partition only; no incremental replay",
+        "inputs": [
+          "documents.FOLDER"
+        ],
+        "shared_input": false
+      },
+      "docs_search_log_parse": {
+        "status": "green",
+        "measurement": {
+          "row_count": {
+            "before": 200,
+            "after": 200
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "SEARCH_INDEX_LOG_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "EVENT_AT": {
+                "nulls": 0,
+                "min": "2026-11-03 00:00:02",
+                "max": "2026-11-09 23:59:01",
+                "distinct": 200
+              },
+              "RAW_LINE": {
+                "nulls": 0,
+                "min": "2026-11-03T12:00:00Z level=INFO actor=adrian.patel@ternvale-materials.example document=99 action=index status=200 ip=192.0.2.100 agent=\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130.0 Safari/537.36\"",
+                "max": "2026-11-09T12:00:00Z level=INFO actor=theo.calder@willowmere-design.example document=133 action=index status=200 ip=192.0.2.134 agent=\"Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 Version/17.6 Safari/605.1.15\"",
+                "distinct": 200
+              },
+              "STATUS": {
+                "nulls": 0,
+                "min": "active",
+                "max": "pending",
+                "distinct": 3
+              },
+              "PARSED_ACTION": {
+                "nulls": 0,
+                "min": "index",
+                "max": "index",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "SEARCH_INDEX_LOG_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "EVENT_AT": {
+                "nulls": 0,
+                "min": "2026-11-03 00:00:02",
+                "max": "2026-11-09 23:59:01",
+                "distinct": 200
+              },
+              "RAW_LINE": {
+                "nulls": 0,
+                "min": "2026-11-03T12:00:00Z level=INFO actor=adrian.patel@ternvale-materials.example document=99 action=index status=200 ip=192.0.2.100 agent=\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130.0 Safari/537.36\"",
+                "max": "2026-11-09T12:00:00Z level=INFO actor=theo.calder@willowmere-design.example document=133 action=index status=200 ip=192.0.2.134 agent=\"Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 Version/17.6 Safari/605.1.15\"",
+                "distinct": 200
+              },
+              "STATUS": {
+                "nulls": 0,
+                "min": "active",
+                "max": "pending",
+                "distinct": 3
+              },
+              "PARSED_ACTION": {
+                "nulls": 0,
+                "min": "index",
+                "max": "index",
+                "distinct": 1
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "SEARCH_INDEX_LOG_ID"
+            ],
+            "difference": 0,
+            "before": "48a1198daa017de4dd40b9a86851163824e7afbf1945c229c6112bedd64f0450",
+            "after": "48a1198daa017de4dd40b9a86851163824e7afbf1945c229c6112bedd64f0450",
+            "key_policy": "contract keys; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        },
+        "blockers": [],
+        "target": "spark__docs_search_log_parse",
+        "legacy_output": "etl/spark/.data/sfx-1119-before/lake/documents/docs_search_log_parse",
+        "run_date": null,
+        "landing_sha256": {
+          "etl/spark/.data/sfx-1119-before/landing/documents/SEARCH_INDEX_LOG/20261103.psv": "0feaf19adb23ba19c70d4c1dacd4fad35ed9f137b2e148f06c3426668d5bf362",
+          "etl/spark/.data/sfx-1119-before/landing/documents/SEARCH_INDEX_LOG/20261104.psv": "5ee06eaf526e32b6dba4b76e0214477f975b8bde1940160d150e58c5190be2c7",
+          "etl/spark/.data/sfx-1119-before/landing/documents/SEARCH_INDEX_LOG/20261105.psv": "8d02ca3635858a1cf70b4cbec88fa880a27f3f557729a592f8f9e8f676d7e231",
+          "etl/spark/.data/sfx-1119-before/landing/documents/SEARCH_INDEX_LOG/20261106.psv": "1ffc64f0568a477904dd2293c9df62fdb2d1d2a5c3bbfa4e7f86e8f5bb38e1cf",
+          "etl/spark/.data/sfx-1119-before/landing/documents/SEARCH_INDEX_LOG/20261107.psv": "545b7b06151fd30b0dea113d62ca5cd66a92a385a31ad501200712a1c5f67549",
+          "etl/spark/.data/sfx-1119-before/landing/documents/SEARCH_INDEX_LOG/20261108.psv": "bc6ce81077ea7b9d020d7ffc20d4eab5e8ce1d5afca8397affa9ef2f5d1cde10",
+          "etl/spark/.data/sfx-1119-before/landing/documents/SEARCH_INDEX_LOG/20261109.psv": "d2bcfa52726ebe6f52d25569d6c5ab1f0a3d3461d19b0cb4be69fd06fa653a0a"
+        },
+        "upstream_sha256": {},
+        "output_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_search_log_parse/part-00000-6998d1d9-6cbb-4981-95ed-089b785869e1-c000.snappy.parquet": "c9d7e6576a6b1d8c1e8f2150ae040f8a33ada3ee5fc0450904e42ac486264c5a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_search_log_parse/part-00001-6998d1d9-6cbb-4981-95ed-089b785869e1-c000.snappy.parquet": "e4a72e3f03dd055332bd0bb2c466d33d4404e1987c1e2683485b65c31fd2d56a"
+        },
+        "execution_log_sha256": {
+          "etl/spark/.data/sfx-1119-before/logs/docs_search_log_parse.log": "c46b0cca72889429a291dceea11626048be185c7a876dec5e91de8520cc64f9f"
+        },
+        "conversion_sha256": {
+          "warehouse/dbt/macros/documents_spark_udfs.sql": "c1ff660bd154e5458a609f70063927a2401add2cfc0eef2f07f1fedabf01de18",
+          "warehouse/dbt/models/spark/docs_search_log_parse/docs_search_log_parse.sql": "70a67c26068aa9f795cd4b2beb630f9f668ab306b68b53fffe74865197c644fb"
+        },
+        "legacy_code_sha256": {
+          "etl/spark/jobs/py/common/binary_documents.py": "6929b25a2d70d52afbe2dfe14359d055c8bad76364e7c93688f8560f00c56c8e",
+          "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f",
+          "etl/spark/jobs/py/docs_search_log_parse.py": "72fb70928f06da716b7e8130bfc21a55fd3154cc4dfa9853b456a3adf666abf0"
+        },
+        "query": "SELECT *, DOCS_PARSE_ACTION(RAW_LINE) AS PARSED_ACTION FROM SPARK_INPUT.SEARCH_INDEX_LOG",
+        "build": "initial snapshot; selected binary run partition only; no incremental replay",
+        "inputs": [
+          "documents.SEARCH_INDEX_LOG"
+        ],
+        "shared_input": false
+      },
+      "docs_share_activity": {
+        "status": "green",
+        "measurement": {
+          "row_count": {
+            "before": 150,
+            "after": 150
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "OWNER_USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 50,
+                "distinct": 50
+              },
+              "PERMISSION": {
+                "nulls": 0,
+                "min": "comment",
+                "max": "view",
+                "distinct": 3
+              },
+              "SHARES": {
+                "nulls": 0,
+                "min": 1,
+                "max": 2,
+                "distinct": 2
+              },
+              "RECIPIENTS": {
+                "nulls": 0,
+                "min": 1,
+                "max": 2,
+                "distinct": 2
+              }
+            },
+            "after": {
+              "OWNER_USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 50,
+                "distinct": 50
+              },
+              "PERMISSION": {
+                "nulls": 0,
+                "min": "comment",
+                "max": "view",
+                "distinct": 3
+              },
+              "SHARES": {
+                "nulls": 0,
+                "min": 1,
+                "max": 2,
+                "distinct": 2
+              },
+              "RECIPIENTS": {
+                "nulls": 0,
+                "min": 1,
+                "max": 2,
+                "distinct": 2
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "OWNER_USER_ID",
+              "PERMISSION"
+            ],
+            "difference": 0,
+            "before": "fb74f71b60c3d5e33c2c7f8bcb72a1516b939d5d001008a9325dd4f67885c3d7",
+            "after": "fb74f71b60c3d5e33c2c7f8bcb72a1516b939d5d001008a9325dd4f67885c3d7",
+            "key_policy": "contract keys; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        },
+        "blockers": [],
+        "target": "spark__docs_share_activity",
+        "legacy_output": "etl/spark/.data/sfx-1119-before/lake/documents/docs_share_activity",
+        "run_date": null,
+        "landing_sha256": {
+          "etl/spark/.data/sfx-1119-before/landing/documents/DOCUMENT/20261109.psv": "43b38c30e254ee747f4f623ac582d02027bab91117279ee516c1f85e4cb1fd45",
+          "etl/spark/.data/sfx-1119-before/landing/documents/DOC_SHARE/20261109.psv": "e9277e192fcd5c4b71e675868cd95a0279c6b08baec99bfb35f90fa89e48c17f"
+        },
+        "upstream_sha256": {},
+        "output_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_share_activity/part-00000-634a311f-6968-4f80-8819-38130bc11582-c000.snappy.parquet": "614dc0c5058d5c5bbca8ea9b29803797e5ce472be4553b8b34675eaf33fc82de"
+        },
+        "execution_log_sha256": {
+          "etl/spark/.data/sfx-1119-before/logs/docs_share_activity.log": "ef30d0550aecf5297a4d3a317d618b0ef0ad1525d88c118c40e71702cd2d316e"
+        },
+        "conversion_sha256": {
+          "warehouse/dbt/macros/documents_spark_udfs.sql": "c1ff660bd154e5458a609f70063927a2401add2cfc0eef2f07f1fedabf01de18",
+          "warehouse/dbt/models/spark/docs_share_activity/docs_share_activity.sql": "0d7d2baf92f65075bc5be91a9afceb168d9c30553f41fe0b34b10e9445c73da3"
+        },
+        "legacy_code_sha256": {
+          "etl/spark/jobs/py/common/binary_documents.py": "6929b25a2d70d52afbe2dfe14359d055c8bad76364e7c93688f8560f00c56c8e",
+          "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f",
+          "etl/spark/scala/src/main/scala/sfx/DocsShareActivity.scala": "210d557cccfb4cd8ba075850f66b430258e33cfdec328f7c8693719dce1c2243"
+        },
+        "query": "/* Replaces the Spark lake output documents/docs_share_activity. */ SELECT d.OWNER_USER_ID, s.PERMISSION, COUNT(*) AS SHARES, COUNT(DISTINCT s.SHARED_WITH_USER_ID) AS RECIPIENTS FROM SPARK_INPUT.DOC_SHARE AS s JOIN SPARK_INPUT.DOCUMENT AS d ON s.DOCUMENT_ID = d.DOCUMENT_ID GROUP BY d.OWNER_USER_ID, s.PERMISSION",
+        "build": "initial snapshot; selected binary run partition only; no incremental replay",
+        "inputs": [
+          "documents.DOC_SHARE",
+          "documents.DOCUMENT"
+        ],
+        "shared_input": false
+      },
+      "docs_storage_by_owner": {
+        "status": "green",
+        "measurement": {
+          "row_count": {
+            "before": 50,
+            "after": 50
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 50,
+                "distinct": 50
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "adrian.alvarez@ternvale-manufacturing.example",
+                "max": "theo.calder@asterfold-energy.example",
+                "distinct": 50
+              },
+              "FILE_COUNT": {
+                "nulls": 0,
+                "min": 4,
+                "max": 4,
+                "distinct": 1
+              },
+              "SIZE_BYTES": {
+                "nulls": 0,
+                "min": 1062512,
+                "max": 1062512,
+                "distinct": 1
+              }
+            },
+            "after": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 50,
+                "distinct": 50
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "adrian.alvarez@ternvale-manufacturing.example",
+                "max": "theo.calder@asterfold-energy.example",
+                "distinct": 50
+              },
+              "FILE_COUNT": {
+                "nulls": 0,
+                "min": 4,
+                "max": 4,
+                "distinct": 1
+              },
+              "SIZE_BYTES": {
+                "nulls": 0,
+                "min": 1062512,
+                "max": 1062512,
+                "distinct": 1
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "USER_ID",
+              "EMAIL"
+            ],
+            "difference": 0,
+            "before": "3e8f54de15bd7e2d072dd6f5a505cfaaf6aadc25b3ddfa4f3e41d288f8389e86",
+            "after": "3e8f54de15bd7e2d072dd6f5a505cfaaf6aadc25b3ddfa4f3e41d288f8389e86",
+            "key_policy": "contract keys; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        },
+        "blockers": [],
+        "target": "spark__docs_storage_by_owner",
+        "legacy_output": "etl/spark/.data/sfx-1119-before/lake/documents/docs_storage_by_owner",
+        "run_date": null,
+        "landing_sha256": {
+          "etl/spark/.data/sfx-1119-before/landing/documents/DOCUMENT/20261109.psv": "43b38c30e254ee747f4f623ac582d02027bab91117279ee516c1f85e4cb1fd45",
+          "etl/spark/.data/sfx-1119-before/landing/documents/FILE_OBJECT/20261109.psv": "5532b3fda692608c22e20e96635d3262df05c07828df9f5167e0544d17e71b8a",
+          "etl/spark/.data/sfx-1119-before/landing/users/APP_USER/20261109.psv": "a3714c9b6ed3e838d71864d6aaa0c52b9a14c4d828deafe8d572edc6cbf85493"
+        },
+        "upstream_sha256": {},
+        "output_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_storage_by_owner/part-00000-98762056-42ae-47b8-b8d9-b0b1bf9eb132-c000.snappy.parquet": "e2403ec59922d6bc489aee7c30914e00c9b4e882b97f8e1ab15627c18c239a2d"
+        },
+        "execution_log_sha256": {
+          "etl/spark/.data/sfx-1119-before/logs/docs_storage_by_owner.log": "72285800e7522992ee64c26378a1875d9cb90c8b6d986024945b85a74070a63d"
+        },
+        "conversion_sha256": {
+          "warehouse/dbt/macros/documents_spark_udfs.sql": "c1ff660bd154e5458a609f70063927a2401add2cfc0eef2f07f1fedabf01de18",
+          "warehouse/dbt/models/spark/docs_storage_by_owner/docs_storage_by_owner.sql": "30af5c6ad8ce0c0f04a396b049a66c83dcefeea76afb46fec0f78082eb40aa07"
+        },
+        "legacy_code_sha256": {
+          "etl/spark/jobs/py/common/binary_documents.py": "6929b25a2d70d52afbe2dfe14359d055c8bad76364e7c93688f8560f00c56c8e",
+          "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f",
+          "etl/spark/jobs/py/docs_storage_by_owner.py": "b061b52c8b158e78c63bc8760b9462fc673ecd424dfe8827e38714b4f5103e6d"
+        },
+        "query": "/* Replaces the Spark lake output documents/docs_storage_by_owner. */ SELECT u.USER_ID, u.EMAIL, COUNT(*) AS FILE_COUNT, SUM(f.SIZE_BYTES) AS SIZE_BYTES FROM SPARK_INPUT.DOCUMENT AS d JOIN SPARK_INPUT.FILE_OBJECT AS f ON d.DOCUMENT_ID = f.DOCUMENT_ID JOIN SPARK_INPUT.APP_USER AS u ON d.OWNER_USER_ID = u.USER_ID GROUP BY u.USER_ID, u.EMAIL",
+        "build": "initial snapshot; selected binary run partition only; no incremental replay",
+        "inputs": [
+          "documents.DOCUMENT",
+          "documents.FILE_OBJECT",
+          "users.APP_USER"
+        ],
+        "shared_input": true
+      },
+      "docs_tag_normalize": {
+        "status": "green",
+        "measurement": {
+          "row_count": {
+            "before": 200,
+            "after": 200
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "DOC_TAG_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "TAG": {
+                "nulls": 0,
+                "min": " Finance ",
+                "max": "customer-contract",
+                "distinct": 5
+              },
+              "NORMALIZED_TAG": {
+                "nulls": 0,
+                "min": "annual-review",
+                "max": "report",
+                "distinct": 5
+              }
+            },
+            "after": {
+              "DOC_TAG_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "TAG": {
+                "nulls": 0,
+                "min": " Finance ",
+                "max": "customer-contract",
+                "distinct": 5
+              },
+              "NORMALIZED_TAG": {
+                "nulls": 0,
+                "min": "annual-review",
+                "max": "report",
+                "distinct": 5
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "DOC_TAG_ID"
+            ],
+            "difference": 0,
+            "before": "035992e01efdccdc7d102428635eda2da015305dd91404a1b0e084ac3b34dc52",
+            "after": "035992e01efdccdc7d102428635eda2da015305dd91404a1b0e084ac3b34dc52",
+            "key_policy": "contract keys; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        },
+        "blockers": [],
+        "target": "spark__docs_tag_normalize",
+        "legacy_output": "etl/spark/.data/sfx-1119-before/lake/documents/docs_tag_normalize",
+        "run_date": null,
+        "landing_sha256": {
+          "etl/spark/.data/sfx-1119-before/landing/documents/DOC_TAG/20261109.psv": "c57fd9be88820a4c73a39295ab2b70b1cee854296382ade3955b383abf2e81a8"
+        },
+        "upstream_sha256": {},
+        "output_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_tag_normalize/part-00000-e01eaf8d-9423-4e51-bd17-b7b2b5ccf3e8-c000.snappy.parquet": "79ee873867f5e462cb0e509667c2151bef047a92adb82a0dc3fc381fc0ddc8a3"
+        },
+        "execution_log_sha256": {
+          "etl/spark/.data/sfx-1119-before/logs/docs_tag_normalize.log": "07203e05913f66d36c5fe0c7ccd62128a2968f27c0dbbb907924b93bcf590cf8"
+        },
+        "conversion_sha256": {
+          "warehouse/dbt/macros/documents_spark_udfs.sql": "c1ff660bd154e5458a609f70063927a2401add2cfc0eef2f07f1fedabf01de18",
+          "warehouse/dbt/models/spark/docs_tag_normalize/docs_tag_normalize.sql": "9c782bb05cb36009cd97d820a3ae87aa65e995172baaa32566690892daff6ee2"
+        },
+        "legacy_code_sha256": {
+          "etl/spark/jobs/py/common/binary_documents.py": "6929b25a2d70d52afbe2dfe14359d055c8bad76364e7c93688f8560f00c56c8e",
+          "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f",
+          "etl/spark/jobs/py/docs_tag_normalize.py": "8caec4774575fd774055eb2ad068e5acf4f18fb1b4d406cfc61e33247bf06219"
+        },
+        "query": "SELECT *, DOCS_NORMALIZE(TAG) AS NORMALIZED_TAG FROM SPARK_INPUT.DOC_TAG",
+        "build": "initial snapshot; selected binary run partition only; no incremental replay",
+        "inputs": [
+          "documents.DOC_TAG"
+        ],
+        "shared_input": false
+      },
+      "file_object_binary_extract": {
+        "status": "red",
+        "measurement": {
+          "row_count": {
+            "before": 200,
+            "after": 200
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "STORAGE_KEY": {
+                "nulls": 0,
+                "min": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+                "max": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+                "distinct": 1
+              },
+              "FILE_OBJECT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "SIZE_BYTES": {
+                "nulls": 0,
+                "min": 265628,
+                "max": 265628,
+                "distinct": 1
+              },
+              "CHECKSUM": {
+                "nulls": 0,
+                "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+                "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+                "distinct": 1
+              },
+              "MEDIA_TYPE": {
+                "nulls": 0,
+                "min": "application/pdf",
+                "max": "application/pdf",
+                "distinct": 1
+              },
+              "TEXT": {
+                "nulls": 0,
+                "min": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+                "max": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+                "distinct": 1
+              },
+              "PAGE_COUNT": {
+                "nulls": 0,
+                "min": 26,
+                "max": 26,
+                "distinct": 1
+              },
+              "SHA256": {
+                "nulls": 0,
+                "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+                "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+                "distinct": 1
+              },
+              "ERROR": {
+                "nulls": 200,
+                "min": null,
+                "max": null,
+                "distinct": 0
+              },
+              "RUN_DATE": {
+                "nulls": 0,
+                "min": "2026-11-19",
+                "max": "2026-11-19",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "STORAGE_KEY": {
+                "nulls": 0,
+                "min": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+                "max": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+                "distinct": 1
+              },
+              "FILE_OBJECT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "SIZE_BYTES": {
+                "nulls": 0,
+                "min": 265628,
+                "max": 265628,
+                "distinct": 1
+              },
+              "CHECKSUM": {
+                "nulls": 0,
+                "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+                "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+                "distinct": 1
+              },
+              "MEDIA_TYPE": {
+                "nulls": 0,
+                "min": "application/pdf",
+                "max": "application/pdf",
+                "distinct": 1
+              },
+              "TEXT": {
+                "nulls": 0,
+                "min": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+                "max": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+                "distinct": 1
+              },
+              "PAGE_COUNT": {
+                "nulls": 0,
+                "min": 26,
+                "max": 26,
+                "distinct": 1
+              },
+              "SHA256": {
+                "nulls": 0,
+                "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+                "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+                "distinct": 1
+              },
+              "ERROR": {
+                "nulls": 200,
+                "min": null,
+                "max": null,
+                "distinct": 0
+              },
+              "RUN_DATE": {
+                "nulls": 0,
+                "min": "2026-11-19",
+                "max": "2026-11-19",
+                "distinct": 1
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "FILE_OBJECT_ID",
+              "RUN_DATE"
+            ],
+            "difference": 0,
+            "before": "7404b9a252d23f35006816dd5e4aee0307343772aac6dc69555c58407f427dbb",
+            "after": "7404b9a252d23f35006816dd5e4aee0307343772aac6dc69555c58407f427dbb",
+            "key_policy": "contract keys; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        },
+        "blockers": [
+          "file_object_binary_extract partition history"
+        ],
+        "target": "spark__file_object_binary_extract",
+        "legacy_output": "etl/spark/.data/sfx-1119-before/lake/documents/file_object_binary_extract/run_date=2026-11-19",
+        "run_date": "2026-11-19",
+        "landing_sha256": {
+          "etl/spark/.data/sfx-1119-before/landing/documents/FILE_OBJECT/20261109.psv": "5532b3fda692608c22e20e96635d3262df05c07828df9f5167e0544d17e71b8a",
+          "etl/spark/.data/sfx-1119-before/landing/documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87"
+        },
+        "upstream_sha256": {},
+        "output_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/documents/file_object_binary_extract/run_date=2026-11-19/part-00000-1f965666-7713-49e9-875f-ba160fd966eb.c000.snappy.parquet": "304a627923f929b915009d3cd395c0251135399348d379ebd0b17265ad4807f9"
+        },
+        "execution_log_sha256": {
+          "etl/spark/.data/sfx-1119-before/logs/file_object_binary_extract.log": "a92bbbba972050c9bab1c35f3dde3d9338f61e55210280f5b86f4a1d460105f0"
+        },
+        "conversion_sha256": {
+          "warehouse/dbt/macros/documents_spark_udfs.sql": "c1ff660bd154e5458a609f70063927a2401add2cfc0eef2f07f1fedabf01de18",
+          "warehouse/dbt/models/spark/file_object_binary_extract/file_object_binary_extract.sql": "4be135ff0994886549c4052a9a1b74d8f5d57aa567ba63e0f42de551773179c0"
+        },
+        "legacy_code_sha256": {
+          "etl/spark/jobs/py/common/binary_documents.py": "6929b25a2d70d52afbe2dfe14359d055c8bad76364e7c93688f8560f00c56c8e",
+          "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f",
+          "etl/spark/jobs/py/file_object_binary_extract.py": "b0aa7dd444b1176ae25d4b330fdf3f90a3fd9e02dcf315488a451408ebb37fe9"
+        },
+        "query": "WITH extracted AS (SELECT STORAGE_KEY, DOCS_EXTRACT_DOCUMENT(CONTENT) AS X FROM SPARK_INPUT.FILE_OBJECT_BLOBS) SELECT f.STORAGE_KEY, f.FILE_OBJECT_ID, f.DOCUMENT_ID, f.SIZE_BYTES, f.CHECKSUM, CAST(TO_JSON(e.X) AS TEXT) ->> '$.MEDIA_TYPE' AS MEDIA_TYPE, CAST(TO_JSON(e.X) AS TEXT) ->> '$.TEXT' AS TEXT, CAST(CAST(TO_JSON(e.X) AS TEXT) ->> '$.PAGE_COUNT' AS BIGINT) AS PAGE_COUNT, CAST(TO_JSON(e.X) AS TEXT) ->> '$.SHA256' AS SHA256, CAST(TO_JSON(e.X) AS TEXT) ->> '$.ERROR' AS ERROR, CAST('2026-11-19' AS TEXT) AS RUN_DATE FROM SPARK_INPUT.FILE_OBJECT AS f JOIN extracted AS e ON f.STORAGE_KEY = e.STORAGE_KEY",
+        "build": "initial snapshot; selected binary run partition only; no incremental replay",
+        "inputs": [
+          "documents.FILE_OBJECT",
+          "documents.FILE_OBJECT_BLOBS"
+        ],
+        "shared_input": false
+      },
+      "lake_compaction_documents": {
+        "status": "green",
+        "measurement": {
+          "row_count": {
+            "before": 200,
+            "after": 200
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "OWNER_USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 50,
+                "distinct": 50
+              },
+              "FOLDER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 25,
+                "distinct": 25
+              },
+              "TITLE": {
+                "nulls": 0,
+                "min": "Access certification - Feb 2026",
+                "max": "Services agreement - Sep 2026",
+                "distinct": 30
+              },
+              "CREATED_AT": {
+                "nulls": 0,
+                "min": "2026-01-06 01:13:03",
+                "max": "2026-11-09 00:24:00",
+                "distinct": 200
+              },
+              "STATUS": {
+                "nulls": 0,
+                "min": "archived",
+                "max": "published",
+                "distinct": 3
+              },
+              "EXPORT_BUCKET": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              }
+            },
+            "after": {
+              "DOCUMENT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "OWNER_USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 50,
+                "distinct": 50
+              },
+              "FOLDER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 25,
+                "distinct": 25
+              },
+              "TITLE": {
+                "nulls": 0,
+                "min": "Access certification - Feb 2026",
+                "max": "Services agreement - Sep 2026",
+                "distinct": 30
+              },
+              "CREATED_AT": {
+                "nulls": 0,
+                "min": "2026-01-06 01:13:03",
+                "max": "2026-11-09 00:24:00",
+                "distinct": 200
+              },
+              "STATUS": {
+                "nulls": 0,
+                "min": "archived",
+                "max": "published",
+                "distinct": 3
+              },
+              "EXPORT_BUCKET": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "DOCUMENT_ID"
+            ],
+            "difference": 0,
+            "before": "0a9528511e0ccd9dc07daa4f43c59e68a0be10903ea0a3a12b2645a421c62565",
+            "after": "0a9528511e0ccd9dc07daa4f43c59e68a0be10903ea0a3a12b2645a421c62565",
+            "key_policy": "contract keys; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        },
+        "blockers": [],
+        "target": "spark__lake_compaction_documents",
+        "legacy_output": "etl/spark/.data/sfx-1119-before/lake/documents/lake_compaction_documents",
+        "run_date": null,
+        "landing_sha256": {
+          "etl/spark/.data/sfx-1119-before/landing/documents/DOCUMENT/20261109.psv": "43b38c30e254ee747f4f623ac582d02027bab91117279ee516c1f85e4cb1fd45"
+        },
+        "upstream_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=1/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "bb5a541335a75ed27bfd146bd934bd69a0b26e425c5338c7488c5bb182e81486",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=10/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "46e71d351040b0f7d198d08901dbbb3ee956494365e4899895f8cd94a147c725",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=100/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "9eef60474fadc7c30ecce4251a6104c46408313b6a73e16c88d0fa1fd1018528",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=101/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "fe75c42ba6246852757f040127aea65b71cef90a20ed9fd36435de5ad2d2d4cd",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=102/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "770aaef46eef5a7574518e4eca16ced99a09e0486cb15e349de94e8f0582e06a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=103/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5d63ee4f0c456257daf1cbf0c26400f71fc3576c1f963ef8a602e546fcfbc918",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=104/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "53b3d69eac60454796153d176e833a1ec6a26d9a7da19f2254317155be3aa2b2",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=105/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "338b389756eb7dcc55212a3e17d5fb2a7c9077f6f3d82fb4757111abedb4a6a5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=106/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "af122f607a9f7a43687df006986ccb6c8fc8dece0c38313cdfa87bafd8e96fbd",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=107/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "de48b5b65dcd85fe0dbacd22121e1727dcdf11f62d15f51d3b8d56171cbeb773",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=108/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d8922677a5aebe20a1959f3805b3e3433b0ca74ff08733b0215c31e8bb88ef46",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=109/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "b48b70e655855fe430dea08709e8d9a11113f4325db4153bed561c296bdc0226",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=11/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "70e36741bc0ced0f4ef59a6d2b9dcc0f2c2c4d6a2ebf7cbfdad3aa9316f7951f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=110/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d9770c098ec4c2dec779727c42d53d8750a9872b6c28b6475769b994d6dc1d5c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=111/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "372e73df8dde2675054baa5dd0c845f1ef1a7ef86ab702e574ca7feedc3ef3a5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=112/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a8ea2e88209cd24e60534def77faad0330a90baeae17affb4492db6f96ba487a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=113/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ad2e128b1d7975f1831219ef4bf3b5fc369fe9bae0196dd17b9e24c1e75fe20a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=114/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c9a8f28337845168a0b1c2a827c2cd7343236850c27c5f5aa4566665abc3eb9f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=115/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5ee52bca440c92a931c3a2503646ac07a89f0878824bb193cea4628e1def9e5f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=116/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2597bbe918ac180240d1df4f5bb1d38753c1fad37d788a74a4fae46ae2834a85",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=117/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "f5999b8e6973b115057e4f7b41b74a08009a13a29545d4d4a363ed2256231df7",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=118/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a1f94b28e2f2babce298aa7301295f6f5e716a7e11b9252252156d2a32f82e58",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=119/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7d665694b0fb3bd4d93674909f7631713da4f8e2fd5450b94c0f424eb181422e",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=12/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6debc33501788b484c72631336a8bcc9efe767a02e983608cdba2d1fb54ed5bf",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=120/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c53c55faf3cc09d3328a70cd8140e4fb3dd0a3613f01210d7d999293e2fa0aba",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=121/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "208473bb24bf0adc36c39e01c88a6cd64328f7c9b12a548a1e73182526fc8e4f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=122/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "17ae1142f0c70509a1a190ba3af31e03c9104d0880c8d139b27f9c02ae2a51ec",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=123/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6a55b4a2d8c0db7f136585ef98bd5a934c5d255f253f961477a0dfade3550f65",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=124/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "98c4a8aba1c3b53c42ad33a320d1fee92a29b0dff2255e2a596eab7648ec7281",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=125/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "eeba6cf0a163e2ea347b8ec9740901c8b2e34fe38b2f5aedbd5fa3bd55d82641",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=126/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5b9fbf91cea51c0e92f638c58d334294c668127962c8147ae2877ce8e2720b0d",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=127/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "e3ca9e7e6a7803e156a649a290bb1d2d4ce57a625602c9cebcb86acc071ceade",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=128/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a9a10604f52a50e77c614f99428f66efa0e3bee8e7802ca513497343bb782f14",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=129/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d4eeae385a90eb59616123b0b8f79d57b8510db9dbef80bda6fc4b1915738fa6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=13/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2db8dcd6ad5953ce0a12f61f75b1915027a2262c30f7dace01aaeefb4aff4730",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=130/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "968921b12a18c2ce6509581cc0fafbcc036783007f451bb54cbdfbb6516dceec",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=131/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "43679e8a9ebf9d694d31007e529bb541eeebee108555242f64c667341da019bc",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=132/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "afde6c331800186f8738d24844b6caef2ed1174c796802a24b20d1aa220fdb83",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=133/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "821ae3ce9df8662676d252cf50356a9f871a1149df58f485cc0a2532954a3c45",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=134/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "53c5be3170e40051eeb5699bc15229289d4c3a8b534b968bb48cb9311ddf2bba",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=135/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "28e18c99b8c9e2e4982f779aaaf3ea73859bc67706d59e356493422e6a106e4c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=136/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4635afb42253c2cfd587ccd3e6305f8e183ee157a420fcde7b0b5bc0a20c9f7d",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=137/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "60b83d11d78cc3938b9a6675cca59a375731b1c847453f5756ee2e23c552b4f1",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=138/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c86d8f9ec5e06dfb3380c5362b952d7b22d3ae296f8db7f200760473c4df80ba",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=139/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ff8a9f6944f791bc36781dbda7b314fc8edec4354a280da3175aae2b02887853",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=14/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "81a0b27b0816d314d6ec7ebcab4a1a3b35006ffe6ec95d0559ce1461772124cc",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=140/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "0c079c8ac94773776e6edd4ee51ef12a868c0dc74adfa9228c04904c6e3e56bc",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=141/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c77e761fa07e5fd6927168064c16a174846eff247c1c85510e2c54e770c91973",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=142/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "e835ffb5546914a56b723a5847d62caf9fdb0c7b1153c660080f6bb02584d69f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=143/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "8b8309488d7e6600163c3ad8916aa9025ae903dd33b01921bde481e154504262",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=144/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "cf72774c2408ec99c76d3f6e0fd8c62b0b726f5ba26311bc0ae8654fe0ba40e9",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=145/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ececeadefeab129c7b0b2f30ef4cb5175e8546db3cc27635ee9f8fcb1a666f33",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=146/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5ad45afa9d85a7302f97a8c17942262ae272408bd43f2d81f4c95981348b8a88",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=147/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "dd6bfb9d2953edd01f5d423fb272b56e543890828fc2c4e6f3922c99af6bffb4",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=148/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c878895d69e8bc84bb278fcb7810a14f116fdc1b5554b5ca3b6598624af9ec31",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=149/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "78bbf52c770a16e48a08a49ed431403a1e268aa0c78b263e0e21422f33fe34ea",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=15/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d4de70688248954decb4fa1cf07f14b07197f2326f8050c7515e22961539faa9",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=150/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "570e813c070f8220ae000070cd4b3abdeac72404315494406944126cc591c85b",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=151/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d812a05024185358991b1cfa824f19634ac7013eac9e3fae37918ad762f37479",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=152/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "1d44c41a860750146874ce9749fb6cdde53265512382c07509bff27f4830b927",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=153/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "50f27f26f791c847f399af64f1508850e14b545678fc06001c3d2ca733c80e16",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=154/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2436fe8acac39938c0d8c0be4154aaef3fd970f10cab86d592c18dd3e4065b0d",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=155/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "08a54ff8179f03007744bfda39828d55f80b82647fe11c296495087a1ac227af",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=156/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6660dc8a5e1649d89417bf6c5910b819ccf3c3f8c9ca7ff64d04d9fb6f7203b6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=157/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "fea4a32d64606082185e2f8cdde95062ebcbafd02a0c022e9f1cdcc48728b442",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=158/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7220017e61ef9ad767b2fc5bba3d302efe0368376e86360379924912e4f79c8a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=159/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5d9684dcb47d495fc48f3f3c614a8ee99c68cb224f2c68f32a79863ffb74165c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=16/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "22f92f144dfae20420157bfcbb0320a3eea7ff66021131990acb1d9e5cf09979",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=160/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "54a0d168b5e1d1caec62dca9a1bbff2c1fb8c6e3659617979cc9d50963603c67",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=161/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "932257d37d51d7d9a01e492d1bae6d0857cf46a6c7350090321de34c1a35655d",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=162/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "110a7aece4345f2c97e0263d7be0b7f0830d34ed00cd597b5345e400a3eff007",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=163/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4151bd7c515f05b5c711c53efef8a64cdb5fb39f4d651f21d7fa348f76fdd722",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=164/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "94aa29c35fbd5c4e79db2138b73644101366e64c4cf26cc9c2c4d0e8105fcbed",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=165/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4d3f93610fe5a406713078a538c5a171a7bac1719f6437605d6245c5a69cfb54",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=166/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "978623b272953acc12629bf23a2d096ea3206dbbc2e29db9bb7e6c789b239488",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=167/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d82c476e911e83afaedd45cc6f199825970d350e15585189d9ed1c0087db5c6c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=168/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7d3244b5ee2c2c9c4c3d41c3d83b313b54e391fa16d8b1458a839826dfd92ca1",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=169/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c09810066005f5720c872ffb17e53d5638b146a282698a6f531408835a13c3cd",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=17/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5f3979b0a70fcd8aed1ae59778f204465ecbf1703f4fdae002cacda6c0831eef",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=170/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "568b7622b17d397ee3afc6a8edf7be39519f2f50b55494dbc2a5c79c801af540",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=171/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "07fe98957e1849925280e53b98db82e7407dceb269e5c733f4a2d9da03bde476",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=172/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a7954cae2bb3126553dba8d94292802b6e21cdeebf6bd77aa375f35c1c6380ac",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=173/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5c54e6a0e44150982fa8e1d9bd858382b36512bf0ce816cab18442dc3246676c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=174/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "9fae922762d83d24dcd9e663030a09a726c68c37dacd869dafbeef08a1001d93",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=175/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4ac6933662ff00bf22ccf79185f563419c7665225647c3e1499ecf9a1f36223f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=176/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "60abfb8a3acacd129afa1552315018c584be4b01b0abd1c6b2c24523c54beaac",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=177/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "dfa97db3e4e6a1d27eec5bd2803748fadfadfe6cf2c0ef35b28d8f0fc10c5591",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=178/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "f9d3dbbba18eb20402aa2f88947ad500d8cd35424aae9e7bc195f75bafac87d5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=179/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "671d5e6fe7775bd74664cae9b361fb6e62292b4cddc903a9b0e82d70c38c0d3f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=18/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6e2d3aac56c69fc71a7ba0884643046b1f8b17c4881027b7ba7b2cfc483fb3c9",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=180/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "553ea06d6fa9e11c0ba750d64f746fb710c5dfdf3af9576c5818183d1c023baa",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=181/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ee8fd1b6238190ec37878f697e309515cc8072bf42f7d821ea2fb4618db892f3",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=182/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "dfa51a454a7bf84b42f56ad319e86c6fdbf2d5d17af057d6113eb9a298c3d36f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=183/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "34819ba2ff48ac494a665358db71702fc8903131c95154d12d33e1f31fed5b7f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=184/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "84423e349db1077abcdee58c21384dcf5a69893153a6bc3e7e928a5103aa9d91",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=185/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d5fdd05c15fa7c6c459588ef158481cc948b1373996d9d0f6ee31521fb9666f0",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=186/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "dae8c0a1396518d7252e3c54fc91509e071a224004275db93ca3365b9503e797",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=187/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a111607dd3cd89f94d7a16d7adcbab9110ecb5709ed39259256778a7e12d2bed",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=188/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "3be38aff7e58e5941113a050de03301d6d14bf234d6194a1660b9c6bbcd60eeb",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=189/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a230a770f0d182b0b0cc4d7cb7413e9614a928aae9de2487952d679121f99ab5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=19/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5a8f46bc084aa17df7e05d05764c20226edb28a851c80a91827358b33acda522",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=190/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2dd698a3190267cedaa31986bc1888a3d0facc98077c95ecee8fa6064fc52dce",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=191/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "5f4bd3bc94b90f19fee80d2eddc48b6952c76be3dac2618655465d38c7678cab",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=192/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "49688cf024a5ccc45973c4feb8e76b4d49274a49b73d84e2a108cfb7d03fee34",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=193/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6fd42e3a8b6e45352e946c33a83f338bedb4e031e8bd51964db76998d8f66d34",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=194/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "472a740583e55e2a0beca104e2c1b423d7bf82f44c2b65aed61cc9273f750759",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=195/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "0432e6fea7f1fd71298c8065b8ed8a14532c50009a9b52b277197031caf2ba54",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=196/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2f3bce5ffa0aa27f34193748ea689f18d67f8d372bd662eaf26b255e8f3d041a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=197/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "fcc0f08086cf9a63def3a9cb77d6e64da876b7a044e0598dd9c7ab30c8cf97a7",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=198/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "021721dd6034b82d7b47cb879e0d2b9b241fb034416a8051fe9ce8e75b09cfa0",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=199/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "e432b64d2bb428a3a4700cd9e555b753e48cd7fc882cdbb69f9b9c2d867117bb",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=2/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "788f7dceaae983c184655228bdcf16aca7add3fff7855d33f71bdef055117812",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=20/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a60e575eefd61b25d13791f0ba43756179c4cfe6ca40592cb39c2af60028ab60",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=200/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "9d48472039a966b2384f1d1b7b7371b5c2857d5b1a6e3d5a6caa521caeb38f97",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=21/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "0d40c8e80519d73d8b905454549b81e844e8764d9e9f0935b2b18adca809e68d",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=22/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "3a6ecc9351ee5dfc64939694848cbd0a8c7d54e6b14f6da7405eae9d03dfb7fd",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=23/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "3edb0dc8c4655204f8d248074a5ef16a3b750609a7227361ec939f959f38ccaa",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=24/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a6aaab72bfe0f40522a1e255f5dced6b2c66b4a900369703339bc508b9b5a43a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=25/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c909dfd1a9a288f4df06489875c204e8e3b95e24064b3e9f33d3cebe404a74f6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=26/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4c3d6086c33039a230ae5b73c45bd47215ccc128cc04a30ed8169ffdec27546e",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=27/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ca6c37d1d57ab665fc8b9d172cadd09f82a5d9e69792714994362eb8944fd826",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=28/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "20dd86cdcd78164644ccfe29fa4427fc573a947caed5aa7cf82aaa798c897d88",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=29/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "48fcd6fe7acb91a003a6734dd3f7fefdaeb71f932f310bbbea84d4b36553feec",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=3/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "0d0ba0136c53693f4f00809b944f57b0d33e648dfa2176721edc57bca26128d4",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=30/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d6d1a40f93490aeba2e4b3d303521cfa6d42817b22d5fc0e03308a5266054270",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=31/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "395aaf0d02cbb5ce581c723b0d8b18ef074d3d306c97da2a1fa454773d457c82",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=32/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "459954caeb2aab2f42b4ec24aed4b03c46206e9ddd8827ad0452e3a31fe3e6a6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=33/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ed67585cdd63e4f5135c37c641f91e5016b6e17d7561b6b0bf2812f6fea9c9cb",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=34/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "0844381e629622be53d8b67a5b8bebc55d7a79f0e4d00f1e382662eb59d9fc76",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=35/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "83342169937f4aec41d2d1e131c632a67ecfc07ec6f2d337f677244fe667ce5b",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=36/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "88e561aecc8c68d0fbd62f07852c73445029ffcf55b152e71ac5afc5fea3ad40",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=37/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "247e52fe2dd734a4132fc27abb45084c05af065b08b74342292bdf85fbc8d3f6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=38/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "d668058f3588ce7702403cf2f9145c6b51aadb3325b1bc26b38c048751855821",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=39/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "f069ccba9b86b6016460ba62f5209fe1f1de8abb5939ffdca96f46f85f26d371",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=4/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "8d65fcae0048f32efa8bed9977120f4ae42476fb0f064da302f60b303eb43d64",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=40/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "1cec35e5142f1715f067aea9c293ae570811af0eaa383c69996db71cc907be3f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=41/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c9a04e04e301f73bdfb6974d70bb2411c2fdf513e884271114234f1dd3dff1d1",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=42/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4e4e3c88bf99af3efe4427299b3929b6417dab43e671981afc5dbc2be9501d31",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=43/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "13472c9735bf8ebb035684a88d572c7912a052cc2edc9ba05d335228787025c6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=44/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "e8e24a3d9a4c13f3bdd9b016b7a201b1b1e5a19a2138ad2c03f82ccc7bb90ef4",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=45/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4fe088801218f6b51b9486873ba7fced81a7c19efc863901e639a1ce6e50ef79",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=46/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "a5aea8f21dd647a58269464026e5659c84764d74464bee6dcc364a10dfb32ef5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=47/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "294a7bf0b65b3cd690736bc4d35911203cf098dc5aa4e711280577428fa852a2",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=48/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "945c7a56b9573a2175aa1a2452e581cdbc9d218c07e2c1e315490421a14660f4",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=49/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "51f8c4a77a32de21278c113515c386aafb66af40fee586517a171b8ab4523100",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=5/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "3a2f2867891ffca467e05a1abbb26eae462ffd20257d6065e35de8ac522fdc8b",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=50/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "0dda405561df150e9ba79324ce4fc7f1c320cdf9e32e41b09ca6956b050d0100",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=51/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "1955302fd99a1782c37cb59d9c28e93438494e2b528722884780f6f3822cfb89",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=52/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "78d3ea49a19e2c10638b65daf361c5d2a0f23404d7b948ae5703648d8345906b",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=53/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "410ac8f1996b0cfe7791a188cbffb72a35977ac7f82273b7116a4c3cd4cd273a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=54/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "70818269a13a4729f2f4cddcb2d67c6108f0a477a98863e45111390692912ba8",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=55/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "70b68b0e30a0c6949b182ca17d0651cd9379538b2079f8ab7aae5aa89869a056",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=56/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2298ee21a06528e96d0cb630564d6c80fd80245d4fcc1c5d7cad06560a7b3a6d",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=57/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "bd996c5c1590577d4e2369deea55e2dd99d431e0d77b1d297f343ccf085f2be7",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=58/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4a5d4fff5c8cb4f73b3b6aa982157eae1256b8e36da17908cfbc159a8221046f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=59/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7fd84cff2b0c70f3d8a84f18795fbcc863400ed02e335439f1dcd5b3856b3bca",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=6/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "bbf37190c014b855cc2add0c9b024eae9eda326d72cca23ce7420c4bd8faddc7",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=60/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "148dc321fa8493bdca757292655db45a019a20ff052f594f4b8e1f0910300b61",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=61/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ca6e11864721e6d93bf6d853fda81c13e6aacdbd9e642ceab1561158936d4dc0",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=62/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "3c3140fc447af7bcca5714d24e0434ffc96e6a21f771d02df799c953cf1ddd77",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=63/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6e42d653781994af9f3a1f9c1e5f280bd2b8a19f2f70f979faa48c04d9120ca2",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=64/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "1e85df8503c870489c91fb46c3a1d1748c72e1701b6211e81fd54a9e25109da0",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=65/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "c718906e3664f9d29a64d2e8bf8a6e4f87271122a1ff9eb41350d64063f561f5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=66/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "bc788db50e3f2b29c8bddb91fd30563d7248827f5b63ce45abaa13928dcdcdd6",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=67/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "562c9f85e735e94355442be50910657831bb2e8aa6e572cd76da8ec6214d85be",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=68/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "9c5f3dd5fe6888a26e75c6fd25a6984251f6e3b3024be54cdfdb8064f28d74b7",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=69/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6205b1a516348cf1485dce4c07c5b398854c7aee9c4a75cbefd4745b9dbda0c2",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=7/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7f91a8f17560bff122803912c7b21ab215ce5237ff747eb6c13bd2b9689ca81f",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=70/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "625ae67b371b5ffdb242474cfa658c0cc9f99d5b5f1b071d61d89fe3aa562956",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=71/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "f0c32c32c106f88058898d5266e73b614068d7899656e9702b1bc787dd4e1a1a",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=72/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "aa1dc34f0e4147c0ff1726adfb15055c1e8f6b97843978af901f6dfea9af7291",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=73/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "125eda885252d3cf60d3660a8c5f768ad7b14dade8c3c7afb30060e28d0f5c96",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=74/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "18456b2a76c7e2920ca112fe5553c475d937a042244bcd0403e1b448494f9d8c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=75/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6c17ebe835168ad5c5dcec604911068fda190c82774c552fc894557c7cac76d0",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=76/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "520616a181132d3c20bb3930143f3cae6a07f60e397c034492498085e8d8f170",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=77/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "6bbb507f1d833653b0082bc05a30be2c264b6d6fda687ebc9fc9e8b0c2d97aa2",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=78/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2e9fd9382511a44057c2111e9b5482fea4e83cb271bf6d034381f45a9e7a9639",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=79/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "8bedb9290578497440bcead69e403ead637a3a7e21265acc9520413df448f71b",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=8/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "2438bf4af33c364f6a793cca5680fbb18b98cd6b6d67593d73c5255ae17b8991",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=80/part-00005-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "410c388d2344073398252687343b840fb57f3915ac1d317c4e091f8bb1073be1",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=81/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "563dc1bcfe94b0df17c2bad3766dabe94be635e36679b2d8ae741c4a29471a75",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=82/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "8eed4e13bb556b6f128d7bbec0a1c4bead8d61d0f0b09564ae7d1bd3e4d3a769",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=83/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4ff86de60d2d4b17b87f53fed6602bb0dd149e40b1b196c42ba16d3d7c393de8",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=84/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "ddfff9fa91cbac947f10cd1260a83c345eeb377bb48efaeea3d527a6fa1e484c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=85/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "1f6fac78aa02f07c6260d4ff45d9493554c36c708d9f1fcbfc002b599b8cec78",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=86/part-00003-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "8b27d1e3ccebcb97902a0493896107eab46ea38659b055389874ab8a1189923c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=87/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "06622367872876f72ecf502c5c3896b8dec96c154b3296881cb0475acd7dc7b5",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=88/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "35e3e60b9bcbe82ea63453633e7fee74696ad015b4ab58e2bd08f0c020a958ad",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=89/part-00006-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "3f8cd6798b327dda648f4512ddd047a8e30090b251ec2a0b27f12c73281db1dc",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=9/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7234508b25ef27128d5c4c80810780a3c4cd0cc9631a18f9c08ffedc647c38aa",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=90/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "e795e0124541a266f1efb7d99667dc2831ec767df830d54716fa87bd671d81f3",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=91/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "790bcf95d50d08b3e9352c7024e62660c1fee0905c1794338c80a980db5d09cc",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=92/part-00004-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "4b092475d6eda01909b90dae4d842d3aa9a7040861f7ffdbd3919f46dbfe33d2",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=93/part-00000-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "b9c012cfa3a02452863c1afe79de388078953e2712f8e7e9a72b5b3745ab81e0",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=94/part-00002-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "79d646bf06c8c54e5591e3b8f88c50a4ec1a3264cb24aefea5b03d3534eb4920",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=95/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "aed4ff46450a9d92c096a9fc140bf7f1092cf8d3cb41026217ceb0a66ad37c5e",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=96/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "50fcc4253e286f9d6abdcf629e4da22b29af7edf439547f544dfaec362fbe12b",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=97/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "7b656f2c0f39488542fd55b17574372ca46d9b4f5703bda6fb27cf84d32d435c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=98/part-00007-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "166acc80e4a80f2b40fd6955ebd2bd7913ae97d1fad62ee3f3b4745807e48a5c",
+          "etl/spark/.data/sfx-1119-before/lake/documents/docs_event_export_hourly/EXPORT_BUCKET=99/part-00001-aad08a61-ace7-48e9-8190-9a80e09dfe0e.c000.snappy.parquet": "53c80e107da0215bf43c6339a041258418e2ed8288eedcdd8846e84101ae4eaf"
+        },
+        "output_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/documents/lake_compaction_documents/part-00000-7c511bab-fca8-4394-b287-ccf502a8e175-c000.snappy.parquet": "8c7194bf51a68acec02a12577642ba50d036e1826ee423c7142fb5318799aa39",
+          "etl/spark/.data/sfx-1119-before/lake/documents/lake_compaction_documents/part-00001-7c511bab-fca8-4394-b287-ccf502a8e175-c000.snappy.parquet": "baf86a5b0789f499ebd41de2473db031ae1bd6e84ec09e061579cc9bc00bd548",
+          "etl/spark/.data/sfx-1119-before/lake/documents/lake_compaction_documents/part-00002-7c511bab-fca8-4394-b287-ccf502a8e175-c000.snappy.parquet": "3083e9be7d22eea9fdebde535c9ed214a7787bfeabc5a84a6660fe94cac7d55e",
+          "etl/spark/.data/sfx-1119-before/lake/documents/lake_compaction_documents/part-00003-7c511bab-fca8-4394-b287-ccf502a8e175-c000.snappy.parquet": "569e564888d5a729f5171c6e4329073ea91e9c43bc9fe7c816d917b984847673"
+        },
+        "execution_log_sha256": {
+          "etl/spark/.data/sfx-1119-before/logs/lake_compaction_documents.log": "ecfc50d2f7240bc270c0155df2990bbf0c218a7c5037996db1a96cf192eae690"
+        },
+        "conversion_sha256": {
+          "warehouse/dbt/macros/documents_spark_udfs.sql": "c1ff660bd154e5458a609f70063927a2401add2cfc0eef2f07f1fedabf01de18",
+          "warehouse/dbt/models/spark/lake_compaction_documents/lake_compaction_documents.sql": "ad66cda7fd7ac7e6093894edceedd9d7f2988fecdfbdf0f79b76e6a19ff30577"
+        },
+        "legacy_code_sha256": {
+          "etl/spark/jobs/py/common/binary_documents.py": "6929b25a2d70d52afbe2dfe14359d055c8bad76364e7c93688f8560f00c56c8e",
+          "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f",
+          "etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala": "19f053d3629cc81468c58e928c65e6a6295a54ee68376001f7f4ed341d76f32f"
+        },
+        "query": "SELECT * FROM SPARK.\"SPARK__DOCS_EVENT_EXPORT_HOURLY\"",
+        "build": "initial snapshot; selected binary run partition only; no incremental replay",
+        "inputs": [
+          "documents.DOCUMENT"
+        ],
+        "shared_input": false
+      },
+      "security_alert_anomaly": {
+        "status": "red",
+        "measurement": {
+          "row_count": {
+            "before": 200,
+            "after": 200
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "ALERT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "SCORE": {
+                "nulls": 0,
+                "min": 0.0,
+                "max": 87.6,
+                "distinct": 194
+              },
+              "Z_SCORE": {
+                "nulls": 0,
+                "min": -2.0288837087623484,
+                "max": 2.9739723291138858,
+                "distinct": 194
+              }
+            },
+            "after": {
+              "ALERT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "SCORE": {
+                "nulls": 0,
+                "min": 0.0,
+                "max": 87.6,
+                "distinct": 194
+              },
+              "Z_SCORE": {
+                "nulls": 0,
+                "min": -2.0288837087623484,
+                "max": 2.9739723291138858,
+                "distinct": 194
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "ALERT_ID"
+            ],
+            "difference": 0,
+            "before": "887347b36271dbbcffbabeaf4591ae85e783381b258cf437692ca2f383c2c03b",
+            "after": "887347b36271dbbcffbabeaf4591ae85e783381b258cf437692ca2f383c2c03b",
+            "key_policy": "contract keys; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        },
+        "blockers": [
+          "security_alert_anomaly JDBC publication"
+        ],
+        "target": "spark__security_alert_anomaly",
+        "legacy_output": "etl/spark/.data/sfx-1119-before/lake/audit/security_alert_anomaly",
+        "run_date": null,
+        "landing_sha256": {
+          "etl/spark/.data/sfx-1119-before/landing/audit/SECURITY_ALERT/20261109.psv": "b8541c0fd131cbaafa882a5c30b3ef3f68b2426c1e764b76d9cd61fba5dde884"
+        },
+        "upstream_sha256": {},
+        "output_sha256": {
+          "etl/spark/.data/sfx-1119-before/lake/audit/security_alert_anomaly/part-00000-67442d77-0f21-4366-bd09-ca4c2547b7a1-c000.snappy.parquet": "c6b073ed6460f6350c0632ab69a159ff4e7cb2b9145a516f99a4a86955e1f3be"
+        },
+        "execution_log_sha256": {
+          "etl/spark/.data/sfx-1119-before/logs/security_alert_anomaly.log": "b2cacbf5f140016c03bf6934c188d659de5e3f77f90ee2b0a9e4d5121ddb78bb"
+        },
+        "conversion_sha256": {
+          "warehouse/dbt/macros/documents_spark_udfs.sql": "c1ff660bd154e5458a609f70063927a2401add2cfc0eef2f07f1fedabf01de18",
+          "warehouse/dbt/models/spark/security_alert_anomaly/security_alert_anomaly.sql": "f98b0babbd4e1e030c5bf30e3f7fdcda909dd586f8fafae23f51fd72bcf4fc80"
+        },
+        "legacy_code_sha256": {
+          "etl/spark/jobs/py/common/binary_documents.py": "6929b25a2d70d52afbe2dfe14359d055c8bad76364e7c93688f8560f00c56c8e",
+          "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f",
+          "etl/spark/jobs/py/security_alert_anomaly.py": "73694a2fc88a0f6802a2a48b7884a7b95ba0a5488dcf9d3a77c8698c6088ed63"
+        },
+        "query": "WITH alerts AS (SELECT SECURITY_ALERT_ID AS ALERT_ID, USER_ID, CAST(SCORE AS DOUBLE) AS SCORE FROM SPARK_INPUT.SECURITY_ALERT), moments AS (SELECT COUNT(*) AS N, CAST(COALESCE(SUM(SCORE), 0) AS DOUBLE) AS TOTAL, CAST(COALESCE(SUM(SCORE * SCORE), 0) AS DOUBLE) AS SQUARES FROM alerts), distribution AS (SELECT TOTAL / GREATEST(N, 1) AS MEAN, SQRT(GREATEST(SQUARES / GREATEST(N, 1) - POWER(TOTAL / GREATEST(N, 1), 2), 0)) AS SD FROM moments) SELECT a.ALERT_ID, a.USER_ID, a.SCORE, (a.SCORE - d.MEAN) / CASE WHEN d.SD = 0 THEN 1 ELSE d.SD END AS Z_SCORE FROM alerts AS a CROSS JOIN distribution AS d",
+        "build": "initial snapshot; selected binary run partition only; no incremental replay",
+        "inputs": [
+          "audit.SECURITY_ALERT"
+        ],
+        "shared_input": true
+      }
+    },
+    "errors": {},
+    "ready": [
+      "SPARK.SPARK__COLLAB_SESSION_SESSIONIZE",
+      "SPARK.SPARK__DOCS_EVENT_EXPORT_HOURLY",
+      "SPARK.SPARK__DOCS_FOLDER_LEGACY_REPORT",
+      "SPARK.SPARK__DOCS_FOLDER_TREE_WALK",
+      "SPARK.SPARK__DOCS_SEARCH_LOG_PARSE",
+      "SPARK.SPARK__DOCS_SHARE_ACTIVITY",
+      "SPARK.SPARK__DOCS_STORAGE_BY_OWNER",
+      "SPARK.SPARK__DOCS_TAG_NORMALIZE",
+      "SPARK.SPARK__DOC_SHARE_GRAPH_REACH",
+      "SPARK.SPARK__DOC_VERSION_DIFF_STATS",
+      "SPARK.SPARK__LAKE_COMPACTION_DOCUMENTS"
+    ],
+    "summary": {
+      "legacy_runs": 13,
+      "lake_measurements_passed": 13,
+      "green_objects": 11,
+      "red_objects": 2,
+      "manifest_output_relations": "missing; approved manifest unchanged, outputs declared in parity/documents.json"
+    },
+    "jdbc_outputs": {
+      "SPARK_SECURITY_ALERT_ANOMALY_JDBC": {
+        "status": "red",
+        "before": "sfx_audit.spark_alert_anomaly",
+        "after": "COMPAT.SPARK_ALERT_ANOMALY",
+        "keys": [
+          "ALERT_ID"
+        ],
+        "before_row_count": 200,
+        "after_row_count": null,
+        "hash_delta": null,
+        "reason": "No approved target publisher. Lake parity does not prove this JDBC contract.",
+        "source_columns": [
+          "ALERT_ID",
+          "USER_ID",
+          "SCORE",
+          "Z_SCORE"
+        ],
+        "verification_command": "docker compose -f docker-compose.spark.yml -p sfx1119-spark-sfx-1119-before exec -T sfx-tdemu psql -U etl_batch -d sfx_teradata -Atc 'SELECT COUNT(*) FROM sfx_audit.spark_alert_anomaly'",
+        "verification_output": "200"
+      }
+    },
+    "checks": {
+      "migration_pytest": "145 passed, 23 skipped in 11.66s",
+      "spark_unittest": "Ran 54 tests in 35.923s; OK",
+      "local_jobs": "LOCAL_JOBS billing_revenue_by_plan docs_tag_normalize user_pref_json_flatten: OK (2000 rows)",
+      "scala_ids": "SCALA_IDS IntegerType, LongType (>2^31), empty inputs and missing columns: OK",
+      "baseline": "Baseline matches 30 applications."
+    },
+    "limitations": [
+      "initial snapshot only; no append/incremental/replay or late-arrival proof",
+      "only binary run_date=2026-11-19; history policy unresolved and object red",
+      "audit JDBC target unavailable; object red",
+      "no physical Parquet layout or coalesce proof",
+      "no live Snowflake objects, dbt materialization or Python UDF registration",
+      "Spark-owned proposed job metadata does not override analytics ownership of APP_USER",
+      "no board, registry, classification or schedule integration",
+      "ambiguous duplicate parent IDs and equal version-number lag ordering not established"
+    ]
+  }
 }
