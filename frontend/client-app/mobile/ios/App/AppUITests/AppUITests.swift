@@ -77,16 +77,21 @@ class AppUITestCase: XCTestCase {
         XCTAssertTrue(app.textFields["you@example.com"].waitForExistence(timeout: 10))
     }
 
-    func login(password: String = "HarborPass123!") {
-        let email = app.textFields["you@example.com"]
-        fill(email, "tester@example.com")
-        let field = app.secureTextFields.firstMatch
-        fill(field, password)
+    private func dismissKeyboard() {
         let done = app.toolbars.buttons["Done"]
         if done.exists {
             done.tap()
             XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5))
         }
+    }
+
+    func login(password: String = "HarborPass123!") {
+        let email = app.textFields["you@example.com"]
+        fill(email, "tester@example.com")
+        dismissKeyboard()
+        let field = app.secureTextFields.firstMatch
+        fill(field, password)
+        dismissKeyboard()
         app.buttons["Sign in"].tap()
         if password == "HarborPass123!" {
             XCTAssertTrue(app.links["Files"].waitForExistence(timeout: 10))
