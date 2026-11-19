@@ -22,6 +22,14 @@ objects:
   - A-032
   - A-033
   - A-037
+  - A-039
+  - A-040
+  - A-041
+  - A-042
+  - A-043
+  - A-045
+  - A-046
+  - A-047
   notes: Not migrated; no completeness claim.
 - id: batch_runner:warehouse/teradata/jobs/reconcile
   status: pending
@@ -286,6 +294,7 @@ objects:
   parity: []
   assumptions:
   - A-037
+  - A-044
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#0994e1d7781b
   status: pending
@@ -708,12 +717,23 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml
+  - lakehouse/airflow/dags/lakehouse_daily.py
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-039
+  - A-040
+  - A-041
+  - A-042
+  - A-043
+  - A-045
+  - A-046
+  - A-047
+  notes: All 42 staging feeds are readiness-gated and loaded by the four domain bronze nodes. Does not replace other daily-chain stages.
+  verification: test:lakehouse/tests/test_orchestration.py::test_pipeline_contract_and_staging_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/01_load_users
   status: pending
   targets: []
@@ -1929,7 +1949,8 @@ objects:
   status: pending
   targets: []
   parity: []
-  assumptions: []
+  assumptions:
+  - A-044
   notes: Not migrated; no completeness claim.
 - id: spark_job:docs_folder_legacy_report
   status: pending
@@ -2485,6 +2506,7 @@ objects:
   - A-034
   - A-035
   - A-038
+  - A-045
   notes: Measured output parity for the Type-1 account snapshot only.
 - id: teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST
   status: pending

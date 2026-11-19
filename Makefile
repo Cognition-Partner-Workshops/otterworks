@@ -24,11 +24,11 @@ sfx-lakehouse-up: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Bootst
 	$(SFX_LH_ENV) $(SFX_LH_PY) warehouse/seed/generate.py --rows "$(ROWS_PER_TABLE)" --seed 1110 --business-date "$(BUSINESS_DATE)" --out "lakehouse/.data/$(NS)/landing"
 
 sfx-lakehouse-run: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Ingest bronze and build the silver pilot
-	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.runtime.ingest --landing "$(SFX_LH_LANDING)" --business-date "$(BUSINESS_DATE)"
-	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.runtime.dbt
+	$(SFX_LH_ENV) LEGACY_NS="$(LEGACY_NS)" $(SFX_LH_PG_PORT_ENV) $(SFX_LH_PY) -m lakehouse.orchestration run --landing "$(SFX_LH_LANDING)" --business-date "$(BUSINESS_DATE)"
 
 sfx-lakehouse-test: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Test lakehouse runtime and pilot
 	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.coverage check
+	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.orchestration check
 	$(SFX_LH_ENV) $(SFX_LH_PY) -m pytest -q lakehouse/tests
 
 sfx-lakehouse-down: sfx-lakehouse-validate ## Remove only this namespace's local lakehouse data
@@ -41,6 +41,22 @@ sfx-lakehouse-parity: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Co
 .PHONY: sfx-lakehouse-coverage
 sfx-lakehouse-coverage: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Validate migration inventory and assumptions; render evidence
 	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.coverage check
+	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.orchestration check
+
+SFX_LH_AF_PY = lakehouse/.venv-airflow/bin/python
+SFX_LH_AF_ENV = $(SFX_LH_ENV) LEGACY_NS="$(LEGACY_NS)" $(SFX_LH_PG_PORT_ENV) SFX_LH_LANDING="$(abspath $(SFX_LH_LANDING))" AIRFLOW_HOME="$(CURDIR)/lakehouse/.data/$(NS)/airflow" AIRFLOW__CORE__DAGS_FOLDER="$(CURDIR)/lakehouse/airflow/dags" AIRFLOW__CORE__LOAD_EXAMPLES=False AIRFLOW__CORE__EXECUTOR=SequentialExecutor AIRFLOW__CORE__DEFAULT_TIMEZONE=utc AIRFLOW_CONN_FS_DEFAULT='{"conn_type":"fs","extra":{"path":"/"}}'
+SFX_LH_LOGICAL_DATE = $(shell $(SFX_LH_PY) -c 'from datetime import datetime,timedelta; print((datetime.strptime("$(BUSINESS_DATE)","%Y%m%d")+timedelta(days=1)).isoformat()+"+00:00")')
+
+lakehouse/.venv-airflow/.requirements: lakehouse/requirements-airflow.txt
+	python3.12 -m venv lakehouse/.venv-airflow
+	$(SFX_LH_AF_PY) -m pip install -r lakehouse/requirements-airflow.txt
+	@touch $@
+
+.PHONY: sfx-lakehouse-airflow-test
+sfx-lakehouse-airflow-test: sfx-lakehouse-validate lakehouse/.venv/.requirements lakehouse/.venv-airflow/.requirements ## Import generated DAGs and execute one logical date locally
+	$(SFX_LH_AF_ENV) $(SFX_LH_AF_PY) -m pytest -q lakehouse/airflow/tests
+	$(SFX_LH_AF_ENV) lakehouse/.venv-airflow/bin/airflow db migrate
+	$(SFX_LH_AF_ENV) lakehouse/.venv-airflow/bin/airflow dags test lakehouse_daily "$(SFX_LH_LOGICAL_DATE)"
 
 .PHONY: sfx-teradata-up sfx-teradata-run sfx-teradata-test sfx-teradata-down sfx-teradata-validate
 

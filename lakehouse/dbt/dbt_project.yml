@@ -10,5 +10,35 @@ models:
     +file_format: delta
     silver:
       billing:
+        +tags: [billing]
         +schema: silver_billing
         +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/silver/billing"
+      documents:
+        +tags: [documents]
+        +schema: silver_documents
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/silver/documents"
+      users:
+        +tags: [users]
+        +schema: silver_users
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/silver/users"
+      audit:
+        +tags: [audit]
+        +schema: silver_audit
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/silver/audit"
+    gold:
+      billing:
+        +tags: [billing]
+        +schema: gold_billing
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/gold/billing"
+      documents:
+        +tags: [documents]
+        +schema: gold_documents
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/gold/documents"
+      users:
+        +tags: [users]
+        +schema: gold_users
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/gold/users"
+      audit:
+        +tags: [audit]
+        +schema: gold_audit
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/gold/audit"

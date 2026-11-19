@@ -3,6 +3,7 @@
 !coverage/*.py
 !coverage/coverage.yaml
 .venv/
+.venv-airflow/
 .data/
 dbt/target/
 dbt/logs/

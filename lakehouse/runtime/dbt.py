@@ -1,3 +1,4 @@
+import argparse
 import os
 
 from dbt.cli.main import dbtRunner
@@ -8,13 +9,18 @@ from .session import create_session
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--select', help='dbt selection expression, e.g. tag:billing')
+    args = parser.parse_args()
     business_date(os.environ['BUSINESS_DATE'])
     root = data_root()
     os.environ['LAKEHOUSE_DELTA_ROOT'] = str(root / 'delta')
     spark = create_session()
     try:
-        result = dbtRunner().invoke(['build', '--project-dir', str(ROOT / 'dbt'),
-                                     '--profiles-dir', str(ROOT / 'dbt')])
+        arguments = ['build', '--project-dir', str(ROOT / 'dbt'), '--profiles-dir', str(ROOT / 'dbt')]
+        if args.select:
+            arguments += ['--select', args.select]
+        result = dbtRunner().invoke(arguments)
         if not result.success:
             raise SystemExit(1)
     finally:

@@ -1,0 +1,608 @@
+dags:
+- id: lakehouse_daily
+  schedule: '@daily'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_billing_customer_account
+    kind: feed_sensor
+    domain: billing
+    table: CUSTOMER_ACCOUNT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_plan_catalog
+    kind: feed_sensor
+    domain: billing
+    table: PLAN_CATALOG
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_subscription
+    kind: feed_sensor
+    domain: billing
+    table: SUBSCRIPTION
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_invoice_hdr
+    kind: feed_sensor
+    domain: billing
+    table: INVOICE_HDR
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_invoice_line
+    kind: feed_sensor
+    domain: billing
+    table: INVOICE_LINE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_payment
+    kind: feed_sensor
+    domain: billing
+    table: PAYMENT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_credit_note
+    kind: feed_sensor
+    domain: billing
+    table: CREDIT_NOTE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_tax_rate
+    kind: feed_sensor
+    domain: billing
+    table: TAX_RATE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_usage_daily
+    kind: feed_sensor
+    domain: billing
+    table: USAGE_DAILY
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_billing_adj
+    kind: feed_sensor
+    domain: billing
+    table: BILLING_ADJ
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_folder
+    kind: feed_sensor
+    domain: documents
+    table: FOLDER
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_document
+    kind: feed_sensor
+    domain: documents
+    table: DOCUMENT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_doc_version
+    kind: feed_sensor
+    domain: documents
+    table: DOC_VERSION
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_doc_share
+    kind: feed_sensor
+    domain: documents
+    table: DOC_SHARE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_doc_tag
+    kind: feed_sensor
+    domain: documents
+    table: DOC_TAG
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_file_object
+    kind: feed_sensor
+    domain: documents
+    table: FILE_OBJECT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_doc_comment
+    kind: feed_sensor
+    domain: documents
+    table: DOC_COMMENT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_collab_session
+    kind: feed_sensor
+    domain: documents
+    table: COLLAB_SESSION
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_storage_usage_daily
+    kind: feed_sensor
+    domain: documents
+    table: STORAGE_USAGE_DAILY
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_search_index_log
+    kind: feed_sensor
+    domain: documents
+    table: SEARCH_INDEX_LOG
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_app_user
+    kind: feed_sensor
+    domain: users
+    table: APP_USER
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_user_profile
+    kind: feed_sensor
+    domain: users
+    table: USER_PROFILE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_team
+    kind: feed_sensor
+    domain: users
+    table: TEAM
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_team_member
+    kind: feed_sensor
+    domain: users
+    table: TEAM_MEMBER
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_role_grant
+    kind: feed_sensor
+    domain: users
+    table: ROLE_GRANT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_sso_identity
+    kind: feed_sensor
+    domain: users
+    table: SSO_IDENTITY
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_login_event
+    kind: feed_sensor
+    domain: users
+    table: LOGIN_EVENT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_user_activity_daily
+    kind: feed_sensor
+    domain: users
+    table: USER_ACTIVITY_DAILY
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_user_pref
+    kind: feed_sensor
+    domain: users
+    table: USER_PREF
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_user_status_hist
+    kind: feed_sensor
+    domain: users
+    table: USER_STATUS_HIST
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_audit_event
+    kind: feed_sensor
+    domain: audit
+    table: AUDIT_EVENT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_audit_event_archive
+    kind: feed_sensor
+    domain: audit
+    table: AUDIT_EVENT_ARCHIVE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_access_review
+    kind: feed_sensor
+    domain: audit
+    table: ACCESS_REVIEW
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_retention_policy
+    kind: feed_sensor
+    domain: audit
+    table: RETENTION_POLICY
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_data_export_req
+    kind: feed_sensor
+    domain: audit
+    table: DATA_EXPORT_REQ
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_compliance_flag
+    kind: feed_sensor
+    domain: audit
+    table: COMPLIANCE_FLAG
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_security_alert
+    kind: feed_sensor
+    domain: audit
+    table: SECURITY_ALERT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_legal_hold
+    kind: feed_sensor
+    domain: audit
+    table: LEGAL_HOLD
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_audit_daily_summary
+    kind: feed_sensor
+    domain: audit
+    table: AUDIT_DAILY_SUMMARY
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_audit_recon
+    kind: feed_sensor
+    domain: audit
+    table: AUDIT_RECON
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_gl_account
+    kind: feed_sensor
+    domain: billing
+    table: GL_ACCOUNT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_gl_journal_line
+    kind: feed_sensor
+    domain: billing
+    table: GL_JOURNAL_LINE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: bronze_billing
+    kind: bronze_ingest
+    domain: billing
+    depends_on:
+    - feed_billing_customer_account
+    - feed_billing_plan_catalog
+    - feed_billing_subscription
+    - feed_billing_invoice_hdr
+    - feed_billing_invoice_line
+    - feed_billing_payment
+    - feed_billing_credit_note
+    - feed_billing_tax_rate
+    - feed_billing_usage_daily
+    - feed_billing_billing_adj
+    - feed_billing_gl_account
+    - feed_billing_gl_journal_line
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - fastload:warehouse/teradata/load/fastload/billing_billing_adj.fl
+    - fastload:warehouse/teradata/load/fastload/billing_credit_note.fl
+    - fastload:warehouse/teradata/load/fastload/billing_customer_account.fl
+    - fastload:warehouse/teradata/load/fastload/billing_gl_account.fl
+    - fastload:warehouse/teradata/load/fastload/billing_gl_journal_line.fl
+    - fastload:warehouse/teradata/load/fastload/billing_invoice_hdr.fl
+    - fastload:warehouse/teradata/load/fastload/billing_invoice_line.fl
+    - fastload:warehouse/teradata/load/fastload/billing_payment.fl
+    - fastload:warehouse/teradata/load/fastload/billing_plan_catalog.fl
+    - fastload:warehouse/teradata/load/fastload/billing_subscription.fl
+    - fastload:warehouse/teradata/load/fastload/billing_tax_rate.fl
+    - fastload:warehouse/teradata/load/fastload/billing_usage_daily.fl
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging
+  - id: dbt_billing
+    kind: dbt
+    domain: billing
+    selector: tag:billing
+    depends_on:
+    - bronze_billing
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: bronze_documents
+    kind: bronze_ingest
+    domain: documents
+    depends_on:
+    - feed_documents_folder
+    - feed_documents_document
+    - feed_documents_doc_version
+    - feed_documents_doc_share
+    - feed_documents_doc_tag
+    - feed_documents_file_object
+    - feed_documents_doc_comment
+    - feed_documents_collab_session
+    - feed_documents_storage_usage_daily
+    - feed_documents_search_index_log
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - tpt:warehouse/teradata/load/tpt/documents_collab_session.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_doc_comment.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_doc_share.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_doc_tag.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_doc_version.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_document.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_file_object.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_folder.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_search_index_log.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_storage_usage_daily.tpt
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging
+  - id: dbt_documents
+    kind: dbt
+    domain: documents
+    selector: tag:documents
+    depends_on:
+    - bronze_documents
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: bronze_users
+    kind: bronze_ingest
+    domain: users
+    depends_on:
+    - feed_users_app_user
+    - feed_users_user_profile
+    - feed_users_team
+    - feed_users_team_member
+    - feed_users_role_grant
+    - feed_users_sso_identity
+    - feed_users_login_event
+    - feed_users_user_activity_daily
+    - feed_users_user_pref
+    - feed_users_user_status_hist
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - fastload:warehouse/teradata/load/fastload/users_app_user.fl
+    - fastload:warehouse/teradata/load/fastload/users_login_event.fl
+    - fastload:warehouse/teradata/load/fastload/users_role_grant.fl
+    - fastload:warehouse/teradata/load/fastload/users_sso_identity.fl
+    - fastload:warehouse/teradata/load/fastload/users_team.fl
+    - fastload:warehouse/teradata/load/fastload/users_team_member.fl
+    - fastload:warehouse/teradata/load/fastload/users_user_activity_daily.fl
+    - fastload:warehouse/teradata/load/fastload/users_user_pref.fl
+    - fastload:warehouse/teradata/load/fastload/users_user_profile.fl
+    - fastload:warehouse/teradata/load/fastload/users_user_status_hist.fl
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging
+  - id: dbt_users
+    kind: dbt
+    domain: users
+    selector: tag:users
+    depends_on:
+    - bronze_users
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: bronze_audit
+    kind: bronze_ingest
+    domain: audit
+    depends_on:
+    - feed_audit_audit_event
+    - feed_audit_audit_event_archive
+    - feed_audit_access_review
+    - feed_audit_retention_policy
+    - feed_audit_data_export_req
+    - feed_audit_compliance_flag
+    - feed_audit_security_alert
+    - feed_audit_legal_hold
+    - feed_audit_audit_daily_summary
+    - feed_audit_audit_recon
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - tpt:warehouse/teradata/load/tpt/audit_access_review.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_audit_daily_summary.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_audit_event.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_audit_event_archive.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_audit_recon.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_compliance_flag.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_data_export_req.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_legal_hold.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_retention_policy.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_security_alert.tpt
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging
+  - id: dbt_audit
+    kind: dbt
+    domain: audit
+    selector: tag:audit
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_customer_account
+    kind: parity
+    spec: billing.customer_account
+    depends_on:
+    - dbt_billing
+    - dbt_documents
+    - dbt_users
+    - dbt_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+- id: lakehouse_hourly
+  schedule: '@hourly'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: docs_event_export_hourly_stub
+    kind: noop
+    depends_on: []
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: []

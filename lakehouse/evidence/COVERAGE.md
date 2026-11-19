@@ -9,7 +9,7 @@ Inventory: 438. Validation errors: 0.
 | bteq_script | 0 | 0 | 0 | 29 | 29 |
 | consumer | 0 | 0 | 0 | 7 | 7 |
 | consumer_script | 0 | 0 | 0 | 3 | 3 |
-| cron_entry | 0 | 0 | 0 | 68 | 68 |
+| cron_entry | 0 | 1 | 0 | 67 | 68 |
 | etl_config | 0 | 0 | 0 | 1 | 1 |
 | etl_script | 0 | 0 | 0 | 8 | 8 |
 | fastload | 0 | 22 | 0 | 0 | 22 |
@@ -32,13 +32,13 @@ Inventory: 438. Validation errors: 0.
 | teradata_table | 1 | 0 | 0 | 88 | 89 |
 | teradata_view | 0 | 0 | 0 | 14 | 14 |
 | tpt | 0 | 20 | 0 | 0 | 20 |
-| **TOTAL** | 1 | 42 | 0 | 395 | 438 |
+| **TOTAL** | 1 | 43 | 0 | 394 | 438 |
 
 | ID | Sources | Status | Targets | Parity result | Assumptions |
 |---|---|---|---|---|---|
 | batch_runner:etl/run.sh | [etl/run.sh](../../etl/run.sh) | pending |  | — |  |
 | batch_runner:etl/spark/run.sh | [etl/spark/run.sh](../../etl/spark/run.sh) | pending |  | — |  |
-| batch_runner:warehouse/teradata/jobs/daily_chain | [warehouse/teradata/jobs/daily_chain](../../warehouse/teradata/jobs/daily_chain) | pending |  | — | A-017, A-018, A-025, A-032, A-033, A-037 |
+| batch_runner:warehouse/teradata/jobs/daily_chain | [warehouse/teradata/jobs/daily_chain](../../warehouse/teradata/jobs/daily_chain) | pending |  | — | A-017, A-018, A-025, A-032, A-033, A-037, A-039, A-040, A-041, A-042, A-043, A-045, A-046, A-047 |
 | batch_runner:warehouse/teradata/jobs/reconcile | [warehouse/teradata/jobs/reconcile](../../warehouse/teradata/jobs/reconcile) | pending |  | — |  |
 | bi_artifact:consumers/bi/account_status.pq | [consumers/bi/account_status.pq](../../consumers/bi/account_status.pq) | pending |  | — |  |
 | bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq | [consumers/partner-extract/sql/partner_invoice_extract.bteq](../../consumers/partner-extract/sql/partner_invoice_extract.bteq) | pending |  | — |  |
@@ -81,7 +81,7 @@ Inventory: 438. Validation errors: 0.
 | consumer_script:consumers/partner-extract/bin/postprocess.sh | [consumers/partner-extract/bin/postprocess.sh](../../consumers/partner-extract/bin/postprocess.sh) | pending |  | — |  |
 | consumer_script:consumers/partner-extract/bin/sftp_push.sh | [consumers/partner-extract/bin/sftp_push.sh](../../consumers/partner-extract/bin/sftp_push.sh) | pending |  | — |  |
 | cron_entry:etl/crontab#042e9e7fa551 | [etl/crontab#L16](../../etl/crontab#L16) | pending |  | — | A-037 |
-| cron_entry:etl/crontab#06b1c260f55b | [etl/crontab#L28](../../etl/crontab#L28) | pending |  | — | A-037 |
+| cron_entry:etl/crontab#06b1c260f55b | [etl/crontab#L28](../../etl/crontab#L28) | pending |  | — | A-037, A-044 |
 | cron_entry:etl/crontab#0994e1d7781b | [etl/crontab#L22](../../etl/crontab#L22) | pending |  | — | A-037 |
 | cron_entry:etl/crontab#146d93841612 | [etl/crontab#L20](../../etl/crontab#L20) | pending |  | — | A-037 |
 | cron_entry:etl/crontab#21215b59c160 | [etl/crontab#L39](../../etl/crontab#L39) | pending |  | — | A-037 |
@@ -142,7 +142,7 @@ Inventory: 438. Validation errors: 0.
 | cron_entry:warehouse/teradata/jobs/daily_chain#stage=generate | [warehouse/teradata/jobs/daily_chain#L82](../../warehouse/teradata/jobs/daily_chain#L82) | pending |  | — | A-037 |
 | cron_entry:warehouse/teradata/jobs/daily_chain#stage=jobs/reconcile | [warehouse/teradata/jobs/daily_chain#L93](../../warehouse/teradata/jobs/daily_chain#L93) | pending |  | — | A-037 |
 | cron_entry:warehouse/teradata/jobs/daily_chain#stage=setup | [warehouse/teradata/jobs/daily_chain#L76](../../warehouse/teradata/jobs/daily_chain#L76) | pending |  | — | A-037 |
-| cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging | [warehouse/teradata/jobs/daily_chain#L87](../../warehouse/teradata/jobs/daily_chain#L87) | pending |  | — | A-037 |
+| cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging | [warehouse/teradata/jobs/daily_chain#L87](../../warehouse/teradata/jobs/daily_chain#L87) | replaced_by_platform | lakehouse/orchestration/pipeline.yaml, lakehouse/airflow/dags/lakehouse_daily.py | test:lakehouse/tests/test_orchestration.py::test_pipeline_contract_and_staging_replacement | A-037, A-039, A-040, A-041, A-042, A-043, A-045, A-046, A-047 |
 | cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/01_load_users | [warehouse/teradata/jobs/daily_chain#L23](../../warehouse/teradata/jobs/daily_chain#L23) | pending |  | — | A-037 |
 | cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/02_load_teams | [warehouse/teradata/jobs/daily_chain#L23](../../warehouse/teradata/jobs/daily_chain#L23) | pending |  | — | A-037 |
 | cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/03_load_identity | [warehouse/teradata/jobs/daily_chain#L23](../../warehouse/teradata/jobs/daily_chain#L23) | pending |  | — | A-037 |
@@ -289,7 +289,7 @@ Inventory: 438. Validation errors: 0.
 | spark_job:compliance_flag_rules | [etl/spark/jobs.txt#L30](../../etl/spark/jobs.txt#L30), [etl/spark/k8s/compliance_flag_rules.yaml](../../etl/spark/k8s/compliance_flag_rules.yaml), [etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala](../../etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala) | pending |  | — |  |
 | spark_job:doc_share_graph_reach | [etl/spark/jobs.txt#L24](../../etl/spark/jobs.txt#L24), [etl/spark/jobs/py/doc_share_graph_reach.py](../../etl/spark/jobs/py/doc_share_graph_reach.py), [etl/spark/k8s/doc_share_graph_reach.yaml](../../etl/spark/k8s/doc_share_graph_reach.yaml) | pending |  | — |  |
 | spark_job:doc_version_diff_stats | [etl/spark/jobs.txt#L26](../../etl/spark/jobs.txt#L26), [etl/spark/jobs/py/doc_version_diff_stats.py](../../etl/spark/jobs/py/doc_version_diff_stats.py), [etl/spark/k8s/doc_version_diff_stats.yaml](../../etl/spark/k8s/doc_version_diff_stats.yaml) | pending |  | — |  |
-| spark_job:docs_event_export_hourly | [etl/spark/jobs.txt#L19](../../etl/spark/jobs.txt#L19), [etl/spark/jobs/py/docs_event_export_hourly.py](../../etl/spark/jobs/py/docs_event_export_hourly.py), [etl/spark/k8s/docs_event_export_hourly.yaml](../../etl/spark/k8s/docs_event_export_hourly.yaml) | pending |  | — |  |
+| spark_job:docs_event_export_hourly | [etl/spark/jobs.txt#L19](../../etl/spark/jobs.txt#L19), [etl/spark/jobs/py/docs_event_export_hourly.py](../../etl/spark/jobs/py/docs_event_export_hourly.py), [etl/spark/k8s/docs_event_export_hourly.yaml](../../etl/spark/k8s/docs_event_export_hourly.yaml) | pending |  | — | A-044 |
 | spark_job:docs_folder_legacy_report | [etl/spark/jobs.txt#L12](../../etl/spark/jobs.txt#L12), [etl/spark/jobs/py/docs_folder_legacy_report.py](../../etl/spark/jobs/py/docs_folder_legacy_report.py), [etl/spark/k8s/docs_folder_legacy_report.yaml](../../etl/spark/k8s/docs_folder_legacy_report.yaml) | pending |  | — |  |
 | spark_job:docs_folder_tree_walk | [etl/spark/jobs.txt#L22](../../etl/spark/jobs.txt#L22), [etl/spark/jobs/py/docs_folder_tree_walk.py](../../etl/spark/jobs/py/docs_folder_tree_walk.py), [etl/spark/k8s/docs_folder_tree_walk.yaml](../../etl/spark/k8s/docs_folder_tree_walk.yaml) | pending |  | — |  |
 | spark_job:docs_search_log_parse | [etl/spark/jobs.txt#L13](../../etl/spark/jobs.txt#L13), [etl/spark/jobs/py/docs_search_log_parse.py](../../etl/spark/jobs/py/docs_search_log_parse.py), [etl/spark/k8s/docs_search_log_parse.yaml](../../etl/spark/k8s/docs_search_log_parse.yaml) | pending |  | — |  |
@@ -377,7 +377,7 @@ Inventory: 438. Validation errors: 0.
 | teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH | [warehouse/teradata/ddl/billing/00_type2_account.sql#L11](../../warehouse/teradata/ddl/billing/00_type2_account.sql#L11) | pending |  | — |  |
 | teradata_table:SFX_BILLING.BILLING_ADJ | [warehouse/teradata/ddl/billing/00_tables.sql#L219](../../warehouse/teradata/ddl/billing/00_tables.sql#L219) | pending |  | — |  |
 | teradata_table:SFX_BILLING.CREDIT_NOTE | [warehouse/teradata/ddl/billing/00_tables.sql#L157](../../warehouse/teradata/ddl/billing/00_tables.sql#L157) | pending |  | — |  |
-| teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT | [warehouse/teradata/ddl/billing/00_tables.sql#L5](../../warehouse/teradata/ddl/billing/00_tables.sql#L5) | converted | lakehouse/dbt/models/silver/billing/customer_account.sql | billing.customer_account: PASS | A-003, A-004, A-005, A-006, A-007, A-012, A-013, A-014, A-015, A-016, A-018, A-020, A-022, A-023, A-025, A-026, A-027, A-028, A-029, A-030, A-031, A-032, A-034, A-035, A-038 |
+| teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT | [warehouse/teradata/ddl/billing/00_tables.sql#L5](../../warehouse/teradata/ddl/billing/00_tables.sql#L5) | converted | lakehouse/dbt/models/silver/billing/customer_account.sql | billing.customer_account: PASS | A-003, A-004, A-005, A-006, A-007, A-012, A-013, A-014, A-015, A-016, A-018, A-020, A-022, A-023, A-025, A-026, A-027, A-028, A-029, A-030, A-031, A-032, A-034, A-035, A-038, A-045 |
 | teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST | [warehouse/teradata/ddl/billing/00_type2_account.sql#L2](../../warehouse/teradata/ddl/billing/00_type2_account.sql#L2) | pending |  | — |  |
 | teradata_table:SFX_BILLING.GL_ACCOUNT | [warehouse/teradata/ddl/billing/00_tables.sql#L239](../../warehouse/teradata/ddl/billing/00_tables.sql#L239) | pending |  | — |  |
 | teradata_table:SFX_BILLING.GL_JOURNAL_LINE | [warehouse/teradata/ddl/billing/00_tables.sql#L257](../../warehouse/teradata/ddl/billing/00_tables.sql#L257) | pending |  | — |  |

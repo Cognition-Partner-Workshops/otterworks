@@ -1,6 +1,6 @@
 # Migration assumptions
 
-Entries: 38. Validation errors: 0.
+Entries: 47. Validation errors: 0.
 
 ## A-001 — PSV empty fields and nulls
 
@@ -574,7 +574,7 @@ Entries: 38. Validation errors: 0.
 
 **rationale:** A standalone unconfigured dbt invocation would not automatically load Delta jars or the NS metastore.
 
-**verification:** unverified: remote Spark, Airflow execution and concurrent dbt model builds are not implemented
+**verification:** unverified: remote Spark deployments, distributed Airflow executors and concurrent dbt model builds have not been tested
 
 **sources:** warehouse/teradata/jobs/daily_chain, lakehouse/runtime/dbt.py, lakehouse/dbt/profiles.yml
 
@@ -660,11 +660,11 @@ Entries: 38. Validation errors: 0.
 
 **ambiguity:** Make entry points can execute a batch but do not implement the legacy schedules, retries, dependencies or alerting.
 
-**decision:** Keep all cron entries, daily-chain stages and runners pending until orchestration migration.
+**decision:** Replace only the staging stage with the shared pipeline; retain all unported domain cron entries, other daily-chain stages and the full daily runner as pending.
 
-**rationale:** Airflow is deferred; a manually invoked foundation does not replace cron or workflow control logic.
+**rationale:** A partial DAG does not replace legacy domain SQL, reconciliation, exports, alerts or the whole daily chain.
 
-**verification:** unverified: scheduling, retries, alerting and end-to-end orchestration are not implemented
+**verification:** unverified: domain-specific scheduling, alerts and whole-estate end-to-end orchestration remain unported
 
 **sources:** etl/crontab, warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain
 
@@ -685,3 +685,165 @@ Entries: 38. Validation errors: 0.
 **verification:** billing.customer_account
 
 **sources:** warehouse/seed/generate.py, warehouse/seed/columns.py, lakehouse/evidence/parity/billing.customer_account.json
+
+## A-039 — UTC logical date is the date before the run label
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging, batch_runner:warehouse/teradata/jobs/daily_chain
+
+**ambiguity:** Airflow cron logical dates label interval starts; this need not be the wall-clock execution date.
+
+**decision:** Use UTC calendar date(logical_date) minus one day for both DAG templates and explicit local business-date mapping. The daily DAG starts at logical date 2026-11-10 and catches up.
+
+**rationale:** Follows the requested contract literally, not data_interval_end minus one day. A scheduled @daily run can therefore process a date two days before its wall-clock trigger.
+
+**verification:** test:lakehouse/tests/test_orchestration.py::test_order_and_logical_business_date
+
+**sources:** warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain, etl/crontab, lakehouse/orchestration/pipeline.yaml
+
+## A-040 — Readiness replaces a fixed launch time, not source completeness
+
+**status:** accepted
+
+**risk:** high
+
+**legacy_objects:** cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging, batch_runner:warehouse/teradata/jobs/daily_chain
+
+**ambiguity:** The UTC cron launches at 01:15 regardless of actual feed arrival. File existence alone cannot prove a writer finished.
+
+**decision:** Start daily at midnight UTC; wait per feed for up to 3600 seconds per attempt, checking every 30 seconds. Accept empty files. Require producers to publish by atomic rename.
+
+**rationale:** Explicit readiness is stronger than a wall-clock assumption, but there is no completeness manifest, nonempty check or size-stability test. Partial published files can still fail ingestion.
+
+**verification:** test:lakehouse/tests/test_orchestration.py::test_readiness_present_empty_missing_and_arriving
+
+**sources:** warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain, etl/crontab, lakehouse/orchestration/pipeline.yaml
+
+## A-041 — No-overlap and embedded catalog serialization
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging, batch_runner:warehouse/teradata/jobs/daily_chain
+
+**ambiguity:** max_active_runs prevents DAG-run overlap but not parallel tasks or unrelated manual invocations.
+
+**decision:** Use one active run and one active task per DAG; local runs hold a namespace flock and Airflow work tasks take the same lock per task. Do not mix local and Airflow runs in one namespace.
+
+**rationale:** Serial tasks protect Derby; per-task Airflow locks do not implement an across-worker whole-DAG lease. A manual run could start between Airflow tasks.
+
+**verification:** test:lakehouse/tests/test_orchestration.py::test_retries_block_descendants_continue_independent_and_no_overlap
+
+**sources:** warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain, etl/crontab, lakehouse/orchestration/pipeline.yaml
+
+## A-042 — Retries and branch-local failure replace stop-at-first-failure
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging, batch_runner:warehouse/teradata/jobs/daily_chain
+
+**ambiguity:** The legacy chain returns immediately after its first failed stage and has no built-in retry.
+
+**decision:** Retry seeded tasks once after ten seconds; exhausted tasks block their descendants while independent branches may finish. Both executors return a failed run if a task fails.
+
+**rationale:** Independent domain work need not be discarded because another branch fails. Existing ingestion and full-replacement pilot model are retry-safe; future exports must define idempotence.
+
+**verification:** test:lakehouse/tests/test_orchestration.py::test_retries_block_descendants_continue_independent_and_no_overlap
+
+**sources:** warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain, etl/crontab, lakehouse/orchestration/pipeline.yaml
+
+## A-043 — Only the staging orchestration stage is platform-replaced
+
+**status:** accepted
+
+**risk:** high
+
+**legacy_objects:** cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging, batch_runner:warehouse/teradata/jobs/daily_chain
+
+**ambiguity:** The daily cron and runner invoke many unconverted outputs, not just the pilot and staging loads.
+
+**decision:** Mark only daily_chain#stage=staging as orchestration-replaced; keep the full cron, daily runner, all other stages and domain jobs pending.
+
+**rationale:** The account-loading BTEQ also loads other tables, so even its whole stage cannot be claimed as replaced by the account pilot alone.
+
+**verification:** test:lakehouse/tests/test_orchestration.py::test_pipeline_contract_and_staging_replacement
+
+**sources:** warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain, etl/crontab, lakehouse/orchestration/pipeline.yaml
+
+## A-044 — Hourly document export is a paused placeholder
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** spark_job:docs_event_export_hourly, cron_entry:etl/crontab#06b1c260f55b
+
+**ambiguity:** The legacy document export runs at minute 18 hourly, while the new graph currently has no converted export implementation.
+
+**decision:** Expose a paused @hourly DAG containing one explicitly named no-op stub and no legacy replacement claims.
+
+**rationale:** A scheduling skeleton is not an export conversion. The domain ticket must implement outputs, exact cadence, publication semantics and parity before unpausing.
+
+**verification:** test:lakehouse/tests/test_orchestration.py::test_pipeline_contract_and_staging_replacement
+
+**sources:** warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain, etl/crontab, lakehouse/orchestration/pipeline.yaml
+
+## A-045 — Backfill execution does not restore historical legacy state
+
+**status:** open
+
+**risk:** high
+
+**legacy_objects:** cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging, batch_runner:warehouse/teradata/jobs/daily_chain, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT
+
+**ambiguity:** The pilot PostgreSQL reader selects the current mutable CUSTOMER_ACCOUNT table, not an as-of snapshot.
+
+**decision:** Enable catchup/backfill, retaining date-partitioned bronze inputs, but require matching legacy oracle state or date-specific file specs for historical parity.
+
+**rationale:** A historical lakehouse run can execute correctly and still fail parity against a newer legacy snapshot. No automatic legacy reseeding is performed.
+
+**verification:** unverified: historical as-of PostgreSQL snapshots and multi-date end-to-end backfill parity are not available
+
+**sources:** warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain, etl/crontab, lakehouse/orchestration/pipeline.yaml
+
+## A-046 — Local Airflow metadata is not a production service
+
+**status:** open
+
+**risk:** med
+
+**legacy_objects:** cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging, batch_runner:warehouse/teradata/jobs/daily_chain
+
+**ambiguity:** Production Airflow deployment, multi-worker filesystem visibility and operational alerting are out of scope.
+
+**decision:** Use a separate Python 3.12 venv with official Airflow 2.10.5 constraints, per-namespace SQLite metadata and SequentialExecutor for local DAG tests.
+
+**rationale:** Keeps Airflow dependencies isolated from dbt/PySpark. Airflow and Spark tasks require the same absolute repository/landing paths on this single host; no Docker deployment is added.
+
+**verification:** unverified: production scheduler, distributed workers, external metadata database and alert delivery have not been tested
+
+**sources:** warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain, etl/crontab, lakehouse/orchestration/pipeline.yaml
+
+## A-047 — Empty domain selectors do not imply domain conversion
+
+**status:** accepted
+
+**risk:** low
+
+**legacy_objects:** cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging, batch_runner:warehouse/teradata/jobs/daily_chain
+
+**ambiguity:** Only billing currently has a dbt model, while every domain needs a stable orchestration extension point.
+
+**decision:** Seed tag-based dbt build tasks for all four domains. Empty selections succeed without creating models, and coverage for unconverted outputs stays pending.
+
+**rationale:** Models inherit domain tags and schema/location settings from their silver/gold directories and join the graph automatically. Cross-domain dependencies still require explicit graph edges.
+
+**verification:** test:lakehouse/tests/test_orchestration.py::test_pipeline_contract_and_staging_replacement
+
+**sources:** warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain, etl/crontab, lakehouse/orchestration/pipeline.yaml

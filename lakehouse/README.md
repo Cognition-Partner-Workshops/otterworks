@@ -42,11 +42,19 @@ processing objects. Their semantics are cited by assumptions where relevant.
 When source objects are added, inventory changes automatically and the checker
 fails until `coverage/coverage.yaml` receives an explicit entry. Only the account
 output is converted; the surrounding BTEQ, staging schemas, Informatica mappings
-and cron/orchestration remain pending. FastLoad/TPT controls are platform-replaced
+and domain cron/orchestration remain pending, except the staging stage now replaced
+by the shared graph. FastLoad/TPT controls are platform-replaced
 by bronze ingestion, not certified against native vendor runtimes. Assumptions
 cite legacy sources and distinguish accepted choices from open/unverified gaps.
 
 ## Runtime and pilot
+
+`sfx-lakehouse-run` now executes `orchestration/pipeline.yaml`: 42 readiness
+sensors, four domain bronze loads, four tag-selected dbt builds and pilot parity.
+It therefore requires the matching legacy emulator to be available. Prefer
+`SFX_LH_LANDING=warehouse/landing` after legacy-up so both engines use identical
+files. See [CONVERSION-GUIDE.md](CONVERSION-GUIDE.md) for the extension contract,
+Airflow setup, date/backfill semantics and exact verification commands.
 
 Java 17 and Python 3.10–3.12 are required. No services, credentials or Docker
 are needed. Run from the repository root:

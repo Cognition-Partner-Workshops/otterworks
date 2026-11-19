@@ -130,7 +130,8 @@ def test_seed_statuses_and_assumption_links():
     for identity, entry in coverage.items():
         kind = inventory[identity]['kind']
         assert entry['status'] == ('converted' if identity == PILOT else
-                                  'replaced_by_platform' if kind in ('fastload', 'tpt') else 'pending')
+                                  'replaced_by_platform' if kind in ('fastload', 'tpt') or
+                                  identity == 'cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging' else 'pending')
         assert set(entry['assumptions']) == {key for key, assumption in assumptions.items()
                                             if identity in assumption['legacy_objects']}
 
@@ -203,6 +204,10 @@ def test_verification_only_for_non_data_objects(setup_map):
     assert any('converted requires' in error for error in validate(setup_map))
     assert not checker.test_reference('test:lakehouse/tests/test_coverage.py::write')
     assert not checker.test_reference('test:../test_missing.py::test_x')
+    coverage[PILOT].update(status='replaced_by_platform', verification=None)
+    assert any('replaced orchestration requires' in error for error in validate(setup_map))
+    coverage[PILOT]['verification'] = TEST
+    assert validate(setup_map) == []
 
 
 @pytest.mark.parametrize('field,value,error', [

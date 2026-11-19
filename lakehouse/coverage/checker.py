@@ -127,6 +127,9 @@ def validate_coverage(coverage, inventory, specs, assumptions, evidence, strict=
                 errors.append(f'{identity}: unknown assumption {reference}')
         if status in ('converted', 'replaced_by_platform') and not entry.get('targets'):
             errors.append(f'{identity}: {status} requires targets')
+        if (status == 'replaced_by_platform' and inventory.get(identity, {}).get('kind') in ('cron_entry', 'batch_runner')
+                and not test_reference(entry.get('verification'), root)):
+            errors.append(f'{identity}: replaced orchestration requires a verification test')
         if status == 'converted':
             passing = [spec for spec in string_list(entry.get('parity')) if spec in specs and
                        parity_result(spec, specs, evidence) == 'PASS' and
