@@ -1,0 +1,41 @@
+name: ${COLLECTION_PROJECT:-collection-workspace}
+services:
+  mock-slack:
+    build: .
+    ports: ["127.0.0.1:${MOCK_SLACK_PORT:-3100}:3100"]
+    environment:
+      RUN_TOKEN: ${RUN_TOKEN:-collection}
+      MOCK_SLACK_DEVIN_API_KEY: ${MOCK_SLACK_DEVIN_API_KEY:-}
+      DEVIN_ORG_ID: ${DEVIN_ORG_ID:-}
+      DEVIN_API_BASE: ${DEVIN_API_BASE:-https://api.devin.ai}
+      DEVIN_WEB_BASE: ${DEVIN_WEB_BASE:-https://app.devin.ai}
+      DEVIN_CREATE_AS_USER_ID: ${DEVIN_CREATE_AS_USER_ID:-}
+      DEVIN_MAX_ACU: ${DEVIN_MAX_ACU:-5}
+      DEVIN_TRIGGER_ROUTE: ${DEVIN_TRIGGER_ROUTE:-session}
+      DEVIN_WEBHOOK_ACTION: ${DEVIN_WEBHOOK_ACTION:-start_session}
+      DEVIN_AUTOMATION_URL: ${DEVIN_AUTOMATION_URL:-}
+      DEVIN_WEBHOOK_SECRET: ${DEVIN_WEBHOOK_SECRET:-}
+      ALERTMANAGER_RECEIVER_SECRET: ${ALERTMANAGER_RECEIVER_SECRET:-}
+      ALERT_BATCH_WEBHOOK_URL: ${ALERT_BATCH_WEBHOOK_URL:-}
+      ALERT_BATCH_WEBHOOK_SECRET: ${ALERT_BATCH_WEBHOOK_SECRET:-}
+      ALERT_BATCH_QUIET_MS: ${ALERT_BATCH_QUIET_MS:-90000}
+      ALERT_BATCH_MAX_AGE_MS: ${ALERT_BATCH_MAX_AGE_MS:-1800000}
+      ALERT_BATCH_REQUIRED_ALERTS: ${ALERT_BATCH_REQUIRED_ALERTS:-}
+      ALERTMANAGER_CHANNEL: ${ALERTMANAGER_CHANNEL:-alerts}
+      DEVIN_TRANSCRIPT_FILE: ${DEVIN_TRANSCRIPT_FILE:-}
+    volumes: ["workspace-data:/data"]
+    labels:
+      run-token: ${RUN_TOKEN:-collection}
+      expires-at: ${RUN_EXPIRES:-unset}
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3100/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+volumes:
+  workspace-data:
+    labels: {run-token: "${RUN_TOKEN:-collection}", expires-at: "${RUN_EXPIRES:-unset}"}

@@ -1,0 +1,6 @@
+{
+  "mcpServers": {
+    "incident-grafana": { "url": "http://127.0.0.1:8000/sse", "transport": "sse" },
+    "document-postgres": { "url": "http://127.0.0.1:8001/sse", "transport": "sse" }
+  }
+}
