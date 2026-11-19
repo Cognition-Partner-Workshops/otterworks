@@ -1,1 +1,0 @@
-27 3 * * * /opt/etl/spark/submit/audit_archive_resort.sh >> /var/log/etl/spark-audit_archive_resort.log 2>&1
