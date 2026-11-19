@@ -1,0 +1,160 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "1a9d2f29b29720a388138bd886309cb9a0eb0282",
+  "id": "platform.dbc_qrylogobjects",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:DBC.DBC_QRYLOGOBJECTS"
+  ],
+  "results": {
+    "columns": [
+      "queryid",
+      "objectdatabasename",
+      "objecttablename",
+      "objecttype",
+      "usagetype",
+      "occurrence"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "objectdatabasename": {
+          "count": 20451,
+          "hash": "cb048dfa4926af544be15760d0a0750c9e62e38923f66c58588747acb1d91f2f",
+          "null_count": 0,
+          "sum": null
+        },
+        "objecttablename": {
+          "count": 20451,
+          "hash": "61e843e6c4f74dab004f9e00aec06b1c34ae817fad8a042e4a3fd68a21018e06",
+          "null_count": 0,
+          "sum": null
+        },
+        "objecttype": {
+          "count": 20451,
+          "hash": "317efb9c13393d51f8b919c9012c0eb63f7cb71b1c48f4e481b0fd7cf503eb98",
+          "null_count": 0,
+          "sum": null
+        },
+        "occurrence": {
+          "count": 20451,
+          "hash": "7cc6818e327a6f053f740337e02761079e7497e28d0a06b5edbe4ee5224696b7",
+          "null_count": 0,
+          "sum": "209131926"
+        },
+        "queryid": {
+          "count": 20451,
+          "hash": "b2ca8252f49fd9d49f50968b35ed71dc8102f28177db956267d153a50da829b9",
+          "null_count": 0,
+          "sum": "2270061090155806"
+        },
+        "usagetype": {
+          "count": 20451,
+          "hash": "d556b827c57ca5e9eb1ce786aa3798edb305df841db8553249298493eaf6b510",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "objectdatabasename": {
+          "count": 20451,
+          "hash": "cb048dfa4926af544be15760d0a0750c9e62e38923f66c58588747acb1d91f2f",
+          "null_count": 0,
+          "sum": null
+        },
+        "objecttablename": {
+          "count": 20451,
+          "hash": "61e843e6c4f74dab004f9e00aec06b1c34ae817fad8a042e4a3fd68a21018e06",
+          "null_count": 0,
+          "sum": null
+        },
+        "objecttype": {
+          "count": 20451,
+          "hash": "317efb9c13393d51f8b919c9012c0eb63f7cb71b1c48f4e481b0fd7cf503eb98",
+          "null_count": 0,
+          "sum": null
+        },
+        "occurrence": {
+          "count": 20451,
+          "hash": "7cc6818e327a6f053f740337e02761079e7497e28d0a06b5edbe4ee5224696b7",
+          "null_count": 0,
+          "sum": "209131926"
+        },
+        "queryid": {
+          "count": 20451,
+          "hash": "b2ca8252f49fd9d49f50968b35ed71dc8102f28177db956267d153a50da829b9",
+          "null_count": 0,
+          "sum": "2270061090155806"
+        },
+        "usagetype": {
+          "count": 20451,
+          "hash": "d556b827c57ca5e9eb1ce786aa3798edb305df841db8553249298493eaf6b510",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "objectdatabasename": {
+        "count": 0,
+        "samples": []
+      },
+      "objecttablename": {
+        "count": 0,
+        "samples": []
+      },
+      "objecttype": {
+        "count": 0,
+        "samples": []
+      },
+      "occurrence": {
+        "count": 0,
+        "samples": []
+      },
+      "queryid": {
+        "count": 0,
+        "samples": []
+      },
+      "usagetype": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 20451,
+      "legacy": 20451
+    }
+  },
+  "row_counts": {
+    "lakehouse": 20451,
+    "legacy": 20451
+  },
+  "spec_hash": "292c4ea043368bbd46860a02e9115cc60325320a874d61486da5ce0313608742",
+  "timestamp": "2026-11-19T15:35:13.067962+00:00"
+}

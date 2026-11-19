@@ -428,6 +428,65 @@ dags:
     timeout_seconds: 3600
     poke_interval_seconds: 30
     legacy_objects: []
+  - id: feed_platform_dbc_qrylog
+    kind: feed_sensor
+    domain: platform
+    table: DBC_QRYLOG
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_platform_dbc_qrylogobjects
+    kind: feed_sensor
+    domain: platform
+    table: DBC_QRYLOGOBJECTS
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_platform_dbc_tablesv
+    kind: feed_sensor
+    domain: platform
+    table: DBC_TABLESV
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: bronze_platform
+    kind: bronze_ingest
+    domain: platform
+    depends_on: [feed_platform_dbc_qrylog, feed_platform_dbc_qrylogobjects, feed_platform_dbc_tablesv]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: dbt_platform
+    kind: dbt
+    domain: platform
+    selector: tag:platform
+    depends_on: [bronze_platform]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - teradata_table:DBC.DBC_QRYLOG
+    - teradata_table:DBC.DBC_QRYLOGOBJECTS
+    - teradata_table:DBC.DBC_TABLESV
+    - teradata_view:DBC.QRYLOGV
+    - teradata_view:DBC.QRYLOGOBJECTSV
+    - teradata_view:DBC.TABLESV
+    - bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
+  - id: parity_platform
+    kind: parity
+    specs: [platform.dbc_qrylog, platform.dbc_qrylogobjects, platform.dbc_tablesv, platform.qrylogv, platform.qrylogobjectsv, platform.tablesv, platform.consumer_reads]
+    depends_on: [dbt_platform]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
   - id: bronze_billing
     kind: bronze_ingest
     domain: billing

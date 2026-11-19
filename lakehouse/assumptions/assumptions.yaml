@@ -1,4 +1,48 @@
 assumptions:
+- id: A-409
+  title: Historical cross-domain DBQL snapshot inputs
+  legacy_objects:
+  - teradata_table:DBC.DBC_QRYLOG
+  - teradata_table:DBC.DBC_QRYLOGOBJECTS
+  - teradata_table:DBC.DBC_TABLESV
+  - teradata_view:DBC.QRYLOGV
+  - teradata_view:DBC.QRYLOGOBJECTSV
+  - teradata_view:DBC.TABLESV
+  - bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
+  ambiguity: DBQL inputs are static historical CSVs, unlike the date-named warehouse PSV feeds; live Spark telemetry is not the same data.
+  decision: Ingest exactly qrylog.csv, objectusage.csv and tablesv.csv used by the emulator DBQL loader. PLATFORM_DBQL_LANDING optionally selects an identical frozen directory for both engines. Tag snapshots with BUSINESS_DATE and filter models explicitly on it. Header-only files are valid empty inputs; missing or malformed feeds fail.
+  rationale: Preserve historical query/catalog evidence without claiming future query instrumentation or regenerating shared input. Raw text casing, whitespace and duplicate object edges are retained. CSV empty strings remain text, matching the legacy copy loader; invalid typed values fail in ANSI casts.
+  risk: low
+  status: accepted
+  verification: test:lakehouse/tests/test_platform.py::test_empty_ingestion_retry_and_missing_feed
+  sources: [warehouse/teradata/dbql/load.py, warehouse/teradata/dbql/schema.sql]
+- id: A-410
+  title: DBQL ACCESS locking becomes Delta snapshot isolation
+  legacy_objects:
+  - teradata_table:DBC.DBC_QRYLOG
+  - teradata_table:DBC.DBC_QRYLOGOBJECTS
+  - teradata_table:DBC.DBC_TABLESV
+  - teradata_view:DBC.QRYLOGV
+  - teradata_view:DBC.QRYLOGOBJECTSV
+  - teradata_view:DBC.TABLESV
+  - bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
+  ambiguity: Teradata views use LOCKING ROW FOR ACCESS and the historical catalog has nullable or multiset keys.
+  decision: Use ref-based views over dated Delta snapshots, not Teradata row locks. Compare full-column multisets using deterministic binary-ordered occurrence numbers, preserving duplicate and nullable rows. Key tests cover declared unique indexes without inventing non-null constraints on nullable catalog columns.
+  rationale: Delta readers see a committed snapshot. A run requires immutable atomically published feeds; this is not a multi-file transaction or live engine metadata service. Production concurrent producer coordination is outside this historical import.
+  risk: med
+  status: accepted
+  verification: test:lakehouse/tests/test_platform.py::test_parity_multiset_preserves_duplicate_null_edges
+  sources: [warehouse/teradata/dbql/schema.sql, warehouse/teradata/dbql/load.py]
+- id: A-411
+  title: Parameterized historical consumer-read window and case groups
+  legacy_objects: [bteq_script:warehouse/teradata/dbql/consumer_reads.bteq]
+  ambiguity: Legacy fixes a 30-day timestamp window, groups NOT CASESPECIFIC usernames but CASESPECIFIC application/client IDs, and does not define display casing or order inside ties.
+  decision: dbql_window_start and dbql_window_end vars default to the literal inclusive 2026-10-11 and exclusive 2026-11-10 timestamps. Preserve division by 30.00 even for overridden windows. Canonicalize username with lower/rtrim for its case-insensitive group; rtrim application/client IDs without case folding. Preserve raw casing in silver. Order counts descending then canonical username ascending NULLS LAST; order inside tied count/username groups is unspecified.
+  rationale: The representative casing of a NOT CASESPECIFIC group is not stable. Canonical output makes it deterministic; the parity reader applies the same explicit representative rule only to the report, with no table normalization or numerical tolerance. ASCII fixture grouping is verified; full Teradata Unicode collation equivalence is not claimed.
+  risk: med
+  status: accepted
+  verification: test:lakehouse/tests/test_platform.py::test_consumer_window_case_grouping_and_order
+  sources: [warehouse/teradata/dbql/consumer_reads.bteq, warehouse/teradata/dbql/schema.sql, warehouse/teradata/bteq/runner.py]
 - id: A-001
   title: PSV empty fields and nulls
   legacy_objects:

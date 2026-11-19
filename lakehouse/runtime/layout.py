@@ -4,7 +4,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 LAYERS = ('bronze', 'silver', 'gold')
-DOMAINS = ('billing', 'documents', 'users', 'audit')
+DOMAINS = ('billing', 'documents', 'users', 'audit', 'platform')
 
 
 def data_root():

@@ -52,11 +52,11 @@ objects:
   verification: test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries
   notes: "Pinned-clock source SQL and physical consumer outputs have individual PASS evidence. Services are read-only and not automatically retargeted. Partner cron UTC 02:15 is a paused, readiness-gated platform replacement. Open production and Power Query risks are A-136..A-138."
 - id: bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [gold_platform.consumer_reads, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.consumer_reads]
+  assumptions: [A-409, A-410, A-411]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: bteq_script:warehouse/teradata/scripts/audit/01_load_events.bteq
   status: converted
   targets:
@@ -4016,23 +4016,23 @@ objects:
   - A-303
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:DBC.DBC_QRYLOG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [silver_platform.dbc_qrylog, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.dbc_qrylog]
+  assumptions: [A-409, A-410]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: teradata_table:DBC.DBC_QRYLOGOBJECTS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [silver_platform.dbc_qrylogobjects, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.dbc_qrylogobjects]
+  assumptions: [A-409, A-410]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: teradata_table:DBC.DBC_TABLESV
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [silver_platform.dbc_tablesv, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.dbc_tablesv]
+  assumptions: [A-409, A-410]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: teradata_table:SFX_AUDIT.ACCESS_REVIEW
   status: converted
   targets:
@@ -4962,23 +4962,23 @@ objects:
   - A-301
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_view:DBC.QRYLOGOBJECTSV
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [silver_platform.qrylogobjectsv, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.qrylogobjectsv]
+  assumptions: [A-409, A-410]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: teradata_view:DBC.QRYLOGV
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [silver_platform.qrylogv, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.qrylogv]
+  assumptions: [A-409, A-410]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: teradata_view:DBC.TABLESV
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets: [silver_platform.tablesv, lakehouse/orchestration/pipeline.yaml#dbt_platform]
+  parity: [platform.tablesv]
+  assumptions: [A-409, A-410]
+  notes: Dated DBQL snapshot on shared CSV inputs; exact full-column parity. Historical telemetry migration, not live Spark query instrumentation.
 - id: teradata_view:SFX_AUDIT.V_CUSTOMER_RECON
   status: converted
   targets:

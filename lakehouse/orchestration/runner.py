@@ -40,6 +40,8 @@ def command(node, landing, day):
     python = str(ROOT / '.venv/bin/python')
     base = [python, '-m']
     if node['kind'] == 'bronze_ingest':
+        if node['domain'] == 'platform':
+            return base + ['lakehouse.runtime.platform', '--business-date', day]
         tables = [t.name for t in TABLES if t.area == node['domain']]
         return base + ['lakehouse.runtime.ingest', '--landing', str(landing), '--business-date', day, '--tables', *tables]
     if node['kind'] == 'dbt':

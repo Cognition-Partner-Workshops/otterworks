@@ -1,0 +1,8 @@
+legacy_objects:
+  - teradata_table:DBC.DBC_QRYLOG
+  - teradata_table:DBC.DBC_QRYLOGOBJECTS
+  - teradata_table:DBC.DBC_TABLESV
+  - teradata_view:DBC.QRYLOGV
+  - teradata_view:DBC.QRYLOGOBJECTSV
+  - teradata_view:DBC.TABLESV
+  - bteq_script:warehouse/teradata/dbql/consumer_reads.bteq

@@ -10,6 +10,7 @@ from airflow.timetables.base import TimeRestriction
 
 from lakehouse.orchestration.graph import artifact_path, load, logical_business_date
 from lakehouse.runtime.layout import ROOT
+from lakehouse.runtime.platform import feed_path as platform_feed_path
 
 
 def test_dagbag_contract_and_templates():
@@ -34,7 +35,9 @@ def test_dagbag_contract_and_templates():
             if node['kind'] in ('feed_sensor', 'artifact_sensor'):
                 assert isinstance(task, FileSensor)
                 assert Path(task.filepath).is_absolute()
-                if node['kind'] == 'feed_sensor':
+                if node['kind'] == 'feed_sensor' and node['domain'] == 'platform':
+                    assert Path(task.filepath) == platform_feed_path(node['table'])
+                elif node['kind'] == 'feed_sensor':
                     assert task.filepath.endswith('/' + node['table'] + '/20261109.psv')
                 else:
                     assert Path(task.filepath) == artifact_path(node, '20261109')

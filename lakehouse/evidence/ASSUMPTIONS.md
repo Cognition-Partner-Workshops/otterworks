@@ -1,6 +1,6 @@
 # Migration assumptions
 
-Entries: 141. Validation errors: 0.
+Entries: 144. Validation errors: 0.
 
 ## A-001 — PSV empty fields and nulls
 
@@ -2539,3 +2539,57 @@ Entries: 141. Validation errors: 0.
 **verification:** test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 
 **sources:** etl/crontab, warehouse/teradata/jobs/daily_chain, etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML, etl/informatica/params/sfx_d1110_daily.par
+
+## A-409 — Historical cross-domain DBQL snapshot inputs
+
+**status:** accepted
+
+**risk:** low
+
+**legacy_objects:** teradata_table:DBC.DBC_QRYLOG, teradata_table:DBC.DBC_QRYLOGOBJECTS, teradata_table:DBC.DBC_TABLESV, teradata_view:DBC.QRYLOGV, teradata_view:DBC.QRYLOGOBJECTSV, teradata_view:DBC.TABLESV, bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
+
+**ambiguity:** DBQL inputs are static historical CSVs, unlike the date-named warehouse PSV feeds; live Spark telemetry is not the same data.
+
+**decision:** Ingest exactly qrylog.csv, objectusage.csv and tablesv.csv used by the emulator DBQL loader. PLATFORM_DBQL_LANDING optionally selects an identical frozen directory for both engines. Tag snapshots with BUSINESS_DATE and filter models explicitly on it. Header-only files are valid empty inputs; missing or malformed feeds fail.
+
+**rationale:** Preserve historical query/catalog evidence without claiming future query instrumentation or regenerating shared input. Raw text casing, whitespace and duplicate object edges are retained. CSV empty strings remain text, matching the legacy copy loader; invalid typed values fail in ANSI casts.
+
+**verification:** test:lakehouse/tests/test_platform.py::test_empty_ingestion_retry_and_missing_feed
+
+**sources:** warehouse/teradata/dbql/load.py, warehouse/teradata/dbql/schema.sql
+
+## A-410 — DBQL ACCESS locking becomes Delta snapshot isolation
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** teradata_table:DBC.DBC_QRYLOG, teradata_table:DBC.DBC_QRYLOGOBJECTS, teradata_table:DBC.DBC_TABLESV, teradata_view:DBC.QRYLOGV, teradata_view:DBC.QRYLOGOBJECTSV, teradata_view:DBC.TABLESV, bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
+
+**ambiguity:** Teradata views use LOCKING ROW FOR ACCESS and the historical catalog has nullable or multiset keys.
+
+**decision:** Use ref-based views over dated Delta snapshots, not Teradata row locks. Compare full-column multisets using deterministic binary-ordered occurrence numbers, preserving duplicate and nullable rows. Key tests cover declared unique indexes without inventing non-null constraints on nullable catalog columns.
+
+**rationale:** Delta readers see a committed snapshot. A run requires immutable atomically published feeds; this is not a multi-file transaction or live engine metadata service. Production concurrent producer coordination is outside this historical import.
+
+**verification:** test:lakehouse/tests/test_platform.py::test_parity_multiset_preserves_duplicate_null_edges
+
+**sources:** warehouse/teradata/dbql/schema.sql, warehouse/teradata/dbql/load.py
+
+## A-411 — Parameterized historical consumer-read window and case groups
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
+
+**ambiguity:** Legacy fixes a 30-day timestamp window, groups NOT CASESPECIFIC usernames but CASESPECIFIC application/client IDs, and does not define display casing or order inside ties.
+
+**decision:** dbql_window_start and dbql_window_end vars default to the literal inclusive 2026-10-11 and exclusive 2026-11-10 timestamps. Preserve division by 30.00 even for overridden windows. Canonicalize username with lower/rtrim for its case-insensitive group; rtrim application/client IDs without case folding. Preserve raw casing in silver. Order counts descending then canonical username ascending NULLS LAST; order inside tied count/username groups is unspecified.
+
+**rationale:** The representative casing of a NOT CASESPECIFIC group is not stable. Canonical output makes it deterministic; the parity reader applies the same explicit representative rule only to the report, with no table normalization or numerical tolerance. ASCII fixture grouping is verified; full Teradata Unicode collation equivalence is not claimed.
+
+**verification:** test:lakehouse/tests/test_platform.py::test_consumer_window_case_grouping_and_order
+
+**sources:** warehouse/teradata/dbql/consumer_reads.bteq, warehouse/teradata/dbql/schema.sql, warehouse/teradata/bteq/runner.py

@@ -6,7 +6,7 @@ Inventory: 438. Validation errors: 0.
 |---|---:|---:|---:|---:|---:|
 | batch_runner | 0 | 0 | 0 | 4 | 4 |
 | bi_artifact | 1 | 0 | 0 | 0 | 1 |
-| bteq_script | 27 | 0 | 0 | 2 | 29 |
+| bteq_script | 28 | 0 | 0 | 1 | 29 |
 | consumer | 7 | 0 | 0 | 0 | 7 |
 | consumer_script | 3 | 0 | 0 | 0 | 3 |
 | cron_entry | 24 | 33 | 0 | 11 | 68 |
@@ -29,10 +29,10 @@ Inventory: 438. Validation errors: 0.
 | spark_submit | 23 | 7 | 0 | 0 | 30 |
 | teradata_macro | 6 | 0 | 0 | 0 | 6 |
 | teradata_procedure | 4 | 0 | 0 | 0 | 4 |
-| teradata_table | 86 | 0 | 0 | 3 | 89 |
-| teradata_view | 11 | 0 | 0 | 3 | 14 |
+| teradata_table | 89 | 0 | 0 | 0 | 89 |
+| teradata_view | 14 | 0 | 0 | 0 | 14 |
 | tpt | 10 | 10 | 0 | 0 | 20 |
-| **TOTAL** | 300 | 99 | 0 | 39 | 438 |
+| **TOTAL** | 307 | 99 | 0 | 32 | 438 |
 
 | ID | Sources | Status | Targets | Parity result | Assumptions |
 |---|---|---|---|---|---|
@@ -42,7 +42,7 @@ Inventory: 438. Validation errors: 0.
 | batch_runner:warehouse/teradata/jobs/reconcile | [warehouse/teradata/jobs/reconcile](../../warehouse/teradata/jobs/reconcile) | pending |  | — |  |
 | bi_artifact:consumers/bi/account_status.pq | [consumers/bi/account_status.pq](../../consumers/bi/account_status.pq) | converted | lakehouse/billing/consumer_queries.py, lakehouse/billing/consumer_exports.py, lakehouse/orchestration/pipeline.yaml | billing.consumer_account_status: PASS, billing.consumer_workbook_feed: PASS; test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries | A-131, A-132, A-133, A-134, A-135, A-136, A-137, A-138 |
 | bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq | [consumers/partner-extract/sql/partner_invoice_extract.bteq](../../consumers/partner-extract/sql/partner_invoice_extract.bteq) | converted | lakehouse/billing/consumer_queries.py, lakehouse/billing/consumer_exports.py, lakehouse/orchestration/pipeline.yaml | billing.consumer_partner_raw: PASS, billing.consumer_partner_csv: PASS, billing.consumer_partner_transfer: PASS; test:lakehouse/tests/test_billing_consumers.py::test_legacy_clock_boundary_and_matching_queries | A-131, A-132, A-133, A-134, A-135, A-136, A-137, A-138 |
-| bteq_script:warehouse/teradata/dbql/consumer_reads.bteq | [warehouse/teradata/dbql/consumer_reads.bteq](../../warehouse/teradata/dbql/consumer_reads.bteq) | pending |  | — |  |
+| bteq_script:warehouse/teradata/dbql/consumer_reads.bteq | [warehouse/teradata/dbql/consumer_reads.bteq](../../warehouse/teradata/dbql/consumer_reads.bteq) | converted | gold_platform.consumer_reads, lakehouse/orchestration/pipeline.yaml#dbt_platform | platform.consumer_reads: PASS | A-409, A-410, A-411 |
 | bteq_script:warehouse/teradata/scripts/audit/01_load_events.bteq | [warehouse/teradata/scripts/audit/01_load_events.bteq](../../warehouse/teradata/scripts/audit/01_load_events.bteq) | converted | silver_audit.audit_event | audit.audit_event: PASS | A-400 |
 | bteq_script:warehouse/teradata/scripts/audit/02_load_controls.bteq | [warehouse/teradata/scripts/audit/02_load_controls.bteq](../../warehouse/teradata/scripts/audit/02_load_controls.bteq) | converted | silver_audit.retention_policy, silver_audit.data_export_req, silver_audit.access_review, silver_audit.compliance_flag | audit.access_review: PASS, audit.compliance_flag: PASS, audit.data_export_req: PASS, audit.retention_policy: PASS |  |
 | bteq_script:warehouse/teradata/scripts/audit/03_load_reviews.bteq | [warehouse/teradata/scripts/audit/03_load_reviews.bteq](../../warehouse/teradata/scripts/audit/03_load_reviews.bteq) | converted | silver_audit.security_alert, gold_audit.audit_recon_final, silver_audit.legal_hold, gold_audit.audit_summary_final | audit.audit_daily_summary: PASS, audit.audit_recon: PASS, audit.legal_hold: PASS, audit.security_alert: PASS | A-400, A-404 |
@@ -351,9 +351,9 @@ Inventory: 438. Validation errors: 0.
 | teradata_procedure:SFX_AUDIT.P_RECON_COUNTS | [warehouse/teradata/procedures/recon_counts.sql#L2](../../warehouse/teradata/procedures/recon_counts.sql#L2) | converted | gold_audit.audit_recon_final | audit.audit_recon: PASS | A-404 |
 | teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE | [warehouse/teradata/procedures/monthly_invoice.sql#L2](../../warehouse/teradata/procedures/monthly_invoice.sql#L2) | converted | lakehouse/dbt/models/gold/billing/monthly_invoice_hdr.sql, lakehouse/dbt/models/gold/billing/monthly_invoice_line.sql, lakehouse/dbt/models/gold/billing/monthly_invoice_result.sql | billing.monthly_invoice_hdr: PASS, billing.monthly_invoice_line: PASS, billing.monthly_invoice_result: PASS | A-108, A-109, A-113, A-114 |
 | teradata_procedure:SFX_USERS.P_ACTIVITY_DAILY | [warehouse/teradata/procedures/activity_daily.sql#L2](../../warehouse/teradata/procedures/activity_daily.sql#L2) | converted | delta_table:silver_users.user_activity_daily | users.user_activity_daily: PASS | A-303 |
-| teradata_table:DBC.DBC_QRYLOG | [warehouse/teradata/dbql/schema.sql#L5](../../warehouse/teradata/dbql/schema.sql#L5) | pending |  | — |  |
-| teradata_table:DBC.DBC_QRYLOGOBJECTS | [warehouse/teradata/dbql/schema.sql#L25](../../warehouse/teradata/dbql/schema.sql#L25) | pending |  | — |  |
-| teradata_table:DBC.DBC_TABLESV | [warehouse/teradata/dbql/schema.sql#L34](../../warehouse/teradata/dbql/schema.sql#L34) | pending |  | — |  |
+| teradata_table:DBC.DBC_QRYLOG | [warehouse/teradata/dbql/schema.sql#L5](../../warehouse/teradata/dbql/schema.sql#L5) | converted | silver_platform.dbc_qrylog, lakehouse/orchestration/pipeline.yaml#dbt_platform | platform.dbc_qrylog: PASS | A-409, A-410 |
+| teradata_table:DBC.DBC_QRYLOGOBJECTS | [warehouse/teradata/dbql/schema.sql#L25](../../warehouse/teradata/dbql/schema.sql#L25) | converted | silver_platform.dbc_qrylogobjects, lakehouse/orchestration/pipeline.yaml#dbt_platform | platform.dbc_qrylogobjects: PASS | A-409, A-410 |
+| teradata_table:DBC.DBC_TABLESV | [warehouse/teradata/dbql/schema.sql#L34](../../warehouse/teradata/dbql/schema.sql#L34) | converted | silver_platform.dbc_tablesv, lakehouse/orchestration/pipeline.yaml#dbt_platform | platform.dbc_tablesv: PASS | A-409, A-410 |
 | teradata_table:SFX_AUDIT.ACCESS_REVIEW | [warehouse/teradata/ddl/audit/00_tables.sql#L47](../../warehouse/teradata/ddl/audit/00_tables.sql#L47) | converted | silver_audit.access_review | audit.access_review: PASS |  |
 | teradata_table:SFX_AUDIT.AUDIT_DAILY_SUMMARY | [warehouse/teradata/ddl/audit/00_tables.sql#L163](../../warehouse/teradata/ddl/audit/00_tables.sql#L163) | converted | gold_audit.audit_summary_final | audit.audit_daily_summary: PASS | A-404 |
 | teradata_table:SFX_AUDIT.AUDIT_EVENT | [warehouse/teradata/ddl/audit/00_tables.sql#L5](../../warehouse/teradata/ddl/audit/00_tables.sql#L5) | converted | silver_audit.audit_event | audit.audit_event: PASS | A-400 |
@@ -440,9 +440,9 @@ Inventory: 438. Validation errors: 0.
 | teradata_table:SFX_USERS.USER_PREF | [warehouse/teradata/ddl/users/00_tables.sql#L145](../../warehouse/teradata/ddl/users/00_tables.sql#L145) | converted | delta_table:silver_users.user_pref | users.user_pref: PASS | A-302 |
 | teradata_table:SFX_USERS.USER_PROFILE | [warehouse/teradata/ddl/users/00_tables.sql#L23](../../warehouse/teradata/ddl/users/00_tables.sql#L23) | converted | delta_table:silver_users.user_profile | users.user_profile: PASS | A-300, A-301 |
 | teradata_table:SFX_USERS.USER_STATUS_HIST | [warehouse/teradata/ddl/users/00_tables.sql#L163](../../warehouse/teradata/ddl/users/00_tables.sql#L163) | converted | delta_table:silver_users.user_status_hist | users.user_status_hist: PASS | A-300, A-301 |
-| teradata_view:DBC.QRYLOGOBJECTSV | [warehouse/teradata/dbql/schema.sql#L48](../../warehouse/teradata/dbql/schema.sql#L48) | pending |  | — |  |
-| teradata_view:DBC.QRYLOGV | [warehouse/teradata/dbql/schema.sql#L44](../../warehouse/teradata/dbql/schema.sql#L44) | pending |  | — |  |
-| teradata_view:DBC.TABLESV | [warehouse/teradata/dbql/schema.sql#L52](../../warehouse/teradata/dbql/schema.sql#L52) | pending |  | — |  |
+| teradata_view:DBC.QRYLOGOBJECTSV | [warehouse/teradata/dbql/schema.sql#L48](../../warehouse/teradata/dbql/schema.sql#L48) | converted | silver_platform.qrylogobjectsv, lakehouse/orchestration/pipeline.yaml#dbt_platform | platform.qrylogobjectsv: PASS | A-409, A-410 |
+| teradata_view:DBC.QRYLOGV | [warehouse/teradata/dbql/schema.sql#L44](../../warehouse/teradata/dbql/schema.sql#L44) | converted | silver_platform.qrylogv, lakehouse/orchestration/pipeline.yaml#dbt_platform | platform.qrylogv: PASS | A-409, A-410 |
+| teradata_view:DBC.TABLESV | [warehouse/teradata/dbql/schema.sql#L52](../../warehouse/teradata/dbql/schema.sql#L52) | converted | silver_platform.tablesv, lakehouse/orchestration/pipeline.yaml#dbt_platform | platform.tablesv: PASS | A-409, A-410 |
 | teradata_view:SFX_AUDIT.V_CUSTOMER_RECON | [warehouse/teradata/ddl/audit/10_views.sql#L6](../../warehouse/teradata/ddl/audit/10_views.sql#L6) | converted | gold_audit.v_customer_recon | audit.v_customer_recon: PASS | A-402 |
 | teradata_view:SFX_AUDIT.V_EVENT_ACTORS | [warehouse/teradata/ddl/audit/10_views.sql#L2](../../warehouse/teradata/ddl/audit/10_views.sql#L2) | converted | gold_audit.v_event_actors | audit.v_event_actors: PASS | A-401 |
 | teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES | [warehouse/teradata/ddl/billing/10_views.sql#L2](../../warehouse/teradata/ddl/billing/10_views.sql#L2) | converted | lakehouse/dbt/models/gold/billing/v_account_invoices.sql | billing.v_account_invoices: PASS | A-108, A-113, A-114 |
