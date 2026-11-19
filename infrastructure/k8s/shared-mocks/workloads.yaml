@@ -15,8 +15,14 @@ spec:
         app: jira
     spec:
       automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
       containers:
         - name: jira
+          securityContext:
+            allowPrivilegeEscalation: false
           image: 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks-odl/mock-jira:0fbc19b96a72611ecdb626b00bfc45efc5cd93f8
           ports:
             - containerPort: 8080
@@ -46,8 +52,14 @@ spec:
         app: pagerduty
     spec:
       automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
       containers:
         - name: pagerduty
+          securityContext:
+            allowPrivilegeEscalation: false
           image: 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks-odl/mock-pagerduty:0fbc19b96a72611ecdb626b00bfc45efc5cd93f8
           env:
             - {name: DB_PATH, value: /data/pagerduty.db}
