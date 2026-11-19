@@ -48,6 +48,19 @@ Dockerfile uses that mirror directly.
 
 ## Shared Alertmanager
 
+The mock NetworkPolicies allow ingress only from `ingress-nginx` and
+`monitoring`; seed sidecars use localhost within their mock pod, not the Service.
+Apply policy-only updates with `kubectl apply -f
+infrastructure/k8s/odl-mocks/networkpolicy.yaml`. No same-namespace allowance is
+needed. The separate webhook relay forwards incoming webhooks to its HTTPS
+upstream and does not call the mock Services.
+
+These policies are declared but the shared cluster's VPC CNI runs with
+`--enable-network-policy=false`. Until enforcement is enabled, in-cluster
+callers can reach the mock Services without basic auth, which is enforced only
+at ingress. The mocks hold only synthetic demo data. This deployment does not
+change cluster-wide enforcement.
+
 No kube-prometheus-stack release values source was found under `demo-platform/`,
 `infrastructure/`, or `platform/`. The overlay is
 `observability/alertmanager/k8s/odl-routing-values.yaml`.
@@ -55,7 +68,7 @@ No kube-prometheus-stack release values source was found under `demo-platform/`,
 With Python 3 and PyYAML installed, run `python scripts/odl/route-alerts.py`.
 It reads the current configuration only into memory, copies the existing Devin
 URL into `monitoring/alertmanager-devin-webhook` (`url`), and preserves all
-routes, Bofa configuration, webhook options, other receivers and Secret mounts.
+routes, existing configuration, webhook options, other receivers and Secret mounts.
 It adds PagerDuty Events v2 to the same `devin-oncall` receiver, with the seeded
 demo service's routing key held in `alertmanager-odl-pagerduty`. Both integrations
 therefore receive `page="devin"` alerts without changing the routing tree.

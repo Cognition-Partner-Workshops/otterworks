@@ -2,6 +2,8 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: jira
+  namespace: odl-mocks
+  labels: {run_token: odl-1795112287}
 spec:
   podSelector:
     matchLabels: {app: jira}
@@ -10,6 +12,8 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels: {kubernetes.io/metadata.name: ingress-nginx}
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: monitoring}
       ports:
         - {protocol: TCP, port: 8080}
 ---
@@ -17,6 +21,8 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: pagerduty
+  namespace: odl-mocks
+  labels: {run_token: odl-1795112287}
 spec:
   podSelector:
     matchLabels: {app: pagerduty}
@@ -29,3 +35,21 @@ spec:
             matchLabels: {kubernetes.io/metadata.name: monitoring}
       ports:
         - {protocol: TCP, port: 8080}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: confluence
+  namespace: odl-mocks
+  labels: {app: confluence, run_token: odl-1795112287}
+spec:
+  podSelector:
+    matchLabels: {app: confluence}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: ingress-nginx}
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: monitoring}
+      ports: [{protocol: TCP, port: 8080}]

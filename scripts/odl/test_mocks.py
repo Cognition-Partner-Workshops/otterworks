@@ -22,6 +22,21 @@ confluence = load("confluence_seed", "infrastructure/k8s/odl-mocks/confluence-se
 routing = load("routing", "scripts/odl/route-alerts.py")
 
 
+class NetworkPolicyTests(unittest.TestCase):
+    def test_only_controller_and_monitoring_namespaces(self):
+        policies = list(yaml.safe_load_all(
+            (ROOT / "infrastructure/k8s/odl-mocks/networkpolicy.yaml").read_text()))
+        self.assertEqual({p["metadata"]["name"] for p in policies}, {"jira", "pagerduty", "confluence"})
+        for policy in policies:
+            self.assertEqual(policy["metadata"]["namespace"], "odl-mocks")
+            self.assertEqual(policy["metadata"]["labels"]["run_token"], "odl-1795112287")
+            self.assertEqual(policy["spec"]["podSelector"],
+                             {"matchLabels": {"app": policy["metadata"]["name"]}})
+            self.assertEqual(policy["spec"]["ingress"], [{"from": [
+                {"namespaceSelector": {"matchLabels": {"kubernetes.io/metadata.name": ns}}}
+                for ns in ("ingress-nginx", "monitoring")], "ports": [{"protocol": "TCP", "port": 8080}]}])
+
+
 class SeedTests(unittest.TestCase):
     def test_missing_created_and_existing_unchanged(self):
         issue = {"seed_label": "odl-test", "fields": {"summary": "Example"}}
