@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { billingApi, type Entitlement } from "./api";
 import { BillingAlert } from "./alert";
+import { localToday } from "./format";
+import { BillingDateInput, isCompleteDate } from "./date-input";
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
 export default function BillingEntitlementPage() {
   const { tenantId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedDate = searchParams.get("on") ?? "";
+  const asOf = isCompleteDate(requestedDate) ? requestedDate : localToday();
   const [entitlement, setEntitlement] = useState<Entitlement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,7 +32,7 @@ export default function BillingEntitlementPage() {
       };
     }
     billingApi
-      .entitlement(tenantId, "2026-02-28")
+      .entitlement(tenantId, asOf)
       .then((value) => {
         if (mounted) setEntitlement(value);
       })
@@ -41,7 +46,7 @@ export default function BillingEntitlementPage() {
       mounted = false;
       setError("");
     };
-  }, [tenantId, retry]);
+  }, [tenantId, asOf, retry]);
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-6">
@@ -53,6 +58,18 @@ export default function BillingEntitlementPage() {
         Back
       </button>
       <h1 className="text-3xl font-bold">Tenant entitlement</h1>
+      <div>
+        <label htmlFor="entitlement-as-of" className="mb-1 block text-sm font-medium">As of</label>
+        <BillingDateInput
+          id="entitlement-as-of"
+          value={asOf}
+          onChange={(value) => {
+            const next = new URLSearchParams(searchParams);
+            next.set("on", value);
+            setSearchParams(next, { replace: true });
+          }}
+        />
+      </div>
       {error && <BillingAlert message={error} onDismiss={() => setError("")} />}
       {error && (
         <button
