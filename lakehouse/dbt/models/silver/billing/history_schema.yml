@@ -1,0 +1,44 @@
+{
+  "version": 2,
+  "models": [
+    {
+      "name": "customer_account_hist",
+      "data_tests": [
+        "billing_history_invariants",
+        "billing_history_key"
+      ],
+      "columns": [
+        {
+          "name": "customer_id",
+          "data_tests": [
+            "not_null"
+          ]
+        },
+        {
+          "name": "valid_from_dt",
+          "data_tests": [
+            "not_null"
+          ]
+        },
+        {
+          "name": "valid_to_dt",
+          "data_tests": [
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "account_hist_batch",
+      "columns": [
+        {
+          "name": "business_dt",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "billing.stg_gl_account",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.STG_GL_ACCOUNT"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT gl_account_id, account_number, account_name, account_type, normal_balance FROM sfx_billing.stg_gl_account"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.stg_gl_account"
+  },
+  "keys": [
+    "gl_account_id"
+  ],
+  "columns": [
+    "gl_account_id",
+    "account_number",
+    "account_name",
+    "account_type",
+    "normal_balance"
+  ]
+}

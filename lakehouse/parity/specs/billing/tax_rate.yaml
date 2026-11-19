@@ -1,0 +1,30 @@
+{
+  "id": "billing.tax_rate",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.TAX_RATE",
+    "bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT tax_rate_id, country_cd, region_cd, rate, effective_dt FROM sfx_billing.tax_rate"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.tax_rate"
+  },
+  "keys": [
+    "tax_rate_id"
+  ],
+  "columns": [
+    "tax_rate_id",
+    "country_cd",
+    "region_cd",
+    "rate",
+    "effective_dt"
+  ],
+  "normalize": {
+    "country_cd": {
+      "rstrip": true
+    }
+  }
+}

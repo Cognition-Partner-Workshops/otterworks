@@ -2,11 +2,12 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "47d9eb19ad859e8d3313a525bba82712b553b928",
+  "git_sha": "d48c11e07c4315a30d5a4eee747e2e7426d15a42",
   "id": "billing.customer_account",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
-    "teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT"
+    "teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT",
+    "bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq"
   ],
   "results": {
     "columns": [
@@ -206,6 +207,6 @@
     "lakehouse": 300,
     "legacy": 300
   },
-  "spec_hash": "3e053539366b3b23837260809fe89f007212c0ed9ab3ef0f8bccd7a2c2decac5",
-  "timestamp": "2026-11-19T07:51:24.030052+00:00"
+  "spec_hash": "3c1273ca96359108bb23a339c659688a9510c7f952151e24dd24a8d2e19e9ada",
+  "timestamp": "2026-11-19T08:16:13.040088+00:00"
 }

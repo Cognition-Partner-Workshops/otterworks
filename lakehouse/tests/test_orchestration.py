@@ -169,7 +169,9 @@ def test_dbt_selector_passed_to_runner(monkeypatch):
 def test_cli_check_and_invalid_graph(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr('sys.argv', ['orchestration', 'check'])
     assert main() == 0
-    assert '2 DAGs, 52 tasks, valid' in capsys.readouterr().out
+    dags = graph.load()
+    tasks = sum(len(dag['nodes']) for dag in dags.values())
+    assert f'{len(dags)} DAGs, {tasks} tasks, valid' in capsys.readouterr().out
     path = tmp_path / 'empty.yaml'
     path.write_text('{}')
     monkeypatch.setattr('sys.argv', ['orchestration', 'check', '--pipeline', str(path)])

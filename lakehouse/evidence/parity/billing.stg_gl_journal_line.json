@@ -1,0 +1,211 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "d48c11e07c4315a30d5a4eee747e2e7426d15a42",
+  "id": "billing.stg_gl_journal_line",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE"
+  ],
+  "results": {
+    "columns": [
+      "journal_line_id",
+      "invoice_id",
+      "credit_note_id",
+      "gl_account_id",
+      "posting_dt",
+      "currency_cd",
+      "debit_amount",
+      "credit_amount",
+      "description"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "credit_amount": {
+          "count": 830,
+          "hash": "e533c6279397cd7cfb54a3e07bdbad16e7bc4f56d3155140b61c359ea51f4773",
+          "null_count": 0,
+          "sum": "84505.98"
+        },
+        "credit_note_id": {
+          "count": 830,
+          "hash": "266a100c60aa6f6e9123f61131b0b62091824b9b1ee2d45da310558ca8e13b74",
+          "null_count": 800,
+          "sum": "165"
+        },
+        "currency_cd": {
+          "count": 830,
+          "hash": "a59f88e1bab6ef4d3e5d7e2e0b98185d699dc1ae1c615b7cbd86134779cbd958",
+          "null_count": 0,
+          "sum": null
+        },
+        "debit_amount": {
+          "count": 830,
+          "hash": "fd6538ed1e5bd51e131ed923edd2b2f2a17df2109052fea704bc6b867f58de08",
+          "null_count": 0,
+          "sum": "84505.98"
+        },
+        "description": {
+          "count": 830,
+          "hash": "401312d95f1d42d3411490c1fc60778d9412a97a67bf24dde390dbfd0f1f0d42",
+          "null_count": 0,
+          "sum": null
+        },
+        "gl_account_id": {
+          "count": 830,
+          "hash": "27008d37ccaa3a1d22f983f14d070db33cc1f5f3e3e7cc31ad2ec7077370b6ca",
+          "null_count": 0,
+          "sum": "2375000"
+        },
+        "invoice_id": {
+          "count": 830,
+          "hash": "c6348823d1091a779fb2fe515602fc09aed175a8cc9ccb5bbd2fbc89701d24a9",
+          "null_count": 0,
+          "sum": "82725"
+        },
+        "journal_line_id": {
+          "count": 830,
+          "hash": "b9c42b768b48d9b37402c759d77f7c845c45afc80fe8de6b8082946cbef364fc",
+          "null_count": 0,
+          "sum": "168166315000000807710"
+        },
+        "posting_dt": {
+          "count": 830,
+          "hash": "c4a61eaf800a2e1084cb512d1700cfd1b9fef6a371e1008f4e39b96a3a9a2a31",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "credit_amount": {
+          "count": 830,
+          "hash": "e533c6279397cd7cfb54a3e07bdbad16e7bc4f56d3155140b61c359ea51f4773",
+          "null_count": 0,
+          "sum": "84505.98"
+        },
+        "credit_note_id": {
+          "count": 830,
+          "hash": "266a100c60aa6f6e9123f61131b0b62091824b9b1ee2d45da310558ca8e13b74",
+          "null_count": 800,
+          "sum": "165"
+        },
+        "currency_cd": {
+          "count": 830,
+          "hash": "a59f88e1bab6ef4d3e5d7e2e0b98185d699dc1ae1c615b7cbd86134779cbd958",
+          "null_count": 0,
+          "sum": null
+        },
+        "debit_amount": {
+          "count": 830,
+          "hash": "fd6538ed1e5bd51e131ed923edd2b2f2a17df2109052fea704bc6b867f58de08",
+          "null_count": 0,
+          "sum": "84505.98"
+        },
+        "description": {
+          "count": 830,
+          "hash": "401312d95f1d42d3411490c1fc60778d9412a97a67bf24dde390dbfd0f1f0d42",
+          "null_count": 0,
+          "sum": null
+        },
+        "gl_account_id": {
+          "count": 830,
+          "hash": "27008d37ccaa3a1d22f983f14d070db33cc1f5f3e3e7cc31ad2ec7077370b6ca",
+          "null_count": 0,
+          "sum": "2375000"
+        },
+        "invoice_id": {
+          "count": 830,
+          "hash": "c6348823d1091a779fb2fe515602fc09aed175a8cc9ccb5bbd2fbc89701d24a9",
+          "null_count": 0,
+          "sum": "82725"
+        },
+        "journal_line_id": {
+          "count": 830,
+          "hash": "b9c42b768b48d9b37402c759d77f7c845c45afc80fe8de6b8082946cbef364fc",
+          "null_count": 0,
+          "sum": "168166315000000807710"
+        },
+        "posting_dt": {
+          "count": 830,
+          "hash": "c4a61eaf800a2e1084cb512d1700cfd1b9fef6a371e1008f4e39b96a3a9a2a31",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "credit_amount": {
+        "count": 0,
+        "samples": []
+      },
+      "credit_note_id": {
+        "count": 0,
+        "samples": []
+      },
+      "currency_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "debit_amount": {
+        "count": 0,
+        "samples": []
+      },
+      "description": {
+        "count": 0,
+        "samples": []
+      },
+      "gl_account_id": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_id": {
+        "count": 0,
+        "samples": []
+      },
+      "journal_line_id": {
+        "count": 0,
+        "samples": []
+      },
+      "posting_dt": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 830,
+      "legacy": 830
+    }
+  },
+  "row_counts": {
+    "lakehouse": 830,
+    "legacy": 830
+  },
+  "spec_hash": "0af6319e6b5aa6704c7347554e0d472de3169c8aff96274b42332ba15f4cc454",
+  "timestamp": "2026-11-19T08:16:18.943638+00:00"
+}

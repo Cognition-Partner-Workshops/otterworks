@@ -1,6 +1,6 @@
 # Migration assumptions
 
-Entries: 47. Validation errors: 0.
+Entries: 55. Validation errors: 0.
 
 ## A-001 — PSV empty fields and nulls
 
@@ -847,3 +847,147 @@ Entries: 47. Validation errors: 0.
 **verification:** test:lakehouse/tests/test_orchestration.py::test_pipeline_contract_and_staging_replacement
 
 **sources:** warehouse/teradata/jobs/crontab.example, warehouse/teradata/jobs/daily_chain, etl/crontab, lakehouse/orchestration/pipeline.yaml
+
+## A-100 — Billing executable numeric and date types
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH, teradata_table:SFX_BILLING.BILLING_ADJ, teradata_table:SFX_BILLING.CREDIT_NOTE, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST, teradata_table:SFX_BILLING.GL_ACCOUNT, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.PAYMENT, teradata_table:SFX_BILLING.PLAN_CATALOG, teradata_table:SFX_BILLING.STG_BILLING_ADJ, teradata_table:SFX_BILLING.STG_CREDIT_NOTE, teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE, teradata_table:SFX_BILLING.STG_INVOICE_HDR, teradata_table:SFX_BILLING.STG_INVOICE_LINE, teradata_table:SFX_BILLING.STG_PAYMENT, teradata_table:SFX_BILLING.STG_PLAN_CATALOG, teradata_table:SFX_BILLING.STG_SUBSCRIPTION, teradata_table:SFX_BILLING.STG_TAX_RATE, teradata_table:SFX_BILLING.STG_USAGE_DAILY, teradata_table:SFX_BILLING.SUBSCRIPTION, teradata_table:SFX_BILLING.TAX_RATE, teradata_table:SFX_BILLING.USAGE_DAILY
+
+**ambiguity:** Bronze strings do not retain Teradata target numeric/date types or native parser behavior.
+
+**decision:** Cast from explicit DDL types in UTC ANSI Spark: BIGINT, INTEGER, DATE, DECIMAL(14,2) and DECIMAL(7,4). Preserve nulls and decimal rounding. Parity certifies canonical fixture inputs; noncanonical vendor parsing remains unverified.
+
+**rationale:** The runnable emulator and DDL are the comparison contract; invalid canonical casts fail rather than silently becoming null.
+
+**verification:** test:lakehouse/tests/test_billing_load.py::test_billing_load_types_empty_and_errors
+
+**sources:** warehouse/teradata/ddl/billing/00_tables.sql, warehouse/teradata/bteq/runner.py, warehouse/seed/columns.py
+
+## A-101 — Billing character widths and collation
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH, teradata_table:SFX_BILLING.BILLING_ADJ, teradata_table:SFX_BILLING.CREDIT_NOTE, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST, teradata_table:SFX_BILLING.GL_ACCOUNT, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.PAYMENT, teradata_table:SFX_BILLING.PLAN_CATALOG, teradata_table:SFX_BILLING.STG_BILLING_ADJ, teradata_table:SFX_BILLING.STG_CREDIT_NOTE, teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE, teradata_table:SFX_BILLING.STG_INVOICE_HDR, teradata_table:SFX_BILLING.STG_INVOICE_LINE, teradata_table:SFX_BILLING.STG_PAYMENT, teradata_table:SFX_BILLING.STG_PLAN_CATALOG, teradata_table:SFX_BILLING.STG_SUBSCRIPTION, teradata_table:SFX_BILLING.STG_TAX_RATE, teradata_table:SFX_BILLING.STG_USAGE_DAILY, teradata_table:SFX_BILLING.SUBSCRIPTION, teradata_table:SFX_BILLING.TAX_RATE, teradata_table:SFX_BILLING.USAGE_DAILY
+
+**ambiguity:** Delta stores strings without native CHAR padding, widths or NOT CASESPECIFIC collation.
+
+**decision:** Replicate explicit PostgreSQL INSERT casts by truncating target text, padding CHAR to its declared width, and retaining null/empty distinctions. Parity strips trailing ASCII spaces only for declared CHAR columns. History change comparison lowercases and removes trailing ASCII spaces; no other load-layer string predicate requires a collation rewrite.
+
+**rationale:** Base INSERT SELECT is explicitly cast by Runner.translate; staging COPY has distinct width-rejection behavior. Equality of history status/currency follows case-insensitive padded legacy values.
+
+**verification:** test:lakehouse/tests/test_billing_load.py::test_billing_history_replay_and_order
+
+**sources:** warehouse/teradata/bteq/runner.py, warehouse/teradata/ddl/billing/00_type2_account.sql, warehouse/teradata/scripts/billing/load_account_history.bteq
+
+## A-102 — Billing FastLoad replacement and staging
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** fastload:warehouse/teradata/load/fastload/billing_billing_adj.fl, fastload:warehouse/teradata/load/fastload/billing_credit_note.fl, fastload:warehouse/teradata/load/fastload/billing_customer_account.fl, fastload:warehouse/teradata/load/fastload/billing_gl_account.fl, fastload:warehouse/teradata/load/fastload/billing_gl_journal_line.fl, fastload:warehouse/teradata/load/fastload/billing_invoice_hdr.fl, fastload:warehouse/teradata/load/fastload/billing_invoice_line.fl, fastload:warehouse/teradata/load/fastload/billing_payment.fl, fastload:warehouse/teradata/load/fastload/billing_plan_catalog.fl, fastload:warehouse/teradata/load/fastload/billing_subscription.fl, fastload:warehouse/teradata/load/fastload/billing_tax_rate.fl, fastload:warehouse/teradata/load/fastload/billing_usage_daily.fl, teradata_table:SFX_BILLING.STG_BILLING_ADJ, teradata_table:SFX_BILLING.STG_CREDIT_NOTE, teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE, teradata_table:SFX_BILLING.STG_INVOICE_HDR, teradata_table:SFX_BILLING.STG_INVOICE_LINE, teradata_table:SFX_BILLING.STG_PAYMENT, teradata_table:SFX_BILLING.STG_PLAN_CATALOG, teradata_table:SFX_BILLING.STG_SUBSCRIPTION, teradata_table:SFX_BILLING.STG_TAX_RATE, teradata_table:SFX_BILLING.STG_USAGE_DAILY
+
+**ambiguity:** Native FastLoad sessions, error tables, error limits and parser behavior have no direct Delta equivalent.
+
+**decision:** Replace control execution by existing readiness sensors and CSV bronze ingestion, then typed date-filtered silver staging. Preserve quoted pipes/newlines, exactly-empty noncharacter nulls and character empties. Reject malformed/missing feeds and staging text over 200 characters. Do not implement native FastLoad error tables, session parallelism or partial reject acceptance.
+
+**rationale:** Certify executable emulator load_all/load_control behavior and table parity, not an unavailable proprietary runtime. Existing feeds/sensors already cover all twelve billing inputs.
+
+**verification:** test:lakehouse/tests/test_lakehouse.py::test_ingestion_and_pilot
+
+**sources:** warehouse/teradata/bteq/load.py, warehouse/teradata/load/fastload/billing_customer_account.fl, warehouse/teradata/ddl/billing/00_tables.sql
+
+## A-103 — Billing snapshot replacement and journal append
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq, bteq_script:warehouse/teradata/scripts/billing/02_load_subscriptions.bteq, bteq_script:warehouse/teradata/scripts/billing/03_load_invoices.bteq, bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq, bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/02_load_subscriptions, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/03_load_invoices, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/04_load_payments, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/05_load_usage, teradata_table:SFX_BILLING.BILLING_ADJ, teradata_table:SFX_BILLING.CREDIT_NOTE, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.GL_ACCOUNT, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.PAYMENT, teradata_table:SFX_BILLING.PLAN_CATALOG, teradata_table:SFX_BILLING.SUBSCRIPTION, teradata_table:SFX_BILLING.TAX_RATE, teradata_table:SFX_BILLING.USAGE_DAILY
+
+**ambiguity:** Not every billing base table is a current snapshot; GL journal retention is controlled by posting date, not row key.
+
+**decision:** Rebuild eleven current base snapshots only from BUSINESS_DATE. Retain previous GL_JOURNAL_LINE and append staged rows only for posting dates absent in the pre-load journal. Preserve NULL posting-date SQL equality behavior, including repeated append of null-date rows.
+
+**rationale:** Matches DELETE/INSERT in scripts 01..05 and the journal NOT EXISTS POSTING_DT predicate, without deduplication or latest-partition inference.
+
+**verification:** test:lakehouse/tests/test_billing_load.py::test_billing_journal_posting_date_append
+
+**sources:** warehouse/teradata/scripts/billing/01_load_accounts.bteq, warehouse/teradata/scripts/billing/02_load_subscriptions.bteq, warehouse/teradata/scripts/billing/03_load_invoices.bteq, warehouse/teradata/scripts/billing/04_load_payments.bteq, warehouse/teradata/scripts/billing/05_load_usage.bteq
+
+## A-104 — Billing SCD2 replay and ordering
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST, teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH, bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/load_account_history
+
+**ambiguity:** A retained bronze snapshot alone cannot express latest-day correction, absent accounts or rejection of completed older dates.
+
+**decision:** Use existing silver history as state. Remove same-day new rows, reopen same-day closures, close changed current status/currency null-safely and insert newly current rows. Retain absent customers. Track even empty or unchanged completed dates in ACCOUNT_HIST_BATCH and reject any run older than its maximum date before either history output is replaced.
+
+**rationale:** Mirrors the reset/MERGE/INSERT/batch sequence in the legacy transaction, including correcting the latest completed file instead of accumulating duplicate versions.
+
+**verification:** test:lakehouse/tests/test_billing_load.py::test_billing_history_replay_and_order
+
+**sources:** warehouse/teradata/scripts/billing/load_account_history.bteq, warehouse/teradata/ddl/billing/00_type2_account.sql
+
+## A-105 — Billing failure and constraint boundary
+
+**status:** open
+
+**risk:** high
+
+**legacy_objects:** teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH, teradata_table:SFX_BILLING.BILLING_ADJ, teradata_table:SFX_BILLING.CREDIT_NOTE, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST, teradata_table:SFX_BILLING.GL_ACCOUNT, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.PAYMENT, teradata_table:SFX_BILLING.PLAN_CATALOG, teradata_table:SFX_BILLING.STG_BILLING_ADJ, teradata_table:SFX_BILLING.STG_CREDIT_NOTE, teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE, teradata_table:SFX_BILLING.STG_INVOICE_HDR, teradata_table:SFX_BILLING.STG_INVOICE_LINE, teradata_table:SFX_BILLING.STG_PAYMENT, teradata_table:SFX_BILLING.STG_PLAN_CATALOG, teradata_table:SFX_BILLING.STG_SUBSCRIPTION, teradata_table:SFX_BILLING.STG_TAX_RATE, teradata_table:SFX_BILLING.STG_USAGE_DAILY, teradata_table:SFX_BILLING.SUBSCRIPTION, teradata_table:SFX_BILLING.TAX_RATE, teradata_table:SFX_BILLING.USAGE_DAILY, bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq, bteq_script:warehouse/teradata/scripts/billing/02_load_subscriptions.bteq, bteq_script:warehouse/teradata/scripts/billing/03_load_invoices.bteq, bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq, bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq, bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq, fastload:warehouse/teradata/load/fastload/billing_billing_adj.fl, fastload:warehouse/teradata/load/fastload/billing_credit_note.fl, fastload:warehouse/teradata/load/fastload/billing_customer_account.fl, fastload:warehouse/teradata/load/fastload/billing_gl_account.fl, fastload:warehouse/teradata/load/fastload/billing_gl_journal_line.fl, fastload:warehouse/teradata/load/fastload/billing_invoice_hdr.fl, fastload:warehouse/teradata/load/fastload/billing_invoice_line.fl, fastload:warehouse/teradata/load/fastload/billing_payment.fl, fastload:warehouse/teradata/load/fastload/billing_plan_catalog.fl, fastload:warehouse/teradata/load/fastload/billing_subscription.fl, fastload:warehouse/teradata/load/fastload/billing_tax_rate.fl, fastload:warehouse/teradata/load/fastload/billing_usage_daily.fl, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/02_load_subscriptions, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/03_load_invoices, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/04_load_payments, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/05_load_usage, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/load_account_history
+
+**ambiguity:** Delta/dbt cannot reproduce every native transactional constraint, BTEQ label, multi-statement partial commit, or the two-table SCD2 transaction.
+
+**decision:** Use atomic per-model Delta replacement, ANSI cast failure and dbt key/null/invariant tests. History validates nonnull unique input keys and older-date guard before mutation; history then batch are ordered and same-date retry-safe. Do not claim cross-model rollback: a failure between history and batch publication, or a post-materialization dbt constraint failure, can leave partial outputs requiring same-date retry and operational review.
+
+**rationale:** Legacy non-history scripts also partially commit, but exact boundaries differ. Cross-table transactional equivalence is not supplied by this foundation; retain this explicit open risk rather than hide it behind row parity.
+
+**verification:** test:lakehouse/tests/test_billing_load.py::test_billing_history_replay_and_order
+
+**sources:** warehouse/teradata/scripts/billing/load_account_history.bteq, warehouse/teradata/scripts/billing/01_load_accounts.bteq, warehouse/teradata/bteq/runner.py
+
+## A-106 — Load-layer parity uses matching legacy stage
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH, teradata_table:SFX_BILLING.BILLING_ADJ, teradata_table:SFX_BILLING.CREDIT_NOTE, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST, teradata_table:SFX_BILLING.GL_ACCOUNT, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.PAYMENT, teradata_table:SFX_BILLING.PLAN_CATALOG, teradata_table:SFX_BILLING.STG_BILLING_ADJ, teradata_table:SFX_BILLING.STG_CREDIT_NOTE, teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_ACCOUNT, teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE, teradata_table:SFX_BILLING.STG_INVOICE_HDR, teradata_table:SFX_BILLING.STG_INVOICE_LINE, teradata_table:SFX_BILLING.STG_PAYMENT, teradata_table:SFX_BILLING.STG_PLAN_CATALOG, teradata_table:SFX_BILLING.STG_SUBSCRIPTION, teradata_table:SFX_BILLING.STG_TAX_RATE, teradata_table:SFX_BILLING.STG_USAGE_DAILY, teradata_table:SFX_BILLING.SUBSCRIPTION, teradata_table:SFX_BILLING.TAX_RATE, teradata_table:SFX_BILLING.USAGE_DAILY, bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq, bteq_script:warehouse/teradata/scripts/billing/02_load_subscriptions.bteq, bteq_script:warehouse/teradata/scripts/billing/03_load_invoices.bteq, bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq, bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq, bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq, fastload:warehouse/teradata/load/fastload/billing_billing_adj.fl, fastload:warehouse/teradata/load/fastload/billing_credit_note.fl, fastload:warehouse/teradata/load/fastload/billing_customer_account.fl, fastload:warehouse/teradata/load/fastload/billing_gl_account.fl, fastload:warehouse/teradata/load/fastload/billing_gl_journal_line.fl, fastload:warehouse/teradata/load/fastload/billing_invoice_hdr.fl, fastload:warehouse/teradata/load/fastload/billing_invoice_line.fl, fastload:warehouse/teradata/load/fastload/billing_payment.fl, fastload:warehouse/teradata/load/fastload/billing_plan_catalog.fl, fastload:warehouse/teradata/load/fastload/billing_subscription.fl, fastload:warehouse/teradata/load/fastload/billing_tax_rate.fl, fastload:warehouse/teradata/load/fastload/billing_usage_daily.fl, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/02_load_subscriptions, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/03_load_invoices, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/04_load_payments, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/05_load_usage, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/load_account_history
+
+**ambiguity:** The mutable legacy daily chain later changes invoice headers, lines and GL journal; its final state is not the output of the load layer.
+
+**decision:** Prepare the local legacy billing load baseline by clearing GL journal fixture state and replaying the six scoped BTEQ scripts over unchanged shared landing staging. Compare each of 26 output tables at that load-stage boundary. Do not claim these PASS results certify later monthly billing, period close or historical as-of outputs.
+
+**rationale:** Table parity is meaningful only when both sides represent the same execution stage and prior state. Fresh journal fixture state is used for initial parity; separate stateful tests prove subsequent posting-date retention.
+
+**verification:** billing.gl_journal_line
+
+**sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, warehouse/teradata/scripts/billing/13_period_close.bteq
+
+## A-107 — Billing per-stage scheduler replacement
+
+**status:** accepted
+
+**risk:** low
+
+**legacy_objects:** cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/02_load_subscriptions, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/03_load_invoices, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/04_load_payments, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/05_load_usage, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/load_account_history
+
+**ambiguity:** The all-domain daily runner and its wall-clock scheduling are shared; billing stage replacement cannot claim those global responsibilities.
+
+**decision:** Map only the six scoped billing stage IDs to the tag:billing dbt task after bronze_billing. Model refs order staging and SCD2 batch publication; one parity node per output follows dbt_billing. Shared daily_chain and global cron remain unclaimed.
+
+**rationale:** Existing graph has all twelve billing readiness sensors and domain ingestion. The named contract test checks the exact stage IDs, model presence and parity dependencies.
+
+**verification:** test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
+
+**sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/jobs/crontab.example

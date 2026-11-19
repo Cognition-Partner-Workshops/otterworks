@@ -1,0 +1,143 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "d48c11e07c4315a30d5a4eee747e2e7426d15a42",
+  "id": "billing.stg_tax_rate",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.STG_TAX_RATE"
+  ],
+  "results": {
+    "columns": [
+      "tax_rate_id",
+      "country_cd",
+      "region_cd",
+      "rate",
+      "effective_dt"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "country_cd": {
+          "count": 200,
+          "hash": "2b677680e6789eb920e095723c28ed28fec089656bec3d7348fdcd5b86515c59",
+          "null_count": 0,
+          "sum": null
+        },
+        "effective_dt": {
+          "count": 200,
+          "hash": "fc323652562232d39cf3a620f4ddc37239d741edd03b7c5c50c78a829f3c5e4c",
+          "null_count": 0,
+          "sum": null
+        },
+        "rate": {
+          "count": 200,
+          "hash": "a0dd303f7c8bdeaf4248f2fb623804f7e1b81cdf7ecb8ab19346bdcd2d0f911e",
+          "null_count": 0,
+          "sum": "28.5625"
+        },
+        "region_cd": {
+          "count": 200,
+          "hash": "cf11bcde59da17a72939616a2b76bc6f2b1efcbbbdb4a2e74e6a283521c57910",
+          "null_count": 0,
+          "sum": null
+        },
+        "tax_rate_id": {
+          "count": 200,
+          "hash": "e6112a17a14a7271363201ad4615c1acdf7b4c1128f9aaf72fb47bb69130d043",
+          "null_count": 0,
+          "sum": "20100"
+        }
+      },
+      "legacy": {
+        "country_cd": {
+          "count": 200,
+          "hash": "2b677680e6789eb920e095723c28ed28fec089656bec3d7348fdcd5b86515c59",
+          "null_count": 0,
+          "sum": null
+        },
+        "effective_dt": {
+          "count": 200,
+          "hash": "fc323652562232d39cf3a620f4ddc37239d741edd03b7c5c50c78a829f3c5e4c",
+          "null_count": 0,
+          "sum": null
+        },
+        "rate": {
+          "count": 200,
+          "hash": "a0dd303f7c8bdeaf4248f2fb623804f7e1b81cdf7ecb8ab19346bdcd2d0f911e",
+          "null_count": 0,
+          "sum": "28.5625"
+        },
+        "region_cd": {
+          "count": 200,
+          "hash": "cf11bcde59da17a72939616a2b76bc6f2b1efcbbbdb4a2e74e6a283521c57910",
+          "null_count": 0,
+          "sum": null
+        },
+        "tax_rate_id": {
+          "count": 200,
+          "hash": "e6112a17a14a7271363201ad4615c1acdf7b4c1128f9aaf72fb47bb69130d043",
+          "null_count": 0,
+          "sum": "20100"
+        }
+      }
+    },
+    "mismatches": {
+      "country_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "effective_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "rate": {
+        "count": 0,
+        "samples": []
+      },
+      "region_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "tax_rate_id": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 200,
+      "legacy": 200
+    }
+  },
+  "row_counts": {
+    "lakehouse": 200,
+    "legacy": 200
+  },
+  "spec_hash": "152205354e939b8cf6c5347ab77ebca6487f9a692d4599825f5ef1d18333eb34",
+  "timestamp": "2026-11-19T08:16:22.071033+00:00"
+}

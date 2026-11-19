@@ -86,39 +86,78 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/customer_account.sql
+  - lakehouse/dbt/models/silver/billing/gl_account.sql
+  - lakehouse/dbt/models/silver/billing/gl_journal_line.sql
+  - lakehouse/dbt/models/silver/billing/plan_catalog.sql
+  - lakehouse/dbt/models/silver/billing/tax_rate.sql
+  parity:
+  - billing.plan_catalog
+  - billing.tax_rate
+  - billing.gl_account
+  - billing.customer_account
+  - billing.gl_journal_line
   assumptions:
   - A-003
   - A-014
   - A-015
   - A-024
-  notes: Not migrated; no completeness claim.
+  - A-103
+  - A-105
+  - A-106
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/billing/02_load_subscriptions.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/subscription.sql
+  parity:
+  - billing.subscription
+  assumptions:
+  - A-103
+  - A-105
+  - A-106
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/billing/03_load_invoices.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/invoice_hdr.sql
+  - lakehouse/dbt/models/silver/billing/invoice_line.sql
+  parity:
+  - billing.invoice_hdr
+  - billing.invoice_line
+  assumptions:
+  - A-103
+  - A-105
+  - A-106
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/billing_adj.sql
+  - lakehouse/dbt/models/silver/billing/credit_note.sql
+  - lakehouse/dbt/models/silver/billing/payment.sql
+  parity:
+  - billing.payment
+  - billing.credit_note
+  - billing.billing_adj
+  assumptions:
+  - A-103
+  - A-105
+  - A-106
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/usage_daily.sql
+  parity:
+  - billing.usage_daily
+  assumptions:
+  - A-103
+  - A-105
+  - A-106
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq
   status: pending
   targets: []
@@ -150,11 +189,18 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/account_hist_batch.sql
+  - lakehouse/dbt/models/silver/billing/customer_account_hist.sql
+  parity:
+  - billing.account_hist_batch
+  - billing.customer_account_hist
+  assumptions:
+  - A-104
+  - A-105
+  - A-106
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/documents/01_load_folders.bteq
   status: pending
   targets: []
@@ -577,40 +623,70 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-103
+  - A-105
+  - A-106
+  - A-107
+  notes: Only this billing load stage is replaced by bronze_billing -> dbt_billing and table parity tasks. Shared runner/global schedule and later billing reports remain pending.
+  verification: test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/02_load_subscriptions
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-103
+  - A-105
+  - A-106
+  - A-107
+  notes: Only this billing load stage is replaced by bronze_billing -> dbt_billing and table parity tasks. Shared runner/global schedule and later billing reports remain pending.
+  verification: test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/03_load_invoices
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-103
+  - A-105
+  - A-106
+  - A-107
+  notes: Only this billing load stage is replaced by bronze_billing -> dbt_billing and table parity tasks. Shared runner/global schedule and later billing reports remain pending.
+  verification: test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/04_load_payments
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-103
+  - A-105
+  - A-106
+  - A-107
+  notes: Only this billing load stage is replaced by bronze_billing -> dbt_billing and table parity tasks. Shared runner/global schedule and later billing reports remain pending.
+  verification: test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/05_load_usage
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-103
+  - A-105
+  - A-106
+  - A-107
+  notes: Only this billing load stage is replaced by bronze_billing -> dbt_billing and table parity tasks. Shared runner/global schedule and later billing reports remain pending.
+  verification: test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/10_subscription_report
   status: pending
   targets: []
@@ -647,12 +723,18 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/load_account_history
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-104
+  - A-105
+  - A-106
+  - A-107
+  notes: Only this billing load stage is replaced by bronze_billing -> dbt_billing and table parity tasks. Shared runner/global schedule and later billing reports remain pending.
+  verification: test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/01_load_folders
   status: pending
   targets: []
@@ -827,7 +909,9 @@ objects:
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_billing_adj.sql
+  parity:
+  - billing.stg_billing_adj
   assumptions:
   - A-001
   - A-002
@@ -843,12 +927,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_credit_note.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_credit_note.sql
+  parity:
+  - billing.stg_credit_note
   assumptions:
   - A-001
   - A-002
@@ -864,12 +953,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_customer_account.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_customer_account.sql
+  parity:
+  - billing.stg_customer_account
   assumptions:
   - A-001
   - A-002
@@ -885,12 +979,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_gl_account.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_gl_account.sql
+  parity:
+  - billing.stg_gl_account
   assumptions:
   - A-001
   - A-002
@@ -906,12 +1005,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_gl_journal_line.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_gl_journal_line.sql
+  parity:
+  - billing.stg_gl_journal_line
   assumptions:
   - A-001
   - A-002
@@ -927,12 +1031,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_invoice_hdr.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_invoice_hdr.sql
+  parity:
+  - billing.stg_invoice_hdr
   assumptions:
   - A-001
   - A-002
@@ -948,12 +1057,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_invoice_line.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_invoice_line.sql
+  parity:
+  - billing.stg_invoice_line
   assumptions:
   - A-001
   - A-002
@@ -969,12 +1083,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_payment.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_payment.sql
+  parity:
+  - billing.stg_payment
   assumptions:
   - A-001
   - A-002
@@ -990,12 +1109,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_plan_catalog.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_plan_catalog.sql
+  parity:
+  - billing.stg_plan_catalog
   assumptions:
   - A-001
   - A-002
@@ -1011,12 +1135,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_subscription.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_subscription.sql
+  parity:
+  - billing.stg_subscription
   assumptions:
   - A-001
   - A-002
@@ -1032,12 +1161,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_tax_rate.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_tax_rate.sql
+  parity:
+  - billing.stg_tax_rate
   assumptions:
   - A-001
   - A-002
@@ -1053,12 +1187,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/billing_usage_daily.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  - lakehouse/dbt/models/silver/billing/stg_usage_daily.sql
+  parity:
+  - billing.stg_usage_daily
   assumptions:
   - A-001
   - A-002
@@ -1074,7 +1213,10 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-102
+  - A-105
+  - A-106
+  notes: Readiness and bronze ingestion replace native loader sessions/errorfiles; typed staging matches executable emulator output, not proprietary FastLoad control semantics.
 - id: fastload:warehouse/teradata/load/fastload/users_app_user.fl
   status: replaced_by_platform
   targets:
@@ -2457,23 +2599,44 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/account_hist_batch.sql
+  parity:
+  - billing.account_hist_batch
+  assumptions:
+  - A-100
+  - A-101
+  - A-104
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.BILLING_ADJ
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/billing_adj.sql
+  parity:
+  - billing.billing_adj
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.CREDIT_NOTE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/credit_note.sql
+  parity:
+  - billing.credit_note
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT
   status: converted
   targets:
@@ -2507,139 +2670,298 @@ objects:
   - A-035
   - A-038
   - A-045
-  notes: Measured output parity for the Type-1 account snapshot only.
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/customer_account_hist.sql
+  parity:
+  - billing.customer_account_hist
+  assumptions:
+  - A-100
+  - A-101
+  - A-104
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.GL_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/gl_account.sql
+  parity:
+  - billing.gl_account
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.GL_JOURNAL_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/gl_journal_line.sql
+  parity:
+  - billing.gl_journal_line
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/invoice_hdr.sql
+  parity:
+  - billing.invoice_hdr
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.INVOICE_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/invoice_line.sql
+  parity:
+  - billing.invoice_line
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.PAYMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/payment.sql
+  parity:
+  - billing.payment
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.PLAN_CATALOG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/plan_catalog.sql
+  parity:
+  - billing.plan_catalog
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_BILLING_ADJ
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_billing_adj.sql
+  parity:
+  - billing.stg_billing_adj
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_CREDIT_NOTE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_credit_note.sql
+  parity:
+  - billing.stg_credit_note
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_customer_account.sql
+  parity:
+  - billing.stg_customer_account
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_GL_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_gl_account.sql
+  parity:
+  - billing.stg_gl_account
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_gl_journal_line.sql
+  parity:
+  - billing.stg_gl_journal_line
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_invoice_hdr.sql
+  parity:
+  - billing.stg_invoice_hdr
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_INVOICE_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_invoice_line.sql
+  parity:
+  - billing.stg_invoice_line
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_PAYMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_payment.sql
+  parity:
+  - billing.stg_payment
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_PLAN_CATALOG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_plan_catalog.sql
+  parity:
+  - billing.stg_plan_catalog
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_SUBSCRIPTION
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_subscription.sql
+  parity:
+  - billing.stg_subscription
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_TAX_RATE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_tax_rate.sql
+  parity:
+  - billing.stg_tax_rate
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.STG_USAGE_DAILY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/stg_usage_daily.sql
+  parity:
+  - billing.stg_usage_daily
+  assumptions:
+  - A-100
+  - A-101
+  - A-102
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.SUBSCRIPTION
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/subscription.sql
+  parity:
+  - billing.subscription
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.TAX_RATE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/tax_rate.sql
+  parity:
+  - billing.tax_rate
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_BILLING.USAGE_DAILY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/silver/billing/usage_daily.sql
+  parity:
+  - billing.usage_daily
+  assumptions:
+  - A-100
+  - A-101
+  - A-103
+  - A-105
+  - A-106
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
 - id: teradata_table:SFX_DOCUMENTS.COLLAB_SESSION
   status: pending
   targets: []

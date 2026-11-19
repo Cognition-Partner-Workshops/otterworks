@@ -1,0 +1,36 @@
+{
+  "id": "billing.gl_account",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.GL_ACCOUNT",
+    "bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT gl_account_id, account_number, account_name, account_type, normal_balance FROM sfx_billing.gl_account"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.gl_account"
+  },
+  "keys": [
+    "gl_account_id"
+  ],
+  "columns": [
+    "gl_account_id",
+    "account_number",
+    "account_name",
+    "account_type",
+    "normal_balance"
+  ],
+  "normalize": {
+    "account_number": {
+      "rstrip": true
+    },
+    "account_type": {
+      "rstrip": true
+    },
+    "normal_balance": {
+      "rstrip": true
+    }
+  }
+}

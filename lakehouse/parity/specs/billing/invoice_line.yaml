@@ -1,0 +1,27 @@
+{
+  "id": "billing.invoice_line",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.INVOICE_LINE",
+    "bteq_script:warehouse/teradata/scripts/billing/03_load_invoices.bteq"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT invoice_line_id, invoice_id, line_no, description, quantity, unit_price, line_amount FROM sfx_billing.invoice_line"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.invoice_line"
+  },
+  "keys": [
+    "invoice_line_id"
+  ],
+  "columns": [
+    "invoice_line_id",
+    "invoice_id",
+    "line_no",
+    "description",
+    "quantity",
+    "unit_price",
+    "line_amount"
+  ]
+}

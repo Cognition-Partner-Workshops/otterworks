@@ -468,7 +468,45 @@ dags:
     - bronze_billing
     retries: 1
     retry_delay_seconds: 10
-    legacy_objects: []
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/02_load_subscriptions.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/03_load_invoices.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/02_load_subscriptions
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/03_load_invoices
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/04_load_payments
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/05_load_usage
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/load_account_history
+    - teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH
+    - teradata_table:SFX_BILLING.BILLING_ADJ
+    - teradata_table:SFX_BILLING.CREDIT_NOTE
+    - teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT
+    - teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST
+    - teradata_table:SFX_BILLING.GL_ACCOUNT
+    - teradata_table:SFX_BILLING.GL_JOURNAL_LINE
+    - teradata_table:SFX_BILLING.INVOICE_HDR
+    - teradata_table:SFX_BILLING.INVOICE_LINE
+    - teradata_table:SFX_BILLING.PAYMENT
+    - teradata_table:SFX_BILLING.PLAN_CATALOG
+    - teradata_table:SFX_BILLING.STG_BILLING_ADJ
+    - teradata_table:SFX_BILLING.STG_CREDIT_NOTE
+    - teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT
+    - teradata_table:SFX_BILLING.STG_GL_ACCOUNT
+    - teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE
+    - teradata_table:SFX_BILLING.STG_INVOICE_HDR
+    - teradata_table:SFX_BILLING.STG_INVOICE_LINE
+    - teradata_table:SFX_BILLING.STG_PAYMENT
+    - teradata_table:SFX_BILLING.STG_PLAN_CATALOG
+    - teradata_table:SFX_BILLING.STG_SUBSCRIPTION
+    - teradata_table:SFX_BILLING.STG_TAX_RATE
+    - teradata_table:SFX_BILLING.STG_USAGE_DAILY
+    - teradata_table:SFX_BILLING.SUBSCRIPTION
+    - teradata_table:SFX_BILLING.TAX_RATE
+    - teradata_table:SFX_BILLING.USAGE_DAILY
   - id: bronze_documents
     kind: bronze_ingest
     domain: documents
@@ -588,6 +626,181 @@ dags:
     - dbt_documents
     - dbt_users
     - dbt_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_account_hist_batch
+    kind: parity
+    spec: billing.account_hist_batch
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_billing_adj
+    kind: parity
+    spec: billing.billing_adj
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_credit_note
+    kind: parity
+    spec: billing.credit_note
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_customer_account_hist
+    kind: parity
+    spec: billing.customer_account_hist
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_gl_account
+    kind: parity
+    spec: billing.gl_account
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_gl_journal_line
+    kind: parity
+    spec: billing.gl_journal_line
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_invoice_hdr
+    kind: parity
+    spec: billing.invoice_hdr
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_invoice_line
+    kind: parity
+    spec: billing.invoice_line
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_payment
+    kind: parity
+    spec: billing.payment
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_plan_catalog
+    kind: parity
+    spec: billing.plan_catalog
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_billing_adj
+    kind: parity
+    spec: billing.stg_billing_adj
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_credit_note
+    kind: parity
+    spec: billing.stg_credit_note
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_customer_account
+    kind: parity
+    spec: billing.stg_customer_account
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_gl_account
+    kind: parity
+    spec: billing.stg_gl_account
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_gl_journal_line
+    kind: parity
+    spec: billing.stg_gl_journal_line
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_invoice_hdr
+    kind: parity
+    spec: billing.stg_invoice_hdr
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_invoice_line
+    kind: parity
+    spec: billing.stg_invoice_line
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_payment
+    kind: parity
+    spec: billing.stg_payment
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_plan_catalog
+    kind: parity
+    spec: billing.stg_plan_catalog
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_subscription
+    kind: parity
+    spec: billing.stg_subscription
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_tax_rate
+    kind: parity
+    spec: billing.stg_tax_rate
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_usage_daily
+    kind: parity
+    spec: billing.stg_usage_daily
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_subscription
+    kind: parity
+    spec: billing.subscription
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_tax_rate
+    kind: parity
+    spec: billing.tax_rate
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_usage_daily
+    kind: parity
+    spec: billing.usage_daily
+    depends_on: [dbt_billing]
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []

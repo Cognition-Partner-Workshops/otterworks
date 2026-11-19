@@ -134,16 +134,14 @@ def validate(setup_map, strict=False):
     return checker.validate_coverage(coverage, inventory, specs, assumptions, evidence, strict)
 
 
-def test_seed_statuses_and_assumption_links():
+def test_repository_coverage_and_assumption_links():
     inventory = discover()
     coverage = checker.entries(ROOT / 'coverage/coverage.yaml', 'objects')
     assumptions = checker.entries(ROOT / 'assumptions/assumptions.yaml', 'assumptions')
     assert inventory.keys() == coverage.keys()
+    assert checker.validate_coverage(coverage, inventory, checker.discover_specs(),
+                                     assumptions, ROOT / 'evidence') == []
     for identity, entry in coverage.items():
-        kind = inventory[identity]['kind']
-        assert entry['status'] == ('converted' if identity == PILOT else
-                                  'replaced_by_platform' if kind in ('fastload', 'tpt') or
-                                  identity == 'cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging' else 'pending')
         assert set(entry['assumptions']) == {key for key, assumption in assumptions.items()
                                             if identity in assumption['legacy_objects']}
 
