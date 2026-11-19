@@ -1,19 +1,36 @@
 package sfx
 
+import org.apache.spark.sql.AnalysisException
+
 object TeamGraphComponentsCheck {
   def main(args: Array[String]): Unit = {
     val spark = BatchSupport.session("team-components-check")
-    val sc = spark.sparkContext
+    import spark.implicits._
     try {
-      val teams = sc.parallelize(Seq(1L, 2L, 3L, 4L, 5L))
-      val members = sc.parallelize(Seq((1L, 3L), (2L, 3L), (3L, 1L), (4L, 1L), (1L, 3L)))
-      assert(TeamGraphComponents.components(teams, members).collect().toMap ==
-        Map(1L -> 1L, 2L -> 1L, 3L -> 3L, 4L -> 3L, 5L -> 5L))
-      val chain = (1L until 9L).flatMap(id => Seq((id, id + 100L), (id + 1L, id + 100L)))
-      assert(TeamGraphComponents.components(sc.parallelize(1L to 9L), sc.parallelize(chain))
-        .collect().toMap == (1L to 9L).map(_ -> 1L).toMap)
-      assert(TeamGraphComponents.components(sc.emptyRDD[Long], sc.emptyRDD[(Long, Long)]).count() == 0)
-      println("TEAM_COMPONENTS_CHECK: overlapping identifiers, isolated teams, duplicate memberships, long chain, empty graph: OK")
+      def check(members: Seq[(Long, Long)]): Unit = {
+        val edges = for ((team, user) <- members; (otherTeam, neighbor) <- members
+                         if team == otherTeam && user != neighbor) yield (user, neighbor)
+        var expected = edges.map { case (user, _) => user -> user }.toMap
+        for (_ <- 0 until 6) {
+          val previous = expected
+          expected = edges.foldLeft(previous) { case (labels, (user, neighbor)) =>
+            labels.updated(neighbor, math.min(labels(neighbor), previous(user)))
+          }
+        }
+        val result = TeamGraphComponents.transform(members.toDF("TEAM_ID", "USER_ID")).collect()
+        assert(result.map(row => row.getLong(0) -> row.getLong(1)).toMap == expected)
+        assert(result.length == expected.size)
+      }
+      check(Seq((1L, 3L), (1L, 4L), (2L, 4L), (2L, 5L), (1L, 3L), (3L, 99L)))
+      check((1L until 10L).flatMap(team => Seq((team, team), (team, team + 1L))))
+      check(Seq((1L, 1L), (1L, 2L), (2L, 3L), (2L, 4L)))
+      check(Seq.empty[(Long, Long)])
+      var rejected = false
+      try TeamGraphComponents.transform(spark.emptyDataFrame) catch {
+        case _: AnalysisException => rejected = true
+      }
+      assert(rejected)
+      println("TEAM_COMPONENTS_CHECK: exact six-round reference, overlaps, duplicates, isolated users, long chain, disconnected graph, empty and invalid inputs: OK")
     } finally {
       spark.stop()
     }
