@@ -18,7 +18,9 @@
 # Usage:
 #   ./scripts/deploy-tenant.sh <ATTENDEE_ID> [--tier A|B] [--image-tag TAG] \
 #       [--ttl 72h] [--host-suffix demo.example.com] [--skip-db] \
-#       [--profile core|full]
+#       [--profile core|full] [--atomic] [--strict]
+# HELM_ATOMIC=true enables atomic app upgrades. VERIFY_IGNORE is a comma-separated
+# deployment exclusion list; VERIFY_TIMEOUT defaults to 120s per deployment.
 #
 # Required env: AWS creds (exported), DB_PASSWORD. JWT_SECRET / SECRET_KEY_BASE
 #   are taken from the environment, else carried over from the tenant's existing
@@ -30,6 +32,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 # shellcheck source=lib/tenant-common.sh
 source "${SCRIPT_DIR}/lib/tenant-common.sh"
+# shellcheck source=lib/tenant-rollout.sh
+source "${SCRIPT_DIR}/lib/tenant-rollout.sh"
 
 # ---------- Args ----------
 ATTENDEE_ID=""
@@ -39,6 +43,8 @@ TENANT_BRANCH_ARG=""
 TTL="72h"
 HOST_SUFFIX="${HOST_SUFFIX:-}"
 SKIP_DB=false
+ATOMIC="${HELM_ATOMIC:-false}"
+STRICT=false
 # Deploy only the services the lab needs. At 100 tenants the difference between
 # "core" and "full" is roughly 100 vCPU of requests. Defaults to "full" so no
 # existing lab loses a service; see profile_services in lib/tenant-common.sh.
@@ -52,12 +58,14 @@ while [ $# -gt 0 ]; do
     --host-suffix) HOST_SUFFIX="$2"; shift 2 ;;
     --profile)     PROFILE="$2"; shift 2 ;;
     --skip-db)     SKIP_DB=true; shift ;;
+    --atomic)      ATOMIC=true; shift ;;
+    --strict)      STRICT=true; shift ;;
     -*)            err "Unknown flag: $1"; exit 1 ;;
     *)             if [ -z "${ATTENDEE_ID}" ]; then ATTENDEE_ID="$1"; else err "Unexpected arg: $1"; exit 1; fi; shift ;;
   esac
 done
 
-[ -n "${ATTENDEE_ID}" ] || { err "Usage: $0 <ATTENDEE_ID> [--tier A|B] [--image-tag TAG] [--branch BRANCH] [--ttl 72h|never] [--profile core|full]"; exit 1; }
+[ -n "${ATTENDEE_ID}" ] || { err "Usage: $0 <ATTENDEE_ID> [--tier A|B] [--image-tag TAG] [--branch BRANCH] [--ttl 72h|never] [--profile core|full] [--atomic] [--strict]"; exit 1; }
 case "${TIER}" in A|B) ;; *) err "--tier must be A or B"; exit 1 ;; esac
 case "${PROFILE}" in core|full) ;; *) err "--profile must be core or full"; exit 1 ;; esac
 mapfile -t TENANT_SERVICES < <(profile_services "${PROFILE}")
@@ -290,9 +298,11 @@ EOF
         Principal: (.Statement[0].Principal),
         Condition: { StringEquals: { ($url+":sub"): $sub, ($url+":aud"): "sts.amazonaws.com" } }
       }]')"
-    aws iam update-assume-role-policy --role-name "${role}" --policy-document "${new}" >/dev/null \
-      && log "  IRSA trust: ${role} now trusts ${sub}" \
-      || warn "  failed to update trust for ${role}"
+    if aws iam update-assume-role-policy --role-name "${role}" --policy-document "${new}" >/dev/null; then
+      log "  IRSA trust: ${role} now trusts ${sub}"
+    else
+      warn "  failed to update trust for ${role}"
+    fi
   done
 }
 log "Ensuring shared IRSA roles trust the tenant namespace service accounts..."
@@ -514,15 +524,18 @@ deploy_service() {
     secret_args=(-f "${secret_file}")
   fi
 
+  local safety_args=(--history-max 10)
+  if [ "${ATOMIC}" = true ]; then safety_args+=(--wait --atomic); fi
   log "Deploying ${service} (tag ${tag})..."
-  helm upgrade --install "${service}" "${chart_dir}" \
+  local rc=0
+  if ! helm upgrade --install "${service}" "${chart_dir}" \
     --namespace "${NS}" \
     --set image.repository="${ECR_REGISTRY}/${ECR_PREFIX}${service}" \
     --set image.tag="${tag}" \
     "${EXTRA_ARGS[@]}" \
     "${secret_args[@]}" \
-    --timeout 4m \
-    && local rc=0 || local rc=1
+    "${safety_args[@]}" \
+    --timeout 4m; then rc=1; fi
   [ -n "${secret_file}" ] && rm -f "${secret_file}"
   if [ "${rc}" -ne 0 ]; then
     warn "Helm deploy failed for ${service}"
@@ -618,6 +631,10 @@ else
   warn "Run scripts/tenant-platform-baseline.sh once to install it. Frontends are ClusterIP-only for now."
 fi
 
+# ---------- Rollout verification ----------
+VERIFY_FAILED=false
+verify_tenant_rollouts "${NS}" || VERIFY_FAILED=true
+
 # ---------- Summary ----------
 echo ""
 log "Tenant ${ATTENDEE_ID} deployed to namespace ${NS}."
@@ -631,3 +648,4 @@ log "Reach API: kubectl -n ${NS} port-forward svc/api-gateway 8080:8080"
 log "Inject bug: ./scripts/inject-bug.sh ${ATTENDEE_ID} <scenario>"
 log "Teardown:  ./scripts/teardown-tenant.sh ${ATTENDEE_ID}"
 [ ${#FAILED[@]} -eq 0 ] || exit 1
+if [ "${STRICT}" = true ] && [ "${VERIFY_FAILED}" = true ]; then exit 1; fi

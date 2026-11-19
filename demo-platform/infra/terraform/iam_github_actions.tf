@@ -38,17 +38,24 @@ data "aws_iam_policy_document" "github_actions_trust" {
     # assume this role and publish images the golden app then serves. Only the
     # branches CD actually deploys are trusted, per repository, so a fork gets
     # credentials for its own ephemeral environments and not for main.
-    # `pull_request`, `environment` and tag subjects are excluded by the same
-    # token: a fork PR never gets credentials, and neither does a pushed tag
-    # (release builds run from main via workflow_dispatch -- see
-    # .github/workflows/docker-build.yml).
+    # Environment jobs replace the ref in the OIDC subject. Restrict t-main to
+    # main and workshop to demo/workshop branches in GitHub environment settings.
+    # Forks without a trusted main ref never receive t-main environment trust.
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values = flatten([
-        for repo, refs in var.github_actions_trusted_repos :
-        [for ref in refs : "repo:${repo}:ref:refs/heads/${ref}"]
-      ])
+      values = concat(
+        flatten([
+          for repo, refs in var.github_actions_trusted_repos :
+          [for ref in refs : "repo:${repo}:ref:refs/heads/${ref}"]
+        ]),
+        flatten([
+          for repo, refs in var.github_actions_trusted_repos : concat(
+            contains(refs, "main") ? ["repo:${repo}:environment:t-main"] : [],
+            anytrue([for ref in refs : startswith(ref, "workshop-") || startswith(ref, "demo-")]) ? ["repo:${repo}:environment:workshop"] : []
+          )
+        ])
+      )
     }
   }
 }

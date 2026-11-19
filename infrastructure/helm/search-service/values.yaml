@@ -1,4 +1,15 @@
 replicaCount: 1
+revisionHistoryLimit: 10
+
+pdb:
+  enabled: false
+  minAvailable: 1
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
 
 image:
   repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/workshop/otterworks-search-service
