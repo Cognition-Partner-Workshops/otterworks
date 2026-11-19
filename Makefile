@@ -900,12 +900,14 @@ INFA_COMPOSE = NS=$(INFA_NS) TD_PORT=$(INFA_TD_PORT) docker compose -f $(INFA_DI
 INFA_WORKFLOWS ?= SFX_CONTENT:wf_SFX_CONTENT_DAILY SFX_BILLING:wf_SFX_BILLING_DAILY SFX_AUDIT:wf_SFX_AUDIT_DAILY
 
 define INFA_VALIDATE
-RUN_TOKEN='$(subst ','"'"',$(RUN_TOKEN))' python3 -c 'from warehouse.run_config import RunConfig; RunConfig.from_env()' || { echo 'RunConfig failed for RUN_TOKEN' >&2; exit 2; }; \
+infa_default=$$(RUN_TOKEN='$(subst ','"'"',$(RUN_TOKEN))' python3 -c 'from warehouse.run_config import RunConfig; print(RunConfig.from_env().before_namespace)') && [ -n "$$infa_default" ] || { echo 'RunConfig failed for RUN_TOKEN' >&2; exit 2; }; \
 infa_ns='$(subst ','"'"',$(INFA_NS))'; \
-[[ "$$infa_ns" =~ ^[a-z0-9][a-z0-9_-]*$$ ]] || { echo 'INFA_NS must be a nonempty namespace containing lowercase letters, digits, underscores or hyphens' >&2; exit 2; }
+if [ '$(origin NS)' = undefined ] && [ '$(origin INFA_NS)' = file ] && [ "$$infa_ns" = "$$infa_default" ]; then :; \
+else [[ "$$infa_ns" =~ ^[A-Za-z0-9_]+$$ ]] || { echo 'INFA_NS must be a nonempty namespace containing only letters, digits, and underscores, or the RunConfig-generated default' >&2; exit 2; }; fi
 endef
 
 sfx-informatica-up: ## Create the runner venv and start the warehouse database for NS (INFA_DB=fixture|teradata)
+	@$(INFA_VALIDATE)
 	@test -x $(INFA_PY) || (python3 -m venv $(INFA_DIR)/.venv && $(INFA_DIR)/.venv/bin/pip install -q -r $(INFA_DIR)/requirements.txt)
 	@if [ "$(INFA_DB)" = teradata ]; then $(MAKE) sfx-teradata-up NS=$(INFA_NS); else \
 	  docker image inspect postgres:16 >/dev/null 2>&1 || (docker pull mirror.gcr.io/library/postgres:16 && docker tag mirror.gcr.io/library/postgres:16 postgres:16); \
@@ -932,8 +934,9 @@ INFA_SCAI = $(or $(shell command -v scai 2>/dev/null),$(wildcard $(HOME)/.local/
 INFA_SC_DIR = $(CURDIR)/$(INFA_DIR)/snowconvert/$(INFA_NS)
 
 sfx-informatica-snowconvert: ## Convert the PowerCenter workflow exports with SnowConvert AI and keep its raw output (NS=, SNOWFLAKE_CONNECTION=)
+	@$(INFA_VALIDATE)
 	@test -n "$(INFA_SCAI)" || (echo "scai not found: curl -fsSL https://snowconvert.snowflake.com/storage/linux/prod/cli/install.sh | sh" >&2; exit 2)
-	@rm -rf $(INFA_SC_DIR) && mkdir -p $(INFA_SC_DIR)/input
+	@rm -rf -- "$(INFA_SC_DIR)" && mkdir -p "$(INFA_SC_DIR)/input"
 	@cp $(INFA_DIR)/repository/*/wf_*.XML $(INFA_SC_DIR)/input/
 	@cd $(INFA_SC_DIR) && $(INFA_SCAI) init project -n $(RUN_TOKEN)-informatica-$(INFA_NS) -l Teradata $(if $(SNOWFLAKE_CONNECTION),-c $(SNOWFLAKE_CONNECTION)) > init.log 2>&1; rc=$$?; cat init.log; exit $$rc
 	@cd $(INFA_SC_DIR)/project && $(INFA_SCAI) code add -i $(INFA_SC_DIR)/input > ../add.log 2>&1; rc=$$?; cat ../add.log; exit $$rc

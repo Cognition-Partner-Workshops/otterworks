@@ -42,7 +42,7 @@ def guarded_commands(tmp_path, monkeypatch):
     directory = tmp_path / 'bin'
     directory.mkdir()
     marker = tmp_path / 'command-ran'
-    for name in ('rm', 'runner'):
+    for name in ('rm', 'runner', 'docker', 'scai', 'mkdir'):
         executable = directory / name
         executable.write_text(f'#!/bin/sh\nprintf reached > "{marker}"\n')
         executable.chmod(0o755)
@@ -51,11 +51,13 @@ def guarded_commands(tmp_path, monkeypatch):
     return tmp_path, marker
 
 
-@pytest.mark.parametrize('target', ['sfx-informatica-run', 'sfx-informatica-down'])
+@pytest.mark.parametrize('target', ['sfx-informatica-up', 'sfx-informatica-run',
+                                    'sfx-informatica-down', 'sfx-informatica-snowconvert'])
 @pytest.mark.parametrize('arguments', [
     ['RUN_TOKEN=invalid'], ['RUN_TOKEN='], ["RUN_TOKEN=sfx1119'quote"],
-    ['RUN_TOKEN=invalid', 'NS=sfx-safe-before'], ['INFA_NS='], ['INFA_NS= '],
-    ['NS=..'], ['NS=../other'], ['NS=/'],
+    ['RUN_TOKEN=invalid', 'NS=Demo_1'], ['INFA_NS='], ['INFA_NS= '],
+    ['NS=..'], ['NS=../other'], ['NS=/'], ['NS='], ['NS=with-hyphen'],
+    ['NS=sfx-1119-before'], ['INFA_NS=sfx-1119-before'],
 ])
 def test_guard_rejects_invalid_scope(target, arguments, guarded_commands):
     directory, marker = guarded_commands
@@ -69,7 +71,8 @@ def test_guard_rejects_invalid_scope(target, arguments, guarded_commands):
 
 
 @pytest.mark.parametrize('output,status', [('sfx-1119-before', 7), ('', 0)])
-@pytest.mark.parametrize('target', ['sfx-informatica-run', 'sfx-informatica-down'])
+@pytest.mark.parametrize('target', ['sfx-informatica-up', 'sfx-informatica-run',
+                                    'sfx-informatica-down', 'sfx-informatica-snowconvert'])
 def test_run_config_failure_or_empty_output_stops_commands(guarded_commands, monkeypatch, output, status, target):
     tmp_path, marker = guarded_commands
     executable = tmp_path / 'python3'
@@ -85,12 +88,30 @@ def test_run_config_failure_or_empty_output_stops_commands(guarded_commands, mon
     assert not marker.exists()
 
 
-def test_valid_run_reaches_runner(guarded_commands):
+@pytest.mark.parametrize('namespace', [None, 'Demo_1', '_', '123'])
+def test_valid_run_reaches_runner(guarded_commands, namespace):
     directory, marker = guarded_commands
     subprocess.run(['make', 'sfx-informatica-run', 'RUN_TOKEN=sfx2220', f'INFA_DIR={directory}',
-                    f'INFA_PY={directory}/bin/runner', 'INFA_WORKFLOWS=sample:job'],
+                    f'INFA_PY={directory}/bin/runner', 'INFA_WORKFLOWS=sample:job',
+                    *([f'NS={namespace}'] if namespace is not None else [])],
                    cwd=ROOT, capture_output=True, text=True, check=True)
     assert marker.read_text() == 'reached'
+
+
+@pytest.mark.parametrize('namespace', [None, 'Demo_1'])
+@pytest.mark.parametrize('target', ['sfx-informatica-up', 'sfx-informatica-snowconvert'])
+def test_valid_scope_reaches_setup(guarded_commands, namespace, target):
+    directory, marker = guarded_commands
+    result = subprocess.run(['make', target, 'RUN_TOKEN=sfx2220', f'INFA_DIR={directory}',
+                             f'INFA_PY={directory}/bin/runner', 'INFA_DB=fixture', 'INFA_SCAI=',
+                             *([f'NS={namespace}'] if namespace is not None else [])],
+                            cwd=ROOT, capture_output=True, text=True)
+    if target == 'sfx-informatica-up':
+        assert result.returncode == 0, result.stderr
+        assert marker.read_text() == 'reached'
+    else:
+        assert result.returncode != 0 and 'scai not found' in result.stderr
+        assert not marker.exists()
 
 
 @pytest.mark.parametrize('target,expected', [
@@ -108,15 +129,17 @@ def test_unrelated_targets_ignore_runner_validation(tmp_path, target, expected):
     assert 'RunConfig failed' not in result.stderr and 'INFA_NS' not in result.stderr
 
 
-def test_teardown_removes_only_the_selected_child(tmp_path):
+@pytest.mark.parametrize('namespace', [None, 'Demo_1'])
+def test_teardown_removes_only_the_selected_child(tmp_path, namespace):
     parent = tmp_path / 'infa_shared'
-    selected = parent / 'sfx-2220-before'
+    selected = parent / (namespace or 'sfx-2220-before')
     sibling = parent / 'sfx-1119-before'
     selected.mkdir(parents=True)
     sibling.mkdir()
     (selected / 'session.log').write_text('selected')
     (sibling / 'session.log').write_text('retained')
     subprocess.run(['make', 'sfx-informatica-down', 'RUN_TOKEN=sfx2220', 'INFA_DB=teradata',
-                    f'INFA_DIR={tmp_path}'], cwd=ROOT, capture_output=True, text=True, check=True)
+                    f'INFA_DIR={tmp_path}', *([f'NS={namespace}'] if namespace is not None else [])],
+                   cwd=ROOT, capture_output=True, text=True, check=True)
     assert not selected.exists()
     assert parent.is_dir() and (sibling / 'session.log').read_text() == 'retained'
