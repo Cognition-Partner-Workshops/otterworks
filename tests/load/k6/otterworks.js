@@ -16,12 +16,13 @@ const BASE_URL = (__ENV.BASE_URL || 'http://localhost:8080').replace(/\/$/, '');
 const PROFILE = __ENV.PROFILE || 'smoke';
 const VUS = parseInt(__ENV.TARGET_VUS || '50', 10);
 const READ_ONLY = __ENV.READ_ONLY === '1';
+const HOLD = __ENV.HOLD || '10m'; // steady-state length of the load profile
 
 const profiles = {
   smoke: { executor: 'constant-vus', vus: 2, duration: '1m' },
   load: {
     executor: 'ramping-vus', startVUs: 0,
-    stages: [{ duration: '2m', target: VUS }, { duration: '10m', target: VUS }, { duration: '2m', target: 0 }],
+    stages: [{ duration: '2m', target: VUS }, { duration: HOLD, target: VUS }, { duration: '2m', target: 0 }],
   },
   stress: {
     executor: 'ramping-vus', startVUs: 0,
@@ -84,7 +85,7 @@ export default function (data) {
   group('browse', () => {
     for (const [name, path] of [
       ['documents', '/api/v1/documents/'],
-      ['files', '/api/v1/files/list'],
+      ['files', '/api/v1/files'],
       ['notifications', '/api/v1/notifications'],
       ['search', '/api/v1/search?q=report'],
     ]) {
