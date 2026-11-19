@@ -176,9 +176,11 @@ interface ImageFilePreviewProps {
 
 export function ImageFilePreview({ presignedUrl, fileName }: ImageFilePreviewProps) {
   const [error, setError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     setError(false);
+    setLoaded(false);
   }, [presignedUrl]);
 
   if (!presignedUrl || error) {
@@ -194,7 +196,9 @@ export function ImageFilePreview({ presignedUrl, fileName }: ImageFilePreviewPro
     <img
       src={presignedUrl}
       alt={fileName}
+      aria-label={loaded ? `${fileName} preview loaded` : fileName}
       className="max-w-full max-h-[500px] rounded-lg shadow-sm"
+      onLoad={() => setLoaded(true)}
       onError={() => setError(true)}
     />
   );

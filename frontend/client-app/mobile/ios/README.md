@@ -14,6 +14,15 @@ the shared App scheme. It stops the mock even if tests fail. Do not run the
 browser and native suites simultaneously: both reset the same in-memory state.
 Generated public assets and Capacitor config are intentionally not committed.
 
+The harness sets `VITE_STORAGE_PUBLIC_URL=http://127.0.0.1:4010` so the
+`Harbor preview.svg` fixture's `http://localstack:4566` presigned URL loads from
+the mock. The native image accessibility label gains `preview loaded` only on
+the image load event; both native and WebKit flows assert successful loading.
+For a real device build, set `VITE_STORAGE_PUBLIC_URL` to your storage server's
+device-reachable origin (e.g. `http://192.168.1.10:4566`), alongside the API URL,
+then rebuild and sync. Loopback only works for the simulator. See the client
+README for default and invalid-value behavior; real S3 URLs are never rewritten.
+
 Browser counterpart (no Xcode required):
 
 ```sh
@@ -71,10 +80,10 @@ Xcode test builds; keep it in version control, unlike built web assets and repor
 
 ## Current native validation status
 
-The iPhone 17 / iOS 26.5 full run executes 11 tests with 1 skipped and 0 failures:
-9 ordinary passes, the documented safe-area expected failure and the Filesystem
+The iPhone 17 / iOS 26.5 full run executes 12 tests with 1 skipped and 0 failures:
+10 ordinary passes, the documented safe-area expected failure and the Filesystem
 download skip above. All six previously failing flows pass without additional
-skips or expected failures. The mocked WebKit suite passes all 7 flows; it does
+skips or expected failures. The mocked WebKit suite passes all 8 flows; it does
 not substitute for native validation. XCTest failures retain a screenshot and
 accessibility hierarchy in the result bundle for follow-up. Margins data can be
 below the fold and the wide table can scale the viewport; use `reveal()` instead

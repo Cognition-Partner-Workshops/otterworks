@@ -13,6 +13,12 @@ test('mock contract: auth, uploads/downloads, persistence, empty results and res
     assert.equal((await request('/api/v1/auth/login', json({ email: 'tester@example.com', password: 'wrong' }))).status, 401);
     const login = await (await request('/api/v1/auth/login', json({ email: 'tester@example.com', password: 'HarborPass123!' }))).json();
     const headers = { Authorization: `Bearer ${login.accessToken}` };
+    const preview = await (await request('/api/v1/files/preview-1/download', { headers })).json();
+    assert.equal(preview.url, 'http://localstack:4566/download/preview-1');
+    const image = await request('/download/preview-1');
+    assert.equal(image.headers.get('content-type'), 'image/svg+xml');
+    assert.match(await image.text(), /Harbor preview/);
+    assert.equal((await request('/api/v1/files/missing/download', { headers })).status, 404);
     const form = new FormData();
     form.append('file', new Blob(['uploaded content']), 'deck.txt');
     const upload = await request('/api/v1/files/upload', { method: 'POST', headers, body: form });
@@ -28,7 +34,7 @@ test('mock contract: auth, uploads/downloads, persistence, empty results and res
     await request('/api/v1/documents/doc-1', { method: 'PATCH', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ content: '<p>Saved</p>' }) });
     assert.equal((await (await request('/api/v1/documents/doc-1', { headers })).json()).content, '<p>Saved</p>');
     await request('/__reset', { method: 'POST' });
-    assert.equal((await (await request('/api/v1/files', { headers })).json()).total, 1);
+    assert.equal((await (await request('/api/v1/files', { headers })).json()).total, 2);
   } finally {
     server.kill();
     await once(server, 'exit');

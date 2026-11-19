@@ -124,6 +124,21 @@ class AppUITestCase: XCTestCase {
 }
 
 final class AppUITests: AppUITestCase {
+    func testLocalStackImagePreviewLoads() {
+        login()
+        navigate("Files")
+        let title = element(.staticText, "Harbor preview.svg")
+        reveal(title)
+        title.doubleTap()
+        let image = element(.other, "Harbor preview.svg preview loaded")
+        reveal(image)
+        XCTAssertFalse(element(.staticText, "Image preview not available").exists)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Loaded LocalStack preview"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
     func testPortraitMenuReopens() {
         login()
         navigate("Files")

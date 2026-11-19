@@ -29,6 +29,15 @@ Build-time env vars (Vite): `VITE_COLLAB_WS_URL` (collab websocket URL, default
 `ws://localhost:8085`, upgraded to `wss` when the page is served over https; native
 defaults below), `VITE_API_BASE_URL` (native builds only, see below).
 
+`VITE_STORAGE_PUBLIC_URL` sets the public origin (scheme, host and optional port)
+for LocalStack presigned preview, video and download URLs. Only the exact
+`localstack` hostname is rewritten; real S3 URLs are unchanged. Paths and signed
+queries are preserved; any path in this setting is ignored. Unset or empty keeps
+the web default (`localstack:port` → `localhost:port`). Invalid values leave URLs
+unchanged. For a physical iOS device, use a reachable LAN host or HTTPS endpoint,
+not localhost, e.g. `VITE_STORAGE_PUBLIC_URL=http://192.168.1.10:4566 npm run build`,
+then `npx cap sync ios`. This is a build-time setting, not a runtime preference.
+
 ## Docker
 
 ```bash

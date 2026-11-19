@@ -41,7 +41,7 @@ export default defineConfig({
     ? { webServer: [
         ...(!process.env.BASE_URL ? [{ command: "npm run dev", url: BASE_URL, reuseExistingServer: !process.env.CI, timeout: 120_000 }] : []),
         { command: "node mock-api/server.mjs", url: "http://127.0.0.1:4010/health", reuseExistingServer: false },
-        { command: "API_GATEWAY_URL=http://127.0.0.1:4010 VITE_API_BASE_URL=http://127.0.0.1:4010/api/v1 VITE_COLLAB_WS_URL=ws://127.0.0.1:4010 npm run dev -- --host 127.0.0.1 --port 3001 --strictPort", url: "http://127.0.0.1:3001", reuseExistingServer: false },
+        { command: "VITE_STORAGE_PUBLIC_URL=http://127.0.0.1:4010 API_GATEWAY_URL=http://127.0.0.1:4010 VITE_API_BASE_URL=http://127.0.0.1:4010/api/v1 VITE_COLLAB_WS_URL=ws://127.0.0.1:4010 npm run dev -- --host 127.0.0.1 --port 3001 --strictPort", url: "http://127.0.0.1:3001", reuseExistingServer: false },
       ] }
     : process.env.BASE_URL
     ? {}
