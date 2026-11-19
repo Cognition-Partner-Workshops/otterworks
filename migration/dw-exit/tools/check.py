@@ -31,7 +31,7 @@ def validate(out=OUT, source=True):
             errors.append('inventory/manifest must have exactly one entry per object')
         index = {r['id']: r for r in objects}
         for row in objects:
-            for key, allowed in {'kind': {'bteq', 'catalog', 'fastload', 'tpt', 'table', 'view', 'macro', 'procedure', 'mapping', 'session', 'worklet', 'workflow', 'spark_job'}, 'system': {'teradata', 'powercenter', 'spark'}, 'target_type': {'dbt_model', 'snowpark', 'snowflake_scripting', 'compatibility_view', 'retire'}, 'wave': {1, 2, 3, 4}, 'risk': {'low', 'med', 'high'}, 'complexity': {'low', 'medium', 'high'}, 'status': {'not_started', 'migrated'}}.items():
+            for key, allowed in {'kind': {'bteq', 'catalog', 'fastload', 'tpt', 'table', 'view', 'macro', 'procedure', 'mapping', 'session', 'worklet', 'workflow', 'spark_job'}, 'system': {'teradata', 'powercenter', 'spark'}, 'target_type': {'dbt_model', 'snowpark', 'snowflake_scripting', 'compatibility_view', 'retire'}, 'wave': {1, 2, 3, 4}, 'risk': {'low', 'med', 'high'}, 'complexity': {'low', 'medium', 'high'}, 'status': {'not_started', 'migrated', 'retired'}}.items():
                 if row.get(key) not in allowed:
                     errors.append(f"invalid {key}: {row['id']}")
             for key in ('name', 'source', 'target', 'owner', 'owner_source', 'risk_reasons', 'subject_area', 'licence_dependency', 'output_relations'):
@@ -45,6 +45,12 @@ def validate(out=OUT, source=True):
                 errors.append('dead object not retired: ' + row['name'])
             if row['kind'] == 'catalog' and row['target_type'] != 'retire':
                 errors.append('catalog not retired: ' + row['name'])
+            if row.get('status') == 'retired':
+                reason = row.get('retirement_reason')
+                if row['target_type'] != 'retire' or not isinstance(reason, str) or not reason.strip():
+                    errors.append('invalid retirement: ' + row['id'])
+            elif 'retirement_reason' in row:
+                errors.append('retirement reason on active object: ' + row['id'])
         for a, b in manifest['dependencies']:
             if a not in index or b not in index or index[a]['wave'] > index[b]['wave']:
                 errors.append(f'dependency wave order: {a} -> {b}')
@@ -70,7 +76,8 @@ def validate(out=OUT, source=True):
             expected_inventory = [{k: str(v) for k, v in r.items()} for r in expected['artifacts']]
             if inventory != expected_inventory:
                 errors.append('inventory content differs from source estate')
-            if [dict(row, status='not_started') for row in objects] != expected['objects']:
+            if [dict(((k, v) for k, v in row.items() if k != 'retirement_reason'),
+                     status='not_started') for row in objects] != expected['objects']:
                 errors.append('manifest content differs from assessment rules')
             if actual_board['licence_counters'] != licence_counters(objects, expected['counters']):
                 errors.append('licence counters differ from source')

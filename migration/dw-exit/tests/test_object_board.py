@@ -223,6 +223,16 @@ def test_make_command_line_token_selects_namespace():
     assert 'sfx-1119-before' not in output
 
 
+def test_offline_board_make_target():
+    output = subprocess.check_output(['make', '-n', 'sfx-manifest-board-offline', 'RUN_TOKEN=sfx2220'],
+                                     cwd=ROOT, text=True)
+    assert 'NS="sfx-2220-before"' in output
+    assert 'object_board.py --target duckdb' in output
+    assert all(f'-u {key}' in output for key in board.CREDENTIALS)
+    assert 'assess.py' not in output
+    assert 'docker' not in output
+
+
 @pytest.mark.parametrize('values', [[], [(1, 'x')], [(1, None), (1, 'x'), (1, 'x')]])
 @pytest.mark.parametrize('system', ['spark', 'powercenter'])
 def test_snowflake_and_spark_measurements(relations, monkeypatch, values, system):

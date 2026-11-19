@@ -387,7 +387,7 @@ def build(root=None):
 
 
 def licence_counters(objects, metadata):
-    pending = [r for r in objects if r.get('status') != 'migrated']
+    pending = [r for r in objects if r.get('status') not in ('migrated', 'retired')]
     remaining = Counter(r['licence_dependency'] for r in pending if r['licence_dependency'] != 'none')
     counters = {
         'teradata_objects': {'remaining': remaining['teradata'], 'target': 0},
@@ -409,11 +409,13 @@ def board(objects, counters):
 
 def preserve_migration_status(objects, manifest_path):
     if manifest_path.is_file():
-        previous = yaml.safe_load(manifest_path.read_text())['objects']
-        migrated = {obj['id'] for obj in previous if obj['status'] == 'migrated'}
+        previous = {obj['id']: obj for obj in yaml.safe_load(manifest_path.read_text())['objects']}
         for obj in objects:
-            if obj['id'] in migrated:
+            prior = previous.get(obj['id'], {})
+            if prior.get('status') == 'migrated':
                 obj['status'] = 'migrated'
+            elif prior.get('status') == 'retired' and obj['target_type'] == 'retire':
+                obj.update(status='retired', retirement_reason=prior['retirement_reason'])
 
 
 def main():
@@ -454,7 +456,8 @@ def main():
         for key in sorted({k for v in b['waves'].values() for k in v[field]}):
             table += '| ' + field + ': ' + key + ' | ' + ' | '.join(str(b['waves'][str(w)][field].get(key, 0)) for w in range(1, 5)) + ' |\n'
     migrated = sum(obj['status'] == 'migrated' for obj in data['objects'])
-    (OUT / 'board/README.md').write_text('# Migration board\n\n' + table + '\n## Licence counters\n\n| Counter | Remaining | Target |\n|---|---:|---:|\n' + '\n'.join(f"| {k} | {v['remaining']} | {v['target']} |" for k, v in data['counters'].items() if 'remaining' in v) + f'\n\nMigrated objects: {migrated}. Parity measurements do not migrate or retire objects.\n')
+    retired = sum(obj['status'] == 'retired' for obj in data['objects'])
+    (OUT / 'board/README.md').write_text('# Migration board\n\n' + table + '\n## Licence counters\n\n| Counter | Remaining | Target |\n|---|---:|---:|\n' + '\n'.join(f"| {k} | {v['remaining']} | {v['target']} |" for k, v in data['counters'].items() if 'remaining' in v) + f'\n\nMigrated objects: {migrated}. Retired objects: {retired}. Parity measurements do not migrate or retire objects.\n')
     print(json.dumps(summary, indent=2))
 
 

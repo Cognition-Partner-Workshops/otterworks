@@ -97,12 +97,17 @@ sfx-billing-promote sfx-area-promote: warehouse/.venv/.billing-requirements ## P
 sfx-billing-test: warehouse/.venv/.billing-requirements ## Offline parity tool regression tests (no Snowflake credentials)
 	$(SFX_TD_PY) -m pytest -q migration/dw-exit/tests
 
-.PHONY: sfx-manifest-board sfx-manifest-board-test sfx-run-render
+.PHONY: sfx-manifest-board sfx-manifest-board-offline sfx-manifest-board-test sfx-run-render
 BOARD_ROWS ?= 200
 sfx-manifest-board: ROWS_PER_TABLE=$(BOARD_ROWS)
 sfx-manifest-board: sfx-teradata-up warehouse/.venv/.billing-requirements
 	$(SFX_TD_PY) migration/dw-exit/tools/assess.py
 	$(SFX_TD_ENV) $(SFX_TD_PY) migration/dw-exit/parity/object_board.py $(if $(AREA),--subject-area "$(AREA)",)
+
+sfx-manifest-board-offline: NS ?= $(RUN_BEFORE_NAMESPACE)
+sfx-manifest-board-offline: sfx-teradata-validate warehouse/.venv/.billing-requirements ## Refresh parity from the running BEFORE emulator without connecting to Snowflake
+	$(SFX_TD_ENV) env -u SNOWFLAKE_ACCOUNT -u SNOWFLAKE_USER -u SNOWFLAKE_ROLE -u SNOWFLAKE_PRIVATE_KEY \
+		$(SFX_TD_PY) migration/dw-exit/parity/object_board.py --target duckdb
 
 sfx-manifest-board-test: warehouse/.venv/.billing-requirements
 	$(SFX_TD_PY) -m pytest -q migration/dw-exit/tests

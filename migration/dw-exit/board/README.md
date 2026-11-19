@@ -26,10 +26,10 @@
 
 | Counter | Remaining | Target |
 |---|---:|---:|
-| teradata_objects | 178 | 0 |
-| powercenter_mappings | 20 | 0 |
-| powercenter_objects | 44 | 0 |
+| teradata_objects | 170 | 0 |
+| powercenter_mappings | 19 | 0 |
+| powercenter_objects | 42 | 0 |
 | spark_jobs | 30 | 0 |
-| licence_dependencies | 252 | 0 |
+| licence_dependencies | 242 | 0 |
 
-All objects remain not_started. Parity measurements do not migrate or retire objects.
+Migrated objects: 0. Retired objects: 10. Parity measurements do not migrate or retire objects.

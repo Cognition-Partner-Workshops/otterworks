@@ -141,7 +141,19 @@ def test_assessment_regeneration_preserves_promotion(tmp_path, estate):
     assert counters['licence_dependencies']['total'] == len(objects)
 
 
-@pytest.mark.parametrize('fault', ['duplicate', 'enum', 'dead', 'lineage', 'board', 'wave'])
+def test_assessment_regeneration_preserves_retirement(tmp_path, estate):
+    objects = copy.deepcopy(estate['objects'])
+    target = next(obj for obj in objects if obj['target_type'] == 'retire')
+    reason = target['risk_reasons'][-1]
+    manifest = tmp_path / 'manifest.yaml'
+    manifest.write_text(yaml.safe_dump({'objects': [dict(target, status='retired', retirement_reason=reason)]}))
+    assess.preserve_migration_status(objects, manifest)
+    assert target['status'] == 'retired'
+    assert target['retirement_reason'] == reason
+    assert assess.licence_counters(objects, {})['licence_dependencies']['remaining'] == len(objects) - 1
+
+
+@pytest.mark.parametrize('fault', ['duplicate', 'enum', 'dead', 'lineage', 'board', 'wave', 'retirement_reason', 'retirement_target'])
 def test_validator_rejects(tmp_path, fault):
     import shutil
     for name in ['inventory.csv', 'inventory.md', 'lineage.md', 'manifest.yaml', 'plan.md', 'board/README.md', 'board/board.json', 'README.md']:
@@ -156,6 +168,11 @@ def test_validator_rejects(tmp_path, fault):
         manifest['objects'][0]['target_type'] = 'invalid'
     elif fault == 'dead':
         next(r for r in manifest['objects'] if r['name'] in manifest['dead'])['target_type'] = 'dbt_model'
+    elif fault == 'retirement_reason':
+        next(r for r in manifest['objects'] if r['status'] == 'retired').pop('retirement_reason')
+    elif fault == 'retirement_target':
+        next(r for r in manifest['objects'] if r['target_type'] != 'retire').update(
+            status='retired', retirement_reason='no DBQL usage in 90-day window')
     elif fault == 'lineage':
         (tmp_path / 'lineage.md').write_text('flowchart LR')
     elif fault == 'board':

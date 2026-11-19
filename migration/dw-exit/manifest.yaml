@@ -72,7 +72,8 @@ objects:
   risk_reasons:
   - high complexity
   - feeds only dead objects
-  status: not_started
+  status: retired
+  retirement_reason: feeds only dead objects
   output_relations:
   - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
 - id: n6aaec9f5432be4e3
@@ -442,7 +443,8 @@ objects:
   risk: med
   risk_reasons:
   - feeds only dead objects
-  status: not_started
+  status: retired
+  retirement_reason: feeds only dead objects
   output_relations:
   - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
 - id: n4752fbb3cc9908e1
@@ -1758,7 +1760,8 @@ objects:
   risk: low
   risk_reasons:
   - feeds only dead objects
-  status: not_started
+  status: retired
+  retirement_reason: feeds only dead objects
   output_relations:
   - SFX_USERS.STG_USER_PREF
 - id: n877eaed6968f6f98
@@ -1813,7 +1816,8 @@ objects:
   risk: high
   risk_reasons:
   - no DBQL usage in 90-day window
-  status: not_started
+  status: retired
+  retirement_reason: no DBQL usage in 90-day window
   output_relations: []
 - id: ncc8932a645bd1e39
   system: teradata
@@ -2044,7 +2048,8 @@ objects:
   risk: high
   risk_reasons:
   - no DBQL usage in 90-day window
-  status: not_started
+  status: retired
+  retirement_reason: no DBQL usage in 90-day window
   output_relations:
   - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
 - id: n21217e4029e00d59
@@ -2928,7 +2933,8 @@ objects:
   risk: high
   risk_reasons:
   - no DBQL usage in 90-day window
-  status: not_started
+  status: retired
+  retirement_reason: no DBQL usage in 90-day window
   output_relations:
   - SFX_DOCUMENTS.SEARCH_INDEX_LOG
 - id: n1c075fb7d55b7b5d
@@ -3344,7 +3350,8 @@ objects:
   risk: med
   risk_reasons:
   - feeds only dead objects
-  status: not_started
+  status: retired
+  retirement_reason: feeds only dead objects
   output_relations:
   - SFX_USERS.STG_USER_PREF
 - id: n533cd80b40ebc9c5
@@ -3453,7 +3460,8 @@ objects:
   risk: high
   risk_reasons:
   - no DBQL usage in 90-day window
-  status: not_started
+  status: retired
+  retirement_reason: no DBQL usage in 90-day window
   output_relations:
   - SFX_USERS.USER_PREF
 - id: n00ae1e0d0a7ece39
@@ -3996,7 +4004,8 @@ objects:
   risk: high
   risk_reasons:
   - no DBQL usage in 90-day window
-  status: not_started
+  status: retired
+  retirement_reason: no DBQL usage in 90-day window
   output_relations:
   - SFX_DOCUMENTS.V_SEARCH_HISTORY
 - id: ne711c6aec2d571c4
@@ -4051,7 +4060,8 @@ objects:
   risk: high
   risk_reasons:
   - no DBQL usage in 90-day window
-  status: not_started
+  status: retired
+  retirement_reason: no DBQL usage in 90-day window
   output_relations:
   - SFX_USERS.V_USER_SETTINGS
 - id: na305277024d75d53
