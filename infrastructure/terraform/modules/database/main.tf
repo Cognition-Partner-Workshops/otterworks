@@ -8,6 +8,8 @@ locals {
     Module  = "database"
     Project = var.project
   }
+
+  postgres_identifier = "${var.project}-postgres-${var.environment}"
 }
 
 # --- RDS Subnet Group ---
@@ -50,8 +52,19 @@ resource "aws_security_group" "rds" {
 
 # --- RDS PostgreSQL ---
 
+resource "aws_cloudwatch_log_group" "postgres" { # nosemgrep: terraform.aws.security.aws-cloudwatch-log-group-unencrypted.aws-cloudwatch-log-group-unencrypted
+  for_each = var.environment == "dev" ? toset(["postgresql", "upgrade"]) : toset([])
+
+  name              = "/aws/rds/instance/${local.postgres_identifier}/${each.key}"
+  retention_in_days = var.dev_log_retention_days
+
+  tags = merge(local.common_tags, {
+    Service = "shared-database"
+  })
+}
+
 resource "aws_db_instance" "postgres" {
-  identifier     = "${var.project}-postgres-${var.environment}"
+  identifier     = local.postgres_identifier
   engine         = "postgres"
   engine_version = "15.7"
   instance_class = var.db_instance_class
@@ -73,6 +86,8 @@ resource "aws_db_instance" "postgres" {
   backup_retention_period = var.environment == "dev" ? 1 : 7
 
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
+
+  depends_on = [aws_cloudwatch_log_group.postgres]
 
   tags = merge(local.common_tags, {
     Service = "shared-database"

@@ -35,6 +35,12 @@ variable "db_instance_class" {
   default     = "db.t3.micro"
 }
 
+variable "dev_log_retention_days" {
+  description = "CloudWatch retention for exported development PostgreSQL logs"
+  type        = number
+  default     = 7
+}
+
 variable "db_allocated_storage" {
   description = "Initial allocated storage in GB"
   type        = number
