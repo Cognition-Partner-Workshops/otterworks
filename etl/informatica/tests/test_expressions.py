@@ -15,13 +15,13 @@ TYPES = {"A": "string", "B": "string", "N": "integer", "D": "date/time"}
 
 
 @pytest.mark.parametrize("text,expected", [
-    ("IIF(A = 'x', 'Y', 'N')", "N"),           # null condition takes the false branch
-    ("IIF(A = 'x', 'Y')", ""),                 # two-argument IIF defaults to empty string for strings
-    ("IIF(N > 9, N)", 0),                      # ... and to zero for numbers
+    ("IIF(A = 'x', 'Y', 'N')", "N"),
+    ("IIF(A = 'x', 'Y')", ""),
+    ("IIF(N > 9, N)", 0),
     ("IIF(ISNULL(A), 'missing', A)", "missing"),
     ("NVL(A, B)", "x"),
     ("ISNULL(A)", 1),
-    ("A || B", "x"),                           # null concatenates as empty
+    ("A || B", "x"),
     ("LTRIM('  ab ')", "ab "),
     ("RTRIM('  ab  ')", "  ab"),
     ("LTRIM(A)", None),

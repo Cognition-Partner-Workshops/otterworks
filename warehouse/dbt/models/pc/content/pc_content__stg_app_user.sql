@@ -1,5 +1,3 @@
--- m_SFX_STG_APP_USER: FF_APP_USER -> EXP_APP_USER -> STG_APP_USER (truncate and load).
--- LTRIM(RTRIM(x)) strips blanks only, so trim(x, ' ') keeps tabs like PowerCenter does.
 {{ config(materialized='table') }}
 select
     cast(USER_ID as bigint) as USER_ID,
