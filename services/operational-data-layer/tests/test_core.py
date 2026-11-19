@@ -111,11 +111,20 @@ class Collection:
         assert ordered is False
         for op in operations:
             key = op._filter['_id']
+            existed = key in self.docs
             if key in self.docs:
                 updated += 1
             else:
                 inserted += 1
-            self.docs[key] = op._doc
+            if '$set' in op._doc:
+                document = self.docs.setdefault(key, {'_id': key})
+                if not existed:
+                    document.update(op._doc.get('$setOnInsert', {}))
+                document.update(op._doc['$set'])
+                for field in op._doc.get('$unset', {}):
+                    document.pop(field, None)
+            else:
+                self.docs[key] = op._doc
         return Result(upserted_count=inserted, modified_count=updated)
 
     def delete_many(self, query):
@@ -156,3 +165,24 @@ def test_load_write_failure():
     docs, errors = merge([Extract('db2', [record('db2', 'C0000001')])])
     with pytest.raises(RuntimeError, match='write failure'):
         load(db, docs, errors)
+
+
+def test_duplicate_parents_account_for_all_dependents():
+    from odl_sync.parity import tables, unplaced_for
+
+    keys = [str(uuid4()), str(uuid4())]
+    db2_rows = [dict(cust_no=f'C000000{i}', full_name_hex='Jane'.encode().hex(), address='1 Road',
+                     opened_on=date(2020, 1, 1), opened_ymd=20200101) for i in (1, 2)]
+    history = [dict(history_id=i, cust_no=row['cust_no'], event_on=date(2020, 1, 1), amount=Decimal('1.20'))
+               for i, row in enumerate(db2_rows, 1)]
+    contacts = [dict(contact_id=key, full_name='Jane', address='1 Road', credit=Decimal('1.20')) for key in keys]
+    cases = [dict(case_id=str(uuid4()), contact_id=key, subject='Help', opened_at=datetime(2020, 1, 1)) for key in keys]
+    subscriptions = [dict(contact_id=key, status='active') for key in keys]
+    docs, errors = merge([db2.from_rows(db2_rows, history), postgres.from_rows(contacts, cases, subscriptions)])
+    assert not docs
+    assert len(errors) == 10
+    specs = {table.name: table for table in tables()}
+    for name in ('ODL.CUSTMAST', 'ODL.ACCTHIST', 'crm.contacts', 'crm.service_cases', 'crm.subscription_snapshots'):
+        assert len(unplaced_for(specs[name], errors)) == 2
+    child = next(e for e in errors if e['reason'] == 'orphan_history')
+    assert child['detail']['amount'] == '1.20'

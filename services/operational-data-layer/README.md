@@ -19,6 +19,8 @@ C1–C4 conflict decisions are in
 - `load.py`: indexed unordered bulk upserts, content-hash skipping of unchanged
   documents, and removal of stale customer/exception IDs. A source failure skips
   writes for the whole run rather than deleting the failed source's projection.
+  Unique-key ownership is released before assigning changed keys; interrupted
+  releases are retried on the next run. Snapshot publication is not transactional.
 - `api.py`: FastAPI reads and a background sync loop in one process.
 - `parity.py`: independent SQL versus MongoDB counts, column profiles, keyed
   hashes and deterministic sampled values for all seven source tables. Reports
@@ -48,6 +50,7 @@ arguments. The chart reads these existing Secrets:
 | `MONGO_HOST`, `MONGO_PORT` | `operational-data-layer-mongo`, `27017` |
 | `MONGO_USER`, `MONGO_PASSWORD` | `operational-data-layer-mongo`: `username`, `password` |
 | `MONGO_DATABASE`, `MONGO_AUTH_SOURCE` | `odl`, `odl` |
+| `JWT_SECRET` (API only) | `api-gateway-secrets`: `JWT_SECRET` |
 
 For port-forwards, override hosts/ports and the Oracle DSN with loopback addresses.
 Optional API settings: `ODL_HOST=0.0.0.0`, `ODL_PORT=8098`,
@@ -64,6 +67,9 @@ python -m odl_sync.api                         # API + background sync, metrics 
 python -m odl_sync.parity --run-id audit-001 --csv /tmp/odl-parity-audit-001.csv
 ```
 
+Run IDs are 1–128 URL-safe letters/digits, dots, underscores or hyphens, starting
+with a letter/digit. `latest` and IDs ending in `.csv` are reserved.
+
 Standalone continuous sync is also available with
 `python -m odl_sync.sync --interval 60`; it exposes metrics on port 9108.
 
@@ -71,7 +77,8 @@ Standalone continuous sync is also available with
 
 The gateway routes `/api/v1/odl` to `ODL_SERVICE_URL` (default
 `http://operational-data-layer:8098`) and requires its normal bearer JWT. The
-internal API does not independently authenticate callers. Decimal values are
+API also validates the same tenant JWT signature and expiration, including for
+direct in-cluster reads. Only `/health` and `/metrics` are unauthenticated. Decimal values are
 JSON strings; timestamps use UTC ISO-8601 with `Z`.
 
 | Relative route | Purpose |
@@ -93,6 +100,10 @@ raw detail strings and `status: open`. Reasons are `transform_failed`,
 `orphan_subscription`, `candidate_match_unconfirmed` and `ambiguous_local_time`.
 Unplaceable rows are not merged. Candidate pairs stay separate single-source
 customers; candidate and ambiguity exceptions are referenced by their owners.
+Source updates preserve review-owned fields such as status, reviewer, notes and
+resolution timestamps. Duplicate parents' attached child rows become orphan
+exceptions rather than disappearing. Per-source name/address spellings are kept
+in `source_records` for exact parity independently of the canonical display text.
 
 ## Images
 

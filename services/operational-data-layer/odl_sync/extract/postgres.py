@@ -1,7 +1,7 @@
 import time
 import psycopg
 
-from . import Extract, ExtractError, SourceRecord, raw_strings, rejected, sql_rows, transform
+from . import Extract, ExtractError, SourceRecord, duplicate_parent_keys, raw_strings, rejected, sql_rows, transform
 from ..normalize import money, text, utc_time, uuid_key
 
 
@@ -15,6 +15,7 @@ def from_rows(contacts, cases, subscriptions):
 
     result.records = list(transform(result, contacts, 'contact_id', contact))
     parents = {r.key: r for r in result.records}
+    duplicates = duplicate_parent_keys(result.records)
 
     def case(row):
         return uuid_key(row['contact_id']), dict(case_id=uuid_key(row['case_id']), subject=text(row['subject']), opened_at=utc_time(row['opened_at'])), row
@@ -24,6 +25,8 @@ def from_rows(contacts, cases, subscriptions):
             result.unplaced.append(rejected('postgres', 'orphan_service_case', raw['case_id'], raw))
         else:
             parents[key].data['service_cases'].append(value)
+            if key in duplicates:
+                parents[key].dependents.append(('orphan_service_case', value['case_id'], raw))
 
     def subscription(row):
         return uuid_key(row['contact_id']), text(row['status']), row
@@ -33,6 +36,8 @@ def from_rows(contacts, cases, subscriptions):
             result.unplaced.append(rejected('postgres', 'orphan_subscription', key, raw))
         else:
             parents[key].data['subscription_status'] = value
+            if key in duplicates:
+                parents[key].dependents.append(('orphan_subscription', key, raw))
     for record in result.records:
         record.data['service_cases'].sort(key=lambda r: r['case_id'])
     return result

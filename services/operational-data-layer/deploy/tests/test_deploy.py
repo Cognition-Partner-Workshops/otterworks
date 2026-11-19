@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -94,7 +95,9 @@ def test_pinned_ui_chart_rendering():
         assert service['spec']['type'] == 'ClusterIP'
         deployment = next(obj for obj in objects if obj['kind'] == 'Deployment')
         container = deployment['spec']['template']['spec']['containers'][0]
-        assert ':odl-864279553@sha256:' in container['image']
+        values = yaml.safe_load((SCRIPTS / file).read_text())
+        assert re.fullmatch(r'odl-[0-9a-f]+@sha256:[0-9a-f]{64}', values['image']['tag'])
+        assert container['image'] == f"{values['image']['repository']}:{values['image']['tag']}"
         if release == 'api-gateway':
             env = {item['name']: item.get('value') for item in container['env']}
             assert env['ODL_SERVICE_URL'] == 'http://operational-data-layer:8098'

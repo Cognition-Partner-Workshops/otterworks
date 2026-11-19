@@ -2,7 +2,7 @@ import hashlib
 from collections import Counter
 
 from bson import json_util
-from pymongo import ASCENDING, ReplaceOne
+from pymongo import ASCENDING, ReplaceOne, UpdateOne
 
 
 def content_hash(doc):
@@ -24,8 +24,27 @@ def indexes(db):
     customers.create_index([('match.status', ASCENDING)])
 
 
-def replace_changed(collection, documents, applied):
-    previous = {r['_id']: r.get('content_hash') for r in collection.find({}, {'content_hash': 1})}
+def replace_changed(collection, documents, applied, preserve_review=False):
+    previous = {r['_id']: r for r in collection.find({}, {'content_hash': 1, 'match_key': 1, 'source_keys': 1})}
+    changed = []
+    for original in documents:
+        doc = dict(original)
+        if preserve_review:
+            doc.pop('status', None)
+        doc['content_hash'] = content_hash(doc)
+        if previous.get(doc['_id'], {}).get('content_hash') != doc['content_hash']:
+            changed.append(doc)
+    release = []
+    if not preserve_review:
+        for doc in changed:
+            old = previous.get(doc['_id'])
+            if old and any(old.get(key) != doc.get(key) for key in ('match_key', 'source_keys')):
+                release.append(UpdateOne({'_id': doc['_id']}, {
+                    '$set': {'match_key': 'pending:' + doc['_id']},
+                    '$unset': {'source_keys': '', 'content_hash': ''},
+                }))
+        for offset in range(0, len(release), 1000):
+            collection.bulk_write(release[offset:offset + 1000], ordered=False)
     produced = {doc['_id'] for doc in documents}
     stale = sorted(previous.keys() - produced)
     removed = 0
@@ -49,14 +68,17 @@ def replace_changed(collection, documents, applied):
         operations.clear()
         written.clear()
 
-    for original in documents:
-        doc = dict(original)
-        doc['content_hash'] = content_hash(original)
-        if previous.get(doc['_id']) != doc['content_hash']:
+    for doc in changed:
+        if preserve_review:
+            values = {key: value for key, value in doc.items() if key != '_id'}
+            operations.append(UpdateOne({'_id': doc['_id']}, {
+                '$set': values, '$setOnInsert': {'status': 'open'},
+            }, upsert=True))
+        else:
             operations.append(ReplaceOne({'_id': doc['_id']}, doc, upsert=True))
-            written.append(doc)
-            if len(operations) >= 1000:
-                flush()
+        written.append(doc)
+        if len(operations) >= 1000:
+            flush()
     flush()
     return dict(inserted=inserted, modified=updated, removed=removed, unchanged=len(documents) - inserted - updated)
 
@@ -65,6 +87,6 @@ def load(db, customers, exceptions):
     indexes(db)
     applied = Counter({s: 0 for s in ('db2', 'oracle', 'postgres')})
     result = dict(customers=replace_changed(db.customers, customers, applied),
-                  exceptions=replace_changed(db.mapping_exceptions, exceptions, Counter()))
+                  exceptions=replace_changed(db.mapping_exceptions, exceptions, Counter(), preserve_review=True))
     result['applied'] = dict(applied)
     return result

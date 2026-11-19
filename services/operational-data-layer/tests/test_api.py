@@ -8,10 +8,18 @@ import pytest
 from bson.decimal128 import Decimal128
 from fastapi.testclient import TestClient
 from pymongo.errors import ConnectionFailure
+import jwt
 
 from odl_sync import metrics, sync
 from odl_sync.api import PREFIX, create_app
 from odl_sync.parity import write_csv
+
+SECRET = 'odl-unit-test-secret-at-least-32-bytes'
+
+
+@pytest.fixture(autouse=True)
+def auth_environment(monkeypatch):
+    monkeypatch.setenv('JWT_SECRET', SECRET)
 
 
 @pytest.fixture
@@ -27,7 +35,8 @@ def db():
 
 @pytest.fixture
 def client(db):
-    with TestClient(create_app(db=db, sync_enabled=False)) as client:
+    token = jwt.encode({'exp': datetime.now(timezone.utc).timestamp() + 60}, SECRET, algorithm='HS256')
+    with TestClient(create_app(db=db, sync_enabled=False), headers={'Authorization': 'Bearer ' + token}) as client:
         yield client
 
 
@@ -134,4 +143,26 @@ def test_combined_mode_rejects_bad_interval(db, monkeypatch):
     monkeypatch.setenv('ODL_SYNC_INTERVAL_SECONDS', '0')
     with pytest.raises(ValueError, match='finite and positive'):
         with TestClient(create_app(db=db, settings=object())):
+            pass
+
+
+@pytest.mark.parametrize('path', ['/customers', '/customers/cus_0', '/exceptions', '/exceptions/exc_0',
+                                  '/parity', '/parity/latest', '/parity/r1', '/parity/r1.csv'])
+def test_direct_backend_reads_require_tenant_token(db, path):
+    with TestClient(create_app(db=db, sync_enabled=False)) as client:
+        assert client.get(PREFIX + path).status_code == 401
+        for token in ('malformed',
+                      jwt.encode({'exp': 1}, SECRET, algorithm='HS256'),
+                      jwt.encode({'exp': 9999999999}, 'another-tenant-secret-at-least-32-bytes', algorithm='HS256'),
+                      jwt.encode({}, SECRET, algorithm='HS256'),
+                      jwt.encode({'exp': 9999999999}, '', algorithm='none')):
+            assert client.get(PREFIX + path, headers={'Authorization': 'Bearer ' + token}).status_code == 401
+        assert client.get('/health').status_code == 200
+        assert client.get('/metrics').status_code == 200
+
+
+def test_missing_auth_secret_fails_closed(db, monkeypatch):
+    monkeypatch.delenv('JWT_SECRET')
+    with pytest.raises(ValueError, match='JWT_SECRET is required'):
+        with TestClient(create_app(db=db, sync_enabled=False)):
             pass

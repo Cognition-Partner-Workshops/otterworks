@@ -1,4 +1,5 @@
 import csv
+import pytest
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 
@@ -101,3 +102,40 @@ def test_csv_samples_include_raw_expected_actual(tmp_path):
         rows = list(csv.DictReader(f))
     assert rows[1]['status'] == 'fail'
     assert '0.305' in rows[1]['detail']
+
+
+@pytest.mark.parametrize('run_id', ['latest', 'audit.csv', '', '../audit', 'run/1', 'a' * 129])
+def test_invalid_run_ids_rejected_before_connecting(run_id, tmp_path):
+    with pytest.raises(ValueError, match='run_id'):
+        parity.run(None, run_id, tmp_path / 'report.csv')
+    assert not (tmp_path / 'report.csv').exists()
+
+
+@pytest.mark.parametrize('run_id', ['odl-1795112287-parity-2', 'audit_1.0', 'a'])
+def test_valid_run_ids(run_id):
+    assert parity.validate_run_id(run_id) == run_id
+
+
+@pytest.mark.parametrize('source', ['db2', 'oracle', 'postgres'])
+@pytest.mark.parametrize('name,address', [('JANE', '1 ROAD'), (' Jane  ', '1   Road'), ('Jäne', '1 Road')])
+def test_source_spelling_survives_normalized_matches(source, name, address):
+    import mongomock
+    from odl_sync.extract import Extract
+    from odl_sync.merge import merge
+    from test_core import record
+
+    anchor = record('db2', 'C0000001', name.casefold().replace('ä', 'a\u0308').strip(), '1 Road')
+    other = record(source, {'db2': 'C0000001', 'oracle': '7000001', 'postgres': 'contact-1'}[source], name, address)
+    records = [other] if source == 'db2' else [anchor, other]
+    customers, _ = merge([Extract(r.source, [r]) for r in records])
+    assert len(customers) == 1
+    table = next(t for t in tables() if t.name == {'db2': 'ODL.CUSTMAST', 'oracle': 'ACCOUNTS', 'postgres': 'crm.contacts'}[source])
+    collection = mongomock.MongoClient().odl.customers
+    collection.insert_many(customers)
+    actual = list(collection.aggregate(table.target))[0]
+    assert actual['name'] == name and actual['address'] == address
+    assert all(c['passed'] for c in compare_profiles(profile([name], 'string'), profile([actual['name']], 'string')).values())
+    expected = {table.key: actual[table.key], 'name': name, 'address': address}
+    projected = {key: actual[key] for key in expected}
+    hashes, sample = compare_rows([expected], [projected], table.key)
+    assert hashes['passed'] and sample['passed']

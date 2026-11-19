@@ -4,6 +4,7 @@ import argparse
 import csv
 import hashlib
 import json
+import re
 from collections import Counter, defaultdict
 from contextlib import ExitStack, closing, nullcontext
 from dataclasses import dataclass
@@ -109,7 +110,7 @@ def tables():
               dict(cust_no='string', name='string', address='string', customer_since='string', raw_cust_no='string', opened_on='string', opened_ymd='number'),
               'SELECT CUST_NO, HEX(FULL_NAME) AS FULL_NAME_HEX, ADDRESS, OPENED_ON, OPENED_YMD FROM ODL.CUSTMAST',
               dict(cust_no='RTRIM(CUST_NO)', raw_cust_no='RTRIM(CUST_NO)', address='ADDRESS', opened_ymd='OPENED_YMD'),
-              [db2_match, projection(dict(cust_no='source_keys.db2_cust_no', name='name', address='address', customer_since='customer_since', raw_cust_no='source_records.db2.cust_no', opened_on='source_records.db2.opened_on', opened_ymd='source_records.db2.opened_ymd'))], cust),
+              [db2_match, projection(dict(cust_no='source_keys.db2_cust_no', name='source_records.db2.name', address='source_records.db2.address', customer_since='customer_since', raw_cust_no='source_records.db2.cust_no', opened_on='source_records.db2.opened_on', opened_ymd='source_records.db2.opened_ymd'))], cust),
         Table('db2', 'ODL.ACCTHIST', 'history_id',
               dict(history_id='number', cust_no='string', event_on='string', amount='money'),
               'SELECT HISTORY_ID, CUST_NO, EVENT_ON, AMOUNT FROM ODL.ACCTHIST',
@@ -120,14 +121,14 @@ def tables():
               dict(account_id='number', source_account_ids='array', name='string', address='string', product_id='number', product_name='string', balance='money', opened_at='datetime', opened_at_local='string', opened_at_tz='string'),
               'SELECT a.account_id, a.holder_name, a.address, a.product_id, p.name AS product_name, a.balance, a.opened_at FROM accounts a LEFT JOIN products p ON p.product_id=a.product_id',
               dict(account_id='account_id', name='holder_name', address='address', product_id='product_id', product_name='product_name', balance='balance'),
-              [{'$unwind': '$accounts'}, projection(dict(account_id='accounts.account_id', source_account_ids='source_keys.oracle_account_ids', name='name', address='address', product_id='accounts.product.id', product_name='accounts.product.name', balance='accounts.balance', opened_at='accounts.opened_at', opened_at_local='accounts.opened_at_local', opened_at_tz='accounts.opened_at_tz'))], account),
+              [{'$unwind': '$accounts'}, projection(dict(account_id='accounts.account_id', source_account_ids='source_keys.oracle_account_ids', name='source_records.oracle.name', address='source_records.oracle.address', product_id='accounts.product.id', product_name='accounts.product.name', balance='accounts.balance', opened_at='accounts.opened_at', opened_at_local='accounts.opened_at_local', opened_at_tz='accounts.opened_at_tz'))], account),
         Table('oracle', 'PRODUCTS', 'product_id', dict(product_id='number', name='string'),
               'SELECT product_id, name FROM products', dict(product_id='product_id', name='name'),
               [{'$unwind': '$accounts'}, {'$group': {'_id': {'product_id': '$accounts.product.id', 'name': '$accounts.product.name'}}}, projection(dict(product_id='_id.product_id', name='_id.name'))],
               lambda r: dict(product_id=int(r['product_id']), name=r['name'])),
         Table('postgres', 'crm.contacts', 'contact_id', dict(contact_id='string', name='string', address='string', credit='money'),
               'SELECT contact_id, full_name, address, credit FROM crm.contacts', dict(name='full_name', address='address'),
-              [pg_match, projection(dict(contact_id='source_keys.crm_contact_id', name='name', address='address', credit='crm.credit'))],
+              [pg_match, projection(dict(contact_id='source_keys.crm_contact_id', name='source_records.postgres.name', address='source_records.postgres.address', credit='crm.credit'))],
               lambda r: dict(contact_id=str(r['contact_id']).lower(), name=r['full_name'], address=r['address'], credit=Decimal(str(r['credit'])).quantize(Decimal('.01'), rounding=ROUND_HALF_EVEN))),
         Table('postgres', 'crm.service_cases', 'case_id', dict(case_id='string', contact_id='string', subject='string', opened_at='datetime'),
               'SELECT case_id, contact_id, subject, opened_at FROM crm.service_cases', dict(subject='subject'),
@@ -320,7 +321,14 @@ def write_csv(report, path):
                                 writer.writerow(dict(base, check='value', field=field, source_value=serialized(value), target_value=serialized(actual), status='pass' if passed else 'fail', detail=serialized(dict(key=row['key'], raw_source=row['raw_source']))))
 
 
+def validate_run_id(run_id):
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,127}', run_id) or run_id == 'latest' or run_id.endswith('.csv'):
+        raise ValueError('run_id must be a URL-safe identifier, not latest or ending in .csv')
+    return run_id
+
+
 def run(settings, run_id, csv_path):
+    validate_run_id(run_id)
     with ExitStack() as stack:
         db2 = stack.enter_context(closing(ibm_db_dbi.connect(f'DATABASE={settings.db2_database};HOSTNAME={settings.db2_host};PORT={settings.db2_port};PROTOCOL=TCPIP;UID={settings.db2_user};PWD={settings.db2_password};', '', '')))
         oracle = stack.enter_context(closing(oracledb.connect(user=settings.oracle_user, password=settings.oracle_password, dsn=settings.oracle_dsn)))
@@ -347,7 +355,7 @@ def run(settings, run_id, csv_path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--run-id', required=True)
+    parser.add_argument('--run-id', required=True, type=validate_run_id)
     parser.add_argument('--csv', type=Path)
     args = parser.parse_args()
     report = run(Settings.environment(), args.run_id, args.csv or Path(f'odl-parity-{args.run_id}.csv'))

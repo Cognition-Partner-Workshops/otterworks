@@ -91,6 +91,7 @@ class ChartTests(unittest.TestCase):
                             "ODL_HOST": "0.0.0.0", "ODL_PORT": "8098", "ODL_SYNC_INTERVAL_SECONDS": "600"}.items():
             self.assertEqual(env.pop(name), {"name": name, "value": value})
         for name, secret, key in (
+            ("JWT_SECRET", "api-gateway-secrets", "JWT_SECRET"),
             ("DB2_USER", "db2-archive-credentials", "DB2_USER"),
             ("DB2_PASSWORD", "db2-archive-credentials", "DB2_PASSWORD"),
             ("ORACLE_USER", "odl-oracle", "ORACLE_USER"),

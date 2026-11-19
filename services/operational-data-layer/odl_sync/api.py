@@ -1,4 +1,4 @@
-"""Internal read service; the API gateway enforces JWT authentication."""
+"""Read service with tenant JWT authentication and background synchronization."""
 
 import asyncio
 import json
@@ -11,10 +11,12 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 from typing import Literal
 
+import jwt
 import uvicorn
 from bson import ObjectId
 from bson.decimal128 import Decimal128
-from fastapi import APIRouter, FastAPI, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from pymongo import MongoClient
@@ -132,6 +134,18 @@ def ensure_indexes(db):
 
 
 def create_app(db=None, settings=None, sync_enabled=True):
+    bearer = HTTPBearer(auto_error=False)
+
+    def authorize(request: Request, credentials: HTTPAuthorizationCredentials | None = Depends(bearer)):
+        try:
+            if credentials is None:
+                raise jwt.InvalidTokenError()
+            jwt.decode(credentials.credentials, request.app.state.jwt_secret,
+                       algorithms=['HS256', 'HS384', 'HS512'],
+                       options={'require': ['exp'], 'verify_aud': False})
+        except jwt.InvalidTokenError:
+            raise HTTPException(401, 'Invalid or missing bearer token', headers={'WWW-Authenticate': 'Bearer'})
+
     @asynccontextmanager
     async def lifespan(app):
         client = None
@@ -139,6 +153,9 @@ def create_app(db=None, settings=None, sync_enabled=True):
         stop = threading.Event()
         config = settings
         try:
+            app.state.jwt_secret = os.environ.get('JWT_SECRET')
+            if not app.state.jwt_secret:
+                raise ValueError('JWT_SECRET is required')
             if db is None:
                 config = config or Settings.environment()
                 client = MongoClient(**config.mongo, tz_aware=True)
@@ -163,7 +180,7 @@ def create_app(db=None, settings=None, sync_enabled=True):
 
     app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
     app.add_middleware(ReadMetrics)
-    router = APIRouter(prefix=PREFIX)
+    router = APIRouter(prefix=PREFIX, dependencies=[Depends(authorize)])
 
     @app.exception_handler(PyMongoError)
     async def mongo_error(request, error):

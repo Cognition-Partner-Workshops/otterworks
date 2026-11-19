@@ -36,6 +36,8 @@ spec:
             allowPrivilegeEscalation: false
             capabilities: {drop: [ALL]}
           env:
+            - name: JWT_SECRET
+              valueFrom: {secretKeyRef: {name: api-gateway-secrets, key: JWT_SECRET}}
             - {name: ODL_HOST, value: "0.0.0.0"}
             - {name: ODL_PORT, value: "8098"}
             - name: ODL_SYNC_INTERVAL_SECONDS

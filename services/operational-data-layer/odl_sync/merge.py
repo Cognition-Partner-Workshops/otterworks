@@ -16,6 +16,8 @@ def merge(extracts):
             if len(records) > 1:
                 for record in records:
                     exceptions.append(rejected(record.source, 'duplicate_match_key', record.key, record.raw))
+                    for reason, child_key, raw in record.dependents:
+                        exceptions.append(rejected(record.source, reason, child_key, raw))
             else:
                 groups[key].extend(records)
     customers = []
@@ -51,6 +53,8 @@ def merge(extracts):
                 exceptions.append(dict(_id=eid, reason='ambiguous_local_time', customer_ids=[doc['_id']],
                                        source_keys=keys, detail=r.raw, status='open'))
                 doc['exception_ids'].append(eid)
+        for record in records:
+            doc['source_records'].setdefault(record.source, {}).update(name=record.name, address=record.address)
         if len(records) == 1 and anchor.source in ('db2', 'oracle'):
             suffix = re.search(r'(\d{6})\s*$', anchor.name)
             if suffix:

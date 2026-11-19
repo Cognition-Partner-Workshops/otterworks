@@ -1,7 +1,7 @@
 import time
 import ibm_db_dbi
 
-from . import Extract, ExtractError, SourceRecord, raw_strings, rejected, sql_rows, transform
+from . import Extract, ExtractError, SourceRecord, duplicate_parent_keys, raw_strings, rejected, sql_rows, transform
 from ..normalize import customer_since, date_string, db2_key, db2_name, integer, money, text
 
 
@@ -19,6 +19,7 @@ def from_rows(customers, history):
 
     result.records = list(transform(result, customers, 'cust_no', customer))
     parents = {r.key: r for r in result.records}
+    duplicates = duplicate_parent_keys(result.records)
 
     def event(row):
         return db2_key(row['cust_no']), dict(history_id=integer(row['history_id']),
@@ -29,6 +30,8 @@ def from_rows(customers, history):
             result.unplaced.append(rejected('db2', 'orphan_history', raw['history_id'], raw))
         else:
             parents[key].data['history'].append(value)
+            if key in duplicates:
+                parents[key].dependents.append(('orphan_history', str(raw['history_id']), raw))
     for record in result.records:
         record.data['history'].sort(key=lambda r: r['history_id'])
     return result
