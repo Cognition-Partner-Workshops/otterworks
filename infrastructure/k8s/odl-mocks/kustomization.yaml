@@ -10,8 +10,15 @@ resources:
   - workloads.yaml
   - ingress.yaml
   - networkpolicy.yaml
+  - confluence.yaml
 configMapGenerator:
   - name: jira-odl-seed
     files:
       - seed.json
       - seed.py
+  - name: confluence-odl-seed
+    options:
+      labels: {app: confluence}
+    files:
+      - confluence-seed.json
+      - confluence-seed.py

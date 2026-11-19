@@ -1,8 +1,11 @@
 import importlib.util
 import json
+import subprocess
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -15,6 +18,7 @@ def load(name, path):
 
 
 seed = load("seed", "infrastructure/k8s/odl-mocks/seed.py")
+confluence = load("confluence_seed", "infrastructure/k8s/odl-mocks/confluence-seed.py")
 routing = load("routing", "scripts/odl/route-alerts.py")
 
 
@@ -46,6 +50,60 @@ class SeedTests(unittest.TestCase):
             self.assertIn("odl-seed", fields["labels"])
             self.assertIn("Acceptance criteria", fields["description"])
             self.assertTrue(3 <= fields["description"].count("- [ ]") <= 5)
+
+
+class ConfluenceTests(unittest.TestCase):
+    def test_scoped_resources(self):
+        objects = list(yaml.safe_load_all(subprocess.check_output(
+            ["kubectl", "kustomize", str(ROOT / "infrastructure/k8s/odl-mocks")], text=True)))
+        scoped = [o for o in objects if o["metadata"]["labels"].get("app") == "confluence"]
+        self.assertEqual(len(scoped), 5)
+        self.assertEqual({o["kind"] for o in scoped},
+                         {"Deployment", "Service", "Ingress", "NetworkPolicy", "ConfigMap"})
+        self.assertTrue(all(o["metadata"]["labels"]["run_token"] == "odl-1795112287" for o in scoped))
+
+    def test_ingress_paths_and_secret(self):
+        objects = list(yaml.safe_load_all((ROOT / "infrastructure/k8s/odl-mocks/confluence.yaml").read_text()))
+        ingress = next(o for o in objects if o["kind"] == "Ingress")
+        self.assertEqual(ingress["metadata"]["annotations"]["nginx.ingress.kubernetes.io/auth-secret"],
+                         "confluence-mock-basic-auth")
+        rule = ingress["spec"]["rules"][0]
+        self.assertEqual(rule["host"], "confluence-odl.demo.otterworks.app")
+        self.assertEqual([p["path"] for p in rule["http"]["paths"]], ["/wiki", "/static"])
+
+    def test_missing_and_existing_pages(self):
+        page = {"title": "Example", "body": {"representation": "storage", "value": "<p>Example</p>"}}
+        with patch.object(confluence, "request", side_effect=[{"results": [{"id": "2"}]},
+                          {"results": []}, {"id": "203"}]) as call:
+            confluence.reconcile([page])
+            self.assertEqual(call.call_args.args, ("/pages", {"spaceId": "2", **page}))
+            self.assertEqual(call.call_args_list[1].args, ("/pages?space-id=2&title=Example",))
+        with patch.object(confluence, "request", side_effect=[{"results": [{"id": "2"}]},
+                          {"results": [{"id": "203"}]}]) as call:
+            confluence.reconcile([page])
+            self.assertEqual(call.call_count, 2)
+
+    def test_empty_and_errors(self):
+        with patch.object(confluence, "request") as call:
+            confluence.reconcile([])
+            call.assert_not_called()
+        for result in ({"results": []}, {"results": [{"id": "2"}, {"id": "3"}]}):
+            with patch.object(confluence, "request", return_value=result):
+                with self.assertRaises(ValueError):
+                    confluence.reconcile([{"title": "Example"}])
+        with patch.object(confluence, "request", side_effect=ConnectionError):
+            with self.assertRaises(ConnectionError):
+                confluence.reconcile([{"title": "Example"}])
+
+    def test_page_contract(self):
+        pages = json.loads((ROOT / "infrastructure/k8s/odl-mocks/confluence-seed.json").read_text())
+        self.assertEqual([p["title"] for p in pages], ["REST API conventions", "Customer source mapping"])
+        for page in pages:
+            self.assertEqual(page["body"]["representation"], "storage")
+        for term in ("/api/v1/", "snake_case", "decimal strings", "pagination", "contract"):
+            self.assertIn(term, pages[0]["body"]["value"])
+        for term in ("CUSTMAST", "ACCOUNTS", "crm.contacts", "MongoDB", "open question"):
+            self.assertIn(term, pages[1]["body"]["value"])
 
 
 class RoutingTests(unittest.TestCase):

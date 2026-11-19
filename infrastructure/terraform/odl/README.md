@@ -6,6 +6,16 @@ credentials must be supplied through the environment. Every repository inherits
 ECR lifecycle policies inherit ownership through their repository (AWS does not
 support tagging lifecycle policies separately).
 
+To add only Confluence to an existing run without touching repositories from
+other feature branches:
+
+```sh
+terraform -chdir=infrastructure/terraform/odl init -input=false
+terraform -chdir=infrastructure/terraform/odl apply \
+  '-target=aws_ecr_repository.images["mock-confluence"]' \
+  '-target=aws_ecr_lifecycle_policy.images["mock-confluence"]'
+```
+
 ```sh
 terraform -chdir=infrastructure/terraform/odl init -input=false
 terraform -chdir=infrastructure/terraform/odl plan -out=odl.tfplan

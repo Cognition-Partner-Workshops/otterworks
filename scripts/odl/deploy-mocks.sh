@@ -1,14 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-kubectl apply -f "${ROOT}/infrastructure/k8s/odl-mocks/namespace.yaml"
-python3 - <<'PY'
+SCOPE=all
+if [ "$#" -ne 0 ]; then
+  [ "$#" -eq 2 ] && [ "$1" = --only ] && [ "$2" = confluence ] || {
+    echo "Usage: $0 [--only confluence]" >&2; exit 1;
+  }
+  SCOPE=confluence
+fi
+if [ "$SCOPE" = all ]; then
+  kubectl apply -f "${ROOT}/infrastructure/k8s/odl-mocks/namespace.yaml"
+else
+  kubectl get namespace odl-mocks >/dev/null
+fi
+python3 - "$SCOPE" <<'PY'
 import base64
 import json
 import secrets
 import subprocess
+import sys
 
-for name in ("jira-mock-basic-auth", "pagerduty-mock-basic-auth"):
+names = ("confluence-mock-basic-auth",) if sys.argv[1] == "confluence" else (
+    "jira-mock-basic-auth", "pagerduty-mock-basic-auth", "confluence-mock-basic-auth")
+for name in names:
     result = subprocess.run(["kubectl", "-n", "odl-mocks", "get", "secret", name,
                              "--ignore-not-found", "-o", "json"],
                             check=True, capture_output=True, text=True)
@@ -27,6 +41,11 @@ for name in ("jira-mock-basic-auth", "pagerduty-mock-basic-auth"):
                    text=True, check=True, stdout=subprocess.DEVNULL)
     print("created", name)
 PY
-kubectl apply -k "${ROOT}/infrastructure/k8s/odl-mocks"
-kubectl -n odl-mocks rollout status deployment/jira --timeout=300s
-kubectl -n odl-mocks rollout status deployment/pagerduty --timeout=300s
+if [ "$SCOPE" = confluence ]; then
+  kubectl apply -k "${ROOT}/infrastructure/k8s/odl-mocks" -l app=confluence
+else
+  kubectl apply -k "${ROOT}/infrastructure/k8s/odl-mocks"
+  kubectl -n odl-mocks rollout status deployment/jira --timeout=300s
+  kubectl -n odl-mocks rollout status deployment/pagerduty --timeout=300s
+fi
+kubectl -n odl-mocks rollout status deployment/confluence --timeout=300s
