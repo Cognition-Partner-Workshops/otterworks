@@ -136,5 +136,18 @@
       "expected_count": 12,
       "headline": true
     }
-  ]
+  ],
+  "odl": {
+    "spec": "services/odl-sources/SEED-SPEC.md",
+    "classes": [
+      {"id":"ODL-01","title":"Padded customer keys","source":"db2","table":"ODL.CUSTMAST","field":"CUST_NO","query":"SELECT COUNT(*) FROM ODL.CUSTMAST WHERE LENGTH(CUST_NO)>LENGTH(RTRIM(CUST_NO))","expected_count":50000},
+      {"id":"ODL-02","title":"Sentinel dates and packed YYYYMMDD","source":"db2","table":"ODL.CUSTMAST","field":"OPENED_ON,OPENED_YMD","query":"SELECT COUNT(*) FROM ODL.CUSTMAST WHERE OPENED_ON=DATE('0001-01-01') AND OPENED_YMD=10101","expected_count":500},
+      {"id":"ODL-03","title":"Money stored as binary double","source":"postgres","table":"crm.contacts","field":"credit","query":"SELECT COUNT(*) FROM crm.contacts WHERE credit::text='0.30000000000000004'","expected_count":600},
+      {"id":"ODL-04","title":"Oracle local DATE interpreted as UTC","source":"oracle","table":"ACCOUNTS","field":"OPENED_AT","query":"SELECT account_id, TO_CHAR(opened_at,'YYYY-MM-DD HH24:MI:SS') FROM accounts WHERE account_id IN (7000000,7000017,7000034,7000051)","expected_count":4,"affected_rows":40000},
+      {"id":"ODL-05","title":"CCSID 037 names decoded as UTF-8","source":"db2","table":"ODL.CUSTMAST","field":"FULL_NAME","query":"SELECT CUST_NO,HEX(FULL_NAME) FROM ODL.CUSTMAST WHERE MOD(INTEGER(SUBSTR(CUST_NO,2,7))-1,100)=0","expected_count":500},
+      {"id":"ODL-06","title":"Billing SQL-to-REST field rename","source":"billing-service (reference); postgres snapshot","table":"billing_svc.subscriptions; crm.subscription_snapshots","field":"status -> subscription_status","query":"SELECT status,COUNT(*) FROM crm.subscription_snapshots GROUP BY status","expected_count":30000,"reference":"services/billing-service/app/repository.py:40,56; services/billing-service/app/main.py:94"},
+      {"id":"ODL-07","title":"Missing index on service-case contact read path","source":"postgres","table":"crm.service_cases","field":"contact_id","query":"SELECT indexdef FROM pg_indexes WHERE schemaname='crm' AND tablename='service_cases' AND indexdef LIKE '%(contact_id)%'","expected_count":0,"affected_rows":60000},
+      {"id":"ODL-08","title":"Unmatched duplicate customers with conflicting names and addresses","source":"db2 + oracle","table":"ODL.CUSTMAST; ACCOUNTS","field":"FULL_NAME,ADDRESS; HOLDER_NAME,ADDRESS","query":"SELECT account_id,holder_name,address FROM accounts WHERE account_id < 7010200 ORDER BY account_id","expected_count":600,"cohort_size":30000}
+    ]
+  }
 }

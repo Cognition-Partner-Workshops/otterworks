@@ -1,6 +1,6 @@
 {{- /* Static PersistentVolume over the EBS volume ops Terraform created (CONTRACTS.md §12.4). Cluster-scoped, so it
      carries the demo labels for demo-destroy / verify-clean and is kept when the release is uninstalled. */ -}}
-{{- if .Values.pv.create }}
+{{- if and (eq .Values.storage.mode "persistentVolumeClaim") .Values.pv.create }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:

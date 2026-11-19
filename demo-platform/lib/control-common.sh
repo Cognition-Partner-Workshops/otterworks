@@ -73,6 +73,23 @@ ctl_update_status() {
          '{":s":{S:$s},":t":{N:($t|tostring)}}')" >/dev/null
 }
 
+ctl_register_run_tenant() {
+  local id="$1" branch="$2" token="$3" now
+  now="$(ctl_now)"
+  aws dynamodb put-item --table-name "${CONTROL_TABLE}" --region "${AWS_REGION}" \
+    --condition-expression 'attribute_not_exists(PK) OR run_token = :run' \
+    --expression-attribute-values "$(jq -n --arg token "$token" '{":run":{S:$token}}')" \
+    --item "$(jq -n --arg id "$id" --arg branch "$branch" --arg token "$token" --argjson now "$now" '
+      {PK:{S:("TENANT#"+$id)},SK:{S:"META"},id:{S:$id},status:{S:"deploying"},
+       owner:{S:"otterworks-demo"},branch:{S:$branch},tier:{S:"A"},run_token:{S:$token},
+       url:{S:("https://t-"+$id+".demo.otterworks.app")},
+       api_url:{S:("https://api-t-"+$id+".demo.otterworks.app")},
+       db_name:{S:("otterworks_"+($id|gsub("-";"_")))},namespace:{S:("otterworks-"+$id)},
+       created_at:{N:($now|tostring)},checked_out_at:{N:($now|tostring)},
+       expires_at:{N:(($now+315360000)|tostring)},last_seen_at:{N:($now|tostring)},
+       persistent:{BOOL:false}}')" >/dev/null
+}
+
 # Mark a tenant active and record its resolved coordinates.
 ctl_set_active() {
   local id="$1" url="$2" api_url="$3" db="$4" ns="$5" expires_epoch="$6"

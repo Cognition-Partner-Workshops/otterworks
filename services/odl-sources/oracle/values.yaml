@@ -1,0 +1,10 @@
+runToken: odl-1795112287
+seedImage: 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks-odl/odl-seed:odl-1795112287
+oracleImage: 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks-odl/oracle-free@sha256:366fe85702d764d81a0272b72e94e629290c27aa72a47825fcc45701a0633dac
+settings:
+  ODL_SEED: "1795112287"
+  ODL_DB2_CUSTOMERS: "50000"
+  ODL_DB2_HISTORY: "400000"
+  ODL_ORACLE_ACCOUNTS: "40000"
+  ODL_PG_CONTACTS: "30000"
+  ODL_DUP_RATE: "0.02"
