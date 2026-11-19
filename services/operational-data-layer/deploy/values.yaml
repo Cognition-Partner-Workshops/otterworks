@@ -1,0 +1,14 @@
+runToken: odl-1795112287
+mongodb:
+  enabled: true
+  image: 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks-odl/mongo:8.0.16
+  rootUsername: root
+  username: odl_app
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {cpu: "1", memory: 1Gi}
+persistence:
+  existingClaim: ""
+  sizeLimit: 5Gi
+observability:
+  enabled: false

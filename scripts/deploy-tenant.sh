@@ -228,7 +228,11 @@ metadata:
   name: tenant-isolation
   namespace: ${NS}
 spec:
-  podSelector: {}
+  podSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: NotIn
+        values: [operational-data-layer-mongo]
   policyTypes: [Ingress]
   ingress:
     - from:
