@@ -48,6 +48,8 @@ def main():
         target = cache / "jars" / artifact.split("/")[-1]
         if not target.is_file():
             temporary = target.with_suffix(".tmp")
+            # The HTTPS origin and artifact paths are fixed repository-owned constants.
+            # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
             urlretrieve(f"{base}/{artifact}", temporary)
             temporary.replace(target)
     with ZipFile(cache / "common.zip", "w", ZIP_DEFLATED) as archive:
