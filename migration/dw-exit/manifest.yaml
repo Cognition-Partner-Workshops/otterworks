@@ -36,7 +36,7 @@ objects:
   - high complexity
   status: not_started
   output_relations:
-  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
+  - SFX_AUDIT_PC.AUDIT_DAILY_SUMMARY
 - id: n9912ea8ce8887d9a
   system: powercenter
   kind: mapping
@@ -54,7 +54,7 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.AUDIT_EVENT
+  - SFX_AUDIT_PC.AUDIT_EVENT
 - id: ncf58434800570afc
   system: powercenter
   kind: mapping
@@ -263,7 +263,7 @@ objects:
   - high complexity
   status: not_started
   output_relations:
-  - SFX_AUDIT.SECURITY_ALERT
+  - SFX_AUDIT_PC.SECURITY_ALERT
 - id: n2f5adf79707598c4
   system: powercenter
   kind: mapping
@@ -299,7 +299,7 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.STG_AUDIT_EVENT
+  - SFX_AUDIT_PC.STG_AUDIT_EVENT
 - id: n2949244725eedc48
   system: powercenter
   kind: mapping
@@ -407,7 +407,7 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
+  - SFX_AUDIT_PC.AUDIT_DAILY_SUMMARY
 - id: n871f62d3691a3f87
   system: powercenter
   kind: session
@@ -425,7 +425,7 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.AUDIT_EVENT
+  - SFX_AUDIT_PC.AUDIT_EVENT
 - id: nd28651dfba442ad6
   system: powercenter
   kind: session
@@ -624,7 +624,7 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.SECURITY_ALERT
+  - SFX_AUDIT_PC.SECURITY_ALERT
 - id: n3d22b7a534acc0bb
   system: powercenter
   kind: session
@@ -660,7 +660,7 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.STG_AUDIT_EVENT
+  - SFX_AUDIT_PC.STG_AUDIT_EVENT
 - id: n314aedf512c71123
   system: powercenter
   kind: session
@@ -750,11 +750,10 @@ objects:
   risk_reasons: []
   status: not_started
   output_relations:
-  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
-  - SFX_AUDIT.AUDIT_EVENT
-  - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
-  - SFX_AUDIT.SECURITY_ALERT
-  - SFX_AUDIT.STG_AUDIT_EVENT
+  - SFX_AUDIT_PC.STG_AUDIT_EVENT
+  - SFX_AUDIT_PC.AUDIT_EVENT
+  - SFX_AUDIT_PC.AUDIT_DAILY_SUMMARY
+  - SFX_AUDIT_PC.SECURITY_ALERT
 - id: n04c6b6b63a36b7db
   system: powercenter
   kind: workflow
@@ -1221,7 +1220,8 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
-  output_relations: []
+  output_relations:
+  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
 - id: n978bec82e829a7bd
   system: teradata
   kind: bteq
@@ -1835,7 +1835,8 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
-  output_relations: []
+  output_relations:
+  - SFX_AUDIT.M_RECON_TOTALS_OUTPUT
 - id: nc70e3f09535ab2b8
   system: teradata
   kind: macro
@@ -4069,7 +4070,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/audit_actor_activity_join.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.AUDIT_ACTOR_ACTIVITY_JOIN
   target_type: dbt_model
   target: spark__audit_actor_activity_join
   wave: 3
@@ -4078,6 +4080,8 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_artifacts:
+  - lake/audit/audit_actor_activity_join
 - id: na7a9d654bab3f884
   system: spark
   kind: spark_job
@@ -4087,7 +4091,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/audit_archive_resort.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.AUDIT_ARCHIVE_RESORT
   target_type: dbt_model
   target: spark__audit_archive_resort
   wave: 3
@@ -4096,6 +4101,8 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_artifacts:
+  - lake/audit/audit_archive_resort
 - id: n8966d99361db3a40
   system: spark
   kind: spark_job
@@ -4105,7 +4112,9 @@ objects:
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/AuditDailySummary.scala
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.AUDIT_DAILY_SUMMARY
+  - SFX_SPARK.AUDIT_DAILY_SUMMARY_JDBC
   target_type: dbt_model
   target: spark__audit_daily_summary
   wave: 3
@@ -4114,6 +4123,9 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_artifacts:
+  - lake/audit/audit_daily_summary
+  - jdbc:sfx_audit.SPARK_AUDIT_SUMMARY
 - id: nab9092239e992697
   system: spark
   kind: spark_job
@@ -4255,7 +4267,9 @@ objects:
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.COMPLIANCE_FLAG_RULES
+  - SFX_SPARK.COMPLIANCE_FLAG_RULES_JDBC
   target_type: dbt_model
   target: spark__compliance_flag_rules
   wave: 3
@@ -4264,6 +4278,9 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_artifacts:
+  - lake/audit/compliance_flag_rules
+  - jdbc:sfx_audit.SPARK_COMPLIANCE_REVIEW
 - id: nb1e649b467d1d68d
   system: spark
   kind: spark_job
@@ -4453,7 +4470,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/lake_compaction_audit.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.LAKE_COMPACTION_AUDIT
   target_type: dbt_model
   target: spark__lake_compaction_audit
   wave: 3
@@ -4462,6 +4480,8 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_artifacts:
+  - lake/audit/lake_compaction_audit
 - id: n46441ec8597bcf09
   system: spark
   kind: spark_job

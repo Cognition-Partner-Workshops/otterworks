@@ -2,17 +2,67 @@
 import ast
 from pathlib import Path
 import re
+import subprocess
+from functools import lru_cache
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[3]
 BRANCH = 'devin/sfx1119-billing-parity'
 BASE = 'https://github.com/Cognition-Partner-Workshops/otterworks/blob/' + BRANCH + '/'
 
 
-def link(path, start=1, end=None):
+def link(path, start=1, end=None, branch=None):
     path = Path(path)
     end = end or max(1, len((ROOT / path).read_text().splitlines()))
+    base = BASE if branch is None else 'https://github.com/Cognition-Partner-Workshops/otterworks/blob/' + quote(branch, safe='/') + '/'
     return {'file': path.as_posix(), 'start_line': start, 'end_line': end,
-            'url': f'{BASE}{path.as_posix()}#L{start}-L{end}'}
+            'url': f'{base}{path.as_posix()}#L{start}-L{end}'}
+
+
+@lru_cache(maxsize=1)
+def audit_branch():
+    return subprocess.check_output(['git', 'branch', '--show-current'], cwd=ROOT, text=True).strip() or 'HEAD'
+
+
+def audit_provenance(obj):
+    branch = audit_branch()
+    def entry(path, text, match):
+        return link(path, text.count('\n', 0, match.start())+1,
+                    text.count('\n', 0, match.end())+1, branch=branch)
+    converted = {}
+    for relation in obj.get('output_relations', []):
+        schema, table = relation.removeprefix('SFX_').split('.')
+        if obj.get('system') == 'spark':
+            directory = Path('warehouse/dbt/models/spark') / obj['name']
+            converted[relation] = [link(path.relative_to(ROOT), branch=branch)
+                                   for path in sorted((ROOT / directory).glob('*.sql'))]
+            continue
+        entries = []
+        for path in sorted((ROOT / 'migration/dw-exit/audit').glob('*.sql')):
+            text = path.read_text()
+            pattern = r'(?:INSERT\s+INTO|UPDATE|MERGE\s+INTO|COPY\s+INTO|CREATE\s+OR\s+REPLACE\s+(?:TABLE|VIEW))\s+__RUN_DATABASE__\.' + schema + r'\.' + table + r'\b.*?;'
+            entries.extend(entry(path.relative_to(ROOT), text, match)
+                           for match in re.finditer(pattern, text, re.S | re.I))
+        converted[relation] = entries
+    if obj.get('target_type') == 'retire':
+        converted = {}
+    elif obj.get('system') == 'powercenter' or obj['kind'] in ('macro', 'procedure') or obj['name'] == '10_summary_daily':
+        name = obj['name'].split('.')[-1].upper()
+        if name == '10_SUMMARY_DAILY':
+            name = 'P_DAILY_SUMMARY'
+        for path in sorted((ROOT / 'migration/dw-exit/audit').glob('*.sql')):
+            text = path.read_text()
+            pattern = r'CREATE OR REPLACE PROCEDURE\s+\S+\.' + name + r'\(.*?\$\$.*?\$\$;'
+            entries = [entry(path.relative_to(ROOT), text, match) for match in re.finditer(pattern, text, re.S | re.I)]
+            if entries:
+                converted['routine:' + name] = entries
+    source = source_link(obj) if obj.get('source') and (ROOT / obj['source']).is_file() else None
+    if source:
+        source = link(source['file'], source['start_line'], source['end_line'], branch=branch)
+    return {'source': [source] if source else [], 'converted': converted,
+            'conversion_note': 'Retirement proposed; no conversion' if obj.get('target_type') == 'retire' else None,
+            'metrics': {key: link(value['file'], value['start_line'], value['end_line'], branch=branch)
+                        for key, value in metric_links().items()}}
 
 
 def source_link(obj):
@@ -61,6 +111,8 @@ def metric_links():
 
 
 def provenance(obj):
+    if obj.get('subject_area') == 'audit':
+        return audit_provenance(obj)
     outputs = obj.get('output_relations', [])
     converted = {name:converted_links(name) for name in outputs}
     source = ROOT / obj.get('source', '')
@@ -102,4 +154,13 @@ def markdown(rows):
         p = row['provenance']
         converted = [entry for entries in p['converted'].values() for entry in entries]
         lines.append(f"| {row['name']} | {row['local_duckdb']} | {row['snowflake']} | {anchors(p['source'])} | {anchors(converted) or p['conversion_note'] or 'Not materialized'} | {anchors(p['metrics'].values())} |")
+    audit = [row for row in rows if row['subject_area'] == 'audit']
+    if audit:
+        lines += ['', '## Audit parity provenance', '',
+                  'Batch, isolated PowerCenter, and actual Spark lake/JDBC outputs are separate evidence paths. Retirements remain unconverted.', '',
+                  '| Object | Local DuckDB | Snowflake | Source | Converted producers | Metrics |', '|---|---|---|---|---|---|']
+        for row in audit:
+            p = row['provenance']
+            converted = [entry for entries in p['converted'].values() for entry in entries]
+            lines.append(f"| {row['name']} | {row['local_duckdb']} | {row['snowflake']} | {anchors(p['source'])} | {anchors(converted) or p['conversion_note'] or 'Not materialized'} | {anchors(p['metrics'].values())} |")
     return '\n'.join(lines)+'\n'
