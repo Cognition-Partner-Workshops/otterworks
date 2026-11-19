@@ -5,7 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
-from importlib.resources import files
+from pathlib import Path
 from typing import Any, Protocol
 from urllib.parse import unquote, urlparse
 
@@ -36,7 +36,9 @@ MAX_INVOICES = 100000
 
 class WarehouseSettings(BaseSettings):
     enabled: bool = True
-    dsn: str = tomllib.loads(files("app.warehouse").joinpath("config.toml").read_text())["dsn"]
+    dsn: str = tomllib.loads(
+        Path(__file__).with_name("config.toml").read_text(encoding="utf-8")
+    )["dsn"]
 
     model_config = {"env_prefix": "FINANCE_WAREHOUSE_", "extra": "ignore"}
 
