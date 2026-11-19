@@ -24,8 +24,10 @@
   reason: "Groups document shares by owner and permission using relational joins and distinct counts."
 - job: users_active_daily
   language: python
-  target: dbt
-  reason: "Groups daily activity into active-user, login and action totals."
+  target: spark_standard_template
+  reason: "Groups daily activity into active-user, login and action totals; runs on the standard Spark template."
+  original_target: dbt
+  change_reason: "The sfx1119 Snowflake role has no run database or transform warehouse, so a dbt run could not be measured; the standard template is the measured, cheaper option today."
 - job: users_team_rollup
   language: python
   target: dbt

@@ -1,1 +1,0 @@
-6 1 * * * /opt/etl/spark/submit/users_active_daily.sh >> /var/log/etl/spark-users_active_daily.log 2>&1

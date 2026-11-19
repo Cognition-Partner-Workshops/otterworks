@@ -1,8 +1,8 @@
 {
   "job": "users_active_daily",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "6 1 * * *",
   "profile": "small"
 }
