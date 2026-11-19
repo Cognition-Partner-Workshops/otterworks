@@ -7,6 +7,10 @@ SHELL := /bin/bash
 .PHONY: sfx-lakehouse-up sfx-lakehouse-run sfx-lakehouse-test sfx-lakehouse-down sfx-lakehouse-validate
 SFX_LH_PY = lakehouse/.venv/bin/python
 SFX_LH_ENV = NS="$(NS)" BUSINESS_DATE="$(BUSINESS_DATE)" PYTHONPATH="$(CURDIR)" SPARK_LOCAL_IP=127.0.0.1
+SFX_LH_LANDING ?= lakehouse/.data/$(NS)/landing
+LEGACY_NS ?= sfx-d1110-before
+SFX_LH_LEGACY_PORT = $(shell NS="$(LEGACY_NS)" python3 -c 'import os,zlib; print(54500+zlib.crc32(os.environ["NS"].encode())%1000)')
+SFX_LH_PG_PORT_ENV = $(if $(filter file undefined default,$(origin TD_PG_PORT)),$(if $(TD_PG_DSN),,TD_PG_PORT="$(SFX_LH_LEGACY_PORT)"),TD_PG_PORT="$(TD_PG_PORT)")
 
 sfx-lakehouse-validate:
 	@test -n "$(NS)" && [[ "$(NS)" =~ ^[a-z0-9][a-z0-9-]*$$ ]] || (echo "NS required: lowercase letters, digits or hyphens (e.g. sfx-d1110-after)" >&2; exit 2)
@@ -20,7 +24,7 @@ sfx-lakehouse-up: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Bootst
 	$(SFX_LH_ENV) $(SFX_LH_PY) warehouse/seed/generate.py --rows "$(ROWS_PER_TABLE)" --seed 1110 --business-date "$(BUSINESS_DATE)" --out "lakehouse/.data/$(NS)/landing"
 
 sfx-lakehouse-run: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Ingest bronze and build the silver pilot
-	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.runtime.ingest --landing "lakehouse/.data/$(NS)/landing" --business-date "$(BUSINESS_DATE)"
+	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.runtime.ingest --landing "$(SFX_LH_LANDING)" --business-date "$(BUSINESS_DATE)"
 	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.runtime.dbt
 
 sfx-lakehouse-test: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Test lakehouse runtime and pilot
@@ -28,6 +32,10 @@ sfx-lakehouse-test: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Test
 
 sfx-lakehouse-down: sfx-lakehouse-validate ## Remove only this namespace's local lakehouse data
 	rm -rf "lakehouse/.data/$(NS)"
+
+.PHONY: sfx-lakehouse-parity
+sfx-lakehouse-parity: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Compare built lakehouse outputs with the running legacy namespace
+	$(SFX_LH_ENV) LEGACY_NS="$(LEGACY_NS)" $(SFX_LH_PG_PORT_ENV) $(SFX_LH_PY) -m lakehouse.parity run --all --business-date "$(BUSINESS_DATE)"
 
 .PHONY: sfx-teradata-up sfx-teradata-run sfx-teradata-test sfx-teradata-down sfx-teradata-validate
 

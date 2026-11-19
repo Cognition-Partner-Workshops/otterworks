@@ -18,6 +18,7 @@ def create_session():
                .config('spark.sql.warehouse.dir', str(root / 'warehouse'))
                .config('spark.hadoop.javax.jdo.option.ConnectionURL',
                        f'jdbc:derby:;databaseName={root / "metastore"};create=true')
+               .config('spark.hadoop.hive.metastore.disallow.incompatible.col.type.changes', 'false')
                .config('spark.driver.extraJavaOptions', f'-Dderby.stream.error.file={root / "derby.log"}')
                .config('spark.sql.session.timeZone', 'UTC')
                .config('spark.sql.ansi.enabled', 'true')

@@ -87,3 +87,105 @@ Tests use an isolated disposable namespace, exercising layout, quoted/empty
 fields, malformed and missing input, date-specific replacement, retained
 history, empty snapshots, pilot types/padding/truncation and cast failures.
 The Make run additionally executes real dbt model and key tests.
+
+## Legacy parity
+
+The harness is read-only against legacy PostgreSQL; it does not invoke the BTEQ
+runner or modify its metadata. Start legacy once, then use **its exact landing
+files**, without regenerating feeds between the two loads:
+
+```sh
+make sfx-teradata-up NS=sfx-d1110-before ROWS_PER_TABLE=2000 BUSINESS_DATE=20261109
+make sfx-lakehouse-run NS=sfx-d1110-after SFX_LH_LANDING=warehouse/landing BUSINESS_DATE=20261109
+make sfx-lakehouse-parity NS=sfx-d1110-after LEGACY_NS=sfx-d1110-before BUSINESS_DATE=20261109
+make sfx-lakehouse-test NS=sfx-d1110-after
+```
+
+`sfx-lakehouse-parity` compares already-built outputs; it deliberately does not
+start, reseed or reload either side. `sfx-lakehouse-run` bootstraps the venv if
+needed, so a separate lakehouse-up is unnecessary for this shared-input flow.
+Legacy-up uses seed 1110 and writes `warehouse/landing/`; the lakehouse reads
+that same directory directly. Keep the emulator running for subsequent tickets.
+`LEGACY_NS` defaults to `sfx-d1110-before` and selects its deterministic local
+port, independently of lakehouse NS. Explicit TD_PG_PORT or TD_PG_DSN overrides
+that derivation. The reader uses the TD_PG_DSN/HOST/PORT/DB/USER/PASSWORD
+precedence documented in `warehouse/README.md`. No credentials enter specs.
+
+Direct invocation (export TD_PG_* connection settings as appropriate):
+
+```sh
+NS=sfx-d1110-after lakehouse/.venv/bin/python -m lakehouse.parity run \
+  --spec billing.customer_account --business-date 20261109 --samples 10
+```
+
+Use `--all` instead of `--spec ID ...` for every spec. Failures, including read
+errors, exit nonzero. Each selected spec overwrites its small report under
+`evidence/parity/<id>.json`. `evidence/PARITY.md` rolls up all saved reports;
+reports not selected in a run remain saved with their own namespace/date/time.
+JSON records the raw spec SHA-256, code git SHA and dirty flag, namespaces,
+business date, UTC timestamp, counts, diagnostics, samples and fingerprints.
+These small artifacts are committed intentionally; never use sensitive data.
+
+### Adding an object spec
+
+Place one YAML file at `parity/specs/<domain>/<object>.yaml`. Required fields:
+`id` (unique lowercase filename-safe ID), `legacy_objects` (stable coverage IDs,
+e.g. `teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT`), `legacy`, `lakehouse`, `keys`.
+Keys/column names are lowercase; reader column names are matched case-insensitively.
+Each side supports:
+
+* `kind: postgres_sql`, `sql: SELECT ...` — PostgreSQL, read-only transaction.
+* `kind: spark_sql`, `sql: SELECT ...` — namespace's configured Spark session.
+* `kind: delta_table`, `table: silver_billing.customer_account`, or `path: ...`.
+* `kind: file`, `path: ...`, `delimiter: '|'`, `header: false`,
+  `columns: [id, amount]` — headerless PSV/CSV requires columns; headered files
+  may infer names. Explicit names must match the header. Empty fields remain
+  empty until normalization. An empty headerless file retains its schema.
+* `kind: parquet`, `path: ...` — Spark Parquet file/directory reader.
+
+Relative paths are repository-relative, independent of cwd. Paths substitute
+`{business_date}` and `{NS}`; SQL substitutes `{business_date}`. Specs are trusted
+repository code, not arbitrary user-supplied queries. Use side SQL for complex
+source filters/column aliases.
+
+Optional comparison fields:
+
+```yaml
+columns: [id, status, amount, day]  # omitted => every common column
+normalize:
+  '*': {trim: true}               # defaults; per-column settings override
+  status: {rstrip: true, trim: false, case_fold: true, empty_as_null: true}
+  amount: {numeric_scale: 2}      # Decimal, ROUND_HALF_UP
+  day: {date_format: '%d/%m/%Y'}  # input strings => ISO date; native dates accepted
+tolerance:
+  amount: '0.01'                  # inclusive absolute numeric difference
+filters:
+  status: [active, pending]      # equality/IN on normalized values, both sides
+```
+
+`trim` strips surrounding whitespace; `rstrip` strips trailing ASCII spaces
+only (CHAR padding). Trim takes precedence if both are true. Native dates and
+numbers normalize to ISO strings and finite Decimal values; files needing
+numeric semantics should specify numeric_scale. Normalization precedes filters,
+key grouping, comparison and fingerprints. Keys must be included in columns.
+Null keys and duplicate keys on either side fail; duplicate groups are reported
+but not arbitrarily paired for cell comparisons. Missing/extra key counts and
+per-column cell mismatch counts are exact, with deterministically ordered samples
+capped by --samples. Pass requires equal filtered counts, no duplicate/null keys,
+no missing/extra keys and no out-of-tolerance cells.
+
+Per-column fingerprints include count, null count, numeric sum (when nonempty
+values are numeric), and a SHA-256 of sorted, length-prefixed, type-tagged values.
+They are order-independent diagnostics, not pass gates: tolerated numeric
+differences can legitimately produce different sums/hashes. All comparisons and
+hash sorting happen in driver Python memory; this is intended for demo sizes,
+not production-scale parity. Full source rows, not just samples, are collected.
+
+### Embedded Hive replacement compatibility
+
+Delta 3.2.1 replacement previously caused Hive 2.3 to reject a metastore column
+type update (`customer_id`), then Spark retried successfully in its own metadata
+format. The session now sets
+`spark.hadoop.hive.metastore.disallow.incompatible.col.type.changes=false` for
+the per-namespace embedded metastore. Delta schema checks remain authoritative;
+this removes the Hive-only compatibility rejection, not Delta data validation.

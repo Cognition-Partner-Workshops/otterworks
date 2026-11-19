@@ -8,6 +8,7 @@ import pytest
 from jinja2 import Environment, StrictUndefined
 from pyspark.sql import types as T
 
+from lakehouse.parity.readers import Readers
 from lakehouse.runtime.ingest import business_date, ingest, select_tables
 from lakehouse.runtime.layout import DOMAINS, LAYERS, ROOT, data_root, database, delta_path
 from lakehouse.runtime.session import create_session
@@ -103,3 +104,22 @@ def test_invalid_arguments():
     for value in ('20260230', '2026-11-09', "20261109' OR true"):
         with pytest.raises(ValueError):
             business_date(value)
+
+
+def test_parity_spark_readers(spark, tmp_path):
+    assert spark.sparkContext._jsc.hadoopConfiguration().get(
+        'hive.metastore.disallow.incompatible.col.type.changes') == 'false'
+    reader = Readers('20261109')
+    reader.spark = spark
+    query = {'kind': 'spark_sql', 'sql': 'SELECT 1 as id, \'{business_date}\' as day'}
+    assert reader.read(query) == ([{'id': 1, 'day': '20261109'}], ['id', 'day'])
+    path = tmp_path / 'output.parquet'
+    spark.sql('SELECT 2 as id').write.parquet(str(path))
+    assert reader.read({'kind': 'parquet', 'path': str(path)}) == ([{'id': 2}], ['id'])
+    delta = tmp_path / 'output.delta'
+    spark.sql('SELECT 3 as id').write.format('delta').save(str(delta))
+    assert reader.read({'kind': 'delta_table', 'path': str(delta)}) == ([{'id': 3}], ['id'])
+    assert reader.read({'kind': 'delta_table', 'table': 'bronze_billing.customer_account'})[1][0] == 'customer_id'
+    for value in (1, 2):
+        spark.sql(f'CREATE OR REPLACE TABLE gold_billing.parity_runtime_test USING DELTA AS SELECT {value} AS id')
+        assert spark.table('gold_billing.parity_runtime_test').first().id == value
