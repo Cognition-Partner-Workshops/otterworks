@@ -1,0 +1,111 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "a6706562b107e688a72f77c9b99a0a29262872b6",
+  "id": "documents.spark_docs_folder_tree_walk",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "spark_job:docs_folder_tree_walk",
+    "spark_submit:etl/spark/submit/docs_folder_tree_walk.sh",
+    "cron_entry:etl/crontab#5c3511fa77a1"
+  ],
+  "results": {
+    "columns": [
+      "folder_id",
+      "root_folder_id",
+      "depth"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "depth": {
+          "count": 32,
+          "hash": "93440dc440b45f424ca9d161c5866b1b3c70f5752f320d577a94785f0b284e54",
+          "null_count": 0,
+          "sum": "391"
+        },
+        "folder_id": {
+          "count": 32,
+          "hash": "5b91823b507fb48077b89b5b5e9ff1a9f0f68f5e872c048bec4433b595dd1394",
+          "null_count": 0,
+          "sum": "1231"
+        },
+        "root_folder_id": {
+          "count": 32,
+          "hash": "78be0fa01c0872c73b4c0c8ae276121b88bed6d475bec4243fcd2eeb71c6444b",
+          "null_count": 0,
+          "sum": "1739"
+        }
+      },
+      "legacy": {
+        "depth": {
+          "count": 32,
+          "hash": "93440dc440b45f424ca9d161c5866b1b3c70f5752f320d577a94785f0b284e54",
+          "null_count": 0,
+          "sum": "391"
+        },
+        "folder_id": {
+          "count": 32,
+          "hash": "5b91823b507fb48077b89b5b5e9ff1a9f0f68f5e872c048bec4433b595dd1394",
+          "null_count": 0,
+          "sum": "1231"
+        },
+        "root_folder_id": {
+          "count": 32,
+          "hash": "78be0fa01c0872c73b4c0c8ae276121b88bed6d475bec4243fcd2eeb71c6444b",
+          "null_count": 0,
+          "sum": "1739"
+        }
+      }
+    },
+    "mismatches": {
+      "depth": {
+        "count": 0,
+        "samples": []
+      },
+      "folder_id": {
+        "count": 0,
+        "samples": []
+      },
+      "root_folder_id": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 32,
+      "legacy": 32
+    }
+  },
+  "row_counts": {
+    "lakehouse": 32,
+    "legacy": 32
+  },
+  "spec_hash": "5d426a6e8d283ed5959f2dc626b4a34e7ee1d4f875024b77f1a8c265e05dc4b1",
+  "timestamp": "2026-11-19T10:00:09.701331+00:00"
+}

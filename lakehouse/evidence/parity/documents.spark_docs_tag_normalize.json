@@ -1,0 +1,128 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "a6706562b107e688a72f77c9b99a0a29262872b6",
+  "id": "documents.spark_docs_tag_normalize",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "spark_job:docs_tag_normalize",
+    "spark_submit:etl/spark/submit/docs_tag_normalize.sh",
+    "cron_entry:etl/crontab#7ce72803f1b1"
+  ],
+  "results": {
+    "columns": [
+      "doc_tag_id",
+      "document_id",
+      "tag",
+      "normalized_tag"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "doc_tag_id": {
+          "count": 68,
+          "hash": "1774f62ed2a22745bc32ee5db7df3eeb1f2d2458aaad47348629d7130dc45304",
+          "null_count": 0,
+          "sum": "2346"
+        },
+        "document_id": {
+          "count": 68,
+          "hash": "4556d4e54a8cee1ea4f17e5f21cf42a6bb46f775cc38d7ac5b2ec36515ad40b6",
+          "null_count": 0,
+          "sum": "42078"
+        },
+        "normalized_tag": {
+          "count": 68,
+          "hash": "7ce8b6f2079c17ec4e7e5e1464a6461f0fbd573aaff1632fdb4004620b3d40e6",
+          "null_count": 0,
+          "sum": null
+        },
+        "tag": {
+          "count": 68,
+          "hash": "81f0cdd7a809a1fab95fd5eeda34cfaf6a679e1ce5add6472942a720eb053184",
+          "null_count": 9,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "doc_tag_id": {
+          "count": 68,
+          "hash": "1774f62ed2a22745bc32ee5db7df3eeb1f2d2458aaad47348629d7130dc45304",
+          "null_count": 0,
+          "sum": "2346"
+        },
+        "document_id": {
+          "count": 68,
+          "hash": "4556d4e54a8cee1ea4f17e5f21cf42a6bb46f775cc38d7ac5b2ec36515ad40b6",
+          "null_count": 0,
+          "sum": "42078"
+        },
+        "normalized_tag": {
+          "count": 68,
+          "hash": "7ce8b6f2079c17ec4e7e5e1464a6461f0fbd573aaff1632fdb4004620b3d40e6",
+          "null_count": 0,
+          "sum": null
+        },
+        "tag": {
+          "count": 68,
+          "hash": "81f0cdd7a809a1fab95fd5eeda34cfaf6a679e1ce5add6472942a720eb053184",
+          "null_count": 9,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "doc_tag_id": {
+        "count": 0,
+        "samples": []
+      },
+      "document_id": {
+        "count": 0,
+        "samples": []
+      },
+      "normalized_tag": {
+        "count": 0,
+        "samples": []
+      },
+      "tag": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 68,
+      "legacy": 68
+    }
+  },
+  "row_counts": {
+    "lakehouse": 68,
+    "legacy": 68
+  },
+  "spec_hash": "ecbcb72d43797a424c2ddc6c2ad63ba6b0551b4c025371ece3363d9cc544ae6a",
+  "timestamp": "2026-11-19T10:00:11.407059+00:00"
+}

@@ -9,7 +9,7 @@ from pathlib import Path
 from lakehouse.runtime.layout import ROOT, data_root
 from warehouse.seed.columns import TABLES
 
-from .graph import business_date, feed_path, ordered
+from .graph import artifact_path, business_date, feed_path, ordered
 
 
 @contextmanager
@@ -55,8 +55,9 @@ def command(node, landing, day):
 
 def execute(node, landing, day):
     business_date(day)
-    if node['kind'] == 'feed_sensor':
-        path = feed_path(node, landing, day)
+    if node['kind'] in ('feed_sensor', 'artifact_sensor'):
+        path = (feed_path(node, landing, day) if node['kind'] == 'feed_sensor'
+                else artifact_path(node, day))
         deadline = time.monotonic() + node['timeout_seconds']
         while not path.is_file():
             remaining = deadline - time.monotonic()

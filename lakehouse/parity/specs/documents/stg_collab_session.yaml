@@ -1,0 +1,25 @@
+{
+  "id": "documents.stg_collab_session",
+  "legacy_objects": [
+    "teradata_table:SFX_DOCUMENTS.STG_COLLAB_SESSION",
+    "tpt:warehouse/teradata/load/tpt/documents_collab_session.tpt"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT session_id, document_id, user_id, start_ts, end_ts FROM sfx_documents.stg_collab_session"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.stg_collab_session"
+  },
+  "keys": [
+    "session_id"
+  ],
+  "columns": [
+    "session_id",
+    "document_id",
+    "user_id",
+    "start_ts",
+    "end_ts"
+  ]
+}

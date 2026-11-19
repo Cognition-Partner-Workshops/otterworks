@@ -1,0 +1,128 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "a6706562b107e688a72f77c9b99a0a29262872b6",
+  "id": "documents.spark_docs_share_activity",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "spark_job:docs_share_activity",
+    "spark_submit:etl/spark/submit/docs_share_activity.sh",
+    "cron_entry:etl/crontab#e913aaa5c3d7"
+  ],
+  "results": {
+    "columns": [
+      "owner_user_id",
+      "permission",
+      "shares",
+      "recipients"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "owner_user_id": {
+          "count": 51,
+          "hash": "cbf776b8a1b952a53014ef46d152a15537befe9099461138b8fe95f8316f344f",
+          "null_count": 0,
+          "sum": "459"
+        },
+        "permission": {
+          "count": 51,
+          "hash": "f91df6f1ba9995f2f3ee72f1242f0d556dd78b0fa572ec2f8fb5ee47a410804c",
+          "null_count": 0,
+          "sum": null
+        },
+        "recipients": {
+          "count": 51,
+          "hash": "97e6cac21a5e5071d1425a613b35f60d8172adafac0fc043a2ed6bd3363e7bcd",
+          "null_count": 0,
+          "sum": "68"
+        },
+        "shares": {
+          "count": 51,
+          "hash": "f638b7badea7b4631b7bb3e8b294508e7647ce4fdf4cbf0d063ec8be6b2c28c5",
+          "null_count": 0,
+          "sum": "69"
+        }
+      },
+      "legacy": {
+        "owner_user_id": {
+          "count": 51,
+          "hash": "cbf776b8a1b952a53014ef46d152a15537befe9099461138b8fe95f8316f344f",
+          "null_count": 0,
+          "sum": "459"
+        },
+        "permission": {
+          "count": 51,
+          "hash": "f91df6f1ba9995f2f3ee72f1242f0d556dd78b0fa572ec2f8fb5ee47a410804c",
+          "null_count": 0,
+          "sum": null
+        },
+        "recipients": {
+          "count": 51,
+          "hash": "97e6cac21a5e5071d1425a613b35f60d8172adafac0fc043a2ed6bd3363e7bcd",
+          "null_count": 0,
+          "sum": "68"
+        },
+        "shares": {
+          "count": 51,
+          "hash": "f638b7badea7b4631b7bb3e8b294508e7647ce4fdf4cbf0d063ec8be6b2c28c5",
+          "null_count": 0,
+          "sum": "69"
+        }
+      }
+    },
+    "mismatches": {
+      "owner_user_id": {
+        "count": 0,
+        "samples": []
+      },
+      "permission": {
+        "count": 0,
+        "samples": []
+      },
+      "recipients": {
+        "count": 0,
+        "samples": []
+      },
+      "shares": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 51,
+      "legacy": 51
+    }
+  },
+  "row_counts": {
+    "lakehouse": 51,
+    "legacy": 51
+  },
+  "spec_hash": "cf4a2326b31f5d850edbc998487760e8aec0d79a96d3b108e25c536f1ff0d811",
+  "timestamp": "2026-11-19T10:00:10.535652+00:00"
+}

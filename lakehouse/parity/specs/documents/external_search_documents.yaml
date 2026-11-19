@@ -1,0 +1,26 @@
+{
+  "id": "documents.external_search_documents",
+  "legacy_objects": [
+    "etl_script:etl/scripts/search_reindex_weekly.py",
+    "cron_entry:etl/crontab#69562b8e166b"
+  ],
+  "legacy": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/external_parity/{business_date}/legacy/search_documents.psv",
+    "header": true
+  },
+  "lakehouse": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/external_parity/{business_date}/lakehouse/search_documents.psv",
+    "header": true
+  },
+  "keys": [
+    "scenario",
+    "identity"
+  ],
+  "columns": [
+    "scenario",
+    "identity",
+    "payload"
+  ]
+}

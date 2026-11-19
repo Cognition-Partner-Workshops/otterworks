@@ -29,8 +29,12 @@ def build_dags():
             for node in config['nodes']:
                 common = {'task_id': node['id'], 'retries': node['retries'],
                           'retry_delay': timedelta(seconds=node['retry_delay_seconds'])}
-                if node['kind'] == 'feed_sensor':
-                    path = landing / node['domain'] / node['table'] / (DAY + '.psv')
+                if node['kind'] in ('feed_sensor', 'artifact_sensor'):
+                    if node['kind'] == 'feed_sensor':
+                        prefix = node.get('landing_prefix', '').replace('{business_date}', DAY)
+                        path = landing / prefix / node['domain'] / node['table'] / (DAY + '.psv')
+                    else:
+                        path = Path(node['path'].format(data_root=data_root(), business_date=DAY))
                     task = FileSensor(filepath=str(path), fs_conn_id='fs_default', mode='reschedule',
                                       timeout=node['timeout_seconds'], poke_interval=node['poke_interval_seconds'],
                                       **common)

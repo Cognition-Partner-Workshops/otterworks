@@ -1,0 +1,32 @@
+{
+  "id": "documents.spark_file_object_binary_extract",
+  "legacy_objects": [
+    "spark_job:file_object_binary_extract",
+    "spark_submit:etl/spark/submit/file_object_binary_extract.sh",
+    "cron_entry:etl/crontab#9f970c1cb2a8",
+    "spark_library:etl/spark/jobs/py/common/binary_documents.py"
+  ],
+  "legacy": {
+    "kind": "parquet",
+    "path": "lakehouse/.data/{NS}/legacy_spark/{business_date}/documents/file_object_binary_extract"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.spark_file_object_binary_extract"
+  },
+  "keys": [
+    "file_object_id"
+  ],
+  "columns": [
+    "storage_key",
+    "file_object_id",
+    "document_id",
+    "size_bytes",
+    "checksum",
+    "media_type",
+    "text",
+    "page_count",
+    "sha256",
+    "error"
+  ]
+}

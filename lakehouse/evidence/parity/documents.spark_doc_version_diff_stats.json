@@ -1,0 +1,179 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "a6706562b107e688a72f77c9b99a0a29262872b6",
+  "id": "documents.spark_doc_version_diff_stats",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "spark_job:doc_version_diff_stats",
+    "spark_submit:etl/spark/submit/doc_version_diff_stats.sh",
+    "cron_entry:etl/crontab#d54b23093fd1"
+  ],
+  "results": {
+    "columns": [
+      "doc_version_id",
+      "document_id",
+      "version_number",
+      "body",
+      "created_at",
+      "previous_body",
+      "similarity"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "body": {
+          "count": 11,
+          "hash": "2736a640a608a4fed89289aa4e8b6ceba33974ec91ed3ecc2ec78487c282d497",
+          "null_count": 2,
+          "sum": null
+        },
+        "created_at": {
+          "count": 11,
+          "hash": "a45e47f43f424517a132812a70522929ec469aa2d29e5e60c652525ebef7a3ed",
+          "null_count": 0,
+          "sum": null
+        },
+        "doc_version_id": {
+          "count": 11,
+          "hash": "8ce404c46b3fbaeab4b98f9ddb8a0d5f3eee217be4e6f5947897df4fd4383bc7",
+          "null_count": 0,
+          "sum": "66"
+        },
+        "document_id": {
+          "count": 11,
+          "hash": "b92256abe52a2e36e8e08440cdb1b5a4bdee0614882478bc371b360025001bf0",
+          "null_count": 0,
+          "sum": "24"
+        },
+        "previous_body": {
+          "count": 11,
+          "hash": "ac91eb86888908abaf89e5d20b09edd651116773cd5c55feb41ab2577510c9ce",
+          "null_count": 6,
+          "sum": null
+        },
+        "similarity": {
+          "count": 11,
+          "hash": "31046100c907edfc4aa4f8a1685157bb8469466d0c3a5731d11820e1110edf4c",
+          "null_count": 0,
+          "sum": "4.2713782550955598"
+        },
+        "version_number": {
+          "count": 11,
+          "hash": "9757ed2f3c8fb2c3571bcfe9e9d0f60fdc705fa90a988aa7eae7dd79b96a8478",
+          "null_count": 0,
+          "sum": "22"
+        }
+      },
+      "legacy": {
+        "body": {
+          "count": 11,
+          "hash": "2736a640a608a4fed89289aa4e8b6ceba33974ec91ed3ecc2ec78487c282d497",
+          "null_count": 2,
+          "sum": null
+        },
+        "created_at": {
+          "count": 11,
+          "hash": "a45e47f43f424517a132812a70522929ec469aa2d29e5e60c652525ebef7a3ed",
+          "null_count": 0,
+          "sum": null
+        },
+        "doc_version_id": {
+          "count": 11,
+          "hash": "8ce404c46b3fbaeab4b98f9ddb8a0d5f3eee217be4e6f5947897df4fd4383bc7",
+          "null_count": 0,
+          "sum": "66"
+        },
+        "document_id": {
+          "count": 11,
+          "hash": "b92256abe52a2e36e8e08440cdb1b5a4bdee0614882478bc371b360025001bf0",
+          "null_count": 0,
+          "sum": "24"
+        },
+        "previous_body": {
+          "count": 11,
+          "hash": "ac91eb86888908abaf89e5d20b09edd651116773cd5c55feb41ab2577510c9ce",
+          "null_count": 6,
+          "sum": null
+        },
+        "similarity": {
+          "count": 11,
+          "hash": "31046100c907edfc4aa4f8a1685157bb8469466d0c3a5731d11820e1110edf4c",
+          "null_count": 0,
+          "sum": "4.2713782550955598"
+        },
+        "version_number": {
+          "count": 11,
+          "hash": "9757ed2f3c8fb2c3571bcfe9e9d0f60fdc705fa90a988aa7eae7dd79b96a8478",
+          "null_count": 0,
+          "sum": "22"
+        }
+      }
+    },
+    "mismatches": {
+      "body": {
+        "count": 0,
+        "samples": []
+      },
+      "created_at": {
+        "count": 0,
+        "samples": []
+      },
+      "doc_version_id": {
+        "count": 0,
+        "samples": []
+      },
+      "document_id": {
+        "count": 0,
+        "samples": []
+      },
+      "previous_body": {
+        "count": 0,
+        "samples": []
+      },
+      "similarity": {
+        "count": 0,
+        "samples": []
+      },
+      "version_number": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 11,
+      "legacy": 11
+    }
+  },
+  "row_counts": {
+    "lakehouse": 11,
+    "legacy": 11
+  },
+  "spec_hash": "c70bb271357a1e894ce4282adfd0778834fd48af74d6342f5c0d6f36fcdc0ce3",
+  "timestamp": "2026-11-19T10:00:07.938964+00:00"
+}

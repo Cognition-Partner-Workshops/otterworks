@@ -1,0 +1,145 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "a6706562b107e688a72f77c9b99a0a29262872b6",
+  "id": "documents.folder",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_DOCUMENTS.FOLDER",
+    "bteq_script:warehouse/teradata/scripts/documents/01_load_folders.bteq",
+    "cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/01_load_folders"
+  ],
+  "results": {
+    "columns": [
+      "folder_id",
+      "owner_user_id",
+      "customer_id",
+      "folder_name",
+      "created_dt"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "created_dt": {
+          "count": 200,
+          "hash": "fc323652562232d39cf3a620f4ddc37239d741edd03b7c5c50c78a829f3c5e4c",
+          "null_count": 0,
+          "sum": null
+        },
+        "customer_id": {
+          "count": 200,
+          "hash": "e6112a17a14a7271363201ad4615c1acdf7b4c1128f9aaf72fb47bb69130d043",
+          "null_count": 0,
+          "sum": "20100"
+        },
+        "folder_id": {
+          "count": 200,
+          "hash": "e6112a17a14a7271363201ad4615c1acdf7b4c1128f9aaf72fb47bb69130d043",
+          "null_count": 0,
+          "sum": "20100"
+        },
+        "folder_name": {
+          "count": 200,
+          "hash": "aa82056384ce2d9a42fed990e6511db31168bb0ad7224683f7cfb97af1be5d82",
+          "null_count": 0,
+          "sum": null
+        },
+        "owner_user_id": {
+          "count": 200,
+          "hash": "e6112a17a14a7271363201ad4615c1acdf7b4c1128f9aaf72fb47bb69130d043",
+          "null_count": 0,
+          "sum": "20100"
+        }
+      },
+      "legacy": {
+        "created_dt": {
+          "count": 200,
+          "hash": "fc323652562232d39cf3a620f4ddc37239d741edd03b7c5c50c78a829f3c5e4c",
+          "null_count": 0,
+          "sum": null
+        },
+        "customer_id": {
+          "count": 200,
+          "hash": "e6112a17a14a7271363201ad4615c1acdf7b4c1128f9aaf72fb47bb69130d043",
+          "null_count": 0,
+          "sum": "20100"
+        },
+        "folder_id": {
+          "count": 200,
+          "hash": "e6112a17a14a7271363201ad4615c1acdf7b4c1128f9aaf72fb47bb69130d043",
+          "null_count": 0,
+          "sum": "20100"
+        },
+        "folder_name": {
+          "count": 200,
+          "hash": "aa82056384ce2d9a42fed990e6511db31168bb0ad7224683f7cfb97af1be5d82",
+          "null_count": 0,
+          "sum": null
+        },
+        "owner_user_id": {
+          "count": 200,
+          "hash": "e6112a17a14a7271363201ad4615c1acdf7b4c1128f9aaf72fb47bb69130d043",
+          "null_count": 0,
+          "sum": "20100"
+        }
+      }
+    },
+    "mismatches": {
+      "created_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "customer_id": {
+        "count": 0,
+        "samples": []
+      },
+      "folder_id": {
+        "count": 0,
+        "samples": []
+      },
+      "folder_name": {
+        "count": 0,
+        "samples": []
+      },
+      "owner_user_id": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 200,
+      "legacy": 200
+    }
+  },
+  "row_counts": {
+    "lakehouse": 200,
+    "legacy": 200
+  },
+  "spec_hash": "f6eda790011c608273b01f157fd06157bdc04bbc4cbd16da42e9255037985a2d",
+  "timestamp": "2026-11-19T10:00:04.075402+00:00"
+}

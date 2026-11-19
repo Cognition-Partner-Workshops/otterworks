@@ -1,0 +1,128 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "a6706562b107e688a72f77c9b99a0a29262872b6",
+  "id": "documents.spark_docs_storage_by_owner",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "spark_job:docs_storage_by_owner",
+    "spark_submit:etl/spark/submit/docs_storage_by_owner.sh",
+    "cron_entry:etl/crontab#6cccad9ba92f"
+  ],
+  "results": {
+    "columns": [
+      "user_id",
+      "email",
+      "file_count",
+      "size_bytes"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "email": {
+          "count": 17,
+          "hash": "5e2d168b921b16a50471abc644e6d2f71d9305c8f294509f63150c71658be68a",
+          "null_count": 0,
+          "sum": null
+        },
+        "file_count": {
+          "count": 17,
+          "hash": "4ab1adba9d1dccd5d5322e6d94a7d06a92e1a94b486a56fa110a37b0eff10546",
+          "null_count": 0,
+          "sum": "69"
+        },
+        "size_bytes": {
+          "count": 17,
+          "hash": "490b68a5a0d7ad2e3bdd37c3ba06039b8befa1ed6f02f74a64d52039259732de",
+          "null_count": 1,
+          "sum": "2336000000000"
+        },
+        "user_id": {
+          "count": 17,
+          "hash": "ae7e55f377412b16bc1da674dc43655519a70218cf011e7794205828ac709a78",
+          "null_count": 0,
+          "sum": "153"
+        }
+      },
+      "legacy": {
+        "email": {
+          "count": 17,
+          "hash": "5e2d168b921b16a50471abc644e6d2f71d9305c8f294509f63150c71658be68a",
+          "null_count": 0,
+          "sum": null
+        },
+        "file_count": {
+          "count": 17,
+          "hash": "4ab1adba9d1dccd5d5322e6d94a7d06a92e1a94b486a56fa110a37b0eff10546",
+          "null_count": 0,
+          "sum": "69"
+        },
+        "size_bytes": {
+          "count": 17,
+          "hash": "490b68a5a0d7ad2e3bdd37c3ba06039b8befa1ed6f02f74a64d52039259732de",
+          "null_count": 1,
+          "sum": "2336000000000"
+        },
+        "user_id": {
+          "count": 17,
+          "hash": "ae7e55f377412b16bc1da674dc43655519a70218cf011e7794205828ac709a78",
+          "null_count": 0,
+          "sum": "153"
+        }
+      }
+    },
+    "mismatches": {
+      "email": {
+        "count": 0,
+        "samples": []
+      },
+      "file_count": {
+        "count": 0,
+        "samples": []
+      },
+      "size_bytes": {
+        "count": 0,
+        "samples": []
+      },
+      "user_id": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 17,
+      "legacy": 17
+    }
+  },
+  "row_counts": {
+    "lakehouse": 17,
+    "legacy": 17
+  },
+  "spec_hash": "e9ccad4a55b83b7ddb02b17fc1bfe6dcc7032e4400a3775eee4de2df2224d422",
+  "timestamp": "2026-11-19T10:00:10.958239+00:00"
+}

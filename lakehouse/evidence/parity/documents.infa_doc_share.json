@@ -1,0 +1,146 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "a6706562b107e688a72f77c9b99a0a29262872b6",
+  "id": "documents.infa_doc_share",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "informatica_mapping:SFX_CONTENT.m_SFX_DOC_SHARE",
+    "informatica_session:SFX_CONTENT.s_m_SFX_DOC_SHARE",
+    "informatica_source:SFX_CONTENT.FF_DOC_SHARE",
+    "informatica_target:SFX_CONTENT.DOC_SHARE"
+  ],
+  "results": {
+    "columns": [
+      "share_id",
+      "document_id",
+      "user_id",
+      "access_level",
+      "shared_dt"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "access_level": {
+          "count": 1000,
+          "hash": "e73d3934fdcaeea5309777b87fea25132503f495ccbd2b0cf16ba2aebc1c3371",
+          "null_count": 0,
+          "sum": null
+        },
+        "document_id": {
+          "count": 1000,
+          "hash": "6beaf113e7396610ccb72f57158de58c3653c25a186dbc8fb856d03e2bc96e5c",
+          "null_count": 0,
+          "sum": "180500"
+        },
+        "share_id": {
+          "count": 1000,
+          "hash": "631eb3b0a686350f87f328e04ddce456c0c5ca9ea670d2f2f6f3dc80725ec87f",
+          "null_count": 0,
+          "sum": "500500"
+        },
+        "shared_dt": {
+          "count": 1000,
+          "hash": "fc758d255314aa880c170982708b24d54a83926eae6c4a303f20325b68d83857",
+          "null_count": 0,
+          "sum": null
+        },
+        "user_id": {
+          "count": 1000,
+          "hash": "ae793778c691701cd0e42fec50c0e8332431b99effd926872e8cc0b0d027a962",
+          "null_count": 0,
+          "sum": "100500"
+        }
+      },
+      "legacy": {
+        "access_level": {
+          "count": 1000,
+          "hash": "e73d3934fdcaeea5309777b87fea25132503f495ccbd2b0cf16ba2aebc1c3371",
+          "null_count": 0,
+          "sum": null
+        },
+        "document_id": {
+          "count": 1000,
+          "hash": "6beaf113e7396610ccb72f57158de58c3653c25a186dbc8fb856d03e2bc96e5c",
+          "null_count": 0,
+          "sum": "180500"
+        },
+        "share_id": {
+          "count": 1000,
+          "hash": "631eb3b0a686350f87f328e04ddce456c0c5ca9ea670d2f2f6f3dc80725ec87f",
+          "null_count": 0,
+          "sum": "500500"
+        },
+        "shared_dt": {
+          "count": 1000,
+          "hash": "fc758d255314aa880c170982708b24d54a83926eae6c4a303f20325b68d83857",
+          "null_count": 0,
+          "sum": null
+        },
+        "user_id": {
+          "count": 1000,
+          "hash": "ae793778c691701cd0e42fec50c0e8332431b99effd926872e8cc0b0d027a962",
+          "null_count": 0,
+          "sum": "100500"
+        }
+      }
+    },
+    "mismatches": {
+      "access_level": {
+        "count": 0,
+        "samples": []
+      },
+      "document_id": {
+        "count": 0,
+        "samples": []
+      },
+      "share_id": {
+        "count": 0,
+        "samples": []
+      },
+      "shared_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "user_id": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 1000,
+      "legacy": 1000
+    }
+  },
+  "row_counts": {
+    "lakehouse": 1000,
+    "legacy": 1000
+  },
+  "spec_hash": "384845ed23b637e07aa4a7c2303e9b716d72733d2dabc09ba762725a3ab793e6",
+  "timestamp": "2026-11-19T10:00:04.483585+00:00"
+}

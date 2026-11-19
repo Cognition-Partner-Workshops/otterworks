@@ -189,35 +189,59 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: bteq_script:warehouse/teradata/scripts/documents/01_load_folders.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.document
+  - silver_documents.folder
+  parity:
+  - documents.document
+  - documents.folder
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: bteq_script:warehouse/teradata/scripts/documents/02_current_versions.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.doc_version
+  parity:
+  - documents.doc_version
+  assumptions:
+  - A-200
+  - A-203
+  notes: 'PASS candidate-set parity: exact untied outputs, legal tied winners and bounded recomputed workspace totals; see A-200.'
 - id: bteq_script:warehouse/teradata/scripts/documents/03_load_access.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.doc_share
+  - silver_documents.doc_tag
+  parity:
+  - documents.doc_share
+  - documents.doc_tag
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: bteq_script:warehouse/teradata/scripts/documents/04_load_objects.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.doc_comment
+  - silver_documents.file_object
+  parity:
+  - documents.doc_comment
+  - documents.file_object
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: bteq_script:warehouse/teradata/scripts/documents/05_load_sessions.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.collab_session
+  - silver_documents.storage_usage_daily
+  parity:
+  - documents.collab_session
+  - documents.storage_usage_daily
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: bteq_script:warehouse/teradata/scripts/documents/10_storage_monthly.bteq
   status: pending
   targets: []
@@ -349,20 +373,37 @@ objects:
   notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
   verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#06b1c260f55b
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_event_export_hourly.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_hourly'
+  parity:
+  - documents.spark_docs_event_export_hourly
   assumptions:
   - A-037
   - A-044
-  notes: Not migrated; no completeness claim.
+  - A-210
+  - A-212
+  - A-213
+  - A-215
+  - A-216
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Minute-18 hourly DAG remains paused; atomic idempotent bucketed snapshot.
 - id: cron_entry:etl/crontab#0994e1d7781b
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_search_log_parse.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_docs_search_log_parse'
+  parity:
+  - documents.spark_docs_search_log_parse
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-210
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: cron_entry:etl/crontab#146d93841612
   status: pending
   targets: []
@@ -401,12 +442,20 @@ objects:
     DAG. Includes explicit users input edge and success gating; no independent legacy runner.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#5c3511fa77a1
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_docs_folder_tree_walk.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_docs_folder_tree_walk"
+  parity:
+  - documents.spark_docs_folder_tree_walk
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-217
+  - A-222
+  - A-223
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_second_cron_replacements
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: cron_entry:etl/crontab#5f21c41e60ca
   status: pending
   targets: []
@@ -415,19 +464,37 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#69562b8e166b
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_external.py
+  - lakehouse/orchestration/pipeline.yaml#lakehouse_search_reindex_weekly
+  parity:
+  - documents.external_search_documents
+  - documents.external_search_files
+  - documents.external_search_actions
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-224
+  - A-226
+  - A-227
+  - A-228
+  - A-229
+  verification: test:lakehouse/tests/test_documents_external.py::test_documents_external_cron_replacements
+  notes: Injectable native task; unchanged legacy script parity against identical dated service fakes. Live external DAG starts paused.
 - id: cron_entry:etl/crontab#6cccad9ba92f
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_storage_by_owner.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_docs_storage_by_owner'
+  parity:
+  - documents.spark_docs_storage_by_owner
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-210
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: cron_entry:etl/crontab#77635c543e02
   status: replaced_by_platform
   targets:
@@ -440,12 +507,19 @@ objects:
     DAG. Includes explicit users input edge and success gating; no independent legacy runner.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#7ce72803f1b1
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_tag_normalize.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_docs_tag_normalize'
+  parity:
+  - documents.spark_docs_tag_normalize
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-210
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: cron_entry:etl/crontab#8018504ce246
   status: pending
   targets: []
@@ -454,12 +528,19 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#817f451e90ab
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_doc_share_graph_reach.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_doc_share_graph_reach"
+  parity:
+  - documents.spark_doc_share_graph_reach
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-218
+  - A-223
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_second_cron_replacements
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: cron_entry:etl/crontab#8256b4d51699
   status: replaced_by_platform
   targets:
@@ -492,12 +573,20 @@ objects:
   notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
   verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#9f970c1cb2a8
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/runtime/documents_binary.py"
+  - "lakehouse/dbt/models/silver/documents/spark_file_object_binary_extract.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_file_object_binary_extract"
+  parity:
+  - documents.spark_file_object_binary_extract
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-221
+  - A-223
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_second_cron_replacements
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: cron_entry:etl/crontab#a1a53c82cfb3
   status: replaced_by_platform
   targets:
@@ -520,19 +609,34 @@ objects:
     DAG. Includes explicit users input edge and success gating; no independent legacy runner.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#afa009bc6185
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_collab_session_sessionize.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_collab_session_sessionize"
+  parity:
+  - documents.spark_collab_session_sessionize
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-219
+  - A-223
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_second_cron_replacements
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: cron_entry:etl/crontab#b40205d7056e
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_folder_legacy_report.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_documents_folder_manual'
+  parity:
+  - documents.spark_docs_folder_legacy_report
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-210
+  - A-211
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Logic converted; manual-only unscheduled paused DAG preserves disabled cron.
 - id: cron_entry:etl/crontab#b8eef1610f31
   status: replaced_by_platform
   targets:
@@ -582,19 +686,37 @@ objects:
   notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
   verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#d379dc30b522
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_lake_compaction_documents.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_documents_compaction'
+  parity:
+  - documents.spark_lake_compaction_documents
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-210
+  - A-213
+  - A-214
+  - A-215
+  - A-216
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Daily 02:19 DAG remains paused with its producer; committed-source readiness and coalesce(4).
 - id: cron_entry:etl/crontab#d54b23093fd1
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_doc_version_diff_stats.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_doc_version_diff_stats"
+  parity:
+  - documents.spark_doc_version_diff_stats
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-220
+  - A-222
+  - A-223
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_second_cron_replacements
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: cron_entry:etl/crontab#d793014c2fb2
   status: replaced_by_platform
   targets:
@@ -607,12 +729,19 @@ objects:
     DAG. Includes explicit users input edge and success gating; no independent legacy runner.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#e913aaa5c3d7
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_share_activity.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_docs_share_activity'
+  parity:
+  - documents.spark_docs_share_activity
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-210
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: cron_entry:etl/crontab#ed928bb7422d
   status: pending
   targets: []
@@ -628,12 +757,22 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#fd7befdb4e7d
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_external.py
+  - lakehouse/orchestration/pipeline.yaml#lakehouse_storage_cleanup_daily
+  parity:
+  - documents.external_cleanup_report
+  - documents.external_cleanup_actions
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-224
+  - A-225
+  - A-227
+  - A-228
+  - A-229
+  verification: test:lakehouse/tests/test_documents_external.py::test_documents_external_cron_replacements
+  notes: Injectable native task; unchanged legacy script parity against identical dated service fakes. Live external DAG starts paused.
 - id: cron_entry:warehouse/teradata/jobs/crontab.example#250f291ea0eb
   status: pending
   targets: []
@@ -798,40 +937,64 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/01_load_folders
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_documents.document
+  - silver_documents.folder
+  parity:
+  - documents.document
+  - documents.folder
   assumptions:
+  - A-203
   - A-037
-  notes: Not migrated; no completeness claim.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/02_current_versions
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_documents.doc_version
+  parity:
+  - documents.doc_version
   assumptions:
+  - A-200
+  - A-203
   - A-037
-  notes: Not migrated; no completeness claim.
+  notes: 'PASS candidate-set parity: exact untied outputs, legal tied winners and bounded recomputed workspace totals; see A-200.'
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/03_load_access
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_documents.doc_share
+  - silver_documents.doc_tag
+  parity:
+  - documents.doc_share
+  - documents.doc_tag
   assumptions:
+  - A-203
   - A-037
-  notes: Not migrated; no completeness claim.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/04_load_objects
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_documents.doc_comment
+  - silver_documents.file_object
+  parity:
+  - documents.doc_comment
+  - documents.file_object
   assumptions:
+  - A-203
   - A-037
-  notes: Not migrated; no completeness claim.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/05_load_sessions
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_documents.collab_session
+  - silver_documents.storage_usage_daily
+  parity:
+  - documents.collab_session
+  - documents.storage_usage_daily
   assumptions:
+  - A-203
   - A-037
-  notes: Not migrated; no completeness claim.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/10_storage_monthly
   status: pending
   targets: []
@@ -955,17 +1118,36 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: etl_script:etl/scripts/search_reindex_weekly.py
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_external.py
+  - lakehouse/orchestration/pipeline.yaml#lakehouse_search_reindex_weekly
+  parity:
+  - documents.external_search_documents
+  - documents.external_search_files
+  - documents.external_search_actions
+  assumptions:
+  - A-224
+  - A-226
+  - A-227
+  - A-228
+  - A-229
+  notes: Injectable native task; unchanged legacy script parity against identical dated service fakes. Live external DAG starts paused.
 - id: etl_script:etl/scripts/storage_cleanup_daily.py
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_external.py
+  - lakehouse/orchestration/pipeline.yaml#lakehouse_storage_cleanup_daily
+  parity:
+  - documents.external_cleanup_report
+  - documents.external_cleanup_actions
+  assumptions:
+  - A-224
+  - A-225
+  - A-227
+  - A-228
+  - A-229
+  notes: Injectable native task; unchanged legacy script parity against identical dated service fakes. Live external DAG starts paused.
 - id: etl_script:etl/scripts/user_activity_daily.py
   status: converted
   targets:
@@ -1589,17 +1771,33 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-207
+  - A-208
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_DOC_SHARE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_doc_share
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_doc_share
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-208
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_LOGIN_EVENT
   status: converted
   targets:
@@ -1631,11 +1829,17 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_STG_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_stg_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_stg_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_TEAM_MEMBER
   status: converted
   targets:
@@ -1781,17 +1985,33 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-207
+  - A-208
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_DOC_SHARE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_doc_share
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_doc_share
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-208
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_LOGIN_EVENT
   status: converted
   targets:
@@ -1823,11 +2043,17 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_STG_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_stg_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_stg_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_TEAM_MEMBER
   status: converted
   targets:
@@ -1925,17 +2151,31 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_source:SFX_CONTENT.FF_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_stg_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_stg_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_source:SFX_CONTENT.FF_DOC_SHARE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_doc_share
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_doc_share
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-208
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_source:SFX_CONTENT.FF_LOGIN_EVENT
   status: converted
   targets:
@@ -1977,11 +2217,19 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_source:SFX_CONTENT.STG_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-207
+  - A-208
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_target:SFX_AUDIT.AUDIT_DAILY_SUMMARY
   status: replaced_by_platform
   targets:
@@ -2086,17 +2334,33 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_target:SFX_CONTENT.DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-207
+  - A-208
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_target:SFX_CONTENT.DOC_SHARE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_doc_share
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_doc_share
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-208
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_target:SFX_CONTENT.LOGIN_EVENT
   status: converted
   targets:
@@ -2128,11 +2392,17 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_target:SFX_CONTENT.STG_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_stg_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_stg_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_target:SFX_CONTENT.TEAM_MEMBER
   status: converted
   targets:
@@ -2289,11 +2559,17 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_job:collab_session_sessionize
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_collab_session_sessionize.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_collab_session_sessionize"
+  parity:
+  - documents.spark_collab_session_sessionize
+  assumptions:
+  - A-219
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_job:compliance_flag_rules
   status: converted
   targets:
@@ -2306,66 +2582,139 @@ objects:
   notes: Fresh same-landing fixture parity. A-406 limits the Z-score floating-reduction tolerance and
     retires duplicate Parquet/JDBC sinks in favor of Delta.
 - id: spark_job:doc_share_graph_reach
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_doc_share_graph_reach.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_doc_share_graph_reach"
+  parity:
+  - documents.spark_doc_share_graph_reach
+  assumptions:
+  - A-218
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_job:doc_version_diff_stats
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_doc_version_diff_stats.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_doc_version_diff_stats"
+  parity:
+  - documents.spark_doc_version_diff_stats
+  assumptions:
+  - A-220
+  - A-222
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_job:docs_event_export_hourly
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_event_export_hourly.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_hourly'
+  parity:
+  - documents.spark_docs_event_export_hourly
   assumptions:
   - A-044
-  notes: Not migrated; no completeness claim.
+  - A-210
+  - A-212
+  - A-213
+  - A-215
+  - A-216
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Minute-18 hourly DAG remains paused; atomic idempotent bucketed snapshot.
 - id: spark_job:docs_folder_legacy_report
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_folder_legacy_report.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_documents_folder_manual'
+  parity:
+  - documents.spark_docs_folder_legacy_report
+  assumptions:
+  - A-210
+  - A-211
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Logic converted; manual-only unscheduled paused DAG preserves disabled cron.
 - id: spark_job:docs_folder_tree_walk
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_docs_folder_tree_walk.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_docs_folder_tree_walk"
+  parity:
+  - documents.spark_docs_folder_tree_walk
+  assumptions:
+  - A-217
+  - A-222
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_job:docs_search_log_parse
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_search_log_parse.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_docs_search_log_parse'
+  parity:
+  - documents.spark_docs_search_log_parse
+  assumptions:
+  - A-210
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: spark_job:docs_share_activity
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_share_activity.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_docs_share_activity'
+  parity:
+  - documents.spark_docs_share_activity
+  assumptions:
+  - A-210
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: spark_job:docs_storage_by_owner
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_storage_by_owner.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_docs_storage_by_owner'
+  parity:
+  - documents.spark_docs_storage_by_owner
+  assumptions:
+  - A-210
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: spark_job:docs_tag_normalize
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_tag_normalize.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_docs_tag_normalize'
+  parity:
+  - documents.spark_docs_tag_normalize
+  assumptions:
+  - A-210
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: spark_job:file_object_binary_extract
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/runtime/documents_binary.py"
+  - "lakehouse/dbt/models/silver/documents/spark_file_object_binary_extract.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_file_object_binary_extract"
+  parity:
+  - documents.spark_file_object_binary_extract
+  assumptions:
+  - A-221
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_job:lake_compaction_audit
   status: replaced_by_platform
   targets:
@@ -2379,11 +2728,21 @@ objects:
     unchanged rows; fresh output parity covers the legacy compacted relation.
   verification: test:lakehouse/tests/test_audit_spark.py::test_delta_optimize_preserves_audit_summary
 - id: spark_job:lake_compaction_documents
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_lake_compaction_documents.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_documents_compaction'
+  parity:
+  - documents.spark_lake_compaction_documents
+  assumptions:
+  - A-210
+  - A-213
+  - A-214
+  - A-215
+  - A-216
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Daily 02:19 DAG remains paused with its producer; committed-source readiness and coalesce(4).
 - id: spark_job:security_alert_anomaly
   status: converted
   targets:
@@ -2456,11 +2815,18 @@ objects:
   - A-308
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: spark_library:etl/spark/jobs/py/common/binary_documents.py
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/runtime/documents_binary.py"
+  - "lakehouse/dbt/models/silver/documents/spark_file_object_binary_extract.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_file_object_binary_extract"
+  parity:
+  - documents.spark_file_object_binary_extract
+  assumptions:
+  - A-221
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_library:etl/spark/jobs/py/common/package.py
   status: pending
   targets: []
@@ -2558,11 +2924,17 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_submit:etl/spark/submit/collab_session_sessionize.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_collab_session_sessionize.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_collab_session_sessionize"
+  parity:
+  - documents.spark_collab_session_sessionize
+  assumptions:
+  - A-219
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_submit:etl/spark/submit/compliance_flag_rules.sh
   status: converted
   targets:
@@ -2576,65 +2948,138 @@ objects:
     retires duplicate Parquet/JDBC sinks in favor of Delta.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: spark_submit:etl/spark/submit/doc_share_graph_reach.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_doc_share_graph_reach.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_doc_share_graph_reach"
+  parity:
+  - documents.spark_doc_share_graph_reach
+  assumptions:
+  - A-218
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_submit:etl/spark/submit/doc_version_diff_stats.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_doc_version_diff_stats.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_doc_version_diff_stats"
+  parity:
+  - documents.spark_doc_version_diff_stats
+  assumptions:
+  - A-220
+  - A-222
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_submit:etl/spark/submit/docs_event_export_hourly.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_event_export_hourly.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_hourly'
+  parity:
+  - documents.spark_docs_event_export_hourly
+  assumptions:
+  - A-210
+  - A-212
+  - A-213
+  - A-215
+  - A-216
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Minute-18 hourly DAG remains paused; atomic idempotent bucketed snapshot.
 - id: spark_submit:etl/spark/submit/docs_folder_legacy_report.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_folder_legacy_report.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_documents_folder_manual'
+  parity:
+  - documents.spark_docs_folder_legacy_report
+  assumptions:
+  - A-210
+  - A-211
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Logic converted; manual-only unscheduled paused DAG preserves disabled cron.
 - id: spark_submit:etl/spark/submit/docs_folder_tree_walk.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_docs_folder_tree_walk.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_docs_folder_tree_walk"
+  parity:
+  - documents.spark_docs_folder_tree_walk
+  assumptions:
+  - A-217
+  - A-222
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_submit:etl/spark/submit/docs_search_log_parse.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_search_log_parse.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_docs_search_log_parse'
+  parity:
+  - documents.spark_docs_search_log_parse
+  assumptions:
+  - A-210
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: spark_submit:etl/spark/submit/docs_share_activity.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_share_activity.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_docs_share_activity'
+  parity:
+  - documents.spark_docs_share_activity
+  assumptions:
+  - A-210
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: spark_submit:etl/spark/submit/docs_storage_by_owner.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_storage_by_owner.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_docs_storage_by_owner'
+  parity:
+  - documents.spark_docs_storage_by_owner
+  assumptions:
+  - A-210
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: spark_submit:etl/spark/submit/docs_tag_normalize.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_docs_tag_normalize.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_docs_tag_normalize'
+  parity:
+  - documents.spark_docs_tag_normalize
+  assumptions:
+  - A-210
+  - A-215
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: spark_submit:etl/spark/submit/file_object_binary_extract.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/runtime/documents_binary.py"
+  - "lakehouse/dbt/models/silver/documents/spark_file_object_binary_extract.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_file_object_binary_extract"
+  parity:
+  - documents.spark_file_object_binary_extract
+  assumptions:
+  - A-221
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_submit:etl/spark/submit/lake_compaction_audit.sh
   status: replaced_by_platform
   targets:
@@ -2648,11 +3093,21 @@ objects:
     unchanged rows; fresh output parity covers the legacy compacted relation.
   verification: test:lakehouse/tests/test_audit_spark.py::test_delta_optimize_preserves_audit_summary
 - id: spark_submit:etl/spark/submit/lake_compaction_documents.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/runtime/documents_spark.py
+  - lakehouse/dbt/models/silver/documents/spark_lake_compaction_documents.sql
+  - 'lakehouse/orchestration/pipeline.yaml#lakehouse_documents_compaction'
+  parity:
+  - documents.spark_lake_compaction_documents
+  assumptions:
+  - A-210
+  - A-213
+  - A-214
+  - A-215
+  - A-216
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
+  notes: Daily 02:19 DAG remains paused with its producer; committed-source readiness and coalesce(4).
 - id: spark_submit:etl/spark/submit/security_alert_anomaly.sh
   status: converted
   targets:
@@ -2753,11 +3208,14 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_macro:SFX_DOCUMENTS.M_STORAGE_TOTALS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_documents.m_storage_totals
+  parity:
+  - documents.m_storage_totals
+  assumptions:
+  - A-202
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_macro:SFX_USERS.M_TEAM_COUNTS
   status: converted
   targets:
@@ -3172,125 +3630,198 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_table:SFX_DOCUMENTS.COLLAB_SESSION
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.collab_session
+  parity:
+  - documents.collab_session
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.document
+  parity:
+  - documents.document
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.DOC_COMMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.doc_comment
+  parity:
+  - documents.doc_comment
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.DOC_SHARE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.doc_share
+  parity:
+  - documents.doc_share
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.DOC_TAG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.doc_tag
+  parity:
+  - documents.doc_tag
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.DOC_VERSION
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.doc_version
+  parity:
+  - documents.doc_version
+  assumptions:
+  - A-200
+  - A-203
+  notes: 'PASS candidate-set parity: exact untied outputs, legal tied winners and bounded recomputed workspace totals; see A-200.'
 - id: teradata_table:SFX_DOCUMENTS.FILE_OBJECT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.file_object
+  parity:
+  - documents.file_object
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.FOLDER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.folder
+  parity:
+  - documents.folder
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.SEARCH_INDEX_LOG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.search_index_log
+  parity:
+  - documents.search_index_log
+  assumptions:
+  - A-201
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_COLLAB_SESSION
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_collab_session
+  parity:
+  - documents.stg_collab_session
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_document
+  parity:
+  - documents.stg_document
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_DOC_COMMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_doc_comment
+  parity:
+  - documents.stg_doc_comment
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_DOC_SHARE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_doc_share
+  parity:
+  - documents.stg_doc_share
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_DOC_TAG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_doc_tag
+  parity:
+  - documents.stg_doc_tag
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_DOC_VERSION
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_doc_version
+  parity:
+  - documents.stg_doc_version
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_FILE_OBJECT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_file_object
+  parity:
+  - documents.stg_file_object
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_FOLDER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_folder
+  parity:
+  - documents.stg_folder
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_search_index_log
+  parity:
+  - documents.stg_search_index_log
+  assumptions:
+  - A-201
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_storage_usage_daily
+  parity:
+  - documents.stg_storage_usage_daily
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STORAGE_USAGE_DAILY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.storage_usage_daily
+  parity:
+  - documents.storage_usage_daily
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_USERS.APP_USER
   status: converted
   targets:
@@ -3534,23 +4065,32 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_view:SFX_DOCUMENTS.V_DOCUMENT_VERSIONS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_documents.v_document_versions
+  parity:
+  - documents.v_document_versions
+  assumptions:
+  - A-200
+  notes: 'PASS candidate-set parity: exact untied outputs, legal tied winners and bounded recomputed workspace totals; see A-200.'
 - id: teradata_view:SFX_DOCUMENTS.V_SEARCH_HISTORY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_documents.v_search_history
+  parity:
+  - documents.v_search_history
+  assumptions:
+  - A-201
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_view:SFX_DOCUMENTS.V_WORKSPACE_STORAGE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_documents.v_workspace_storage
+  parity:
+  - documents.v_workspace_storage
+  assumptions:
+  - A-200
+  notes: 'PASS candidate-set parity: exact untied outputs, legal tied winners and bounded recomputed workspace totals; see A-200.'
 - id: teradata_view:SFX_USERS.V_TEAM_MEMBERS
   status: converted
   targets:
@@ -3781,11 +4321,14 @@ objects:
   - A-036
   notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
 - id: tpt:warehouse/teradata/load/tpt/documents_collab_session.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_collab_session
+  parity:
+  - documents.stg_collab_session
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3800,13 +4343,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_doc_comment.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_doc_comment
+  parity:
+  - documents.stg_doc_comment
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3821,13 +4367,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_doc_share.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_doc_share
+  parity:
+  - documents.stg_doc_share
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3842,13 +4391,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_doc_tag.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_doc_tag
+  parity:
+  - documents.stg_doc_tag
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3863,13 +4415,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_doc_version.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_doc_version
+  parity:
+  - documents.stg_doc_version
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3884,13 +4439,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_document.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_document
+  parity:
+  - documents.stg_document
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3905,13 +4463,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_file_object.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_file_object
+  parity:
+  - documents.stg_file_object
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3926,13 +4487,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_folder.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_folder
+  parity:
+  - documents.stg_folder
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3947,13 +4511,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_search_index_log.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_search_index_log
+  parity:
+  - documents.stg_search_index_log
   assumptions:
+  - A-201
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3968,13 +4536,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_storage_usage_daily.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_storage_usage_daily
+  parity:
+  - documents.stg_storage_usage_daily
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3989,4 +4560,4 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.

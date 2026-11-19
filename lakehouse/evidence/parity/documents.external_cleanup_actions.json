@@ -1,0 +1,110 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "a6706562b107e688a72f77c9b99a0a29262872b6",
+  "id": "documents.external_cleanup_actions",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "etl_script:etl/scripts/storage_cleanup_daily.py",
+    "cron_entry:etl/crontab#fd7befdb4e7d"
+  ],
+  "results": {
+    "columns": [
+      "scenario",
+      "identity",
+      "payload"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "identity": {
+          "count": 9,
+          "hash": "bbab23ccb5ce98c7c2794ecd541daf2199c35337d3f26db168e0544fb7264f76",
+          "null_count": 0,
+          "sum": null
+        },
+        "payload": {
+          "count": 9,
+          "hash": "362c5434cbf9d2dada5aa5d321982d794f04abffebfbc5540e6fd37d4fe12f4a",
+          "null_count": 0,
+          "sum": null
+        },
+        "scenario": {
+          "count": 9,
+          "hash": "8aab383bd28b8ab0ce693eda76f1e5e04affdcbd834b1ad0b0b3fcd7fd6ca1f8",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "identity": {
+          "count": 9,
+          "hash": "bbab23ccb5ce98c7c2794ecd541daf2199c35337d3f26db168e0544fb7264f76",
+          "null_count": 0,
+          "sum": null
+        },
+        "payload": {
+          "count": 9,
+          "hash": "362c5434cbf9d2dada5aa5d321982d794f04abffebfbc5540e6fd37d4fe12f4a",
+          "null_count": 0,
+          "sum": null
+        },
+        "scenario": {
+          "count": 9,
+          "hash": "8aab383bd28b8ab0ce693eda76f1e5e04affdcbd834b1ad0b0b3fcd7fd6ca1f8",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "identity": {
+        "count": 0,
+        "samples": []
+      },
+      "payload": {
+        "count": 0,
+        "samples": []
+      },
+      "scenario": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 9,
+      "legacy": 9
+    }
+  },
+  "row_counts": {
+    "lakehouse": 9,
+    "legacy": 9
+  },
+  "spec_hash": "47d0328396e0da7054feb432657b446e3bdb092daf67fdb7ac471890a37fb495",
+  "timestamp": "2026-11-19T10:00:03.534080+00:00"
+}
