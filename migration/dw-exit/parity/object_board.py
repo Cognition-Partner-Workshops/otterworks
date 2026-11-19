@@ -17,11 +17,13 @@ from sqlglot import exp
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
+MIGRATION = ROOT / 'migration/dw-exit'
+MANIFEST = MIGRATION / 'manifest.yaml'
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'migration/dw-exit/tools'))
 sys.path.insert(0, str(ROOT / 'migration/dw-exit'))
 from warehouse.run_config import RunConfig
-from assess import board as wave_board
+from assess import board as wave_board, licence_counters
 from parity import connection as snowflake_connection
 from parity.ladder import identifier, relation as snowflake_relation
 
@@ -283,6 +285,23 @@ def declared_outputs(obj):
     return sorted({r for declaration in declarations for r in declaration.get('output_relations', [])})
 
 
+def update_migration_summary(result, objects):
+    statuses = {obj['id']: obj.get('status', 'not_started') for obj in objects}
+    rows = result['rows']
+    for row in rows:
+        row['migration_status'] = statuses[row['id']]
+    pending = [row for row in rows if row['migration_status'] != 'migrated']
+    remaining_by_system = Counter(r['licence_dependency'] for r in pending if r['licence_dependency'] != 'none')
+    result['summary'].update(
+        migrated=len(rows) - len(pending),
+        migrated_areas=len({r['subject_area'] for r in rows} - {r['subject_area'] for r in pending}),
+        licence_total=sum(r['licence_dependency_count'] for r in rows),
+        licence_remaining=sum(remaining_by_system.values()),
+        licence_by_system=dict(remaining_by_system),
+    )
+    result['licence_counters'] = licence_counters(objects, result['licence_counters'])
+
+
 def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb',
                 counters=None, subject_area=None, snowflake=None):
     if target not in ('duckdb', 'snowflake'):
@@ -293,7 +312,9 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     result.update(run_token=RunConfig.from_env().token, target=target, rows=[])
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
         'local_target': 'DuckDB', 'conversions': ['billing/initial/10_load.sql','billing/initial/30_views.sql'],
-        'non_relational_objects': 'dependency parity and routine existence', 'migration_state': 'BEFORE'}
+        'non_relational_objects': 'dependency parity and routine existence', 'migration_state': 'manifest'}
+    if target == 'duckdb' and os.environ.get('BOARD_DUCKDB_PATH'):
+        result['measurement_contract']['conversions'] = ['operator-provisioned DuckDB target']
     available, errors = set(available or ()), errors or {}
     own_snowflake = snowflake is None
     snowflake = snowflake or SnowflakeMeasurements()
@@ -376,33 +397,22 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
             red = next((side for side in legs if legs[side]['status'] == 'red'), None)
             row.update(legs=legs, status='red' if red else 'green',
                        reason=red + ': ' + legs[red]['reason'] if red else None,
-                       migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'))
+                       licence_dependency_count=int(obj['licence_dependency'] != 'none'))
             row.update({field: legs['duckdb'][field] for field in FIELDS})
             result['rows'].append(row)
     finally:
         if own_snowflake:
             snowflake.close()
-    total = sum(r['licence_dependency_count'] for r in result['rows'])
     def counts(rows):
         return dict(green=sum(r['status']=='green' for r in rows), red=sum(r['status']=='red' for r in rows),
                     measured=sum(r['row_count'] is not None for r in rows))
     result['summary'] = dict(rows=len(selected), **counts(result['rows']),
-        legs={side: counts([r['legs'][side] for r in result['rows']]) for side in ('duckdb', 'snowflake')},
-        migrated=0, licence_remaining=total, licence_total=total,
-        licence_by_system=dict(Counter(r['licence_dependency'] for r in result['rows'] if r['licence_dependency']!='none')))
+        legs={side: counts([r['legs'][side] for r in result['rows']]) for side in ('duckdb', 'snowflake')})
+    update_migration_summary(result, selected)
     return result
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--manifest',type=Path,default=ROOT/'migration/dw-exit/manifest.yaml')
-    parser.add_argument('--output',type=Path,default=ROOT/'migration/dw-exit/board/board.json')
-    parser.add_argument('--target',choices=['duckdb','snowflake'],default=os.environ.get('PARITY_TARGET','duckdb'))
-    parser.add_argument('--subject-area')
-    args = parser.parse_args()
-    manifest = yaml.safe_load(args.manifest.read_text())
-    from assess import build
-    counters = build()['counters']
+def measure_board(manifest, *, target='duckdb', counters=None, subject_area=None, snowflake=None):
     before = after = None
     ready, errors = set(), {}
     try:
@@ -412,17 +422,36 @@ def main():
             port = os.environ.get('TD_PG_PORT',str(54500+zlib.crc32(ns.encode())%1000))
             dsn = os.environ.get('BOARD_SOURCE_DSN',f'host=127.0.0.1 port={port} dbname=teradata user=postgres')
             before, source_ready, source_errors = source_snapshot(dsn,names)
-            if args.target == 'duckdb':
-                after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing/initial')
+            if target == 'duckdb':
+                if local_target := os.environ.get('BOARD_DUCKDB_PATH'):
+                    after = duckdb.connect(local_target, read_only=True)
+                    ready = {f'{schema}.{table}'.upper() for schema, table in after.execute(
+                        'SELECT table_schema, table_name FROM information_schema.tables').fetchall()}
+                else:
+                    after, ready, errors = materialize(before, source_ready, MIGRATION/'billing/initial')
             errors.update(source_errors)
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,subject_area=args.subject_area)
-        args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
-        print(json.dumps(payload['summary'],sort_keys=True))
+        return build_board(manifest, before, after, ready, errors, target=target, counters=counters,
+                           subject_area=subject_area, snowflake=snowflake)
     finally:
         if before is not None:
             before.close()
         if after is not None:
             after.close()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--manifest', type=Path, default=MANIFEST)
+    parser.add_argument('--output', type=Path, default=MIGRATION/'board/board.json')
+    parser.add_argument('--target', choices=['duckdb','snowflake'], default=os.environ.get('PARITY_TARGET','duckdb'))
+    parser.add_argument('--subject-area')
+    args = parser.parse_args()
+    manifest = yaml.safe_load(args.manifest.read_text())
+    from assess import build
+    payload = measure_board(manifest, target=args.target, counters=build()['counters'],
+                            subject_area=args.subject_area)
+    args.output.write_text(json.dumps(payload, indent=2, default=str) + '\n')
+    print(json.dumps(payload['summary'], sort_keys=True))
 
 
 if __name__ == '__main__':

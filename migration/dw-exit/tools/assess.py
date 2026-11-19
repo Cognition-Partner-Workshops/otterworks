@@ -381,21 +381,45 @@ def build(root=None):
             risk_reasons=[], status='not_started'))
     setup_only = sorted(name for name, qs in reads.items() if qs and all(q['StartTime'][:10] == '2026-08-12' for q in qs))
     cost = yaml.safe_load(_run_render((root / 'etl/informatica/licence.yaml').read_text()))['variables']
-    counters = {'teradata_objects': {'remaining': len(catalog), 'target': 0}, 'powercenter_mappings': {'remaining': len(mapping_files), 'target': 0}, 'spark_executor_hours': {'remaining': 0, 'target': 0, 'status': 'no Spark estate on branch yet'}, 'powercenter_annual_cost': {'value': cost['ANNUAL_COST'], 'currency': cost['ANNUAL_COST_CURRENCY']}}
-    counters.pop('spark_executor_hours')
-    counters['teradata_objects']['remaining'] = sum(r['licence_dependency'] == 'teradata' for r in manifest)
-    counters['powercenter_objects'] = {'remaining': sum(r['licence_dependency'] == 'powercenter' for r in manifest), 'target': 0}
-    counters['spark_jobs'] = {'remaining': 30, 'target': 0}
-    counters['licence_dependencies'] = {'remaining': len(manifest), 'total': len(manifest), 'target': 0}
+    counters = licence_counters(manifest, {'powercenter_annual_cost': {
+        'value': cost['ANNUAL_COST'], 'currency': cost['ANNUAL_COST_CURRENCY']}})
     return {'artifacts': sorted(artifacts, key=lambda r: r['id']), 'objects': manifest, 'consumers': consumers, 'dead': dead, 'dead_dependents': dependents, 'setup_only': setup_only, 'scans': scans, 'links': sorted(normalized), 'dependencies': dependencies, 'feeds': sorted(feeds), 'counters': counters}
+
+
+def licence_counters(objects, metadata):
+    pending = [r for r in objects if r.get('status') != 'migrated']
+    remaining = Counter(r['licence_dependency'] for r in pending if r['licence_dependency'] != 'none')
+    counters = {
+        'teradata_objects': {'remaining': remaining['teradata'], 'target': 0},
+        'powercenter_mappings': {'remaining': sum(r['kind'] == 'mapping' and r['licence_dependency'] == 'powercenter'
+                                                for r in pending), 'target': 0},
+        'powercenter_objects': {'remaining': remaining['powercenter'], 'target': 0},
+        'spark_jobs': {'remaining': remaining['spark'], 'target': 0},
+        'licence_dependencies': {'remaining': sum(remaining.values()), 'target': 0,
+                                 'total': sum(r['licence_dependency'] != 'none' for r in objects)},
+    }
+    if 'powercenter_annual_cost' in metadata:
+        counters['powercenter_annual_cost'] = metadata['powercenter_annual_cost']
+    return counters
 
 
 def board(objects, counters):
     return {'waves': {str(w): {'total': sum(r['wave'] == w for r in objects), 'by_kind': dict(sorted(Counter(r['kind'] for r in objects if r['wave'] == w).items())), 'by_target': dict(sorted(Counter(r['target_type'] for r in objects if r['wave'] == w).items()))} for w in range(1, 5)}, 'licence_counters': counters}
 
 
+def preserve_migration_status(objects, manifest_path):
+    if manifest_path.is_file():
+        previous = yaml.safe_load(manifest_path.read_text())['objects']
+        migrated = {obj['id'] for obj in previous if obj['status'] == 'migrated'}
+        for obj in objects:
+            if obj['id'] in migrated:
+                obj['status'] = 'migrated'
+
+
 def main():
     data = build()
+    preserve_migration_status(data['objects'], OUT / 'manifest.yaml')
+    data['counters'] = licence_counters(data['objects'], data['counters'])
     with (OUT / 'inventory.csv').open('w') as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator='\n')
         writer.writeheader()
@@ -429,7 +453,8 @@ def main():
     for field in ('by_kind', 'by_target'):
         for key in sorted({k for v in b['waves'].values() for k in v[field]}):
             table += '| ' + field + ': ' + key + ' | ' + ' | '.join(str(b['waves'][str(w)][field].get(key, 0)) for w in range(1, 5)) + ' |\n'
-    (OUT / 'board/README.md').write_text('# Migration board\n\n' + table + '\n## Licence counters\n\n| Counter | Remaining | Target |\n|---|---:|---:|\n' + '\n'.join(f"| {k} | {v['remaining']} | {v['target']} |" for k, v in data['counters'].items() if 'remaining' in v) + '\n\nAll objects remain not_started. Parity measurements do not migrate or retire objects.\n')
+    migrated = sum(obj['status'] == 'migrated' for obj in data['objects'])
+    (OUT / 'board/README.md').write_text('# Migration board\n\n' + table + '\n## Licence counters\n\n| Counter | Remaining | Target |\n|---|---:|---:|\n' + '\n'.join(f"| {k} | {v['remaining']} | {v['target']} |" for k, v in data['counters'].items() if 'remaining' in v) + f'\n\nMigrated objects: {migrated}. Parity measurements do not migrate or retire objects.\n')
     print(json.dumps(summary, indent=2))
 
 

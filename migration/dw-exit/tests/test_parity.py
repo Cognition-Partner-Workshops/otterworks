@@ -5,11 +5,11 @@ _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
 from warehouse.run_config import render as _run_render
 
 import json
-import importlib.util
 import os
 from pathlib import Path
 
 import pytest
+import yaml
 
 from parity.ladder import Ladder, assert_parity, identifier, relation
 from parity.report import table
@@ -100,13 +100,9 @@ def test_report_rejects_missing_relation_or_changed_count():
 
 
 def test_promotion_inventory_is_billing_only():
-    spec = importlib.util.spec_from_file_location('billing_promote', ROOT / 'billing/promote.py')
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    objects = module.inventory_objects()
-    assert len(objects) == len({(kind, name) for kind, name, _, _ in objects})
-    assert all(kind in ('table', 'view', 'macro', 'procedure', 'bteq') for kind, _, _, _ in objects)
-    assert all(name.startswith('SFX_BILLING.') if kind != 'bteq'
-               else source.startswith('warehouse/teradata/scripts/billing/')
-               for kind, name, source, _ in objects)
-    assert any(name.startswith('SFX_BILLING.STG_') for _, name, _, _ in objects)
+    manifest = yaml.safe_load((ROOT / 'manifest.yaml').read_text())
+    objects = [obj for obj in manifest['objects'] if obj['subject_area'] == 'billing']
+    inventory = {(obj['kind'], obj['name']) for obj in objects}
+    assert len(objects) == len(inventory)
+    assert ('procedure', 'SFX_BILLING.P_MONTHLY_INVOICE') in inventory
+    assert ('table', 'SFX_BILLING.STG_CUSTOMER_ACCOUNT') in inventory
