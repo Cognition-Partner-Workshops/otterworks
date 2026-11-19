@@ -23,8 +23,8 @@ from assess import board as wave_board
 from parity.local_billing import execute
 from parity.semantics import columns as source_columns, numeric_type
 from parity.ladder import local_compare as compare
-from parity.provenance import provenance, markdown
-from parity import report_outputs, spark_billing
+from parity.provenance import provenance, markdown, content_provenance
+from parity import report_outputs, spark_billing, local_content
 
 
 def quote(name):
@@ -154,7 +154,8 @@ def materialize(before, names, conversion_dir, business_date='20261109'):
     return after, ready, errors
 
 
-def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, preflight=None):
+def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, preflight=None,
+                content_available=None):
     if target not in ('duckdb', 'snowflake'):
         raise ValueError('Unsupported parity target')
     if preflight is not None and (preflight.get('run_token') != RunConfig.from_env().token
@@ -169,6 +170,8 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
         'local_target': 'DuckDB', 'conversions': ['billing/'+s for s in ('10_load.sql','15_storage.sql','20_routines.sql','30_views.sql','40_close.sql')],
         'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
+    result['measurement_contract']['content'] = {'source': 'actual PowerCenter wf_SFX_CONTENT_DAILY execution',
+        'conversion': 'content/workflow.sql', 'scope': 'content workflow only; not standalone mapping proof'}
     available, errors = set(available or ()), errors or {}
     for obj in objects:
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
@@ -176,6 +179,8 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                    row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
         if obj['subject_area'] == 'billing':
             row['provenance'] = provenance(obj)
+        elif obj['subject_area'] == 'content':
+            row['provenance'] = content_provenance(obj)
         if obj['system'] == 'spark' and not any(name.startswith('SFX_SPARK.') for name in obj.get('output_relations', [])):
             if obj.get('source') and (ROOT / obj['source']).is_file():
                 row.update(source=obj['source'], source_ref=obj.get('source_ref'))
@@ -188,13 +193,15 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
             row['reason'] = 'no declared output relation'
         else:
             measured = {}
+            row_available = available | set(content_available or ()) if obj['subject_area'] == 'content' else available
             for source in obj['output_relations']:
                 destination = source.removeprefix('SFX_')
-                if destination not in available:
+                if destination not in row_available:
                     row['reason'] = errors.get(destination, errors.get('*', 'output not materialized: '+destination))
                     break
                 try:
-                    measured[source] = compare(before, after, source, destination)
+                    measured[source] = compare(before, after, source, destination,
+                                               sample_size=None if obj['subject_area'] == 'content' else 5)
                 except (duckdb.Error, ValueError) as error:
                     row['reason'] = 'measurement failed: '+str(error).splitlines()[0]
                     break
@@ -203,10 +210,16 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 for field in ('column_profile','keyed_row_hash','sampled_differences'):
                     row[field] = {name:values[field] for name,values in measured.items()}
                 row['comparison_rules'] = {name:values['comparison_rules'] for name,values in measured.items()}
+                if obj['subject_area'] == 'content':
+                    row['relation_results'] = measured
                 row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
                 if row['status'] == 'red':
                     row['reason'] = 'measured parity mismatch'
-        if obj['subject_area'] == 'billing':
+                    if obj['subject_area'] == 'content':
+                        differing = [name for name, values in measured.items() if not values['passed']]
+                        row['reason'] = (local_content.PENDING if differing == ['SFX_USERS.STG_APP_USER']
+                                         else 'measured parity mismatch: '+', '.join(differing))
+        if obj['subject_area'] in ('billing', 'content'):
             row.update(local_duckdb=row['status'] if target == 'duckdb' else 'red',
                        snowflake='red', snowflake_reason=snowflake_reason,
                        snowflake_preflight=preflight)
@@ -221,6 +234,9 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     result['summary']['billing'] = dict(local_duckdb='green' if billing and local_green == len(billing) else 'red',
         local_green=local_green, local_red=len(billing)-local_green,
         snowflake='red', snowflake_reason=snowflake_reason)
+    content = [row for row in result['rows'] if row['subject_area'] == 'content']
+    result['summary']['content'] = dict(local_green=sum(row['local_duckdb'] == 'green' for row in content),
+                                      local_red=sum(row['local_duckdb'] == 'red' for row in content), snowflake='red')
     return result
 
 
@@ -247,14 +263,19 @@ def main():
             before, source_ready, source_errors = source_snapshot(dsn,names)
             after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing',os.environ.get('BUSINESS_DATE','20261109'))
             errors.update(source_errors)
+            content_ready,content_errors,content_evidence = local_content.materialize(
+                before,after,dsn,ns,source_snapshot,os.environ.get('BUSINESS_DATE','20261109'))
+            errors.update(content_errors)
             if not errors.get('*'):
                 errors.update(report_outputs.materialize(before,after,dsn,ready,os.environ.get('BUSINESS_DATE','20261109')))
             spark_ready,spark_errors,spark_evidence = spark_billing.materialize(before,after,manifest['objects'],ns)
             ready.update(spark_ready)
             errors.update(spark_errors)
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight)
+        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight,
+                              content_available=content_ready if args.target == 'duckdb' and manifest['objects'] else None)
         if args.target == 'duckdb' and manifest['objects']:
             payload['spark_evidence'] = spark_evidence
+            payload['content_evidence'] = content_evidence
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         readme = args.output.parent / 'README.md'
         if readme.exists():
