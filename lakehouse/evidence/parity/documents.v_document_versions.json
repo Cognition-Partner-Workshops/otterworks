@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "d48c11e07c4315a30d5a4eee747e2e7426d15a42",
+  "git_sha": "1c9f575e97ec86cc27294cfd4104e32c8f3a1864",
   "id": "documents.v_document_versions",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -38,9 +38,9 @@
         },
         "file_size": {
           "count": 450,
-          "hash": "d5ef8e4e4cfaabe0ac313b8eb180d3c8e3166352e94e54402e918685294003af",
+          "hash": "d85abe79641dc645649bac402a6135b6b4c4c67d5b4b2661d08868bb4c20ba62",
           "null_count": 0,
-          "sum": "289200294"
+          "sum": "289200344"
         },
         "owner_user_id": {
           "count": 450,
@@ -50,9 +50,9 @@
         },
         "version_id": {
           "count": 450,
-          "hash": "4550b3be896beb09a0f9b8c47bbec9dd77e29d995ba50a288595eafdd5175d1e",
+          "hash": "536f2d96e01fb3a5881153a66a7c2b224b25c3ea30a288700e112f23deb86e47",
           "null_count": 0,
-          "sum": "450000722700"
+          "sum": "450000722750"
         },
         "version_ts": {
           "count": 450,
@@ -100,14 +100,77 @@
         "samples": []
       },
       "file_size": {
-        "count": 1,
+        "count": 49,
         "samples": [
           {
             "key": [
-              "9000000025"
+              "9.00000001E+9"
             ],
-            "lakehouse": "4144",
-            "legacy": "4145"
+            "lakehouse": "4115",
+            "legacy": "4114"
+          },
+          {
+            "key": [
+              "9.00000002E+9"
+            ],
+            "lakehouse": "4135",
+            "legacy": "4134"
+          },
+          {
+            "key": [
+              "9.00000003E+9"
+            ],
+            "lakehouse": "4155",
+            "legacy": "4154"
+          },
+          {
+            "key": [
+              "9.00000004E+9"
+            ],
+            "lakehouse": "4175",
+            "legacy": "4174"
+          },
+          {
+            "key": [
+              "9.00000005E+9"
+            ],
+            "lakehouse": "4195",
+            "legacy": "4194"
+          },
+          {
+            "key": [
+              "9000000001"
+            ],
+            "lakehouse": "4097",
+            "legacy": "4096"
+          },
+          {
+            "key": [
+              "9000000002"
+            ],
+            "lakehouse": "4099",
+            "legacy": "4098"
+          },
+          {
+            "key": [
+              "9000000003"
+            ],
+            "lakehouse": "4101",
+            "legacy": "4.1E+3"
+          },
+          {
+            "key": [
+              "9000000004"
+            ],
+            "lakehouse": "4103",
+            "legacy": "4102"
+          },
+          {
+            "key": [
+              "9000000005"
+            ],
+            "lakehouse": "4105",
+            "legacy": "4104"
           }
         ]
       },
@@ -116,14 +179,77 @@
         "samples": []
       },
       "version_id": {
-        "count": 1,
+        "count": 49,
         "samples": [
           {
             "key": [
-              "9000000025"
+              "9.00000001E+9"
             ],
-            "lakehouse": "9000000049",
-            "legacy": "9.00000005E+9"
+            "lakehouse": "9.00000002E+9",
+            "legacy": "9000000019"
+          },
+          {
+            "key": [
+              "9.00000002E+9"
+            ],
+            "lakehouse": "9.00000004E+9",
+            "legacy": "9000000039"
+          },
+          {
+            "key": [
+              "9.00000003E+9"
+            ],
+            "lakehouse": "9.00000006E+9",
+            "legacy": "9000000059"
+          },
+          {
+            "key": [
+              "9.00000004E+9"
+            ],
+            "lakehouse": "9.00000008E+9",
+            "legacy": "9000000079"
+          },
+          {
+            "key": [
+              "9.00000005E+9"
+            ],
+            "lakehouse": "9.0000001E+9",
+            "legacy": "9000000099"
+          },
+          {
+            "key": [
+              "9000000001"
+            ],
+            "lakehouse": "9000000002",
+            "legacy": "9000000001"
+          },
+          {
+            "key": [
+              "9000000002"
+            ],
+            "lakehouse": "9000000004",
+            "legacy": "9000000003"
+          },
+          {
+            "key": [
+              "9000000003"
+            ],
+            "lakehouse": "9000000006",
+            "legacy": "9000000005"
+          },
+          {
+            "key": [
+              "9000000004"
+            ],
+            "lakehouse": "9000000008",
+            "legacy": "9000000007"
+          },
+          {
+            "key": [
+              "9000000005"
+            ],
+            "lakehouse": "9.00000001E+9",
+            "legacy": "9000000009"
           }
         ]
       },
@@ -155,5 +281,5 @@
     "legacy": 450
   },
   "spec_hash": "6d3eb6767a98911d0be3250575681cc0a37983574f475e27bcb62688b1aeafa3",
-  "timestamp": "2026-11-19T08:07:45.948174+00:00"
+  "timestamp": "2026-11-19T08:13:29.717285+00:00"
 }

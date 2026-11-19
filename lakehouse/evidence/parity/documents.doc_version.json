@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "d48c11e07c4315a30d5a4eee747e2e7426d15a42",
+  "git_sha": "1c9f575e97ec86cc27294cfd4104e32c8f3a1864",
   "id": "documents.doc_version",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -35,7 +35,7 @@
       "lakehouse": {
         "content_hash": {
           "count": 450,
-          "hash": "25276fc1cf1676ef1b56173e2aeaf3fa0031e8ae4be7dfc83f2c3d0d39b29f4f",
+          "hash": "488d886df74251bd573b6e7978cde24ca3df2cc4c34de90580840d0e4b26afe8",
           "null_count": 0,
           "sum": null
         },
@@ -47,21 +47,21 @@
         },
         "file_size": {
           "count": 450,
-          "hash": "d5ef8e4e4cfaabe0ac313b8eb180d3c8e3166352e94e54402e918685294003af",
+          "hash": "d85abe79641dc645649bac402a6135b6b4c4c67d5b4b2661d08868bb4c20ba62",
           "null_count": 0,
-          "sum": "289200294"
+          "sum": "289200344"
         },
         "version_id": {
           "count": 450,
-          "hash": "4550b3be896beb09a0f9b8c47bbec9dd77e29d995ba50a288595eafdd5175d1e",
+          "hash": "536f2d96e01fb3a5881153a66a7c2b224b25c3ea30a288700e112f23deb86e47",
           "null_count": 0,
-          "sum": "450000722700"
+          "sum": "450000722750"
         },
         "version_no": {
           "count": 450,
-          "hash": "b91cffb03e2e7e9bcb92940c97a7383a27a5826d50d3222899cf4f6d47b47306",
+          "hash": "f7d957d5ff81bb356c43f683f1a18956d5c8b5e5f612bf7ae180e60b5392c80f",
           "null_count": 0,
-          "sum": "2050"
+          "sum": "2100"
         },
         "version_ts": {
           "count": 450,
@@ -140,18 +140,72 @@
       "legacy": 0
     },
     "only_in_lakehouse": {
-      "count": 1,
+      "count": 49,
       "samples": [
         [
-          "9000000049"
+          "9.00000001E+9"
+        ],
+        [
+          "9.00000002E+9"
+        ],
+        [
+          "9.00000003E+9"
+        ],
+        [
+          "9.00000004E+9"
+        ],
+        [
+          "9.00000006E+9"
+        ],
+        [
+          "9.00000007E+9"
+        ],
+        [
+          "9.00000008E+9"
+        ],
+        [
+          "9.00000009E+9"
+        ],
+        [
+          "9.0000001E+9"
+        ],
+        [
+          "9000000002"
         ]
       ]
     },
     "only_in_legacy": {
-      "count": 1,
+      "count": 49,
       "samples": [
         [
-          "9.00000005E+9"
+          "9000000001"
+        ],
+        [
+          "9000000003"
+        ],
+        [
+          "9000000005"
+        ],
+        [
+          "9000000007"
+        ],
+        [
+          "9000000009"
+        ],
+        [
+          "9000000011"
+        ],
+        [
+          "9000000013"
+        ],
+        [
+          "9000000015"
+        ],
+        [
+          "9000000017"
+        ],
+        [
+          "9000000019"
         ]
       ]
     },
@@ -166,5 +220,5 @@
     "legacy": 450
   },
   "spec_hash": "586acb9b4ad0cd2acdb82caa7c47e3ed8839861c21e150720f120c2085b18a31",
-  "timestamp": "2026-11-19T08:07:38.307519+00:00"
+  "timestamp": "2026-11-19T08:13:21.519714+00:00"
 }

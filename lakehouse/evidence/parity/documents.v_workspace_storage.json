@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "d48c11e07c4315a30d5a4eee747e2e7426d15a42",
+  "git_sha": "1c9f575e97ec86cc27294cfd4104e32c8f3a1864",
   "id": "documents.v_workspace_storage",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -42,9 +42,9 @@
         },
         "total_bytes": {
           "count": 250,
-          "hash": "4cf1c59d608d0ba8f1d03459a30108691ae861da982f96777d6fdfb6d3b58db5",
+          "hash": "6351af8102431e2c7d8cf6801f5a95a885810c46e68e9bf17e9dc50a48a6b5fe",
           "null_count": 0,
-          "sum": "289200294"
+          "sum": "289200344"
         }
       },
       "legacy": {
@@ -78,14 +78,77 @@
         "samples": []
       },
       "total_bytes": {
-        "count": 1,
+        "count": 49,
         "samples": [
           {
             "key": [
-              "9000000025"
+              "9.00000001E+9"
             ],
-            "lakehouse": "4144",
-            "legacy": "4145"
+            "lakehouse": "4115",
+            "legacy": "4114"
+          },
+          {
+            "key": [
+              "9.00000002E+9"
+            ],
+            "lakehouse": "4135",
+            "legacy": "4134"
+          },
+          {
+            "key": [
+              "9.00000003E+9"
+            ],
+            "lakehouse": "4155",
+            "legacy": "4154"
+          },
+          {
+            "key": [
+              "9.00000004E+9"
+            ],
+            "lakehouse": "4175",
+            "legacy": "4174"
+          },
+          {
+            "key": [
+              "9.00000005E+9"
+            ],
+            "lakehouse": "4195",
+            "legacy": "4194"
+          },
+          {
+            "key": [
+              "9000000001"
+            ],
+            "lakehouse": "4097",
+            "legacy": "4096"
+          },
+          {
+            "key": [
+              "9000000002"
+            ],
+            "lakehouse": "4099",
+            "legacy": "4098"
+          },
+          {
+            "key": [
+              "9000000003"
+            ],
+            "lakehouse": "4101",
+            "legacy": "4.1E+3"
+          },
+          {
+            "key": [
+              "9000000004"
+            ],
+            "lakehouse": "4103",
+            "legacy": "4102"
+          },
+          {
+            "key": [
+              "9000000005"
+            ],
+            "lakehouse": "4105",
+            "legacy": "4104"
           }
         ]
       }
@@ -113,5 +176,5 @@
     "legacy": 250
   },
   "spec_hash": "9c19725aca62f580cf41ad591a665d0e6eda1d7f2e59cd04360a05da0dbb1e05",
-  "timestamp": "2026-11-19T08:07:46.634004+00:00"
+  "timestamp": "2026-11-19T08:13:30.336806+00:00"
 }

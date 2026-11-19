@@ -80,9 +80,12 @@ def test_document_version_order_and_ties(spark):
     table = next(table for table in TABLES if table.name == 'DOC_VERSION')
     rows = [('1', '5', '1', '2026-11-08 00:00:00', '10', 'a'),
             ('2', '5', '2', '2026-11-09 00:00:00', '20', 'b'),
-            ('3', '5', '3', '2026-11-09 00:00:00', '30', 'c')]
+            ('3', '5', '3', '2026-11-09 00:00:00', '30', 'c'),
+            ('9', '6', '1', '2026-11-08 00:00:00', '10', 'd'),
+            ('7', '6', '2', '2026-11-09 00:00:00', '20', 'e'),
+            ('6', '6', '3', '2026-11-09 00:00:00', '30', 'f')]
     input_rows(spark, table, [row + (date(2026, 11, 9),) for row in rows])
-    assert model(spark, 'doc_version').first().version_id in (2, 3)
+    assert {row.document_id: row.version_id for row in model(spark, 'doc_version').collect()} == {5: 3, 6: 7}
     input_rows(spark, table, [rows[0] + (date(2026, 11, 9),),
                               ('4', '5', '4', None, '40', 'd', date(2026, 11, 9))])
     assert model(spark, 'doc_version').first().version_id == 4
