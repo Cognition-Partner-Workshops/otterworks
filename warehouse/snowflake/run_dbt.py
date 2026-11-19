@@ -64,7 +64,8 @@ def main():
             destination.parent.mkdir(parents=True,exist_ok=True)
             destination.write_text(config.render(path.read_text()))
     command = [str(Path(sys.executable).with_name("dbt")), args.command,
-               "--project-dir", str(project), "--profiles-dir", str(project)]
+               "--project-dir", str(project), "--profiles-dir", str(project),
+               "--target-path", str(target), "--log-path", str(source_project / 'logs')]
     if args.command == "build":
         command += ["--select", args.selection]
     variables = {"phase": args.phase}
