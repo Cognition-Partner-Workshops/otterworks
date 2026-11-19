@@ -295,7 +295,7 @@ publish_config() {
   local ctx="$1" fail="$2" fn="${RUN}-${1}" env
   env="$(aws lambda get-function-configuration --function-name "$fn" --query 'Environment.Variables' --output json \
     | jq -c --arg f "$fail" '{Variables: ((. // {}) + {FAIL_READS: $f})}')"
-  aws lambda update-function-configuration --function-name "$fn" --runtime java21 \
+  aws lambda update-function-configuration --function-name "$fn" --runtime java25 \
     --handler "${HANDLERS[$ctx]}" --memory-size "$JAVA_MEMORY_MB" --environment "$env" >/dev/null
   aws lambda wait function-updated-v2 --function-name "$fn"
   aws lambda publish-version --function-name "$fn" \
@@ -396,7 +396,7 @@ cmd_deploy() {
     cur="$(live_version "$ctx")"
     if [ "$cur" = "$v" ]; then echo "  ${ctx}: live already on version ${v}"; continue; fi
     # The placeholder answers 501, so moving off it goes all at once and without the 5xx alarm.
-    if [ "$(version_runtime "$ctx" "$cur")" = java21 ]; then config="$(out deployment_config)"; alarms=on
+    if [[ "$(version_runtime "$ctx" "$cur")" = java@(21|25) ]]; then config="$(out deployment_config)"; alarms=on
     else config="$BOOTSTRAP_CONFIG"; alarms=off; fi
     ids+=("$(create_deployment "$ctx" "$v" "$config" "$alarms" "lp-deploy ${ctx} v${v}")")
   done
@@ -420,7 +420,7 @@ cmd_break() {
   need_run; one_context; start_transcript "$RUN"
   local t0 v id; t0="$(date +%s)"
   tf_init >/dev/null; load_outputs
-  [ "$(version_runtime "$CTX" "$(live_version "$CTX")")" = java21 ] || die "${RUN}-${CTX}:live is not a Java version; run make lp-deploy RUN=${RUN} first"
+  [[ "$(version_runtime "$CTX" "$(live_version "$CTX")")" = java@(21|25) ]] || die "${RUN}-${CTX}:live is not a Java version; run make lp-deploy RUN=${RUN} first"
   echo "bad build: same code as live, FAIL_READS=1 (every GET on ${CTX} answers 500)"
   v="$(publish_config "$CTX" 1)"
   id="$(create_deployment "$CTX" "$v" "$(out deployment_config)" on "lp-break ${CTX} v${v} FAIL_READS=1")"
