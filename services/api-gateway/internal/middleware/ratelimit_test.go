@@ -100,3 +100,22 @@ func TestExtractIP(t *testing.T) {
 		})
 	}
 }
+
+func TestRateLimiter_BillingError(t *testing.T) {
+	rl := NewRateLimiter(0)
+	handler := rl.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Fatal("rate-limited request reached backend")
+	}))
+	for _, path := range []string{"/api/v1/billing/plans", "/api/v1/billingX", "/api/v1/files"} {
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
+		assert.Equal(t, http.StatusTooManyRequests, rec.Code)
+		assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
+		assert.Equal(t, "1", rec.Header().Get("Retry-After"))
+		want := "{\"error\":\"rate limit exceeded\"}\n"
+		if path == "/api/v1/billing/plans" {
+			want = "{\"error\":{\"code\":\"rate_limited\",\"message\":\"rate limit exceeded\"}}\n"
+		}
+		assert.Equal(t, want, rec.Body.String())
+	}
+}

@@ -14,6 +14,14 @@ PROCS_TARGET_DB_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "pri
 PROCS_TARGET_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(12096 + $(PROCS_PORT_OFFSET))")
 PROCS_ENV = NS=$(NS) PROCS_DB_PORT=$(PROCS_DB_PORT) PROCS_APP_PORT=$(PROCS_APP_PORT) PROCS_TARGET_DB_PORT=$(PROCS_TARGET_DB_PORT) PROCS_TARGET_PORT=$(PROCS_TARGET_PORT)
 
+.PHONY: billing-contract
+billing-contract: NS = billing-contract
+billing-contract: procs-validate ## Run REST foundation contracts against disposable Postgres
+	@set -e; trap '$(PROCS_ENV) docker compose -f docker-compose.procs.yml -p otterworks-contract-$(NS) down -v' EXIT; \
+	$(PROCS_ENV) docker compose -f docker-compose.procs.yml -p otterworks-contract-$(NS) up -d --wait legacy-billing-db; \
+	DB_NAME=billing_$(NS) DB_PORT=$(PROCS_DB_PORT) uv run --with-requirements services/legacy-billing/requirements-test.txt pytest -c services/legacy-billing/pytest.ini services/legacy-billing/tests/contract; \
+	uv run --with-requirements services/legacy-billing/requirements-test.txt openapi-spec-validator services/legacy-billing/openapi/billing-v1.yaml
+
 procs-validate:
 	@test -n "$(NS)" || (echo "NS is required, e.g. make procs-up NS=dev" >&2; exit 2)
 	@command -v python3 >/dev/null 2>&1 || (echo "python3 is required for namespace port derivation" >&2; exit 2)
