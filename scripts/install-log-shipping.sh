@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# OtterWorks - CloudWatch log shipping for tenant edge logs
+# OtterWorks - CloudWatch log shipping for tenant application logs
 #
 # Installs one aws-for-fluent-bit DaemonSet in otterworks-system that ships the
-# api-gateway and ingress-nginx access logs of every otterworks-* namespace to
+# all application container logs and ingress-nginx access logs of every otterworks-* namespace to
 #   /otterworks/eks/<cluster>/<namespace>/<container>     (7-day retention)
 # and switches the shared ingress-nginx controller to a JSON access log so its
 # lines can be filed per tenant. Nothing per tenant; new tenants are picked up
@@ -62,4 +62,4 @@ helm upgrade --install aws-for-fluent-bit eks/aws-for-fluent-bit \
 kubectl -n "${LOG_NS}" rollout restart ds/aws-for-fluent-bit >/dev/null
 kubectl -n "${LOG_NS}" rollout status ds/aws-for-fluent-bit --timeout=180s
 
-log "Shipping to /otterworks/eks/${EKS_CLUSTER}/<namespace>/{api-gateway,ingress-nginx}"
+log "Shipping to /otterworks/eks/${EKS_CLUSTER}/<namespace>/<container> (including ingress-nginx)"

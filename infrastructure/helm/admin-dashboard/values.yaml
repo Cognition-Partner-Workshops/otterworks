@@ -38,7 +38,7 @@ healthCheck:
   port: 4200
 
 monitoring:
-  enabled: true
+  enabled: false
   path: /metrics
   port: 4200
 

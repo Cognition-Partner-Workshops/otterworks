@@ -1,0 +1,50 @@
+runbookUrl: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/sre-triage.md
+
+ingressMetrics:
+  enabled: true
+  namespace: ingress-nginx
+  release: ingress-nginx
+  interval: 30s
+
+rules:
+  enabled: true
+  tenantNamespaceRegex: otterworks-.*
+  appJobRegex: api-gateway|auth-service|file-service|document-service|collab-service|notification-service|search-service|analytics-service|admin-service|audit-service|report-service
+  scrapeDownFor: 5m
+  crashLoopFor: 5m
+  restartWindow: 15m
+  restartThreshold: 3
+  restartFor: 5m
+  oomWindow: 10m
+  oomFor: 1m
+  notReadyFor: 10m
+  deploymentFor: 10m
+  ingressWindow: 5m
+  ingressMinRequestsPerSecond: 0.1
+  ingress5xxRatio: 0.05
+  ingress5xxFor: 5m
+  ingressP95Seconds: 2
+  ingressLatencyFor: 10m
+  nodeNotReadyFor: 5m
+  nodePressureFor: 5m
+  filesystemUsedRatio: 0.85
+  filesystemFor: 15m
+  selfHealthWindow: 5m
+  selfHealthFailureThreshold: 0
+  selfHealthFor: 5m
+  logShippingNamespace: otterworks-system
+  logShippingDaemonSet: aws-for-fluent-bit
+  logShippingFor: 10m
+
+alerting:
+  webhook:
+    enabled: false
+    secretName: alertmanager-sre-webhook
+    urlKey: url
+    authorizationKey: token
+  groupWait: 30s
+  groupInterval: 5m
+  repeatInterval: 4h
+
+triage:
+  enabled: true

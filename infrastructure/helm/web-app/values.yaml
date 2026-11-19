@@ -45,7 +45,7 @@ env:
   API_GATEWAY_URL: "http://api-gateway:8080"
 
 monitoring:
-  enabled: true
+  enabled: false
   path: /metrics
   port: 3000
 

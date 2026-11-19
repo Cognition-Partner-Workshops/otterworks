@@ -1,5 +1,8 @@
 # Edge latency by client in CloudWatch
 
+For the full metrics/logs/traces/events/alerting map and read-only agent commands,
+see [SRE triage](../runbooks/sre-triage.md).
+
 The api-gateway writes one JSON access log line per request. Each line carries
 `method`, `route`, `status`, `duration_ms` and `client`, where `client` comes
 from the User-Agent:
@@ -17,15 +20,16 @@ from the User-Agent:
 ## Log groups
 
 Fluent Bit (`scripts/install-log-shipping.sh`, values in
-`infrastructure/helm/aws-for-fluent-bit/`) ships two containers for every
-`otterworks-*` namespace:
+`infrastructure/helm/aws-for-fluent-bit/`) ships all application containers for
+every `otterworks-*` namespace, plus tenant-routed ingress access logs:
 
 ```
 /otterworks/eks/otterworks-dev/<namespace>/api-gateway
 /otterworks/eks/otterworks-dev/<namespace>/ingress-nginx
+/otterworks/eks/otterworks-dev/<namespace>/<other-application-container>
 ```
 
-with 7-day retention on both. The ingress-nginx group holds the shared controller's
+with 7-day retention. The ingress-nginx group holds the shared controller's
 lines for requests routed to that namespace, with the same `route`,
 `duration_ms` and `client` fields added by the Fluent Bit Lua filter. Use the
 api-gateway group to see time spent inside the gateway, and the ingress-nginx

@@ -1,6 +1,6 @@
 # Values for the upstream eks/aws-for-fluent-bit chart (pinned in
 # scripts/install-log-shipping.sh). One DaemonSet in otterworks-system ships the
-# api-gateway and ingress-nginx access logs of every otterworks-* namespace to
+# application container logs and ingress-nginx access logs of every otterworks-* namespace to
 #   /otterworks/eks/otterworks-dev/<namespace>/<container>
 # with 7-day retention. ingress-nginx lines are filed under the namespace of the
 # tenant they were proxied to, not under ingress-nginx.
@@ -14,8 +14,7 @@ serviceAccount:
 input:
   enabled: true
   tag: "kube.*"
-  # Only the two containers we ship; everything else on the node is skipped.
-  path: "/var/log/containers/api-gateway-*_otterworks-*_api-gateway-*.log,/var/log/containers/ingress-nginx-controller-*_ingress-nginx_controller-*.log"
+  path: "/var/log/containers/*_otterworks-*_*.log,/var/log/containers/ingress-nginx-controller-*_ingress-nginx_controller-*.log"
   db: "/var/log/flb_otterworks.db"
   multilineParser: "docker, cri"
   memBufLimit: 5MB
