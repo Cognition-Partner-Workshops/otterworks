@@ -51,13 +51,25 @@ not part of this service.
 | Module | Procedures/functions | Routes |
 |---|---|---|
 | Plans | `fn_list_plans`, `fn_entitlement`, `sp_change_plan` | `/plans`, `/plans/<tenant>/entitlement`, `/plans/<tenant>/change` |
-| Rating | `fn_usage_rating`, `fn_usage_summary`, `sp_finalize_rating` | `/api/rating/preview`, `/api/rating/finalize` |
+| Rating | `fn_usage_rating`, `fn_usage_summary`, `sp_finalize_rating` | v1: `GET /api/v1/billing/tenants/{tenant_id}/rating`, `POST /api/v1/billing/tenants/{tenant_id}/rating-periods`; deprecated adapters: `POST /api/rating/preview`, `POST /api/rating/finalize` |
 | Invoicing | `fn_invoice_preview`, `fn_invoice_lines`, `sp_issue_invoice` | `/api/invoices/<tenant>/preview`, `/api/invoices/<tenant>/issue`, `/api/invoices/<invoice>/lines` |
 | Dunning | `fn_overdue_accounts`, `sp_schedule_dunning`, `sp_suspend_overdue` | `/api/dunning/overdue`, `/api/dunning/schedule`, `/api/dunning/suspend` |
 
 The Flask layer intentionally binds request values, calls a database
 entrypoint, and renders the returned values. It does not reproduce domain
 decisions in Python.
+
+### Rating REST migration
+
+Rating's v1 operations are implemented. Preview requires explicit
+`period_start` and `period_end` query dates and returns a single `data`
+object (no pagination). Finalize requires those dates in a JSON object and
+returns `201` with `data` containing tenant, period and finalized status.
+Both call the original PL/pgSQL entrypoints; finalization remains an upsert.
+There are no rating field renames. Legacy adapters retain their JSON arrays
+or status-only bodies, original statuses and error bytes, adding
+`Deprecation` and successor-version `Link` headers, including on errors.
+No usage-summary HTTP operation is defined by the contract.
 
 ## Why it is an extraction candidate
 
