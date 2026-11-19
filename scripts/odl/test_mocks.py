@@ -1,0 +1,216 @@
+import importlib.util
+import io
+import json
+import unittest
+from contextlib import redirect_stdout
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from threading import Thread
+from unittest.mock import patch
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def load(name, path):
+    spec = importlib.util.spec_from_file_location(name, ROOT / path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+seed = load("seed", "infrastructure/k8s/odl-mocks/seed.py")
+relay = load("relay", "infrastructure/k8s/odl-mocks/relay.py")
+routing = load("routing", "scripts/odl/route-alerts.py")
+
+
+class SeedTests(unittest.TestCase):
+    def test_missing_created_and_existing_unchanged(self):
+        issue = {"seed_label": "odl-test", "fields": {"summary": "Example"}}
+        with patch.object(seed, "request", side_effect=[{"issues": []}, {"key": "ENG-4"}]) as call:
+            seed.reconcile([issue])
+            self.assertEqual(call.call_args.args, ("/rest/api/3/issue", {"fields": issue["fields"]}))
+        with patch.object(seed, "request", return_value={"issues": [{"key": "ENG-4"}]}) as call:
+            seed.reconcile([issue])
+            self.assertEqual(call.call_count, 1)
+
+    def test_empty_and_api_failure(self):
+        with patch.object(seed, "request") as call:
+            seed.reconcile([])
+            call.assert_not_called()
+        with patch.object(seed, "request", side_effect=ConnectionError):
+            with self.assertRaises(ConnectionError):
+                seed.reconcile([{"seed_label": "odl-test"}])
+
+    def test_story_contract(self):
+        issues = json.loads((ROOT / "infrastructure/k8s/odl-mocks/seed.json").read_text())
+        self.assertEqual(len(issues), 3)
+        self.assertEqual(len({i["seed_label"] for i in issues}), 3)
+        for issue in issues:
+            fields = issue["fields"]
+            self.assertIn(issue["seed_label"], fields["labels"])
+            self.assertIn("odl-seed", fields["labels"])
+            self.assertIn("Acceptance criteria", fields["description"])
+            self.assertTrue(3 <= fields["description"].count("- [ ]") <= 5)
+
+    def test_webhook_is_registered_once_and_reregistered_after_reset(self):
+        hook = {"id": 7, **seed.WEBHOOK}
+        with patch.object(seed, "request", side_effect=[[], hook, [hook], [], {**hook, "id": 1}]) as call:
+            with redirect_stdout(io.StringIO()) as output:
+                self.assertEqual([seed.reconcile_webhook() for _ in range(3)], [7, 7, 1])
+            self.assertEqual([c.args for c in call.call_args_list if len(c.args) == 2],
+                             [(seed.WEBHOOK_PATH, seed.WEBHOOK)] * 2)
+            self.assertEqual(output.getvalue().splitlines(), [
+                "registered Devin webhook 7", "registered Devin webhook 1"])
+
+
+class RelayTests(unittest.TestCase):
+    def make_gate(self):
+        state = relay.ConfigMapState.__new__(relay.ConfigMapState)
+        persisted = {}
+
+        def configmap(method="GET", body=None):
+            if method == "PATCH":
+                for key, value in json.loads(body)["data"].items():
+                    if value is None:
+                        persisted.pop(key, None)
+                    else:
+                        persisted[key] = value
+            return {"data": persisted.copy()}
+
+        state.request = configmap
+        return relay.LabelGate(state)
+
+    def test_forward_only_labelled_creations_and_supported_events(self):
+        gate = self.make_gate()
+        issue = {"key": "ENG-7", "fields": {"labels": ["not-devin"]}}
+        created = {"webhookEvent": "jira:issue_created", "issue": issue}
+        self.assertEqual(gate.skip_reason(created, "ENG-7"), "devin_label_absent")
+        issue["fields"]["labels"].append("devin")
+        self.assertIsNone(gate.skip_reason(created, "ENG-7"))
+        self.assertEqual(gate.skip_reason({**created, "webhookEvent": "comment_created"}, "ENG-7"),
+                         "unsupported_event")
+        self.assertEqual(gate.skip_reason({**created, "webhookEvent": "jira:issue_updated"}, "ENG-7"),
+                         "devin_label_already_seen")
+
+    def test_explicit_changelog_does_not_fall_back_to_snapshot(self):
+        for field, old, new, reason in (
+            ("labels", "other, devin", "devin", "changelog_did_not_add_devin"),
+            ("labels", "other", "devin-secondary", "changelog_did_not_add_devin"),
+            ("status", None, "devin", "changelog_did_not_add_devin"),
+            ("labels", "not-devin, other", "other, devin", None),
+            ("labels", None, "devin", None),
+        ):
+            with self.subTest(field=field, old=old, new=new):
+                gate = self.make_gate()
+                update = {"webhookEvent": "jira:issue_updated",
+                          "issue": {"key": "ENG-7", "fields": {"labels": ["devin"]}},
+                          "changelog": {"items": [{"field": field, "fromString": old, "toString": new}]}}
+                self.assertEqual(gate.skip_reason(update, "ENG-7"), reason)
+
+    def test_snapshot_transition_persists_and_clears_observed_removals(self):
+        gate = self.make_gate()
+        issue = {"key": "ENG-7", "fields": {"labels": ["devin"]}}
+        update = {"webhookEvent": "jira:issue_updated", "issue": issue}
+        self.assertIsNone(gate.skip_reason(update, "ENG-7"))
+        gate = relay.LabelGate(gate.state)
+        self.assertEqual(gate.skip_reason(update, "ENG-7"), "devin_label_already_seen")
+        issue["fields"]["labels"] = []
+        self.assertEqual(gate.skip_reason(update, "ENG-7"), "devin_label_absent")
+        gate = relay.LabelGate(gate.state)
+        issue["fields"]["labels"] = ["devin"]
+        self.assertIsNone(gate.skip_reason(update, "ENG-7"))
+
+    def start_server(self, handler):
+        server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(thread.join)
+        self.addCleanup(server.shutdown)
+        return server, f"http://127.0.0.1:{server.server_port}"
+
+    def test_delivery_bytes_secret_status_and_no_redirect(self):
+        received = []
+
+        class Upstream(BaseHTTPRequestHandler):
+            def log_message(self, format, *args):
+                pass
+
+            def do_POST(self):
+                received.append((self.path, self.headers.get("X-Webhook-Secret"),
+                                 self.headers.get("Content-Type"),
+                                 self.rfile.read(int(self.headers["Content-Length"]))))
+                if self.path == "/redirect":
+                    self.send_response(307)
+                    self.send_header("Location", "/unexpected")
+                else:
+                    self.send_response(202)
+                self.end_headers()
+
+        _, upstream = self.start_server(Upstream)
+        server, url = self.start_server(relay.Relay)
+        server.upstream_url = upstream + "/accept"
+        server.upstream_secret = "test-secret"
+        server.gate = self.make_gate()
+        body = (b'{ "issue": {"key": "ENG-7", "fields": {"labels": ["devin"]}},'
+                b' "webhookEvent": "jira:issue_updated" }\n')
+        delivery = Request(url + "/webhook", data=body, headers={"Content-Type": "application/json"})
+        with redirect_stdout(io.StringIO()) as output:
+            with urlopen(delivery, timeout=3) as response:
+                self.assertEqual(response.status, 202)
+            with urlopen(delivery, timeout=3) as response:
+                self.assertEqual(response.status, 204)
+            with urlopen(Request(url + "/webhook", data=b""), timeout=3) as response:
+                self.assertEqual(response.status, 204)
+            server.upstream_url = upstream + "/redirect"
+            redirect_body = body.replace(b"ENG-7", b"ENG-8")
+            with self.assertRaises(HTTPError) as rejected:
+                urlopen(Request(url + "/webhook", data=redirect_body, headers=delivery.headers), timeout=3)
+            self.assertEqual(rejected.exception.code, 502)
+            rejected.exception.close()
+        self.assertEqual(received, [("/accept", "test-secret", "application/json", body),
+                                    ("/redirect", "test-secret", "application/json", redirect_body)])
+        self.assertEqual(output.getvalue().splitlines(), [
+            "issue=ENG-7 upstream_status=202", "issue=ENG-7 skip_reason=devin_label_already_seen",
+            "issue=- skip_reason=invalid_payload", "issue=ENG-8 upstream_status=307"])
+
+
+class RoutingTests(unittest.TestCase):
+    def test_routing_key_lookup_and_empty_result(self):
+        with patch.object(routing.subprocess, "check_output", return_value="fixture-key\n"):
+            self.assertEqual(routing.pagerduty_routing_key(), "fixture-key")
+        with patch.object(routing.subprocess, "check_output", return_value="\n"):
+            with self.assertRaises(ValueError):
+                routing.pagerduty_routing_key()
+        with patch.object(routing.subprocess, "check_output", side_effect=RuntimeError):
+            with self.assertRaises(RuntimeError):
+                routing.pagerduty_routing_key()
+
+    def config(self):
+        return {"route": {"receiver": "null", "routes": [{"receiver": "other"}]},
+                "receivers": [{"name": "other", "webhook_configs": [{"url": "http://example.invalid"}]},
+                              {"name": "devin-oncall", "webhook_configs": [
+                                  {"url": "https://example.invalid", "send_resolved": False}]}]}
+
+    def test_preserves_routes_other_receivers_and_is_idempotent(self):
+        original = self.config()
+        updated, url = routing.updated_config(original)
+        self.assertEqual(url, "https://example.invalid")
+        self.assertEqual(original["route"], updated["route"])
+        self.assertEqual(original["receivers"][0], updated["receivers"][0])
+        self.assertIn("url", original["receivers"][1]["webhook_configs"][0])
+        again, url = routing.updated_config(updated)
+        self.assertIsNone(url)
+        self.assertEqual(updated, again)
+        self.assertNotIn("example.invalid", json.dumps(routing.structure(updated)))
+
+    def test_missing_or_ambiguous_receiver_rejected(self):
+        for receivers in ([], [{"name": "devin-oncall", "webhook_configs": []}]):
+            with self.assertRaises(ValueError):
+                routing.updated_config({"receivers": receivers})
+
+
+if __name__ == "__main__":
+    unittest.main()
