@@ -1,8 +1,8 @@
 plugins {
-    kotlin("jvm") version "1.9.23"
-    kotlin("plugin.serialization") version "1.9.23"
-    id("io.ktor.plugin") version "2.3.9"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    application
+    kotlin("jvm") version "2.4.21"
+    kotlin("plugin.serialization") version "2.4.21"
+    id("com.gradleup.shadow") version "9.6.1"
 }
 
 group = "com.otterworks"
@@ -10,6 +10,13 @@ version = "0.1.0"
 
 application {
     mainClass.set("com.otterworks.notification.ApplicationKt")
+}
+
+tasks.shadowJar {
+    archiveVersion.set("")
+    filesMatching("META-INF/*.kotlin_module") {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
 }
 
 repositories {
@@ -25,6 +32,7 @@ val commonsTextVersion = "1.9"
 
 dependencies {
     // Ktor Server
+    implementation(platform("io.ktor:ktor-bom:$ktorVersion"))
     implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktorVersion")
@@ -76,14 +84,14 @@ dependencies {
     // Testing
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.9.23")
-    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation(kotlin("test-junit"))
+    testImplementation("io.mockk:mockk:1.14.12")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
     testImplementation("io.insert-koin:koin-test:$koinVersion")
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(25)
 }
 
 tasks.withType<Test> {
