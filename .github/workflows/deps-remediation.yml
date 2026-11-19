@@ -28,22 +28,23 @@ jobs:
       - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
         with:
           version: latest
-      # 21 and 17 first so $JAVA_HOME_21_X64 (the legacy-portal Lambda modules) and
-      # $JAVA_HOME_17_X64 (the Gradle modules) exist, then 11 as the ambient JDK the
-      # other Maven modules build on.
+      # 25 is first for entries pinned to JDK 25 ($JAVA_HOME_25_X64), then 21 and
+      # 17 for entries pinned to them. Keep 11 last as the ambient JDK so entries
+      # still pinned to older JDKs keep resolving.
       - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
         with:
           distribution: temurin
           java-version: |
+            25
             21
             17
             11
-      # notification-service ships no Gradle wrapper, so the harness invokes the
-      # `gradle` on PATH — the runner image does not carry one.
+      # Each module's checked-in Gradle wrapper, listed first in modules.yaml
+      # `tool`, takes priority over the `gradle` on PATH.
       - uses: gradle/actions/setup-gradle@da187c8e6ffbd3802e00f2477aa5a822b25f2dda # v4.4.4
         with:
-          # 8.6, matching ci.yml and auth-service's wrapper: the suite counts this job
-          # reports have to come from the toolchain the services are built with.
+          # Gradle 8.6 on PATH is the fallback for branches whose modules have
+          # not been upgraded yet.
           gradle-version: "8.6"
       - run: uv run --with ruff==0.9.10 ruff check security/deps/harness
       - run: make deps-inventory

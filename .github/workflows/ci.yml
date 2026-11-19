@@ -361,7 +361,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '8'
+          java-version: '25'
       - run: mvn compile -B -q
       - run: mvn test -B
       - run: mvn package -DskipTests -B -q

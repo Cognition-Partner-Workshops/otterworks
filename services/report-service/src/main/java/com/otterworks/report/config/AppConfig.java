@@ -1,8 +1,8 @@
 package com.otterworks.report.config;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
  *
  * LEGACY PATTERNS:
  * - Uses RestTemplate (deprecated in Spring 5.x, removed path in 6.x)
- * - Uses Apache HttpComponents 4.x directly
+ * - Uses Apache HttpComponents 5.x directly
  * - Manual connection pool management instead of reactive WebClient
  *
  * UPGRADE NOTES:
