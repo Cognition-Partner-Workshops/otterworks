@@ -135,3 +135,15 @@ def test_issue_reads_back_tenant_six_january_invoice(client, period_end):
     assert len(issued) == 1
     assert response.json["data"] == {**issued[0], "tenant_id": tenant, **period, "status": "issued"}
     assert response.headers["Location"] == f"{BASE}/invoices/{issued[0]['id']}/lines"
+
+
+def test_unknown_tenant_preview(client):
+    old = client.get(f"/api/invoices/{UNKNOWN}/preview", query_string=PERIOD)
+    assert old.status_code == 200
+    assert len(old.json) == 5
+    assert old.json[0]["description"] is None
+    assert old.json[0]["amount"] is None
+    response = client.get(f"{BASE}/tenants/{UNKNOWN}/invoice-preview", query_string=PERIOD)
+    assert response.status_code == 404
+    assert response.content_type == "application/json"
+    assert response.json == {"error": {"code": "not_found", "message": "Not Found"}}

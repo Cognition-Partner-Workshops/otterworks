@@ -3,7 +3,7 @@
 from functools import wraps
 
 from flask import jsonify, request
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import HTTPException, NotFound
 
 from .pagination import paginate
 from .validation import date_value, json_body, required, uuid_value
@@ -22,6 +22,8 @@ def _lines(kind, identifier, values, legacy=False):
     if not legacy:
         identifier = uuid_value(identifier, "tenant_id" if kind == "preview" else "invoice_id")
     if kind == "preview":
+        if not legacy and not select("SELECT id FROM billing.tenants WHERE id = %s", (identifier,)):
+            raise NotFound()
         result = select("SELECT * FROM billing.fn_invoice_preview(%s, %s, %s)",
                         (identifier, *_period(values, legacy)))
     else:
