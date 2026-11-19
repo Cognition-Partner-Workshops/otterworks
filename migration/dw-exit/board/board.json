@@ -135,14 +135,120 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "audit",
       "licence_dependency": "powercenter",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "output not materialized: AUDIT.AUDIT_EVENT"
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_AUDIT.AUDIT_EVENT": {
+          "before": {
+            "EVENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "ACTOR_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "EVENT_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "EVENT_TYPE": {
+              "nulls": 0,
+              "min": "ACCESS_DENY ",
+              "max": "VERSION_PUB ",
+              "distinct": 8
+            },
+            "DETAILS": {
+              "nulls": 0,
+              "min": "ACCESS_DENY: document 12; access evaluated under workspace policy; client=desktop",
+              "max": "VERSION_PUB: document 9; access evaluated under workspace policy; client=api",
+              "distinct": 184
+            }
+          },
+          "after": {
+            "EVENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "ACTOR_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "EVENT_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "EVENT_TYPE": {
+              "nulls": 0,
+              "min": "ACCESS_DENY ",
+              "max": "VERSION_PUB ",
+              "distinct": 8
+            },
+            "DETAILS": {
+              "nulls": 0,
+              "min": "ACCESS_DENY: document 12; access evaluated under workspace policy; client=desktop",
+              "max": "VERSION_PUB: document 9; access evaluated under workspace policy; client=api",
+              "distinct": 184
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_AUDIT.AUDIT_EVENT": {
+          "keys": [
+            "EVENT_ID"
+          ],
+          "difference": 0,
+          "before": "d2e5b15fa08c69c9c209426140569c9711a1bf686db07003456e9383ec748593",
+          "after": "d2e5b15fa08c69c9c209426140569c9711a1bf686db07003456e9383ec748593",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_AUDIT.AUDIT_EVENT": []
+      },
+      "reason": null
     },
     {
       "id": "ncf58434800570afc",
@@ -2047,14 +2153,120 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "audit",
       "licence_dependency": "powercenter",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "output not materialized: AUDIT.AUDIT_EVENT"
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_AUDIT.AUDIT_EVENT": {
+          "before": {
+            "EVENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "ACTOR_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "EVENT_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "EVENT_TYPE": {
+              "nulls": 0,
+              "min": "ACCESS_DENY ",
+              "max": "VERSION_PUB ",
+              "distinct": 8
+            },
+            "DETAILS": {
+              "nulls": 0,
+              "min": "ACCESS_DENY: document 12; access evaluated under workspace policy; client=desktop",
+              "max": "VERSION_PUB: document 9; access evaluated under workspace policy; client=api",
+              "distinct": 184
+            }
+          },
+          "after": {
+            "EVENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "ACTOR_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "EVENT_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "EVENT_TYPE": {
+              "nulls": 0,
+              "min": "ACCESS_DENY ",
+              "max": "VERSION_PUB ",
+              "distinct": 8
+            },
+            "DETAILS": {
+              "nulls": 0,
+              "min": "ACCESS_DENY: document 12; access evaluated under workspace policy; client=desktop",
+              "max": "VERSION_PUB: document 9; access evaluated under workspace policy; client=api",
+              "distinct": 184
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_AUDIT.AUDIT_EVENT": {
+          "keys": [
+            "EVENT_ID"
+          ],
+          "difference": 0,
+          "before": "d2e5b15fa08c69c9c209426140569c9711a1bf686db07003456e9383ec748593",
+          "after": "d2e5b15fa08c69c9c209426140569c9711a1bf686db07003456e9383ec748593",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_AUDIT.AUDIT_EVENT": []
+      },
+      "reason": null
     },
     {
       "id": "nd28651dfba442ad6",
@@ -5398,14 +5610,120 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "audit",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "output not materialized: AUDIT.AUDIT_EVENT"
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_AUDIT.AUDIT_EVENT": {
+          "before": {
+            "EVENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "ACTOR_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "EVENT_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "EVENT_TYPE": {
+              "nulls": 0,
+              "min": "ACCESS_DENY ",
+              "max": "VERSION_PUB ",
+              "distinct": 8
+            },
+            "DETAILS": {
+              "nulls": 0,
+              "min": "ACCESS_DENY: document 12; access evaluated under workspace policy; client=desktop",
+              "max": "VERSION_PUB: document 9; access evaluated under workspace policy; client=api",
+              "distinct": 184
+            }
+          },
+          "after": {
+            "EVENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "ACTOR_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "EVENT_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "EVENT_TYPE": {
+              "nulls": 0,
+              "min": "ACCESS_DENY ",
+              "max": "VERSION_PUB ",
+              "distinct": 8
+            },
+            "DETAILS": {
+              "nulls": 0,
+              "min": "ACCESS_DENY: document 12; access evaluated under workspace policy; client=desktop",
+              "max": "VERSION_PUB: document 9; access evaluated under workspace policy; client=api",
+              "distinct": 184
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_AUDIT.AUDIT_EVENT": {
+          "keys": [
+            "EVENT_ID"
+          ],
+          "difference": 0,
+          "before": "d2e5b15fa08c69c9c209426140569c9711a1bf686db07003456e9383ec748593",
+          "after": "d2e5b15fa08c69c9c209426140569c9711a1bf686db07003456e9383ec748593",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_AUDIT.AUDIT_EVENT": []
+      },
+      "reason": null
     },
     {
       "id": "ned5c84172e82cd20",
@@ -10466,14 +10784,120 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "audit",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "output not materialized: AUDIT.AUDIT_EVENT"
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_AUDIT.AUDIT_EVENT": {
+          "before": {
+            "EVENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "ACTOR_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "EVENT_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "EVENT_TYPE": {
+              "nulls": 0,
+              "min": "ACCESS_DENY ",
+              "max": "VERSION_PUB ",
+              "distinct": 8
+            },
+            "DETAILS": {
+              "nulls": 0,
+              "min": "ACCESS_DENY: document 12; access evaluated under workspace policy; client=desktop",
+              "max": "VERSION_PUB: document 9; access evaluated under workspace policy; client=api",
+              "distinct": 184
+            }
+          },
+          "after": {
+            "EVENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "ACTOR_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "EVENT_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "EVENT_TYPE": {
+              "nulls": 0,
+              "min": "ACCESS_DENY ",
+              "max": "VERSION_PUB ",
+              "distinct": 8
+            },
+            "DETAILS": {
+              "nulls": 0,
+              "min": "ACCESS_DENY: document 12; access evaluated under workspace policy; client=desktop",
+              "max": "VERSION_PUB: document 9; access evaluated under workspace policy; client=api",
+              "distinct": 184
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_AUDIT.AUDIT_EVENT": {
+          "keys": [
+            "EVENT_ID"
+          ],
+          "difference": 0,
+          "before": "d2e5b15fa08c69c9c209426140569c9711a1bf686db07003456e9383ec748593",
+          "after": "d2e5b15fa08c69c9c209426140569c9711a1bf686db07003456e9383ec748593",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_AUDIT.AUDIT_EVENT": []
+      },
+      "reason": null
     },
     {
       "id": "n7fe8704cb752389d",
@@ -18304,16 +18728,17 @@
     "local_target": "DuckDB",
     "conversions": [
       "billing/initial/10_load.sql",
-      "billing/initial/30_views.sql"
+      "billing/initial/30_views.sql",
+      "warehouse/dbt/models/pc/audit/pc_audit__audit_event.sql"
     ],
     "non_relational_objects": "declared output relations",
     "migration_state": "BEFORE"
   },
   "summary": {
     "rows": 252,
-    "red": 223,
-    "green": 29,
-    "measured": 59,
+    "red": 219,
+    "green": 33,
+    "measured": 63,
     "migrated": 0,
     "licence_remaining": 252,
     "licence_total": 252,

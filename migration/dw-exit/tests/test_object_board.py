@@ -159,3 +159,90 @@ def test_make_command_line_token_selects_namespace():
     output=subprocess.check_output(['make','-n','sfx-teradata-validate','RUN_TOKEN=sfx2220'],cwd=ROOT,text=True)
     assert 'sfx-2220-before' in output
     assert 'sfx-1119-before' not in output
+
+
+AUDIT_ROWS = [
+    (1, 7, 5, 9, '2026-11-09 01:02:03', ' login ', ' ok '),
+    (2, 7, 0, 0, '2026-11-09 01:02:03', 'edit', None),
+    (3, None, None, None, None, 'share', '   '),
+    (4, 7, -3, -1, '2026-11-09 01:02:03', None, None),
+    (5, None, 5, 9, '2026-11-09 01:02:03', None, ''),
+    (6, 7, 5, 9, '2026-11-09 01:02:03', 'a very long event type', 'x' * 200),
+]
+
+
+def legacy_audit_event(rows):
+    """Evaluate m_SFX_AUDIT_EVENT's own port expressions with the PowerCenter runner."""
+    import html
+    import re
+    sys.path.insert(0, str(ROOT / 'etl/informatica'))
+    from runner import expr
+    xml = (ROOT / 'etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_EVENT.XML').read_text()
+    block = xml.split('NAME="EXP_STANDARDISE"', 1)[1].split('</TRANSFORMATION>', 1)[0]
+    ports = [dict(re.findall(r'(\w+)="([^"]*)"', field)) for field in re.findall(r'<TRANSFORMFIELD ([^>]*)/>', block)]
+    names = ['EVENT_ID', 'ACTOR_USER_ID', 'DOCUMENT_ID', 'CUSTOMER_ID', 'EVENT_TS', 'EVENT_TYPE', 'DETAILS']
+    context = expr.CompileContext(port_types={p['NAME']: p['DATATYPE'] for p in ports if p['PORTTYPE'] == 'INPUT'})
+    outputs = [(p['NAME'].removeprefix('o_'), expr.compile_expr(html.unescape(p['EXPRESSION']), context), int(p['PRECISION']), p['DATATYPE'])
+               for p in ports if p['PORTTYPE'] == 'OUTPUT']
+    assert [name for name, *_ in outputs] == names
+    result = []
+    for row in rows:
+        values = dict(zip(names, row))
+        out = []
+        for name, function, precision, datatype in outputs:
+            value = function(values)
+            if datatype == 'string' and value is not None:
+                value = str(value)[:precision]
+            if name == 'EVENT_TYPE' and value is not None:
+                value = value.ljust(12)  # Teradata CHAR(12) target pads
+            out.append(value)
+        result.append(tuple(out))
+    return result
+
+
+def test_audit_event_model_matches_legacy_mapping():
+    before = duckdb.connect()
+    try:
+        before.execute('CREATE SCHEMA SFX_AUDIT')
+        columns = 'EVENT_ID BIGINT, ACTOR_USER_ID BIGINT, DOCUMENT_ID BIGINT, CUSTOMER_ID BIGINT, EVENT_TS TIMESTAMP, EVENT_TYPE VARCHAR, DETAILS VARCHAR'
+        before.execute(f'CREATE TABLE SFX_AUDIT.STG_AUDIT_EVENT ({columns})')
+        before.execute(f'CREATE TABLE SFX_AUDIT.AUDIT_EVENT ({columns})')
+        before.executemany('INSERT INTO SFX_AUDIT.STG_AUDIT_EVENT VALUES (?,?,?,?,?,?,?)', AUDIT_ROWS)
+        stage = before.execute('SELECT * FROM SFX_AUDIT.STG_AUDIT_EVENT ORDER BY 1').fetchall()
+        expected = legacy_audit_event(stage)
+        assert [row[2:4] for row in expected[1:4]] == [(0, 0)] * 3
+        assert [row[6] for row in expected[1:5]] == ['EDIT by user 7', 'SHARE by user ', ' by user 7', ' by user ']
+        before.executemany('INSERT INTO SFX_AUDIT.AUDIT_EVENT VALUES (?,?,?,?,?,?,?)', expected)
+        after, ready, errors = board.materialize(before, {'SFX_AUDIT.AUDIT_EVENT', 'SFX_AUDIT.STG_AUDIT_EVENT'}, ROOT / 'migration/dw-exit/billing/initial')
+        try:
+            assert 'AUDIT.AUDIT_EVENT' in ready and 'AUDIT.AUDIT_EVENT' not in errors
+            assert 'AUDIT.STG_AUDIT_EVENT' not in ready
+            assert after.execute('SELECT * FROM AUDIT.AUDIT_EVENT ORDER BY 1').fetchall() == expected
+            row = board.build_board({'objects': [obj(subject_area='audit', output_relations=['SFX_AUDIT.AUDIT_EVENT'])]},
+                                    before, after, ready, errors)['rows'][0]
+            assert row['status'] == 'green' and row['row_count'] == {'before': 6, 'after': 6}
+        finally:
+            after.close()
+    finally:
+        before.close()
+
+
+def test_model_conversion_failures_stay_red(tmp_path, monkeypatch):
+    monkeypatch.setattr(board, 'ROOT', tmp_path)
+    (tmp_path / '10_load.sql').write_text('')
+    (tmp_path / '30_views.sql').write_text('')
+    (tmp_path / 'model.sql').write_text("select ID from {{ source('a','b') }}")
+    before = duckdb.connect()
+    try:
+        before.execute('CREATE SCHEMA SFX_AUDIT')
+        before.execute('CREATE TABLE SFX_AUDIT.T (ID INTEGER)')
+        before.execute('CREATE TABLE SFX_AUDIT.STG_T (ID INTEGER)')
+        models = {'AUDIT.T': ('model.sql', {'stg': 'SFX_AUDIT.STG_T'})}
+        after, ready, errors = board.materialize(before, {'SFX_AUDIT.T'}, tmp_path, models)
+        after.close()
+        assert not ready and errors['AUDIT.T'] == 'conversion input not materialized'
+        after, ready, errors = board.materialize(before, {'SFX_AUDIT.T', 'SFX_AUDIT.STG_T'}, tmp_path, models)
+        after.close()
+        assert not ready and errors['AUDIT.T'] == 'conversion failed: unsupported Jinja'
+    finally:
+        before.close()

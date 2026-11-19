@@ -46,7 +46,7 @@ def test_table_projections(rows):
             assert db.execute(query).fetchall() == rows
 
 
-@pytest.mark.parametrize("value,expected", [(5, 5), (0, None), (None, None)])
+@pytest.mark.parametrize("value,expected", [(5, 5), (0, 0), (-3, 0), (None, 0)])
 def test_numeric_projection(value, expected):
     source = (ROOT / "dbt/models/pc/audit/pc_audit__audit_event.sql").read_text()
     expression = re.search(r"case when DOCUMENT_ID.*?end", source).group()
