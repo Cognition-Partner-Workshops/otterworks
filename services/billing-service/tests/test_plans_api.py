@@ -115,7 +115,7 @@ def test_future_plan_change_closes_prior_and_starts_selected_plan(plan_client) -
     assert created.status == "active"
 
 
-def test_repeated_plan_change_is_idempotent(plan_client) -> None:
+def test_repeated_plan_change_returns_conflict(plan_client) -> None:
     client, repository = plan_client
     payload = {"plan_id": str(PLAN), "effective_on": "2026-03-01"}
     first = client.post(f"/api/tenants/{TENANT}/plan-change", json=payload)
@@ -123,7 +123,7 @@ def test_repeated_plan_change_is_idempotent(plan_client) -> None:
     second = client.post(f"/api/tenants/{TENANT}/plan-change", json=payload)
 
     assert first.status_code == 200
-    assert second.status_code == 200
-    assert second.json() == first.json()
+    assert second.status_code == 409
+    assert second.json()["detail"] == "this plan change has already been requested"
     assert len(repository.subscriptions) == len(before) == 2
     assert repository.subscriptions == before

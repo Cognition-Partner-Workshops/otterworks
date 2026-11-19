@@ -12,7 +12,7 @@ from pydantic import BaseModel
 
 from app.config import settings
 from app.db import connect, migrate, reset
-from app.domain import catalog, change_plan, entitlement
+from app.domain import BackdatedPlanChangeError, catalog, change_plan, entitlement
 from app.repository import PostgresPlansRepository
 
 
@@ -101,32 +101,12 @@ def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) 
     try:
         with connect() as connection:
             repository = PostgresPlansRepository(connection)
-            subscriptions = sorted(
-                repository.list_subscriptions(tenant_id), key=lambda item: item.starts_on
+            subscriptions, created = change_plan(
+                repository,
+                tenant_id,
+                request.plan_id,
+                request.effective_on,
             )
-            created = next(
-                (
-                    item
-                    for item in subscriptions
-                    if item.plan_id == request.plan_id and item.starts_on == request.effective_on
-                ),
-                None,
-            )
-            if created is None:
-                if any(
-                    item.ends_on is None and request.effective_on < item.starts_on
-                    for item in subscriptions
-                ):
-                    raise HTTPException(
-                        status_code=400,
-                        detail="effective_on cannot be before the current subscription start",
-                    )
-                subscriptions, created = change_plan(
-                    repository,
-                    tenant_id,
-                    request.plan_id,
-                    request.effective_on,
-                )
             return {
                 "latest_plan": str(created.plan_id),
                 "latest_start": created.starts_on.isoformat(),
@@ -140,6 +120,8 @@ def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) 
                     for item in subscriptions
                 ],
             }
+    except BackdatedPlanChangeError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
     except psycopg.errors.ForeignKeyViolation as error:
         raise HTTPException(status_code=400, detail="invalid plan change") from error
     except psycopg.errors.UniqueViolation as error:

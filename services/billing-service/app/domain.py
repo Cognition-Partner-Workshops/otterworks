@@ -80,6 +80,10 @@ def entitlement(rows: list[EntitlementRow], tenant_id: UUID, on: date) -> Entitl
     return max(eligible, key=lambda row: row.starts_on, default=None)
 
 
+class BackdatedPlanChangeError(ValueError):
+    pass
+
+
 def change_plan(
     repository: PlansRepository,
     tenant_id: UUID,
@@ -87,6 +91,14 @@ def change_plan(
     effective_on: date,
 ) -> tuple[list[SubscriptionRow], SubscriptionRow]:
     subscriptions = repository.list_subscriptions(tenant_id)
+    current_start = min(
+        (item.starts_on for item in subscriptions if item.ends_on is None),
+        default=effective_on,
+    )
+    if effective_on < current_start:
+        raise BackdatedPlanChangeError(
+            "effective_on cannot be before the current subscription start"
+        )
     for subscription in subscriptions:
         if subscription.ends_on is None and subscription.starts_on < effective_on:
             next_status = (
