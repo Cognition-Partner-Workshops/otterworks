@@ -45,8 +45,9 @@ def _issue(tenant_id, values, legacy=False):
     invoice = select(
         "SELECT i.id, i.tenant_id, p.period_start, p.period_end, i.status "
         "FROM billing.invoices i JOIN billing.rating_periods p ON p.id = i.period_id "
-        "WHERE i.tenant_id = %s AND p.period_start = %s",
-        (tenant_id, start),
+        "WHERE i.tenant_id = %s AND p.tenant_id = %s "
+        "AND p.period_start = %s AND p.period_end = %s",
+        (tenant_id, tenant_id, start, end),
     )[0]
     response = jsonify(data=invoice)
     response.status_code = 201

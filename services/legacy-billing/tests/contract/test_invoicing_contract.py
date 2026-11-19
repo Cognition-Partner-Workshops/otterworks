@@ -117,3 +117,21 @@ def test_unknown_tenant_issue(compare_requests):
         v1_body=lambda response: 500, state_probe=state)
     assert old.data == InternalServerError().get_response().data
     assert new.json["error"]["code"] == "unprocessable"
+
+
+@pytest.mark.parametrize("period_end", ["2026-01-31", "2026-01-30"])
+def test_issue_reads_back_tenant_six_january_invoice(client, period_end):
+    tenant = "00000000-0000-0000-0000-000000000006"
+    period = {"period_start": "2026-01-01", "period_end": period_end}
+    response = client.post(f"{BASE}/tenants/{tenant}/invoices", json=period)
+    assert response.status_code == 201
+    issued = select(
+        "SELECT i.id FROM billing.invoices i "
+        "JOIN billing.rating_periods p ON p.id = i.period_id "
+        "WHERE i.tenant_id = %s AND p.tenant_id = %s "
+        "AND p.period_start = %s AND p.period_end = %s",
+        (tenant, tenant, period["period_start"], period_end),
+    )
+    assert len(issued) == 1
+    assert response.json["data"] == {**issued[0], "tenant_id": tenant, **period, "status": "issued"}
+    assert response.headers["Location"] == f"{BASE}/invoices/{issued[0]['id']}/lines"
