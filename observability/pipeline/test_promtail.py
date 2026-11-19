@@ -17,6 +17,9 @@ pytestmark = pytest.mark.skipif(os.getenv('SFX_PROMTAIL_TEST') != '1',
 def collect(tmp_path, job_name, lines, filename):
     config = yaml.safe_load(CONFIG.read_text().replace('${RUN_TOKEN}', 'sfx1119'))
     job = next(job for job in config['scrape_configs'] if job['job_name'] == job_name)
+    for stage in job.get('pipeline_stages', []):
+        if 'multiline' in stage:
+            stage['multiline']['max_wait_time'] = '50ms'
     job['static_configs'][0]['labels']['filename'] = filename
     config['scrape_configs'] = [job]
     config['positions']['filename'] = '/tmp/positions.yml'
@@ -105,3 +108,16 @@ def test_missing_or_invalid_warehouse_timestamp_is_dropped(tmp_path, timestamp):
 def test_missing_or_invalid_runner_timestamp_is_dropped(tmp_path, line):
     result = collect(tmp_path, 'runner', [line], '/logs/runner/sfx-1119-before/SessLogs/session.log')
     assert 'component="runner"' not in result
+
+
+def test_runner_continuations_stay_with_error_headline(tmp_path):
+    result = collect(tmp_path, 'runner', [
+        '2020-01-02 03:04:05 : ERROR : database load failed',
+        'DETAIL: failing row violates not-null constraint',
+        '  at load.py:42',
+        '2020-01-02 03:04:06 : INFO : next operation',
+    ], '/logs/runner/sfx-1119-before/SessLogs/session.log')
+    assert 'DETAIL: failing row violates not-null constraint' in result
+    assert '  at load.py:42' in result
+    assert result.count('component="runner"') == 2
+    assert result.index('database load failed') < result.index('DETAIL:') < result.index('next operation')
