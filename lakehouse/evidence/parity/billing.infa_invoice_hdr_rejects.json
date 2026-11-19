@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "655e8ba5f44d8b26f10a17b9fd95d5d398146a2b",
+  "git_sha": "fd494626e8afdfba1a53443c13957ba0a0790d62",
   "id": "billing.infa_invoice_hdr_rejects",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -108,5 +108,5 @@
     "legacy": 0
   },
   "spec_hash": "ee2d055bd8680293c7226c697911a23c92bf150ccf45ec6bbfc19447e9d1509e",
-  "timestamp": "2026-11-19T08:59:22.689039+00:00"
+  "timestamp": "2026-11-19T09:36:56.890004+00:00"
 }

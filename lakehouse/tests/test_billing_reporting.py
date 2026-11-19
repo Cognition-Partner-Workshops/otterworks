@@ -7,6 +7,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from dbt.cli.main import dbtRunner
 from jinja2 import Environment, StrictUndefined
 from pyspark.sql import types as T
 
@@ -20,6 +21,20 @@ from warehouse.seed.columns import TABLES
 
 
 GOLD = ROOT / 'dbt/models/gold/billing'
+
+
+def test_billing_stage_aware_indirect_tests(tmp_path, monkeypatch):
+    monkeypatch.setenv('BUSINESS_DATE', '20261109')
+    monkeypatch.setenv('LAKEHOUSE_DELTA_ROOT', str(tmp_path / 'delta'))
+    for layer, expected in [('silver', False), ('gold', True)]:
+        result = dbtRunner().invoke([
+            'ls', '--project-dir', str(ROOT / 'dbt'), '--profiles-dir', str(ROOT / 'dbt'),
+            '--target-path', str(tmp_path / layer), '--log-path', str(tmp_path / 'logs'),
+            '--select', f'path:models/{layer}/billing', '--indirect-selection', 'buildable',
+            '--resource-type', 'test', '--output', 'name',
+        ])
+        assert result.success, result.exception
+        assert any('billing_monthly_amounts' in str(node) for node in result.result) == expected
 
 
 @pytest.fixture(scope='module')

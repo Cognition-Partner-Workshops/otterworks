@@ -45,7 +45,8 @@ def command(node, landing, day):
     if node['kind'] == 'dbt':
         return base + ['lakehouse.runtime.dbt', '--select', node['selector']]
     if node['kind'] == 'parity':
-        return base + ['lakehouse.parity', 'run', '--spec', node['spec'], '--business-date', day]
+        selected = node['specs'] if 'specs' in node else [node['spec']]
+        return base + ['lakehouse.parity', 'run', '--spec', *selected, '--business-date', day]
     if node['kind'] == 'export':
         values = {'python': python, 'business_date': day, 'landing': str(landing), 'data_root': str(data_root())}
         return [part.format_map(values) for part in node['command']]

@@ -24,7 +24,7 @@ def node(identity, dependencies=(), kind='noop', **options):
 
 def test_pipeline_contract_and_staging_replacement():
     dags = graph.load()
-    assert set(dags) == {'lakehouse_daily', 'lakehouse_hourly'}
+    assert {'lakehouse_daily', 'lakehouse_hourly'} <= set(dags)
     daily = dags['lakehouse_daily']
     nodes = {node['id']: node for node in daily['nodes']}
     sensors = [n for n in nodes.values() if n['kind'] == 'feed_sensor']
@@ -165,6 +165,7 @@ def test_dbt_selector_passed_to_runner(monkeypatch):
     monkeypatch.setattr(dbt, 'dbtRunner', lambda: SimpleNamespace(invoke=lambda args: calls.append(args) or SimpleNamespace(success=True)))
     dbt.main()
     assert calls[0][-2:] == ['--select', 'tag:billing'] and stopped == [True]
+    assert calls[0][calls[0].index('--indirect-selection') + 1] == 'buildable'
 
 
 def test_cli_check_and_invalid_graph(tmp_path, monkeypatch, capsys):

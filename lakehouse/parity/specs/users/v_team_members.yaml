@@ -1,0 +1,11 @@
+id: users.v_team_members
+legacy_objects:
+  - teradata_view:SFX_USERS.V_TEAM_MEMBERS
+legacy:
+  kind: postgres_sql
+  sql: SELECT team_id, team_name, user_id, display_name, row_number() over (order by team_id NULLS FIRST, team_name COLLATE "C" NULLS FIRST, user_id NULLS FIRST, display_name COLLATE "C" NULLS FIRST) as occurrence FROM sfx_users.v_team_members
+lakehouse:
+  kind: spark_sql
+  sql: SELECT team_id, team_name, user_id, display_name, row_number() over (order by team_id NULLS FIRST, team_name NULLS FIRST, user_id NULLS FIRST, display_name NULLS FIRST) as occurrence FROM silver_users.v_team_members
+keys: [occurrence]
+columns: [occurrence, team_id, team_name, user_id, display_name]

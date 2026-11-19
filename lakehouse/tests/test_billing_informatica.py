@@ -5,6 +5,7 @@ import uuid
 import zlib
 from datetime import date
 from decimal import Decimal
+from types import SimpleNamespace
 
 import pytest
 
@@ -72,6 +73,25 @@ def test_informatica_journal_filters_tax_sequence_and_retention():
     assert len(errors) == 2
     with pytest.raises(OverflowError, match='Sequence'):
         I.mapping('GL_JOURNAL_LINE', [], source, sequence=2**63)
+
+
+def test_split_sessions_preserve_sequence_source_order(tmp_path, monkeypatch):
+    source = [row('STG_INVOICE_HDR', invoice_id=i, customer_id=1, total_amount=Decimal('10.00'),
+                  tax_amount=Decimal('0.00'), invoice_dt=date(2026, 11, 9), invoice_number=str(i))
+              for i in (20, 3)]
+    I.save(tmp_path / 'state/STG_INVOICE_HDR.json', source)
+    for table in ('STG_INVOICE_HDR', 'INVOICE_HDR', 'INVOICE_LINE'):
+        I.save(tmp_path / 'sessions' / (table + '.json'), {'Status': 'SUCCEEDED'})
+    spark = SimpleNamespace(table=lambda _: SimpleNamespace(collect=lambda: []))
+    captured = []
+    monkeypatch.setattr(I, 'delta', lambda _spark, _root, _table, rows: captured.extend(rows))
+    I.run(spark, tmp_path, '20261109', tmp_path, 'GL_JOURNAL_LINE')
+    assert [r['invoice_id'] for r in captured] == [20, 3, 20, 3]
+    assert captured[0]['journal_line_id'] == 8000000000001
+    assert json.loads((tmp_path / 'state/GL_JOURNAL_LINE.json').read_text())[0]['invoice_id'] == 20
+    (tmp_path / 'state/STG_INVOICE_HDR.json').unlink()
+    with pytest.raises(FileNotFoundError):
+        I.run(spark, tmp_path, '20261109', tmp_path, 'GL_JOURNAL_LINE')
 
 
 def test_informatica_decision_alert_and_scheduler(tmp_path, monkeypatch):
@@ -167,7 +187,8 @@ def test_informatica_native_reject_row_parity(tmp_path, monkeypatch):
                                                      state['GL_ACCOUNT'], sequence=sequence)
         state[table] = values
         I.output(modern, table, values, rejects, errors)
-    reference.prepare(landing, day)
+    reference.prepare(landing, day, replay_next_run=True)
+    assert json.loads((root.parent / 'sequence.json').read_text())['next'] == 1000000000001
     for path in modern.glob('*.psv'):
         assert path.read_bytes() == (root / 'reference' / path.name).read_bytes(), path.name
     assert (modern / 'customer_account_rejects.psv').stat().st_size > 0

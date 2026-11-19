@@ -1,0 +1,13 @@
+id: users.stg_team
+legacy_objects:
+  - teradata_table:SFX_USERS.STG_TEAM
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.stg_team
+lakehouse:
+  kind: spark_sql
+  sql: >-
+    SELECT CAST(team_id AS bigint) AS team_id, CAST(owner_user_id AS bigint) AS owner_user_id, CAST(team_name AS string) AS team_name, CAST(created_dt AS date) AS created_dt
+    FROM bronze_users.team WHERE _business_date = to_date('{business_date}', 'yyyyMMdd')
+keys: [team_id]
+columns: [team_id, owner_user_id, team_name, created_dt]

@@ -35,12 +35,24 @@ def load_spec(path):
         side = spec.get(label, {})
         kind = side.get('kind')
         required = {'postgres_sql': 'sql', 'spark_sql': 'sql', 'file': 'path',
-                    'parquet': 'path', 'delta_table': 'table' if 'table' in side else 'path'}
+                    'json': 'path', 'jsonl': 'path', 'parquet': 'path',
+                    'delta_table': 'table' if 'table' in side else 'path'}
         if kind not in required or not isinstance(side.get(required[kind]), str):
             raise ValueError(f'{label}: invalid reader kind or missing reader field')
         if kind == 'file':
             if not isinstance(side.get('header', False), bool) or len(side.get('delimiter', '|')) != 1:
                 raise ValueError('file requires a boolean header and one-character delimiter')
+        if kind in ('json', 'jsonl'):
+            names = side.get('columns')
+            if (not isinstance(names, list) or not names
+                    or any(not isinstance(name, str) or name != name.lower() for name in names)
+                    or len(names) != len(set(names))):
+                raise ValueError('JSON readers require unique lowercase columns')
+        if 'missing_is_empty' in side and (kind != 'jsonl' or type(side['missing_is_empty']) is not bool):
+            raise ValueError('Only JSONL readers support boolean missing_is_empty')
+        if 'database' in side and (kind != 'postgres_sql'
+                                   or not re.fullmatch(r'[a-z][a-z0-9_]*', str(side['database']))):
+            raise ValueError('Only PostgreSQL readers support a lowercase database override')
     return spec
 
 

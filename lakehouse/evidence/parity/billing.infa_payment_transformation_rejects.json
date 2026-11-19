@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "655e8ba5f44d8b26f10a17b9fd95d5d398146a2b",
+  "git_sha": "fd494626e8afdfba1a53443c13957ba0a0790d62",
   "id": "billing.infa_payment_transformation_rejects",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -108,5 +108,5 @@
     "legacy": 0
   },
   "spec_hash": "ad327c1a0b3866142034c09491a78754e2ee4c7034809ac60c2b4bb81ca299b3",
-  "timestamp": "2026-11-19T08:59:24.773355+00:00"
+  "timestamp": "2026-11-19T09:36:59.009852+00:00"
 }

@@ -1,0 +1,13 @@
+id: users.stg_user_activity_daily
+legacy_objects:
+  - teradata_table:SFX_USERS.STG_USER_ACTIVITY_DAILY
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.stg_user_activity_daily
+lakehouse:
+  kind: spark_sql
+  sql: >-
+    SELECT CAST(activity_id AS bigint) AS activity_id, CAST(user_id AS bigint) AS user_id, CAST(activity_dt AS date) AS activity_dt, CAST(login_count AS int) AS login_count, CAST(document_count AS int) AS document_count
+    FROM bronze_users.user_activity_daily WHERE _business_date = to_date('{business_date}', 'yyyyMMdd')
+keys: [activity_id]
+columns: [activity_id, user_id, activity_dt, login_count, document_count]

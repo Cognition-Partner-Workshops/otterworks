@@ -1,0 +1,15 @@
+id: users.activity_user_summaries
+legacy_objects:
+  - etl_script:etl/scripts/user_activity_daily.py
+legacy:
+  kind: jsonl
+  missing_is_empty: true
+  path: lakehouse/.data/{NS}/oracle/activity/reports/user-activity/{iso_date}/user_summaries.jsonl
+  columns: [user_id, total_actions, active_days, actions_by_type]
+lakehouse:
+  kind: jsonl
+  missing_is_empty: true
+  path: lakehouse/.data/{NS}/exports/reports/user-activity/{iso_date}/user_summaries.jsonl
+  columns: [user_id, total_actions, active_days, actions_by_type]
+keys: [user_id]
+columns: [user_id, total_actions, active_days, actions_by_type]

@@ -1,0 +1,11 @@
+id: users.v_user_settings
+legacy_objects:
+  - teradata_view:SFX_USERS.V_USER_SETTINGS
+legacy:
+  kind: postgres_sql
+  sql: SELECT user_id, display_name, pref_name, pref_value, row_number() over (order by user_id NULLS FIRST, display_name COLLATE "C" NULLS FIRST, pref_name COLLATE "C" NULLS FIRST, pref_value COLLATE "C" NULLS FIRST) as occurrence FROM sfx_users.v_user_settings
+lakehouse:
+  kind: spark_sql
+  sql: SELECT user_id, display_name, pref_name, pref_value, row_number() over (order by user_id NULLS FIRST, display_name NULLS FIRST, pref_name NULLS FIRST, pref_value NULLS FIRST) as occurrence FROM silver_users.v_user_settings
+keys: [occurrence]
+columns: [occurrence, user_id, display_name, pref_name, pref_value]

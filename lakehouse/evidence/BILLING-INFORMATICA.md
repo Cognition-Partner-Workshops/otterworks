@@ -102,6 +102,14 @@ The deployed graph includes real start/worklet/decision/payment/alert/finish tas
 and independent session validation nodes. The reference command must succeed
 before parity; it fails on workflow errors or uncaptured transformation drops.
 
+CI explicitly prepares the billing BTEQ snapshots and Informatica oracle before
+the shared graph, like the users oracle. `informatica_reference --replay-next-run`
+restores only the prepared sequence input so that the next graph execution consumes
+the same counter range as the native oracle. Normal execution still advances its
+persistent counter; this fixture-only flag does not change writer semantics.
+Split sessions retain typed writer-order state separately from canonical parity
+outputs, so a Delta partition read cannot reassign sequence values to other invoices.
+
 ## Verification evidence
 
 All **72 billing parity specs PASS**, including all 28 new surfaces. Shared-input

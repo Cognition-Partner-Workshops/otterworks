@@ -1,0 +1,11 @@
+id: users.users_active_daily
+legacy_objects:
+  - spark_job:users_active_daily
+legacy:
+  kind: parquet
+  path: lakehouse/.data/{NS}/oracle/spark/users/users_active_daily
+lakehouse:
+  kind: delta_table
+  table: gold_users.users_active_daily
+keys: [activity_date]
+columns: [activity_date, active_users, logins, actions]

@@ -36,7 +36,7 @@ class CapturedMapping(MappingRun):
             {'stage': name, 'row': inputs[id(ctx)]} for ctx in before if id(ctx) not in after)
 
 
-def prepare(landing, day):
+def prepare(landing, day, replay_next_run=False):
     business_date(day)
     legacy = os.environ.get('LEGACY_NS', 'sfx-d1110-before')
     if not os.environ.get('TD_PG_DSN'):
@@ -125,6 +125,8 @@ def prepare(landing, day):
         spark.stop()
         if status != 'SUCCEEDED':
             raise RuntimeError('Legacy Informatica workflow failed; see reference/workflow_result.json')
+    if replay_next_run:
+        save(root.parent / 'sequence.json', {'next': manifest['sequence_start']})
     print('Informatica reference: PASS (actual emulator; isolated database ' + database + ')')
 
 
@@ -132,8 +134,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--business-date', required=True)
     parser.add_argument('--landing', type=Path, required=True)
+    parser.add_argument('--replay-next-run', action='store_true', help='Restore the prepared counter input for an identical graph replay')
     args = parser.parse_args()
-    prepare(args.landing, args.business_date)
+    prepare(args.landing, args.business_date, args.replay_next_run)
 
 
 if __name__ == '__main__':

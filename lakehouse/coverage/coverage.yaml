@@ -290,35 +290,59 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: bteq_script:warehouse/teradata/scripts/users/01_load_users.bteq
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - delta_table:silver_users.app_user
+  - delta_table:silver_users.user_profile
+  parity:
+  - users.app_user
+  - users.user_profile
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: bteq_script:warehouse/teradata/scripts/users/02_load_teams.bteq
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - delta_table:silver_users.role_grant
+  - delta_table:silver_users.team
+  - delta_table:silver_users.team_member
+  parity:
+  - users.role_grant
+  - users.team
+  - users.team_member
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: bteq_script:warehouse/teradata/scripts/users/03_load_identity.bteq
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - delta_table:silver_users.sso_identity
+  - delta_table:silver_users.user_status_hist
+  parity:
+  - users.sso_identity
+  - users.user_status_hist
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: bteq_script:warehouse/teradata/scripts/users/04_load_events.bteq
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - delta_table:silver_users.login_event
+  - delta_table:silver_users.user_activity_daily
+  parity:
+  - users.login_event
+  - users.user_activity_daily
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: bteq_script:warehouse/teradata/scripts/users/10_activity_daily.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.user_activity_daily
+  - file:lakehouse/.data/{NS}/exports/{business_date}/team_counts.psv
+  parity:
+  - users.team_counts
+  - users.user_activity_daily
+  assumptions:
+  - A-303
+  - A-305
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: consumer:admin-service
   status: pending
   targets: []
@@ -380,12 +404,15 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#042e9e7fa551
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - airflow:users_spark_outputs
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-315
+  notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#06b1c260f55b
   status: pending
   targets: []
@@ -486,12 +513,15 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#8256b4d51699
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - airflow:users_spark_outputs
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-315
+  notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#949f96b6edeb
   status: pending
   targets: []
@@ -500,12 +530,15 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#9d492d3cabc6
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - airflow:users_spark_outputs
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-315
+  notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#9f970c1cb2a8
   status: pending
   targets: []
@@ -514,12 +547,15 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#a1a53c82cfb3
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - airflow:users_spark_outputs
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-315
+  notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#ae80e15b906a
   status: pending
   targets: []
@@ -542,19 +578,25 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#b8eef1610f31
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - airflow:users_spark_outputs
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-315
+  notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#bb89194e6e7e
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - airflow:users_spark_outputs
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-315
+  notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#d0caaba38c97
   status: pending
   targets: []
@@ -570,12 +612,15 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#d28d753c053a
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - airflow:users_activity_report
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-315
+  notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#d379dc30b522
   status: pending
   targets: []
@@ -978,11 +1023,20 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: etl_script:etl/scripts/user_activity_daily.py
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - json:lakehouse/.data/{NS}/exports/reports/user-activity/latest/activity_report.json
+  - json:lakehouse/.data/{NS}/exports/reports/user-activity/{iso_date}/activity_report.json
+  - jsonl:lakehouse/.data/{NS}/exports/reports/user-activity/{iso_date}/user_summaries.jsonl
+  parity:
+  - users.activity_latest
+  - users.activity_report
+  - users.activity_user_summaries
+  assumptions:
+  - A-312
+  - A-313
+  - A-314
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: fastload:warehouse/teradata/load/fastload/billing_billing_adj.fl
   status: replaced_by_platform
   targets:
@@ -1299,7 +1353,8 @@ objects:
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  parity:
+  - users.stg_app_user
   assumptions:
   - A-001
   - A-002
@@ -1315,12 +1370,13 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Date-partitioned bronze replaces this users FastLoad; staging parity verifies typed values.
 - id: fastload:warehouse/teradata/load/fastload/users_login_event.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  parity:
+  - users.stg_login_event
   assumptions:
   - A-001
   - A-002
@@ -1336,12 +1392,13 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Date-partitioned bronze replaces this users FastLoad; staging parity verifies typed values.
 - id: fastload:warehouse/teradata/load/fastload/users_role_grant.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  parity:
+  - users.stg_role_grant
   assumptions:
   - A-001
   - A-002
@@ -1357,12 +1414,13 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Date-partitioned bronze replaces this users FastLoad; staging parity verifies typed values.
 - id: fastload:warehouse/teradata/load/fastload/users_sso_identity.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  parity:
+  - users.stg_sso_identity
   assumptions:
   - A-001
   - A-002
@@ -1378,12 +1436,13 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Date-partitioned bronze replaces this users FastLoad; staging parity verifies typed values.
 - id: fastload:warehouse/teradata/load/fastload/users_team.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  parity:
+  - users.stg_team
   assumptions:
   - A-001
   - A-002
@@ -1399,12 +1458,13 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Date-partitioned bronze replaces this users FastLoad; staging parity verifies typed values.
 - id: fastload:warehouse/teradata/load/fastload/users_team_member.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  parity:
+  - users.stg_team_member
   assumptions:
   - A-001
   - A-002
@@ -1420,12 +1480,13 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Date-partitioned bronze replaces this users FastLoad; staging parity verifies typed values.
 - id: fastload:warehouse/teradata/load/fastload/users_user_activity_daily.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  parity:
+  - users.stg_user_activity_daily
   assumptions:
   - A-001
   - A-002
@@ -1441,12 +1502,13 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Date-partitioned bronze replaces this users FastLoad; staging parity verifies typed values.
 - id: fastload:warehouse/teradata/load/fastload/users_user_pref.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  parity:
+  - users.stg_user_pref
   assumptions:
   - A-001
   - A-002
@@ -1462,12 +1524,14 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  - A-302
+  notes: Date-partitioned bronze replaces this users FastLoad; staging parity verifies typed values.
 - id: fastload:warehouse/teradata/load/fastload/users_user_profile.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  parity:
+  - users.stg_user_profile
   assumptions:
   - A-001
   - A-002
@@ -1483,12 +1547,13 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Date-partitioned bronze replaces this users FastLoad; staging parity verifies typed values.
 - id: fastload:warehouse/teradata/load/fastload/users_user_status_hist.fl
   status: replaced_by_platform
   targets:
   - lakehouse/runtime/ingest.py
-  parity: []
+  parity:
+  - users.stg_user_status_hist
   assumptions:
   - A-001
   - A-002
@@ -1504,7 +1569,7 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Date-partitioned bronze replaces this users FastLoad; staging parity verifies typed values.
 - id: informatica_config:SFX_AUDIT.default_session_config
   status: pending
   targets: []
@@ -1719,11 +1784,15 @@ objects:
   - A-124
   notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_CONTENT.m_SFX_APP_USER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_app_user
+  parity:
+  - users.infa_app_user
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_DOCUMENT
   status: pending
   targets: []
@@ -1737,23 +1806,35 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_LOGIN_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_login_event
+  parity:
+  - users.infa_login_event
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_ROLE_GRANT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_role_grant
+  parity:
+  - users.infa_role_grant
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_STG_APP_USER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_stg_app_user
+  parity:
+  - users.infa_stg_app_user
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_STG_DOCUMENT
   status: pending
   targets: []
@@ -1761,11 +1842,15 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_TEAM_MEMBER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_team_member
+  parity:
+  - users.infa_team_member
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_param:etl/informatica/params/sfx_d1110_daily.par
   status: pending
   targets: []
@@ -1980,11 +2065,15 @@ objects:
   - A-124
   notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_CONTENT.s_m_SFX_APP_USER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_app_user
+  parity:
+  - users.infa_app_user
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_DOCUMENT
   status: pending
   targets: []
@@ -1998,23 +2087,35 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_LOGIN_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_login_event
+  parity:
+  - users.infa_login_event
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_ROLE_GRANT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_role_grant
+  parity:
+  - users.infa_role_grant
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_STG_APP_USER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_stg_app_user
+  parity:
+  - users.infa_stg_app_user
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_STG_DOCUMENT
   status: pending
   targets: []
@@ -2022,11 +2123,15 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_TEAM_MEMBER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_team_member
+  parity:
+  - users.infa_team_member
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_source:SFX_AUDIT.AUDIT_EVENT
   status: pending
   targets: []
@@ -2182,11 +2287,15 @@ objects:
   - A-124
   notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_source:SFX_CONTENT.FF_APP_USER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_stg_app_user
+  parity:
+  - users.infa_stg_app_user
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_source:SFX_CONTENT.FF_DOCUMENT
   status: pending
   targets: []
@@ -2200,29 +2309,45 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_source:SFX_CONTENT.FF_LOGIN_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_login_event
+  parity:
+  - users.infa_login_event
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_source:SFX_CONTENT.FF_ROLE_GRANT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_role_grant
+  parity:
+  - users.infa_role_grant
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_source:SFX_CONTENT.FF_TEAM_MEMBER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_team_member
+  parity:
+  - users.infa_team_member
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_source:SFX_CONTENT.STG_APP_USER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_app_user
+  parity:
+  - users.infa_app_user
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_source:SFX_CONTENT.STG_DOCUMENT
   status: pending
   targets: []
@@ -2407,11 +2532,15 @@ objects:
   - A-124
   notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_CONTENT.APP_USER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_app_user
+  parity:
+  - users.infa_app_user
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_target:SFX_CONTENT.DOCUMENT
   status: pending
   targets: []
@@ -2425,23 +2554,35 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_target:SFX_CONTENT.LOGIN_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_login_event
+  parity:
+  - users.infa_login_event
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_target:SFX_CONTENT.ROLE_GRANT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_role_grant
+  parity:
+  - users.infa_role_grant
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_target:SFX_CONTENT.STG_APP_USER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_stg_app_user
+  parity:
+  - users.infa_stg_app_user
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_target:SFX_CONTENT.STG_DOCUMENT
   status: pending
   targets: []
@@ -2449,11 +2590,15 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_target:SFX_CONTENT.TEAM_MEMBER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.infa_team_member
+  parity:
+  - users.infa_team_member
+  assumptions:
+  - A-306
+  - A-307
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_task:SFX_AUDIT.wf_SFX_AUDIT_DAILY.Start
   status: pending
   targets: []
@@ -2738,41 +2883,65 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_job:team_graph_components
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:gold_users.team_graph_components
+  parity:
+  - users.team_graph_components
+  assumptions:
+  - A-308
+  - A-310
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: spark_job:user_pref_json_flatten
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:gold_users.user_pref_json_flatten
+  parity:
+  - users.user_pref_json_flatten
+  assumptions:
+  - A-308
+  - A-311
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: spark_job:users_active_daily
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:gold_users.users_active_daily
+  parity:
+  - users.users_active_daily
+  assumptions:
+  - A-308
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: spark_job:users_login_useragent_parse
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:gold_users.users_login_useragent_parse
+  parity:
+  - users.users_login_useragent_parse
+  assumptions:
+  - A-308
+  - A-311
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: spark_job:users_risk_score
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:gold_users.users_risk_score
+  parity:
+  - users.users_risk_score
+  - users.users_risk_score_jdbc
+  assumptions:
+  - A-308
+  - A-309
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: spark_job:users_team_rollup
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:gold_users.users_team_rollup
+  parity:
+  - users.users_team_rollup
+  - users.users_team_rollup_jdbc
+  assumptions:
+  - A-308
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: spark_library:etl/spark/jobs/py/common/binary_documents.py
   status: pending
   targets: []
@@ -2948,41 +3117,59 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_submit:etl/spark/submit/team_graph_components.sh
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - airflow:users_spark_outputs
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-308
+  notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: spark_submit:etl/spark/submit/user_pref_json_flatten.sh
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - airflow:users_spark_outputs
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-308
+  notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: spark_submit:etl/spark/submit/users_active_daily.sh
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - airflow:users_spark_outputs
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-308
+  notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: spark_submit:etl/spark/submit/users_login_useragent_parse.sh
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - airflow:users_spark_outputs
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-308
+  notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: spark_submit:etl/spark/submit/users_risk_score.sh
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - airflow:users_spark_outputs
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-308
+  notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: spark_submit:etl/spark/submit/users_team_rollup.sh
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - airflow:users_spark_outputs
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-308
+  notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
+  verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: teradata_macro:SFX_AUDIT.M_ARCHIVE_OVERVIEW
   status: pending
   targets: []
@@ -3024,11 +3211,14 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_macro:SFX_USERS.M_TEAM_COUNTS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - file:lakehouse/.data/{NS}/exports/{business_date}/team_counts.psv
+  parity:
+  - users.team_counts
+  assumptions:
+  - A-305
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_procedure:SFX_AUDIT.P_DAILY_SUMMARY
   status: pending
   targets: []
@@ -3058,11 +3248,14 @@ objects:
   - A-114
   notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_procedure:SFX_USERS.P_ACTIVITY_DAILY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.user_activity_daily
+  parity:
+  - users.user_activity_daily
+  assumptions:
+  - A-303
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:DBC.DBC_QRYLOG
   status: pending
   targets: []
@@ -3707,125 +3900,186 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_table:SFX_USERS.APP_USER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.app_user
+  parity:
+  - users.app_user
+  assumptions:
+  - A-300
+  - A-301
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.LOGIN_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.login_event
+  parity:
+  - users.login_event
+  assumptions:
+  - A-300
+  - A-301
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.ROLE_GRANT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.role_grant
+  parity:
+  - users.role_grant
+  assumptions:
+  - A-300
+  - A-301
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.SSO_IDENTITY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.sso_identity
+  parity:
+  - users.sso_identity
+  assumptions:
+  - A-300
+  - A-301
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.STG_APP_USER
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - spark_sql:silver_users.stg_app_user
+  parity:
+  - users.stg_app_user
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.STG_LOGIN_EVENT
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - spark_sql:silver_users.stg_login_event
+  parity:
+  - users.stg_login_event
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.STG_ROLE_GRANT
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - spark_sql:silver_users.stg_role_grant
+  parity:
+  - users.stg_role_grant
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.STG_SSO_IDENTITY
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - spark_sql:silver_users.stg_sso_identity
+  parity:
+  - users.stg_sso_identity
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.STG_TEAM
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - spark_sql:silver_users.stg_team
+  parity:
+  - users.stg_team
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.STG_TEAM_MEMBER
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - spark_sql:silver_users.stg_team_member
+  parity:
+  - users.stg_team_member
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.STG_USER_ACTIVITY_DAILY
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - spark_sql:silver_users.stg_user_activity_daily
+  parity:
+  - users.stg_user_activity_daily
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.STG_USER_PREF
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - spark_sql:silver_users.stg_user_pref
+  parity:
+  - users.stg_user_pref
+  assumptions:
+  - A-302
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.STG_USER_PROFILE
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - spark_sql:silver_users.stg_user_profile
+  parity:
+  - users.stg_user_profile
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.STG_USER_STATUS_HIST
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - spark_sql:silver_users.stg_user_status_hist
+  parity:
+  - users.stg_user_status_hist
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.TEAM
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.team
+  parity:
+  - users.team
+  assumptions:
+  - A-300
+  - A-301
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.TEAM_MEMBER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.team_member
+  parity:
+  - users.team_member
+  assumptions:
+  - A-300
+  - A-301
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.USER_ACTIVITY_DAILY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.user_activity_daily
+  parity:
+  - users.user_activity_daily
+  assumptions:
+  - A-300
+  - A-301
+  - A-303
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.USER_PREF
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.user_pref
+  parity:
+  - users.user_pref
+  assumptions:
+  - A-302
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.USER_PROFILE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.user_profile
+  parity:
+  - users.user_profile
+  assumptions:
+  - A-300
+  - A-301
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_table:SFX_USERS.USER_STATUS_HIST
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - delta_table:silver_users.user_status_hist
+  parity:
+  - users.user_status_hist
+  assumptions:
+  - A-300
+  - A-301
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_view:DBC.QRYLOGOBJECTSV
   status: pending
   targets: []
@@ -3919,17 +4173,24 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_view:SFX_USERS.V_TEAM_MEMBERS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - spark_sql:silver_users.v_team_members
+  parity:
+  - users.v_team_members
+  assumptions:
+  - A-304
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_view:SFX_USERS.V_USER_SETTINGS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - spark_sql:silver_users.v_user_settings
+  parity:
+  - users.v_user_settings
+  assumptions:
+  - A-302
+  - A-304
+  notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: tpt:warehouse/teradata/load/tpt/audit_access_review.tpt
   status: replaced_by_platform
   targets:

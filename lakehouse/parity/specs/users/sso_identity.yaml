@@ -1,0 +1,14 @@
+id: users.sso_identity
+legacy_objects:
+  - teradata_table:SFX_USERS.SSO_IDENTITY
+  - bteq_script:warehouse/teradata/scripts/users/03_load_identity.bteq
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.sso_identity
+lakehouse:
+  kind: delta_table
+  table: silver_users.sso_identity
+keys: [identity_id]
+columns: [identity_id, user_id, provider_cd, subject_id, created_dt]
+normalize:
+  provider_cd: {rstrip: true}

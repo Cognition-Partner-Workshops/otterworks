@@ -17,7 +17,8 @@ def main():
     os.environ['LAKEHOUSE_DELTA_ROOT'] = str(root / 'delta')
     spark = create_session()
     try:
-        arguments = ['build', '--project-dir', str(ROOT / 'dbt'), '--profiles-dir', str(ROOT / 'dbt')]
+        arguments = ['build', '--indirect-selection', 'buildable',
+                     '--project-dir', str(ROOT / 'dbt'), '--profiles-dir', str(ROOT / 'dbt')]
         if args.select:
             arguments += ['--select', args.select]
         result = dbtRunner().invoke(arguments)

@@ -1,0 +1,11 @@
+id: users.users_team_rollup
+legacy_objects:
+  - spark_job:users_team_rollup
+legacy:
+  kind: parquet
+  path: lakehouse/.data/{NS}/oracle/spark/users/users_team_rollup
+lakehouse:
+  kind: delta_table
+  table: gold_users.users_team_rollup
+keys: [team_id]
+columns: [team_id, team_name, members]

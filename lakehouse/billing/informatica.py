@@ -340,8 +340,8 @@ def run(spark, landing, day, destination, selected=None):
                     'GL_JOURNAL_LINE': ['STG_INVOICE_HDR']}.get(selected, [])
         for table in required:
             if result.get(table, {}).get('Status') == 'SUCCEEDED':
-                state[table] = [r.asDict() for r in spark.read.format('delta').load(
-                    str(destination / 'delta' / table.lower())).drop('ordinal').collect()]
+                state[table] = [shape(r, table) for r in json.loads(
+                    (destination / 'state' / (table + '.json')).read_text())]
     prerequisites = {'CUSTOMER_ACCOUNT': ['STG_CUSTOMER_ACCOUNT'],
                      'INVOICE_HDR': list(ORDER[:3]), 'INVOICE_LINE': list(ORDER[:3]),
                      'GL_JOURNAL_LINE': ['INVOICE_HDR', 'INVOICE_LINE'], 'PAYMENT': ['GL_JOURNAL_LINE']}
@@ -362,6 +362,7 @@ def run(spark, landing, day, destination, selected=None):
         state[table] = rows
         delta(spark, destination, table, rows)
         output(destination, table, rows, rejects, errors)
+        save(destination / 'state' / (table + '.json'), rows)
         result[table] = {'Status': 'SUCCEEDED', 'TgtFailedRows': len(rejects) + len(errors)}
         save(destination / 'sessions' / (table + '.json'), result[table])
         print(f'Informatica {table}: {len(rows)} target rows, {len(rejects)} writer rejects, {len(errors)} transformation errors', flush=True)

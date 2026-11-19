@@ -1,0 +1,14 @@
+id: users.user_profile
+legacy_objects:
+  - teradata_table:SFX_USERS.USER_PROFILE
+  - bteq_script:warehouse/teradata/scripts/users/01_load_users.bteq
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.user_profile
+lakehouse:
+  kind: delta_table
+  table: silver_users.user_profile
+keys: [profile_id]
+columns: [profile_id, user_id, title, country_cd, timezone]
+normalize:
+  country_cd: {rstrip: true}
