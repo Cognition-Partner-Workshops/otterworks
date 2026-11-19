@@ -1,7 +1,7 @@
 import pytest
 
 
-pytestmark = pytest.mark.api_flow
+pytestmark = [pytest.mark.api_flow, pytest.mark.smoke]
 
 
 def test_register_login_profile_refresh_and_logout(api_client):

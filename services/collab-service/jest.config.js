@@ -10,13 +10,14 @@ module.exports = {
     '!src/**/__tests__/**',
   ],
   coverageDirectory: 'coverage',
+  reporters: ['default', ['jest-junit', {outputDirectory: 'coverage', outputName: 'junit.xml'}]],
   coverageReporters: ['text', 'lcov', 'clover'],
   coverageThreshold: {
     global: {
-      branches: 0,
-      functions: 0,
-      lines: 0,
-      statements: 0,
+      branches: 36,
+      functions: 48,
+      lines: 64,
+      statements: 63,
     },
   },
   moduleFileExtensions: ['ts', 'js', 'json'],

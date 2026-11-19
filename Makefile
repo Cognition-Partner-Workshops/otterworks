@@ -182,20 +182,28 @@ test: ## Run tests for all services
 	@echo "=== Web Frontend ===" && cd frontend/web-app && npm test
 	@echo "=== Admin Dashboard ===" && cd frontend/admin-dashboard && npm test
 
-test-coverage: ## Run tests with coverage for all services
-	@echo "=== Document Service ===" && cd services/document-service && pytest --cov=app --cov-report=term-missing || true
-	@echo "=== Search Service ===" && cd services/search-service && pytest --cov=app --cov-report=term-missing || true
-	@echo "=== Collab Service ===" && cd services/collab-service && npm test -- --coverage || true
-	@echo "=== API Gateway ===" && cd services/api-gateway && go test -cover ./... || true
-	@echo "=== Admin Service ===" && cd services/admin-service && bundle exec rspec --format documentation || true
-	@echo "=== Auth Service ===" && cd services/auth-service && ./gradlew test jacocoTestReport || true
-	@echo "=== File Service ===" && cd services/file-service && cargo test 2>&1 | tail -5 || true
+test-coverage: ## Run language-native coverage locally (requires all toolchains)
+	@status=0; \
+	(cd services/api-gateway && go test -race -cover ./...) || status=1; \
+	(cd services/auth-service && gradle test jacocoTestReport --no-daemon) || status=1; \
+	(cd services/collab-service && npm test) || status=1; \
+	(cd services/document-service && poetry run pytest --cov=app) || status=1; \
+	(cd services/file-service && cargo llvm-cov --locked) || status=1; \
+	(cd services/search-service && pytest --cov=app) || status=1; \
+	(cd frontend/client-app && npm test -- --coverage) || status=1; \
+	(cd frontend/workbench && npm test -- --coverage) || status=1; \
+	(cd frontend/admin-dashboard && npm test -- --code-coverage) || status=1; \
+	exit $$status
+
+.PHONY: test-smoke
+test-smoke: ## Run strict API smoke tests against an already running local Compose stack
+	API_FLOWS_REQUIRE_STACK=1 uv run --with-requirements tests/api/requirements.txt python -m pytest tests/api -m smoke
 
 test-api-flows: ## Run black-box API flow tests against the local API gateway
-	UV_PROJECT_ENVIRONMENT=.venv uv run python -m pytest tests/api
+	uv run --with-requirements tests/api/requirements.txt python -m pytest tests/api
 
 test-api-flows-collect: ## Collect black-box API flow tests without running them
-	UV_PROJECT_ENVIRONMENT=.venv uv run python -m pytest tests/api --collect-only -q
+	uv run --with-requirements tests/api/requirements.txt python -m pytest tests/api --collect-only -q
 
 lint: ## Lint all services
 	@echo "=== API Gateway ===" && cd services/api-gateway && golangci-lint run

@@ -1,0 +1,189 @@
+name: Application test coverage
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    name: Coverage / ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Document HTTP fixtures omit bearer auth; Admin Dashboard has existing
+    # timer/state/auth fixture failures. Publish their results without blocking.
+    continue-on-error: ${{ matrix.service == 'document-service' || matrix.service == 'admin-dashboard' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {service: admin-dashboard, runtime: node, path: frontend/admin-dashboard, report: lcov.info}
+          - {service: api-gateway, runtime: go, path: services/api-gateway, report: coverage.out}
+          - {service: auth-service, runtime: java, path: services/auth-service, report: jacoco.xml}
+          - {service: client-app, runtime: node, path: frontend/client-app, report: lcov.info}
+          - {service: collab-service, runtime: node, path: services/collab-service, report: lcov.info}
+          - {service: document-service, runtime: python, path: services/document-service, report: cobertura.xml}
+          - {service: file-service, runtime: rust, path: services/file-service, report: cobertura.xml}
+          - {service: search-service, runtime: python, path: services/search-service, report: cobertura.xml}
+          - {service: workbench, runtime: node, path: frontend/workbench, report: lcov.info}
+    defaults:
+      run:
+        working-directory: ${{ matrix.path }}
+    env:
+      SERVICE: ${{ matrix.service }}
+      REPORT: ${{ matrix.report }}
+      EVIDENCE: ${{ github.workspace }}/test-coverage-evidence
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        if: matrix.runtime == 'go'
+        with:
+          go-version-file: services/api-gateway/go.mod
+          cache-dependency-path: services/api-gateway/go.sum
+      - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
+        if: matrix.runtime == 'java'
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@da187c8e6ffbd3802e00f2477aa5a822b25f2dda # v4
+        if: matrix.runtime == 'java'
+        with:
+          gradle-version: '8.6'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        if: matrix.runtime == 'node'
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ${{ matrix.path }}/package-lock.json
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
+        if: matrix.runtime == 'rust'
+        with:
+          toolchain: stable
+          components: llvm-tools-preview
+      - uses: taiki-e/install-action@75a7c0f87bd666af3cdb75c5b9e9d03ab6044e6f # v2
+        if: matrix.runtime == 'rust'
+        with:
+          tool: cargo-llvm-cov@0.9.1
+      - name: Run tests with native coverage
+        id: tests
+        shell: bash
+        env:
+          RUNTIME: ${{ matrix.runtime }}
+          COVERAGE_FILE: ${{ runner.temp }}/.coverage
+        run: |
+          mkdir -p "$EVIDENCE"
+          case "$RUNTIME" in
+            go)
+              go install gotest.tools/gotestsum@v1.12.0
+              "$(go env GOPATH)/bin/gotestsum" --junitfile "$EVIDENCE/junit.xml" -- \
+                -race "-coverprofile=$EVIDENCE/$REPORT" ./...
+              ;;
+            java)
+              gradle test jacocoTestReport --no-daemon
+              ;;
+            node)
+              npm ci
+              case "$SERVICE" in
+                admin-dashboard)
+                  npm test -- --code-coverage
+                  ;;
+                collab-service)
+                  npm test
+                  ;;
+                *)
+                  npm test -- --coverage --reporter=default --reporter=junit --outputFile.junit="$EVIDENCE/junit.xml"
+                  ;;
+              esac
+              ;;
+            python)
+              args=(--cov=app "--cov-report=xml:$EVIDENCE/$REPORT" "--junitxml=$EVIDENCE/junit.xml")
+              if [[ "$SERVICE" == document-service ]]; then
+                python -m pip install poetry==1.8.2
+                poetry install --no-interaction --no-root
+                poetry run pytest "${args[@]}"
+              else
+                python -m pip install -r requirements-dev.txt
+                python -m pytest "${args[@]}"
+              fi
+              ;;
+            rust)
+              cargo llvm-cov --locked --cobertura --output-path "$EVIDENCE/$REPORT"
+              ;;
+          esac
+      - name: Collect coverage and check floor
+        if: always()
+        shell: bash
+        env:
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+        run: |
+          mkdir -p "$EVIDENCE"
+          case "$SERVICE" in
+            auth-service)
+              if [[ -f build/reports/jacoco/test/jacocoTestReport.xml ]]; then
+                cp build/reports/jacoco/test/jacocoTestReport.xml "$EVIDENCE/$REPORT"
+              fi
+              if compgen -G 'build/test-results/test/TEST-*.xml' > /dev/null; then
+                cp build/test-results/test/TEST-*.xml "$EVIDENCE/"
+              fi
+              ;;
+            client-app|collab-service|workbench)
+              if [[ -f "coverage/$REPORT" ]]; then
+                cp "coverage/$REPORT" "$EVIDENCE/"
+              fi
+              if [[ -f coverage/junit.xml ]]; then
+                cp coverage/junit.xml "$EVIDENCE/"
+              fi
+              ;;
+            admin-dashboard)
+              if [[ -f "coverage/admin-dashboard/$REPORT" ]]; then
+                cp "coverage/admin-dashboard/$REPORT" "$EVIDENCE/"
+              fi
+              if [[ -f coverage/admin-dashboard/junit.xml ]]; then
+                cp coverage/admin-dashboard/junit.xml "$EVIDENCE/"
+              fi
+              ;;
+          esac
+          echo '| Service | Metric | Actual | Floor | Test result |' >> "$GITHUB_STEP_SUMMARY"
+          echo '| --- | --- | ---: | ---: | --- |' >> "$GITHUB_STEP_SUMMARY"
+          python "$GITHUB_WORKSPACE/tests/check_coverage.py" "$SERVICE" "$EVIDENCE/$REPORT" \
+            --tests "$TEST_OUTCOME" | tee "$EVIDENCE/summary-row.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload native test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: coverage-${{ matrix.service }}
+          path: ${{ env.EVIDENCE }}/
+          if-no-files-found: error
+
+  summary:
+    name: Coverage summary
+    if: ${{ !cancelled() }}
+    needs: coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: coverage-*
+          path: evidence
+      - name: Publish coverage table
+        shell: bash
+        run: |
+          {
+            echo '## Application coverage'
+            echo '| Service | Metric | Actual | Floor | Test result |'
+            echo '| --- | --- | ---: | ---: | --- |'
+            for service in admin-dashboard api-gateway auth-service client-app collab-service document-service file-service search-service workbench; do
+              row="evidence/coverage-$service/summary-row.md"
+              if [[ -s "$row" ]]; then
+                cat "$row"
+              else
+                printf '| %s | — | — | — | Artifact unavailable |\n' "$service"
+              fi
+            done
+          } >> "$GITHUB_STEP_SUMMARY"

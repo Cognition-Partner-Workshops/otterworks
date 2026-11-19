@@ -75,12 +75,16 @@ class ApiClient:
         while time.monotonic() < deadline:
             try:
                 response = self.client.get("/health")
-                if response.status_code < 500:
+                if response.is_success:
                     return
+                last_error = RuntimeError(f"GET /health returned HTTP {response.status_code}")
             except httpx.HTTPError as exc:
                 last_error = exc
             time.sleep(0.25)
-        pytest.skip(f"OtterWorks API gateway is not reachable: {last_error}")
+        message = f"OtterWorks API gateway is not ready: {last_error}"
+        if os.getenv("API_FLOWS_REQUIRE_STACK") == "1":
+            pytest.fail(message)
+        pytest.skip(message)
 
     def iso_time(self, days_offset: int = 0) -> str:
         return (datetime.now(UTC) + timedelta(days=days_offset)).isoformat()
