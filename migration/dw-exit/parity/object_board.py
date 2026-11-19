@@ -23,8 +23,8 @@ from assess import board as wave_board
 from parity.local_billing import execute
 from parity.semantics import columns as source_columns, numeric_type
 from parity.ladder import local_compare as compare
-from parity.provenance import provenance, markdown
-from parity import report_outputs, spark_billing
+from parity.provenance import provenance, documents_provenance, markdown
+from parity import local_documents, report_outputs, spark_billing
 
 
 def quote(name):
@@ -154,7 +154,38 @@ def materialize(before, names, conversion_dir, business_date='20261109'):
     return after, ready, errors
 
 
-def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, preflight=None):
+def measure_documents(row, entry, before, after):
+    """Fill one documents row; an open owner decision or retirement keeps it red whatever was measured."""
+    for key in ('owner_decision', 'retire', 'evidence'):
+        if entry.get(key):
+            row[key] = entry[key]
+    row['reason'] = entry.get('reason')
+    measured = {}
+    if not row['reason'] or entry.get('retire') is None and not row['reason'].startswith(('conversion failed', 'macro measurement failed', 'PowerCenter leg', 'Spark parity')):
+        for source, destination in entry['pairs']:
+            try:
+                measured[source] = compare(before, after, source, destination, padded=entry.get('padded'))
+            except (duckdb.Error, ValueError) as error:
+                row['reason'] = 'measurement failed: '+str(error).splitlines()[0]
+                measured = {}
+                break
+    if not entry['pairs'] and not row['reason']:
+        row['reason'] = 'no local output to measure'
+    if measured:
+        row['row_count'] = {side:sum(r['row_count'][side] for r in measured.values()) for side in ('before','after')}
+        for field in ('column_profile','keyed_row_hash','sampled_differences','comparison_rules'):
+            row[field] = {name:values[field] for name,values in measured.items()}
+        passed = all(r['passed'] for r in measured.values())
+        row['measured_parity'] = 'match' if passed else 'mismatch'
+        if entry.get('owner_decision'):
+            row['reason'] = 'open owner decision: '+entry['owner_decision']['question']+' (measured '+row['measured_parity']+')'
+        elif passed:
+            row['status'] = 'green'
+        else:
+            row['reason'] = 'measured parity mismatch'
+
+
+def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, preflight=None, documents=None):
     if target not in ('duckdb', 'snowflake'):
         raise ValueError('Unsupported parity target')
     if preflight is not None and (preflight.get('run_token') != RunConfig.from_env().token
@@ -176,7 +207,9 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                    row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
         if obj['subject_area'] == 'billing':
             row['provenance'] = provenance(obj)
-        if obj['system'] == 'spark' and not any(name.startswith('SFX_SPARK.') for name in obj.get('output_relations', [])):
+        if target == 'duckdb' and documents is not None and obj['id'] in documents:
+            measure_documents(row, documents[obj['id']], before, after)
+        elif obj['system'] == 'spark' and not any(name.startswith('SFX_SPARK.') for name in obj.get('output_relations', [])):
             if obj.get('source') and (ROOT / obj['source']).is_file():
                 row.update(source=obj['source'], source_ref=obj.get('source_ref'))
                 row['reason'] = 'Spark source available; output not materialized locally'
@@ -206,7 +239,9 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
                 if row['status'] == 'red':
                     row['reason'] = 'measured parity mismatch'
-        if obj['subject_area'] == 'billing':
+        if obj['subject_area'] == 'documents':
+            row['provenance'] = documents_provenance(obj, (documents or {}).get(obj['id'], {}))
+        if obj['subject_area'] in ('billing', 'documents'):
             row.update(local_duckdb=row['status'] if target == 'duckdb' else 'red',
                        snowflake='red', snowflake_reason=snowflake_reason,
                        snowflake_preflight=preflight)
@@ -216,11 +251,16 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         green=sum(r['status']=='green' for r in result['rows']), measured=sum(r['row_count'] is not None for r in result['rows']),
         migrated=0, licence_remaining=total, licence_total=total,
         licence_by_system=dict(Counter(r['licence_dependency'] for r in result['rows'] if r['licence_dependency']!='none')))
-    billing = [row for row in result['rows'] if row['subject_area'] == 'billing']
-    local_green = sum(row['local_duckdb'] == 'green' for row in billing)
-    result['summary']['billing'] = dict(local_duckdb='green' if billing and local_green == len(billing) else 'red',
-        local_green=local_green, local_red=len(billing)-local_green,
-        snowflake='red', snowflake_reason=snowflake_reason)
+    for area in ('billing', 'documents'):
+        rows = [row for row in result['rows'] if row['subject_area'] == area]
+        local_green = sum(row['local_duckdb'] == 'green' for row in rows)
+        result['summary'][area] = dict(local_duckdb='green' if rows and local_green == len(rows) else 'red',
+            local_green=local_green, local_red=len(rows)-local_green,
+            snowflake='red', snowflake_reason=snowflake_reason)
+    result['summary']['documents'].update(
+        owner_decisions_open=sorted({row['owner_decision']['id'] for row in result['rows'] if row.get('owner_decision')}),
+        retire_confirmed=sum(bool(row.get('retire')) and row['retire']['reads'] == 0 for row in result['rows']),
+        retire_blocked=sum(bool(row.get('retire')) and row['retire']['reads'] > 0 for row in result['rows']))
     return result
 
 
@@ -236,7 +276,7 @@ def main():
     from assess import build
     counters = build()['counters']
     before = after = None
-    ready, errors = set(), {}
+    ready, errors, documents = set(), {}, None
     try:
         if args.target == 'duckdb' and manifest['objects']:
             names = {r for obj in manifest['objects'] for r in obj.get('output_relations',[])
@@ -252,7 +292,8 @@ def main():
             spark_ready,spark_errors,spark_evidence = spark_billing.materialize(before,after,manifest['objects'],ns)
             ready.update(spark_ready)
             errors.update(spark_errors)
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight)
+            documents = local_documents.materialize(before,after,manifest['objects'],dsn,ns,os.environ.get('BUSINESS_DATE','20261109'))
+        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight,documents=documents)
         if args.target == 'duckdb' and manifest['objects']:
             payload['spark_evidence'] = spark_evidence
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')

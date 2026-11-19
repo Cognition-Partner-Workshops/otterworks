@@ -1,10 +1,11 @@
 """Source ranges and metric implementation links for the measured board."""
 import ast
+import os
 from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[3]
-BRANCH = 'devin/sfx1119-billing-parity'
+BRANCH = os.environ.get('SFX_PROVENANCE_REF', 'devin/sfx1119-billing-parity')
 BASE = 'https://github.com/Cognition-Partner-Workshops/otterworks/blob/' + BRANCH + '/'
 
 
@@ -86,20 +87,34 @@ def provenance(obj):
             'metrics': metric_links()}
 
 
+def documents_provenance(obj, entry):
+    converted = [link(*item) for item in entry.get('converted', []) if item]
+    retire = obj.get('target_type') == 'retire'
+    return {'source': [source_link(obj)] if obj.get('source') and (ROOT/obj['source']).is_file() else [],
+            'converted': {'documents': converted},
+            'conversion_note': 'Retire: no conversion; query-log evidence is on the row' if retire
+                               else (None if converted else 'No conversion is shipped for this object'),
+            'metrics': metric_links()}
+
+
 def markdown(rows):
-    billing = [row for row in rows if row['subject_area'] == 'billing']
+    return section(rows, 'billing', 'Billing')+section(rows, 'documents', 'Documents')
+
+
+def section(rows, area, title):
+    billing = [row for row in rows if row['subject_area'] == area]
     green = sum(row['local_duckdb'] == 'green' for row in billing)
-    lines = ['\n## Billing parity provenance', '',
+    lines = ['\n## '+title+' parity provenance', '',
              f'Local DuckDB: {green} green / {len(billing)-green} red (including unmeasured outputs).',
-             'Snowflake: **red** — '+(billing[0]['snowflake_reason'] if billing else 'No billing evidence')+'.',
+             'Snowflake: **red** — '+(billing[0]['snowflake_reason'] if billing else 'No evidence')+'.',
              'These are separate evidence legs; local green does not imply live Snowflake parity.', '',
-             '| Object | Local DuckDB | Snowflake | Source | Converted producers | Metrics |', '|---|---|---|---|---|---|']
+             '| Object | Local DuckDB | Snowflake | Why red | Source | Converted producers | Metrics |', '|---|---|---|---|---|---|---|']
     def anchors(entries):
         return '<br>'.join(f"[{e['file']}:{e['start_line']}–{e['end_line']}]({e['url']})" for e in entries)
     for row in rows:
-        if row['subject_area'] != 'billing':
+        if row['subject_area'] != area:
             continue
         p = row['provenance']
         converted = [entry for entries in p['converted'].values() for entry in entries]
-        lines.append(f"| {row['name']} | {row['local_duckdb']} | {row['snowflake']} | {anchors(p['source'])} | {anchors(converted) or p['conversion_note'] or 'Not materialized'} | {anchors(p['metrics'].values())} |")
+        lines.append(f"| {row['name']} | {row['local_duckdb']} | {row['snowflake']} | {(row['reason'] or '').replace('|', '/') if row['local_duckdb'] == 'red' else ''} | {anchors(p['source'])} | {anchors(converted) or p['conversion_note'] or 'Not materialized'} | {anchors(p['metrics'].values())} |")
     return '\n'.join(lines)+'\n'

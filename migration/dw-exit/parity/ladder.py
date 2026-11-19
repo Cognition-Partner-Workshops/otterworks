@@ -35,8 +35,8 @@ def local_measure(connection, name, padded):
     return names, rows, profiles
 
 
-def local_compare(before, after, source, target, sample_size=5):
-    padded = char_columns(source)
+def local_compare(before, after, source, target, sample_size=5, padded=None):
+    padded = char_columns(source) if padded is None else padded
     bcols, brows, bp = local_measure(before, source, padded)
     acols, arows, ap = local_measure(after, target, padded)
     if not bcols or bcols != acols:
