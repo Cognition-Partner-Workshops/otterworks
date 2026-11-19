@@ -2,7 +2,7 @@
 # NOTE: legacy-portal deploys to a VM / on-prem host today (see docker-compose.onprem.yml,
 # scripts/run-onprem.sh, deploy/legacy-portal.service). It is intentionally NOT on the Helm/EKS
 # deploy path — it is the rehost / decomposition "before" state.
-FROM maven:3.9-eclipse-temurin-25 AS builder
+FROM maven:3.9.11-eclipse-temurin-25 AS builder
 
 WORKDIR /app
 COPY pom.xml .
