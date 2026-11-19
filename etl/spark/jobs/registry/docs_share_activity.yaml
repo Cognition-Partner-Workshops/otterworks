@@ -1,8 +1,9 @@
 {
   "job": "docs_share_activity",
   "language": "scala",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
+  "class": "sfx.DocsShareActivity",
   "schedule": "5 1 * * *",
   "profile": "small"
 }

@@ -20,8 +20,10 @@
   reason: "Joins documents, files and users to aggregate storage by owner."
 - job: docs_share_activity
   language: scala
-  target: dbt
+  target: spark_standard_template
   reason: "Groups document shares by owner and permission using relational joins and distinct counts."
+  original_target: dbt
+  change_reason: "Snowflake run-scoped database and warehouse are unavailable; use the standard Spark template for measurable execution."
 - job: users_active_daily
   language: python
   target: dbt
