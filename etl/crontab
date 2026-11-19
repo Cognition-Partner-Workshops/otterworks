@@ -27,7 +27,6 @@
 17 2 * * * /opt/etl/spark/submit/security_alert_anomaly.sh >> /var/log/etl/spark-security_alert_anomaly.log 2>&1
 18 * * * * /opt/etl/spark/submit/docs_event_export_hourly.sh >> /var/log/etl/spark-docs_event_export_hourly.log 2>&1
 19 2 * * * /opt/etl/spark/submit/lake_compaction_documents.sh >> /var/log/etl/spark-lake_compaction_documents.log 2>&1
-20 3 * * * /opt/etl/spark/submit/lake_compaction_audit.sh >> /var/log/etl/spark-lake_compaction_audit.log 2>&1
 21 3 * * * /opt/etl/spark/submit/docs_folder_tree_walk.sh >> /var/log/etl/spark-docs_folder_tree_walk.log 2>&1
 22 3 * * * /opt/etl/spark/submit/team_graph_components.sh >> /var/log/etl/spark-team_graph_components.log 2>&1
 23 3 * * * /opt/etl/spark/submit/doc_share_graph_reach.sh >> /var/log/etl/spark-doc_share_graph_reach.log 2>&1
