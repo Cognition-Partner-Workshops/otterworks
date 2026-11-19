@@ -1,8 +1,8 @@
 {
   "job": "users_risk_score",
   "language": "scala",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "16 2 * * *",
   "profile": "small",
   "class": "sfx.UsersRiskScore"
