@@ -1,1 +1,0 @@
-5 1 * * * /opt/etl/spark/submit/docs_share_activity.sh >> /var/log/etl/spark-docs_share_activity.log 2>&1
