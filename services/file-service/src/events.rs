@@ -223,6 +223,10 @@ impl EventPublisher {
 }
 
 #[cfg(test)]
+#[path = "events/tests/support.rs"]
+mod test_support;
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
