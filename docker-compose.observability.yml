@@ -27,12 +27,13 @@ services:
       - promtail_positions:/positions
     depends_on: [loki]
   grafana:
-    image: grafana/grafana:11.6.0
+    image: grafana/grafana:12.0.0
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${SFX_GRAFANA_PASSWORD:?Set SFX_GRAFANA_PASSWORD}
       GF_ANALYTICS_REPORTING_ENABLED: "false"
       GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
       SFX_ALERT_WEBHOOK_URL: ${SFX_ALERT_WEBHOOK_URL:?Set SFX_ALERT_WEBHOOK_URL}
+      SFX_ALERT_WEBHOOK_SECRET: ${SFX_ALERT_WEBHOOK_SECRET:-}
       RUN_TOKEN: ${RUN_TOKEN:-sfx1119}
     ports: ["127.0.0.1:${SFX_GRAFANA_PORT:-13000}:3000"]
     volumes:

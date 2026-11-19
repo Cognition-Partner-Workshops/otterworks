@@ -59,7 +59,7 @@ def main():
     project = Path(rendered.name)
     for path in source_project.rglob('*'):
         relative = path.relative_to(source_project)
-        if path.is_file() and relative.parts[0] in ('models','macros','analyses','seeds','snapshots','dbt_project.yml','profiles.yml'):
+        if path.is_file() and relative.parts[0] in ('models','macros','analyses','seeds','snapshots','tests','dbt_project.yml','profiles.yml'):
             destination = project / relative
             destination.parent.mkdir(parents=True,exist_ok=True)
             destination.write_text(config.render(path.read_text()))

@@ -15,6 +15,8 @@ def project(tmp_path, monkeypatch):
     models = source / 'models'
     models.mkdir(parents=True)
     (models / 'example.sql').write_text("select '__RUN_DATABASE__' as name")
+    (source / 'tests').mkdir()
+    (source / 'tests/example_check.sql').write_text("select '__RUN_DATABASE__' where false")
     (source / 'dbt_project.yml').write_text('name: example')
     monkeypatch.setattr(run_dbt, 'ROOT', tmp_path / 'snowflake')
     monkeypatch.setenv('RUN_TOKEN', 'sfx2220')
@@ -33,6 +35,7 @@ def test_execution_artifacts_outlive_rendered_project(project, monkeypatch, fail
         path = Path(command[command.index('--project-dir') + 1])
         rendered.append(path)
         assert (path / 'models/example.sql').read_text() == "select 'SFX_2220' as name"
+        assert (path / 'tests/example_check.sql').read_text() == "select 'SFX_2220' where false"
         for flag, default, filename, content in [
             ('--target-path', path / 'target', 'run_results.json', '{"results": []}'),
             ('--log-path', path / 'logs', 'dbt.log', 'offline fixture execution')

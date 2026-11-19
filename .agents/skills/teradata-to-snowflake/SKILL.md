@@ -62,7 +62,9 @@ credentials; it is not needed for local DuckDB checks.
 
 ## Local failure feed
 
-Set `SFX_GRAFANA_PASSWORD` and `SFX_ALERT_WEBHOOK_URL` explicitly before starting:
+Set `SFX_GRAFANA_PASSWORD`, `SFX_ALERT_WEBHOOK_URL` and `SFX_ALERT_WEBHOOK_SECRET`
+explicitly before starting. Grafana sends the secret in the `X-Webhook-Secret`
+header, not the URL:
 
 ```sh
 make sfx-observability-up
@@ -72,7 +74,8 @@ Grafana: `http://127.0.0.1:13000`; Loki: `http://127.0.0.1:13100`.
 Loader and check events: `migration/dw-exit/.runs/logs/pipeline.jsonl`.
 Runner session/workflow logs are shipped from `etl/informatica/infa_shared/`.
 For a local-only webhook endpoint, set the URL to `http://alert-sink:9095/sink`
-and add `--profile test` to the observability Compose command. Captures land in
+and add `--profile test` to the observability Compose command. The secret may be
+unset or blank for this unauthenticated local sink. Captures land in
 `migration/dw-exit/.runs/alerts/sink.jsonl` and are available at
 `http://127.0.0.1:19095/sink/latest`.
 
