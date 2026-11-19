@@ -4,6 +4,9 @@ import os
 from collections import Counter
 
 import yaml
+import pytest
+from defusedxml import ElementTree as ET
+from defusedxml.common import EntitiesForbidden
 
 from runner.params import resolve
 from runner.repo import Repository
@@ -88,7 +91,6 @@ def test_licence_covers_every_mapping():
 
 def test_workflow_exports_are_self_contained():
     import glob
-    import xml.etree.ElementTree as ET
 
     files = sorted(glob.glob(os.path.join(ESTATE, "repository", "*", "wf_*.XML")))
     assert len(files) == 3
@@ -97,6 +99,33 @@ def test_workflow_exports_are_self_contained():
         assert len(folder.findall("WORKFLOW")) == 1, path
         mappings = {m.get("NAME") for m in folder.findall("MAPPING")}
         assert {s.get("MAPPINGNAME") for s in folder.findall("SESSION")} == mappings, path
+
+
+@pytest.mark.parametrize('declaration,reference', [
+    ('<!ENTITY file SYSTEM "file:///nonexistent/xxe-secret">', '&file;'),
+    ('<!ENTITY a "expansion"><!ENTITY b "&a;&a;"><!ENTITY c "&b;&b;">', '&c;'),
+])
+def test_repository_rejects_entities(tmp_path, declaration, reference):
+    (tmp_path / 'export.XML').write_text(
+        '<!DOCTYPE POWERMART [' + declaration + ']><POWERMART>' + reference + '</POWERMART>')
+    with pytest.raises(EntitiesForbidden):
+        Repository(tmp_path)
+
+
+def test_repository_preserves_external_doctype_without_fetching(tmp_path):
+    (tmp_path / 'export.XML').write_text(
+        '<!DOCTYPE POWERMART SYSTEM "file:///nonexistent/powrmart.dtd">'
+        '<POWERMART><REPOSITORY NAME="example"><FOLDER NAME="empty"/></REPOSITORY></POWERMART>')
+    repository = Repository(tmp_path)
+    assert repository.repository_name == 'example'
+    assert repository.mappings == {}
+
+
+@pytest.mark.parametrize('document', ['', '<POWERMART>'])
+def test_repository_rejects_malformed_xml(tmp_path, document):
+    (tmp_path / 'export.XML').write_text(document)
+    with pytest.raises(ET.ParseError):
+        Repository(tmp_path)
 
 
 def test_mapping_selection():
