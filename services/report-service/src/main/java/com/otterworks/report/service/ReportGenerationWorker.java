@@ -1,6 +1,5 @@
 package com.otterworks.report.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.otterworks.report.config.AppConfig;
 import com.otterworks.report.model.Report;
 import com.otterworks.report.model.ReportCategory;
@@ -12,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.File;
 import java.util.Date;
@@ -55,7 +56,7 @@ public class ReportGenerationWorker {
         this.csvGenerator = csvGenerator;
         this.excelGenerator = excelGenerator;
         this.appConfig = appConfig;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = JsonMapper.builder().build();
     }
 
     /**

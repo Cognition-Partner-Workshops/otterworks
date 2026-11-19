@@ -1,7 +1,5 @@
 package com.otterworks.report.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.otterworks.report.config.AppConfig;
 import com.otterworks.report.model.Report;
 import com.otterworks.report.model.ReportRequest;
@@ -14,6 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.File;
 import java.util.Date;
@@ -46,7 +47,7 @@ public class ReportService {
         this.reportRepository = reportRepository;
         this.generationWorker = generationWorker;
         this.appConfig = appConfig;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = JsonMapper.builder().build();
     }
 
     /**
@@ -70,7 +71,7 @@ public class ReportService {
         if (request.getParameters() != null) {
             try {
                 report.setParameters(objectMapper.writeValueAsString(request.getParameters()));
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.warn("Failed to serialize report parameters: {}", e.getMessage());
             }
         }
