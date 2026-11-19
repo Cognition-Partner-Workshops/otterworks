@@ -18033,14 +18033,14 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "retire_verified",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "output not materialized: USERS.STG_USER_PREF",
+      "reason": "Current DBQL absence and dead-dependent propagation verified; Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten; no deletion or cutover approval",
       "provenance": {
         "source": [
           {
@@ -18053,7 +18053,7 @@
         "converted": {
           "SFX_USERS.STG_USER_PREF": []
         },
-        "conversion_note": null,
+        "conversion_note": "Retirement evidence only, not migrated; keep Spark USER_PREF/PREF_JSON landing for user_pref_json_flatten",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -18072,10 +18072,83 @@
             "start_line": 38,
             "end_line": 62,
             "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/parity/ladder.py#L38-L62"
+          },
+          "retirement_manifest": {
+            "file": "migration/dw-exit/manifest.yaml",
+            "start_line": 4798,
+            "end_line": 4812,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/manifest.yaml#L4798-L4812"
+          },
+          "retirement_absence": {
+            "file": "migration/dw-exit/tools/assess.py",
+            "start_line": 91,
+            "end_line": 101,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/tools/assess.py#L91-L101"
+          },
+          "retirement_propagation": {
+            "file": "migration/dw-exit/tools/assess.py",
+            "start_line": 322,
+            "end_line": 347,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/tools/assess.py#L322-L347"
+          },
+          "retirement_qrylog.csv": {
+            "file": "warehouse/teradata/dbql/qrylog.csv",
+            "start_line": 1,
+            "end_line": 8081,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/teradata/dbql/qrylog.csv#L1-L8081"
+          },
+          "retirement_objectusage.csv": {
+            "file": "warehouse/teradata/dbql/objectusage.csv",
+            "start_line": 1,
+            "end_line": 20444,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/teradata/dbql/objectusage.csv#L1-L20444"
+          },
+          "retirement_tablesv.csv": {
+            "file": "warehouse/teradata/dbql/tablesv.csv",
+            "start_line": 1,
+            "end_line": 112,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/teradata/dbql/tablesv.csv#L1-L112"
+          },
+          "retirement_check": {
+            "file": "migration/dw-exit/parity/retirement_users.py",
+            "start_line": 1,
+            "end_line": 36,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/parity/retirement_users.py#L1-L36"
           }
         }
       },
-      "local_duckdb": "red",
+      "retirement_evidence": {
+        "passed": true,
+        "window": [
+          "2026-08-12",
+          "2026-11-09"
+        ],
+        "caveat": "Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten; no deletion or cutover approval",
+        "query_count": 8080,
+        "reads": {
+          "SFX_USERS.USER_PREF": 0,
+          "SFX_USERS.V_USER_SETTINGS": 0
+        },
+        "dead": [
+          "SFX_USERS.USER_PREF",
+          "SFX_USERS.V_USER_SETTINGS"
+        ],
+        "dead_dependents": [
+          "SFX_USERS.STG_USER_PREF",
+          "users_user_pref"
+        ],
+        "observed_window": [
+          "2026-08-12",
+          "2026-11-09"
+        ],
+        "sha256": {
+          "warehouse/teradata/dbql/qrylog.csv": "d3354f9618aca793f7948541f816547041e87255a6088b29a1e8f873e27265cf",
+          "warehouse/teradata/dbql/objectusage.csv": "3ee44d7a6b574716691746d6f100bf7686ab0262e316b278281046c0310c00c3",
+          "warehouse/teradata/dbql/tablesv.csv": "d2e9810955da39990bdccf7bc992fbde4c812915c27f046121294e1893440e44"
+        },
+        "reason": "Current DBQL absence and dead-dependent propagation verified"
+      },
+      "local_duckdb": "retire_verified",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -27078,14 +27151,14 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "retire_verified",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "output not materialized: USERS.STG_USER_PREF",
+      "reason": "Current DBQL absence and dead-dependent propagation verified; Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten; no deletion or cutover approval",
       "provenance": {
         "source": [
           {
@@ -27098,7 +27171,7 @@
         "converted": {
           "SFX_USERS.STG_USER_PREF": []
         },
-        "conversion_note": null,
+        "conversion_note": "Retirement evidence only, not migrated; keep Spark USER_PREF/PREF_JSON landing for user_pref_json_flatten",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -27117,10 +27190,83 @@
             "start_line": 38,
             "end_line": 62,
             "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/parity/ladder.py#L38-L62"
+          },
+          "retirement_manifest": {
+            "file": "migration/dw-exit/manifest.yaml",
+            "start_line": 4798,
+            "end_line": 4812,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/manifest.yaml#L4798-L4812"
+          },
+          "retirement_absence": {
+            "file": "migration/dw-exit/tools/assess.py",
+            "start_line": 91,
+            "end_line": 101,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/tools/assess.py#L91-L101"
+          },
+          "retirement_propagation": {
+            "file": "migration/dw-exit/tools/assess.py",
+            "start_line": 322,
+            "end_line": 347,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/tools/assess.py#L322-L347"
+          },
+          "retirement_qrylog.csv": {
+            "file": "warehouse/teradata/dbql/qrylog.csv",
+            "start_line": 1,
+            "end_line": 8081,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/teradata/dbql/qrylog.csv#L1-L8081"
+          },
+          "retirement_objectusage.csv": {
+            "file": "warehouse/teradata/dbql/objectusage.csv",
+            "start_line": 1,
+            "end_line": 20444,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/teradata/dbql/objectusage.csv#L1-L20444"
+          },
+          "retirement_tablesv.csv": {
+            "file": "warehouse/teradata/dbql/tablesv.csv",
+            "start_line": 1,
+            "end_line": 112,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/teradata/dbql/tablesv.csv#L1-L112"
+          },
+          "retirement_check": {
+            "file": "migration/dw-exit/parity/retirement_users.py",
+            "start_line": 1,
+            "end_line": 36,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/parity/retirement_users.py#L1-L36"
           }
         }
       },
-      "local_duckdb": "red",
+      "retirement_evidence": {
+        "passed": true,
+        "window": [
+          "2026-08-12",
+          "2026-11-09"
+        ],
+        "caveat": "Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten; no deletion or cutover approval",
+        "query_count": 8080,
+        "reads": {
+          "SFX_USERS.USER_PREF": 0,
+          "SFX_USERS.V_USER_SETTINGS": 0
+        },
+        "dead": [
+          "SFX_USERS.USER_PREF",
+          "SFX_USERS.V_USER_SETTINGS"
+        ],
+        "dead_dependents": [
+          "SFX_USERS.STG_USER_PREF",
+          "users_user_pref"
+        ],
+        "observed_window": [
+          "2026-08-12",
+          "2026-11-09"
+        ],
+        "sha256": {
+          "warehouse/teradata/dbql/qrylog.csv": "d3354f9618aca793f7948541f816547041e87255a6088b29a1e8f873e27265cf",
+          "warehouse/teradata/dbql/objectusage.csv": "3ee44d7a6b574716691746d6f100bf7686ab0262e316b278281046c0310c00c3",
+          "warehouse/teradata/dbql/tablesv.csv": "d2e9810955da39990bdccf7bc992fbde4c812915c27f046121294e1893440e44"
+        },
+        "reason": "Current DBQL absence and dead-dependent propagation verified"
+      },
+      "local_duckdb": "retire_verified",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -27963,14 +28109,14 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "retire_verified",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "output not materialized: USERS.USER_PREF",
+      "reason": "Current DBQL absence and dead-dependent propagation verified; Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten; no deletion or cutover approval",
       "provenance": {
         "source": [
           {
@@ -27983,7 +28129,7 @@
         "converted": {
           "SFX_USERS.USER_PREF": []
         },
-        "conversion_note": null,
+        "conversion_note": "Retirement evidence only, not migrated; keep Spark USER_PREF/PREF_JSON landing for user_pref_json_flatten",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -28002,10 +28148,83 @@
             "start_line": 38,
             "end_line": 62,
             "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/parity/ladder.py#L38-L62"
+          },
+          "retirement_manifest": {
+            "file": "migration/dw-exit/manifest.yaml",
+            "start_line": 4798,
+            "end_line": 4812,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/manifest.yaml#L4798-L4812"
+          },
+          "retirement_absence": {
+            "file": "migration/dw-exit/tools/assess.py",
+            "start_line": 91,
+            "end_line": 101,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/tools/assess.py#L91-L101"
+          },
+          "retirement_propagation": {
+            "file": "migration/dw-exit/tools/assess.py",
+            "start_line": 322,
+            "end_line": 347,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/tools/assess.py#L322-L347"
+          },
+          "retirement_qrylog.csv": {
+            "file": "warehouse/teradata/dbql/qrylog.csv",
+            "start_line": 1,
+            "end_line": 8081,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/teradata/dbql/qrylog.csv#L1-L8081"
+          },
+          "retirement_objectusage.csv": {
+            "file": "warehouse/teradata/dbql/objectusage.csv",
+            "start_line": 1,
+            "end_line": 20444,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/teradata/dbql/objectusage.csv#L1-L20444"
+          },
+          "retirement_tablesv.csv": {
+            "file": "warehouse/teradata/dbql/tablesv.csv",
+            "start_line": 1,
+            "end_line": 112,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/teradata/dbql/tablesv.csv#L1-L112"
+          },
+          "retirement_check": {
+            "file": "migration/dw-exit/parity/retirement_users.py",
+            "start_line": 1,
+            "end_line": 36,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/parity/retirement_users.py#L1-L36"
           }
         }
       },
-      "local_duckdb": "red",
+      "retirement_evidence": {
+        "passed": true,
+        "window": [
+          "2026-08-12",
+          "2026-11-09"
+        ],
+        "caveat": "Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten; no deletion or cutover approval",
+        "query_count": 8080,
+        "reads": {
+          "SFX_USERS.USER_PREF": 0,
+          "SFX_USERS.V_USER_SETTINGS": 0
+        },
+        "dead": [
+          "SFX_USERS.USER_PREF",
+          "SFX_USERS.V_USER_SETTINGS"
+        ],
+        "dead_dependents": [
+          "SFX_USERS.STG_USER_PREF",
+          "users_user_pref"
+        ],
+        "observed_window": [
+          "2026-08-12",
+          "2026-11-09"
+        ],
+        "sha256": {
+          "warehouse/teradata/dbql/qrylog.csv": "d3354f9618aca793f7948541f816547041e87255a6088b29a1e8f873e27265cf",
+          "warehouse/teradata/dbql/objectusage.csv": "3ee44d7a6b574716691746d6f100bf7686ab0262e316b278281046c0310c00c3",
+          "warehouse/teradata/dbql/tablesv.csv": "d2e9810955da39990bdccf7bc992fbde4c812915c27f046121294e1893440e44"
+        },
+        "reason": "Current DBQL absence and dead-dependent propagation verified"
+      },
+      "local_duckdb": "retire_verified",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -29594,14 +29813,14 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "retire_verified",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "output not materialized: USERS.V_USER_SETTINGS",
+      "reason": "Current DBQL absence and dead-dependent propagation verified; Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten; no deletion or cutover approval",
       "provenance": {
         "source": [
           {
@@ -29614,7 +29833,7 @@
         "converted": {
           "SFX_USERS.V_USER_SETTINGS": []
         },
-        "conversion_note": null,
+        "conversion_note": "Retirement evidence only, not migrated; keep Spark USER_PREF/PREF_JSON landing for user_pref_json_flatten",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -29633,10 +29852,83 @@
             "start_line": 38,
             "end_line": 62,
             "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/parity/ladder.py#L38-L62"
+          },
+          "retirement_manifest": {
+            "file": "migration/dw-exit/manifest.yaml",
+            "start_line": 4798,
+            "end_line": 4812,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/manifest.yaml#L4798-L4812"
+          },
+          "retirement_absence": {
+            "file": "migration/dw-exit/tools/assess.py",
+            "start_line": 91,
+            "end_line": 101,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/tools/assess.py#L91-L101"
+          },
+          "retirement_propagation": {
+            "file": "migration/dw-exit/tools/assess.py",
+            "start_line": 322,
+            "end_line": 347,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/tools/assess.py#L322-L347"
+          },
+          "retirement_qrylog.csv": {
+            "file": "warehouse/teradata/dbql/qrylog.csv",
+            "start_line": 1,
+            "end_line": 8081,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/teradata/dbql/qrylog.csv#L1-L8081"
+          },
+          "retirement_objectusage.csv": {
+            "file": "warehouse/teradata/dbql/objectusage.csv",
+            "start_line": 1,
+            "end_line": 20444,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/teradata/dbql/objectusage.csv#L1-L20444"
+          },
+          "retirement_tablesv.csv": {
+            "file": "warehouse/teradata/dbql/tablesv.csv",
+            "start_line": 1,
+            "end_line": 112,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/teradata/dbql/tablesv.csv#L1-L112"
+          },
+          "retirement_check": {
+            "file": "migration/dw-exit/parity/retirement_users.py",
+            "start_line": 1,
+            "end_line": 36,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/parity/retirement_users.py#L1-L36"
           }
         }
       },
-      "local_duckdb": "red",
+      "retirement_evidence": {
+        "passed": true,
+        "window": [
+          "2026-08-12",
+          "2026-11-09"
+        ],
+        "caveat": "Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten; no deletion or cutover approval",
+        "query_count": 8080,
+        "reads": {
+          "SFX_USERS.USER_PREF": 0,
+          "SFX_USERS.V_USER_SETTINGS": 0
+        },
+        "dead": [
+          "SFX_USERS.USER_PREF",
+          "SFX_USERS.V_USER_SETTINGS"
+        ],
+        "dead_dependents": [
+          "SFX_USERS.STG_USER_PREF",
+          "users_user_pref"
+        ],
+        "observed_window": [
+          "2026-08-12",
+          "2026-11-09"
+        ],
+        "sha256": {
+          "warehouse/teradata/dbql/qrylog.csv": "d3354f9618aca793f7948541f816547041e87255a6088b29a1e8f873e27265cf",
+          "warehouse/teradata/dbql/objectusage.csv": "3ee44d7a6b574716691746d6f100bf7686ab0262e316b278281046c0310c00c3",
+          "warehouse/teradata/dbql/tablesv.csv": "d2e9810955da39990bdccf7bc992fbde4c812915c27f046121294e1893440e44"
+        },
+        "reason": "Current DBQL absence and dead-dependent propagation verified"
+      },
+      "local_duckdb": "retire_verified",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -31969,7 +32261,8 @@
   },
   "summary": {
     "rows": 252,
-    "red": 132,
+    "red": 128,
+    "retire_verified": 4,
     "green": 120,
     "measured": 126,
     "migrated": 0,
@@ -31990,7 +32283,8 @@
     "users": {
       "local_duckdb": "red",
       "local_green": 45,
-      "local_red": 10,
+      "local_retire_verified": 4,
+      "local_red": 6,
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run"
     }
