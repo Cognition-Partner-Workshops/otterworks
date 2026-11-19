@@ -7,6 +7,7 @@ import re
 import duckdb
 
 from . import spark_billing
+from .ladder import identifier
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -22,6 +23,9 @@ def sql_template(node):
 
 
 def snowpark_query(connection, name, schema='SPARK_INPUT'):
+    if name not in ('users_risk_score','users_login_useragent_parse','user_pref_json_flatten','team_graph_components'):
+        raise ValueError('Unsupported shipped users Snowpark job')
+    schema = identifier(schema)
     path = ROOT/'warehouse/snowpark'/(name+'.py')
     tree = ast.parse(path.read_text())
     run = next((n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == 'run'), None)
@@ -33,13 +37,15 @@ def snowpark_query(connection, name, schema='SPARK_INPUT'):
     if len(bodies) != 1:
         raise ValueError('Expected one shipped Python UDF body')
     scope = {}
+    # Only allowlisted repository-shipped Snowpark code/SQL is evaluated; landing values are UDF arguments, never code.
+    # nosemgrep: python.lang.security.audit.exec-detected.exec-detected
     exec(compile(bodies[0], str(path), 'exec'), scope)
     definition = next(text for text in sql if '$$' in text)
     handler = re.search(r'handler\s*=\s*\x27?(\w+)', definition, re.I)[1]
     function = scope[handler]
     if isinstance(function, type):
         parameters = re.search(r'function.*?\((.*?)\)\s*returns', definition, re.S|re.I)[1]
-        parameters = [p.strip().split()[0] for p in parameters.split(',')]
+        parameters = [identifier(p.strip().split()[0]) for p in parameters.split(',')]
         outputs = re.search(r'returns table\((.*?)\)', definition, re.S|re.I)[1]
         outputs = [p.strip().split() for p in outputs.split(',')]
         if any(kind.lower() != 'number' for _,kind in outputs):
@@ -50,9 +56,13 @@ def snowpark_query(connection, name, schema='SPARK_INPUT'):
             raise ValueError('Unsupported shipped UDTF projection')
         table = re.search(r'"SPARK_RAW_USERS"\."(\w+)"', projection)[1]
         instance = function()
+        # Only allowlisted repository-shipped Snowpark code/SQL is evaluated; landing values are UDF arguments, never code.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         for row in connection.execute('SELECT '+','.join(parameters)+' FROM '+schema+'.'+table).fetchall():
             instance.process(*row)
-        connection.execute('CREATE OR REPLACE TABLE GRAPH_RESULT ('+','.join(column+' BIGINT' for column,_ in outputs)+')')
+        # Only allowlisted repository-shipped Snowpark code/SQL is evaluated; landing values are UDF arguments, never code.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        connection.execute('CREATE OR REPLACE TABLE GRAPH_RESULT ('+','.join(identifier(column)+' BIGINT' for column,_ in outputs)+')')
         rows = list(instance.end_partition())
         if rows:
             connection.executemany('INSERT INTO GRAPH_RESULT VALUES ('+','.join('?' for _ in outputs)+')',rows)
@@ -63,7 +73,9 @@ def snowpark_query(connection, name, schema='SPARK_INPUT'):
                and isinstance(n.func,ast.Attribute) and n.func.attr == 'select']
     if len(tables) != 1 or len(selects) != 1:
         raise ValueError('Expected one shipped Snowpark input and projection')
-    kinds = {c[0]:c[1] for c in connection.execute('DESCRIBE '+schema+'.'+tables[0]).fetchall()}
+    # Only allowlisted repository-shipped Snowpark code/SQL is evaluated; landing values are UDF arguments, never code.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+    kinds = {c[0]:c[1] for c in connection.execute('DESCRIBE '+schema+'.'+identifier(tables[0])).fetchall()}
     registered = False
 
     def udf(call, variables=None):
@@ -142,6 +154,8 @@ def materialize(before, after, objects, namespace):
             else:
                 query = snowpark_query(after,name,'USERS_SPARK_INPUT')
             before.read_parquet([str(p) for p in paths]).create('SFX_SPARK.'+name.upper())
+            # Only allowlisted repository-shipped Snowpark code/SQL is evaluated; landing values are UDF arguments, never code.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             after.execute('CREATE OR REPLACE TABLE '+target+' AS '+query)
             spark_billing.uppercase_columns(before,'SFX_SPARK.'+name.upper())
             spark_billing.uppercase_columns(after,target)

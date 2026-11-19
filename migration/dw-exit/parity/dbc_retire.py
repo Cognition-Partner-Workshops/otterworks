@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[3]
 DBQL = Path('warehouse/teradata/dbql')
 SQL = Path('migration/dw-exit/dbc/10_account_usage.sql')
 BEFORE = 'a48ea0e29c31ca5a5445e22074a99a0549d7d6b3'
+FAMILIES = ('DBC_QRYLOG','DBC_QRYLOGOBJECTS','DBC_TABLESV','QRYLOGV','QRYLOGOBJECTSV','TABLESV')
 
 
 def records(path, snapshot=False):
@@ -70,8 +71,12 @@ def materialize():
     db = duckdb.connect()
     db.execute('CREATE SCHEMA DBC; CREATE SCHEMA COMPAT; CREATE SCHEMA ACCOUNT_USAGE')
     for filename, table in [('qrylog','DBC_QRYLOG'), ('objectusage','DBC_QRYLOGOBJECTS'), ('tablesv','DBC_TABLESV')]:
+        # DBC relation/projection names are fixed harness constants; queries come from checked-in SQL; CSV paths are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute(f"CREATE TABLE DBC.{table} AS SELECT * FROM read_csv_auto(?, sample_size=-1)", [str(ROOT/DBQL/(filename+'.csv'))])
     for view, table in [('QRYLOGV','DBC_QRYLOG'),('QRYLOGOBJECTSV','DBC_QRYLOGOBJECTS'),('TABLESV','DBC_TABLESV')]:
+        # DBC relation/projection names are fixed harness constants; queries come from checked-in SQL; CSV paths are bound.
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute(f'CREATE VIEW DBC.{view} AS SELECT * FROM DBC.{table}')
     db.execute('''CREATE TABLE ACCOUNT_USAGE.QUERY_HISTORY AS SELECT QueryID AS QUERY_ID,
         UserName AS USER_NAME, DefaultDatabase AS DATABASE_NAME, AppID AS QUERY_TAG,
@@ -97,18 +102,26 @@ def materialize():
         db.execute(statement.sql(dialect='duckdb'))
     consumer = (ROOT/DBQL/'consumer_reads.bteq').read_text()
     old = re.search(r'SELECT\b.*?;', consumer, re.S)[0]
+    # DBC relation/projection names are fixed harness constants; queries come from checked-in SQL; CSV paths are bound.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     db.execute('CREATE VIEW DBC.CONSUMER AS '+old)
+    # DBC relation/projection names are fixed harness constants; queries come from checked-in SQL; CSV paths are bound.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     db.execute('CREATE VIEW COMPAT.CONSUMER AS '+(ROOT/'migration/dw-exit/dbc/20_consumer_reads.sql').read_text())
     return db
 
 
 def emulator(db, name):
+    if name not in {'DBC.'+family for family in FAMILIES}:
+        raise ValueError('Unsupported DBC relation')
     ns = os.environ.get('NS', RunConfig.from_env().before_namespace)
     port = str(54500+zlib.crc32(ns.encode())%1000)
     dsn = os.environ.get('BOARD_SOURCE_DSN', f"host=127.0.0.1 port={os.environ.get('TD_PG_PORT', port)} dbname=teradata user=postgres connect_timeout=3")
     try:
         with psycopg.connect(dsn) as source:
             with source.cursor() as cursor:
+                # DBC relation/projection names are fixed harness constants; queries come from checked-in SQL; CSV paths are bound.
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 cursor.execute('SELECT * FROM '+name)
                 values = cursor.fetchall()
                 schema, table = name.split('.')
@@ -120,6 +133,8 @@ def emulator(db, name):
                 observed_reads = cursor.fetchall()
                 cursor.execute('SELECT * FROM dbc.tablesv WHERE UPPER(databasename)=%s AND UPPER(tablename)=%s', (schema, table))
                 catalog = cursor.fetchall()
+        # DBC relation/projection names are fixed harness constants; queries come from checked-in SQL; CSV paths are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         csv_values = db.execute('SELECT * FROM '+name).fetchall()
         return {'status': 'green' if Counter(map(canonical, values))==Counter(map(canonical, csv_values)) else 'red',
                 'rows': len(values), 'csv_rows': len(csv_values), 'scope': 'full relation, including runtime tooling writes',
@@ -129,6 +144,8 @@ def emulator(db, name):
 
 
 def mapped_compare(db, family):
+    if family not in (*FAMILIES,'CONSUMER'):
+        raise ValueError('Unsupported DBC family')
     if family=='CONSUMER':
         columns = ['UserName','AppID','READ_QUERIES','READS_PER_DAY']
         predicate = ''
@@ -146,6 +163,8 @@ def mapped_compare(db, family):
         predicate = " WHERE TableKind IN ('T','V')"
         excluded = ['AccessCount','LastAccessTimeStamp','M/P catalog rows']
     for schema in ('DBC','COMPAT'):
+        # DBC relation/projection names are fixed harness constants; queries come from checked-in SQL; CSV paths are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute(f'CREATE OR REPLACE VIEW {schema}.MAPPED AS SELECT '+','.join(columns)+f' FROM {schema}.{family}'+predicate)
     return {'label': 'target-equivalent columns only; explicit supported row scope, not full-shape parity',
             'columns': columns, 'row_scope': predicate or 'all rows', 'excluded_decisions': excluded,

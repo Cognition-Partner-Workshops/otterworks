@@ -38,6 +38,8 @@ def render_model(text):
 
 def jdbc_snapshot(connection, dsn, table, destination):
     with psycopg.connect(dsn) as source:
+        # Job/target names come from fixed INPUTS/JDBC contracts; SQL is shipped dbt and metadata types are allowlisted.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         cursor = source.execute(sql.SQL('SELECT * FROM {}.{}').format(sql.Identifier('sfx_audit'), sql.Identifier(table.lower())))
         types = {20: 'BIGINT', 21: 'SMALLINT', 23: 'INTEGER', 25: 'VARCHAR', 1043: 'VARCHAR',
                  1082: 'DATE', 1114: 'TIMESTAMP'}
@@ -47,6 +49,8 @@ def jdbc_snapshot(connection, dsn, table, destination):
                 raise ValueError('Unsupported audit JDBC type: ' + str(column.type_code))
             definitions.append('"' + column.name.upper().replace('"', '""') + '" ' + types[column.type_code])
         rows = cursor.fetchall()
+    # Job/target names come from fixed INPUTS/JDBC contracts; SQL is shipped dbt and metadata types are allowlisted.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     connection.execute('CREATE TABLE ' + destination + ' (' + ','.join(definitions) + ')')
     if rows:
         connection.executemany('INSERT INTO ' + destination + ' VALUES (' + ','.join('?' for _ in definitions) + ')', rows)
@@ -87,6 +91,8 @@ def materialize(before, after, objects, namespace, dsn=None):
                 raise ValueError('Spark output predates inputs; rerun legacy job')
             model = ROOT / 'warehouse/dbt/models/spark' / name / (name + '.sql')
             before.read_parquet([str(path) for path in paths]).create('SFX_' + target)
+            # Job/target names come from fixed INPUTS/JDBC contracts; SQL is shipped dbt and metadata types are allowlisted.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             after.execute('CREATE TABLE ' + target + ' AS ' + render_model(model.read_text()))
             uppercase_columns(before, 'SFX_' + target)
             uppercase_columns(after, target)
@@ -102,6 +108,8 @@ def materialize(before, after, objects, namespace, dsn=None):
                 jdbc_snapshot(before, dsn or os.environ.get('SPARK_SOURCE_DSN',
                     'host=127.0.0.1 port=55432 dbname=sfx_teradata user=etl_batch password=Fake-sfx1119-jdbc'),
                     JDBC[name], 'SFX_' + target + '_JDBC')
+                # Job/target names come from fixed INPUTS/JDBC contracts; SQL is shipped dbt and metadata types are allowlisted.
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 after.execute('CREATE TABLE ' + target + '_JDBC AS SELECT * FROM ' + target)
                 ready.add(target + '_JDBC')
                 evidence[name]['jdbc_output'] = 'sfx_audit.' + JDBC[name]

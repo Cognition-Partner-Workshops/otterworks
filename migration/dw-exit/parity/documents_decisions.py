@@ -44,7 +44,11 @@ def version_scope(before, after, measurements):
                                   ('V_DOCUMENT_VERSIONS',0,scope),
                                   ('V_WORKSPACE_STORAGE',0,owners)):
         source, target = 'SFX_DOCUMENTS.'+name, 'DOCUMENTS.'+name
+        # Relations are assembled only from the fixed three-relation decision-proof tuple above, never row data.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         old = before.execute('SELECT * FROM '+source).fetchall()
+        # Relations are assembled only from the fixed three-relation decision-proof tuple above, never row data.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         new = after.execute('SELECT * FROM '+target).fetchall()
         old_counts = Counter(canonical(row) for row in old)
         new_counts = Counter(canonical(row) for row in new)

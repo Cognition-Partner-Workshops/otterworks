@@ -11,6 +11,7 @@ from sqlglot import exp
 from warehouse.run_config import render
 from .connection import validate_date
 from .report_outputs import postgres_query
+from .ladder import identifier
 
 ROOT = Path(__file__).resolve().parents[3]
 SQL = ROOT / 'migration/dw-exit/audit'
@@ -96,6 +97,8 @@ def landing(connection, business_date, landing_dir):
         evidence[table] = {'file': str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path),
                            'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
         if path.stat().st_size:
+            # Internal manifest relations and shipped audit SQL only; column types are DuckDB metadata and landing paths are bound.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             connection.execute('INSERT INTO AUDIT.' + table +
                                " SELECT * FROM read_csv(?, header=false, delim='|', all_varchar=true, nullstr='')", [str(path)])
     if len(evidence) != 9:
@@ -104,8 +107,16 @@ def landing(connection, business_date, landing_dir):
 
 
 def copy_relation(before, after, source, target):
+    source = '.'.join(identifier(part) for part in source.split('.'))
+    target = '.'.join(identifier(part) for part in target.split('.'))
+    # Internal manifest relations and shipped audit SQL only; column types are DuckDB metadata and landing paths are bound.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     definitions = before.execute('DESCRIBE ' + source).fetchall()
-    after.execute('CREATE TABLE ' + target + ' (' + ', '.join('"' + c[0] + '" ' + c[1] for c in definitions) + ')')
+    # Internal manifest relations and shipped audit SQL only; column types are DuckDB metadata and landing paths are bound.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+    after.execute('CREATE TABLE ' + target + ' (' + ', '.join(identifier(c[0]) + ' ' + c[1] for c in definitions) + ')')
+    # Internal manifest relations and shipped audit SQL only; column types are DuckDB metadata and landing paths are bound.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     rows = before.execute('SELECT * FROM ' + source).fetchall()
     if rows:
         after.executemany('INSERT INTO ' + target + ' VALUES (' + ','.join('?' for _ in definitions) + ')', rows)
@@ -118,12 +129,16 @@ def report(before, after, dsn, business_date, ready):
     with psycopg.connect(dsn) as connection:
         rows = connection.execute(postgres_query(query)).fetchall()
     name = 'M_RECON_TOTALS_OUTPUT'
+    # Internal manifest relations and shipped audit SQL only; column types are DuckDB metadata and landing paths are bound.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     before.execute('CREATE TABLE SFX_AUDIT.' + name + ' (RECON_ID BIGINT, SOURCE_COUNT BIGINT, TARGET_COUNT BIGINT, DIFFERENCE_COUNT BIGINT)')
     if rows:
         before.executemany('INSERT INTO SFX_AUDIT.' + name + ' VALUES (?,?,?,?)', rows)
     body = procedures()['M_RECON_TOTALS']
     query = re.search(r'LET res RESULTSET\s*:=\s*\((.*?)\);', body, re.S | re.I)[1]
     query = query.replace(':p_day', "'" + business_date + "'")
+    # Internal manifest relations and shipped audit SQL only; column types are DuckDB metadata and landing paths are bound.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     after.execute('CREATE TABLE AUDIT.' + name + ' AS ' + next(portable(query, business_date)))
     ready.add('AUDIT.' + name)
 
@@ -136,6 +151,8 @@ def materialize(before, after, source_ready, dsn, ready, business_date='20261109
         evidence['landing'] = landing(after, business_date, landing_dir or ROOT / 'warehouse/landing')
         evidence['external_inputs'] = []
         for schema in ('USERS', 'DOCUMENTS'):
+            # Internal manifest relations and shipped audit SQL only; column types are DuckDB metadata and landing paths are bound.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             after.execute('CREATE SCHEMA IF NOT EXISTS ' + schema)
             for source in sorted(source_ready):
                 if source.startswith('SFX_' + schema + '.'):

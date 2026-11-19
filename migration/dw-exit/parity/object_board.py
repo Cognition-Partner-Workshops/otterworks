@@ -90,9 +90,13 @@ def source_snapshot(dsn, names):
 
 
 def materialize(before, names, conversion_dir, business_date='20261109', subject='billing', after=None):
+    if subject not in SUBJECTS:
+        raise ValueError('Unsupported local subject')
     after = after if after is not None else duckdb.connect()
     ready, errors = set(), {}
     schema = subject.upper()
+    # Subject schema is an internal execution-contract key, not source row data.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     after.execute('CREATE SCHEMA '+schema)
     if (conversion_dir / '15_storage.sql').exists():
         rows = before.execute('SELECT * FROM SFX_DOCUMENTS.STORAGE_USAGE_DAILY').fetchall()

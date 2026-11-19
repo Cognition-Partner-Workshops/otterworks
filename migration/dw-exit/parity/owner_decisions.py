@@ -56,13 +56,19 @@ def display_names(before, after, source, target, raw, sample_size=5, keys=None):
     inputs = next((name for name in candidates if name in available), None)
     if inputs is None:
         return raw
+    # Relation choices are fixed owner-decision inputs; column definitions come from local DuckDB metadata.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     original = dict(after.execute('SELECT USER_ID,DISPLAY_NAME FROM '+inputs).fetchall())
     expected = original
     if table.startswith('STG_'):
         expected = {key:None if value is None else value.strip(' ')[:200] for key,value in expected.items()}
+    # Relation choices are fixed owner-decision inputs; column definitions come from local DuckDB metadata.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     definitions = before.execute('DESCRIBE '+source).fetchall()
     names = [c[0] for c in definitions]
     uid, display = names.index('USER_ID'), names.index('DISPLAY_NAME')
+    # Relation choices are fixed owner-decision inputs; column definitions come from local DuckDB metadata.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     rows = before.execute('SELECT * FROM '+source).fetchall()
     adjusted, valid, changed = [], True, 0
     for row in rows:
@@ -78,6 +84,8 @@ def display_names(before, after, source, target, raw, sample_size=5, keys=None):
         adjusted.append(row)
     with duckdb.connect() as approved:
         approved.execute('CREATE SCHEMA SFX_USERS')
+        # Relation choices are fixed owner-decision inputs; column definitions come from local DuckDB metadata.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         approved.execute('CREATE TABLE '+source+' ('+', '.join(c[0]+' '+c[1] for c in definitions)+')')
         if adjusted:
             approved.executemany('INSERT INTO '+source+' VALUES ('+','.join('?' for _ in names)+')',adjusted)

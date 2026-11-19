@@ -72,6 +72,8 @@ def materialize(before, after, dsn, ready, business_date, subject='billing'):
                         if not kind:
                             raise ValueError('Unsupported report result type: '+str(column.type_code))
                         columns.append('"'+column.name.upper()+'" '+kind)
+                    # Report names are fixed subject contracts; types use the allowlist above and column names are metadata.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     before.execute('CREATE TABLE SFX_'+schema+'.'+name+' ('+', '.join(columns)+')')
                     if rows:
                         before.executemany('INSERT INTO SFX_'+schema+'.'+name+' VALUES ('+','.join('?' for _ in columns)+')', rows)

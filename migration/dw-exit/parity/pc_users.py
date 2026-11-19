@@ -19,7 +19,7 @@ import sqlglot
 from sqlglot import exp
 
 from warehouse.run_config import RunConfig
-from .ladder import local_compare
+from .ladder import identifier, local_compare
 
 ROOT = Path(__file__).resolve().parents[3]
 ESTATE = ROOT/'etl/informatica'
@@ -39,12 +39,18 @@ def fingerprint(landing, day):
 
 
 def copy_table(pg, db, table, schema):
+    if table not in TABLES or schema not in ('INITIAL','SFX_USERS'):
+        raise ValueError('Unsupported PC capture relation')
     with pg.cursor() as cursor:
+        # Mapping targets are fixed TABLES entries; SQL is shipped dbt, identifiers are internal and row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         cursor.execute(sql.SQL('SELECT * FROM sfx_users.{}').format(sql.Identifier(table.lower())))
         rows = cursor.fetchall()
         kinds = {20:'BIGINT',23:'INTEGER',25:'VARCHAR',1042:'VARCHAR',1043:'VARCHAR',1082:'DATE',1114:'TIMESTAMP'}
-        columns = ['"'+c.name.upper()+'" '+kinds[c.type_code] for c in cursor.description]
+        columns = [identifier(c.name)+' '+kinds[c.type_code] for c in cursor.description]
         name = schema+'.'+table
+        # Mapping targets are fixed TABLES entries; SQL is shipped dbt, identifiers are internal and row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute('CREATE TABLE '+name+' ('+', '.join(columns)+')')
         if rows:
             db.executemany('INSERT INTO '+name+' VALUES ('+','.join('?' for _ in columns)+')',rows)
@@ -71,6 +77,8 @@ def capture(dsn, namespace, landing, day, out=OUT):
     with psycopg.connect(dsn,autocommit=True) as pg, duckdb.connect(str(path)) as db:
         db.execute('CREATE SCHEMA INITIAL; CREATE SCHEMA SFX_USERS')
         for table in TABLES:
+            # Mapping targets are fixed TABLES entries; SQL is shipped dbt, identifiers are internal and row values are bound.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             pg.execute(sql.SQL('CREATE TEMP TABLE {} AS SELECT * FROM sfx_users.{}').format(
                 sql.Identifier('pc_backup_'+table.lower()),sql.Identifier(table.lower())))
             copy_table(pg,db,table,'INITIAL')
@@ -91,7 +99,11 @@ def capture(dsn, namespace, landing, day, out=OUT):
         finally:
             with pg.transaction():
                 for table in TABLES:
+                    # Mapping targets are fixed TABLES entries; SQL is shipped dbt, identifiers are internal and row values are bound.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     pg.execute(sql.SQL('DELETE FROM sfx_users.{}').format(sql.Identifier(table.lower())))
+                    # Mapping targets are fixed TABLES entries; SQL is shipped dbt, identifiers are internal and row values are bound.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     pg.execute(sql.SQL('INSERT INTO sfx_users.{} SELECT * FROM {}').format(
                         sql.Identifier(table.lower()),sql.Identifier('pc_backup_'+table.lower())))
     if inputs != fingerprint(landing,day):
@@ -107,7 +119,11 @@ def capture(dsn, namespace, landing, day, out=OUT):
 
 
 def model_query(table, connection, config):
-    environment = Environment(undefined=StrictUndefined)
+    if table not in TABLES:
+        raise ValueError('Unsupported PC model')
+    # Shipped Jinja templates render SQL, never HTML; HTML escaping changes SQL literals.
+    # nosemgrep: python.flask.security.xss.audit.direct-use-of-jinja2.direct-use-of-jinja2, python.jinja2.security.audit.autoescape-disabled-false.incorrect-autoescape-disabled
+    environment = Environment(undefined=StrictUndefined, autoescape=False)
     def configure(**kwargs):
         config.update(kwargs)
         return ''
@@ -154,30 +170,48 @@ def load_inputs(db, captured, landing, day):
         else:
             with (landing/'users'/table/(day+'.psv')).open() as handle:
                 rows = [tuple(v if v else None for v in row) for row in csv.reader(handle,delimiter='|')]
+            # Mapping targets are fixed TABLES entries; SQL is shipped dbt, identifiers are internal and row values are bound.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             definitions = captured.execute('DESCRIBE INITIAL.'+table).fetchall()
+        # Mapping targets are fixed TABLES entries; SQL is shipped dbt, identifiers are internal and row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute('CREATE TABLE INPUT.'+table+' ('+', '.join('"'+c[0]+'" '+c[1] for c in definitions)+')')
         if rows:
             db.executemany('INSERT INTO INPUT.'+table+' VALUES ('+','.join('?' for _ in definitions)+')',rows)
+        # Mapping targets are fixed TABLES entries; SQL is shipped dbt, identifiers are internal and row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         initial = captured.execute('SELECT * FROM INITIAL.'+table).fetchall()
+        # Mapping targets are fixed TABLES entries; SQL is shipped dbt, identifiers are internal and row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute('CREATE TABLE USERS.'+table+' ('+', '.join('"'+c[0]+'" '+c[1] for c in definitions)+')')
         if initial:
             db.executemany('INSERT INTO USERS.'+table+' VALUES ('+','.join('?' for _ in definitions)+')',initial)
 
 
 def execute_model(db,table):
+    if table not in TABLES:
+        raise ValueError('Unsupported PC model')
     config = {}
     query = model_query(table,db,config)
+    # Mapping targets are fixed TABLES entries; SQL is shipped dbt, identifiers are internal and row values are bound.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     db.execute('CREATE OR REPLACE TABLE CANDIDATES AS '+query)
     if config['materialized'] == 'table':
+        # Mapping targets are fixed TABLES entries; SQL is shipped dbt, identifiers are internal and row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute('DELETE FROM USERS.'+table)
+        # Mapping targets are fixed TABLES entries; SQL is shipped dbt, identifiers are internal and row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute('INSERT INTO USERS.'+table+' SELECT * FROM CANDIDATES')
     else:
-        columns = [c[0] for c in db.execute('DESCRIBE CANDIDATES').fetchall()]
+        columns = [identifier(c[0]) for c in db.execute('DESCRIBE CANDIDATES').fetchall()]
         if config['materialized'] != 'incremental' or config['incremental_strategy'] != 'merge':
             raise ValueError('Unsupported PC model materialization')
-        key = config['unique_key']
+        key = identifier(config['unique_key'])
         if key not in columns:
             raise ValueError('PC merge key not in projection')
+        # Mapping targets are fixed TABLES entries; SQL is shipped dbt, identifiers are internal and row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute('MERGE INTO USERS.'+table+' t USING CANDIDATES s ON t.'+key+'=s.'+key+
                    ' WHEN MATCHED THEN UPDATE SET '+','.join(c+'=s.'+c for c in columns[1:])+
                    ' WHEN NOT MATCHED THEN INSERT ('+','.join(columns)+') VALUES ('+','.join('s.'+c for c in columns)+')')

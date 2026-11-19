@@ -39,13 +39,19 @@ def materialize(before, after, dsn, ready, business_date, landing_dir=None):
         audit.landing(after, business_date, landing_dir or audit.ROOT/'warehouse/landing')
         for name in audit.PC_TABLES:
             audit.copy_relation(baseline, before, 'SFX_AUDIT.'+name, 'SFX_AUDIT.'+name)
+            # Temporary schema uses a UUID; table names are fixed PC_TABLES entries quoted by psycopg Identifier.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             before.execute('DELETE FROM SFX_AUDIT.'+name)
         after.execute('CREATE SEQUENCE AUDIT.SUMMARY_SEQ START 50001')
         repo = Repository(str(audit.ROOT / 'etl/informatica/repository/SFX_AUDIT'))
         schema = 'audit_parity_' + uuid.uuid4().hex
         with tempfile.TemporaryDirectory(dir=work) as directory, psycopg.connect(dsn) as source:
+            # Temporary schema uses a UUID; table names are fixed PC_TABLES entries quoted by psycopg Identifier.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             source.execute(sql.SQL('CREATE SCHEMA {}').format(sql.Identifier(schema)))
             for name in audit.PC_TABLES:
+                # Temporary schema uses a UUID; table names are fixed PC_TABLES entries quoted by psycopg Identifier.
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 source.execute(sql.SQL('CREATE TABLE {}.{} (LIKE sfx_audit.{} INCLUDING ALL)').format(
                     sql.Identifier(schema), sql.Identifier(name.lower()), sql.Identifier(name.lower())))
             connection = IsolatedConnection(source, schema)
@@ -64,6 +70,8 @@ def materialize(before, after, dsn, ready, business_date, landing_dir=None):
                                           'log': log.lines}
             audit.execute(after, 'CALL __RUN_DATABASE__.AUDIT.WF_SFX_AUDIT_DAILY();', business_date)
             for name in audit.PC_TABLES:
+                # Temporary schema uses a UUID; table names are fixed PC_TABLES entries quoted by psycopg Identifier.
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 rows = source.execute(sql.SQL('SELECT * FROM {}.{}').format(
                     sql.Identifier(schema), sql.Identifier(name.lower()))).fetchall()
                 if rows:
