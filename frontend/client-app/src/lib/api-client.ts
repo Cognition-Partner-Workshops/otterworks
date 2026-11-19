@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Capacitor } from "@capacitor/core";
+import { resolveNetworkUrls } from "./network-urls";
 
 // ── snake_case → camelCase helpers ────────────────────────────
 function snakeToCamel(s: string): string {
@@ -19,19 +20,10 @@ function transformKeys(obj: unknown): unknown {
   return obj;
 }
 
-// Web builds call the same-origin /api/v1 proxy (Vite dev server locally, nginx in
-// production) to avoid CORS issues; the proxy forwards /api/v1/* to the API gateway
-// (configured via API_GATEWAY_URL env var). Native (Capacitor) builds have no
-// same-origin server, so they call the API gateway directly — the default targets
-// the Android emulator's host-loopback alias, which is plain HTTP by design in
-// local dev. Any real deployment must point VITE_API_BASE_URL at an https
-// gateway; the scheme below is only the local-dev default.
-const NATIVE_API_SCHEME = "http";
-const NATIVE_API_BASE_URL = `${NATIVE_API_SCHEME}://10.0.2.2:8080/api/v1`;
-
-export const API_BASE_URL = Capacitor.isNativePlatform()
-  ? import.meta.env.VITE_API_BASE_URL || NATIVE_API_BASE_URL
-  : "/api/v1";
+export const API_BASE_URL = resolveNetworkUrls(
+  Capacitor.getPlatform(),
+  import.meta.env.VITE_API_BASE_URL,
+).api;
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
