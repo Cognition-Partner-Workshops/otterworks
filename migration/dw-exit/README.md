@@ -77,6 +77,11 @@ The held entries are still `not_started` and count against
 The board shows 10 retirements (neither green nor red) and 242 remaining
 licence dependencies, down from 252. No source objects were removed.
 
+With the BEFORE emulator still running, refresh the board from the existing
+manifest with `make sfx-manifest-board-offline RUN_TOKEN=sfx1119`. This
+does not reassess or rewrite the manifest and disables the Snowflake
+connection even if credentials are set in the shell.
+
 The live `SFX_1119.MIGRATION_CONTROL.OBJECTS` write is deferred until
 Snowflake credentials return. The offline test exercises
 `parity/promote.py::write_retirements(connection, objects, run_token)`
