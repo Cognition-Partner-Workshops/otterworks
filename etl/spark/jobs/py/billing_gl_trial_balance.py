@@ -1,4 +1,7 @@
-from common.runtime import register, save, session
+from datetime import datetime, timezone
+import os
+
+from common.runtime import register, save_jdbc_refresh, save_partition, session
 
 spark = session("billing_gl_trial_balance")
 register(spark, "GL_ACCOUNT", "GL_JOURNAL_LINE", "CREDIT_NOTE")
@@ -29,5 +32,7 @@ LEFT JOIN ledger l ON p.GL_ACCOUNT_ID = l.GL_ACCOUNT_ID
 LEFT JOIN adjustments c ON p.GL_ACCOUNT_ID = c.GL_ACCOUNT_ID
   AND p.PERIOD = c.PERIOD AND p.CURRENCY_CODE = c.CURRENCY_CODE
 """)
-save(result, "billing", "billing_gl_trial_balance", "sfx_billing.SPARK_GL_TRIAL_BALANCE")
+run_date = os.environ.get("SFX_RUN_DATE") or datetime.now(timezone.utc).date().isoformat()
+save_partition(result, "billing", "billing_gl_trial_balance", run_date)
+save_jdbc_refresh(result, "sfx_billing.SPARK_GL_TRIAL_BALANCE")
 spark.stop()
