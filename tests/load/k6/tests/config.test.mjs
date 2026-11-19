@@ -101,3 +101,12 @@ test('cluster runner rejects missing targets and protected namespaces before kub
     rmSync(bin, { recursive: true, force: true });
   }
 });
+
+test('load HOLD supports custom, empty and invalid steady-state durations', async () => {
+  const custom = (await config({ PROFILE: 'load', HOLD: '2m' })).buildOptions().scenarios.load;
+  assert.deepEqual(custom.stages, [{ duration: '120s', target: 50 }, { duration: '120s', target: 50 }, { duration: '120s', target: 0 }]);
+  const empty = (await config({ PROFILE: 'load', HOLD: '' })).buildOptions().scenarios.load;
+  assert.equal(empty.stages[1].duration, '600s');
+  const invalid = await config({ PROFILE: 'load', HOLD: 'forever' });
+  assert.throws(() => invalid.buildOptions(), /HOLD must use/);
+});

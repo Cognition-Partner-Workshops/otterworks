@@ -15,7 +15,10 @@
 #   scripts/chaos/chaos-experiment.sh <ATTENDEE_ID> node-drain --allow-cluster-impact
 #
 # Env: DURATION (fault window, s, default 60), BASELINE (s, default 20),
-#      PROBE_URL (default https://<tenant api host>/health), SLO_AVAILABILITY (default 0.99)
+#      PROBE_URL (default https://<tenant api host>/health), SLO_AVAILABILITY (default 0.99),
+#      POD_KILL_ALL=1 (pod-kill every replica instead of one),
+#      PROBE_TOKEN (optional bearer token, to probe an authenticated route such as
+#      /api/v1/documents/ so the probe exercises gateway -> backend -> datastore)
 #
 # t-main (otterworks-main) is refused: AGENTS.md forbids injecting faults there.
 # ------------------------------------------------------------------------------
@@ -43,10 +46,12 @@ if [ -z "${PROBE_URL:-}" ]; then
   PROBE_URL="https://${API_HOST}/health"
 fi
 LOG="$(mktemp -t chaos-XXXX.log)"
+AUTH=()
+[ -n "${PROBE_TOKEN:-}" ] && AUTH=(-H "Authorization: Bearer ${PROBE_TOKEN}")
 
 probe_loop() {  # appends "<epoch> <http_code> <seconds>" once per second
   while :; do
-    printf '%s %s\n' "$(date +%s)" "$(curl -s -o /dev/null -m 5 -w '%{http_code} %{time_total}' "${PROBE_URL}" || echo '000 5')" >> "${LOG}"
+    printf '%s %s\n' "$(date +%s)" "$(curl -s -o /dev/null -m 5 -w '%{http_code} %{time_total}' "${AUTH[@]}" "${PROBE_URL}" || echo '000 5')" >> "${LOG}"
     sleep 1
   done
 }
@@ -71,7 +76,12 @@ case "${EXPERIMENT}" in
   pod-kill)
     [ -n "${TARGET}" ] || { err "pod-kill needs a service"; exit 1; }
     SEL="app.kubernetes.io/name=${TARGET}"
-    kubectl delete pod -n "${NS}" -l "${SEL}" --wait=false
+    # One pod (a single node/SPOT loss); POD_KILL_ALL=1 kills every replica.
+    if [ "${POD_KILL_ALL:-0}" = 1 ]; then
+      kubectl delete pod -n "${NS}" -l "${SEL}" --wait=false
+    else
+      kubectl delete pod -n "${NS}" "$(kubectl get pod -n "${NS}" -l "${SEL}" -o jsonpath='{.items[0].metadata.name}')" --wait=false
+    fi
     sleep 2
     RECOVER_S=$(wait_ready "${SEL}")
     ;;

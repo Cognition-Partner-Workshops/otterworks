@@ -30,9 +30,9 @@ if (!Number.isInteger(userCount) || userCount > 200) throw new Error('USERS must
 export const runID = __ENV.RUN_ID || `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 if (!/^[a-zA-Z0-9-]{1,60}$/.test(runID)) throw new Error('RUN_ID must be 1..60 alphanumeric/hyphen characters');
 
-function seconds(value) {
+function seconds(value, name = 'DURATION') {
   const match = /^(\d+(?:\.\d+)?)(s|m|h)$/.exec(value);
-  if (!match || Number(match[1]) <= 0) throw new Error('DURATION must use s, m or h');
+  if (!match || Number(match[1]) <= 0) throw new Error(`${name} must use s, m or h`);
   return Number(match[1]) * ({ s: 1, m: 60, h: 3600 })[match[2]];
 }
 
@@ -40,7 +40,7 @@ export function buildOptions() {
   const defaults = {
     baseline: [[30, 10], [240, 10], [30, 0]],
     peak: [[30, 30], [240, 30], [30, 0]],
-    load: [[120, targetVUs], [600, targetVUs], [120, 0]],
+    load: [[120, targetVUs], [seconds(__ENV.HOLD || '10m', 'HOLD'), targetVUs], [120, 0]],
     stress: [[120, targetVUs], [180, targetVUs * 2], [180, targetVUs * 3], [180, targetVUs * 4], [120, 0]],
     spike: [[60, Math.ceil(targetVUs / 10)], [20, targetVUs], [180, targetVUs], [20, Math.ceil(targetVUs / 10)], [120, Math.ceil(targetVUs / 10)]],
     soak: [[300, targetVUs], [3600, targetVUs], [300, 0]],

@@ -62,6 +62,8 @@ it does **not** change arrival rates. For the original closed-loop profiles,
 `TARGET_VUS` (default 50) times `VUS` controls the VU target.
 `USERS` defaults to 10 (integer 1..200).
 `DURATION=5m` rescales all stages; `DURATION=1h` makes soak one hour total.
+`HOLD=2m` changes the load profile's steady-state length (default 10m);
+`DURATION`, if supplied, rescales the resulting full profile including that hold.
 `RUN_ID` optionally sets a unique alphanumeric/hyphen identifier.
 
 ```sh

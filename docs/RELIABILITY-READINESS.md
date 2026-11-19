@@ -20,12 +20,14 @@ is still open. Procedures: [chaos and load testing runbook](runbooks/chaos-and-l
 | Gateway metrics | `api_gateway_http_requests_total` labels every route `path="other"`, so no per-route SLIs | **Open** |
 | t-main | admin-service CrashLoopBackOff (planted bug, left by policy); analytics-service restarting on SQS `InvalidAddressException` | **Open** (analytics needs triage) |
 
-## Paging policy
+## Alert routing
 
-Only t-main (`otterworks-main`) symptoms and cluster-level failures carry `page: devin`:
-gateway 5xx > 5 % (5 m), gateway p95 > 1.5 s (10 m), ingress 5xx > 5 %, a core
-deployment with zero available replicas, node NotReady. Demo tenants run planted bugs
-and injected scenarios on purpose, so their alerts are warnings only.
+Every `otterworks-reliability` alert carries `team: sre` and goes to the SRE receiver that
+the sre-observability chart routes. `page: devin` is reserved for the document-service
+incident-responder rules. Critical: t-main (`otterworks-main`) gateway 5xx > 5 % (5 m),
+gateway p95 > 1.5 s (10 m), ingress 5xx > 5 %, a core deployment with zero available
+replicas, and node NotReady. Demo-tenant and capacity alerts are warnings, because demo
+tenants run planted bugs and injected scenarios on purpose.
 
 ## Recommended before peak (not done here)
 
