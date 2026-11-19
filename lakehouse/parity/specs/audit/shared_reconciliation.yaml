@@ -1,0 +1,26 @@
+{
+  "id": "audit.shared_reconciliation",
+  "legacy_objects": [
+    "batch_runner:warehouse/teradata/jobs/reconcile",
+    "cron_entry:warehouse/teradata/jobs/daily_chain#stage=jobs/reconcile"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "select * from sfx_audit.audit_recon where recon_id = 21000000001"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_audit.shared_reconciliation"
+  },
+  "keys": [
+    "recon_id"
+  ],
+  "columns": [
+    "recon_id",
+    "business_dt",
+    "customer_id",
+    "source_count",
+    "target_count",
+    "difference_count"
+  ]
+}

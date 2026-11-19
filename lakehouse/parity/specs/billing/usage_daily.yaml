@@ -1,0 +1,31 @@
+{
+  "id": "billing.usage_daily",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.USAGE_DAILY",
+    "bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT usage_id, customer_id, subscription_id, usage_dt, units, usage_type FROM sfx_billing_parity.load_usage_daily"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.usage_daily"
+  },
+  "keys": [
+    "usage_id"
+  ],
+  "columns": [
+    "usage_id",
+    "customer_id",
+    "subscription_id",
+    "usage_dt",
+    "units",
+    "usage_type"
+  ],
+  "normalize": {
+    "usage_type": {
+      "rstrip": true
+    }
+  }
+}

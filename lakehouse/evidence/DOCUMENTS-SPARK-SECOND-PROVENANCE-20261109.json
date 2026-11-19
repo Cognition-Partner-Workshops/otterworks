@@ -1,0 +1,278 @@
+{
+  "NS": "sfx-d1110-after",
+  "LEGACY_NS": "sfx-d1110-before",
+  "business_date": "20261109",
+  "manifest": "warehouse/landing/documents-second/spark/20261109/manifest.json",
+  "legacy_provenance_file": "lakehouse/.data/sfx-d1110-after/legacy_spark/20261109/provenance-38111d3e92d4.json",
+  "legacy": {
+    "inputs": {
+      "version": 1,
+      "business_date": "20261109",
+      "generator": "__main__",
+      "generator_hash": "14dde27360f1b299c9bda3c1d758201f8352685ae6153d172282df829a7cf384",
+      "files": {
+        "documents/FOLDER/20261109.psv": "7173a4a4a650111b12deddfa8de8a95165b3605b91633b7423ce3d63de89c857",
+        "documents/DOC_SHARE/20261109.psv": "6d3583c3ec9e041c2b94de209e9c1f6a4ab99d7e0692807b33b58897f266c310",
+        "documents/COLLAB_SESSION/20261109.psv": "319873be82a7eecb3ca9ff2c68ce05d99dac8fa9d7952827b3ddef113966eb6f",
+        "documents/DOC_VERSION/20261109.psv": "f511c4097ff6c3b90e25ea201e280e2d78feb5ea28fa221b3b202fb056b46c98",
+        "documents/FILE_OBJECT/20261109.psv": "46e24902cd893738576d45980059062fe13d74fb0f55dcf35065fd10a124caf2",
+        "documents/FILE_OBJECT_BLOBS/valid.pdf": "213ab87599596a82746468e34f6ab77f17b53cd20876898d9cc4b15d5f96f36a",
+        "documents/FILE_OBJECT_BLOBS/corrupt.pdf": "d6c7c62713a564cd29a1461dccaf531c0f78dfaebb3f4bef8c8e7519bf97a8df",
+        "documents/FILE_OBJECT_BLOBS/empty.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "documents/FILE_OBJECT_BLOBS/corrupt.zip": "f0238e127c2a959023ee9d9e6bf3c1c7b32e38ca6a1a5b2b6ea32f360eee9bf0",
+        "documents/FILE_OBJECT_BLOBS/text.zip": "7bc0b7f7ae35d4a25510a8d3efa2a071f171e3e3b62330e8aaf989944a4f183e",
+        "documents/FILE_OBJECT_BLOBS/empty.zip": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+        "documents/FILE_OBJECT_BLOBS/valid.docx": "2f04e17c9147e5e2a96362d0428869a4080a7fe71e63ef4ab20eedb454feab9e",
+        "documents/FILE_OBJECT_BLOBS/long.docx": "efe9595e32e5ca84174912dfdf30a665b11bbc07e9cfaec2707bca8eee5d4661",
+        "documents/FILE_OBJECT_BLOBS/corrupt.docx": "930fb69a2f17f7d05e621557417ac5508e0f83621b75040f877fb0e6ede5edff",
+        "documents/FILE_OBJECT_BLOBS/doctype.docx": "c94060a324e403fe5c042dad874e9f53972f85bbe787c346e3a1c47036607be3",
+        "documents/FILE_OBJECT_BLOBS/unsupported.bin": "7841109d5731e9c6fefcb45a1a65248ce6b0d512194be70e6aee88d768928bdd",
+        "documents/FILE_OBJECT_BLOBS/unmatched.pdf": "a6f1229b3915355e321341a7d938c98b4b987f885f334b44ed29bd4f3d710b99"
+      },
+      "rows": {
+        "FOLDER": 32,
+        "DOC_SHARE": 11,
+        "COLLAB_SESSION": 8,
+        "DOC_VERSION": 11,
+        "FILE_OBJECT": 13
+      },
+      "blobs": 12,
+      "bytes": 7298
+    },
+    "sources": {
+      "etl/spark/jobs/py/common/runtime.py": "7a68ac84ae8f534f7241ea2086256bf63d22e6f5e993105b2f1829f422a652b8",
+      "etl/spark/jobs/py/common/schemas.py": "14f7457f3245cc28fed857809dbeecb99fe463bab59eba1724de22e5256df77d",
+      "etl/spark/scala/src/main/scala/sfx/BatchSupport.scala": "69477a7846542e26e1be8b090a0bf760ea9aff1233bfb09554b5ccb2bebde597",
+      "etl/spark/scala/build.sbt": "ed451ed08cc03fe9c5c27ea9d20f8dabf54114d71f614c7364dc6c33654f6b19",
+      "etl/spark/jobs/py/common/binary_documents.py": "41e8eea5d8d27c866b2e9de545eb2b49ac67a0da65e64f0f3553f46671919b7b",
+      "etl/spark/jobs/py/docs_folder_tree_walk.py": "746609244f8cd0ca13d52d70bbd495aaeb495a7f811afbfd28a21db5aae6fef8",
+      "etl/spark/jobs/py/doc_share_graph_reach.py": "0b3a67b2549199cf1d8e5ff063e55704905c11f44bc678c1b3638d23fe013a54",
+      "etl/spark/jobs/py/collab_session_sessionize.py": "3d8298bdc92c0f0ef2b66e34de806c13e7f623f93dc8cff2d9b5d7ab00798e13",
+      "etl/spark/jobs/py/doc_version_diff_stats.py": "0792f5d6185f7344de47863d542f2b85bfa298c389acc7d7be43585fdc6608ec",
+      "etl/spark/jobs/py/file_object_binary_extract.py": "a4b5d89f7d1e42e11adfc18033b95d569047b36cf1189ab605a449e1c554e947"
+    },
+    "scala_jar_hash": "ad0426c68b5fe33a8983758d188592effc17a8992e6bb9e9bb987dc773d4ddde",
+    "runtime_image": "postgres:16",
+    "network": "none",
+    "python": "3.12.16 (main, Oct 30 2026, 04:40:57) [GCC 11.4.0]",
+    "spark": "3.5.3",
+    "image_id": "sha256:3950ad7c3148ca2175ef1b6c36c9efbf78957ae8fbe8b3a5d7c35af50500382f",
+    "java": "NOTE: Picked up JDK_JAVA_OPTIONS: -XX:+IgnoreUnrecognizedVMOptions -XX:+UnlockDiagnosticVMOptions -XX:-UseBASE64Intrinsics\nopenjdk version \"17.0.20.1\" 2026-08-18\nOpenJDK Runtime Environment (build 17.0.20.1+1-1-22.04-Ubuntu)\nOpenJDK 64-Bit Server VM (build 17.0.20.1+1-1-22.04-Ubuntu, mixed mode, sharing)\n",
+    "note": "Existing local image is only an isolated filesystem/runtime; host Java, Python and Spark are read-only bind mounts."
+  },
+  "lakehouse": {
+    "docs_folder_tree_walk": {
+      "job": "docs_folder_tree_walk",
+      "business_date": "20261109",
+      "inputs": {
+        "version": 1,
+        "business_date": "20261109",
+        "generator": "__main__",
+        "generator_hash": "14dde27360f1b299c9bda3c1d758201f8352685ae6153d172282df829a7cf384",
+        "files": {
+          "documents/FOLDER/20261109.psv": "7173a4a4a650111b12deddfa8de8a95165b3605b91633b7423ce3d63de89c857",
+          "documents/DOC_SHARE/20261109.psv": "6d3583c3ec9e041c2b94de209e9c1f6a4ab99d7e0692807b33b58897f266c310",
+          "documents/COLLAB_SESSION/20261109.psv": "319873be82a7eecb3ca9ff2c68ce05d99dac8fa9d7952827b3ddef113966eb6f",
+          "documents/DOC_VERSION/20261109.psv": "f511c4097ff6c3b90e25ea201e280e2d78feb5ea28fa221b3b202fb056b46c98",
+          "documents/FILE_OBJECT/20261109.psv": "46e24902cd893738576d45980059062fe13d74fb0f55dcf35065fd10a124caf2",
+          "documents/FILE_OBJECT_BLOBS/valid.pdf": "213ab87599596a82746468e34f6ab77f17b53cd20876898d9cc4b15d5f96f36a",
+          "documents/FILE_OBJECT_BLOBS/corrupt.pdf": "d6c7c62713a564cd29a1461dccaf531c0f78dfaebb3f4bef8c8e7519bf97a8df",
+          "documents/FILE_OBJECT_BLOBS/empty.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "documents/FILE_OBJECT_BLOBS/corrupt.zip": "f0238e127c2a959023ee9d9e6bf3c1c7b32e38ca6a1a5b2b6ea32f360eee9bf0",
+          "documents/FILE_OBJECT_BLOBS/text.zip": "7bc0b7f7ae35d4a25510a8d3efa2a071f171e3e3b62330e8aaf989944a4f183e",
+          "documents/FILE_OBJECT_BLOBS/empty.zip": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+          "documents/FILE_OBJECT_BLOBS/valid.docx": "2f04e17c9147e5e2a96362d0428869a4080a7fe71e63ef4ab20eedb454feab9e",
+          "documents/FILE_OBJECT_BLOBS/long.docx": "efe9595e32e5ca84174912dfdf30a665b11bbc07e9cfaec2707bca8eee5d4661",
+          "documents/FILE_OBJECT_BLOBS/corrupt.docx": "930fb69a2f17f7d05e621557417ac5508e0f83621b75040f877fb0e6ede5edff",
+          "documents/FILE_OBJECT_BLOBS/doctype.docx": "c94060a324e403fe5c042dad874e9f53972f85bbe787c346e3a1c47036607be3",
+          "documents/FILE_OBJECT_BLOBS/unsupported.bin": "7841109d5731e9c6fefcb45a1a65248ce6b0d512194be70e6aee88d768928bdd",
+          "documents/FILE_OBJECT_BLOBS/unmatched.pdf": "a6f1229b3915355e321341a7d938c98b4b987f885f334b44ed29bd4f3d710b99"
+        },
+        "rows": {
+          "FOLDER": 32,
+          "DOC_SHARE": 11,
+          "COLLAB_SESSION": 8,
+          "DOC_VERSION": 11,
+          "FILE_OBJECT": 13
+        },
+        "blobs": 12,
+        "bytes": 7298
+      },
+      "output_version": "/home/ubuntu/repos/otterworks/lakehouse/.data/sfx-d1110-after/exports/documents/spark/20261109/.versions/docs_folder_tree_walk/c3eab95f9f60436a9a5bbb4daed01dcd",
+      "export_input_version": null,
+      "runtime_hash": "f9f27247eb5f7aaff6c042479e48bff5dbd021561332161bdf3b46a130c77f51"
+    },
+    "doc_share_graph_reach": {
+      "job": "doc_share_graph_reach",
+      "business_date": "20261109",
+      "inputs": {
+        "version": 1,
+        "business_date": "20261109",
+        "generator": "__main__",
+        "generator_hash": "14dde27360f1b299c9bda3c1d758201f8352685ae6153d172282df829a7cf384",
+        "files": {
+          "documents/FOLDER/20261109.psv": "7173a4a4a650111b12deddfa8de8a95165b3605b91633b7423ce3d63de89c857",
+          "documents/DOC_SHARE/20261109.psv": "6d3583c3ec9e041c2b94de209e9c1f6a4ab99d7e0692807b33b58897f266c310",
+          "documents/COLLAB_SESSION/20261109.psv": "319873be82a7eecb3ca9ff2c68ce05d99dac8fa9d7952827b3ddef113966eb6f",
+          "documents/DOC_VERSION/20261109.psv": "f511c4097ff6c3b90e25ea201e280e2d78feb5ea28fa221b3b202fb056b46c98",
+          "documents/FILE_OBJECT/20261109.psv": "46e24902cd893738576d45980059062fe13d74fb0f55dcf35065fd10a124caf2",
+          "documents/FILE_OBJECT_BLOBS/valid.pdf": "213ab87599596a82746468e34f6ab77f17b53cd20876898d9cc4b15d5f96f36a",
+          "documents/FILE_OBJECT_BLOBS/corrupt.pdf": "d6c7c62713a564cd29a1461dccaf531c0f78dfaebb3f4bef8c8e7519bf97a8df",
+          "documents/FILE_OBJECT_BLOBS/empty.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "documents/FILE_OBJECT_BLOBS/corrupt.zip": "f0238e127c2a959023ee9d9e6bf3c1c7b32e38ca6a1a5b2b6ea32f360eee9bf0",
+          "documents/FILE_OBJECT_BLOBS/text.zip": "7bc0b7f7ae35d4a25510a8d3efa2a071f171e3e3b62330e8aaf989944a4f183e",
+          "documents/FILE_OBJECT_BLOBS/empty.zip": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+          "documents/FILE_OBJECT_BLOBS/valid.docx": "2f04e17c9147e5e2a96362d0428869a4080a7fe71e63ef4ab20eedb454feab9e",
+          "documents/FILE_OBJECT_BLOBS/long.docx": "efe9595e32e5ca84174912dfdf30a665b11bbc07e9cfaec2707bca8eee5d4661",
+          "documents/FILE_OBJECT_BLOBS/corrupt.docx": "930fb69a2f17f7d05e621557417ac5508e0f83621b75040f877fb0e6ede5edff",
+          "documents/FILE_OBJECT_BLOBS/doctype.docx": "c94060a324e403fe5c042dad874e9f53972f85bbe787c346e3a1c47036607be3",
+          "documents/FILE_OBJECT_BLOBS/unsupported.bin": "7841109d5731e9c6fefcb45a1a65248ce6b0d512194be70e6aee88d768928bdd",
+          "documents/FILE_OBJECT_BLOBS/unmatched.pdf": "a6f1229b3915355e321341a7d938c98b4b987f885f334b44ed29bd4f3d710b99"
+        },
+        "rows": {
+          "FOLDER": 32,
+          "DOC_SHARE": 11,
+          "COLLAB_SESSION": 8,
+          "DOC_VERSION": 11,
+          "FILE_OBJECT": 13
+        },
+        "blobs": 12,
+        "bytes": 7298
+      },
+      "output_version": "/home/ubuntu/repos/otterworks/lakehouse/.data/sfx-d1110-after/exports/documents/spark/20261109/.versions/doc_share_graph_reach/d388ba2075284414a0f319d181ac61f1",
+      "export_input_version": null,
+      "runtime_hash": "f9f27247eb5f7aaff6c042479e48bff5dbd021561332161bdf3b46a130c77f51"
+    },
+    "collab_session_sessionize": {
+      "job": "collab_session_sessionize",
+      "business_date": "20261109",
+      "inputs": {
+        "version": 1,
+        "business_date": "20261109",
+        "generator": "__main__",
+        "generator_hash": "14dde27360f1b299c9bda3c1d758201f8352685ae6153d172282df829a7cf384",
+        "files": {
+          "documents/FOLDER/20261109.psv": "7173a4a4a650111b12deddfa8de8a95165b3605b91633b7423ce3d63de89c857",
+          "documents/DOC_SHARE/20261109.psv": "6d3583c3ec9e041c2b94de209e9c1f6a4ab99d7e0692807b33b58897f266c310",
+          "documents/COLLAB_SESSION/20261109.psv": "319873be82a7eecb3ca9ff2c68ce05d99dac8fa9d7952827b3ddef113966eb6f",
+          "documents/DOC_VERSION/20261109.psv": "f511c4097ff6c3b90e25ea201e280e2d78feb5ea28fa221b3b202fb056b46c98",
+          "documents/FILE_OBJECT/20261109.psv": "46e24902cd893738576d45980059062fe13d74fb0f55dcf35065fd10a124caf2",
+          "documents/FILE_OBJECT_BLOBS/valid.pdf": "213ab87599596a82746468e34f6ab77f17b53cd20876898d9cc4b15d5f96f36a",
+          "documents/FILE_OBJECT_BLOBS/corrupt.pdf": "d6c7c62713a564cd29a1461dccaf531c0f78dfaebb3f4bef8c8e7519bf97a8df",
+          "documents/FILE_OBJECT_BLOBS/empty.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "documents/FILE_OBJECT_BLOBS/corrupt.zip": "f0238e127c2a959023ee9d9e6bf3c1c7b32e38ca6a1a5b2b6ea32f360eee9bf0",
+          "documents/FILE_OBJECT_BLOBS/text.zip": "7bc0b7f7ae35d4a25510a8d3efa2a071f171e3e3b62330e8aaf989944a4f183e",
+          "documents/FILE_OBJECT_BLOBS/empty.zip": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+          "documents/FILE_OBJECT_BLOBS/valid.docx": "2f04e17c9147e5e2a96362d0428869a4080a7fe71e63ef4ab20eedb454feab9e",
+          "documents/FILE_OBJECT_BLOBS/long.docx": "efe9595e32e5ca84174912dfdf30a665b11bbc07e9cfaec2707bca8eee5d4661",
+          "documents/FILE_OBJECT_BLOBS/corrupt.docx": "930fb69a2f17f7d05e621557417ac5508e0f83621b75040f877fb0e6ede5edff",
+          "documents/FILE_OBJECT_BLOBS/doctype.docx": "c94060a324e403fe5c042dad874e9f53972f85bbe787c346e3a1c47036607be3",
+          "documents/FILE_OBJECT_BLOBS/unsupported.bin": "7841109d5731e9c6fefcb45a1a65248ce6b0d512194be70e6aee88d768928bdd",
+          "documents/FILE_OBJECT_BLOBS/unmatched.pdf": "a6f1229b3915355e321341a7d938c98b4b987f885f334b44ed29bd4f3d710b99"
+        },
+        "rows": {
+          "FOLDER": 32,
+          "DOC_SHARE": 11,
+          "COLLAB_SESSION": 8,
+          "DOC_VERSION": 11,
+          "FILE_OBJECT": 13
+        },
+        "blobs": 12,
+        "bytes": 7298
+      },
+      "output_version": "/home/ubuntu/repos/otterworks/lakehouse/.data/sfx-d1110-after/exports/documents/spark/20261109/.versions/collab_session_sessionize/69871f8405ce4ef7aa54732dc161f8e3",
+      "export_input_version": null,
+      "runtime_hash": "f9f27247eb5f7aaff6c042479e48bff5dbd021561332161bdf3b46a130c77f51"
+    },
+    "doc_version_diff_stats": {
+      "job": "doc_version_diff_stats",
+      "business_date": "20261109",
+      "inputs": {
+        "version": 1,
+        "business_date": "20261109",
+        "generator": "__main__",
+        "generator_hash": "14dde27360f1b299c9bda3c1d758201f8352685ae6153d172282df829a7cf384",
+        "files": {
+          "documents/FOLDER/20261109.psv": "7173a4a4a650111b12deddfa8de8a95165b3605b91633b7423ce3d63de89c857",
+          "documents/DOC_SHARE/20261109.psv": "6d3583c3ec9e041c2b94de209e9c1f6a4ab99d7e0692807b33b58897f266c310",
+          "documents/COLLAB_SESSION/20261109.psv": "319873be82a7eecb3ca9ff2c68ce05d99dac8fa9d7952827b3ddef113966eb6f",
+          "documents/DOC_VERSION/20261109.psv": "f511c4097ff6c3b90e25ea201e280e2d78feb5ea28fa221b3b202fb056b46c98",
+          "documents/FILE_OBJECT/20261109.psv": "46e24902cd893738576d45980059062fe13d74fb0f55dcf35065fd10a124caf2",
+          "documents/FILE_OBJECT_BLOBS/valid.pdf": "213ab87599596a82746468e34f6ab77f17b53cd20876898d9cc4b15d5f96f36a",
+          "documents/FILE_OBJECT_BLOBS/corrupt.pdf": "d6c7c62713a564cd29a1461dccaf531c0f78dfaebb3f4bef8c8e7519bf97a8df",
+          "documents/FILE_OBJECT_BLOBS/empty.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "documents/FILE_OBJECT_BLOBS/corrupt.zip": "f0238e127c2a959023ee9d9e6bf3c1c7b32e38ca6a1a5b2b6ea32f360eee9bf0",
+          "documents/FILE_OBJECT_BLOBS/text.zip": "7bc0b7f7ae35d4a25510a8d3efa2a071f171e3e3b62330e8aaf989944a4f183e",
+          "documents/FILE_OBJECT_BLOBS/empty.zip": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+          "documents/FILE_OBJECT_BLOBS/valid.docx": "2f04e17c9147e5e2a96362d0428869a4080a7fe71e63ef4ab20eedb454feab9e",
+          "documents/FILE_OBJECT_BLOBS/long.docx": "efe9595e32e5ca84174912dfdf30a665b11bbc07e9cfaec2707bca8eee5d4661",
+          "documents/FILE_OBJECT_BLOBS/corrupt.docx": "930fb69a2f17f7d05e621557417ac5508e0f83621b75040f877fb0e6ede5edff",
+          "documents/FILE_OBJECT_BLOBS/doctype.docx": "c94060a324e403fe5c042dad874e9f53972f85bbe787c346e3a1c47036607be3",
+          "documents/FILE_OBJECT_BLOBS/unsupported.bin": "7841109d5731e9c6fefcb45a1a65248ce6b0d512194be70e6aee88d768928bdd",
+          "documents/FILE_OBJECT_BLOBS/unmatched.pdf": "a6f1229b3915355e321341a7d938c98b4b987f885f334b44ed29bd4f3d710b99"
+        },
+        "rows": {
+          "FOLDER": 32,
+          "DOC_SHARE": 11,
+          "COLLAB_SESSION": 8,
+          "DOC_VERSION": 11,
+          "FILE_OBJECT": 13
+        },
+        "blobs": 12,
+        "bytes": 7298
+      },
+      "output_version": "/home/ubuntu/repos/otterworks/lakehouse/.data/sfx-d1110-after/exports/documents/spark/20261109/.versions/doc_version_diff_stats/d4b4c4b6c83d429fbc9bd75044d4edfe",
+      "export_input_version": null,
+      "runtime_hash": "f9f27247eb5f7aaff6c042479e48bff5dbd021561332161bdf3b46a130c77f51"
+    },
+    "file_object_binary_extract": {
+      "job": "file_object_binary_extract",
+      "business_date": "20261109",
+      "inputs": {
+        "version": 1,
+        "business_date": "20261109",
+        "generator": "__main__",
+        "generator_hash": "14dde27360f1b299c9bda3c1d758201f8352685ae6153d172282df829a7cf384",
+        "files": {
+          "documents/FOLDER/20261109.psv": "7173a4a4a650111b12deddfa8de8a95165b3605b91633b7423ce3d63de89c857",
+          "documents/DOC_SHARE/20261109.psv": "6d3583c3ec9e041c2b94de209e9c1f6a4ab99d7e0692807b33b58897f266c310",
+          "documents/COLLAB_SESSION/20261109.psv": "319873be82a7eecb3ca9ff2c68ce05d99dac8fa9d7952827b3ddef113966eb6f",
+          "documents/DOC_VERSION/20261109.psv": "f511c4097ff6c3b90e25ea201e280e2d78feb5ea28fa221b3b202fb056b46c98",
+          "documents/FILE_OBJECT/20261109.psv": "46e24902cd893738576d45980059062fe13d74fb0f55dcf35065fd10a124caf2",
+          "documents/FILE_OBJECT_BLOBS/valid.pdf": "213ab87599596a82746468e34f6ab77f17b53cd20876898d9cc4b15d5f96f36a",
+          "documents/FILE_OBJECT_BLOBS/corrupt.pdf": "d6c7c62713a564cd29a1461dccaf531c0f78dfaebb3f4bef8c8e7519bf97a8df",
+          "documents/FILE_OBJECT_BLOBS/empty.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "documents/FILE_OBJECT_BLOBS/corrupt.zip": "f0238e127c2a959023ee9d9e6bf3c1c7b32e38ca6a1a5b2b6ea32f360eee9bf0",
+          "documents/FILE_OBJECT_BLOBS/text.zip": "7bc0b7f7ae35d4a25510a8d3efa2a071f171e3e3b62330e8aaf989944a4f183e",
+          "documents/FILE_OBJECT_BLOBS/empty.zip": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+          "documents/FILE_OBJECT_BLOBS/valid.docx": "2f04e17c9147e5e2a96362d0428869a4080a7fe71e63ef4ab20eedb454feab9e",
+          "documents/FILE_OBJECT_BLOBS/long.docx": "efe9595e32e5ca84174912dfdf30a665b11bbc07e9cfaec2707bca8eee5d4661",
+          "documents/FILE_OBJECT_BLOBS/corrupt.docx": "930fb69a2f17f7d05e621557417ac5508e0f83621b75040f877fb0e6ede5edff",
+          "documents/FILE_OBJECT_BLOBS/doctype.docx": "c94060a324e403fe5c042dad874e9f53972f85bbe787c346e3a1c47036607be3",
+          "documents/FILE_OBJECT_BLOBS/unsupported.bin": "7841109d5731e9c6fefcb45a1a65248ce6b0d512194be70e6aee88d768928bdd",
+          "documents/FILE_OBJECT_BLOBS/unmatched.pdf": "a6f1229b3915355e321341a7d938c98b4b987f885f334b44ed29bd4f3d710b99"
+        },
+        "rows": {
+          "FOLDER": 32,
+          "DOC_SHARE": 11,
+          "COLLAB_SESSION": 8,
+          "DOC_VERSION": 11,
+          "FILE_OBJECT": 13
+        },
+        "blobs": 12,
+        "bytes": 7298
+      },
+      "output_version": "/home/ubuntu/repos/otterworks/lakehouse/.data/sfx-d1110-after/exports/documents/spark/20261109/.versions/file_object_binary_extract/e42eb5884ad248d59bb45fb402144230",
+      "export_input_version": null,
+      "runtime_hash": "f9f27247eb5f7aaff6c042479e48bff5dbd021561332161bdf3b46a130c77f51"
+    }
+  },
+  "note": "Five unchanged Python jobs. Existing Scala jar is recorded by the common launcher but no Scala class is invoked in this batch. First-batch fixture and oracle provenance are retained separately.",
+  "manifest_sha256": "5ebf61ddc58f424f948a4a5fb98606f5a87cd39d66ac223e5c60858593dd0da5",
+  "lakehouse_sources": {
+    "lakehouse/runtime/documents_spark.py": "f9f27247eb5f7aaff6c042479e48bff5dbd021561332161bdf3b46a130c77f51",
+    "lakehouse/runtime/documents_binary.py": "ecace9cb300356d2998c76a8213f449ce222daf4317be8d155ff67a792730058",
+    "lakehouse/parity/documents_spark_second_fixture.py": "14dde27360f1b299c9bda3c1d758201f8352685ae6153d172282df829a7cf384",
+    "lakehouse/parity/documents_spark_legacy.py": "ae4acaea02a8628ceec1c29cee1aef0338cd56fc97de9d93fe2d532682c701b6"
+  }
+}

@@ -1,0 +1,104 @@
+version: 2
+sources:
+  - name: bronze_platform
+    schema: bronze_platform
+    tables:
+      - name: dbc_qrylog
+      - name: dbc_qrylogobjects
+      - name: dbc_tablesv
+  - name: documents_spark_runtime
+    schema: silver_documents
+    tables:
+      - name: spark_runtime_docs_storage_by_owner
+        identifier: "spark_runtime_docs_storage_by_owner_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_docs_share_activity
+        identifier: "spark_runtime_docs_share_activity_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_docs_folder_legacy_report
+        identifier: "spark_runtime_docs_folder_legacy_report_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_docs_search_log_parse
+        identifier: "spark_runtime_docs_search_log_parse_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_docs_tag_normalize
+        identifier: "spark_runtime_docs_tag_normalize_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_docs_event_export_hourly
+        identifier: "spark_runtime_docs_event_export_hourly_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_lake_compaction_documents
+        identifier: "spark_runtime_lake_compaction_documents_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_docs_folder_tree_walk
+        identifier: "spark_runtime_docs_folder_tree_walk_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_doc_share_graph_reach
+        identifier: "spark_runtime_doc_share_graph_reach_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_collab_session_sessionize
+        identifier: "spark_runtime_collab_session_sessionize_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_doc_version_diff_stats
+        identifier: "spark_runtime_doc_version_diff_stats_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_file_object_binary_extract
+        identifier: "spark_runtime_file_object_binary_extract_{{ env_var('BUSINESS_DATE') }}"
+  - name: documents_informatica_runtime
+    schema: silver_documents
+    tables:
+      - name: infa_runtime_stg_document
+      - name: infa_runtime_document
+      - name: infa_runtime_doc_share
+      - name: infa_runtime_metrics
+      - name: infa_runtime_rejects
+      - name: infa_runtime_filtered
+  - name: bronze_billing
+    schema: bronze_billing
+    tables:
+      - name: customer_account
+      - name: plan_catalog
+      - name: subscription
+      - name: invoice_hdr
+      - name: invoice_line
+      - name: payment
+      - name: credit_note
+      - name: tax_rate
+      - name: usage_daily
+      - name: billing_adj
+      - name: gl_account
+      - name: gl_journal_line
+  - name: bronze_documents
+    schema: bronze_documents
+    tables:
+      - name: folder
+      - name: document
+      - name: doc_version
+      - name: doc_share
+      - name: doc_tag
+      - name: file_object
+      - name: doc_comment
+      - name: collab_session
+      - name: storage_usage_daily
+      - name: search_index_log
+  - name: bronze_users
+    schema: bronze_users
+    tables:
+      - name: app_user
+      - name: user_profile
+      - name: team
+      - name: team_member
+      - name: role_grant
+      - name: sso_identity
+      - name: login_event
+      - name: user_activity_daily
+      - name: user_pref
+      - name: user_status_hist
+  - name: bronze_audit
+    schema: bronze_audit
+    tables:
+      - name: audit_event
+      - name: audit_event_archive
+      - name: access_review
+      - name: retention_policy
+      - name: data_export_req
+      - name: compliance_flag
+      - name: security_alert
+      - name: legal_hold
+      - name: audit_daily_summary
+      - name: audit_recon
+      - name: spark_audit_event
+      - name: spark_audit_event_archive
+      - name: spark_compliance_flag
+      - name: spark_security_alert
+      - name: spark_user_activity_daily
+      - name: spark_login_event

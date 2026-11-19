@@ -1,0 +1,78 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "billing.infa_gl_journal_line_errors",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE",
+    "informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE",
+    "informatica_target:SFX_BILLING.GL_JOURNAL_LINE",
+    "informatica_source:SFX_BILLING.STG_INVOICE_HDR"
+  ],
+  "results": {
+    "columns": [
+      "transformation_errors"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "transformation_errors": {
+          "count": 1,
+          "hash": "42058be36c56bb702770d37fd27d81f086e1de95bbd80c126a32eb1dba7243ce",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "transformation_errors": {
+          "count": 1,
+          "hash": "42058be36c56bb702770d37fd27d81f086e1de95bbd80c126a32eb1dba7243ce",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "transformation_errors": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 1,
+      "legacy": 1
+    }
+  },
+  "row_counts": {
+    "lakehouse": 1,
+    "legacy": 1
+  },
+  "spec_hash": "db4710a8ad19dd7d7a09d08773ab1622b86aac36216822b65fd32e056aa851f0",
+  "timestamp": "2026-11-19T18:02:35.550701+00:00"
+}

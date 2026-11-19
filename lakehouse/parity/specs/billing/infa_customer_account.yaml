@@ -1,0 +1,34 @@
+{
+  "id": "billing.infa_customer_account",
+  "description": "A-116..A-124: actual XML emulator in isolated PostgreSQL on identical landing/prior inputs; typed targets preserve NULL versus empty. Canonical ordinal retains duplicate multiplicity; writer and instrumented transformation rejects are independent surfaces.",
+  "legacy_objects": [
+    "informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT",
+    "informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT",
+    "informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT",
+    "informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT"
+  ],
+  "legacy": {
+    "kind": "delta_table",
+    "path": "lakehouse/.data/{NS}/informatica/{business_date}/reference/delta/customer_account"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "path": "lakehouse/.data/{NS}/informatica/{business_date}/delta/customer_account"
+  },
+  "keys": [
+    "ordinal"
+  ],
+  "columns": [
+    "ordinal",
+    "customer_id",
+    "owner_user_id",
+    "account_name",
+    "status_cd",
+    "currency_cd",
+    "created_dt",
+    "account_number",
+    "country_cd",
+    "region_cd"
+  ],
+  "normalize": {}
+}

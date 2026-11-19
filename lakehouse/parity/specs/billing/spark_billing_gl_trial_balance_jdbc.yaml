@@ -1,0 +1,38 @@
+{
+  "id": "billing.spark_billing_gl_trial_balance_jdbc",
+  "legacy_objects": [
+    "spark_job:billing_gl_trial_balance",
+    "spark_submit:etl/spark/submit/billing_gl_trial_balance.sh",
+    "cron_entry:etl/crontab#146d93841612"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "database": "billing_spark_{NS}",
+    "sql": "SELECT \"GL_ACCOUNT_ID\" AS gl_account_id, \"ACCOUNT_CODE\" AS account_code, \"ACCOUNT_NAME\" AS account_name, \"ACCOUNT_TYPE\" AS account_type, \"PERIOD\" AS period, \"CURRENCY_CODE\" AS currency_code, \"DEBITS\" AS debits, \"CREDITS\" AS credits, \"NET\" AS net, \"CREDIT_NOTE_ADJUSTMENTS\" AS credit_note_adjustments, row_number() OVER (ORDER BY \"GL_ACCOUNT_ID\" ASC NULLS FIRST, \"ACCOUNT_CODE\" COLLATE \"C\" ASC NULLS FIRST, \"ACCOUNT_NAME\" COLLATE \"C\" ASC NULLS FIRST, \"ACCOUNT_TYPE\" COLLATE \"C\" ASC NULLS FIRST, \"PERIOD\" COLLATE \"C\" ASC NULLS FIRST, \"CURRENCY_CODE\" COLLATE \"C\" ASC NULLS FIRST, \"DEBITS\" ASC NULLS FIRST, \"CREDITS\" ASC NULLS FIRST, \"NET\" ASC NULLS FIRST, \"CREDIT_NOTE_ADJUSTMENTS\" ASC NULLS FIRST) AS parity_row FROM sfx_billing.spark_gl_trial_balance"
+  },
+  "lakehouse": {
+    "kind": "spark_sql",
+    "sql": "SELECT * FROM gold_billing.billing_gl_trial_balance_jdbc"
+  },
+  "keys": [
+    "parity_row"
+  ],
+  "columns": [
+    "gl_account_id",
+    "account_code",
+    "account_name",
+    "account_type",
+    "period",
+    "currency_code",
+    "debits",
+    "credits",
+    "net",
+    "credit_note_adjustments",
+    "parity_row"
+  ],
+  "normalize": {
+    "parity_row": {
+      "numeric_scale": 0
+    }
+  }
+}

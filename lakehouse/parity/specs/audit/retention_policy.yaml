@@ -1,0 +1,22 @@
+id: audit.retention_policy
+legacy_objects:
+- teradata_table:SFX_AUDIT.RETENTION_POLICY
+- bteq_script:warehouse/teradata/scripts/audit/02_load_controls.bteq
+- cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/02_load_controls
+legacy:
+  kind: postgres_sql
+  sql: select * from sfx_audit.retention_policy
+lakehouse:
+  kind: spark_sql
+  sql: select * from silver_audit.retention_policy
+keys:
+- policy_id
+columns:
+- policy_id
+- policy_name
+- retention_days
+- effective_dt
+- status_cd
+normalize:
+  status_cd:
+    rstrip: true

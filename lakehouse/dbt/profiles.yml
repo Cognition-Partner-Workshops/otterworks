@@ -1,0 +1,9 @@
+otterworks_lakehouse:
+  target: local
+  outputs:
+    local:
+      type: spark
+      method: session
+      host: local
+      schema: "{{ env_var('LAKEHOUSE_DBT_SCHEMA', 'silver_billing') }}"
+      threads: 1

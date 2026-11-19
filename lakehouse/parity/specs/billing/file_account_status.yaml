@@ -1,0 +1,50 @@
+{
+  "id": "billing.file_account_status",
+  "legacy_objects": [
+    "bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq"
+  ],
+  "legacy": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing/{business_date}/account_status_{business_date}.psv",
+    "columns": [
+      "business_dt",
+      "status_cd",
+      "currency_cd",
+      "account_count"
+    ],
+    "header": false
+  },
+  "lakehouse": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/exports/billing/{business_date}/account_status_{business_date}.psv",
+    "columns": [
+      "business_dt",
+      "status_cd",
+      "currency_cd",
+      "account_count"
+    ],
+    "header": false
+  },
+  "keys": [
+    "business_dt",
+    "status_cd",
+    "currency_cd"
+  ],
+  "columns": [
+    "business_dt",
+    "status_cd",
+    "currency_cd",
+    "account_count"
+  ],
+  "normalize": {
+    "status_cd": {
+      "rstrip": true,
+      "case_fold": true
+    },
+    "currency_cd": {
+      "rstrip": true,
+      "case_fold": true
+    }
+  },
+  "description": "A-112: compare actual headerless emulator DATA/REPORT files as rows; ignore unspecified row order, declared CHAR padding and decimal display scale only. Native REPORT layout is not certified."
+}

@@ -1,0 +1,143 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "audit.stg_retention_policy",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_AUDIT.STG_RETENTION_POLICY"
+  ],
+  "results": {
+    "columns": [
+      "policy_id",
+      "policy_name",
+      "retention_days",
+      "effective_dt",
+      "status_cd"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "effective_dt": {
+          "count": 20,
+          "hash": "7144121fba079c7a5ac5ac36cd9affad636642bee420449c72d3cb8e74dfc1f6",
+          "null_count": 0,
+          "sum": null
+        },
+        "policy_id": {
+          "count": 20,
+          "hash": "9d813c070674ec79dd621d250056b9af91389e01c68c446c1e569282938ffc9c",
+          "null_count": 0,
+          "sum": "210"
+        },
+        "policy_name": {
+          "count": 20,
+          "hash": "ac059129a7e0eda613cf9fde5a4b49a58ca17def97227799b09a3e9dc43e96d8",
+          "null_count": 0,
+          "sum": null
+        },
+        "retention_days": {
+          "count": 20,
+          "hash": "c84e1f94fba0a71b82060e67478830273d70129706ffd36f6151b21b4ce3a497",
+          "null_count": 0,
+          "sum": "33580"
+        },
+        "status_cd": {
+          "count": 20,
+          "hash": "5fdf62e0873b95be93fe4a6208d51faa01a03158a903a722102ba3a080cddf12",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "effective_dt": {
+          "count": 20,
+          "hash": "7144121fba079c7a5ac5ac36cd9affad636642bee420449c72d3cb8e74dfc1f6",
+          "null_count": 0,
+          "sum": null
+        },
+        "policy_id": {
+          "count": 20,
+          "hash": "9d813c070674ec79dd621d250056b9af91389e01c68c446c1e569282938ffc9c",
+          "null_count": 0,
+          "sum": "210"
+        },
+        "policy_name": {
+          "count": 20,
+          "hash": "ac059129a7e0eda613cf9fde5a4b49a58ca17def97227799b09a3e9dc43e96d8",
+          "null_count": 0,
+          "sum": null
+        },
+        "retention_days": {
+          "count": 20,
+          "hash": "c84e1f94fba0a71b82060e67478830273d70129706ffd36f6151b21b4ce3a497",
+          "null_count": 0,
+          "sum": "33580"
+        },
+        "status_cd": {
+          "count": 20,
+          "hash": "5fdf62e0873b95be93fe4a6208d51faa01a03158a903a722102ba3a080cddf12",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "effective_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "policy_id": {
+        "count": 0,
+        "samples": []
+      },
+      "policy_name": {
+        "count": 0,
+        "samples": []
+      },
+      "retention_days": {
+        "count": 0,
+        "samples": []
+      },
+      "status_cd": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 20,
+      "legacy": 20
+    }
+  },
+  "row_counts": {
+    "lakehouse": 20,
+    "legacy": 20
+  },
+  "spec_hash": "45fed810eb2bf539ca2fc92018598eee765e1afe1ef4d7010d28eca822c5acbe",
+  "timestamp": "2026-11-19T17:30:54.373064+00:00"
+}

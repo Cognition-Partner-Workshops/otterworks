@@ -1,0 +1,41 @@
+{
+  "id": "billing.infa_invoice_line_rejects",
+  "description": "A-116..A-124: actual XML emulator in isolated PostgreSQL on identical landing/prior inputs; typed targets preserve NULL versus empty. Canonical ordinal retains duplicate multiplicity; writer and instrumented transformation rejects are independent surfaces.",
+  "legacy_objects": [
+    "informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE",
+    "informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE",
+    "informatica_target:SFX_BILLING.INVOICE_LINE",
+    "informatica_source:SFX_BILLING.FF_INVOICE_LINE"
+  ],
+  "legacy": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/informatica/{business_date}/reference/invoice_line_rejects.psv",
+    "columns": [
+      "ordinal",
+      "target",
+      "record"
+    ],
+    "header": false,
+    "delimiter": "|"
+  },
+  "lakehouse": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/informatica/{business_date}/invoice_line_rejects.psv",
+    "columns": [
+      "ordinal",
+      "target",
+      "record"
+    ],
+    "header": false,
+    "delimiter": "|"
+  },
+  "keys": [
+    "ordinal"
+  ],
+  "columns": [
+    "ordinal",
+    "target",
+    "record"
+  ],
+  "normalize": {}
+}

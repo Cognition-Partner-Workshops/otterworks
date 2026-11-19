@@ -1,0 +1,143 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "billing.consumer_admin_overdue",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "consumer:admin-service"
+  ],
+  "results": {
+    "columns": [
+      "account_no",
+      "customer_name",
+      "oldest_due_date",
+      "overdue_balance",
+      "parity_row"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "account_no": {
+          "count": 10,
+          "hash": "56bc0f43218492b3741cff6d0f8cb6939ef3b2056c34de891486b8a9e23d9ed5",
+          "null_count": 0,
+          "sum": null
+        },
+        "customer_name": {
+          "count": 10,
+          "hash": "f6bafce6fdec2da4205b511edfdf022bac29f7a83cab84faeeb326d63f0db64f",
+          "null_count": 0,
+          "sum": null
+        },
+        "oldest_due_date": {
+          "count": 10,
+          "hash": "67a940fe1aa13d2fe3219f0b63c306999bf18fcf92e1db79321e0c509158555e",
+          "null_count": 0,
+          "sum": null
+        },
+        "overdue_balance": {
+          "count": 10,
+          "hash": "f2a836ddd69ab9be00e7b43c7a8eeb1d35758e360d5ee16d2b65cc996d997428",
+          "null_count": 0,
+          "sum": "983.58"
+        },
+        "parity_row": {
+          "count": 10,
+          "hash": "e33cefd9c03d28d2966c8965bbd35453c33673e5720a77dafca41e7fa40b7ee3",
+          "null_count": 0,
+          "sum": "55"
+        }
+      },
+      "legacy": {
+        "account_no": {
+          "count": 10,
+          "hash": "56bc0f43218492b3741cff6d0f8cb6939ef3b2056c34de891486b8a9e23d9ed5",
+          "null_count": 0,
+          "sum": null
+        },
+        "customer_name": {
+          "count": 10,
+          "hash": "f6bafce6fdec2da4205b511edfdf022bac29f7a83cab84faeeb326d63f0db64f",
+          "null_count": 0,
+          "sum": null
+        },
+        "oldest_due_date": {
+          "count": 10,
+          "hash": "67a940fe1aa13d2fe3219f0b63c306999bf18fcf92e1db79321e0c509158555e",
+          "null_count": 0,
+          "sum": null
+        },
+        "overdue_balance": {
+          "count": 10,
+          "hash": "f2a836ddd69ab9be00e7b43c7a8eeb1d35758e360d5ee16d2b65cc996d997428",
+          "null_count": 0,
+          "sum": "983.58"
+        },
+        "parity_row": {
+          "count": 10,
+          "hash": "e33cefd9c03d28d2966c8965bbd35453c33673e5720a77dafca41e7fa40b7ee3",
+          "null_count": 0,
+          "sum": "55"
+        }
+      }
+    },
+    "mismatches": {
+      "account_no": {
+        "count": 0,
+        "samples": []
+      },
+      "customer_name": {
+        "count": 0,
+        "samples": []
+      },
+      "oldest_due_date": {
+        "count": 0,
+        "samples": []
+      },
+      "overdue_balance": {
+        "count": 0,
+        "samples": []
+      },
+      "parity_row": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 10,
+      "legacy": 10
+    }
+  },
+  "row_counts": {
+    "lakehouse": 10,
+    "legacy": 10
+  },
+  "spec_hash": "77211edceb93575cfcb566d8880de38294412a508c64f061bfb0c62dbc8da8d9",
+  "timestamp": "2026-11-19T18:01:55.655693+00:00"
+}

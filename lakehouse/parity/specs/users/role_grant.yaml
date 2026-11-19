@@ -1,0 +1,14 @@
+id: users.role_grant
+legacy_objects:
+  - teradata_table:SFX_USERS.ROLE_GRANT
+  - bteq_script:warehouse/teradata/scripts/users/02_load_teams.bteq
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.role_grant
+lakehouse:
+  kind: delta_table
+  table: silver_users.role_grant
+keys: [grant_id]
+columns: [grant_id, user_id, role_cd, granted_dt]
+normalize:
+  role_cd: {rstrip: true}

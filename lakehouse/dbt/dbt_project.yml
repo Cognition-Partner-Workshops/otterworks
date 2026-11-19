@@ -1,0 +1,52 @@
+name: otterworks_lakehouse
+version: '1.0'
+config-version: 2
+profile: otterworks_lakehouse
+model-paths: [models]
+macro-paths: [macros]
+models:
+  otterworks_lakehouse:
+    +materialized: table
+    +file_format: delta
+    silver:
+      platform:
+        +tags: [platform]
+        +schema: silver_platform
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/silver/platform"
+      billing:
+        +tags: [billing]
+        +schema: silver_billing
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/silver/billing"
+      documents:
+        +tags: [documents]
+        +schema: silver_documents
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/silver/documents"
+      users:
+        +tags: [users]
+        +schema: silver_users
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/silver/users"
+      audit:
+        +tags: [audit]
+        +schema: silver_audit
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/silver/audit"
+    gold:
+      platform:
+        +tags: [platform]
+        +schema: gold_platform
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/gold/platform"
+      billing:
+        +tags: [billing]
+        +schema: gold_billing
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/gold/billing"
+      documents:
+        +tags: [documents]
+        +schema: gold_documents
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/gold/documents"
+      users:
+        +tags: [users]
+        +schema: gold_users
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/gold/users"
+      audit:
+        +tags: [audit]
+        +schema: gold_audit
+        +location_root: "{{ env_var('LAKEHOUSE_DELTA_ROOT') }}/gold/audit"

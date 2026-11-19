@@ -1,0 +1,144 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "billing.gl_account",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.GL_ACCOUNT",
+    "bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq"
+  ],
+  "results": {
+    "columns": [
+      "gl_account_id",
+      "account_number",
+      "account_name",
+      "account_type",
+      "normal_balance"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "account_name": {
+          "count": 10,
+          "hash": "025d6dfc9e0bb99bc796c234c26709fa80976f644ce1bed009281984c9a3f732",
+          "null_count": 0,
+          "sum": null
+        },
+        "account_number": {
+          "count": 10,
+          "hash": "6fc6f8725486c8a47c3a064ffa9f11595d0025f0e13ac4088b6a8e0bead52e31",
+          "null_count": 0,
+          "sum": null
+        },
+        "account_type": {
+          "count": 10,
+          "hash": "08444379131fa8f0420e9d62bab71c46071348555d6485dfce798dc0b6831183",
+          "null_count": 0,
+          "sum": null
+        },
+        "gl_account_id": {
+          "count": 10,
+          "hash": "562249f97d6c6bb80b5968abd29fc4387ca7323816a66cb981300880e4f71c0e",
+          "null_count": 0,
+          "sum": "31000"
+        },
+        "normal_balance": {
+          "count": 10,
+          "hash": "4f6a48f2285c82a2c8fa6900fd93b9e1a27027ce308fc2268511400d997be2c6",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "account_name": {
+          "count": 10,
+          "hash": "025d6dfc9e0bb99bc796c234c26709fa80976f644ce1bed009281984c9a3f732",
+          "null_count": 0,
+          "sum": null
+        },
+        "account_number": {
+          "count": 10,
+          "hash": "6fc6f8725486c8a47c3a064ffa9f11595d0025f0e13ac4088b6a8e0bead52e31",
+          "null_count": 0,
+          "sum": null
+        },
+        "account_type": {
+          "count": 10,
+          "hash": "08444379131fa8f0420e9d62bab71c46071348555d6485dfce798dc0b6831183",
+          "null_count": 0,
+          "sum": null
+        },
+        "gl_account_id": {
+          "count": 10,
+          "hash": "562249f97d6c6bb80b5968abd29fc4387ca7323816a66cb981300880e4f71c0e",
+          "null_count": 0,
+          "sum": "31000"
+        },
+        "normal_balance": {
+          "count": 10,
+          "hash": "4f6a48f2285c82a2c8fa6900fd93b9e1a27027ce308fc2268511400d997be2c6",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "account_name": {
+        "count": 0,
+        "samples": []
+      },
+      "account_number": {
+        "count": 0,
+        "samples": []
+      },
+      "account_type": {
+        "count": 0,
+        "samples": []
+      },
+      "gl_account_id": {
+        "count": 0,
+        "samples": []
+      },
+      "normal_balance": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 10,
+      "legacy": 10
+    }
+  },
+  "row_counts": {
+    "lakehouse": 10,
+    "legacy": 10
+  },
+  "spec_hash": "d1cb18943fbb7f5842ae6386e9c1b9907e8532f0f18a946de1a0e106ab805f69",
+  "timestamp": "2026-11-19T17:35:33.555099+00:00"
+}

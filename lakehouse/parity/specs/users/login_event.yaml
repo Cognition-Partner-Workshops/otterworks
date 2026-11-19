@@ -1,0 +1,15 @@
+id: users.login_event
+legacy_objects:
+  - teradata_table:SFX_USERS.LOGIN_EVENT
+  - bteq_script:warehouse/teradata/scripts/users/04_load_events.bteq
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.login_event
+lakehouse:
+  kind: delta_table
+  table: silver_users.login_event
+keys: [login_id]
+columns: [login_id, user_id, login_ts, result_cd, client_type]
+normalize:
+  result_cd: {rstrip: true}
+  client_type: {rstrip: true}

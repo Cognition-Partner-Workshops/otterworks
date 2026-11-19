@@ -1,0 +1,32 @@
+{
+  "id": "billing.spark_billing_payment_aging_parquet",
+  "legacy_objects": [
+    "spark_job:billing_payment_aging",
+    "spark_submit:etl/spark/submit/billing_payment_aging.sh",
+    "cron_entry:etl/crontab#2ec3f6dad69f"
+  ],
+  "legacy": {
+    "kind": "spark_sql",
+    "sql": "SELECT * FROM gold_billing.legacy_billing_payment_aging_parquet"
+  },
+  "lakehouse": {
+    "kind": "spark_sql",
+    "sql": "SELECT * FROM gold_billing.billing_payment_aging_parquet"
+  },
+  "keys": [
+    "parity_row"
+  ],
+  "columns": [
+    "customer_id",
+    "invoice_id",
+    "days_late",
+    "total_amount",
+    "paid_amount",
+    "parity_row"
+  ],
+  "normalize": {
+    "parity_row": {
+      "numeric_scale": 0
+    }
+  }
+}

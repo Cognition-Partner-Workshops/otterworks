@@ -1,0 +1,94 @@
+{
+  "version": 2,
+  "models": [
+    {
+      "name": "spark_docs_storage_by_owner",
+      "columns": [
+        {
+          "name": "user_id",
+          "tests": [
+            "not_null",
+            "unique"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "spark_docs_share_activity",
+      "columns": [
+        {
+          "name": "owner_user_id",
+          "tests": [
+            "not_null"
+          ]
+        },
+        {
+          "name": "permission",
+          "tests": [
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "spark_docs_folder_legacy_report",
+      "columns": [
+        {
+          "name": "folder_id",
+          "tests": [
+            "not_null",
+            "unique"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "spark_docs_search_log_parse",
+      "columns": [
+        {
+          "name": "search_index_log_id",
+          "tests": [
+            "not_null",
+            "unique"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "spark_docs_tag_normalize",
+      "columns": [
+        {
+          "name": "doc_tag_id",
+          "tests": [
+            "not_null",
+            "unique"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "spark_docs_event_export_hourly",
+      "columns": [
+        {
+          "name": "document_id",
+          "tests": [
+            "not_null",
+            "unique"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "spark_lake_compaction_documents",
+      "columns": [
+        {
+          "name": "document_id",
+          "tests": [
+            "not_null",
+            "unique"
+          ]
+        }
+      ]
+    }
+  ]
+}

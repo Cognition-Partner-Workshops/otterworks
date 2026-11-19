@@ -1,0 +1,127 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "audit.spark_lake_compaction_audit",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "spark_job:lake_compaction_audit",
+    "spark_submit:etl/spark/submit/lake_compaction_audit.sh"
+  ],
+  "results": {
+    "columns": [
+      "event_date",
+      "event_type",
+      "event_count",
+      "actors"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "actors": {
+          "count": 42,
+          "hash": "c5ae2ea146374e5529c8d2a4dbc15c61ab4dc47dcf27200a95a9c1851b8b3bd6",
+          "null_count": 0,
+          "sum": "1406"
+        },
+        "event_count": {
+          "count": 42,
+          "hash": "dae936516d3ceff70c26dc80a8c65924ada43f77da1eb0000b182dc5a285e64b",
+          "null_count": 0,
+          "sum": "2000"
+        },
+        "event_date": {
+          "count": 42,
+          "hash": "c8be72cd9332ed779c22d4d181f9f278fa3bc0af0cc36fdbf04dfc2ca34dbf3c",
+          "null_count": 0,
+          "sum": null
+        },
+        "event_type": {
+          "count": 42,
+          "hash": "28fe31ad81f7b8e598b01d3ed487f0b42113b0c7c1d06ec51a61d0626df405d3",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "actors": {
+          "count": 42,
+          "hash": "c5ae2ea146374e5529c8d2a4dbc15c61ab4dc47dcf27200a95a9c1851b8b3bd6",
+          "null_count": 0,
+          "sum": "1406"
+        },
+        "event_count": {
+          "count": 42,
+          "hash": "dae936516d3ceff70c26dc80a8c65924ada43f77da1eb0000b182dc5a285e64b",
+          "null_count": 0,
+          "sum": "2000"
+        },
+        "event_date": {
+          "count": 42,
+          "hash": "c8be72cd9332ed779c22d4d181f9f278fa3bc0af0cc36fdbf04dfc2ca34dbf3c",
+          "null_count": 0,
+          "sum": null
+        },
+        "event_type": {
+          "count": 42,
+          "hash": "28fe31ad81f7b8e598b01d3ed487f0b42113b0c7c1d06ec51a61d0626df405d3",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "actors": {
+        "count": 0,
+        "samples": []
+      },
+      "event_count": {
+        "count": 0,
+        "samples": []
+      },
+      "event_date": {
+        "count": 0,
+        "samples": []
+      },
+      "event_type": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 42,
+      "legacy": 42
+    }
+  },
+  "row_counts": {
+    "lakehouse": 42,
+    "legacy": 42
+  },
+  "spec_hash": "877e4ea7e1feda844704d6845f7520891f30c8afc8923fe1ac1687a0e21ff20e",
+  "timestamp": "2026-11-19T17:58:39.052274+00:00"
+}

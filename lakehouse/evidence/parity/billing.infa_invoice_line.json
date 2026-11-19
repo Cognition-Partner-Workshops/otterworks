@@ -1,0 +1,197 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "billing.infa_invoice_line",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE",
+    "informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE",
+    "informatica_target:SFX_BILLING.INVOICE_LINE",
+    "informatica_source:SFX_BILLING.FF_INVOICE_LINE"
+  ],
+  "results": {
+    "columns": [
+      "ordinal",
+      "invoice_line_id",
+      "invoice_id",
+      "line_no",
+      "description",
+      "quantity",
+      "unit_price",
+      "line_amount"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "description": {
+          "count": 4434,
+          "hash": "2d40fc5259b5ba63a4cfcee9b5469e04643307838cc615412b846f6c24dca93b",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_id": {
+          "count": 4434,
+          "hash": "a62177595972a3816ba136730d97f974a9234c0dec241a4c182a03e220e7ab54",
+          "null_count": 0,
+          "sum": "1206004111859"
+        },
+        "invoice_line_id": {
+          "count": 4434,
+          "hash": "610e4e9b0625ff2eb60e73281b58a5d6d2aff2cd79946b9020ec6c80eebcc115",
+          "null_count": 0,
+          "sum": "669156004032659"
+        },
+        "line_amount": {
+          "count": 4434,
+          "hash": "a335a36e22a9f7f9436aa63bdd5d06723164a3be07c767382d88101fc4a7f544",
+          "null_count": 0,
+          "sum": "648511.30"
+        },
+        "line_no": {
+          "count": 4434,
+          "hash": "53f98d08c906307be7ad1022f44f07fd8cf1db171945aae0e7ac047d374fe1be",
+          "null_count": 0,
+          "sum": "455400"
+        },
+        "ordinal": {
+          "count": 4434,
+          "hash": "9a03cbca20e1d97d5593d8a6570d902aee72a911f33f4bde8f715b7f1aaccf27",
+          "null_count": 0,
+          "sum": "9832395"
+        },
+        "quantity": {
+          "count": 4434,
+          "hash": "8e83d8f8bf32b0ca4ecb560bcfb73b4b8f39fd68366c25bdc7ccddc99bd61049",
+          "null_count": 0,
+          "sum": "4434"
+        },
+        "unit_price": {
+          "count": 4434,
+          "hash": "a335a36e22a9f7f9436aa63bdd5d06723164a3be07c767382d88101fc4a7f544",
+          "null_count": 0,
+          "sum": "648511.30"
+        }
+      },
+      "legacy": {
+        "description": {
+          "count": 4434,
+          "hash": "2d40fc5259b5ba63a4cfcee9b5469e04643307838cc615412b846f6c24dca93b",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_id": {
+          "count": 4434,
+          "hash": "a62177595972a3816ba136730d97f974a9234c0dec241a4c182a03e220e7ab54",
+          "null_count": 0,
+          "sum": "1206004111859"
+        },
+        "invoice_line_id": {
+          "count": 4434,
+          "hash": "610e4e9b0625ff2eb60e73281b58a5d6d2aff2cd79946b9020ec6c80eebcc115",
+          "null_count": 0,
+          "sum": "669156004032659"
+        },
+        "line_amount": {
+          "count": 4434,
+          "hash": "a335a36e22a9f7f9436aa63bdd5d06723164a3be07c767382d88101fc4a7f544",
+          "null_count": 0,
+          "sum": "648511.30"
+        },
+        "line_no": {
+          "count": 4434,
+          "hash": "53f98d08c906307be7ad1022f44f07fd8cf1db171945aae0e7ac047d374fe1be",
+          "null_count": 0,
+          "sum": "455400"
+        },
+        "ordinal": {
+          "count": 4434,
+          "hash": "9a03cbca20e1d97d5593d8a6570d902aee72a911f33f4bde8f715b7f1aaccf27",
+          "null_count": 0,
+          "sum": "9832395"
+        },
+        "quantity": {
+          "count": 4434,
+          "hash": "8e83d8f8bf32b0ca4ecb560bcfb73b4b8f39fd68366c25bdc7ccddc99bd61049",
+          "null_count": 0,
+          "sum": "4434"
+        },
+        "unit_price": {
+          "count": 4434,
+          "hash": "a335a36e22a9f7f9436aa63bdd5d06723164a3be07c767382d88101fc4a7f544",
+          "null_count": 0,
+          "sum": "648511.30"
+        }
+      }
+    },
+    "mismatches": {
+      "description": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_id": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_line_id": {
+        "count": 0,
+        "samples": []
+      },
+      "line_amount": {
+        "count": 0,
+        "samples": []
+      },
+      "line_no": {
+        "count": 0,
+        "samples": []
+      },
+      "ordinal": {
+        "count": 0,
+        "samples": []
+      },
+      "quantity": {
+        "count": 0,
+        "samples": []
+      },
+      "unit_price": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 4434,
+      "legacy": 4434
+    }
+  },
+  "row_counts": {
+    "lakehouse": 4434,
+    "legacy": 4434
+  },
+  "spec_hash": "de43de362c2d378465d61eeb526e630b9f359753ac2b65083fd8d67c921bbbd6",
+  "timestamp": "2026-11-19T18:01:33.228630+00:00"
+}

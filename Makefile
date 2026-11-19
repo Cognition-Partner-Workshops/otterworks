@@ -4,6 +4,64 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
+.PHONY: sfx-lakehouse-up sfx-lakehouse-run sfx-lakehouse-test sfx-lakehouse-down sfx-lakehouse-validate
+SFX_LH_PY = lakehouse/.venv/bin/python
+SFX_LH_ENV = NS="$(NS)" BUSINESS_DATE="$(BUSINESS_DATE)" PYTHONPATH="$(CURDIR)" SPARK_LOCAL_IP=127.0.0.1
+SFX_LH_LANDING ?= lakehouse/.data/$(NS)/landing
+LEGACY_NS ?= sfx-d1110-before
+SFX_LH_LEGACY_PORT = $(shell NS="$(LEGACY_NS)" python3 -c 'import os,zlib; print(54500+zlib.crc32(os.environ["NS"].encode())%1000)')
+SFX_LH_PG_PORT_ENV = $(if $(filter file undefined default,$(origin TD_PG_PORT)),$(if $(TD_PG_DSN),,TD_PG_PORT="$(SFX_LH_LEGACY_PORT)"),TD_PG_PORT="$(TD_PG_PORT)")
+
+sfx-lakehouse-validate:
+	@test -n "$(NS)" && [[ "$(NS)" =~ ^[a-z0-9][a-z0-9-]*$$ ]] || (echo "NS required: lowercase letters, digits or hyphens (e.g. sfx-d1110-after)" >&2; exit 2)
+
+lakehouse/.venv/.requirements: lakehouse/requirements.txt
+	python3 -m venv lakehouse/.venv
+	$(SFX_LH_PY) -m pip install -r lakehouse/requirements.txt
+	@touch $@
+
+sfx-lakehouse-up: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Bootstrap local lakehouse and deterministic landing files
+	$(SFX_LH_ENV) $(SFX_LH_PY) warehouse/seed/generate.py --rows "$(ROWS_PER_TABLE)" --seed 1110 --business-date "$(BUSINESS_DATE)" --out "lakehouse/.data/$(NS)/landing"
+
+sfx-lakehouse-run: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Ingest bronze and build the silver pilot
+	$(SFX_LH_ENV) LEGACY_NS="$(LEGACY_NS)" $(SFX_LH_PG_PORT_ENV) $(SFX_LH_PY) -m lakehouse.orchestration run --landing "$(SFX_LH_LANDING)" --business-date "$(BUSINESS_DATE)"
+
+sfx-lakehouse-test: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Test lakehouse runtime and pilot
+	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.coverage check
+	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.orchestration check
+	$(SFX_LH_ENV) $(SFX_LH_PY) -m pytest -q lakehouse/tests
+
+sfx-lakehouse-down: sfx-lakehouse-validate ## Remove only this namespace's local lakehouse data
+	rm -rf "lakehouse/.data/$(NS)"
+
+.PHONY: sfx-lakehouse-parity
+sfx-lakehouse-parity: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Compare built lakehouse outputs with the running legacy namespace
+	$(SFX_LH_ENV) LEGACY_NS="$(LEGACY_NS)" $(SFX_LH_PG_PORT_ENV) $(SFX_LH_PY) -m lakehouse.parity run --all --business-date "$(BUSINESS_DATE)"
+
+.PHONY: sfx-lakehouse-coverage
+sfx-lakehouse-coverage: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Validate migration inventory and assumptions; render evidence
+	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.coverage check
+	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.orchestration check
+
+SFX_LH_AF_PY = lakehouse/.venv-airflow/bin/python
+SFX_LH_AF_DAG_TEST ?= 1
+SFX_LH_AF_ENV = $(SFX_LH_ENV) LEGACY_NS="$(LEGACY_NS)" $(SFX_LH_PG_PORT_ENV) SFX_LH_LANDING="$(abspath $(SFX_LH_LANDING))" AIRFLOW_HOME="$(CURDIR)/lakehouse/.data/$(NS)/airflow" AIRFLOW__CORE__DAGS_FOLDER="$(CURDIR)/lakehouse/airflow/dags" AIRFLOW__CORE__LOAD_EXAMPLES=False AIRFLOW__CORE__EXECUTOR=SequentialExecutor AIRFLOW__CORE__DEFAULT_TIMEZONE=utc AIRFLOW_CONN_FS_DEFAULT='{"conn_type":"fs","extra":{"path":"/"}}'
+SFX_LH_LOGICAL_DATE = $(shell $(SFX_LH_PY) -c 'from datetime import datetime,timedelta; print((datetime.strptime("$(BUSINESS_DATE)","%Y%m%d")+timedelta(days=1)).isoformat()+"+00:00")')
+
+lakehouse/.venv-airflow/.requirements: lakehouse/requirements-airflow.txt
+	python3.12 -m venv lakehouse/.venv-airflow
+	$(SFX_LH_AF_PY) -m pip install -r lakehouse/requirements-airflow.txt
+	@touch $@
+
+.PHONY: sfx-lakehouse-airflow-test
+sfx-lakehouse-airflow-test: sfx-lakehouse-validate $(if $(filter 1,$(SFX_LH_AF_DAG_TEST)),lakehouse/.venv/.requirements) lakehouse/.venv-airflow/.requirements ## Import generated DAGs; optionally execute one logical date
+	@test "$(SFX_LH_AF_DAG_TEST)" = 0 || test "$(SFX_LH_AF_DAG_TEST)" = 1
+	$(SFX_LH_AF_ENV) $(SFX_LH_AF_PY) -m pytest -q lakehouse/airflow/tests
+ifeq ($(SFX_LH_AF_DAG_TEST),1)
+	$(SFX_LH_AF_ENV) lakehouse/.venv-airflow/bin/airflow db migrate
+	$(SFX_LH_AF_ENV) lakehouse/.venv-airflow/bin/airflow dags test lakehouse_daily "$(SFX_LH_LOGICAL_DATE)"
+endif
+
 .PHONY: sfx-teradata-up sfx-teradata-run sfx-teradata-test sfx-teradata-down sfx-teradata-validate
 
 ROWS_PER_TABLE ?= 200000

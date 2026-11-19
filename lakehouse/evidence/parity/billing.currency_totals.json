@@ -1,0 +1,111 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "billing.currency_totals",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_macro:SFX_BILLING.M_CURRENCY_TOTALS",
+    "bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq",
+    "bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq"
+  ],
+  "results": {
+    "columns": [
+      "currency_cd",
+      "invoice_count",
+      "total_amount"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "currency_cd": {
+          "count": 6,
+          "hash": "0abb690fe50e25460fdd739e3d50c3220f8bd667f1c061e94ff6b6b9d4948084",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_count": {
+          "count": 6,
+          "hash": "16f1e0f036c40fad43ab3fe29fe2dc9026214fff3ee95613b872cd1c8713e14a",
+          "null_count": 0,
+          "sum": "2100"
+        },
+        "total_amount": {
+          "count": 6,
+          "hash": "abdd4a0636f16a3f89adfc92b1c82d4d0786a840f395bfe176b4e8d209ba1c4d",
+          "null_count": 0,
+          "sum": "745200.37"
+        }
+      },
+      "legacy": {
+        "currency_cd": {
+          "count": 6,
+          "hash": "0abb690fe50e25460fdd739e3d50c3220f8bd667f1c061e94ff6b6b9d4948084",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_count": {
+          "count": 6,
+          "hash": "16f1e0f036c40fad43ab3fe29fe2dc9026214fff3ee95613b872cd1c8713e14a",
+          "null_count": 0,
+          "sum": "2100"
+        },
+        "total_amount": {
+          "count": 6,
+          "hash": "abdd4a0636f16a3f89adfc92b1c82d4d0786a840f395bfe176b4e8d209ba1c4d",
+          "null_count": 0,
+          "sum": "745200.37"
+        }
+      }
+    },
+    "mismatches": {
+      "currency_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_count": {
+        "count": 0,
+        "samples": []
+      },
+      "total_amount": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 6,
+      "legacy": 6
+    }
+  },
+  "row_counts": {
+    "lakehouse": 6,
+    "legacy": 6
+  },
+  "spec_hash": "3d3356ab325f011e907904379a2bb315ee708a158664e047d791ae119eb98914",
+  "timestamp": "2026-11-19T17:47:39.566412+00:00"
+}

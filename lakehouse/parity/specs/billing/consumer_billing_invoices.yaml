@@ -1,0 +1,86 @@
+{
+  "id": "billing.consumer_billing_invoices",
+  "legacy_objects": [
+    "consumer:billing-service"
+  ],
+  "legacy": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing_consumers/{business_date}/billing_invoices.jsonl",
+    "columns": [
+      "invoice_no",
+      "customer_name",
+      "account_no",
+      "invoice_date",
+      "currency_cd",
+      "amount_due",
+      "tax_amt",
+      "open_balance",
+      "parity_row"
+    ]
+  },
+  "lakehouse": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/exports/billing_consumers/{business_date}/current/queries/billing_invoices.jsonl",
+    "columns": [
+      "invoice_no",
+      "customer_name",
+      "account_no",
+      "invoice_date",
+      "currency_cd",
+      "amount_due",
+      "tax_amt",
+      "open_balance",
+      "parity_row"
+    ]
+  },
+  "keys": [
+    "parity_row"
+  ],
+  "columns": [
+    "invoice_no",
+    "customer_name",
+    "account_no",
+    "invoice_date",
+    "currency_cd",
+    "amount_due",
+    "tax_amt",
+    "open_balance",
+    "parity_row"
+  ],
+  "normalize": {
+    "invoice_no": {
+      "rstrip": true
+    },
+    "customer_name": {
+      "rstrip": true
+    },
+    "account_no": {
+      "rstrip": true
+    },
+    "invoice_date": {
+      "rstrip": true
+    },
+    "currency_cd": {
+      "rstrip": true,
+      "case_fold": true
+    },
+    "amount_due": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "tax_amt": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "open_balance": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "parity_row": {
+      "trim": true,
+      "numeric_scale": 0
+    }
+  },
+  "tolerance": {},
+  "description": "A-131..A-134: actual source SQL/emulator vs lakehouse-bound SQL, pinned clock. Canonically sorted comparison-only ordinal preserves duplicates and null rows. CHAR padding and declared code/group representatives normalized; ratios have 1e-6 absolute tolerance."
+}

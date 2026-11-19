@@ -1,0 +1,33 @@
+{
+  "id": "billing.spark_billing_usage_append_daily_jdbc",
+  "legacy_objects": [
+    "spark_job:billing_usage_append_daily",
+    "spark_submit:etl/spark/submit/billing_usage_append_daily.sh",
+    "cron_entry:etl/crontab#ed928bb7422d"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "database": "billing_spark_{NS}",
+    "sql": "SELECT \"USAGE_ID\" AS usage_id, \"CUSTOMER_ID\" AS customer_id, \"USAGE_DATE\" AS usage_date, \"UNITS\" AS units, \"AMOUNT\" AS amount, row_number() OVER (ORDER BY \"USAGE_ID\" ASC NULLS FIRST, \"CUSTOMER_ID\" ASC NULLS FIRST, \"USAGE_DATE\" ASC NULLS FIRST, \"UNITS\" ASC NULLS FIRST, \"AMOUNT\" ASC NULLS FIRST) AS parity_row FROM sfx_billing.spark_usage_daily"
+  },
+  "lakehouse": {
+    "kind": "spark_sql",
+    "sql": "SELECT * FROM gold_billing.billing_usage_append_daily_jdbc"
+  },
+  "keys": [
+    "parity_row"
+  ],
+  "columns": [
+    "usage_id",
+    "customer_id",
+    "usage_date",
+    "units",
+    "amount",
+    "parity_row"
+  ],
+  "normalize": {
+    "parity_row": {
+      "numeric_scale": 0
+    }
+  }
+}

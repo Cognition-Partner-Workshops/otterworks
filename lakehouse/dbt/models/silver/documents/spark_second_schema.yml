@@ -1,0 +1,142 @@
+{
+  "version": 2,
+  "models": [
+    {
+      "name": "spark_docs_folder_tree_walk",
+      "columns": [
+        {
+          "name": "folder_id",
+          "tests": [
+            "not_null",
+            "unique"
+          ]
+        },
+        {
+          "name": "root_folder_id",
+          "tests": [
+            "not_null"
+          ]
+        },
+        {
+          "name": "depth",
+          "tests": [
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "spark_doc_share_graph_reach",
+      "columns": [
+        {
+          "name": "user_id",
+          "tests": [
+            "not_null",
+            "unique"
+          ]
+        },
+        {
+          "name": "distance",
+          "tests": [
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "spark_collab_session_sessionize",
+      "columns": [
+        {
+          "name": "user_id",
+          "tests": [
+            "not_null"
+          ]
+        },
+        {
+          "name": "document_id",
+          "tests": [
+            "not_null"
+          ]
+        },
+        {
+          "name": "session_number",
+          "tests": [
+            "not_null"
+          ]
+        },
+        {
+          "name": "start_at",
+          "tests": [
+            "not_null"
+          ]
+        },
+        {
+          "name": "end_at",
+          "tests": [
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "spark_doc_version_diff_stats",
+      "columns": [
+        {
+          "name": "doc_version_id",
+          "tests": [
+            "not_null",
+            "unique"
+          ]
+        },
+        {
+          "name": "similarity",
+          "tests": [
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "spark_file_object_binary_extract",
+      "columns": [
+        {
+          "name": "file_object_id",
+          "tests": [
+            "not_null",
+            "unique"
+          ]
+        },
+        {
+          "name": "storage_key",
+          "tests": [
+            "not_null"
+          ]
+        },
+        {
+          "name": "media_type",
+          "tests": [
+            "not_null"
+          ]
+        },
+        {
+          "name": "text",
+          "tests": [
+            "not_null"
+          ]
+        },
+        {
+          "name": "page_count",
+          "tests": [
+            "not_null"
+          ]
+        },
+        {
+          "name": "sha256",
+          "tests": [
+            "not_null"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,3170 @@
+dags:
+- id: lakehouse_daily
+  schedule: '@daily'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: feed_billing_customer_account
+    kind: feed_sensor
+    domain: billing
+    table: CUSTOMER_ACCOUNT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_plan_catalog
+    kind: feed_sensor
+    domain: billing
+    table: PLAN_CATALOG
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_subscription
+    kind: feed_sensor
+    domain: billing
+    table: SUBSCRIPTION
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_invoice_hdr
+    kind: feed_sensor
+    domain: billing
+    table: INVOICE_HDR
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_invoice_line
+    kind: feed_sensor
+    domain: billing
+    table: INVOICE_LINE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_payment
+    kind: feed_sensor
+    domain: billing
+    table: PAYMENT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_credit_note
+    kind: feed_sensor
+    domain: billing
+    table: CREDIT_NOTE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_tax_rate
+    kind: feed_sensor
+    domain: billing
+    table: TAX_RATE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_usage_daily
+    kind: feed_sensor
+    domain: billing
+    table: USAGE_DAILY
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_billing_adj
+    kind: feed_sensor
+    domain: billing
+    table: BILLING_ADJ
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_folder
+    kind: feed_sensor
+    domain: documents
+    table: FOLDER
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_document
+    kind: feed_sensor
+    domain: documents
+    table: DOCUMENT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_doc_version
+    kind: feed_sensor
+    domain: documents
+    table: DOC_VERSION
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_doc_share
+    kind: feed_sensor
+    domain: documents
+    table: DOC_SHARE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_doc_tag
+    kind: feed_sensor
+    domain: documents
+    table: DOC_TAG
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_file_object
+    kind: feed_sensor
+    domain: documents
+    table: FILE_OBJECT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_doc_comment
+    kind: feed_sensor
+    domain: documents
+    table: DOC_COMMENT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_collab_session
+    kind: feed_sensor
+    domain: documents
+    table: COLLAB_SESSION
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_storage_usage_daily
+    kind: feed_sensor
+    domain: documents
+    table: STORAGE_USAGE_DAILY
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_documents_search_index_log
+    kind: feed_sensor
+    domain: documents
+    table: SEARCH_INDEX_LOG
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_app_user
+    kind: feed_sensor
+    domain: users
+    table: APP_USER
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_user_profile
+    kind: feed_sensor
+    domain: users
+    table: USER_PROFILE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_team
+    kind: feed_sensor
+    domain: users
+    table: TEAM
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_team_member
+    kind: feed_sensor
+    domain: users
+    table: TEAM_MEMBER
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_role_grant
+    kind: feed_sensor
+    domain: users
+    table: ROLE_GRANT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_sso_identity
+    kind: feed_sensor
+    domain: users
+    table: SSO_IDENTITY
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_login_event
+    kind: feed_sensor
+    domain: users
+    table: LOGIN_EVENT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_user_activity_daily
+    kind: feed_sensor
+    domain: users
+    table: USER_ACTIVITY_DAILY
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_user_pref
+    kind: feed_sensor
+    domain: users
+    table: USER_PREF
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_users_user_status_hist
+    kind: feed_sensor
+    domain: users
+    table: USER_STATUS_HIST
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_audit_event
+    kind: feed_sensor
+    domain: audit
+    table: AUDIT_EVENT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_audit_event_archive
+    kind: feed_sensor
+    domain: audit
+    table: AUDIT_EVENT_ARCHIVE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_access_review
+    kind: feed_sensor
+    domain: audit
+    table: ACCESS_REVIEW
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_retention_policy
+    kind: feed_sensor
+    domain: audit
+    table: RETENTION_POLICY
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_data_export_req
+    kind: feed_sensor
+    domain: audit
+    table: DATA_EXPORT_REQ
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_compliance_flag
+    kind: feed_sensor
+    domain: audit
+    table: COMPLIANCE_FLAG
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_security_alert
+    kind: feed_sensor
+    domain: audit
+    table: SECURITY_ALERT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_legal_hold
+    kind: feed_sensor
+    domain: audit
+    table: LEGAL_HOLD
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_audit_daily_summary
+    kind: feed_sensor
+    domain: audit
+    table: AUDIT_DAILY_SUMMARY
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_audit_audit_recon
+    kind: feed_sensor
+    domain: audit
+    table: AUDIT_RECON
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_gl_account
+    kind: feed_sensor
+    domain: billing
+    table: GL_ACCOUNT
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_billing_gl_journal_line
+    kind: feed_sensor
+    domain: billing
+    table: GL_JOURNAL_LINE
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_platform_dbc_qrylog
+    kind: feed_sensor
+    domain: platform
+    table: DBC_QRYLOG
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_platform_dbc_qrylogobjects
+    kind: feed_sensor
+    domain: platform
+    table: DBC_QRYLOGOBJECTS
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_platform_dbc_tablesv
+    kind: feed_sensor
+    domain: platform
+    table: DBC_TABLESV
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: bronze_platform
+    kind: bronze_ingest
+    domain: platform
+    depends_on: [initialize, feed_platform_dbc_qrylog, feed_platform_dbc_qrylogobjects, feed_platform_dbc_tablesv]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: dbt_platform
+    kind: dbt
+    domain: platform
+    selector: tag:platform
+    depends_on: [bronze_platform]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - teradata_table:DBC.DBC_QRYLOG
+    - teradata_table:DBC.DBC_QRYLOGOBJECTS
+    - teradata_table:DBC.DBC_TABLESV
+    - teradata_view:DBC.QRYLOGV
+    - teradata_view:DBC.QRYLOGOBJECTSV
+    - teradata_view:DBC.TABLESV
+    - bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
+  - id: parity_platform
+    kind: parity
+    specs: [platform.dbc_qrylog, platform.dbc_qrylogobjects, platform.dbc_tablesv, platform.qrylogv, platform.qrylogobjectsv, platform.tablesv, platform.consumer_reads]
+    depends_on: [dbt_platform]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: bronze_billing
+    kind: bronze_ingest
+    domain: billing
+    depends_on:
+    - initialize
+    - feed_billing_customer_account
+    - feed_billing_plan_catalog
+    - feed_billing_subscription
+    - feed_billing_invoice_hdr
+    - feed_billing_invoice_line
+    - feed_billing_payment
+    - feed_billing_credit_note
+    - feed_billing_tax_rate
+    - feed_billing_usage_daily
+    - feed_billing_billing_adj
+    - feed_billing_gl_account
+    - feed_billing_gl_journal_line
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - fastload:warehouse/teradata/load/fastload/billing_billing_adj.fl
+    - fastload:warehouse/teradata/load/fastload/billing_credit_note.fl
+    - fastload:warehouse/teradata/load/fastload/billing_customer_account.fl
+    - fastload:warehouse/teradata/load/fastload/billing_gl_account.fl
+    - fastload:warehouse/teradata/load/fastload/billing_gl_journal_line.fl
+    - fastload:warehouse/teradata/load/fastload/billing_invoice_hdr.fl
+    - fastload:warehouse/teradata/load/fastload/billing_invoice_line.fl
+    - fastload:warehouse/teradata/load/fastload/billing_payment.fl
+    - fastload:warehouse/teradata/load/fastload/billing_plan_catalog.fl
+    - fastload:warehouse/teradata/load/fastload/billing_subscription.fl
+    - fastload:warehouse/teradata/load/fastload/billing_tax_rate.fl
+    - fastload:warehouse/teradata/load/fastload/billing_usage_daily.fl
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging
+  - id: dbt_billing
+    kind: dbt
+    domain: billing
+    selector: path:models/silver/billing
+    exclude: tag:storage_monthly
+    depends_on:
+    - bronze_billing
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/02_load_subscriptions.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/03_load_invoices.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/02_load_subscriptions
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/03_load_invoices
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/04_load_payments
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/05_load_usage
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/load_account_history
+    - teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH
+    - teradata_table:SFX_BILLING.BILLING_ADJ
+    - teradata_table:SFX_BILLING.CREDIT_NOTE
+    - teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT
+    - teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST
+    - teradata_table:SFX_BILLING.GL_ACCOUNT
+    - teradata_table:SFX_BILLING.GL_JOURNAL_LINE
+    - teradata_table:SFX_BILLING.INVOICE_HDR
+    - teradata_table:SFX_BILLING.INVOICE_LINE
+    - teradata_table:SFX_BILLING.PAYMENT
+    - teradata_table:SFX_BILLING.PLAN_CATALOG
+    - teradata_table:SFX_BILLING.STG_BILLING_ADJ
+    - teradata_table:SFX_BILLING.STG_CREDIT_NOTE
+    - teradata_table:SFX_BILLING.STG_CUSTOMER_ACCOUNT
+    - teradata_table:SFX_BILLING.STG_GL_ACCOUNT
+    - teradata_table:SFX_BILLING.STG_GL_JOURNAL_LINE
+    - teradata_table:SFX_BILLING.STG_INVOICE_HDR
+    - teradata_table:SFX_BILLING.STG_INVOICE_LINE
+    - teradata_table:SFX_BILLING.STG_PAYMENT
+    - teradata_table:SFX_BILLING.STG_PLAN_CATALOG
+    - teradata_table:SFX_BILLING.STG_SUBSCRIPTION
+    - teradata_table:SFX_BILLING.STG_TAX_RATE
+    - teradata_table:SFX_BILLING.STG_USAGE_DAILY
+    - teradata_table:SFX_BILLING.SUBSCRIPTION
+    - teradata_table:SFX_BILLING.TAX_RATE
+    - teradata_table:SFX_BILLING.USAGE_DAILY
+  - id: bronze_documents
+    kind: bronze_ingest
+    domain: documents
+    depends_on:
+    - initialize
+    - feed_documents_folder
+    - feed_documents_document
+    - feed_documents_doc_version
+    - feed_documents_doc_share
+    - feed_documents_doc_tag
+    - feed_documents_file_object
+    - feed_documents_doc_comment
+    - feed_documents_collab_session
+    - feed_documents_storage_usage_daily
+    - feed_documents_search_index_log
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - tpt:warehouse/teradata/load/tpt/documents_collab_session.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_doc_comment.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_doc_share.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_doc_tag.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_doc_version.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_document.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_file_object.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_folder.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_search_index_log.tpt
+    - tpt:warehouse/teradata/load/tpt/documents_storage_usage_daily.tpt
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging
+  - id: documents_informatica
+    kind: export
+    depends_on: [bronze_documents, bronze_users, infa_users_app, infa_users_role_grant]
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.runtime.documents_informatica, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects:
+    - informatica_mapping:SFX_CONTENT.m_SFX_STG_DOCUMENT
+    - informatica_session:SFX_CONTENT.s_m_SFX_STG_DOCUMENT
+    - informatica_source:SFX_CONTENT.FF_DOCUMENT
+    - informatica_target:SFX_CONTENT.STG_DOCUMENT
+    - informatica_mapping:SFX_CONTENT.m_SFX_DOCUMENT
+    - informatica_session:SFX_CONTENT.s_m_SFX_DOCUMENT
+    - informatica_source:SFX_CONTENT.STG_DOCUMENT
+    - informatica_target:SFX_CONTENT.DOCUMENT
+    - informatica_mapping:SFX_CONTENT.m_SFX_DOC_SHARE
+    - informatica_session:SFX_CONTENT.s_m_SFX_DOC_SHARE
+    - informatica_source:SFX_CONTENT.FF_DOC_SHARE
+    - informatica_target:SFX_CONTENT.DOC_SHARE
+  - id: parity_documents_infa_stg_document
+    kind: parity
+    spec: documents.infa_stg_document
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_infa_document
+    kind: parity
+    spec: documents.infa_document
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_infa_doc_share
+    kind: parity
+    spec: documents.infa_doc_share
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_infa_metrics
+    kind: parity
+    spec: documents.infa_metrics
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: dbt_documents
+    kind: dbt
+    domain: documents
+    selector: tag:documents
+    depends_on:
+    - dbt_users
+    - bronze_documents
+    - bronze_users
+    - documents_informatica
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/documents/01_load_folders.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/01_load_folders
+    - bteq_script:warehouse/teradata/scripts/documents/02_current_versions.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/02_current_versions
+    - bteq_script:warehouse/teradata/scripts/documents/03_load_access.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/03_load_access
+    - bteq_script:warehouse/teradata/scripts/documents/04_load_objects.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/04_load_objects
+    - bteq_script:warehouse/teradata/scripts/documents/05_load_sessions.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/05_load_sessions
+  - id: bronze_users
+    kind: bronze_ingest
+    domain: users
+    depends_on:
+    - initialize
+    - feed_users_app_user
+    - feed_users_user_profile
+    - feed_users_team
+    - feed_users_team_member
+    - feed_users_role_grant
+    - feed_users_sso_identity
+    - feed_users_login_event
+    - feed_users_user_activity_daily
+    - feed_users_user_pref
+    - feed_users_user_status_hist
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - fastload:warehouse/teradata/load/fastload/users_app_user.fl
+    - fastload:warehouse/teradata/load/fastload/users_login_event.fl
+    - fastload:warehouse/teradata/load/fastload/users_role_grant.fl
+    - fastload:warehouse/teradata/load/fastload/users_sso_identity.fl
+    - fastload:warehouse/teradata/load/fastload/users_team.fl
+    - fastload:warehouse/teradata/load/fastload/users_team_member.fl
+    - fastload:warehouse/teradata/load/fastload/users_user_activity_daily.fl
+    - fastload:warehouse/teradata/load/fastload/users_user_pref.fl
+    - fastload:warehouse/teradata/load/fastload/users_user_profile.fl
+    - fastload:warehouse/teradata/load/fastload/users_user_status_hist.fl
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging
+  - id: dbt_users
+    kind: dbt
+    domain: users
+    selector: tag:users
+    depends_on:
+    - bronze_users
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/users/01_load_users.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/01_load_users
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/02_load_teams
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/03_load_identity
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/04_load_events
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=users/10_activity_daily
+    - bteq_script:warehouse/teradata/scripts/users/02_load_teams.bteq
+    - bteq_script:warehouse/teradata/scripts/users/03_load_identity.bteq
+    - bteq_script:warehouse/teradata/scripts/users/04_load_events.bteq
+  - id: export_users_team_counts
+    kind: export
+    command: ['{python}', '-m', 'lakehouse.runtime.users_exports', '--business-date', '{business_date}']
+    depends_on: ["dbt_users"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/users/10_activity_daily.bteq
+  - id: parity_users_warehouse
+    kind: parity
+    specs:
+    - users.app_user
+    - users.login_event
+    - users.role_grant
+    - users.sso_identity
+    - users.team
+    - users.team_counts
+    - users.team_member
+    - users.user_activity_daily
+    - users.user_pref
+    - users.user_profile
+    - users.user_status_hist
+    - users.v_team_members
+    - users.v_user_settings
+    - users.stg_app_user
+    - users.stg_login_event
+    - users.stg_role_grant
+    - users.stg_sso_identity
+    - users.stg_team
+    - users.stg_team_member
+    - users.stg_user_activity_daily
+    - users.stg_user_pref
+    - users.stg_user_profile
+    - users.stg_user_status_hist
+    depends_on: ["export_users_team_counts"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_users_app
+    kind: export
+    command: ['{python}', '-m', 'lakehouse.runtime.users_informatica', '--stage', 'app', '--business-date', '{business_date}']
+    depends_on: ["bronze_users"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - informatica_session:SFX_CONTENT.s_m_SFX_STG_APP_USER
+    - informatica_workflow:SFX_CONTENT.wf_SFX_CONTENT_DAILY
+    - informatica_task:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Start
+    - informatica_scheduler:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Scheduler
+    - informatica_config:SFX_CONTENT.default_session_config
+    - informatica_config:etl/informatica/config/connections.yaml#TD_SFX_EDW
+    - informatica_param:etl/informatica/params/sfx_d1110_daily.par
+    - informatica_session:SFX_CONTENT.s_m_SFX_APP_USER
+  - id: infa_users_role_grant
+    kind: export
+    command: ['{python}', '-m', 'lakehouse.runtime.users_informatica', '--stage', 'roles', '--business-date', '{business_date}']
+    depends_on: ["infa_users_app"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - informatica_session:SFX_CONTENT.s_m_SFX_ROLE_GRANT
+  - id: infa_users_login_event
+    kind: export
+    command: ['{python}', '-m', 'lakehouse.runtime.users_informatica', '--stage', 'events', '--business-date', '{business_date}']
+    depends_on: ["infa_users_app"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - informatica_session:SFX_CONTENT.s_m_SFX_LOGIN_EVENT
+  - id: parity_users_informatica
+    kind: parity
+    specs: [users.infa_stg_app_user, users.infa_app_user, users.infa_role_grant, users.infa_login_event]
+    depends_on: [infa_users_role_grant, infa_users_login_event]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: bronze_audit
+    kind: bronze_ingest
+    domain: audit
+    depends_on:
+    - initialize
+    - feed_audit_audit_event
+    - feed_audit_audit_event_archive
+    - feed_audit_access_review
+    - feed_audit_retention_policy
+    - feed_audit_data_export_req
+    - feed_audit_compliance_flag
+    - feed_audit_security_alert
+    - feed_audit_legal_hold
+    - feed_audit_audit_daily_summary
+    - feed_audit_audit_recon
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - tpt:warehouse/teradata/load/tpt/audit_access_review.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_audit_daily_summary.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_audit_event.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_audit_event_archive.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_audit_recon.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_compliance_flag.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_data_export_req.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_legal_hold.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_retention_policy.tpt
+    - tpt:warehouse/teradata/load/tpt/audit_security_alert.tpt
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging
+  - id: dbt_audit
+    kind: dbt
+    domain: audit
+    selector: tag:audit
+    depends_on:
+    - bronze_audit
+    - bronze_users
+    - bronze_documents
+    - dbt_billing
+    - dbt_users
+    - dbt_documents
+    - dbt_storage_monthly
+    - dbt_billing_reporting
+    - dbt_shared_reconcile
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/audit/01_load_events.bteq
+    - bteq_script:warehouse/teradata/scripts/audit/02_load_controls.bteq
+    - bteq_script:warehouse/teradata/scripts/audit/03_load_reviews.bteq
+    - bteq_script:warehouse/teradata/scripts/audit/10_summary_daily.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/01_load_events
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/02_load_controls
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/03_load_reviews
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/10_summary_daily
+  - id: parity_customer_account
+    kind: parity
+    spec: billing.customer_account
+    depends_on:
+    - dbt_billing
+    - dbt_documents
+    - dbt_users
+    - dbt_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_account_hist_batch
+    kind: parity
+    spec: billing.account_hist_batch
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_billing_adj
+    kind: parity
+    spec: billing.billing_adj
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_credit_note
+    kind: parity
+    spec: billing.credit_note
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_customer_account_hist
+    kind: parity
+    spec: billing.customer_account_hist
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_gl_account
+    kind: parity
+    spec: billing.gl_account
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_gl_journal_line
+    kind: parity
+    spec: billing.gl_journal_line
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_invoice_hdr
+    kind: parity
+    spec: billing.invoice_hdr
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_invoice_line
+    kind: parity
+    spec: billing.invoice_line
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_payment
+    kind: parity
+    spec: billing.payment
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_plan_catalog
+    kind: parity
+    spec: billing.plan_catalog
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_billing_adj
+    kind: parity
+    spec: billing.stg_billing_adj
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_credit_note
+    kind: parity
+    spec: billing.stg_credit_note
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_customer_account
+    kind: parity
+    spec: billing.stg_customer_account
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_gl_account
+    kind: parity
+    spec: billing.stg_gl_account
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_gl_journal_line
+    kind: parity
+    spec: billing.stg_gl_journal_line
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_invoice_hdr
+    kind: parity
+    spec: billing.stg_invoice_hdr
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_invoice_line
+    kind: parity
+    spec: billing.stg_invoice_line
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_payment
+    kind: parity
+    spec: billing.stg_payment
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_plan_catalog
+    kind: parity
+    spec: billing.stg_plan_catalog
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_subscription
+    kind: parity
+    spec: billing.stg_subscription
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_tax_rate
+    kind: parity
+    spec: billing.stg_tax_rate
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_stg_usage_daily
+    kind: parity
+    spec: billing.stg_usage_daily
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_subscription
+    kind: parity
+    spec: billing.subscription
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_tax_rate
+    kind: parity
+    spec: billing.tax_rate
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_usage_daily
+    kind: parity
+    spec: billing.usage_daily
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: dbt_billing_reporting
+    kind: dbt
+    domain: billing
+    selector: path:models/gold/billing
+    depends_on: [dbt_billing, dbt_storage_monthly]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/10_subscription_report
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/11_currency_daily
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/12_invoice_monthly
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/13_period_close
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/14_account_history_extract
+    - teradata_macro:SFX_BILLING.M_CURRENCY_TOTALS
+    - teradata_macro:SFX_BILLING.M_SUBSCRIPTION_PLANS
+    - teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES
+    - teradata_view:SFX_BILLING.V_INVOICE_BASE
+    - teradata_view:SFX_BILLING.V_INVOICE_REVENUE
+    - teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS
+    - teradata_table:SFX_BILLING.INVOICE_HDR
+    - teradata_table:SFX_BILLING.INVOICE_LINE
+    - teradata_table:SFX_BILLING.GL_JOURNAL_LINE
+    - teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE
+  - id: dbt_storage_monthly
+    kind: dbt
+    domain: billing
+    selector: tag:storage_monthly
+    depends_on: [dbt_documents, dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/documents/10_storage_monthly.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/10_storage_monthly
+  - id: export_storage_monthly
+    kind: export
+    depends_on: [dbt_storage_monthly]
+    command: ['{python}', '-m', lakehouse.billing.storage, --business-date, '{business_date}']
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_storage_monthly
+    kind: parity
+    specs: [billing.usage_daily_effective, billing.invoice_line_effective, billing.storage_monthly_export]
+    depends_on: [dbt_storage_monthly, export_storage_monthly]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: dbt_shared_reconcile
+    kind: dbt
+    domain: audit
+    selector: shared_reconciliation
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - batch_runner:warehouse/teradata/jobs/reconcile
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=jobs/reconcile
+  - id: parity_audit_shared_reconciliation
+    kind: parity
+    spec: audit.shared_reconciliation
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: export_billing_10_subscription_report
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.reports", "--business-date", "{business_date}", "--reports", "subscription_plans"]
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq"]
+  - id: export_billing_11_currency_daily
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.reports", "--business-date", "{business_date}", "--reports", "currency_daily"]
+    depends_on: [dbt_billing_reporting, export_billing_10_subscription_report]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq"]
+  - id: export_billing_12_invoice_monthly
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.reports", "--business-date", "{business_date}", "--reports", "invoice_monthly", "gl_trial_balance"]
+    depends_on: [dbt_billing_reporting, export_billing_11_currency_daily]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq"]
+  - id: export_billing_13_period_close
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.reports", "--business-date", "{business_date}", "--reports", "invoice_periods", "period_close"]
+    depends_on: [dbt_billing_reporting, export_billing_12_invoice_monthly]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq"]
+  - id: export_billing_14_account_history_extract
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.reports", "--business-date", "{business_date}", "--reports", "account_status"]
+    depends_on: [dbt_billing_reporting, export_billing_13_period_close]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq"]
+  - id: parity_billing_monthly_invoice_hdr
+    kind: parity
+    spec: billing.monthly_invoice_hdr
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_monthly_invoice_line
+    kind: parity
+    spec: billing.monthly_invoice_line
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_monthly_gl_journal_line
+    kind: parity
+    spec: billing.monthly_gl_journal_line
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_closed_invoice_hdr
+    kind: parity
+    spec: billing.closed_invoice_hdr
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_v_account_invoices
+    kind: parity
+    spec: billing.v_account_invoices
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_v_invoice_base
+    kind: parity
+    spec: billing.v_invoice_base
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_v_invoice_revenue
+    kind: parity
+    spec: billing.v_invoice_revenue
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_v_subscription_plans
+    kind: parity
+    spec: billing.v_subscription_plans
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_subscription_plans
+    kind: parity
+    spec: billing.subscription_plans
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_currency_totals
+    kind: parity
+    spec: billing.currency_totals
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_monthly_invoice_result
+    kind: parity
+    spec: billing.monthly_invoice_result
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_subscription_plans
+    kind: parity
+    spec: billing.file_subscription_plans
+    depends_on: [export_billing_10_subscription_report]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_currency_daily
+    kind: parity
+    spec: billing.file_currency_daily
+    depends_on: [export_billing_11_currency_daily]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_invoice_monthly
+    kind: parity
+    spec: billing.file_invoice_monthly
+    depends_on: [export_billing_12_invoice_monthly]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_gl_trial_balance
+    kind: parity
+    spec: billing.file_gl_trial_balance
+    depends_on: [export_billing_12_invoice_monthly]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_invoice_periods
+    kind: parity
+    spec: billing.file_invoice_periods
+    depends_on: [export_billing_13_period_close]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_period_close
+    kind: parity
+    spec: billing.file_period_close
+    depends_on: [export_billing_13_period_close]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_account_status
+    kind: parity
+    spec: billing.file_account_status
+    depends_on: [export_billing_14_account_history_extract]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_start
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","start"]
+    depends_on: ["dbt_billing_reporting"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start","informatica_task:SFX_BILLING.wklt_SFX_BILLING_STAGE.Start","informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler","informatica_config:SFX_BILLING.default_session_config"]
+  - id: infa_billing_worklet
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","worklet"]
+    depends_on: ["infa_billing_customer_account","infa_billing_stg_invoice_hdr"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE"]
+  - id: infa_billing_decision
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","decision"]
+    depends_on: ["infa_billing_gl_journal_line"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.dec_GL_POSTED"]
+  - id: infa_billing_alert
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","alert"]
+    depends_on: ["infa_billing_decision"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.em_GL_POSTING_ALERT"]
+  - id: infa_billing_payment_gate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","payment"]
+    depends_on: ["infa_billing_payment"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_finish
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","finish"]
+    depends_on: ["infa_billing_payment_gate","infa_billing_alert"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY"]
+  - id: infa_billing_stg_customer_account
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","STG_CUSTOMER_ACCOUNT"]
+    depends_on: ["infa_billing_start"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT","informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT","informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT","informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT"]
+  - id: infa_billing_stg_customer_account_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:STG_CUSTOMER_ACCOUNT"]
+    depends_on: ["infa_billing_stg_customer_account"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_customer_account
+    kind: parity
+    spec: billing.infa_stg_customer_account
+    depends_on: [infa_billing_stg_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_customer_account_rejects
+    kind: parity
+    spec: billing.infa_stg_customer_account_rejects
+    depends_on: [infa_billing_stg_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_customer_account_transformation_rejects
+    kind: parity
+    spec: billing.infa_stg_customer_account_transformation_rejects
+    depends_on: [infa_billing_stg_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_customer_account_errors
+    kind: parity
+    spec: billing.infa_stg_customer_account_errors
+    depends_on: [infa_billing_stg_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_customer_account
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","CUSTOMER_ACCOUNT"]
+    depends_on: ["infa_billing_stg_customer_account"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT","informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT","informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT","informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT"]
+  - id: infa_billing_customer_account_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:CUSTOMER_ACCOUNT"]
+    depends_on: ["infa_billing_customer_account"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_customer_account
+    kind: parity
+    spec: billing.infa_customer_account
+    depends_on: [infa_billing_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_customer_account_rejects
+    kind: parity
+    spec: billing.infa_customer_account_rejects
+    depends_on: [infa_billing_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_customer_account_transformation_rejects
+    kind: parity
+    spec: billing.infa_customer_account_transformation_rejects
+    depends_on: [infa_billing_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_customer_account_errors
+    kind: parity
+    spec: billing.infa_customer_account_errors
+    depends_on: [infa_billing_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_stg_invoice_hdr
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","STG_INVOICE_HDR"]
+    depends_on: ["infa_billing_start"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR","informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR","informatica_target:SFX_BILLING.STG_INVOICE_HDR","informatica_source:SFX_BILLING.FF_INVOICE_HDR"]
+  - id: infa_billing_stg_invoice_hdr_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:STG_INVOICE_HDR"]
+    depends_on: ["infa_billing_stg_invoice_hdr"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_invoice_hdr
+    kind: parity
+    spec: billing.infa_stg_invoice_hdr
+    depends_on: [infa_billing_stg_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_invoice_hdr_rejects
+    kind: parity
+    spec: billing.infa_stg_invoice_hdr_rejects
+    depends_on: [infa_billing_stg_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_invoice_hdr_transformation_rejects
+    kind: parity
+    spec: billing.infa_stg_invoice_hdr_transformation_rejects
+    depends_on: [infa_billing_stg_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_invoice_hdr_errors
+    kind: parity
+    spec: billing.infa_stg_invoice_hdr_errors
+    depends_on: [infa_billing_stg_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_invoice_hdr
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","INVOICE_HDR"]
+    depends_on: ["infa_billing_worklet"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_INVOICE_HDR","informatica_session:SFX_BILLING.s_m_SFX_INVOICE_HDR","informatica_target:SFX_BILLING.INVOICE_HDR","informatica_source:SFX_BILLING.STG_INVOICE_HDR"]
+  - id: infa_billing_invoice_hdr_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:INVOICE_HDR"]
+    depends_on: ["infa_billing_invoice_hdr"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_hdr
+    kind: parity
+    spec: billing.infa_invoice_hdr
+    depends_on: [infa_billing_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_hdr_rejects
+    kind: parity
+    spec: billing.infa_invoice_hdr_rejects
+    depends_on: [infa_billing_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_hdr_transformation_rejects
+    kind: parity
+    spec: billing.infa_invoice_hdr_transformation_rejects
+    depends_on: [infa_billing_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_hdr_errors
+    kind: parity
+    spec: billing.infa_invoice_hdr_errors
+    depends_on: [infa_billing_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_invoice_line
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","INVOICE_LINE"]
+    depends_on: ["infa_billing_worklet"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE","informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE","informatica_target:SFX_BILLING.INVOICE_LINE","informatica_source:SFX_BILLING.FF_INVOICE_LINE"]
+  - id: infa_billing_invoice_line_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:INVOICE_LINE"]
+    depends_on: ["infa_billing_invoice_line"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_line
+    kind: parity
+    spec: billing.infa_invoice_line
+    depends_on: [infa_billing_invoice_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_line_rejects
+    kind: parity
+    spec: billing.infa_invoice_line_rejects
+    depends_on: [infa_billing_invoice_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_line_transformation_rejects
+    kind: parity
+    spec: billing.infa_invoice_line_transformation_rejects
+    depends_on: [infa_billing_invoice_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_line_errors
+    kind: parity
+    spec: billing.infa_invoice_line_errors
+    depends_on: [infa_billing_invoice_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_gl_journal_line
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","GL_JOURNAL_LINE"]
+    depends_on: ["infa_billing_invoice_hdr","infa_billing_invoice_line"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE","informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE","informatica_target:SFX_BILLING.GL_JOURNAL_LINE","informatica_source:SFX_BILLING.STG_INVOICE_HDR"]
+  - id: infa_billing_gl_journal_line_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:GL_JOURNAL_LINE"]
+    depends_on: ["infa_billing_gl_journal_line"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_gl_journal_line
+    kind: parity
+    spec: billing.infa_gl_journal_line
+    depends_on: [infa_billing_gl_journal_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_gl_journal_line_rejects
+    kind: parity
+    spec: billing.infa_gl_journal_line_rejects
+    depends_on: [infa_billing_gl_journal_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_gl_journal_line_transformation_rejects
+    kind: parity
+    spec: billing.infa_gl_journal_line_transformation_rejects
+    depends_on: [infa_billing_gl_journal_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_gl_journal_line_errors
+    kind: parity
+    spec: billing.infa_gl_journal_line_errors
+    depends_on: [infa_billing_gl_journal_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_payment
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","PAYMENT"]
+    depends_on: ["infa_billing_decision"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_PAYMENT","informatica_session:SFX_BILLING.s_m_SFX_PAYMENT","informatica_target:SFX_BILLING.PAYMENT","informatica_source:SFX_BILLING.FF_PAYMENT"]
+  - id: infa_billing_payment_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:PAYMENT"]
+    depends_on: ["infa_billing_payment"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_payment
+    kind: parity
+    spec: billing.infa_payment
+    depends_on: [infa_billing_payment_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_payment_rejects
+    kind: parity
+    spec: billing.infa_payment_rejects
+    depends_on: [infa_billing_payment_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_payment_transformation_rejects
+    kind: parity
+    spec: billing.infa_payment_transformation_rejects
+    depends_on: [infa_billing_payment_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_payment_errors
+    kind: parity
+    spec: billing.infa_payment_errors
+    depends_on: [infa_billing_payment_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: export_audit_reconciliation
+    kind: export
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/11_reconciliation
+    command:
+    - '{python}'
+    - -m
+    - lakehouse.audit.export
+    - --business-date
+    - '{business_date}'
+    - --output
+    - '{data_root}/exports/{business_date}/reconciliation.psv'
+  - id: parity_audit_audit_event
+    kind: parity
+    spec: audit.audit_event
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_audit_event_archive
+    kind: parity
+    spec: audit.audit_event_archive
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_access_review
+    kind: parity
+    spec: audit.access_review
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_retention_policy
+    kind: parity
+    spec: audit.retention_policy
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_data_export_req
+    kind: parity
+    spec: audit.data_export_req
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_compliance_flag
+    kind: parity
+    spec: audit.compliance_flag
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_security_alert
+    kind: parity
+    spec: audit.security_alert
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_legal_hold
+    kind: parity
+    spec: audit.legal_hold
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_audit_daily_summary
+    kind: parity
+    spec: audit.audit_daily_summary
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_audit_recon
+    kind: parity
+    spec: audit.audit_recon
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_audit_event
+    kind: parity
+    spec: audit.stg_audit_event
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_v_event_actors
+    kind: parity
+    spec: audit.v_event_actors
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_v_customer_recon
+    kind: parity
+    spec: audit.v_customer_recon
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_m_archive_overview
+    kind: parity
+    spec: audit.m_archive_overview
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_m_recon_totals
+    kind: parity
+    spec: audit.m_recon_totals
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_reconciliation_export
+    kind: parity
+    spec: audit.reconciliation_export
+    depends_on: [export_audit_reconciliation]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_spark_audit_actor_activity_join
+    kind: parity
+    spec: audit.spark_audit_actor_activity_join
+    depends_on:
+    - audit_spark
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_spark_audit_archive_resort
+    kind: parity
+    spec: audit.spark_audit_archive_resort
+    depends_on:
+    - audit_spark
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_spark_audit_daily_summary
+    kind: parity
+    spec: audit.spark_audit_daily_summary
+    depends_on:
+    - audit_spark
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_spark_compliance_flag_rules
+    kind: parity
+    spec: audit.spark_compliance_flag_rules
+    depends_on:
+    - audit_spark
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_spark_lake_compaction_audit
+    kind: parity
+    spec: audit.spark_lake_compaction_audit
+    depends_on:
+    - audit_delta_optimize
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_spark_security_alert_anomaly
+    kind: parity
+    spec: audit.spark_security_alert_anomaly
+    depends_on:
+    - audit_spark
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_access_review
+    kind: parity
+    spec: audit.stg_access_review
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_audit_daily_summary
+    kind: parity
+    spec: audit.stg_audit_daily_summary
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_audit_event_archive
+    kind: parity
+    spec: audit.stg_audit_event_archive
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_audit_recon
+    kind: parity
+    spec: audit.stg_audit_recon
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_compliance_flag
+    kind: parity
+    spec: audit.stg_compliance_flag
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_data_export_req
+    kind: parity
+    spec: audit.stg_data_export_req
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_legal_hold
+    kind: parity
+    spec: audit.stg_legal_hold
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_retention_policy
+    kind: parity
+    spec: audit.stg_retention_policy
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_security_alert
+    kind: parity
+    spec: audit.stg_security_alert
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: audit_spark
+    kind: export
+    depends_on:
+    - dbt_audit
+    - bronze_users
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - spark_job:audit_daily_summary
+    - spark_job:audit_actor_activity_join
+    - spark_job:audit_archive_resort
+    - spark_job:compliance_flag_rules
+    - spark_job:security_alert_anomaly
+    - batch_runner:etl/spark/run.sh
+    - spark_config:etl/spark/conf/spark-defaults.conf
+    - spark_library:etl/spark/jobs/py/common/package.py
+    - spark_library:etl/spark/jobs/py/common/runtime.py
+    - spark_library:etl/spark/jobs/py/common/schemas.py
+    - spark_library:etl/spark/scala/src/main/scala/sfx/BatchSupport.scala
+    command:
+    - '{python}'
+    - -m
+    - lakehouse.audit.spark
+    - --business-date
+    - '{business_date}'
+  - id: audit_delta_optimize
+    kind: export
+    depends_on:
+    - audit_spark
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: [spark_job:lake_compaction_audit]
+    command:
+    - '{python}'
+    - -m
+    - lakehouse.audit.spark
+    - --business-date
+    - '{business_date}'
+    - --compact
+  - id: parity_documents_folder
+    kind: parity
+    spec: documents.folder
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_folder
+    kind: parity
+    spec: documents.stg_folder
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_document
+    kind: parity
+    spec: documents.document
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_document
+    kind: parity
+    spec: documents.stg_document
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_doc_version
+    kind: parity
+    spec: documents.doc_version
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_doc_version
+    kind: parity
+    spec: documents.stg_doc_version
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_doc_share
+    kind: parity
+    spec: documents.doc_share
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_doc_share
+    kind: parity
+    spec: documents.stg_doc_share
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_doc_tag
+    kind: parity
+    spec: documents.doc_tag
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_doc_tag
+    kind: parity
+    spec: documents.stg_doc_tag
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_file_object
+    kind: parity
+    spec: documents.file_object
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_file_object
+    kind: parity
+    spec: documents.stg_file_object
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_doc_comment
+    kind: parity
+    spec: documents.doc_comment
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_doc_comment
+    kind: parity
+    spec: documents.stg_doc_comment
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_collab_session
+    kind: parity
+    spec: documents.collab_session
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_collab_session
+    kind: parity
+    spec: documents.stg_collab_session
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_storage_usage_daily
+    kind: parity
+    spec: documents.storage_usage_daily
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_storage_usage_daily
+    kind: parity
+    spec: documents.stg_storage_usage_daily
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_search_index_log
+    kind: parity
+    spec: documents.search_index_log
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_search_index_log
+    kind: parity
+    spec: documents.stg_search_index_log
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_v_document_versions
+    kind: parity
+    spec: documents.v_document_versions
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_v_workspace_storage
+    kind: parity
+    spec: documents.v_workspace_storage
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_v_search_history
+    kind: parity
+    spec: documents.v_search_history
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_m_storage_totals
+    kind: parity
+    spec: documents.m_storage_totals
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+  - id: export_billing_consumers
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.consumer_exports", "--business-date", "{business_date}"]
+    depends_on: [dbt_billing_reporting, export_billing_14_account_history_extract]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["consumer:billing-service","consumer:legacy-billing","consumer:admin-service","consumer:analytics-service","consumer:report-service","consumer:finance-account-workbook","bi_artifact:consumers/bi/account_status.pq","consumer:partner-extract","bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq","consumer_script:consumers/partner-extract/bin/nightly_extract.sh","consumer_script:consumers/partner-extract/bin/postprocess.sh","consumer_script:consumers/partner-extract/bin/sftp_push.sh"]
+  - id: parity_billing_consumers
+    kind: parity
+    specs: ["billing.consumer_billing_invoices","billing.consumer_legacy_aging","billing.consumer_admin_summary","billing.consumer_admin_overdue","billing.consumer_analytics_rollups","billing.consumer_report_summary","billing.consumer_report_unreconciled","billing.consumer_invoice_csv","billing.consumer_partner_raw","billing.consumer_partner_csv","billing.consumer_partner_transfer","billing.consumer_account_status","billing.consumer_workbook_feed"]
+    depends_on: [export_billing_consumers]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: initialize
+    kind: export
+    command: ['{python}', -m, lakehouse.runtime.bootstrap, --business-date, '{business_date}']
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - batch_runner:warehouse/teradata/jobs/daily_chain
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=setup
+    - cron_entry:warehouse/teradata/jobs/crontab.example#250f291ea0eb
+
+- id: lakehouse_fixture_bootstrap
+  schedule: null
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: generate
+    kind: export
+    command: ['{python}', -m, lakehouse.runtime.bootstrap, --landing, '{landing}', --business-date, '{business_date}']
+    depends_on: []
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: [cron_entry:warehouse/teradata/jobs/daily_chain#stage=generate]
+
+- id: lakehouse_users_infa_team_manual
+  schedule: null
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: members
+    kind: export
+    command: ['{python}', -m, lakehouse.runtime.users_informatica, --stage, members, --business-date, '{business_date}']
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: [informatica_session:SFX_CONTENT.s_m_SFX_TEAM_MEMBER]
+  - id: parity
+    kind: parity
+    specs: [users.infa_team_member]
+    depends_on: [members]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_users_spark
+  schedule: '@daily'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: users_spark_outputs
+    kind: export
+    command: ['{python}', '-m', 'lakehouse.runtime.users_spark', '--landing', '{landing}/spark/{business_date}']
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - spark_job:users_active_daily
+    - spark_submit:etl/spark/submit/users_active_daily.sh
+    - cron_entry:etl/crontab#042e9e7fa551
+    - spark_job:users_team_rollup
+    - spark_submit:etl/spark/submit/users_team_rollup.sh
+    - cron_entry:etl/crontab#a1a53c82cfb3
+    - spark_job:users_login_useragent_parse
+    - spark_submit:etl/spark/submit/users_login_useragent_parse.sh
+    - cron_entry:etl/crontab#9d492d3cabc6
+    - spark_job:users_risk_score
+    - spark_submit:etl/spark/submit/users_risk_score.sh
+    - cron_entry:etl/crontab#bb89194e6e7e
+    - spark_job:team_graph_components
+    - spark_submit:etl/spark/submit/team_graph_components.sh
+    - cron_entry:etl/crontab#8256b4d51699
+    - spark_job:user_pref_json_flatten
+    - spark_submit:etl/spark/submit/user_pref_json_flatten.sh
+    - cron_entry:etl/crontab#b8eef1610f31
+  - id: parity_users_spark
+    kind: parity
+    specs:
+    - users.users_active_daily
+    - users.users_team_rollup
+    - users.users_team_rollup_jdbc
+    - users.users_login_useragent_parse
+    - users.users_risk_score
+    - users.users_risk_score_jdbc
+    - users.team_graph_components
+    - users.user_pref_json_flatten
+    depends_on: [users_spark_outputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+- id: lakehouse_users_activity
+  schedule: '@daily'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: users_activity_report
+    kind: export
+    command: ['{python}', '-m', 'lakehouse.runtime.users_activity_report', '--source', '{landing}/activity', '--business-date', '{business_date}']
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - etl_script:etl/scripts/user_activity_daily.py
+    - cron_entry:etl/crontab#d28d753c053a
+  - id: parity_users_activity
+    kind: parity
+    specs: [users.activity_report, users.activity_user_summaries, users.activity_latest]
+    depends_on: [users_activity_report]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+- id: lakehouse_hourly
+  schedule: '18 * * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: feed_spark_document
+    kind: feed_sensor
+    domain: documents
+    table: DOCUMENT
+    landing_prefix: 'spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_docs_event_export_hourly
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, docs_event_export_hourly]
+    depends_on: [feed_spark_document]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:docs_event_export_hourly", "spark_submit:etl/spark/submit/docs_event_export_hourly.sh", "cron_entry:etl/crontab#06b1c260f55b"]
+  - id: dbt_spark_docs_event_export_hourly
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=docs_event_export_hourly, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_docs_event_export_hourly]
+    depends_on: [spark_docs_event_export_hourly]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_docs_event_export_hourly
+    kind: parity
+    spec: documents.spark_docs_event_export_hourly
+    depends_on: [dbt_spark_docs_event_export_hourly]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+- id: lakehouse_documents_folder_manual
+  schedule: null
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: feed_spark_folder
+    kind: feed_sensor
+    domain: documents
+    table: FOLDER
+    landing_prefix: 'spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_spark_document
+    kind: feed_sensor
+    domain: documents
+    table: DOCUMENT
+    landing_prefix: 'spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_docs_folder_legacy_report
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, docs_folder_legacy_report]
+    depends_on: [feed_spark_folder, feed_spark_document]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:docs_folder_legacy_report", "spark_submit:etl/spark/submit/docs_folder_legacy_report.sh", "cron_entry:etl/crontab#b40205d7056e"]
+  - id: dbt_spark_docs_folder_legacy_report
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=docs_folder_legacy_report, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_docs_folder_legacy_report]
+    depends_on: [spark_docs_folder_legacy_report]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_docs_folder_legacy_report
+    kind: parity
+    spec: documents.spark_docs_folder_legacy_report
+    depends_on: [dbt_spark_docs_folder_legacy_report]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+- id: lakehouse_documents_compaction
+  schedule: '19 2 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: await_document_export
+    kind: artifact_sensor
+    path: '{data_root}/exports/documents/spark/{business_date}/docs_event_export_hourly/_SUCCESS'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_lake_compaction_documents
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, lake_compaction_documents]
+    depends_on: [await_document_export]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:lake_compaction_documents", "spark_submit:etl/spark/submit/lake_compaction_documents.sh", "cron_entry:etl/crontab#d379dc30b522"]
+  - id: dbt_spark_lake_compaction_documents
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=lake_compaction_documents, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_lake_compaction_documents]
+    depends_on: [spark_lake_compaction_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_lake_compaction_documents
+    kind: parity
+    spec: documents.spark_lake_compaction_documents
+    depends_on: [dbt_spark_lake_compaction_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+- id: lakehouse_docs_storage_by_owner
+  schedule: '4 1 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_document
+    kind: feed_sensor
+    domain: documents
+    table: DOCUMENT
+    landing_prefix: 'spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_spark_file_object
+    kind: feed_sensor
+    domain: documents
+    table: FILE_OBJECT
+    landing_prefix: 'spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_spark_app_user
+    kind: feed_sensor
+    domain: users
+    table: APP_USER
+    landing_prefix: 'spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_docs_storage_by_owner
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, docs_storage_by_owner]
+    depends_on: [feed_spark_document, feed_spark_file_object, feed_spark_app_user]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:docs_storage_by_owner", "spark_submit:etl/spark/submit/docs_storage_by_owner.sh", "cron_entry:etl/crontab#6cccad9ba92f"]
+  - id: dbt_spark_docs_storage_by_owner
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=docs_storage_by_owner, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_docs_storage_by_owner]
+    depends_on: [spark_docs_storage_by_owner]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_docs_storage_by_owner
+    kind: parity
+    spec: documents.spark_docs_storage_by_owner
+    depends_on: [dbt_spark_docs_storage_by_owner]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+- id: lakehouse_docs_share_activity
+  schedule: '5 1 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_doc_share
+    kind: feed_sensor
+    domain: documents
+    table: DOC_SHARE
+    landing_prefix: 'spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: feed_spark_document
+    kind: feed_sensor
+    domain: documents
+    table: DOCUMENT
+    landing_prefix: 'spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_docs_share_activity
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, docs_share_activity]
+    depends_on: [feed_spark_doc_share, feed_spark_document]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:docs_share_activity", "spark_submit:etl/spark/submit/docs_share_activity.sh", "cron_entry:etl/crontab#e913aaa5c3d7"]
+  - id: dbt_spark_docs_share_activity
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=docs_share_activity, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_docs_share_activity]
+    depends_on: [spark_docs_share_activity]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_docs_share_activity
+    kind: parity
+    spec: documents.spark_docs_share_activity
+    depends_on: [dbt_spark_docs_share_activity]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+- id: lakehouse_docs_search_log_parse
+  schedule: '12 2 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_search_index_log
+    kind: feed_sensor
+    domain: documents
+    table: SEARCH_INDEX_LOG
+    landing_prefix: 'spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_docs_search_log_parse
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, docs_search_log_parse]
+    depends_on: [feed_spark_search_index_log]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:docs_search_log_parse", "spark_submit:etl/spark/submit/docs_search_log_parse.sh", "cron_entry:etl/crontab#0994e1d7781b"]
+  - id: dbt_spark_docs_search_log_parse
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=docs_search_log_parse, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_docs_search_log_parse]
+    depends_on: [spark_docs_search_log_parse]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_docs_search_log_parse
+    kind: parity
+    spec: documents.spark_docs_search_log_parse
+    depends_on: [dbt_spark_docs_search_log_parse]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+- id: lakehouse_docs_tag_normalize
+  schedule: '14 2 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_doc_tag
+    kind: feed_sensor
+    domain: documents
+    table: DOC_TAG
+    landing_prefix: 'spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_docs_tag_normalize
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, docs_tag_normalize]
+    depends_on: [feed_spark_doc_tag]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:docs_tag_normalize", "spark_submit:etl/spark/submit/docs_tag_normalize.sh", "cron_entry:etl/crontab#7ce72803f1b1"]
+  - id: dbt_spark_docs_tag_normalize
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=docs_tag_normalize, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_docs_tag_normalize]
+    depends_on: [spark_docs_tag_normalize]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_docs_tag_normalize
+    kind: parity
+    spec: documents.spark_docs_tag_normalize
+    depends_on: [dbt_spark_docs_tag_normalize]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+- id: lakehouse_audit_weekly
+  schedule: '@weekly'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: audit_weekly_archive
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - etl_script:etl/scripts/audit_archive_weekly.py
+    command:
+    - '{python}'
+    - -m
+    - lakehouse.audit.archive
+    - --business-date
+    - '{business_date}'
+
+- id: lakehouse_docs_folder_tree_walk
+  schedule: '21 3 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_folder
+    kind: feed_sensor
+    domain: documents
+    table: FOLDER
+    landing_prefix: 'documents-second/spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_docs_folder_tree_walk
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}/documents-second', --business-date, '{business_date}', --jobs, docs_folder_tree_walk]
+    depends_on: ["feed_spark_folder"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:docs_folder_tree_walk","spark_submit:etl/spark/submit/docs_folder_tree_walk.sh","cron_entry:etl/crontab#5c3511fa77a1"]
+  - id: dbt_spark_docs_folder_tree_walk
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=docs_folder_tree_walk, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_docs_folder_tree_walk]
+    depends_on: [spark_docs_folder_tree_walk]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_docs_folder_tree_walk
+    kind: parity
+    spec: documents.spark_docs_folder_tree_walk
+    depends_on: [dbt_spark_docs_folder_tree_walk]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_doc_share_graph_reach
+  schedule: '23 3 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_doc_share
+    kind: feed_sensor
+    domain: documents
+    table: DOC_SHARE
+    landing_prefix: 'documents-second/spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_doc_share_graph_reach
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}/documents-second', --business-date, '{business_date}', --jobs, doc_share_graph_reach]
+    depends_on: ["feed_spark_doc_share"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:doc_share_graph_reach","spark_submit:etl/spark/submit/doc_share_graph_reach.sh","cron_entry:etl/crontab#817f451e90ab"]
+  - id: dbt_spark_doc_share_graph_reach
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=doc_share_graph_reach, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_doc_share_graph_reach]
+    depends_on: [spark_doc_share_graph_reach]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_doc_share_graph_reach
+    kind: parity
+    spec: documents.spark_doc_share_graph_reach
+    depends_on: [dbt_spark_doc_share_graph_reach]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_collab_session_sessionize
+  schedule: '24 3 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_collab_session
+    kind: feed_sensor
+    domain: documents
+    table: COLLAB_SESSION
+    landing_prefix: 'documents-second/spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_collab_session_sessionize
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}/documents-second', --business-date, '{business_date}', --jobs, collab_session_sessionize]
+    depends_on: ["feed_spark_collab_session"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:collab_session_sessionize","spark_submit:etl/spark/submit/collab_session_sessionize.sh","cron_entry:etl/crontab#afa009bc6185"]
+  - id: dbt_spark_collab_session_sessionize
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=collab_session_sessionize, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_collab_session_sessionize]
+    depends_on: [spark_collab_session_sessionize]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_collab_session_sessionize
+    kind: parity
+    spec: documents.spark_collab_session_sessionize
+    depends_on: [dbt_spark_collab_session_sessionize]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_doc_version_diff_stats
+  schedule: '25 3 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_doc_version
+    kind: feed_sensor
+    domain: documents
+    table: DOC_VERSION
+    landing_prefix: 'documents-second/spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_doc_version_diff_stats
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}/documents-second', --business-date, '{business_date}', --jobs, doc_version_diff_stats]
+    depends_on: ["feed_spark_doc_version"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:doc_version_diff_stats","spark_submit:etl/spark/submit/doc_version_diff_stats.sh","cron_entry:etl/crontab#d54b23093fd1"]
+  - id: dbt_spark_doc_version_diff_stats
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=doc_version_diff_stats, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_doc_version_diff_stats]
+    depends_on: [spark_doc_version_diff_stats]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_doc_version_diff_stats
+    kind: parity
+    spec: documents.spark_doc_version_diff_stats
+    depends_on: [dbt_spark_doc_version_diff_stats]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_file_object_binary_extract
+  schedule: '26 3 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_file_object
+    kind: feed_sensor
+    domain: documents
+    table: FILE_OBJECT
+    landing_prefix: 'documents-second/spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_file_object_binary_extract
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}/documents-second', --business-date, '{business_date}', --jobs, file_object_binary_extract]
+    depends_on: ["feed_spark_file_object"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:file_object_binary_extract","spark_submit:etl/spark/submit/file_object_binary_extract.sh","cron_entry:etl/crontab#9f970c1cb2a8","spark_library:etl/spark/jobs/py/common/binary_documents.py"]
+  - id: dbt_spark_file_object_binary_extract
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=file_object_binary_extract, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_file_object_binary_extract]
+    depends_on: [spark_file_object_binary_extract]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_file_object_binary_extract
+    kind: parity
+    spec: documents.spark_file_object_binary_extract
+    depends_on: [dbt_spark_file_object_binary_extract]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_search_reindex_weekly
+  schedule: '0 4 * * 0'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: search_reindex_weekly
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_external, --job, search_reindex_weekly, --business-date, '{business_date}']
+    depends_on: []
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: ["etl_script:etl/scripts/search_reindex_weekly.py","cron_entry:etl/crontab#69562b8e166b"]
+
+- id: lakehouse_storage_cleanup_daily
+  schedule: '30 2 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: storage_cleanup_daily
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_external, --job, storage_cleanup_daily, --business-date, '{business_date}']
+    depends_on: []
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: ["etl_script:etl/scripts/storage_cleanup_daily.py","cron_entry:etl/crontab#fd7befdb4e7d"]
+
+- id: lakehouse_documents_external_fixture
+  schedule: null
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: external_documents_fixture
+    kind: export
+    command: ['{python}', '-m', lakehouse.parity.documents_external, --fixture, '{landing}/documents-external/{business_date}.json', --business-date, '{business_date}']
+    depends_on: []
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: []
+
+  - id: parity_documents_external_search_documents
+    kind: parity
+    spec: documents.external_search_documents
+    depends_on: [external_documents_fixture]
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: []
+  - id: parity_documents_external_search_files
+    kind: parity
+    spec: documents.external_search_files
+    depends_on: [external_documents_fixture]
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: []
+  - id: parity_documents_external_search_actions
+    kind: parity
+    spec: documents.external_search_actions
+    depends_on: [external_documents_fixture]
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: []
+  - id: parity_documents_external_cleanup_report
+    kind: parity
+    spec: documents.external_cleanup_report
+    depends_on: [external_documents_fixture]
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: []
+  - id: parity_documents_external_cleanup_actions
+    kind: parity
+    spec: documents.external_cleanup_actions
+    depends_on: [external_documents_fixture]
+    retries: 0
+    retry_delay_seconds: 0
+    legacy_objects: []
+- id: lakehouse_billing_invoice_summary_daily
+  schedule: '0 1 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  paused: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  nodes:
+  - id: validate_inputs
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.billing.spark_inputs, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects: []
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/billing_spark_inputs/{business_date}.json'
+    timeout_seconds: 60
+    poke_interval_seconds: 1
+    depends_on: [validate_inputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ['{python}', '-m', lakehouse.billing.spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, billing_invoice_summary_daily]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:billing_invoice_summary_daily","spark_submit:etl/spark/submit/billing_invoice_summary_daily.sh","cron_entry:etl/crontab#d223b2edaac1"]
+  - id: parity
+    kind: parity
+    specs: ["billing.spark_billing_invoice_summary_daily_parquet","billing.spark_billing_invoice_summary_daily_jdbc"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_billing_revenue_by_plan
+  schedule: '1 1 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  paused: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  nodes:
+  - id: validate_inputs
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.billing.spark_inputs, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects: []
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/billing_spark_inputs/{business_date}.json'
+    timeout_seconds: 60
+    poke_interval_seconds: 1
+    depends_on: [validate_inputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ['{python}', '-m', lakehouse.billing.spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, billing_revenue_by_plan]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:billing_revenue_by_plan","spark_submit:etl/spark/submit/billing_revenue_by_plan.sh","cron_entry:etl/crontab#8018504ce246"]
+  - id: parity
+    kind: parity
+    specs: ["billing.spark_billing_revenue_by_plan_parquet"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_billing_payment_aging
+  schedule: '2 1 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  paused: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  nodes:
+  - id: validate_inputs
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.billing.spark_inputs, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects: []
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/billing_spark_inputs/{business_date}.json'
+    timeout_seconds: 60
+    poke_interval_seconds: 1
+    depends_on: [validate_inputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ['{python}', '-m', lakehouse.billing.spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, billing_payment_aging]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:billing_payment_aging","spark_submit:etl/spark/submit/billing_payment_aging.sh","cron_entry:etl/crontab#2ec3f6dad69f"]
+  - id: parity
+    kind: parity
+    specs: ["billing.spark_billing_payment_aging_parquet"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_billing_usage_append_daily
+  schedule: '3 1 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  paused: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  nodes:
+  - id: validate_inputs
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.billing.spark_inputs, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects: []
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/billing_spark_inputs/{business_date}.json'
+    timeout_seconds: 60
+    poke_interval_seconds: 1
+    depends_on: [validate_inputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ['{python}', '-m', lakehouse.billing.spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, billing_usage_append_daily]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:billing_usage_append_daily","spark_submit:etl/spark/submit/billing_usage_append_daily.sh","cron_entry:etl/crontab#ed928bb7422d"]
+  - id: parity
+    kind: parity
+    specs: ["billing.spark_billing_usage_append_daily_parquet","billing.spark_billing_usage_append_daily_jdbc"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_billing_gl_trial_balance
+  schedule: '10 2 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  paused: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  nodes:
+  - id: validate_inputs
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.billing.spark_inputs, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects: []
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/billing_spark_inputs/{business_date}.json'
+    timeout_seconds: 60
+    poke_interval_seconds: 1
+    depends_on: [validate_inputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ['{python}', '-m', lakehouse.billing.spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, billing_gl_trial_balance]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:billing_gl_trial_balance","spark_submit:etl/spark/submit/billing_gl_trial_balance.sh","cron_entry:etl/crontab#146d93841612"]
+  - id: parity
+    kind: parity
+    specs: ["billing.spark_billing_gl_trial_balance_parquet","billing.spark_billing_gl_trial_balance_jdbc"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_billing_churn_score
+  schedule: '15 2 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  paused: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  nodes:
+  - id: validate_inputs
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.billing.spark_inputs, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects: []
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/billing_spark_inputs/{business_date}.json'
+    timeout_seconds: 60
+    poke_interval_seconds: 1
+    depends_on: [validate_inputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ['{python}', '-m', lakehouse.billing.spark, --landing, '{landing}', --business-date, '{business_date}', --jobs, billing_churn_score]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:billing_churn_score","spark_submit:etl/spark/submit/billing_churn_score.sh","cron_entry:etl/crontab#5f21c41e60ca"]
+  - id: parity
+    kind: parity
+    specs: ["billing.spark_billing_churn_score_parquet"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_billing_partner_extract
+  schedule: '15 2 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/exports/billing/{business_date}/account_status_{business_date}.psv'
+    depends_on: []
+    timeout_seconds: 3600
+    poke_interval_seconds: 10
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: run
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.consumer_exports", "--business-date", "{business_date}", "--partner-only"]
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["consumer:partner-extract","bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq","consumer_script:consumers/partner-extract/bin/nightly_extract.sh","consumer_script:consumers/partner-extract/bin/postprocess.sh","consumer_script:consumers/partner-extract/bin/sftp_push.sh","cron_entry:warehouse/teradata/jobs/crontab.example#c583c86ce8ed"]
+  - id: parity
+    kind: parity
+    specs: ["billing.consumer_partner_raw","billing.consumer_partner_csv","billing.consumer_partner_transfer"]
+    depends_on: [run]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_analytics_daily
+  schedule: '0 2 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: ready
+    kind: artifact_sensor
+    path: '{data_root}/readiness/analytics/{business_date}.json'
+    depends_on: []
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    retries: 1
+    retry_delay_seconds: 30
+    legacy_objects: []
+  - id: analytics
+    kind: export
+    command: ['{python}', -m, lakehouse.runtime.external_settings, --job, analytics_daily.py, --business-date, '{business_date}', --ready, '{data_root}/readiness/analytics/{business_date}.json']
+    depends_on: [ready]
+    retries: 1
+    retry_delay_seconds: 30
+    legacy_objects:
+    - etl_script:etl/scripts/analytics_daily.py
+    - cron_entry:etl/crontab#f34723629b86
+    - etl_script:etl/scripts/run_job.py
+    - etl_script:etl/scripts/runtime_config.py
+    - etl_script:etl/scripts/bucket_owner.py
+    - etl_config:etl/config.ini
+    - batch_runner:etl/run.sh
+
+- id: lakehouse_analytics_fixture
+  schedule: null
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: fixture
+    kind: export
+    command: ['{python}', -m, lakehouse.parity.analytics, --business-date, '{business_date}', --fixture, '{data_root}/fixtures/analytics/{business_date}.json', --generate]
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity
+    kind: parity
+    specs: [platform.analytics_summary, platform.analytics_hourly, platform.analytics_top_users, platform.analytics_report, platform.analytics_postgres]
+    depends_on: [fixture]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []

@@ -1,0 +1,19 @@
+version: 2
+models:
+  - name: infa_stg_document
+  - name: infa_document
+    columns:
+      - name: document_id
+        data_tests: [unique, not_null]
+  - name: infa_doc_share
+    columns:
+      - name: share_id
+        data_tests: [unique, not_null]
+  - name: infa_metrics
+    columns:
+      - name: pipeline
+        data_tests:
+          - unique
+          - not_null
+          - accepted_values:
+              values: [stg_document, document, doc_share]

@@ -1,0 +1,37 @@
+id: documents.v_workspace_storage
+legacy_objects:
+  - teradata_view:SFX_DOCUMENTS.V_WORKSPACE_STORAGE
+comparison: candidates
+legacy:
+  kind: postgres_sql
+  sql: |
+    WITH latest AS (
+      SELECT *, dense_rank() OVER (PARTITION BY document_id ORDER BY version_ts DESC NULLS FIRST) AS latest_rank
+      FROM sfx_documents.stg_doc_version
+    ), candidates AS (
+      SELECT *, count(*) OVER (PARTITION BY document_id) AS candidate_count
+      FROM latest WHERE latest_rank = 1
+    ), legal_versions AS (
+      SELECT v.version_id, v.document_id, v.version_no, v.version_ts, v.file_size, v.content_hash
+      FROM sfx_documents.doc_version v
+      JOIN candidates c ON c.document_id = v.document_id AND c.candidate_count = 1
+      UNION ALL
+      SELECT version_id, document_id, version_no, version_ts, file_size, substring(content_hash, 1, 64)
+      FROM candidates WHERE candidate_count > 1
+    )
+    SELECT v.document_id, d.owner_user_id, v.version_id, v.file_size, w.document_count, w.total_bytes
+    FROM legal_versions v JOIN sfx_documents.document d USING(document_id)
+    LEFT JOIN sfx_documents.v_workspace_storage w ON w.owner_user_id IS NOT DISTINCT FROM d.owner_user_id
+lakehouse:
+  kind: spark_sql
+  sql: |
+    SELECT v.document_id, coalesce(v.owner_user_id, w.owner_user_id) AS owner_user_id, v.version_id, v.file_size, w.document_count, w.total_bytes
+    FROM gold_documents.v_document_versions v
+    FULL OUTER JOIN gold_documents.v_workspace_storage w ON w.owner_user_id <=> v.owner_user_id
+keys: [document_id]
+columns: [document_id, owner_user_id, version_id, file_size]
+candidate_aggregate:
+  group_keys: [owner_user_id]
+  value: file_size
+  count: document_count
+  total: total_bytes

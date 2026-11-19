@@ -1,0 +1,242 @@
+{
+  "version": 2,
+  "models": [
+    {
+      "name": "stg_customer_account"
+    },
+    {
+      "name": "plan_catalog",
+      "columns": [
+        {
+          "name": "plan_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ],
+      "data_tests": [
+        {
+          "billing_snapshot_count": {
+            "staging": "stg_plan_catalog"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stg_plan_catalog"
+    },
+    {
+      "name": "subscription",
+      "columns": [
+        {
+          "name": "subscription_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ],
+      "data_tests": [
+        {
+          "billing_snapshot_count": {
+            "staging": "stg_subscription"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stg_subscription"
+    },
+    {
+      "name": "invoice_hdr",
+      "columns": [
+        {
+          "name": "invoice_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ],
+      "data_tests": [
+        {
+          "billing_snapshot_count": {
+            "staging": "stg_invoice_hdr"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stg_invoice_hdr"
+    },
+    {
+      "name": "invoice_line",
+      "columns": [
+        {
+          "name": "invoice_line_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ],
+      "data_tests": [
+        {
+          "billing_snapshot_count": {
+            "staging": "stg_invoice_line"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stg_invoice_line"
+    },
+    {
+      "name": "payment",
+      "columns": [
+        {
+          "name": "payment_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ],
+      "data_tests": [
+        {
+          "billing_snapshot_count": {
+            "staging": "stg_payment"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stg_payment"
+    },
+    {
+      "name": "credit_note",
+      "columns": [
+        {
+          "name": "credit_note_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ],
+      "data_tests": [
+        {
+          "billing_snapshot_count": {
+            "staging": "stg_credit_note"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stg_credit_note"
+    },
+    {
+      "name": "tax_rate",
+      "columns": [
+        {
+          "name": "tax_rate_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ],
+      "data_tests": [
+        {
+          "billing_snapshot_count": {
+            "staging": "stg_tax_rate"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stg_tax_rate"
+    },
+    {
+      "name": "usage_daily",
+      "columns": [
+        {
+          "name": "usage_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ],
+      "data_tests": [
+        {
+          "billing_snapshot_count": {
+            "staging": "stg_usage_daily"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stg_usage_daily"
+    },
+    {
+      "name": "billing_adj",
+      "columns": [
+        {
+          "name": "adjustment_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ],
+      "data_tests": [
+        {
+          "billing_snapshot_count": {
+            "staging": "stg_billing_adj"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stg_billing_adj"
+    },
+    {
+      "name": "gl_account",
+      "columns": [
+        {
+          "name": "gl_account_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ],
+      "data_tests": [
+        {
+          "billing_snapshot_count": {
+            "staging": "stg_gl_account"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stg_gl_account"
+    },
+    {
+      "name": "gl_journal_line",
+      "columns": [
+        {
+          "name": "journal_line_id",
+          "data_tests": [
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "stg_gl_journal_line"
+    }
+  ]
+}

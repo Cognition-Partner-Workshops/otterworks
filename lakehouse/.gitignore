@@ -1,0 +1,10 @@
+# The repository-wide coverage/ ignore is for generated test coverage, not this package.
+!coverage/
+!coverage/*.py
+!coverage/coverage.yaml
+.venv/
+.venv-airflow/
+.data/
+dbt/target/
+dbt/logs/
+dbt/.user.yml

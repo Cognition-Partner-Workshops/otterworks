@@ -1,0 +1,24 @@
+{
+  "id": "documents.spark_docs_folder_tree_walk",
+  "legacy_objects": [
+    "spark_job:docs_folder_tree_walk",
+    "spark_submit:etl/spark/submit/docs_folder_tree_walk.sh",
+    "cron_entry:etl/crontab#5c3511fa77a1"
+  ],
+  "legacy": {
+    "kind": "parquet",
+    "path": "lakehouse/.data/{NS}/legacy_spark/{business_date}/documents/docs_folder_tree_walk"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.spark_docs_folder_tree_walk"
+  },
+  "keys": [
+    "folder_id"
+  ],
+  "columns": [
+    "folder_id",
+    "root_folder_id",
+    "depth"
+  ]
+}

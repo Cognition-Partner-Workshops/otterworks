@@ -1,0 +1,69 @@
+{
+  "id": "billing.consumer_report_summary",
+  "legacy_objects": [
+    "consumer:report-service"
+  ],
+  "legacy": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing_consumers/{business_date}/report_summary.jsonl",
+    "columns": [
+      "period_id",
+      "invoiced_total",
+      "paid_total",
+      "ar_gl_balance",
+      "variance",
+      "parity_row"
+    ]
+  },
+  "lakehouse": {
+    "kind": "jsonl",
+    "path": "lakehouse/.data/{NS}/exports/billing_consumers/{business_date}/current/queries/report_summary.jsonl",
+    "columns": [
+      "period_id",
+      "invoiced_total",
+      "paid_total",
+      "ar_gl_balance",
+      "variance",
+      "parity_row"
+    ]
+  },
+  "keys": [
+    "parity_row"
+  ],
+  "columns": [
+    "period_id",
+    "invoiced_total",
+    "paid_total",
+    "ar_gl_balance",
+    "variance",
+    "parity_row"
+  ],
+  "normalize": {
+    "period_id": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "invoiced_total": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "paid_total": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "ar_gl_balance": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "variance": {
+      "trim": true,
+      "numeric_scale": 2
+    },
+    "parity_row": {
+      "trim": true,
+      "numeric_scale": 0
+    }
+  },
+  "tolerance": {},
+  "description": "A-131..A-134: actual source SQL/emulator vs lakehouse-bound SQL, pinned clock. Canonically sorted comparison-only ordinal preserves duplicates and null rows. CHAR padding and declared code/group representatives normalized; ratios have 1e-6 absolute tolerance."
+}

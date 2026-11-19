@@ -1,0 +1,27 @@
+{
+  "id": "billing.stg_credit_note",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.STG_CREDIT_NOTE"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT credit_note_id, invoice_id, customer_id, credit_dt, amount, reason_cd, credit_number, reason_text FROM sfx_billing.stg_credit_note"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.stg_credit_note"
+  },
+  "keys": [
+    "credit_note_id"
+  ],
+  "columns": [
+    "credit_note_id",
+    "invoice_id",
+    "customer_id",
+    "credit_dt",
+    "amount",
+    "reason_cd",
+    "credit_number",
+    "reason_text"
+  ]
+}

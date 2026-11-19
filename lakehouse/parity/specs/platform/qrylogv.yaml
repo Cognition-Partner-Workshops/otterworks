@@ -1,0 +1,37 @@
+{
+  "id": "platform.qrylogv",
+  "legacy_objects": [
+    "teradata_view:DBC.QRYLOGV"
+  ],
+  "description": "Exact full-column snapshot comparison. Occurrence numbers preserve nullable keys and duplicate multiset rows; binary ordering aligns case-preserving payloads without normalization.",
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "select procid, collecttimestamp, queryid, username, defaultdatabase, appid, clientid, starttime, firstresptime, statementtype, statementgroup, querytext, numresultrows, ampcputime, totaliocount, errorcode, row_number() over (order by procid ASC NULLS FIRST, collecttimestamp ASC NULLS FIRST, queryid ASC NULLS FIRST, username COLLATE \"C\" ASC NULLS FIRST, defaultdatabase COLLATE \"C\" ASC NULLS FIRST, appid COLLATE \"C\" ASC NULLS FIRST, clientid COLLATE \"C\" ASC NULLS FIRST, starttime ASC NULLS FIRST, firstresptime ASC NULLS FIRST, statementtype COLLATE \"C\" ASC NULLS FIRST, statementgroup COLLATE \"C\" ASC NULLS FIRST, querytext COLLATE \"C\" ASC NULLS FIRST, numresultrows ASC NULLS FIRST, ampcputime ASC NULLS FIRST, totaliocount ASC NULLS FIRST, errorcode ASC NULLS FIRST) as occurrence from dbc.qrylogv"
+  },
+  "lakehouse": {
+    "kind": "spark_sql",
+    "sql": "select procid, collecttimestamp, queryid, username, defaultdatabase, appid, clientid, starttime, firstresptime, statementtype, statementgroup, querytext, numresultrows, ampcputime, totaliocount, errorcode, row_number() over (order by procid ASC NULLS FIRST, collecttimestamp ASC NULLS FIRST, queryid ASC NULLS FIRST, username ASC NULLS FIRST, defaultdatabase ASC NULLS FIRST, appid ASC NULLS FIRST, clientid ASC NULLS FIRST, starttime ASC NULLS FIRST, firstresptime ASC NULLS FIRST, statementtype ASC NULLS FIRST, statementgroup ASC NULLS FIRST, querytext ASC NULLS FIRST, numresultrows ASC NULLS FIRST, ampcputime ASC NULLS FIRST, totaliocount ASC NULLS FIRST, errorcode ASC NULLS FIRST) as occurrence from silver_platform.qrylogv"
+  },
+  "keys": [
+    "occurrence"
+  ],
+  "columns": [
+    "procid",
+    "collecttimestamp",
+    "queryid",
+    "username",
+    "defaultdatabase",
+    "appid",
+    "clientid",
+    "starttime",
+    "firstresptime",
+    "statementtype",
+    "statementgroup",
+    "querytext",
+    "numresultrows",
+    "ampcputime",
+    "totaliocount",
+    "errorcode",
+    "occurrence"
+  ]
+}

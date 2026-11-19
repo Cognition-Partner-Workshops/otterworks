@@ -1,0 +1,195 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "billing.credit_note",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.CREDIT_NOTE",
+    "bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq"
+  ],
+  "results": {
+    "columns": [
+      "credit_note_id",
+      "invoice_id",
+      "customer_id",
+      "credit_dt",
+      "amount",
+      "reason_cd",
+      "credit_number",
+      "reason_text"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "amount": {
+          "count": 100,
+          "hash": "c683bd943dd5f5536a94d06002818ec59d6ec27d0c28805978e21201a2b7937c",
+          "null_count": 0,
+          "sum": "3323.87"
+        },
+        "credit_dt": {
+          "count": 100,
+          "hash": "5938e67300f5815ed5dc25d259dde553af8ec84a1594c2a469bdca09ba9b90fa",
+          "null_count": 0,
+          "sum": null
+        },
+        "credit_note_id": {
+          "count": 100,
+          "hash": "7e3d59edabcaacd3d8e95517ebf3dc57edecf089ce845b2f85a6533a9d7c33cc",
+          "null_count": 0,
+          "sum": "5050"
+        },
+        "credit_number": {
+          "count": 100,
+          "hash": "2066952de4d6edd70fd2327472774fdb8c68552571a0fb5295250645555befea",
+          "null_count": 0,
+          "sum": null
+        },
+        "customer_id": {
+          "count": 100,
+          "hash": "b176e3968fd00b7e861c53d07fcbeafec99baed3df52fe9586f92432856b3fd7",
+          "null_count": 0,
+          "sum": "9850"
+        },
+        "invoice_id": {
+          "count": 100,
+          "hash": "c23d7280f4cb486db881529427fa18960e47b99b592e405870ed56d371db33db",
+          "null_count": 0,
+          "sum": "84250"
+        },
+        "reason_cd": {
+          "count": 100,
+          "hash": "ccb69ce92b7533bb04ec47463a1fa0cd5f16f0ffa5075ac1edcfbd4dcc1a9ace",
+          "null_count": 0,
+          "sum": null
+        },
+        "reason_text": {
+          "count": 100,
+          "hash": "f7b7888fc5ae3e7cdd47b35971c51e74024a7582a784e3fbf4f153b450eee72a",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "amount": {
+          "count": 100,
+          "hash": "c683bd943dd5f5536a94d06002818ec59d6ec27d0c28805978e21201a2b7937c",
+          "null_count": 0,
+          "sum": "3323.87"
+        },
+        "credit_dt": {
+          "count": 100,
+          "hash": "5938e67300f5815ed5dc25d259dde553af8ec84a1594c2a469bdca09ba9b90fa",
+          "null_count": 0,
+          "sum": null
+        },
+        "credit_note_id": {
+          "count": 100,
+          "hash": "7e3d59edabcaacd3d8e95517ebf3dc57edecf089ce845b2f85a6533a9d7c33cc",
+          "null_count": 0,
+          "sum": "5050"
+        },
+        "credit_number": {
+          "count": 100,
+          "hash": "2066952de4d6edd70fd2327472774fdb8c68552571a0fb5295250645555befea",
+          "null_count": 0,
+          "sum": null
+        },
+        "customer_id": {
+          "count": 100,
+          "hash": "b176e3968fd00b7e861c53d07fcbeafec99baed3df52fe9586f92432856b3fd7",
+          "null_count": 0,
+          "sum": "9850"
+        },
+        "invoice_id": {
+          "count": 100,
+          "hash": "c23d7280f4cb486db881529427fa18960e47b99b592e405870ed56d371db33db",
+          "null_count": 0,
+          "sum": "84250"
+        },
+        "reason_cd": {
+          "count": 100,
+          "hash": "ccb69ce92b7533bb04ec47463a1fa0cd5f16f0ffa5075ac1edcfbd4dcc1a9ace",
+          "null_count": 0,
+          "sum": null
+        },
+        "reason_text": {
+          "count": 100,
+          "hash": "f7b7888fc5ae3e7cdd47b35971c51e74024a7582a784e3fbf4f153b450eee72a",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "amount": {
+        "count": 0,
+        "samples": []
+      },
+      "credit_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "credit_note_id": {
+        "count": 0,
+        "samples": []
+      },
+      "credit_number": {
+        "count": 0,
+        "samples": []
+      },
+      "customer_id": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_id": {
+        "count": 0,
+        "samples": []
+      },
+      "reason_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "reason_text": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 100,
+      "legacy": 100
+    }
+  },
+  "row_counts": {
+    "lakehouse": 100,
+    "legacy": 100
+  },
+  "spec_hash": "0abca1c69b59db81e1dd54e5d8a310fedc17e87dd1fe5913a981a56d711812d3",
+  "timestamp": "2026-11-19T17:34:07.596429+00:00"
+}

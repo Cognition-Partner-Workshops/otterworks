@@ -1,0 +1,18 @@
+id: users.infa_login_event
+legacy_objects:
+  - informatica_mapping:SFX_CONTENT.m_SFX_LOGIN_EVENT
+  - informatica_session:SFX_CONTENT.s_m_SFX_LOGIN_EVENT
+  - informatica_source:SFX_CONTENT.FF_LOGIN_EVENT
+  - informatica_target:SFX_CONTENT.LOGIN_EVENT
+legacy:
+  kind: postgres_sql
+  database: users_infa
+  sql: SELECT * FROM sfx_users.login_event
+lakehouse:
+  kind: delta_table
+  table: silver_users.infa_login_event
+keys: [login_id]
+columns: [login_id, user_id, login_ts, result_cd, client_type]
+normalize:
+  result_cd: {rstrip: true}
+  client_type: {rstrip: true}

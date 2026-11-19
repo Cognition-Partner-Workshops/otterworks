@@ -1,0 +1,26 @@
+{
+  "id": "documents.doc_comment",
+  "legacy_objects": [
+    "teradata_table:SFX_DOCUMENTS.DOC_COMMENT",
+    "bteq_script:warehouse/teradata/scripts/documents/04_load_objects.bteq",
+    "cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/04_load_objects"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT comment_id, document_id, user_id, comment_text, created_ts FROM sfx_documents.doc_comment"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.doc_comment"
+  },
+  "keys": [
+    "comment_id"
+  ],
+  "columns": [
+    "comment_id",
+    "document_id",
+    "user_id",
+    "comment_text",
+    "created_ts"
+  ]
+}

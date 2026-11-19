@@ -1,0 +1,37 @@
+{
+  "id": "documents.spark_docs_share_activity",
+  "legacy_objects": [
+    "spark_job:docs_share_activity",
+    "spark_submit:etl/spark/submit/docs_share_activity.sh",
+    "cron_entry:etl/crontab#e913aaa5c3d7"
+  ],
+  "legacy": {
+    "kind": "parquet",
+    "path": "lakehouse/.data/{NS}/legacy_spark/{business_date}/documents/docs_share_activity"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.spark_docs_share_activity"
+  },
+  "keys": [
+    "owner_user_id",
+    "permission"
+  ],
+  "columns": [
+    "owner_user_id",
+    "permission",
+    "shares",
+    "recipients"
+  ],
+  "normalize": {
+    "owner_user_id": {
+      "numeric_scale": 0
+    },
+    "shares": {
+      "numeric_scale": 0
+    },
+    "recipients": {
+      "numeric_scale": 0
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "billing.subscription_plans",
+  "legacy_objects": [
+    "teradata_macro:SFX_BILLING.M_SUBSCRIPTION_PLANS",
+    "bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT s.subscription_id,s.customer_id,s.plan_code,p.monthly_fee FROM sfx_billing.subscription s JOIN sfx_billing.plan_catalog p ON lower(rtrim(s.plan_code))=lower(rtrim(p.plan_code))"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "gold_billing.subscription_plans"
+  },
+  "keys": [
+    "subscription_id"
+  ],
+  "columns": [
+    "subscription_id",
+    "customer_id",
+    "plan_code",
+    "monthly_fee"
+  ],
+  "normalize": {}
+}

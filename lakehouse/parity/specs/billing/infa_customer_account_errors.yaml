@@ -1,0 +1,35 @@
+{
+  "id": "billing.infa_customer_account_errors",
+  "description": "A-116..A-124: actual XML emulator in isolated PostgreSQL on identical landing/prior inputs; typed targets preserve NULL versus empty. Canonical ordinal retains duplicate multiplicity; writer and instrumented transformation rejects are independent surfaces.",
+  "legacy_objects": [
+    "informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT",
+    "informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT",
+    "informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT",
+    "informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT"
+  ],
+  "legacy": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/informatica/{business_date}/reference/customer_account_errors.psv",
+    "columns": [
+      "transformation_errors"
+    ],
+    "header": false,
+    "delimiter": "|"
+  },
+  "lakehouse": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/informatica/{business_date}/customer_account_errors.psv",
+    "columns": [
+      "transformation_errors"
+    ],
+    "header": false,
+    "delimiter": "|"
+  },
+  "keys": [
+    "transformation_errors"
+  ],
+  "columns": [
+    "transformation_errors"
+  ],
+  "normalize": {}
+}

@@ -1,0 +1,23 @@
+id: audit.audit_event_archive
+legacy_objects:
+- teradata_table:SFX_AUDIT.AUDIT_EVENT_ARCHIVE
+legacy:
+  kind: postgres_sql
+  sql: select * from sfx_audit.audit_event_archive
+lakehouse:
+  kind: spark_sql
+  sql: select * from silver_audit.audit_event_archive
+keys:
+- archive_id
+columns:
+- archive_id
+- actor_user_id
+- document_id
+- event_ts
+- event_type
+- details
+normalize:
+  event_type:
+    rstrip: true
+description: 'A-403: default disabled workflow archive task; enabled logic is tested separately and not
+  a claim of persistent sequence migration.'

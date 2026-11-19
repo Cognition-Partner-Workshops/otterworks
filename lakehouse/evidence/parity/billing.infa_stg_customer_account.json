@@ -1,0 +1,231 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "billing.infa_stg_customer_account",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT",
+    "informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT",
+    "informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT",
+    "informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT"
+  ],
+  "results": {
+    "columns": [
+      "ordinal",
+      "customer_id",
+      "owner_user_id",
+      "account_name",
+      "status_cd",
+      "currency_cd",
+      "created_dt",
+      "account_number",
+      "country_cd",
+      "region_cd"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "account_name": {
+          "count": 300,
+          "hash": "ac002b3e2f0494f3b1d1bfbf538179a797be67add6a5dcb82ca0347576af2095",
+          "null_count": 0,
+          "sum": null
+        },
+        "account_number": {
+          "count": 300,
+          "hash": "456a3394acb302b6d43731a076a99fe8053250f941860379dcc95bc0be6c17b8",
+          "null_count": 0,
+          "sum": null
+        },
+        "country_cd": {
+          "count": 300,
+          "hash": "ed1bfcfd31d7d8dc4b4b8de641393ab55d7135203ba7f8ed44647a643d3888fa",
+          "null_count": 0,
+          "sum": null
+        },
+        "created_dt": {
+          "count": 300,
+          "hash": "8e86563f10a86e88722cab3b48baf596e5fdc21f0ea99c96b4666f5cba209f8c",
+          "null_count": 0,
+          "sum": null
+        },
+        "currency_cd": {
+          "count": 300,
+          "hash": "663e847d06dffa4a506ebee340d77c99ba795b2efd0462d685ee87cb85cfcfc4",
+          "null_count": 0,
+          "sum": null
+        },
+        "customer_id": {
+          "count": 300,
+          "hash": "3699c71a4e83b253cf96101903b4fa9ce84dbc808ea0d46823395ae1198bf45b",
+          "null_count": 0,
+          "sum": "900000025150"
+        },
+        "ordinal": {
+          "count": 300,
+          "hash": "3916b07fa7730c7692c34bd613ae79c6ee0ff2df23dcba08f1f46ec2493e2171",
+          "null_count": 0,
+          "sum": "45150"
+        },
+        "owner_user_id": {
+          "count": 300,
+          "hash": "3699c71a4e83b253cf96101903b4fa9ce84dbc808ea0d46823395ae1198bf45b",
+          "null_count": 0,
+          "sum": "900000025150"
+        },
+        "region_cd": {
+          "count": 300,
+          "hash": "66b0eff382e5f4de1a330822548236a360ad7e3f8d2c182c29ef91867004a80c",
+          "null_count": 0,
+          "sum": null
+        },
+        "status_cd": {
+          "count": 300,
+          "hash": "b1b4f4d97daccd3f58cf361a1b7b60a48103139c9e201e2970710559f9dc44b7",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "account_name": {
+          "count": 300,
+          "hash": "ac002b3e2f0494f3b1d1bfbf538179a797be67add6a5dcb82ca0347576af2095",
+          "null_count": 0,
+          "sum": null
+        },
+        "account_number": {
+          "count": 300,
+          "hash": "456a3394acb302b6d43731a076a99fe8053250f941860379dcc95bc0be6c17b8",
+          "null_count": 0,
+          "sum": null
+        },
+        "country_cd": {
+          "count": 300,
+          "hash": "ed1bfcfd31d7d8dc4b4b8de641393ab55d7135203ba7f8ed44647a643d3888fa",
+          "null_count": 0,
+          "sum": null
+        },
+        "created_dt": {
+          "count": 300,
+          "hash": "8e86563f10a86e88722cab3b48baf596e5fdc21f0ea99c96b4666f5cba209f8c",
+          "null_count": 0,
+          "sum": null
+        },
+        "currency_cd": {
+          "count": 300,
+          "hash": "663e847d06dffa4a506ebee340d77c99ba795b2efd0462d685ee87cb85cfcfc4",
+          "null_count": 0,
+          "sum": null
+        },
+        "customer_id": {
+          "count": 300,
+          "hash": "3699c71a4e83b253cf96101903b4fa9ce84dbc808ea0d46823395ae1198bf45b",
+          "null_count": 0,
+          "sum": "900000025150"
+        },
+        "ordinal": {
+          "count": 300,
+          "hash": "3916b07fa7730c7692c34bd613ae79c6ee0ff2df23dcba08f1f46ec2493e2171",
+          "null_count": 0,
+          "sum": "45150"
+        },
+        "owner_user_id": {
+          "count": 300,
+          "hash": "3699c71a4e83b253cf96101903b4fa9ce84dbc808ea0d46823395ae1198bf45b",
+          "null_count": 0,
+          "sum": "900000025150"
+        },
+        "region_cd": {
+          "count": 300,
+          "hash": "66b0eff382e5f4de1a330822548236a360ad7e3f8d2c182c29ef91867004a80c",
+          "null_count": 0,
+          "sum": null
+        },
+        "status_cd": {
+          "count": 300,
+          "hash": "b1b4f4d97daccd3f58cf361a1b7b60a48103139c9e201e2970710559f9dc44b7",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "account_name": {
+        "count": 0,
+        "samples": []
+      },
+      "account_number": {
+        "count": 0,
+        "samples": []
+      },
+      "country_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "created_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "currency_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "customer_id": {
+        "count": 0,
+        "samples": []
+      },
+      "ordinal": {
+        "count": 0,
+        "samples": []
+      },
+      "owner_user_id": {
+        "count": 0,
+        "samples": []
+      },
+      "region_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "status_cd": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 300,
+      "legacy": 300
+    }
+  },
+  "row_counts": {
+    "lakehouse": 300,
+    "legacy": 300
+  },
+  "spec_hash": "8316dfebfb2719e7a0494caa81fdcb44f1a8e31ba64e2ce5a708a65d3e788b5a",
+  "timestamp": "2026-11-19T17:58:02.380292+00:00"
+}

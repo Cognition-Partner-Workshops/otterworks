@@ -1,0 +1,30 @@
+{
+  "id": "billing.v_invoice_revenue",
+  "legacy_objects": [
+    "teradata_view:SFX_BILLING.V_INVOICE_REVENUE"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT currency_cd, invoice_period, invoice_count, total_amount FROM sfx_billing.v_invoice_revenue"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "gold_billing.v_invoice_revenue"
+  },
+  "keys": [
+    "currency_cd",
+    "invoice_period"
+  ],
+  "columns": [
+    "currency_cd",
+    "invoice_period",
+    "invoice_count",
+    "total_amount"
+  ],
+  "normalize": {
+    "currency_cd": {
+      "rstrip": true,
+      "case_fold": true
+    }
+  }
+}

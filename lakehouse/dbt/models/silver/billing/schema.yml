@@ -1,0 +1,6 @@
+version: 2
+models:
+  - name: customer_account
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]

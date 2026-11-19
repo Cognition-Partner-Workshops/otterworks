@@ -1,0 +1,13 @@
+id: users.stg_user_pref
+legacy_objects:
+  - teradata_table:SFX_USERS.STG_USER_PREF
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.stg_user_pref
+lakehouse:
+  kind: spark_sql
+  sql: >-
+    SELECT CAST(pref_id AS bigint) AS pref_id, CAST(user_id AS bigint) AS user_id, CAST(pref_name AS string) AS pref_name, CAST(pref_value AS string) AS pref_value, CAST(updated_dt AS date) AS updated_dt
+    FROM bronze_users.user_pref WHERE _business_date = to_date('{business_date}', 'yyyyMMdd')
+keys: [pref_id]
+columns: [pref_id, user_id, pref_name, pref_value, updated_dt]

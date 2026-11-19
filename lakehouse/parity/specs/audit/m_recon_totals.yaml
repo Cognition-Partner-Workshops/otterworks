@@ -1,0 +1,19 @@
+id: audit.m_recon_totals
+legacy_objects:
+- teradata_macro:SFX_AUDIT.M_RECON_TOTALS
+description: 'A-402: complete reconciliation population including shared jobs/reconcile
+  row 21000000001; no ownership exclusions.'
+legacy:
+  kind: postgres_sql
+  sql: select recon_id, source_count, target_count, difference_count from sfx_audit.audit_recon
+    where business_dt=to_date('{business_date}', 'YYYYMMDD') order by recon_id
+lakehouse:
+  kind: delta_table
+  table: gold_audit.m_recon_totals
+keys:
+- recon_id
+columns:
+- recon_id
+- source_count
+- target_count
+- difference_count

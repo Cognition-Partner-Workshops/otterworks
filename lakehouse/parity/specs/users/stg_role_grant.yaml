@@ -1,0 +1,13 @@
+id: users.stg_role_grant
+legacy_objects:
+  - teradata_table:SFX_USERS.STG_ROLE_GRANT
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.stg_role_grant
+lakehouse:
+  kind: spark_sql
+  sql: >-
+    SELECT CAST(grant_id AS bigint) AS grant_id, CAST(user_id AS bigint) AS user_id, CAST(role_cd AS string) AS role_cd, CAST(granted_dt AS date) AS granted_dt
+    FROM bronze_users.role_grant WHERE _business_date = to_date('{business_date}', 'yyyyMMdd')
+keys: [grant_id]
+columns: [grant_id, user_id, role_cd, granted_dt]

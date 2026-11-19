@@ -1,0 +1,12 @@
+id: users.team
+legacy_objects:
+  - teradata_table:SFX_USERS.TEAM
+  - bteq_script:warehouse/teradata/scripts/users/02_load_teams.bteq
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.team
+lakehouse:
+  kind: delta_table
+  table: silver_users.team
+keys: [team_id]
+columns: [team_id, owner_user_id, team_name, created_dt]

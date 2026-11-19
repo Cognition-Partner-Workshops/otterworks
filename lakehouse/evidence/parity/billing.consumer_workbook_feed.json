@@ -1,0 +1,127 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "billing.consumer_workbook_feed",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "consumer:finance-account-workbook",
+    "bi_artifact:consumers/bi/account_status.pq"
+  ],
+  "results": {
+    "columns": [
+      "account_status",
+      "currency_code",
+      "account_count",
+      "parity_row"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "account_count": {
+          "count": 6,
+          "hash": "45c77cb155f07dacc40117d5e7a113130507935a681336fe63a4aaf2689df341",
+          "null_count": 0,
+          "sum": "300"
+        },
+        "account_status": {
+          "count": 6,
+          "hash": "f814f9933d50ee27d3b9ce8f75617fb230fc3fe317e945e8f3721f0c21f2694c",
+          "null_count": 0,
+          "sum": null
+        },
+        "currency_code": {
+          "count": 6,
+          "hash": "0abb690fe50e25460fdd739e3d50c3220f8bd667f1c061e94ff6b6b9d4948084",
+          "null_count": 0,
+          "sum": null
+        },
+        "parity_row": {
+          "count": 6,
+          "hash": "c4d8962b969926ea0d99f86866c6143b80ee44823a6b67c23ff3e2ecc1985741",
+          "null_count": 0,
+          "sum": "21"
+        }
+      },
+      "legacy": {
+        "account_count": {
+          "count": 6,
+          "hash": "45c77cb155f07dacc40117d5e7a113130507935a681336fe63a4aaf2689df341",
+          "null_count": 0,
+          "sum": "300"
+        },
+        "account_status": {
+          "count": 6,
+          "hash": "f814f9933d50ee27d3b9ce8f75617fb230fc3fe317e945e8f3721f0c21f2694c",
+          "null_count": 0,
+          "sum": null
+        },
+        "currency_code": {
+          "count": 6,
+          "hash": "0abb690fe50e25460fdd739e3d50c3220f8bd667f1c061e94ff6b6b9d4948084",
+          "null_count": 0,
+          "sum": null
+        },
+        "parity_row": {
+          "count": 6,
+          "hash": "c4d8962b969926ea0d99f86866c6143b80ee44823a6b67c23ff3e2ecc1985741",
+          "null_count": 0,
+          "sum": "21"
+        }
+      }
+    },
+    "mismatches": {
+      "account_count": {
+        "count": 0,
+        "samples": []
+      },
+      "account_status": {
+        "count": 0,
+        "samples": []
+      },
+      "currency_code": {
+        "count": 0,
+        "samples": []
+      },
+      "parity_row": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 6,
+      "legacy": 6
+    }
+  },
+  "row_counts": {
+    "lakehouse": 6,
+    "legacy": 6
+  },
+  "spec_hash": "44a526e8a5237afa4b8de72b34d748078a78ac721e5d70c91bdb46833a58a060",
+  "timestamp": "2026-11-19T18:01:55.951633+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "documents.v_document_versions",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_view:SFX_DOCUMENTS.V_DOCUMENT_VERSIONS"
+  ],
+  "results": {
+    "comparison": "candidates",
+    "exact_matched_rows": 400,
+    "mismatch_samples": [],
+    "mismatches": 0,
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 450,
+      "legacy": 500
+    },
+    "tie_resolved_rows": 50
+  },
+  "row_counts": {
+    "lakehouse": 450,
+    "legacy": 500
+  },
+  "spec_hash": "c0e27e55ab9d529930eb1ac8a439cbea4fc5010db303a478558c5e5524e46112",
+  "timestamp": "2026-11-19T17:43:07.303780+00:00"
+}

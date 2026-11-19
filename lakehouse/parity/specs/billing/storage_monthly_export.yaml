@@ -1,0 +1,51 @@
+{
+  "id": "billing.storage_monthly_export",
+  "legacy_objects": [
+    "bteq_script:warehouse/teradata/scripts/documents/10_storage_monthly.bteq",
+    "cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/10_storage_monthly"
+  ],
+  "legacy": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/parity/legacy/billing/{business_date}/storage_monthly.psv",
+    "delimiter": "|",
+    "header": false,
+    "columns": [
+      "customer_id",
+      "bytes_used",
+      "object_count"
+    ]
+  },
+  "lakehouse": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/exports/billing/{business_date}/storage_monthly.psv",
+    "delimiter": "|",
+    "header": false,
+    "columns": [
+      "customer_id",
+      "bytes_used",
+      "object_count"
+    ]
+  },
+  "keys": [
+    "customer_id"
+  ],
+  "columns": [
+    "customer_id",
+    "bytes_used",
+    "object_count"
+  ],
+  "normalize": {
+    "customer_id": {
+      "numeric_scale": 0,
+      "empty_as_null": true
+    },
+    "bytes_used": {
+      "numeric_scale": 0,
+      "empty_as_null": true
+    },
+    "object_count": {
+      "numeric_scale": 0,
+      "empty_as_null": true
+    }
+  }
+}

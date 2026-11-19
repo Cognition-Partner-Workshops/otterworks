@@ -1,0 +1,45 @@
+{
+  "id": "documents.infa_doc_share",
+  "legacy_objects": [
+    "informatica_mapping:SFX_CONTENT.m_SFX_DOC_SHARE",
+    "informatica_session:SFX_CONTENT.s_m_SFX_DOC_SHARE",
+    "informatica_source:SFX_CONTENT.FF_DOC_SHARE",
+    "informatica_target:SFX_CONTENT.DOC_SHARE"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "database": "lakehouse_documents_infa_{NS}",
+    "sql": "SELECT share_id, document_id, user_id, access_level, shared_dt FROM sfx_documents.doc_share"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.infa_doc_share"
+  },
+  "keys": [
+    "share_id"
+  ],
+  "columns": [
+    "share_id",
+    "document_id",
+    "user_id",
+    "access_level",
+    "shared_dt"
+  ],
+  "normalize": {
+    "share_id": {
+      "numeric_scale": 0
+    },
+    "document_id": {
+      "numeric_scale": 0
+    },
+    "user_id": {
+      "numeric_scale": 0
+    },
+    "shared_dt": {
+      "date_format": "%Y-%m-%d"
+    },
+    "access_level": {
+      "rstrip": true
+    }
+  }
+}

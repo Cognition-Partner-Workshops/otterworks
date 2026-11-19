@@ -1,0 +1,178 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "30471c876a61d2a939ae5d6c9fab1e22e658aaf7",
+  "id": "billing.payment",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.PAYMENT",
+    "bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq"
+  ],
+  "results": {
+    "columns": [
+      "payment_id",
+      "invoice_id",
+      "customer_id",
+      "payment_dt",
+      "amount",
+      "method_cd",
+      "payment_reference"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "amount": {
+          "count": 2000,
+          "hash": "bd252384ec19637e9cf8244503503a513f5ded3ad02aa93878e99d0697abe81a",
+          "null_count": 0,
+          "sum": "268853.38"
+        },
+        "customer_id": {
+          "count": 2000,
+          "hash": "bc94db11ce6ea66cd87cacd6f49e9ebc219b6fda75a0b1a87349ea44e24b118a",
+          "null_count": 0,
+          "sum": "201000"
+        },
+        "invoice_id": {
+          "count": 2000,
+          "hash": "55a7dcfcd3f38fe94491d493b4b5e53983dab264b6267d38fe14d8d80eb8f03a",
+          "null_count": 0,
+          "sum": "2001000"
+        },
+        "method_cd": {
+          "count": 2000,
+          "hash": "dbcab996696a74b5a3f4aa49d1934768bc9ea59cbb3a1a77938295102ecad913",
+          "null_count": 0,
+          "sum": null
+        },
+        "payment_dt": {
+          "count": 2000,
+          "hash": "4144399b0b17d4c4258fd98ee2a207c3752463c1be2926f97ee51ba631d5c1e4",
+          "null_count": 0,
+          "sum": null
+        },
+        "payment_id": {
+          "count": 2000,
+          "hash": "55a7dcfcd3f38fe94491d493b4b5e53983dab264b6267d38fe14d8d80eb8f03a",
+          "null_count": 0,
+          "sum": "2001000"
+        },
+        "payment_reference": {
+          "count": 2000,
+          "hash": "1da772322a4578e63bb29cfbc4b69290aa58fa993b71ec434dfd21fa8a2a0364",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "amount": {
+          "count": 2000,
+          "hash": "bd252384ec19637e9cf8244503503a513f5ded3ad02aa93878e99d0697abe81a",
+          "null_count": 0,
+          "sum": "268853.38"
+        },
+        "customer_id": {
+          "count": 2000,
+          "hash": "bc94db11ce6ea66cd87cacd6f49e9ebc219b6fda75a0b1a87349ea44e24b118a",
+          "null_count": 0,
+          "sum": "201000"
+        },
+        "invoice_id": {
+          "count": 2000,
+          "hash": "55a7dcfcd3f38fe94491d493b4b5e53983dab264b6267d38fe14d8d80eb8f03a",
+          "null_count": 0,
+          "sum": "2001000"
+        },
+        "method_cd": {
+          "count": 2000,
+          "hash": "dbcab996696a74b5a3f4aa49d1934768bc9ea59cbb3a1a77938295102ecad913",
+          "null_count": 0,
+          "sum": null
+        },
+        "payment_dt": {
+          "count": 2000,
+          "hash": "4144399b0b17d4c4258fd98ee2a207c3752463c1be2926f97ee51ba631d5c1e4",
+          "null_count": 0,
+          "sum": null
+        },
+        "payment_id": {
+          "count": 2000,
+          "hash": "55a7dcfcd3f38fe94491d493b4b5e53983dab264b6267d38fe14d8d80eb8f03a",
+          "null_count": 0,
+          "sum": "2001000"
+        },
+        "payment_reference": {
+          "count": 2000,
+          "hash": "1da772322a4578e63bb29cfbc4b69290aa58fa993b71ec434dfd21fa8a2a0364",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "amount": {
+        "count": 0,
+        "samples": []
+      },
+      "customer_id": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_id": {
+        "count": 0,
+        "samples": []
+      },
+      "method_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "payment_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "payment_id": {
+        "count": 0,
+        "samples": []
+      },
+      "payment_reference": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 2000,
+      "legacy": 2000
+    }
+  },
+  "row_counts": {
+    "lakehouse": 2000,
+    "legacy": 2000
+  },
+  "spec_hash": "07f2554b72517422739439929ebbdebcc3a8a12335750e7db9c2caa8cf72d85f",
+  "timestamp": "2026-11-19T17:34:18.267052+00:00"
+}

@@ -1,0 +1,20 @@
+version: 2
+models:
+  - name: dbc_qrylog
+    columns:
+      - name: queryid
+        tests: [not_null, unique]
+  - name: dbc_qrylogobjects
+    description: Multiset query/object edges; no unique or non-null key is declared by the source.
+  - name: dbc_tablesv
+    tests:
+      - dbql_catalog_key
+  - name: qrylogv
+    columns:
+      - name: queryid
+        tests: [not_null, unique]
+  - name: qrylogobjectsv
+    description: Snapshot facade preserving duplicate and nullable usage edges.
+  - name: tablesv
+    tests:
+      - dbql_catalog_key

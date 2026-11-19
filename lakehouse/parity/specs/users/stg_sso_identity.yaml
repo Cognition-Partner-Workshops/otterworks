@@ -1,0 +1,13 @@
+id: users.stg_sso_identity
+legacy_objects:
+  - teradata_table:SFX_USERS.STG_SSO_IDENTITY
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.stg_sso_identity
+lakehouse:
+  kind: spark_sql
+  sql: >-
+    SELECT CAST(identity_id AS bigint) AS identity_id, CAST(user_id AS bigint) AS user_id, CAST(provider_cd AS string) AS provider_cd, CAST(subject_id AS string) AS subject_id, CAST(created_dt AS date) AS created_dt
+    FROM bronze_users.sso_identity WHERE _business_date = to_date('{business_date}', 'yyyyMMdd')
+keys: [identity_id]
+columns: [identity_id, user_id, provider_cd, subject_id, created_dt]

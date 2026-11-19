@@ -1,0 +1,24 @@
+{
+  "id": "documents.stg_doc_tag",
+  "legacy_objects": [
+    "teradata_table:SFX_DOCUMENTS.STG_DOC_TAG",
+    "tpt:warehouse/teradata/load/tpt/documents_doc_tag.tpt"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT tag_id, document_id, tag_name, created_dt FROM sfx_documents.stg_doc_tag"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.stg_doc_tag"
+  },
+  "keys": [
+    "tag_id"
+  ],
+  "columns": [
+    "tag_id",
+    "document_id",
+    "tag_name",
+    "created_dt"
+  ]
+}

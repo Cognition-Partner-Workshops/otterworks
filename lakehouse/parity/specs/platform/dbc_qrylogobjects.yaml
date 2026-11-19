@@ -1,0 +1,26 @@
+{
+  "id": "platform.dbc_qrylogobjects",
+  "legacy_objects": [
+    "teradata_table:DBC.DBC_QRYLOGOBJECTS"
+  ],
+  "description": "Exact full-column snapshot comparison. Occurrence numbers preserve nullable keys and duplicate multiset rows; binary ordering aligns case-preserving payloads without normalization.",
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "select queryid, objectdatabasename, objecttablename, objecttype, usagetype, row_number() over (order by queryid ASC NULLS FIRST, objectdatabasename COLLATE \"C\" ASC NULLS FIRST, objecttablename COLLATE \"C\" ASC NULLS FIRST, objecttype COLLATE \"C\" ASC NULLS FIRST, usagetype COLLATE \"C\" ASC NULLS FIRST) as occurrence from dbc.dbc_qrylogobjects"
+  },
+  "lakehouse": {
+    "kind": "spark_sql",
+    "sql": "select queryid, objectdatabasename, objecttablename, objecttype, usagetype, row_number() over (order by queryid ASC NULLS FIRST, objectdatabasename ASC NULLS FIRST, objecttablename ASC NULLS FIRST, objecttype ASC NULLS FIRST, usagetype ASC NULLS FIRST) as occurrence from silver_platform.dbc_qrylogobjects"
+  },
+  "keys": [
+    "occurrence"
+  ],
+  "columns": [
+    "queryid",
+    "objectdatabasename",
+    "objecttablename",
+    "objecttype",
+    "usagetype",
+    "occurrence"
+  ]
+}

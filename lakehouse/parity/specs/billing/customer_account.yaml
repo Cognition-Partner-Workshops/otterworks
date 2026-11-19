@@ -1,0 +1,40 @@
+{
+  "id": "billing.customer_account",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT",
+    "bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT customer_id, owner_user_id, account_name, status_cd, currency_cd, created_dt, account_number, country_cd, region_cd FROM sfx_billing.customer_account"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_billing.customer_account"
+  },
+  "keys": [
+    "customer_id"
+  ],
+  "columns": [
+    "customer_id",
+    "owner_user_id",
+    "account_name",
+    "status_cd",
+    "currency_cd",
+    "created_dt",
+    "account_number",
+    "country_cd",
+    "region_cd"
+  ],
+  "normalize": {
+    "status_cd": {
+      "rstrip": true
+    },
+    "currency_cd": {
+      "rstrip": true
+    },
+    "country_cd": {
+      "rstrip": true
+    }
+  }
+}

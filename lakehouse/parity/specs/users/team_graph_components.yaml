@@ -1,0 +1,11 @@
+id: users.team_graph_components
+legacy_objects:
+  - spark_job:team_graph_components
+legacy:
+  kind: parquet
+  path: lakehouse/.data/{NS}/oracle/spark/users/team_graph_components
+lakehouse:
+  kind: delta_table
+  table: gold_users.team_graph_components
+keys: [team_id]
+columns: [team_id, component_id]

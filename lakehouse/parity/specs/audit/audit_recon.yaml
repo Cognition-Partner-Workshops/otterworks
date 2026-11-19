@@ -1,0 +1,26 @@
+id: audit.audit_recon
+legacy_objects:
+- teradata_table:SFX_AUDIT.AUDIT_RECON
+- bteq_script:warehouse/teradata/scripts/audit/03_load_reviews.bteq
+- cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/03_load_reviews
+- bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq
+- cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/11_reconciliation
+- teradata_procedure:SFX_AUDIT.P_RECON_COUNTS
+legacy:
+  kind: postgres_sql
+  sql: select * from sfx_audit.audit_recon
+lakehouse:
+  kind: spark_sql
+  sql: select * from gold_audit.audit_recon_final
+keys:
+- recon_id
+columns:
+- recon_id
+- business_dt
+- customer_id
+- source_count
+- target_count
+- difference_count
+normalize: {}
+description: 'A-402: complete reconciliation population including shared jobs/reconcile
+  row 21000000001; no ownership exclusions.'

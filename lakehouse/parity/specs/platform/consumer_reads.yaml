@@ -1,0 +1,26 @@
+{
+  "id": "platform.consumer_reads",
+  "legacy_objects": [
+    "bteq_script:warehouse/teradata/dbql/consumer_reads.bteq"
+  ],
+  "description": "Original fixed-window SELECT aggregation; lower-case username is a canonical representative of the NOT CASESPECIFIC group (A-411). Trailing spaces follow BTEQ grouping translation; no numeric tolerance.",
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "with reads as (select lower(rtrim(username)) as username, rtrim(appid) as appid, rtrim(clientid) as clientid, count(*) as read_queries, cast(count(*) / 30.00 as decimal(12,2)) as reads_per_day from dbc.qrylogv where starttime >= timestamp '2026-10-11 00:00:00' and starttime < timestamp '2026-11-10 00:00:00' and upper(rtrim(statementtype))='SELECT' and errorcode=0 group by lower(rtrim(username)), rtrim(appid), rtrim(clientid)) select *, row_number() over (order by read_queries desc, username COLLATE \"C\" asc nulls last, appid COLLATE \"C\" asc nulls last, clientid COLLATE \"C\" asc nulls last) as occurrence from reads"
+  },
+  "lakehouse": {
+    "kind": "spark_sql",
+    "sql": "select *, row_number() over (order by read_queries desc, username asc nulls last, appid asc nulls last, clientid asc nulls last) as occurrence from gold_platform.consumer_reads"
+  },
+  "keys": [
+    "occurrence"
+  ],
+  "columns": [
+    "username",
+    "appid",
+    "clientid",
+    "read_queries",
+    "reads_per_day",
+    "occurrence"
+  ]
+}
