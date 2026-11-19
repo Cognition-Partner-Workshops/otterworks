@@ -25,7 +25,7 @@ permissions:
 jobs:
   lakehouse:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     services:
       postgres:
         image: postgres:16
@@ -76,7 +76,27 @@ jobs:
           "$python" -m lakehouse.runtime.dbt --select tag:billing
           "$python" -m lakehouse.billing.informatica --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE"
           "$python" -m lakehouse.billing.informatica_reference --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE" --replay-next-run
-      - name: Run the shared-input graph and pilot parity
+      - name: Prepare the audit Spark oracle on the same headered landing
+        env:
+          NS: ${{ env.LEGACY_NS }}
+          LANDING_DIR: ${{ github.workspace }}/etl/spark/.data/${{ env.LEGACY_NS }}/landing
+          SFX_SPARK_MASTER_UI_PORT: 127.0.0.1:8080
+          SFX_SPARK_HISTORY_PORT: 127.0.0.1:18080
+        run: |
+          docker pull mirror.gcr.io/library/spark:3.5.3-scala2.12-java17-python3-ubuntu
+          docker pull mirror.gcr.io/library/postgres:16
+          bash etl/spark/fixture/fetch_jars.sh
+          mkdir -p "etl/spark/.data/$NS"/{landing,lake,eventlogs,logs}
+          chmod 777 "etl/spark/.data/$NS/lake" "etl/spark/.data/$NS/eventlogs" "etl/spark/.cache/$NS"
+          python3 etl/spark/fixture/generate_fixture.py --rows "$ROWS_PER_TABLE" --seed 1110 --output "$LANDING_DIR"
+          docker compose -f docker-compose.spark.yml -p "sfx-d1110-spark-$NS" up -d --wait --wait-timeout 120 --pull never
+          bash etl/spark/fixture/load_tdemu.sh
+          bash etl/spark/scala/build.sh
+          python3 etl/spark/jobs/py/common/package.py
+          for job in audit_daily_summary audit_actor_activity_join audit_archive_resort security_alert_anomaly compliance_flag_rules lake_compaction_audit; do
+            JOB="$job" bash etl/spark/run.sh
+          done
+      - name: Run the shared-input graph and parity
         run: make sfx-lakehouse-run
       - name: Run the users Spark and activity-report parity graphs
         env:
@@ -103,6 +123,9 @@ jobs:
           name: lakehouse-evidence
           path: lakehouse/evidence/
           if-no-files-found: error
+      - name: Stop the Spark oracle
+        if: always()
+        run: NS="$LEGACY_NS" docker compose -f docker-compose.spark.yml -p "sfx-d1110-spark-$LEGACY_NS" down -v
 
   airflow:
     runs-on: ubuntu-latest

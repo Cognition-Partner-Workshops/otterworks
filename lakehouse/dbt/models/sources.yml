@@ -54,3 +54,9 @@ sources:
       - name: legal_hold
       - name: audit_daily_summary
       - name: audit_recon
+      - name: spark_audit_event
+      - name: spark_audit_event_archive
+      - name: spark_compliance_flag
+      - name: spark_security_alert
+      - name: spark_user_activity_daily
+      - name: spark_login_event

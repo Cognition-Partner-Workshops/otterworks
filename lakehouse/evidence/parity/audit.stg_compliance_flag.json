@@ -1,0 +1,160 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "10face57afb192d61f211e3179bc75d11e728941",
+  "id": "audit.stg_compliance_flag",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_AUDIT.STG_COMPLIANCE_FLAG"
+  ],
+  "results": {
+    "columns": [
+      "flag_id",
+      "customer_id",
+      "document_id",
+      "flag_type",
+      "flag_dt",
+      "status_cd"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "customer_id": {
+          "count": 100,
+          "hash": "7e3d59edabcaacd3d8e95517ebf3dc57edecf089ce845b2f85a6533a9d7c33cc",
+          "null_count": 0,
+          "sum": "5050"
+        },
+        "document_id": {
+          "count": 100,
+          "hash": "7e3d59edabcaacd3d8e95517ebf3dc57edecf089ce845b2f85a6533a9d7c33cc",
+          "null_count": 0,
+          "sum": "5050"
+        },
+        "flag_dt": {
+          "count": 100,
+          "hash": "5938e67300f5815ed5dc25d259dde553af8ec84a1594c2a469bdca09ba9b90fa",
+          "null_count": 0,
+          "sum": null
+        },
+        "flag_id": {
+          "count": 100,
+          "hash": "7e3d59edabcaacd3d8e95517ebf3dc57edecf089ce845b2f85a6533a9d7c33cc",
+          "null_count": 0,
+          "sum": "5050"
+        },
+        "flag_type": {
+          "count": 100,
+          "hash": "c7d2ac91e186199bc0efc03f4efc9e50d32c3195e4a2839edfdb3c0ce024d2bd",
+          "null_count": 0,
+          "sum": null
+        },
+        "status_cd": {
+          "count": 100,
+          "hash": "667bdfb883c08f65158c73c7dcd268551f9d0afd010f66512b71b02ed076c5d1",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "customer_id": {
+          "count": 100,
+          "hash": "7e3d59edabcaacd3d8e95517ebf3dc57edecf089ce845b2f85a6533a9d7c33cc",
+          "null_count": 0,
+          "sum": "5050"
+        },
+        "document_id": {
+          "count": 100,
+          "hash": "7e3d59edabcaacd3d8e95517ebf3dc57edecf089ce845b2f85a6533a9d7c33cc",
+          "null_count": 0,
+          "sum": "5050"
+        },
+        "flag_dt": {
+          "count": 100,
+          "hash": "5938e67300f5815ed5dc25d259dde553af8ec84a1594c2a469bdca09ba9b90fa",
+          "null_count": 0,
+          "sum": null
+        },
+        "flag_id": {
+          "count": 100,
+          "hash": "7e3d59edabcaacd3d8e95517ebf3dc57edecf089ce845b2f85a6533a9d7c33cc",
+          "null_count": 0,
+          "sum": "5050"
+        },
+        "flag_type": {
+          "count": 100,
+          "hash": "c7d2ac91e186199bc0efc03f4efc9e50d32c3195e4a2839edfdb3c0ce024d2bd",
+          "null_count": 0,
+          "sum": null
+        },
+        "status_cd": {
+          "count": 100,
+          "hash": "667bdfb883c08f65158c73c7dcd268551f9d0afd010f66512b71b02ed076c5d1",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "customer_id": {
+        "count": 0,
+        "samples": []
+      },
+      "document_id": {
+        "count": 0,
+        "samples": []
+      },
+      "flag_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "flag_id": {
+        "count": 0,
+        "samples": []
+      },
+      "flag_type": {
+        "count": 0,
+        "samples": []
+      },
+      "status_cd": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 100,
+      "legacy": 100
+    }
+  },
+  "row_counts": {
+    "lakehouse": 100,
+    "legacy": 100
+  },
+  "spec_hash": "e8162f2d56821f2e2102e7e48f49468b1e0d1f829384314e6b7ccd4b4cbb5388",
+  "timestamp": "2026-11-19T10:18:54.197216+00:00"
+}

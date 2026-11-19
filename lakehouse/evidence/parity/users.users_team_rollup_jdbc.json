@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "fd494626e8afdfba1a53443c13957ba0a0790d62",
+  "git_sha": "10face57afb192d61f211e3179bc75d11e728941",
   "id": "users.users_team_rollup_jdbc",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -105,5 +105,5 @@
     "legacy": 70
   },
   "spec_hash": "114d3bf06e226abc9e0467f35fcee22df0c3929979ab2ad94a15212f3072c64a",
-  "timestamp": "2026-11-19T09:37:26.694976+00:00"
+  "timestamp": "2026-11-19T10:19:35.837118+00:00"
 }

@@ -1,0 +1,21 @@
+id: audit.stg_audit_recon
+legacy_objects:
+- teradata_table:SFX_AUDIT.STG_AUDIT_RECON
+legacy:
+  kind: postgres_sql
+  sql: select * from sfx_audit.stg_audit_recon
+lakehouse:
+  kind: spark_sql
+  sql: select cast(recon_id as bigint) as recon_id, cast(business_dt as date) as business_dt, cast(customer_id
+    as bigint) as customer_id, cast(source_count as bigint) as source_count, cast(target_count as bigint)
+    as target_count, cast(difference_count as bigint) as difference_count from bronze_audit.audit_recon
+    where _business_date=to_date('{business_date}', 'yyyyMMdd')
+keys:
+- recon_id
+columns:
+- recon_id
+- business_dt
+- customer_id
+- source_count
+- target_count
+- difference_count

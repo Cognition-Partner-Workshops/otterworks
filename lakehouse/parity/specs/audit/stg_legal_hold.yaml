@@ -1,0 +1,21 @@
+id: audit.stg_legal_hold
+legacy_objects:
+- teradata_table:SFX_AUDIT.STG_LEGAL_HOLD
+legacy:
+  kind: postgres_sql
+  sql: select * from sfx_audit.stg_legal_hold
+lakehouse:
+  kind: spark_sql
+  sql: select cast(hold_id as bigint) as hold_id, cast(document_id as bigint) as document_id, cast(customer_id
+    as bigint) as customer_id, cast(start_dt as date) as start_dt, substring(reason_text, 1, 200) as reason_text,
+    substring(status_cd, 1, 200) as status_cd from bronze_audit.legal_hold where _business_date=to_date('{business_date}',
+    'yyyyMMdd')
+keys:
+- hold_id
+columns:
+- hold_id
+- document_id
+- customer_id
+- start_dt
+- reason_text
+- status_cd

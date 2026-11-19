@@ -100,6 +100,9 @@ def test_empty_inputs_and_invalid_comparisons():
 
 def test_csv_reader_and_errors(tmp_path, monkeypatch):
     monkeypatch.setenv('NS', 'test-parity')
+    monkeypatch.setenv('LEGACY_NS', 'test-legacy-parity')
+    assert Readers('20261109').path({'path': '{LEGACY_NS}/{business_date}'}).parts[-2:] == (
+        'test-legacy-parity', '20261109')
     path = tmp_path / '20261109.csv'
     path.write_text('ID,NAME\n1,"quoted, value"\n')
     reader = Readers('20261109')

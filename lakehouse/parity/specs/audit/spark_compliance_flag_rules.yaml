@@ -1,0 +1,19 @@
+id: audit.spark_compliance_flag_rules
+legacy_objects:
+- spark_job:compliance_flag_rules
+- spark_submit:etl/spark/submit/compliance_flag_rules.sh
+description: 'A-406: same Spark landing snapshot; Parquet/JDBC logical output replaced by Delta. Physical
+  ordering and file layout are not relational outputs.'
+legacy:
+  kind: parquet
+  path: etl/spark/.data/{LEGACY_NS}/lake/audit/compliance_flag_rules
+lakehouse:
+  kind: delta_table
+  table: gold_audit.spark_compliance_flag_rules
+keys:
+- flag_id
+columns:
+- flag_id
+- document_id
+- severity
+- disposition

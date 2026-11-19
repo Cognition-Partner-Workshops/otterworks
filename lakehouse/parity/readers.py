@@ -95,7 +95,8 @@ class Readers:
     def path(self, side):
         path = Path(side['path'].format(business_date=self.business_date,
                                         iso_date=datetime.strptime(self.business_date, '%Y%m%d').date().isoformat(),
-                                        NS=os.environ['NS']))
+                                        NS=os.environ['NS'],
+                                        LEGACY_NS=os.environ.get('LEGACY_NS', 'sfx-d1110-before')))
         return path if path.is_absolute() else ROOT.parent / path
 
     @staticmethod

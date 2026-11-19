@@ -1,0 +1,23 @@
+id: audit.audit_daily_summary
+legacy_objects:
+- teradata_table:SFX_AUDIT.AUDIT_DAILY_SUMMARY
+- bteq_script:warehouse/teradata/scripts/audit/03_load_reviews.bteq
+- cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/03_load_reviews
+- bteq_script:warehouse/teradata/scripts/audit/10_summary_daily.bteq
+- cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/10_summary_daily
+- teradata_procedure:SFX_AUDIT.P_DAILY_SUMMARY
+legacy:
+  kind: postgres_sql
+  sql: select * from sfx_audit.audit_daily_summary
+lakehouse:
+  kind: spark_sql
+  sql: select * from gold_audit.audit_summary_final
+keys:
+- summary_id
+columns:
+- summary_id
+- summary_dt
+- customer_id
+- event_count
+- export_count
+normalize: {}

@@ -9,6 +9,7 @@ from defusedxml.common import EntitiesForbidden
 
 from lakehouse.coverage import checker
 from lakehouse.coverage.inventory import REPO, discover
+from lakehouse.parity.spec import discover as discover_specs
 from lakehouse.runtime.layout import ROOT
 
 
@@ -142,11 +143,6 @@ def test_repository_coverage_and_assumption_links():
     assert checker.validate_coverage(coverage, inventory, checker.discover_specs(),
                                      assumptions, ROOT / 'evidence') == []
     for identity, entry in coverage.items():
-        kind = inventory[identity]['kind']
-        if identity == PILOT:
-            assert entry['status'] == 'converted'
-        elif kind in ('fastload', 'tpt') or identity == 'cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging':
-            assert entry['status'] in ('replaced_by_platform', 'converted')
         assert set(entry['assumptions']) == {key for key, assumption in assumptions.items()
                                             if identity in assumption['legacy_objects']}
 

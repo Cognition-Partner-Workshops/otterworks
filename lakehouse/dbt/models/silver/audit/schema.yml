@@ -1,0 +1,161 @@
+{
+  "version": 2,
+  "models": [
+    {
+      "name": "audit_event",
+      "columns": [
+        {
+          "name": "event_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "audit_event_archive",
+      "columns": [
+        {
+          "name": "archive_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "access_review",
+      "columns": [
+        {
+          "name": "review_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "retention_policy",
+      "columns": [
+        {
+          "name": "policy_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "data_export_req",
+      "columns": [
+        {
+          "name": "export_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "compliance_flag",
+      "columns": [
+        {
+          "name": "flag_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "security_alert",
+      "columns": [
+        {
+          "name": "alert_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "legal_hold",
+      "columns": [
+        {
+          "name": "hold_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "audit_daily_summary",
+      "columns": [
+        {
+          "name": "summary_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "audit_recon",
+      "columns": [
+        {
+          "name": "recon_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "stg_audit_event",
+      "columns": [
+        {
+          "name": "event_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "audit_summary_final",
+      "columns": [
+        {
+          "name": "summary_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "audit_recon_final",
+      "columns": [
+        {
+          "name": "recon_id",
+          "data_tests": [
+            "unique",
+            "not_null"
+          ]
+        }
+      ]
+    }
+  ]
+}
