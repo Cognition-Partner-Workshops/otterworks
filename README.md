@@ -129,8 +129,11 @@ GitHub Actions workflows in `.github/workflows/`:
 | Workflow | Trigger | Description |
 |----------|---------|-------------|
 | `ci.yml` | Push / PR to `main` | Lint, test, and build changed services (change-detection via path filters) |
-| `docker-build.yml` | Push to `main` / tags | Build and push Docker images to ECR |
+| `cd-tenant.yml` | Push to `main`, workshop, or demo branches / manual | Build changed services and deploy the branch's tenant |
+| `docker-build.yml` | Manual release | Build and push the complete release image set to ECR |
 | `security-scan.yml` | Push / PR | SAST, dependency audit, and container scanning |
+
+See the [platform ownership and onboarding guide](platform/README.md) for the shared delivery catalog and the standard path for new services.
 
 ## Makefile Commands
 
@@ -172,6 +175,7 @@ otterworks/
 │   ├── audit-service/     #   C# / ASP.NET
 │   └── report-service/    #   Java 8 / Spring Boot 2.5 (legacy)
 ├── frontend/              # Web app (React/Next.js) + Admin dashboard (Angular)
+├── platform/              # Shared runtime, delivery catalog, and app standards
 ├── infrastructure/
 │   ├── terraform/         #   App-specific AWS resources (S3, RDS, DynamoDB, etc.)
 │   ├── helm/              #   Per-service Helm charts

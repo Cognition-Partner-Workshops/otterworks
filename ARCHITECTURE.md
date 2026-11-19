@@ -166,7 +166,6 @@ Managed via Terraform in `infrastructure/terraform/`:
 - MeiliSearch instance
 - Cognito User Pool
 - CloudFront distribution
-- ECR repositories (one per service)
 - IAM roles and policies for EKS service accounts (IRSA)
 
 ### Kubernetes (App-Specific - in this repo)
@@ -176,15 +175,11 @@ Each service has a Helm chart in `infrastructure/helm/<service-name>/`:
 - Resource limits within namespace quotas
 - ConfigMaps and Secrets for service configuration
 
-### Shared Platform (external - `platform-engineering-shared-services`)
-- EKS cluster (v1.31, t3.medium nodes)
-- VPC, subnets, NAT gateways
-- NGINX Ingress Controller
-- cert-manager + Let's Encrypt
-- Prometheus + Grafana (cluster-wide)
-- ArgoCD for GitOps
-- ExternalDNS for Route 53
-- Network policies (base)
+### Shared Platform (in this repo)
+
+- [Platform Terraform](platform/terraform/) provisions the VPC, EKS cluster, and per-service ECR repositories.
+- Tenants share the cluster and ingress controller; [tenant tooling](docs/MULTI-TENANT-DEMO-PLAN.md) manages the namespaces and isolation guardrails.
+- The [platform ownership guide](platform/README.md) describes the delivery standards and what remains service-owned.
 
 ## Observability
 

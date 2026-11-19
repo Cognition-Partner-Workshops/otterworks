@@ -50,14 +50,12 @@ for arg in "$@"; do
   esac
 done
 
-for bin in aws terraform kubectl helm; do
+for bin in aws terraform kubectl helm jq; do
   command -v "$bin" >/dev/null 2>&1 || { err "$bin not found"; exit 1; }
 done
 
-BACKEND_SERVICES=(api-gateway auth-service file-service document-service collab-service \
-  notification-service search-service analytics-service admin-service audit-service report-service)
-FRONTEND_SERVICES=(web-app admin-dashboard)
-ALL_SERVICES=("${BACKEND_SERVICES[@]}" "${FRONTEND_SERVICES[@]}")
+source "${REPO_ROOT}/platform/delivery/catalog.sh"
+delivery_catalog_load
 
 # ---------- Step 1: Platform (recreate EKS) ----------
 log "Applying platform layer (VPC/EKS/ECR)..."

@@ -41,7 +41,7 @@ HOST_SUFFIX="${HOST_SUFFIX:-}"
 SKIP_DB=false
 # Deploy only the services the lab needs. At 100 tenants the difference between
 # "core" and "full" is roughly 100 vCPU of requests. Defaults to "full" so no
-# existing lab loses a service; see profile_services in lib/tenant-common.sh.
+# existing lab loses a service; see the catalog in platform/delivery/.
 PROFILE="${TENANT_PROFILE:-full}"
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -59,10 +59,15 @@ done
 
 [ -n "${ATTENDEE_ID}" ] || { err "Usage: $0 <ATTENDEE_ID> [--tier A|B] [--image-tag TAG] [--branch BRANCH] [--ttl 72h|never] [--profile core|full]"; exit 1; }
 case "${TIER}" in A|B) ;; *) err "--tier must be A or B"; exit 1 ;; esac
-case "${PROFILE}" in core|full) ;; *) err "--profile must be core or full"; exit 1 ;; esac
-mapfile -t TENANT_SERVICES < <(profile_services "${PROFILE}")
-
 require_bins aws kubectl helm terraform jq
+source "${REPO_ROOT}/platform/delivery/catalog.sh"
+delivery_catalog_load
+case "${PROFILE}" in
+  core) TENANT_SERVICES=("${PROFILE_CORE_SERVICES[@]}") ;;
+  full) TENANT_SERVICES=("${ALL_SERVICES[@]}") ;;
+  *) err "--profile must be core or full"; exit 1 ;;
+esac
+
 AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:-$(aws sts get-caller-identity --query Account --output text 2>/dev/null)}"
 [ -n "${AWS_ACCOUNT_ID}" ] || { err "Unable to resolve AWS account (are creds exported?)"; exit 1; }
 ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
