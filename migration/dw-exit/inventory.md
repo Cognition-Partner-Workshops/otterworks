@@ -20,10 +20,10 @@ DBQL window 2026-08-12 through 2026-11-09 inclusive.
     "worklet": 1
   },
   "total": 252,
-  "loc_total": 5919,
+  "loc_total": 6395,
   "complexity": {
-    "medium": 160,
-    "low": 79,
+    "medium": 181,
+    "low": 58,
     "high": 13
   },
   "dead": [
@@ -71,54 +71,56 @@ DBQL window 2026-08-12 through 2026-11-09 inclusive.
   ],
   "waves": {
     "1": {
-      "total": 108,
+      "total": 111,
       "by_kind": {
         "catalog": 6,
         "fastload": 22,
         "macro": 1,
         "mapping": 6,
         "session": 6,
+        "spark_job": 3,
         "table": 45,
         "tpt": 20,
         "view": 2
       },
       "by_target": {
         "dbt_model": 49,
-        "retire": 20,
+        "retire": 23,
         "snowflake_scripting": 39
       }
     },
     "2": {
-      "total": 51,
+      "total": 72,
       "by_kind": {
         "bteq": 12,
         "mapping": 9,
         "session": 9,
+        "spark_job": 21,
         "table": 21
       },
       "by_target": {
-        "dbt_model": 35,
+        "dbt_model": 42,
         "snowflake_scripting": 12,
-        "snowpark": 4
+        "snowpark": 18
       }
     },
     "3": {
-      "total": 82,
+      "total": 58,
       "by_kind": {
         "bteq": 13,
         "macro": 5,
         "mapping": 5,
         "procedure": 4,
         "session": 5,
-        "spark_job": 30,
+        "spark_job": 6,
         "table": 18,
         "workflow": 1,
         "worklet": 1
       },
       "by_target": {
-        "dbt_model": 55,
+        "dbt_model": 30,
         "snowflake_scripting": 24,
-        "snowpark": 3
+        "snowpark": 4
       }
     },
     "4": {
@@ -142,6 +144,12 @@ DBQL window 2026-08-12 through 2026-11-09 inclusive.
       "remaining": 20,
       "target": 0
     },
+    "spark_executor_hours": {
+      "remaining": 0.206092502,
+      "in_window": 0.198646669,
+      "target": 0,
+      "scope": "all packaged eventlogs; in_window reported separately"
+    },
     "powercenter_annual_cost": {
       "value": 412000,
       "currency": "USD"
@@ -151,7 +159,7 @@ DBQL window 2026-08-12 through 2026-11-09 inclusive.
       "target": 0
     },
     "spark_jobs": {
-      "remaining": 30,
+      "remaining": 27,
       "target": 0
     },
     "licence_dependencies": {
@@ -169,6 +177,56 @@ DBQL window 2026-08-12 through 2026-11-09 inclusive.
     "m_SFX_AUDIT_EVENT_ARCHIVE",
     "s_m_SFX_AUDIT_EVENT_ARCHIVE",
     "users_user_pref"
+  ],
+  "stale": [
+    {
+      "id": "n21635c3e4ef179d8",
+      "name": "SFX_AUDIT.V_CUSTOMER_RECON",
+      "review": "owner review; not auto-retired",
+      "window": [
+        "2026-08-12",
+        "2026-11-09"
+      ],
+      "usage_counts": {
+        "READ": 1,
+        "WRITE": 0
+      },
+      "read_count": 1,
+      "last_read": "2026-08-12 06:07:11",
+      "last_write": null,
+      "recent_accesses": [
+        {
+          "QueryID": "111000000069",
+          "principal": "svc_report_recon",
+          "timestamp": "2026-08-12 06:07:11",
+          "usage_type": "READ"
+        }
+      ]
+    },
+    {
+      "id": "n21655cefa5f6f219",
+      "name": "SFX_BILLING.V_SUBSCRIPTION_PLANS",
+      "review": "owner review; not auto-retired",
+      "window": [
+        "2026-08-12",
+        "2026-11-09"
+      ],
+      "usage_counts": {
+        "READ": 1,
+        "WRITE": 0
+      },
+      "read_count": 1,
+      "last_read": "2026-08-12 06:08:36",
+      "last_write": null,
+      "recent_accesses": [
+        {
+          "QueryID": "111000000070",
+          "principal": "svc_report_recon",
+          "timestamp": "2026-08-12 06:08:36",
+          "usage_type": "READ"
+        }
+      ]
+    }
   ]
 }
 ```

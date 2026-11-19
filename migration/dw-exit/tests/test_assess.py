@@ -129,10 +129,10 @@ def test_generated_check():
     assert check.validate() == []
 
 
-@pytest.mark.parametrize('fault', ['duplicate', 'enum', 'dead', 'lineage', 'board', 'wave'])
+@pytest.mark.parametrize('fault', ['duplicate', 'enum', 'dead', 'lineage', 'board', 'wave', 'retire_evidence', 'stale', 'spark_edge', 'spark_history', 'html', 'wave_plan'])
 def test_validator_rejects(tmp_path, fault):
     import shutil
-    for name in ['inventory.csv', 'inventory.md', 'lineage.md', 'manifest.yaml', 'plan.md', 'board/README.md', 'board/board.json', 'README.md']:
+    for name in ['inventory.csv', 'inventory.md', 'lineage.md', 'lineage.html', 'waves.md', 'manifest.yaml', 'plan.md', 'board/README.md', 'board/board.json', 'README.md']:
         dest = tmp_path / name
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(assess.OUT / name, dest)
@@ -158,6 +158,21 @@ def test_validator_rejects(tmp_path, fault):
                 r['wave'] = 4
             if r['id'] == b:
                 r['wave'] = 1
+    elif fault == 'retire_evidence':
+        next(r for r in manifest['objects'] if r['target_type'] == 'retire').pop('retire_evidence')
+    elif fault == 'stale':
+        manifest.pop('stale')
+    elif fault == 'spark_edge':
+        a, b = manifest['spark_edges'][0]
+        start = assess.uid(a) if a.startswith('feed:') else a
+        path = tmp_path / 'lineage.md'
+        path.write_text(path.read_text().replace(f'{start} --> {b}', ''))
+    elif fault == 'spark_history':
+        next(r for r in manifest['objects'] if r['system'] == 'spark').pop('run_evidence')
+    elif fault == 'html':
+        (tmp_path / 'lineage.html').write_text('<html>missing graph</html>')
+    elif fault == 'wave_plan':
+        (tmp_path / 'waves.md').write_text('## Wave 1\n\nObjects: 999\n')
     path.write_text(yaml.safe_dump(manifest))
     assert check.validate(tmp_path, source=False)
 

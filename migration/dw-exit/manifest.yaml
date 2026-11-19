@@ -75,6 +75,19 @@ objects:
   status: not_started
   output_relations:
   - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 0
+      WRITE: 0
+    read_count: 0
+    last_read: null
+    last_write: null
+    recent_accesses: []
+    feeds_dead_objects:
+    - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
 - id: n6aaec9f5432be4e3
   system: powercenter
   kind: mapping
@@ -445,6 +458,19 @@ objects:
   status: not_started
   output_relations:
   - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 0
+      WRITE: 0
+    read_count: 0
+    last_read: null
+    last_write: null
+    recent_accesses: []
+    feeds_dead_objects:
+    - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
 - id: n4752fbb3cc9908e1
   system: powercenter
   kind: session
@@ -1310,6 +1336,25 @@ objects:
   - replaced by SNOWFLAKE.ACCOUNT_USAGE
   status: not_started
   output_relations: []
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 2
+      WRITE: 0
+    read_count: 2
+    last_read: '2026-08-12 06:04:02'
+    last_write: null
+    recent_accesses:
+    - QueryID: '111000000062'
+      principal: svc_report_recon
+      timestamp: '2026-08-12 06:00:59'
+      usage_type: READ
+    - QueryID: '111000000066'
+      principal: svc_report_recon
+      timestamp: '2026-08-12 06:04:02'
+      usage_type: READ
 - id: n3a3914073bbdc5a1
   system: teradata
   kind: catalog
@@ -1328,6 +1373,25 @@ objects:
   - replaced by SNOWFLAKE.ACCOUNT_USAGE
   status: not_started
   output_relations: []
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 2
+      WRITE: 0
+    read_count: 2
+    last_read: '2026-08-12 06:03:31'
+    last_write: null
+    recent_accesses:
+    - QueryID: '111000000063'
+      principal: svc_report_recon
+      timestamp: '2026-08-12 06:01:54'
+      usage_type: READ
+    - QueryID: '111000000065'
+      principal: svc_report_recon
+      timestamp: '2026-08-12 06:03:31'
+      usage_type: READ
 - id: nead75e45ecc6b8c1
   system: teradata
   kind: catalog
@@ -1346,6 +1410,25 @@ objects:
   - replaced by SNOWFLAKE.ACCOUNT_USAGE
   status: not_started
   output_relations: []
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 2
+      WRITE: 0
+    read_count: 2
+    last_read: '2026-08-12 06:05:30'
+    last_write: null
+    recent_accesses:
+    - QueryID: '111000000064'
+      principal: svc_report_recon
+      timestamp: '2026-08-12 06:02:38'
+      usage_type: READ
+    - QueryID: '111000000067'
+      principal: svc_report_recon
+      timestamp: '2026-08-12 06:05:30'
+      usage_type: READ
 - id: nb66dbaba0e618e92
   system: teradata
   kind: catalog
@@ -1364,6 +1447,21 @@ objects:
   - replaced by SNOWFLAKE.ACCOUNT_USAGE
   status: not_started
   output_relations: []
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 1
+      WRITE: 0
+    read_count: 1
+    last_read: '2026-08-12 06:03:31'
+    last_write: null
+    recent_accesses:
+    - QueryID: '111000000065'
+      principal: svc_report_recon
+      timestamp: '2026-08-12 06:03:31'
+      usage_type: READ
 - id: n86d47bca6ce013e3
   system: teradata
   kind: catalog
@@ -1382,6 +1480,21 @@ objects:
   - replaced by SNOWFLAKE.ACCOUNT_USAGE
   status: not_started
   output_relations: []
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 1
+      WRITE: 0
+    read_count: 1
+    last_read: '2026-08-12 06:04:02'
+    last_write: null
+    recent_accesses:
+    - QueryID: '111000000066'
+      principal: svc_report_recon
+      timestamp: '2026-08-12 06:04:02'
+      usage_type: READ
 - id: nf8cc8d95c6ba4dcd
   system: teradata
   kind: catalog
@@ -1400,6 +1513,21 @@ objects:
   - replaced by SNOWFLAKE.ACCOUNT_USAGE
   status: not_started
   output_relations: []
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 1
+      WRITE: 0
+    read_count: 1
+    last_read: '2026-08-12 06:05:30'
+    last_write: null
+    recent_accesses:
+    - QueryID: '111000000067'
+      principal: svc_report_recon
+      timestamp: '2026-08-12 06:05:30'
+      usage_type: READ
 - id: nee272b6a4740c39c
   system: teradata
   kind: fastload
@@ -1761,6 +1889,19 @@ objects:
   status: not_started
   output_relations:
   - SFX_USERS.STG_USER_PREF
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 0
+      WRITE: 0
+    read_count: 0
+    last_read: null
+    last_write: null
+    recent_accesses: []
+    feeds_dead_objects:
+    - SFX_USERS.USER_PREF
 - id: n877eaed6968f6f98
   system: teradata
   kind: fastload
@@ -1815,6 +1956,17 @@ objects:
   - no DBQL usage in 90-day window
   status: not_started
   output_relations: []
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 0
+      WRITE: 0
+    read_count: 0
+    last_read: null
+    last_write: null
+    recent_accesses: []
 - id: ncc8932a645bd1e39
   system: teradata
   kind: macro
@@ -2047,6 +2199,17 @@ objects:
   status: not_started
   output_relations:
   - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 0
+      WRITE: 0
+    read_count: 0
+    last_read: null
+    last_write: null
+    recent_accesses: []
 - id: n21217e4029e00d59
   system: teradata
   kind: table
@@ -2228,6 +2391,23 @@ objects:
   status: not_started
   output_relations:
   - SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 1
+      WRITE: 0
+    read_count: 1
+    last_read: '2026-08-12 06:06:11'
+    last_write: null
+    recent_accesses:
+    - QueryID: '111000000068'
+      principal: svc_report_recon
+      timestamp: '2026-08-12 06:06:11'
+      usage_type: READ
+    feeds_dead_objects:
+    - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
 - id: ne92ffdc17fbda312
   system: teradata
   kind: table
@@ -2931,6 +3111,17 @@ objects:
   status: not_started
   output_relations:
   - SFX_DOCUMENTS.SEARCH_INDEX_LOG
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 0
+      WRITE: 0
+    read_count: 0
+    last_read: null
+    last_write: null
+    recent_accesses: []
 - id: n1c075fb7d55b7b5d
   system: teradata
   kind: table
@@ -3094,6 +3285,23 @@ objects:
   status: not_started
   output_relations:
   - SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 1
+      WRITE: 0
+    read_count: 1
+    last_read: '2026-08-12 06:09:53'
+    last_write: null
+    recent_accesses:
+    - QueryID: '111000000071'
+      principal: svc_report_recon
+      timestamp: '2026-08-12 06:09:53'
+      usage_type: READ
+    feeds_dead_objects:
+    - SFX_DOCUMENTS.SEARCH_INDEX_LOG
 - id: nce35ed86fccc09d6
   system: teradata
   kind: table
@@ -3347,6 +3555,39 @@ objects:
   status: not_started
   output_relations:
   - SFX_USERS.STG_USER_PREF
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 0
+      WRITE: 20
+    read_count: 0
+    last_read: null
+    last_write: '2026-11-07 00:18:06'
+    recent_accesses:
+    - QueryID: '111000005195'
+      principal: svc_fastload
+      timestamp: '2026-10-20 00:36:56'
+      usage_type: WRITE
+    - QueryID: '111000005873'
+      principal: svc_fastload
+      timestamp: '2026-10-25 00:09:42'
+      usage_type: WRITE
+    - QueryID: '111000006411'
+      principal: svc_fastload
+      timestamp: '2026-10-29 00:27:46'
+      usage_type: WRITE
+    - QueryID: '111000007058'
+      principal: svc_fastload
+      timestamp: '2026-11-03 00:00:29'
+      usage_type: WRITE
+    - QueryID: '111000007628'
+      principal: svc_fastload
+      timestamp: '2026-11-07 00:18:06'
+      usage_type: WRITE
+    feeds_dead_objects:
+    - SFX_USERS.USER_PREF
 - id: n533cd80b40ebc9c5
   system: teradata
   kind: table
@@ -3456,6 +3697,17 @@ objects:
   status: not_started
   output_relations:
   - SFX_USERS.USER_PREF
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 0
+      WRITE: 0
+    read_count: 0
+    last_read: null
+    last_write: null
+    recent_accesses: []
 - id: n00ae1e0d0a7ece39
   system: teradata
   kind: table
@@ -3565,6 +3817,19 @@ objects:
   status: not_started
   output_relations:
   - SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 0
+      WRITE: 0
+    read_count: 0
+    last_read: null
+    last_write: null
+    recent_accesses: []
+    feeds_dead_objects:
+    - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
 - id: n753e2b21e59720e0
   system: teradata
   kind: tpt
@@ -3836,6 +4101,19 @@ objects:
   status: not_started
   output_relations:
   - SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 0
+      WRITE: 0
+    read_count: 0
+    last_read: null
+    last_write: null
+    recent_accesses: []
+    feeds_dead_objects:
+    - SFX_DOCUMENTS.SEARCH_INDEX_LOG
 - id: nd66c4bfb75689e73
   system: teradata
   kind: tpt
@@ -3999,6 +4277,17 @@ objects:
   status: not_started
   output_relations:
   - SFX_DOCUMENTS.V_SEARCH_HISTORY
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 0
+      WRITE: 0
+    read_count: 0
+    last_read: null
+    last_write: null
+    recent_accesses: []
 - id: ne711c6aec2d571c4
   system: teradata
   kind: view
@@ -4054,23 +4343,67 @@ objects:
   status: not_started
   output_relations:
   - SFX_USERS.V_USER_SETTINGS
+  retire_evidence:
+    window:
+    - '2026-08-12'
+    - '2026-11-09'
+    usage_counts:
+      READ: 0
+      WRITE: 0
+    read_count: 0
+    last_read: null
+    last_write: null
+    recent_accesses: []
 - id: na305277024d75d53
   system: spark
   kind: spark_job
   name: audit_actor_activity_join
-  complexity: medium
+  complexity: low
   subject_area: audit
   licence_dependency: spark
   source: etl/spark/jobs/py/audit_actor_activity_join.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - audit/audit_actor_activity_join
   target_type: dbt_model
   target: spark__audit_actor_activity_join
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: med
+  risk: low
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: &id001
+    - '2026-08-13'
+    - '2026-11-10'
+    runs_in_window: 1
+    last_run: '2026-11-10T20:25:04.607Z'
+    executor_hours: 0.004015278
+    executor_hours_in_window: 0.004015278
+    applications:
+    - app_id: app-20261110202505-0009
+      start: '2026-11-10T20:25:04.607Z'
+      end: '2026-11-10T20:25:14.311Z'
+      runtime_seconds: 9.704
+      executor_count: 2
+      executor_hours: 0.004015278
+      core_hours: 0.008030556
+      failed_tasks: 1
+      memory_bytes_spilled: 335490556
+      disk_bytes_spilled: 37850607
+      output_files_written: 4
+    cron:
+      state: enabled
+      schedule: 9 1 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/dbt/models/spark/audit_actor_activity_join/schema.yml
+      accounts: []
+      relations:
+      - audit/audit_actor_activity_join
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: na7a9d654bab3f884
   system: spark
@@ -4081,14 +4414,45 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/audit_archive_resort.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - audit/audit_archive_resort
+  target_type: snowpark
   target: spark__audit_archive_resort
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:29:10.674Z'
+    executor_hours: 0.003700556
+    executor_hours_in_window: 0.003700556
+    applications:
+    - app_id: app-20261110202911-0027
+      start: '2026-11-10T20:29:10.674Z'
+      end: '2026-11-10T20:29:19.441Z'
+      runtime_seconds: 8.767
+      executor_count: 2
+      executor_hours: 0.003700556
+      core_hours: 0.003700556
+      failed_tasks: 0
+      memory_bytes_spilled: 50330880
+      disk_bytes_spilled: 10366849
+      output_files_written: 2
+    cron:
+      state: enabled
+      schedule: 27 3 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/dbt/models/spark/audit_archive_resort/schema.yml
+      accounts: []
+      relations:
+      - audit/audit_archive_resort
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: n8966d99361db3a40
   system: spark
@@ -4099,14 +4463,43 @@ objects:
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/AuditDailySummary.scala
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_AUDIT.SPARK_AUDIT_SUMMARY
+  - audit/audit_daily_summary
   target_type: dbt_model
   target: spark__audit_daily_summary
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:24:48.231Z'
+    executor_hours: 0.015961667
+    executor_hours_in_window: 0.015961667
+    applications:
+    - app_id: app-20261110202448-0008
+      start: '2026-11-10T20:24:48.231Z'
+      end: '2026-11-10T20:25:02.460Z'
+      runtime_seconds: 14.229
+      executor_count: 6
+      executor_hours: 0.015961667
+      core_hours: 0.015961667
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 1
+    cron:
+      state: enabled
+      schedule: 8 1 * * *
+    readers:
+    - kind: spark_job
+      name: lake_compaction_audit
+      path: etl/spark/jobs/py/lake_compaction_audit.py
+    non_reader_mentions: []
   status: not_started
 - id: nab9092239e992697
   system: spark
@@ -4117,14 +4510,45 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_churn_score.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - billing/billing_churn_score
+  target_type: snowpark
   target: spark__billing_churn_score
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:26:04.511Z'
+    executor_hours: 0.00381
+    executor_hours_in_window: 0.00381
+    applications:
+    - app_id: app-20261110202605-0015
+      start: '2026-11-10T20:26:04.511Z'
+      end: '2026-11-10T20:26:10.890Z'
+      runtime_seconds: 6.379
+      executor_count: 6
+      executor_hours: 0.00381
+      core_hours: 0.00381
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 2
+    cron:
+      state: enabled
+      schedule: 15 2 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/snowpark/billing_churn_score.py
+      accounts: []
+      relations:
+      - billing/billing_churn_score
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: nc69cdf8b5dc1cf48
   system: spark
@@ -4135,7 +4559,9 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_gl_trial_balance.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_BILLING.SPARK_GL_TRIAL_BALANCE
+  - billing/billing_gl_trial_balance
   target_type: dbt_model
   target: spark__billing_gl_trial_balance
   wave: 3
@@ -4143,6 +4569,36 @@ objects:
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:25:16.685Z'
+    executor_hours: 0.006288056
+    executor_hours_in_window: 0.006288056
+    applications:
+    - app_id: app-20261110202517-0010
+      start: '2026-11-10T20:25:16.685Z'
+      end: '2026-11-10T20:25:27.011Z'
+      runtime_seconds: 10.326
+      executor_count: 3
+      executor_hours: 0.006288056
+      core_hours: 0.006288056
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 1
+    cron:
+      state: enabled
+      schedule: 10 2 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/dbt/models/spark/billing_gl_trial_balance/schema.yml
+      accounts: []
+      relations:
+      - billing/billing_gl_trial_balance
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: n30eea7b5e4b0f036
   system: spark
@@ -4153,7 +4609,9 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_invoice_summary_daily.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_BILLING.SPARK_INVOICE_SUMMARY
+  - billing/billing_invoice_summary_daily
   target_type: dbt_model
   target: spark__billing_invoice_summary_daily
   wave: 3
@@ -4161,6 +4619,36 @@ objects:
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:23:23.633Z'
+    executor_hours: 0.005417778
+    executor_hours_in_window: 0.005417778
+    applications:
+    - app_id: app-20261110202324-0000
+      start: '2026-11-10T20:23:23.633Z'
+      end: '2026-11-10T20:23:32.793Z'
+      runtime_seconds: 9.16
+      executor_count: 3
+      executor_hours: 0.005417778
+      core_hours: 0.005417778
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 3
+    cron:
+      state: enabled
+      schedule: 0 1 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/dbt/models/spark/billing_invoice_summary_daily/billing_invoice_summary_daily.sql
+      accounts: []
+      relations:
+      - billing/billing_invoice_summary_daily
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: n59a3415908e5a5c3
   system: spark
@@ -4171,7 +4659,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_payment_aging.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - billing/billing_payment_aging
   target_type: dbt_model
   target: spark__billing_payment_aging
   wave: 3
@@ -4179,24 +4668,85 @@ objects:
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:23:41.927Z'
+    executor_hours: 0.005603889
+    executor_hours_in_window: 0.005603889
+    applications:
+    - app_id: app-20261110202342-0002
+      start: '2026-11-10T20:23:41.927Z'
+      end: '2026-11-10T20:23:49.610Z'
+      runtime_seconds: 7.683
+      executor_count: 6
+      executor_hours: 0.005603889
+      core_hours: 0.005603889
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 2
+    cron:
+      state: enabled
+      schedule: 2 1 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/dbt/models/spark/billing_payment_aging/billing_payment_aging.sql
+      accounts: []
+      relations:
+      - billing/billing_payment_aging
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: nc272de5514b12dd4
   system: spark
   kind: spark_job
   name: billing_revenue_by_plan
-  complexity: medium
+  complexity: low
   subject_area: billing
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_revenue_by_plan.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - billing/billing_revenue_by_plan
   target_type: dbt_model
   target: spark__billing_revenue_by_plan
   wave: 3
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: med
+  risk: low
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:23:34.584Z'
+    executor_hours: 0.001860556
+    executor_hours_in_window: 0.001860556
+    applications:
+    - app_id: app-20261110202335-0001
+      start: '2026-11-10T20:23:34.584Z'
+      end: '2026-11-10T20:23:40.048Z'
+      runtime_seconds: 5.464
+      executor_count: 2
+      executor_hours: 0.001860556
+      core_hours: 0.003721111
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 1
+    cron:
+      state: enabled
+      schedule: 1 1 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/dbt/models/spark/billing_revenue_by_plan/billing_revenue_by_plan.sql
+      accounts: []
+      relations:
+      - billing/billing_revenue_by_plan
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: n217068cf70e21f45
   system: spark
@@ -4207,7 +4757,9 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_usage_append_daily.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_BILLING.SPARK_USAGE_DAILY
+  - billing/billing_usage_append_daily
   target_type: dbt_model
   target: spark__billing_usage_append_daily
   wave: 3
@@ -4215,6 +4767,36 @@ objects:
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:23:52.055Z'
+    executor_hours: 0.003107778
+    executor_hours_in_window: 0.003107778
+    applications:
+    - app_id: app-20261110202352-0003
+      start: '2026-11-10T20:23:52.055Z'
+      end: '2026-11-10T20:24:00.354Z'
+      runtime_seconds: 8.299
+      executor_count: 2
+      executor_hours: 0.003107778
+      core_hours: 0.003107778
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 1
+    cron:
+      state: enabled
+      schedule: 3 1 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/dbt/models/spark/billing_usage_append_daily/schema.yml
+      accounts: []
+      relations:
+      - billing/billing_usage_append_daily
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: nda318831425979ea
   system: spark
@@ -4225,14 +4807,45 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/collab_session_sessionize.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - documents/collab_session_sessionize
+  target_type: snowpark
   target: spark__collab_session_sessionize
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:28:20.320Z'
+    executor_hours: 0.002546944
+    executor_hours_in_window: 0.002546944
+    applications:
+    - app_id: app-20261110202821-0024
+      start: '2026-11-10T20:28:20.320Z'
+      end: '2026-11-10T20:28:27.325Z'
+      runtime_seconds: 7.005
+      executor_count: 2
+      executor_hours: 0.002546944
+      core_hours: 0.005093889
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 3
+    cron:
+      state: enabled
+      schedule: 24 3 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/dbt/models/spark/collab_session_sessionize/schema.yml
+      accounts: []
+      relations:
+      - documents/collab_session_sessionize
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: n6b4402f4aec586b1
   system: spark
@@ -4243,14 +4856,46 @@ objects:
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - SFX_AUDIT.SPARK_COMPLIANCE_REVIEW
+  - audit/compliance_flag_rules
+  target_type: snowpark
   target: spark__compliance_flag_rules
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:29:29.185Z'
+    executor_hours: 0.010249167
+    executor_hours_in_window: 0.010249167
+    applications:
+    - app_id: app-20261110202929-0029
+      start: '2026-11-10T20:29:29.185Z'
+      end: '2026-11-10T20:29:39.470Z'
+      runtime_seconds: 10.285
+      executor_count: 6
+      executor_hours: 0.010249167
+      core_hours: 0.010249167
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 3
+    cron:
+      state: enabled
+      schedule: 29 3 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/snowpark/compliance_flag_rules.py
+      accounts: []
+      relations:
+      - audit/compliance_flag_rules
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: nb1e649b467d1d68d
   system: spark
@@ -4261,14 +4906,45 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/doc_share_graph_reach.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - documents/doc_share_graph_reach
+  target_type: snowpark
   target: spark__doc_share_graph_reach
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:28:07.603Z'
+    executor_hours: 0.004417778
+    executor_hours_in_window: 0.004417778
+    applications:
+    - app_id: app-20261110202808-0023
+      start: '2026-11-10T20:28:07.603Z'
+      end: '2026-11-10T20:28:17.660Z'
+      runtime_seconds: 10.057
+      executor_count: 2
+      executor_hours: 0.004417778
+      core_hours: 0.004417778
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 4
+    cron:
+      state: enabled
+      schedule: 23 3 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/snowpark/doc_share_graph_reach.py
+      accounts: []
+      relations:
+      - documents/doc_share_graph_reach
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: n73fc2c67175df7a7
   system: spark
@@ -4279,51 +4955,158 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/doc_version_diff_stats.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - documents/doc_version_diff_stats
+  target_type: snowpark
   target: spark__doc_version_diff_stats
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:28:30.201Z'
+    executor_hours: 0.030714722
+    executor_hours_in_window: 0.030714722
+    applications:
+    - app_id: app-20261110202830-0025
+      start: '2026-11-10T20:28:30.201Z'
+      end: '2026-11-10T20:28:53.303Z'
+      runtime_seconds: 23.102
+      executor_count: 6
+      executor_hours: 0.030714722
+      core_hours: 0.030714722
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 6
+    cron:
+      state: enabled
+      schedule: 25 3 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/snowpark/doc_version_diff_stats.py
+      accounts: []
+      relations:
+      - documents/doc_version_diff_stats
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: n9e1cde11f1fcdf14
   system: spark
   kind: spark_job
   name: docs_event_export_hourly
-  complexity: medium
+  complexity: low
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/docs_event_export_hourly.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - documents/docs_event_export_hourly
   target_type: dbt_model
   target: spark__docs_event_export_hourly
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: med
+  risk: low
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:26:41.430Z'
+    executor_hours: 0.013149444
+    executor_hours_in_window: 0.013149444
+    applications:
+    - app_id: app-20261110202641-0018
+      start: '2026-11-10T20:26:41.430Z'
+      end: '2026-11-10T20:27:07.410Z'
+      runtime_seconds: 25.98
+      executor_count: 2
+      executor_hours: 0.013149444
+      core_hours: 0.026298889
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 10000
+    cron:
+      state: enabled
+      schedule: 18 * * * *
+    readers:
+    - kind: spark_job
+      name: lake_compaction_documents
+      path: etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/dbt/models/spark/docs_event_export_hourly/docs_event_export_hourly.sql
+      accounts: []
+      relations:
+      - documents/docs_event_export_hourly
+      reason: migration/replacement artifact or documentation, not legacy output consumption
+    - kind: repo
+      path: warehouse/dbt/models/spark/docs_event_export_hourly/schema.yml
+      accounts: []
+      relations:
+      - documents/docs_event_export_hourly
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: n62c507a6ebeca788
   system: spark
   kind: spark_job
   name: docs_folder_legacy_report
-  complexity: medium
+  complexity: low
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/docs_folder_legacy_report.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
-  target: spark__docs_folder_legacy_report
-  wave: 3
+  output_relations:
+  - documents/docs_folder_legacy_report
+  target_type: retire
+  target: NONE
+  wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: med
-  risk_reasons: []
+  risk: low
+  risk_reasons:
+  - disabled cron or no runs in window, and no output readers
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 0
+    last_run: '2026-07-15T20:25:29.129Z'
+    executor_hours: 0.007445833
+    executor_hours_in_window: 0
+    applications: &id002
+    - app_id: app-20260715202529-0011
+      start: '2026-07-15T20:25:29.129Z'
+      end: '2026-07-15T20:25:37.845Z'
+      runtime_seconds: 8.716
+      executor_count: 6
+      executor_hours: 0.007445833
+      core_hours: 0.007445833
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 2
+    cron: &id003
+      state: disabled
+      schedule: 11 2 * * *
+    readers: &id004 []
+    non_reader_mentions: &id005 []
   status: not_started
+  retire_evidence:
+    window: *id001
+    runs_in_window: 0
+    last_run: '2026-07-15T20:25:29.129Z'
+    executor_hours: 0.007445833
+    executor_hours_in_window: 0
+    applications: *id002
+    cron: *id003
+    readers: *id004
+    non_reader_mentions: *id005
 - id: nc7caadea569fe6a7
   system: spark
   kind: spark_job
@@ -4333,14 +5116,45 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/docs_folder_tree_walk.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - documents/docs_folder_tree_walk
+  target_type: snowpark
   target: spark__docs_folder_tree_walk
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:27:41.786Z'
+    executor_hours: 0.008423056
+    executor_hours_in_window: 0.008423056
+    applications:
+    - app_id: app-20261110202742-0021
+      start: '2026-11-10T20:27:41.786Z'
+      end: '2026-11-10T20:27:50.652Z'
+      runtime_seconds: 8.866
+      executor_count: 6
+      executor_hours: 0.008423056
+      core_hours: 0.008423056
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 2
+    cron:
+      state: enabled
+      schedule: 21 3 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/snowpark/docs_folder_tree_walk.py
+      accounts: []
+      relations:
+      - documents/docs_folder_tree_walk
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: nacb901d117c72988
   system: spark
@@ -4351,50 +5165,149 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/docs_search_log_parse.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - documents/docs_search_log_parse
+  target_type: snowpark
   target: spark__docs_search_log_parse
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:25:39.542Z'
+    executor_hours: 0.001591111
+    executor_hours_in_window: 0.001591111
+    applications:
+    - app_id: app-20261110202540-0012
+      start: '2026-11-10T20:25:39.542Z'
+      end: '2026-11-10T20:25:44.662Z'
+      runtime_seconds: 5.12
+      executor_count: 2
+      executor_hours: 0.001591111
+      core_hours: 0.001591111
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 3
+    cron:
+      state: enabled
+      schedule: 12 2 * * *
+    readers: []
+    non_reader_mentions: []
   status: not_started
 - id: n99294cb574316a26
   system: spark
   kind: spark_job
   name: docs_share_activity
-  complexity: medium
+  complexity: low
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/DocsShareActivity.scala
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - documents/docs_share_activity
   target_type: dbt_model
   target: spark__docs_share_activity
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: med
+  risk: low
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:24:11.514Z'
+    executor_hours: 0.015369167
+    executor_hours_in_window: 0.015369167
+    applications:
+    - app_id: app-20261110202412-0005
+      start: '2026-11-10T20:24:11.514Z'
+      end: '2026-11-10T20:24:25.922Z'
+      runtime_seconds: 14.408
+      executor_count: 6
+      executor_hours: 0.015369167
+      core_hours: 0.015369167
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 1
+    cron:
+      state: enabled
+      schedule: 5 1 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/dbt/models/spark/docs_share_activity/docs_share_activity.sql
+      accounts: []
+      relations:
+      - documents/docs_share_activity
+      reason: migration/replacement artifact or documentation, not legacy output consumption
+    - kind: repo
+      path: warehouse/dbt/models/spark/docs_share_activity/schema.yml
+      accounts: []
+      relations:
+      - documents/docs_share_activity
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: nb17a88119e3df908
   system: spark
   kind: spark_job
   name: docs_storage_by_owner
-  complexity: medium
+  complexity: low
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/jobs/py/docs_storage_by_owner.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - documents/docs_storage_by_owner
   target_type: dbt_model
   target: spark__docs_storage_by_owner
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: med
+  risk: low
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:24:02.831Z'
+    executor_hours: 0.002620833
+    executor_hours_in_window: 0.002620833
+    applications:
+    - app_id: app-20261110202403-0004
+      start: '2026-11-10T20:24:02.831Z'
+      end: '2026-11-10T20:24:10.044Z'
+      runtime_seconds: 7.213
+      executor_count: 2
+      executor_hours: 0.002620833
+      core_hours: 0.005241667
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 1
+    cron:
+      state: enabled
+      schedule: 4 1 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/dbt/models/spark/docs_storage_by_owner/docs_storage_by_owner.sql
+      accounts: []
+      relations:
+      - documents/docs_storage_by_owner
+      reason: migration/replacement artifact or documentation, not legacy output consumption
+    - kind: repo
+      path: warehouse/dbt/models/spark/docs_storage_by_owner/schema.yml
+      accounts: []
+      relations:
+      - documents/docs_storage_by_owner
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: n2e6e7921f1c1a457
   system: spark
@@ -4405,14 +5318,39 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/docs_tag_normalize.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - documents/docs_tag_normalize
+  target_type: snowpark
   target: spark__docs_tag_normalize
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:25:57.755Z'
+    executor_hours: 0.001232222
+    executor_hours_in_window: 0.001232222
+    applications:
+    - app_id: app-20261110202558-0014
+      start: '2026-11-10T20:25:57.755Z'
+      end: '2026-11-10T20:26:02.013Z'
+      runtime_seconds: 4.258
+      executor_count: 2
+      executor_hours: 0.001232222
+      core_hours: 0.002464444
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 2
+    cron:
+      state: enabled
+      schedule: 14 2 * * *
+    readers: []
+    non_reader_mentions: []
   status: not_started
 - id: n42b4ed91f0a96d32
   system: spark
@@ -4423,68 +5361,200 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/file_object_binary_extract.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - documents/file_object_binary_extract
+  target_type: snowpark
   target: spark__file_object_binary_extract
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: med
+  risk: high
   risk_reasons: []
+  findings:
+  - 'Local run 2026-11-19 failed: ModuleNotFoundError: No module named warehouse;
+    binary_documents imports warehouse.run_config, absent from common.zip and Spark
+    service mounts'
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:28:55.796Z'
+    executor_hours: 0.008545
+    executor_hours_in_window: 0.008545
+    applications:
+    - app_id: app-20261110202856-0026
+      start: '2026-11-10T20:28:55.796Z'
+      end: '2026-11-10T20:29:08.457Z'
+      runtime_seconds: 12.661
+      executor_count: 3
+      executor_hours: 0.008545
+      core_hours: 0.008545
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 3
+    cron:
+      state: enabled
+      schedule: 26 3 * * *
+    readers: []
+    non_reader_mentions: []
   status: not_started
 - id: nb4c259fa9770ac59
   system: spark
   kind: spark_job
   name: lake_compaction_audit
-  complexity: medium
+  complexity: low
   subject_area: audit
   licence_dependency: spark
   source: etl/spark/jobs/py/lake_compaction_audit.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
-  target: spark__lake_compaction_audit
-  wave: 3
+  output_relations:
+  - audit/lake_compaction_audit
+  target_type: retire
+  target: NONE
+  wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: med
-  risk_reasons: []
+  risk: low
+  risk_reasons:
+  - replaced by Snowflake storage management
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:27:35.087Z'
+    executor_hours: 0.001205833
+    executor_hours_in_window: 0.001205833
+    applications: &id006
+    - app_id: app-20261110202735-0020
+      start: '2026-11-10T20:27:35.087Z'
+      end: '2026-11-10T20:27:39.462Z'
+      runtime_seconds: 4.375
+      executor_count: 2
+      executor_hours: 0.001205833
+      core_hours: 0.001205833
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 1
+    cron: &id007
+      state: enabled
+      schedule: 20 3 * * *
+    readers: &id008 []
+    non_reader_mentions: &id009 []
   status: not_started
+  retire_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:27:35.087Z'
+    executor_hours: 0.001205833
+    executor_hours_in_window: 0.001205833
+    applications: *id006
+    cron: *id007
+    readers: *id008
+    non_reader_mentions: *id009
 - id: n46441ec8597bcf09
   system: spark
   kind: spark_job
   name: lake_compaction_documents
-  complexity: medium
+  complexity: low
   subject_area: documents
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
-  target: spark__lake_compaction_documents
-  wave: 3
+  output_relations:
+  - documents/lake_compaction_documents
+  target_type: retire
+  target: NONE
+  wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: med
-  risk_reasons: []
+  risk: low
+  risk_reasons:
+  - replaced by Snowflake storage management
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:27:08.884Z'
+    executor_hours: 0.012373611
+    executor_hours_in_window: 0.012373611
+    applications: &id010
+    - app_id: app-20261110202709-0019
+      start: '2026-11-10T20:27:08.884Z'
+      end: '2026-11-10T20:27:33.508Z'
+      runtime_seconds: 24.624
+      executor_count: 2
+      executor_hours: 0.012373611
+      core_hours: 0.024747222
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 4
+    cron: &id011
+      state: enabled
+      schedule: 19 2 * * *
+    readers: &id012 []
+    non_reader_mentions: &id013 []
   status: not_started
+  retire_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:27:08.884Z'
+    executor_hours: 0.012373611
+    executor_hours_in_window: 0.012373611
+    applications: *id010
+    cron: *id011
+    readers: *id012
+    non_reader_mentions: *id013
 - id: nf3b5c3eaa1bc272c
   system: spark
   kind: spark_job
   name: security_alert_anomaly
   complexity: medium
-  subject_area: documents
+  subject_area: audit
   licence_dependency: spark
   source: etl/spark/jobs/py/security_alert_anomaly.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - SFX_AUDIT.SPARK_ALERT_ANOMALY
+  - audit/security_alert_anomaly
+  target_type: snowpark
   target: spark__security_alert_anomaly
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:26:25.724Z'
+    executor_hours: 0.013226667
+    executor_hours_in_window: 0.013226667
+    applications:
+    - app_id: app-20261110202626-0017
+      start: '2026-11-10T20:26:25.724Z'
+      end: '2026-11-10T20:26:38.955Z'
+      runtime_seconds: 13.231
+      executor_count: 6
+      executor_hours: 0.013226667
+      core_hours: 0.013226667
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 2
+    cron:
+      state: enabled
+      schedule: 17 2 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/snowpark/security_alert_anomaly.py
+      accounts: []
+      relations:
+      - audit/security_alert_anomaly
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: nc6160237cc5eb2cf
   system: spark
@@ -4495,14 +5565,45 @@ objects:
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/TeamGraphComponents.scala
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - users/team_graph_components
+  target_type: snowpark
   target: spark__team_graph_components
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:27:52.721Z'
+    executor_hours: 0.006136667
+    executor_hours_in_window: 0.006136667
+    applications:
+    - app_id: app-20261110202753-0022
+      start: '2026-11-10T20:27:52.721Z'
+      end: '2026-11-10T20:28:06.083Z'
+      runtime_seconds: 13.362
+      executor_count: 2
+      executor_hours: 0.006136667
+      core_hours: 0.012273333
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 4
+    cron:
+      state: enabled
+      schedule: 22 3 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/snowpark/team_graph_components.py
+      accounts: []
+      relations:
+      - users/team_graph_components
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: nadfca1251f9b6a28
   system: spark
@@ -4513,32 +5614,88 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/user_pref_json_flatten.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - users/user_pref_json_flatten
+  target_type: snowpark
   target: spark__user_pref_json_flatten
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:29:22.410Z'
+    executor_hours: 0.001498611
+    executor_hours_in_window: 0.001498611
+    applications:
+    - app_id: app-20261110202922-0028
+      start: '2026-11-10T20:29:22.410Z'
+      end: '2026-11-10T20:29:27.162Z'
+      runtime_seconds: 4.752
+      executor_count: 2
+      executor_hours: 0.001498611
+      core_hours: 0.002997222
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 4
+    cron:
+      state: enabled
+      schedule: 28 3 * * *
+    readers: []
+    non_reader_mentions: []
   status: not_started
 - id: nccade0800035b66b
   system: spark
   kind: spark_job
   name: users_active_daily
-  complexity: medium
+  complexity: low
   subject_area: users
   licence_dependency: spark
   source: etl/spark/jobs/py/users_active_daily.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - users/users_active_daily
   target_type: dbt_model
   target: spark__users_active_daily
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
-  risk: med
+  risk: low
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:24:27.715Z'
+    executor_hours: 0.002261111
+    executor_hours_in_window: 0.002261111
+    applications:
+    - app_id: app-20261110202428-0006
+      start: '2026-11-10T20:24:27.715Z'
+      end: '2026-11-10T20:24:34.166Z'
+      runtime_seconds: 6.451
+      executor_count: 2
+      executor_hours: 0.002261111
+      core_hours: 0.002261111
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 1
+    cron:
+      state: enabled
+      schedule: 6 1 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/dbt/models/spark/users_active_daily/schema.yml
+      accounts: []
+      relations:
+      - users/users_active_daily
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: n1d48699afd1ffdb6
   system: spark
@@ -4549,14 +5706,39 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/users_login_useragent_parse.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - users/users_login_useragent_parse
+  target_type: snowpark
   target: spark__users_login_useragent_parse
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:25:47.283Z'
+    executor_hours: 0.005469167
+    executor_hours_in_window: 0.005469167
+    applications:
+    - app_id: app-20261110202547-0013
+      start: '2026-11-10T20:25:47.283Z'
+      end: '2026-11-10T20:25:54.713Z'
+      runtime_seconds: 7.43
+      executor_count: 6
+      executor_hours: 0.005469167
+      core_hours: 0.005469167
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 3
+    cron:
+      state: enabled
+      schedule: 13 2 * * *
+    readers: []
+    non_reader_mentions: []
   status: not_started
 - id: nb8c305d5ee549186
   system: spark
@@ -4567,14 +5749,46 @@ objects:
   licence_dependency: spark
   source: etl/spark/scala/src/main/scala/sfx/UsersRiskScore.scala
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
-  target_type: dbt_model
+  output_relations:
+  - SFX_USERS.SPARK_RISK_SCORE
+  - users/users_risk_score
+  target_type: snowpark
   target: spark__users_risk_score
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:26:13.032Z'
+    executor_hours: 0.004293889
+    executor_hours_in_window: 0.004293889
+    applications:
+    - app_id: app-20261110202613-0016
+      start: '2026-11-10T20:26:13.032Z'
+      end: '2026-11-10T20:26:22.850Z'
+      runtime_seconds: 9.818
+      executor_count: 2
+      executor_hours: 0.004293889
+      core_hours: 0.008587778
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 4
+    cron:
+      state: enabled
+      schedule: 16 2 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/snowpark/users_risk_score.py
+      accounts: []
+      relations:
+      - users/users_risk_score
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 - id: nc71a4f6251d9ca10
   system: spark
@@ -4585,14 +5799,46 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/users_team_rollup.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_USERS.SPARK_TEAM_ROLLUP
+  - users/users_team_rollup
   target_type: dbt_model
   target: spark__users_team_rollup
-  wave: 3
+  wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
   risk: med
   risk_reasons: []
+  findings: []
+  run_evidence:
+    window: *id001
+    runs_in_window: 1
+    last_run: '2026-11-10T20:24:37.269Z'
+    executor_hours: 0.003556111
+    executor_hours_in_window: 0.003556111
+    applications:
+    - app_id: app-20261110202437-0007
+      start: '2026-11-10T20:24:37.269Z'
+      end: '2026-11-10T20:24:46.161Z'
+      runtime_seconds: 8.892
+      executor_count: 2
+      executor_hours: 0.003556111
+      core_hours: 0.007112222
+      failed_tasks: 0
+      memory_bytes_spilled: 0
+      disk_bytes_spilled: 0
+      output_files_written: 2
+    cron:
+      state: enabled
+      schedule: 7 1 * * *
+    readers: []
+    non_reader_mentions:
+    - kind: repo
+      path: warehouse/dbt/models/spark/users_team_rollup/schema.yml
+      accounts: []
+      relations:
+      - users/users_team_rollup
+      reason: migration/replacement artifact or documentation, not legacy output consumption
   status: not_started
 consumers:
 - id: n7d4be2219d74bf8d
@@ -4790,6 +6036,169 @@ dead_dependents:
 - m_SFX_AUDIT_EVENT_ARCHIVE
 - s_m_SFX_AUDIT_EVENT_ARCHIVE
 - users_user_pref
+stale:
+- id: n21635c3e4ef179d8
+  name: SFX_AUDIT.V_CUSTOMER_RECON
+  review: owner review; not auto-retired
+  window:
+  - '2026-08-12'
+  - '2026-11-09'
+  usage_counts:
+    READ: 1
+    WRITE: 0
+  read_count: 1
+  last_read: '2026-08-12 06:07:11'
+  last_write: null
+  recent_accesses:
+  - QueryID: '111000000069'
+    principal: svc_report_recon
+    timestamp: '2026-08-12 06:07:11'
+    usage_type: READ
+- id: n21655cefa5f6f219
+  name: SFX_BILLING.V_SUBSCRIPTION_PLANS
+  review: owner review; not auto-retired
+  window:
+  - '2026-08-12'
+  - '2026-11-09'
+  usage_counts:
+    READ: 1
+    WRITE: 0
+  read_count: 1
+  last_read: '2026-08-12 06:08:36'
+  last_write: null
+  recent_accesses:
+  - QueryID: '111000000070'
+    principal: svc_report_recon
+    timestamp: '2026-08-12 06:08:36'
+    usage_type: READ
+external_relations:
+- id: n0a4fe95e77d5690b
+  name: SFX_USERS.SPARK_RISK_SCORE
+  kind: table
+- id: n4205d2030d153ac1
+  name: SFX_BILLING.SPARK_USAGE_DAILY
+  kind: table
+- id: n5045de9b751f376f
+  name: SFX_AUDIT.SPARK_AUDIT_SUMMARY
+  kind: table
+- id: n656cdf050777cfd2
+  name: SFX_AUDIT.SPARK_COMPLIANCE_REVIEW
+  kind: table
+- id: n89d7d195e0654372
+  name: SFX_BILLING.SPARK_INVOICE_SUMMARY
+  kind: table
+- id: n98df95cef575cf84
+  name: SFX_USERS.SPARK_TEAM_ROLLUP
+  kind: table
+- id: ndd76574b064683e5
+  name: SFX_BILLING.SPARK_GL_TRIAL_BALANCE
+  kind: table
+- id: ndf67da08e2f1135f
+  name: SFX_AUDIT.SPARK_ALERT_ANOMALY
+  kind: table
+spark_edges:
+- - feed:${LANDING_DIR}/audit/AUDIT_EVENT/${BUSINESS_DATE}.psv
+  - n8966d99361db3a40
+- - feed:${LANDING_DIR}/audit/AUDIT_EVENT/${BUSINESS_DATE}.psv
+  - na305277024d75d53
+- - feed:${LANDING_DIR}/audit/AUDIT_EVENT_ARCHIVE/${BUSINESS_DATE}.psv
+  - na7a9d654bab3f884
+- - feed:${LANDING_DIR}/audit/COMPLIANCE_FLAG/${BUSINESS_DATE}.psv
+  - n6b4402f4aec586b1
+- - feed:${LANDING_DIR}/audit/SECURITY_ALERT/${BUSINESS_DATE}.psv
+  - nf3b5c3eaa1bc272c
+- - feed:${LANDING_DIR}/billing/CREDIT_NOTE/${BUSINESS_DATE}.psv
+  - nc69cdf8b5dc1cf48
+- - feed:${LANDING_DIR}/billing/GL_ACCOUNT/${BUSINESS_DATE}.psv
+  - nc69cdf8b5dc1cf48
+- - feed:${LANDING_DIR}/billing/GL_JOURNAL_LINE/${BUSINESS_DATE}.psv
+  - nc69cdf8b5dc1cf48
+- - feed:${LANDING_DIR}/billing/INVOICE_HDR/${BUSINESS_DATE}.psv
+  - n30eea7b5e4b0f036
+- - feed:${LANDING_DIR}/billing/INVOICE_LINE/${BUSINESS_DATE}.psv
+  - n30eea7b5e4b0f036
+- - feed:${LANDING_DIR}/billing/INVOICE_LINE/${BUSINESS_DATE}.psv
+  - nc272de5514b12dd4
+- - feed:${LANDING_DIR}/billing/PLAN_CATALOG/${BUSINESS_DATE}.psv
+  - nc272de5514b12dd4
+- - feed:${LANDING_DIR}/billing/SUBSCRIPTION/${BUSINESS_DATE}.psv
+  - nab9092239e992697
+- - feed:${LANDING_DIR}/billing/USAGE_DAILY/${BUSINESS_DATE}.psv
+  - n217068cf70e21f45
+- - feed:${LANDING_DIR}/documents/COLLAB_SESSION/${BUSINESS_DATE}.psv
+  - nda318831425979ea
+- - feed:${LANDING_DIR}/documents/DOCUMENT/${BUSINESS_DATE}.psv
+  - n62c507a6ebeca788
+- - feed:${LANDING_DIR}/documents/DOCUMENT/${BUSINESS_DATE}.psv
+  - n99294cb574316a26
+- - feed:${LANDING_DIR}/documents/DOCUMENT/${BUSINESS_DATE}.psv
+  - n9e1cde11f1fcdf14
+- - feed:${LANDING_DIR}/documents/DOCUMENT/${BUSINESS_DATE}.psv
+  - nb17a88119e3df908
+- - feed:${LANDING_DIR}/documents/DOC_SHARE/${BUSINESS_DATE}.psv
+  - n99294cb574316a26
+- - feed:${LANDING_DIR}/documents/DOC_SHARE/${BUSINESS_DATE}.psv
+  - nb1e649b467d1d68d
+- - feed:${LANDING_DIR}/documents/DOC_TAG/${BUSINESS_DATE}.psv
+  - n2e6e7921f1c1a457
+- - feed:${LANDING_DIR}/documents/DOC_VERSION/${BUSINESS_DATE}.psv
+  - n73fc2c67175df7a7
+- - feed:${LANDING_DIR}/documents/FILE_OBJECT/${BUSINESS_DATE}.psv
+  - n42b4ed91f0a96d32
+- - feed:${LANDING_DIR}/documents/FILE_OBJECT/${BUSINESS_DATE}.psv
+  - nb17a88119e3df908
+- - feed:${LANDING_DIR}/documents/FOLDER/${BUSINESS_DATE}.psv
+  - n62c507a6ebeca788
+- - feed:${LANDING_DIR}/documents/FOLDER/${BUSINESS_DATE}.psv
+  - nc7caadea569fe6a7
+- - feed:${LANDING_DIR}/documents/SEARCH_INDEX_LOG/${BUSINESS_DATE}.psv
+  - nacb901d117c72988
+- - feed:${LANDING_DIR}/users/APP_USER/${BUSINESS_DATE}.psv
+  - nb17a88119e3df908
+- - feed:${LANDING_DIR}/users/APP_USER/${BUSINESS_DATE}.psv
+  - nc71a4f6251d9ca10
+- - feed:${LANDING_DIR}/users/LOGIN_EVENT/${BUSINESS_DATE}.psv
+  - n1d48699afd1ffdb6
+- - feed:${LANDING_DIR}/users/LOGIN_EVENT/${BUSINESS_DATE}.psv
+  - na305277024d75d53
+- - feed:${LANDING_DIR}/users/TEAM/${BUSINESS_DATE}.psv
+  - nc71a4f6251d9ca10
+- - feed:${LANDING_DIR}/users/TEAM_MEMBER/${BUSINESS_DATE}.psv
+  - nc6160237cc5eb2cf
+- - feed:${LANDING_DIR}/users/TEAM_MEMBER/${BUSINESS_DATE}.psv
+  - nc71a4f6251d9ca10
+- - feed:${LANDING_DIR}/users/USER_ACTIVITY_DAILY/${BUSINESS_DATE}.psv
+  - na305277024d75d53
+- - feed:${LANDING_DIR}/users/USER_ACTIVITY_DAILY/${BUSINESS_DATE}.psv
+  - nb8c305d5ee549186
+- - feed:${LANDING_DIR}/users/USER_ACTIVITY_DAILY/${BUSINESS_DATE}.psv
+  - nccade0800035b66b
+- - feed:${LANDING_DIR}/users/USER_PREF/${BUSINESS_DATE}.psv
+  - nadfca1251f9b6a28
+- - n217068cf70e21f45
+  - n4205d2030d153ac1
+- - n30eea7b5e4b0f036
+  - n89d7d195e0654372
+- - n40359b042a48a08e
+  - n59a3415908e5a5c3
+- - n4a90a6534be003c7
+  - n59a3415908e5a5c3
+- - n6b4402f4aec586b1
+  - n656cdf050777cfd2
+- - n8966d99361db3a40
+  - n5045de9b751f376f
+- - n8966d99361db3a40
+  - nb4c259fa9770ac59
+- - n9e1cde11f1fcdf14
+  - n46441ec8597bcf09
+- - nb8c305d5ee549186
+  - n0a4fe95e77d5690b
+- - nc69cdf8b5dc1cf48
+  - ndd76574b064683e5
+- - nc71a4f6251d9ca10
+  - n98df95cef575cf84
+- - nf3b5c3eaa1bc272c
+  - ndf67da08e2f1135f
 setup_only:
 - DBC.DBC_QRYLOG
 - DBC.DBC_QRYLOGOBJECTS
@@ -4977,6 +6386,8 @@ dependencies:
 - - n40359b042a48a08e
   - n4bd29833185d98c9
 - - n40359b042a48a08e
+  - n59a3415908e5a5c3
+- - n40359b042a48a08e
   - n6ef7c748ddb91848
 - - n40359b042a48a08e
   - n958c0c1753d86d2b
@@ -5020,6 +6431,8 @@ dependencies:
   - n4d79811371fbb19b
 - - n4a90a6534be003c7
   - n4bf64f7e164e6d9a
+- - n4a90a6534be003c7
+  - n59a3415908e5a5c3
 - - n4a90a6534be003c7
   - nacd21346feee23f6
 - - n4bd29833185d98c9
