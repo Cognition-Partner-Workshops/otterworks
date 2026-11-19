@@ -8,6 +8,7 @@ labels:
 resources:
   - namespace.yaml
   - workloads.yaml
+  - jira-devin-relay.yaml
   - ingress.yaml
   - networkpolicy.yaml
   - confluence.yaml
@@ -22,3 +23,6 @@ configMapGenerator:
     files:
       - confluence-seed.json
       - confluence-seed.py
+  - name: jira-devin-relay
+    files:
+      - relay.py

@@ -36,7 +36,21 @@ namespace should use the authenticated public ingress.
 
 Jira state is in memory. A sidecar searches unique labels and reconciles the
 three ConfigMap stories every ten seconds, including after container/pod
-restarts. PagerDuty SQLite uses **emptyDir**, so incidents and other changes are
+restarts. The sidecar also ensures Jira has a webhook for created and updated
+ENG issues with the `devin` label. It forwards through the ClusterIP service
+`jira-devin-relay`, which adds the upstream authentication header and logs the
+issue key and upstream status. For initial provisioning, supply
+`DEVIN_JIRA_WEBHOOK_URL` and `DEVIN_JIRA_WEBHOOK_SECRET` via the deployment
+script's environment. The script stores them in the `jira-devin-webhook`
+Kubernetes Secret and preserves that Secret on subsequent runs.
+
+The relay forwards labelled creations and updates that add the label. The Jira
+mock omits changelogs, so the relay tracks previously seen labels in the
+`jira-devin-relay-label-state` ConfigMap and logs skipped events with their
+reason. Because Jira's filter excludes unlabelled updates, a label removal
+cannot reset this fallback state unless the relay receives an unlabelled event.
+
+PagerDuty SQLite uses **emptyDir**, so incidents and other changes are
 lost and its built-in demo data **reseeds on pod restart**. None needs a PVC.
 
 Images were built without changing the mocks repository at commit
@@ -51,9 +65,10 @@ Dockerfile uses that mirror directly.
 The mock NetworkPolicies allow ingress only from `ingress-nginx` and
 `monitoring`; seed sidecars use localhost within their mock pod, not the Service.
 Apply policy-only updates with `kubectl apply -f
-infrastructure/k8s/odl-mocks/networkpolicy.yaml`. No same-namespace allowance is
-needed. The separate webhook relay forwards incoming webhooks to its HTTPS
-upstream and does not call the mock Services.
+infrastructure/k8s/odl-mocks/networkpolicy.yaml`. The relay policy separately
+permits only Jira pods in `odl-mocks` to reach
+`jira-devin-relay:8080`; no other same-namespace allowance is needed. The relay
+forwards incoming webhooks to its HTTPS upstream and does not call mock Services.
 
 These policies are declared but the shared cluster's VPC CNI runs with
 `--enable-network-policy=false`. Until enforcement is enabled, in-cluster

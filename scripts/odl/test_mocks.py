@@ -1,9 +1,16 @@
 import importlib.util
+import io
 import json
 import subprocess
+import sys
 import unittest
+from contextlib import redirect_stdout
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from threading import Thread
 from unittest.mock import patch
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
 import yaml
 
@@ -19,6 +26,7 @@ def load(name, path):
 
 seed = load("seed", "infrastructure/k8s/odl-mocks/seed.py")
 confluence = load("confluence_seed", "infrastructure/k8s/odl-mocks/confluence-seed.py")
+relay = load("relay", "infrastructure/k8s/odl-mocks/relay.py")
 routing = load("routing", "scripts/odl/route-alerts.py")
 
 
@@ -26,8 +34,15 @@ class NetworkPolicyTests(unittest.TestCase):
     def test_only_controller_and_monitoring_namespaces(self):
         policies = list(yaml.safe_load_all(
             (ROOT / "infrastructure/k8s/odl-mocks/networkpolicy.yaml").read_text()))
-        self.assertEqual({p["metadata"]["name"] for p in policies}, {"jira", "pagerduty", "confluence"})
+        self.assertEqual({p["metadata"]["name"] for p in policies}, {"jira", "pagerduty", "confluence", "jira-devin-relay"})
         for policy in policies:
+            if policy["metadata"]["name"] == "jira-devin-relay":
+                self.assertEqual(policy["spec"]["podSelector"], {"matchLabels": {"app": "jira-devin-relay"}})
+                self.assertEqual(policy["spec"]["ingress"], [{"from": [{"podSelector": {"matchLabels": {"app": "jira"}}}],
+                                                            "ports": [{"protocol": "TCP", "port": 8080}]}])
+                self.assertEqual(policy["metadata"]["namespace"], "odl-mocks")
+                self.assertEqual(policy["metadata"]["labels"]["run_token"], "odl-1795112287")
+                continue
             self.assertEqual(policy["metadata"]["namespace"], "odl-mocks")
             self.assertEqual(policy["metadata"]["labels"]["run_token"], "odl-1795112287")
             self.assertEqual(policy["spec"]["podSelector"],
@@ -35,6 +50,43 @@ class NetworkPolicyTests(unittest.TestCase):
             self.assertEqual(policy["spec"]["ingress"], [{"from": [
                 {"namespaceSelector": {"matchLabels": {"kubernetes.io/metadata.name": ns}}}
                 for ns in ("ingress-nginx", "monitoring")], "ports": [{"protocol": "TCP", "port": 8080}]}])
+
+
+class DeployTests(unittest.TestCase):
+    def run_credentials(self, scope, existing=True, create_status=0):
+        script = (ROOT / "scripts/odl/deploy-mocks.sh").read_text()
+        program = script.split("<<'PY'\n", 1)[1].split("\nPY\n", 1)[0]
+
+        def run(args, **kwargs):
+            if "get" in args:
+                return subprocess.CompletedProcess(args, 0, stdout="{}" if existing else "")
+            if args[0] == "openssl":
+                return subprocess.CompletedProcess(args, 0, stdout="test-hash")
+            return subprocess.CompletedProcess(args, create_status)
+
+        with patch.object(sys, "argv", ["-", scope]), patch.object(subprocess, "run", side_effect=run) as calls:
+            exec(compile(program, "deploy-mocks credentials", "exec"), {})
+        return calls.call_args_list
+
+    def test_existing_secrets_are_not_written(self):
+        calls = self.run_credentials("all")
+        self.assertEqual([call.args[0][5] for call in calls], [
+            "jira-devin-webhook", "jira-mock-basic-auth", "pagerduty-mock-basic-auth",
+            "confluence-mock-basic-auth"])
+        self.assertTrue(all("get" in call.args[0] for call in calls))
+
+    def test_confluence_scope_does_not_access_jira_or_relay(self):
+        calls = self.run_credentials("confluence")
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0].args[0][5], "confluence-mock-basic-auth")
+        with redirect_stdout(io.StringIO()):
+            calls = self.run_credentials("confluence", existing=False)
+        created = [json.loads(call.kwargs["input"]) for call in calls if "create" in call.args[0]]
+        self.assertEqual([obj["metadata"]["name"] for obj in created], ["confluence-mock-basic-auth"])
+
+    def test_secret_creation_failure(self):
+        with self.assertRaises(SystemExit):
+            self.run_credentials("confluence", existing=False, create_status=1)
 
 
 class SeedTests(unittest.TestCase):
@@ -65,6 +117,16 @@ class SeedTests(unittest.TestCase):
             self.assertIn("odl-seed", fields["labels"])
             self.assertIn("Acceptance criteria", fields["description"])
             self.assertTrue(3 <= fields["description"].count("- [ ]") <= 5)
+
+    def test_webhook_is_registered_once_and_reregistered_after_reset(self):
+        hook = {"id": 7, **seed.WEBHOOK}
+        with patch.object(seed, "request", side_effect=[[], hook, [hook], [], {**hook, "id": 1}]) as call:
+            with redirect_stdout(io.StringIO()) as output:
+                self.assertEqual([seed.reconcile_webhook() for _ in range(3)], [7, 7, 1])
+            self.assertEqual([c.args for c in call.call_args_list if len(c.args) == 2],
+                             [(seed.WEBHOOK_PATH, seed.WEBHOOK)] * 2)
+            self.assertEqual(output.getvalue().splitlines(), [
+                "registered Devin webhook 7", "registered Devin webhook 1"])
 
 
 class ConfluenceTests(unittest.TestCase):
@@ -119,6 +181,118 @@ class ConfluenceTests(unittest.TestCase):
             self.assertIn(term, pages[0]["body"]["value"])
         for term in ("CUSTMAST", "ACCOUNTS", "crm.contacts", "MongoDB", "open question"):
             self.assertIn(term, pages[1]["body"]["value"])
+
+
+class RelayTests(unittest.TestCase):
+    def make_gate(self):
+        state = relay.ConfigMapState.__new__(relay.ConfigMapState)
+        persisted = {}
+
+        def configmap(method="GET", body=None):
+            if method == "PATCH":
+                for key, value in json.loads(body)["data"].items():
+                    if value is None:
+                        persisted.pop(key, None)
+                    else:
+                        persisted[key] = value
+            return {"data": persisted.copy()}
+
+        state.request = configmap
+        return relay.LabelGate(state)
+
+    def test_forward_only_labelled_creations_and_supported_events(self):
+        gate = self.make_gate()
+        issue = {"key": "ENG-7", "fields": {"labels": ["not-devin"]}}
+        created = {"webhookEvent": "jira:issue_created", "issue": issue}
+        self.assertEqual(gate.skip_reason(created, "ENG-7"), "devin_label_absent")
+        issue["fields"]["labels"].append("devin")
+        self.assertIsNone(gate.skip_reason(created, "ENG-7"))
+        self.assertEqual(gate.skip_reason({**created, "webhookEvent": "comment_created"}, "ENG-7"),
+                         "unsupported_event")
+        self.assertEqual(gate.skip_reason({**created, "webhookEvent": "jira:issue_updated"}, "ENG-7"),
+                         "devin_label_already_seen")
+
+    def test_explicit_changelog_does_not_fall_back_to_snapshot(self):
+        for field, old, new, reason in (
+            ("labels", "other, devin", "devin", "changelog_did_not_add_devin"),
+            ("labels", "other", "devin-secondary", "changelog_did_not_add_devin"),
+            ("status", None, "devin", "changelog_did_not_add_devin"),
+            ("labels", "not-devin, other", "other, devin", None),
+            ("labels", None, "devin", None),
+        ):
+            with self.subTest(field=field, old=old, new=new):
+                gate = self.make_gate()
+                update = {"webhookEvent": "jira:issue_updated",
+                          "issue": {"key": "ENG-7", "fields": {"labels": ["devin"]}},
+                          "changelog": {"items": [{"field": field, "fromString": old, "toString": new}]}}
+                self.assertEqual(gate.skip_reason(update, "ENG-7"), reason)
+
+    def test_snapshot_transition_persists_and_clears_observed_removals(self):
+        gate = self.make_gate()
+        issue = {"key": "ENG-7", "fields": {"labels": ["devin"]}}
+        update = {"webhookEvent": "jira:issue_updated", "issue": issue}
+        self.assertIsNone(gate.skip_reason(update, "ENG-7"))
+        gate = relay.LabelGate(gate.state)
+        self.assertEqual(gate.skip_reason(update, "ENG-7"), "devin_label_already_seen")
+        issue["fields"]["labels"] = []
+        self.assertEqual(gate.skip_reason(update, "ENG-7"), "devin_label_absent")
+        gate = relay.LabelGate(gate.state)
+        issue["fields"]["labels"] = ["devin"]
+        self.assertIsNone(gate.skip_reason(update, "ENG-7"))
+
+    def start_server(self, handler):
+        server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(thread.join)
+        self.addCleanup(server.shutdown)
+        return server, f"http://127.0.0.1:{server.server_port}"
+
+    def test_delivery_bytes_secret_status_and_no_redirect(self):
+        received = []
+
+        class Upstream(BaseHTTPRequestHandler):
+            def log_message(self, format, *args):
+                pass
+
+            def do_POST(self):
+                received.append((self.path, self.headers.get("X-Webhook-Secret"),
+                                 self.headers.get("Content-Type"),
+                                 self.rfile.read(int(self.headers["Content-Length"]))))
+                if self.path == "/redirect":
+                    self.send_response(307)
+                    self.send_header("Location", "/unexpected")
+                else:
+                    self.send_response(202)
+                self.end_headers()
+
+        _, upstream = self.start_server(Upstream)
+        server, url = self.start_server(relay.Relay)
+        server.upstream_url = upstream + "/accept"
+        server.upstream_secret = "test-secret"
+        server.gate = self.make_gate()
+        body = (b'{ "issue": {"key": "ENG-7", "fields": {"labels": ["devin"]}},'
+                b' "webhookEvent": "jira:issue_updated" }\n')
+        delivery = Request(url + "/webhook", data=body, headers={"Content-Type": "application/json"})
+        with redirect_stdout(io.StringIO()) as output:
+            with urlopen(delivery, timeout=3) as response:
+                self.assertEqual(response.status, 202)
+            with urlopen(delivery, timeout=3) as response:
+                self.assertEqual(response.status, 204)
+            with urlopen(Request(url + "/webhook", data=b""), timeout=3) as response:
+                self.assertEqual(response.status, 204)
+            server.upstream_url = upstream + "/redirect"
+            redirect_body = body.replace(b"ENG-7", b"ENG-8")
+            with self.assertRaises(HTTPError) as rejected:
+                urlopen(Request(url + "/webhook", data=redirect_body, headers=delivery.headers), timeout=3)
+            self.assertEqual(rejected.exception.code, 502)
+            rejected.exception.close()
+        self.assertEqual(received, [("/accept", "test-secret", "application/json", body),
+                                    ("/redirect", "test-secret", "application/json", redirect_body)])
+        self.assertEqual(output.getvalue().splitlines(), [
+            "issue=ENG-7 upstream_status=202", "issue=ENG-7 skip_reason=devin_label_already_seen",
+            "issue=- skip_reason=invalid_payload", "issue=ENG-8 upstream_status=307"])
 
 
 class RoutingTests(unittest.TestCase):
