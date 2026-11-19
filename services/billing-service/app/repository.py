@@ -3,10 +3,17 @@ from __future__ import annotations
 from datetime import date
 from decimal import Decimal
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 import psycopg
 
 from app.domain import EntitlementRow, PlanRow, SubscriptionRow
+from app.rating_domain import (
+    PriorRatingRow,
+    RatingPeriodRow,
+    RatingResultRow,
+    UsageEventRow,
+)
 
 
 class PostgresPlansRepository:
@@ -108,3 +115,100 @@ class PostgresPlansRepository:
             """,
             (subscription_id, tenant_id, plan_id, starts_on, status),
         )
+
+
+class PostgresRatingRepository(PostgresPlansRepository):
+    def session_timezone(self) -> ZoneInfo:
+        row = self.connection.execute("SELECT current_setting('TimeZone') AS timezone").fetchone()
+        return ZoneInfo(row["timezone"])
+
+    def list_usage_events(self, tenant_id: UUID) -> list[UsageEventRow]:
+        rows = self.connection.execute(
+            """
+            SELECT tenant_id, occurred_at, units, kind
+            FROM billing_svc.usage_events WHERE tenant_id = %s
+            """,
+            (tenant_id,),
+        ).fetchall()
+        return [UsageEventRow(**row) for row in rows]
+
+    def list_prior_rating_results(self, tenant_id: UUID) -> list[PriorRatingRow]:
+        rows = self.connection.execute(
+            """
+            SELECT rp.tenant_id, rp.period_start, rr.rollover_units
+            FROM billing_svc.rating_results rr
+            JOIN billing_svc.rating_periods rp ON rp.id = rr.period_id
+            WHERE rp.tenant_id = %s
+            """,
+            (tenant_id,),
+        ).fetchall()
+        return [PriorRatingRow(**row) for row in rows]
+
+    def upsert_rating_period(
+        self,
+        row: RatingPeriodRow,
+        *,
+        conflict_fields: tuple[str, ...],
+        update_fields: tuple[str, ...],
+    ) -> None:
+        if conflict_fields != ("tenant_id", "period_start") or update_fields != ("period_end",):
+            raise ValueError("unsupported rating period upsert")
+        self.connection.execute(
+            """
+            INSERT INTO billing_svc.rating_periods (id, tenant_id, period_start, period_end)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (tenant_id, period_start) DO UPDATE SET period_end = EXCLUDED.period_end
+            """,
+            (row.id, row.tenant_id, row.period_start, row.period_end),
+        )
+
+    def upsert_rating_result(
+        self,
+        row: RatingResultRow,
+        *,
+        conflict_fields: tuple[str, ...],
+        update_fields: tuple[str, ...],
+    ) -> None:
+        if conflict_fields != ("id",) or update_fields != (
+            "used_units",
+            "rollover_units",
+            "billable_units",
+            "overage_amount",
+        ):
+            raise ValueError("unsupported rating result upsert")
+        self.connection.execute(
+            """
+            INSERT INTO billing_svc.rating_results (
+                id, period_id, subscription_id, used_units, quota_units, rollover_units,
+                billable_units, overage_amount, created_at
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (id) DO UPDATE SET
+                used_units = EXCLUDED.used_units,
+                rollover_units = EXCLUDED.rollover_units,
+                billable_units = EXCLUDED.billable_units,
+                overage_amount = EXCLUDED.overage_amount
+            """,
+            (
+                row.id,
+                row.period_id,
+                row.subscription_id,
+                row.used_units,
+                row.quota_units,
+                row.rollover_units,
+                row.billable_units,
+                row.overage_amount,
+                row.created_at,
+            ),
+        )
+
+    def rating_results(self, tenant_id: UUID, period_start: date) -> list[RatingResultRow]:
+        rows = self.connection.execute(
+            """
+            SELECT rr.* FROM billing_svc.rating_results rr
+            JOIN billing_svc.rating_periods rp ON rp.id = rr.period_id
+            WHERE rp.tenant_id = %s AND rp.period_start = %s
+            ORDER BY rr.id
+            """,
+            (tenant_id, period_start),
+        ).fetchall()
+        return [RatingResultRow(**row) for row in rows]
