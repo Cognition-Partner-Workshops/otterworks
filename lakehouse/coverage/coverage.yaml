@@ -189,35 +189,59 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: bteq_script:warehouse/teradata/scripts/documents/01_load_folders.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.document
+  - silver_documents.folder
+  parity:
+  - documents.document
+  - documents.folder
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: bteq_script:warehouse/teradata/scripts/documents/02_current_versions.bteq
   status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  targets:
+  - silver_documents.doc_version
+  parity:
+  - documents.doc_version
+  assumptions:
+  - A-200
+  - A-203
+  notes: Implemented but exact parity blocked by unspecified timestamp ties; see A-200.
 - id: bteq_script:warehouse/teradata/scripts/documents/03_load_access.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.doc_share
+  - silver_documents.doc_tag
+  parity:
+  - documents.doc_share
+  - documents.doc_tag
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: bteq_script:warehouse/teradata/scripts/documents/04_load_objects.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.doc_comment
+  - silver_documents.file_object
+  parity:
+  - documents.doc_comment
+  - documents.file_object
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: bteq_script:warehouse/teradata/scripts/documents/05_load_sessions.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.collab_session
+  - silver_documents.storage_usage_daily
+  parity:
+  - documents.collab_session
+  - documents.storage_usage_daily
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: bteq_script:warehouse/teradata/scripts/documents/10_storage_monthly.bteq
   status: pending
   targets: []
@@ -798,40 +822,64 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/01_load_folders
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_documents.document
+  - silver_documents.folder
+  parity:
+  - documents.document
+  - documents.folder
   assumptions:
+  - A-203
   - A-037
-  notes: Not migrated; no completeness claim.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/02_current_versions
   status: pending
-  targets: []
-  parity: []
+  targets:
+  - silver_documents.doc_version
+  parity:
+  - documents.doc_version
   assumptions:
+  - A-200
+  - A-203
   - A-037
-  notes: Not migrated; no completeness claim.
+  notes: Implemented but exact parity blocked by unspecified timestamp ties; see A-200.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/03_load_access
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_documents.doc_share
+  - silver_documents.doc_tag
+  parity:
+  - documents.doc_share
+  - documents.doc_tag
   assumptions:
+  - A-203
   - A-037
-  notes: Not migrated; no completeness claim.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/04_load_objects
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_documents.doc_comment
+  - silver_documents.file_object
+  parity:
+  - documents.doc_comment
+  - documents.file_object
   assumptions:
+  - A-203
   - A-037
-  notes: Not migrated; no completeness claim.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/05_load_sessions
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_documents.collab_session
+  - silver_documents.storage_usage_daily
+  parity:
+  - documents.collab_session
+  - documents.storage_usage_daily
   assumptions:
+  - A-203
   - A-037
-  notes: Not migrated; no completeness claim.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/10_storage_monthly
   status: pending
   targets: []
@@ -2753,11 +2801,14 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_macro:SFX_DOCUMENTS.M_STORAGE_TOTALS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_documents.m_storage_totals
+  parity:
+  - documents.m_storage_totals
+  assumptions:
+  - A-202
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_macro:SFX_USERS.M_TEAM_COUNTS
   status: converted
   targets:
@@ -3172,125 +3223,198 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_table:SFX_DOCUMENTS.COLLAB_SESSION
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.collab_session
+  parity:
+  - documents.collab_session
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.document
+  parity:
+  - documents.document
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.DOC_COMMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.doc_comment
+  parity:
+  - documents.doc_comment
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.DOC_SHARE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.doc_share
+  parity:
+  - documents.doc_share
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.DOC_TAG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.doc_tag
+  parity:
+  - documents.doc_tag
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.DOC_VERSION
   status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  targets:
+  - silver_documents.doc_version
+  parity:
+  - documents.doc_version
+  assumptions:
+  - A-200
+  - A-203
+  notes: Implemented but exact parity blocked by unspecified timestamp ties; see A-200.
 - id: teradata_table:SFX_DOCUMENTS.FILE_OBJECT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.file_object
+  parity:
+  - documents.file_object
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.FOLDER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.folder
+  parity:
+  - documents.folder
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.SEARCH_INDEX_LOG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.search_index_log
+  parity:
+  - documents.search_index_log
+  assumptions:
+  - A-201
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_COLLAB_SESSION
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_collab_session
+  parity:
+  - documents.stg_collab_session
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_document
+  parity:
+  - documents.stg_document
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_DOC_COMMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_doc_comment
+  parity:
+  - documents.stg_doc_comment
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_DOC_SHARE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_doc_share
+  parity:
+  - documents.stg_doc_share
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_DOC_TAG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_doc_tag
+  parity:
+  - documents.stg_doc_tag
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_DOC_VERSION
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_doc_version
+  parity:
+  - documents.stg_doc_version
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_FILE_OBJECT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_file_object
+  parity:
+  - documents.stg_file_object
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_FOLDER
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_folder
+  parity:
+  - documents.stg_folder
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_search_index_log
+  parity:
+  - documents.stg_search_index_log
+  assumptions:
+  - A-201
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.stg_storage_usage_daily
+  parity:
+  - documents.stg_storage_usage_daily
+  assumptions:
+  - A-203
+  - A-204
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.STORAGE_USAGE_DAILY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.storage_usage_daily
+  parity:
+  - documents.storage_usage_daily
+  assumptions:
+  - A-203
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_USERS.APP_USER
   status: converted
   targets:
@@ -3535,22 +3659,31 @@ objects:
   notes: Not migrated; no completeness claim.
 - id: teradata_view:SFX_DOCUMENTS.V_DOCUMENT_VERSIONS
   status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  targets:
+  - gold_documents.v_document_versions
+  parity:
+  - documents.v_document_versions
+  assumptions:
+  - A-200
+  notes: Implemented but exact parity blocked by unspecified timestamp ties; see A-200.
 - id: teradata_view:SFX_DOCUMENTS.V_SEARCH_HISTORY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_documents.v_search_history
+  parity:
+  - documents.v_search_history
+  assumptions:
+  - A-201
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_view:SFX_DOCUMENTS.V_WORKSPACE_STORAGE
   status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  targets:
+  - gold_documents.v_workspace_storage
+  parity:
+  - documents.v_workspace_storage
+  assumptions:
+  - A-200
+  notes: Implemented but exact parity blocked by unspecified timestamp ties; see A-200.
 - id: teradata_view:SFX_USERS.V_TEAM_MEMBERS
   status: converted
   targets:
@@ -3781,11 +3914,14 @@ objects:
   - A-036
   notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
 - id: tpt:warehouse/teradata/load/tpt/documents_collab_session.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_collab_session
+  parity:
+  - documents.stg_collab_session
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3800,13 +3936,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_doc_comment.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_doc_comment
+  parity:
+  - documents.stg_doc_comment
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3821,13 +3960,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_doc_share.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_doc_share
+  parity:
+  - documents.stg_doc_share
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3842,13 +3984,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_doc_tag.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_doc_tag
+  parity:
+  - documents.stg_doc_tag
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3863,13 +4008,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_doc_version.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_doc_version
+  parity:
+  - documents.stg_doc_version
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3884,13 +4032,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_document.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_document
+  parity:
+  - documents.stg_document
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3905,13 +4056,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_file_object.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_file_object
+  parity:
+  - documents.stg_file_object
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3926,13 +4080,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_folder.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_folder
+  parity:
+  - documents.stg_folder
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3947,13 +4104,17 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_search_index_log.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_search_index_log
+  parity:
+  - documents.stg_search_index_log
   assumptions:
+  - A-201
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3968,13 +4129,16 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: tpt:warehouse/teradata/load/tpt/documents_storage_usage_daily.tpt
-  status: replaced_by_platform
+  status: converted
   targets:
-  - lakehouse/runtime/ingest.py
-  parity: []
+  - silver_documents.stg_storage_usage_daily
+  parity:
+  - documents.stg_storage_usage_daily
   assumptions:
+  - A-203
+  - A-204
   - A-001
   - A-002
   - A-007
@@ -3989,4 +4153,4 @@ objects:
   - A-023
   - A-025
   - A-036
-  notes: Replaces local-emulator staging transport, not native loader semantics or staging SQL constraints.
+  notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.

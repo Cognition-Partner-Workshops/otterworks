@@ -1,0 +1,44 @@
+version: 2
+models:
+  - name: folder
+    columns:
+      - name: folder_id
+        data_tests: [unique, not_null]
+  - name: document
+    columns:
+      - name: document_id
+        data_tests: [unique, not_null]
+  - name: doc_version
+    columns:
+      - name: version_id
+        data_tests: [unique, not_null]
+      - name: document_id
+        data_tests: [unique]
+  - name: doc_share
+    columns:
+      - name: share_id
+        data_tests: [unique, not_null]
+  - name: doc_tag
+    columns:
+      - name: tag_id
+        data_tests: [unique, not_null]
+  - name: file_object
+    columns:
+      - name: file_object_id
+        data_tests: [unique, not_null]
+  - name: doc_comment
+    columns:
+      - name: comment_id
+        data_tests: [unique, not_null]
+  - name: collab_session
+    columns:
+      - name: session_id
+        data_tests: [unique, not_null]
+  - name: storage_usage_daily
+    columns:
+      - name: storage_usage_id
+        data_tests: [not_null]
+  - name: search_index_log
+    columns:
+      - name: index_log_id
+        data_tests: [unique, not_null]

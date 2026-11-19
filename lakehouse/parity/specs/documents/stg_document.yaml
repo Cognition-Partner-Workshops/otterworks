@@ -1,0 +1,28 @@
+{
+  "id": "documents.stg_document",
+  "legacy_objects": [
+    "teradata_table:SFX_DOCUMENTS.STG_DOCUMENT",
+    "tpt:warehouse/teradata/load/tpt/documents_document.tpt"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT document_id, folder_id, owner_user_id, customer_id, document_name, created_dt, status_cd, file_type FROM sfx_documents.stg_document"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.stg_document"
+  },
+  "keys": [
+    "document_id"
+  ],
+  "columns": [
+    "document_id",
+    "folder_id",
+    "owner_user_id",
+    "customer_id",
+    "document_name",
+    "created_dt",
+    "status_cd",
+    "file_type"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "documents.v_workspace_storage",
+  "legacy_objects": [
+    "teradata_view:SFX_DOCUMENTS.V_WORKSPACE_STORAGE"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT owner_user_id, document_count, total_bytes FROM sfx_documents.v_workspace_storage"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "gold_documents.v_workspace_storage"
+  },
+  "keys": [
+    "owner_user_id"
+  ],
+  "columns": [
+    "owner_user_id",
+    "document_count",
+    "total_bytes"
+  ]
+}

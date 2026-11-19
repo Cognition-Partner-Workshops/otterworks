@@ -1,0 +1,25 @@
+{
+  "id": "documents.stg_doc_share",
+  "legacy_objects": [
+    "teradata_table:SFX_DOCUMENTS.STG_DOC_SHARE",
+    "tpt:warehouse/teradata/load/tpt/documents_doc_share.tpt"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT share_id, document_id, user_id, access_level, shared_dt FROM sfx_documents.stg_doc_share"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.stg_doc_share"
+  },
+  "keys": [
+    "share_id"
+  ],
+  "columns": [
+    "share_id",
+    "document_id",
+    "user_id",
+    "access_level",
+    "shared_dt"
+  ]
+}

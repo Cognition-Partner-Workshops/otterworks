@@ -1,0 +1,24 @@
+{
+  "id": "documents.v_document_versions",
+  "legacy_objects": [
+    "teradata_view:SFX_DOCUMENTS.V_DOCUMENT_VERSIONS"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT document_id, owner_user_id, version_id, version_ts, file_size FROM sfx_documents.v_document_versions"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "gold_documents.v_document_versions"
+  },
+  "keys": [
+    "document_id"
+  ],
+  "columns": [
+    "document_id",
+    "owner_user_id",
+    "version_id",
+    "version_ts",
+    "file_size"
+  ]
+}

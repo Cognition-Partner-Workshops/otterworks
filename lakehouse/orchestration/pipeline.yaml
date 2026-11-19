@@ -505,7 +505,17 @@ dags:
     - bronze_documents
     retries: 1
     retry_delay_seconds: 10
-    legacy_objects: []
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/documents/01_load_folders.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/01_load_folders
+    - bteq_script:warehouse/teradata/scripts/documents/02_current_versions.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/02_current_versions
+    - bteq_script:warehouse/teradata/scripts/documents/03_load_access.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/03_load_access
+    - bteq_script:warehouse/teradata/scripts/documents/04_load_objects.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/04_load_objects
+    - bteq_script:warehouse/teradata/scripts/documents/05_load_sessions.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/05_load_sessions
   - id: bronze_users
     kind: bronze_ingest
     domain: users
@@ -944,6 +954,174 @@ dags:
     - --business-date
     - '{business_date}'
     - --compact
+  - id: parity_documents_folder
+    kind: parity
+    spec: documents.folder
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_folder
+    kind: parity
+    spec: documents.stg_folder
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_document
+    kind: parity
+    spec: documents.document
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_document
+    kind: parity
+    spec: documents.stg_document
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_doc_version
+    kind: parity
+    spec: documents.doc_version
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_doc_version
+    kind: parity
+    spec: documents.stg_doc_version
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_doc_share
+    kind: parity
+    spec: documents.doc_share
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_doc_share
+    kind: parity
+    spec: documents.stg_doc_share
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_doc_tag
+    kind: parity
+    spec: documents.doc_tag
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_doc_tag
+    kind: parity
+    spec: documents.stg_doc_tag
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_file_object
+    kind: parity
+    spec: documents.file_object
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_file_object
+    kind: parity
+    spec: documents.stg_file_object
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_doc_comment
+    kind: parity
+    spec: documents.doc_comment
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_doc_comment
+    kind: parity
+    spec: documents.stg_doc_comment
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_collab_session
+    kind: parity
+    spec: documents.collab_session
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_collab_session
+    kind: parity
+    spec: documents.stg_collab_session
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_storage_usage_daily
+    kind: parity
+    spec: documents.storage_usage_daily
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_storage_usage_daily
+    kind: parity
+    spec: documents.stg_storage_usage_daily
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_search_index_log
+    kind: parity
+    spec: documents.search_index_log
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_stg_search_index_log
+    kind: parity
+    spec: documents.stg_search_index_log
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_v_document_versions
+    kind: parity
+    spec: documents.v_document_versions
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_v_workspace_storage
+    kind: parity
+    spec: documents.v_workspace_storage
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_v_search_history
+    kind: parity
+    spec: documents.v_search_history
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_m_storage_totals
+    kind: parity
+    spec: documents.m_storage_totals
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
 - id: lakehouse_users_spark
   schedule: '@daily'
   timezone: UTC

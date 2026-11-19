@@ -1,0 +1,25 @@
+{
+  "id": "documents.stg_doc_comment",
+  "legacy_objects": [
+    "teradata_table:SFX_DOCUMENTS.STG_DOC_COMMENT",
+    "tpt:warehouse/teradata/load/tpt/documents_doc_comment.tpt"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT comment_id, document_id, user_id, comment_text, created_ts FROM sfx_documents.stg_doc_comment"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.stg_doc_comment"
+  },
+  "keys": [
+    "comment_id"
+  ],
+  "columns": [
+    "comment_id",
+    "document_id",
+    "user_id",
+    "comment_text",
+    "created_ts"
+  ]
+}

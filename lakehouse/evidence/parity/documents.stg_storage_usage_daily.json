@@ -1,0 +1,178 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "d48c11e07c4315a30d5a4eee747e2e7426d15a42",
+  "id": "documents.stg_storage_usage_daily",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+    "tpt:warehouse/teradata/load/tpt/documents_storage_usage_daily.tpt"
+  ],
+  "results": {
+    "columns": [
+      "storage_usage_id",
+      "customer_id",
+      "owner_user_id",
+      "usage_dt",
+      "bytes_used",
+      "object_count",
+      "occurrence"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "bytes_used": {
+          "count": 2100,
+          "hash": "ec40f77d316ad9abfe04f90a3d6c7d52a0d6a4a4df87f1a7dcc4fbbd95bdf922",
+          "null_count": 0,
+          "sum": "394799700628"
+        },
+        "customer_id": {
+          "count": 2100,
+          "hash": "acb7a105924d89899864cd2e7284f1411401f31e82c86e7d6e4de2b226f8ad83",
+          "null_count": 0,
+          "sum": "900000203550"
+        },
+        "object_count": {
+          "count": 2100,
+          "hash": "4652c310aed7f5497a4edf6aa613bcd556a2f8e597af6b003ef7b19c9d98a79f",
+          "null_count": 0,
+          "sum": "9945100"
+        },
+        "occurrence": {
+          "count": 2100,
+          "hash": "3f51e3a64b531afb4ecc10d6c4a11ab6ea6113d381cb02d0802462e2e3c45360",
+          "null_count": 0,
+          "sum": "2206050"
+        },
+        "owner_user_id": {
+          "count": 2100,
+          "hash": "acb7a105924d89899864cd2e7284f1411401f31e82c86e7d6e4de2b226f8ad83",
+          "null_count": 0,
+          "sum": "900000203550"
+        },
+        "storage_usage_id": {
+          "count": 2100,
+          "hash": "4489768392c7c18083fca540c3d193bbf5b39ab16ea649991640db9c2ac00111",
+          "null_count": 0,
+          "sum": "900002003550"
+        },
+        "usage_dt": {
+          "count": 2100,
+          "hash": "77d98ee49cd9bd7592b9802a4ee0137c90d6d381efb550cca4f8464db93c9399",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "bytes_used": {
+          "count": 2100,
+          "hash": "ec40f77d316ad9abfe04f90a3d6c7d52a0d6a4a4df87f1a7dcc4fbbd95bdf922",
+          "null_count": 0,
+          "sum": "394799700628"
+        },
+        "customer_id": {
+          "count": 2100,
+          "hash": "acb7a105924d89899864cd2e7284f1411401f31e82c86e7d6e4de2b226f8ad83",
+          "null_count": 0,
+          "sum": "900000203550"
+        },
+        "object_count": {
+          "count": 2100,
+          "hash": "4652c310aed7f5497a4edf6aa613bcd556a2f8e597af6b003ef7b19c9d98a79f",
+          "null_count": 0,
+          "sum": "9945100"
+        },
+        "occurrence": {
+          "count": 2100,
+          "hash": "3f51e3a64b531afb4ecc10d6c4a11ab6ea6113d381cb02d0802462e2e3c45360",
+          "null_count": 0,
+          "sum": "2206050"
+        },
+        "owner_user_id": {
+          "count": 2100,
+          "hash": "acb7a105924d89899864cd2e7284f1411401f31e82c86e7d6e4de2b226f8ad83",
+          "null_count": 0,
+          "sum": "900000203550"
+        },
+        "storage_usage_id": {
+          "count": 2100,
+          "hash": "4489768392c7c18083fca540c3d193bbf5b39ab16ea649991640db9c2ac00111",
+          "null_count": 0,
+          "sum": "900002003550"
+        },
+        "usage_dt": {
+          "count": 2100,
+          "hash": "77d98ee49cd9bd7592b9802a4ee0137c90d6d381efb550cca4f8464db93c9399",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "bytes_used": {
+        "count": 0,
+        "samples": []
+      },
+      "customer_id": {
+        "count": 0,
+        "samples": []
+      },
+      "object_count": {
+        "count": 0,
+        "samples": []
+      },
+      "occurrence": {
+        "count": 0,
+        "samples": []
+      },
+      "owner_user_id": {
+        "count": 0,
+        "samples": []
+      },
+      "storage_usage_id": {
+        "count": 0,
+        "samples": []
+      },
+      "usage_dt": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 2100,
+      "legacy": 2100
+    }
+  },
+  "row_counts": {
+    "lakehouse": 2100,
+    "legacy": 2100
+  },
+  "spec_hash": "699df6e3cb8468df2969ba5544e09e9d3977c2e9f386a62ec1d32a3a751c3595",
+  "timestamp": "2026-11-19T08:09:09.584291+00:00"
+}

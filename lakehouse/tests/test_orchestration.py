@@ -50,7 +50,7 @@ def test_pipeline_contract_and_staging_replacement():
 
 @pytest.mark.parametrize('mutation,error', [
     (lambda d: d['dags'][0]['nodes'][0].update(depends_on=['unknown']), 'Unknown dependencies'),
-    (lambda d: d['dags'][0]['nodes'][0].update(depends_on=[d['dags'][0]['nodes'][-1]['id']]), 'cycle'),
+    (lambda d: d['dags'][0]['nodes'][0].update(depends_on=['parity_customer_account']), 'cycle'),
     (lambda d: d['dags'][0]['nodes'][0].update(legacy_objects=['missing:object']), 'Unknown legacy ids'),
     (lambda d: d['dags'][0]['nodes'][0].update(retries=-1), 'retries'),
     (lambda d: d['dags'][0]['nodes'][0].update(retry_delay_seconds=True), 'retry_delay'),

@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: v_document_versions
+    columns:
+      - name: document_id
+        data_tests: [unique, not_null]
+      - name: version_id
+        data_tests: [unique, not_null]
+  - name: v_workspace_storage
+    columns:
+      - name: owner_user_id
+        data_tests: [unique]
+  - name: m_storage_totals
+    columns:
+      - name: customer_id
+        data_tests: [unique]

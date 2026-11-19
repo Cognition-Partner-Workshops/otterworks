@@ -1,0 +1,29 @@
+{
+  "id": "documents.search_index_log",
+  "legacy_objects": [
+    "teradata_table:SFX_DOCUMENTS.SEARCH_INDEX_LOG"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT index_log_id, document_id, indexed_ts, status_cd, token_count FROM sfx_documents.search_index_log"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.search_index_log"
+  },
+  "keys": [
+    "index_log_id"
+  ],
+  "columns": [
+    "index_log_id",
+    "document_id",
+    "indexed_ts",
+    "status_cd",
+    "token_count"
+  ],
+  "normalize": {
+    "status_cd": {
+      "rstrip": true
+    }
+  }
+}

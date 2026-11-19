@@ -1,0 +1,27 @@
+{
+  "id": "documents.doc_version",
+  "legacy_objects": [
+    "teradata_table:SFX_DOCUMENTS.DOC_VERSION",
+    "bteq_script:warehouse/teradata/scripts/documents/02_current_versions.bteq",
+    "cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/02_current_versions"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT version_id, document_id, version_no, version_ts, file_size, content_hash FROM sfx_documents.doc_version"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.doc_version"
+  },
+  "keys": [
+    "version_id"
+  ],
+  "columns": [
+    "version_id",
+    "document_id",
+    "version_no",
+    "version_ts",
+    "file_size",
+    "content_hash"
+  ]
+}
