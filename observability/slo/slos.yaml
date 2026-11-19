@@ -1,0 +1,71 @@
+version: 1
+period: 30d
+runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/slo-burn-rate.md
+services:
+  api-gateway:
+    source: services/api-gateway/internal/middleware/metrics.go (prometheus.DefBuckets)
+    availability:
+      objective: 0.995
+      total: api_gateway_http_requests_total{path!="other"}
+      bad: api_gateway_http_requests_total{path!="other",status=~"5.."}
+    latency:
+      objective: 0.95
+      threshold_seconds: 0.5
+      total: api_gateway_http_request_duration_seconds_count{path!="other"}
+      good: api_gateway_http_request_duration_seconds_bucket{path!="other",le="0.5"}
+  auth-service:
+    source: services/auth-service/src/main/resources/application.yml (Micrometer SLO bucket)
+    availability:
+      objective: 0.995
+      total: http_server_requests_seconds_count{uri!~"/(health|metrics|actuator.*)"}
+      bad: http_server_requests_seconds_count{uri!~"/(health|metrics|actuator.*)",status=~"5.."}
+    latency:
+      objective: 0.95
+      threshold_seconds: 0.5
+      total: http_server_requests_seconds_count{uri!~"/(health|metrics|actuator.*)"}
+      good: http_server_requests_seconds_bucket{uri!~"/(health|metrics|actuator.*)",le="0.5"}
+  file-service:
+    source: services/file-service/src/middleware.rs
+    availability:
+      objective: 0.995
+      total: http_requests_total{path!~"/(health|metrics)"}
+      bad: http_requests_total{path!~"/(health|metrics)",status=~"5.."}
+    latency:
+      objective: 0.95
+      threshold_seconds: 0.5
+      total: http_request_duration_seconds_count{path!~"/(health|metrics)"}
+      good: http_request_duration_seconds_bucket{path!~"/(health|metrics)",le="0.5"}
+  document-service:
+    source: services/document-service/app/telemetry.py (LATENCY_BUCKETS)
+    availability:
+      objective: 0.995
+      total: http_requests_total
+      bad: http_requests_total{status=~"5.."}
+    latency:
+      objective: 0.95
+      threshold_seconds: 0.5
+      total: http_request_duration_seconds_count
+      good: http_request_duration_seconds_bucket{le="0.5"}
+  collab-service:
+    source: services/collab-service/src/metrics.ts and src/handlers/collaboration.ts
+    scope: Availability is successful persistence operations (proxy, not WebSocket delivery); latency is completed document syncs.
+    availability:
+      objective: 0.995
+      total: collab_persistence_operations_total
+      bad: collab_persistence_operations_total{status="error"}
+    latency:
+      objective: 0.95
+      threshold_seconds: 0.5
+      total: collab_document_sync_duration_seconds_count
+      good: collab_document_sync_duration_seconds_bucket{le="0.5"}
+  search-service:
+    source: services/search-service/app/api/health.py (prometheus_client default buckets)
+    availability:
+      objective: 0.995
+      total: search_service_requests_total
+      bad: search_service_requests_total{status=~"5.."}
+    latency:
+      objective: 0.95
+      threshold_seconds: 0.5
+      total: search_service_request_duration_seconds_count
+      good: search_service_request_duration_seconds_bucket{le="0.5"}

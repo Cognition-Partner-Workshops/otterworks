@@ -38,6 +38,9 @@ healthCheck:
   port: 8086
 
 monitoring:
+  serviceMonitor:
+    labels:
+      release: prometheus
   enabled: true
   path: /metrics
   port: 8086

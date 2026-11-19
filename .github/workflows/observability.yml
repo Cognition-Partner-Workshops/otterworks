@@ -1,0 +1,82 @@
+name: Observability baseline
+on:
+  pull_request:
+    paths:
+      - 'observability/**'
+      - 'infrastructure/helm/**'
+      - 'scripts/gen-slo-rules.py'
+      - 'scripts/check-*observability*'
+      - 'scripts/check-runbooks.py'
+      - 'scripts/tests/test_observability.py'
+      - 'scripts/install-monitoring.sh'
+      - 'docs/runbooks/**'
+      - 'docker-compose.infra.yml'
+      - 'services/auth-service/src/main/resources/application.yml'
+      - '.github/workflows/observability.yml'
+  push:
+    branches: [main, 'devin/**']
+    paths:
+      - 'observability/**'
+      - 'infrastructure/helm/**'
+      - 'scripts/gen-slo-rules.py'
+      - 'scripts/check-*observability*'
+      - 'scripts/check-runbooks.py'
+      - 'scripts/tests/test_observability.py'
+      - 'scripts/install-monitoring.sh'
+      - 'docs/runbooks/**'
+      - 'docker-compose.infra.yml'
+      - 'services/auth-service/src/main/resources/application.yml'
+      - '.github/workflows/observability.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install PyYAML==6.0.2
+      - name: Generator and runbook checker unit tests
+        run: python3 -m unittest discover -s scripts/tests -p test_observability.py -v
+      - name: Generated rule/chart asset drift
+        run: |
+          python3 scripts/gen-slo-rules.py
+          git diff --exit-code -- observability/prometheus/slo_rules.yml infrastructure/helm/observability-rules/files
+      - name: Prometheus configuration, rules and unit tests
+        run: |
+          docker run --rm --entrypoint /bin/promtool -v "$PWD/observability/prometheus:/rules:ro" prom/prometheus:v2.55.1 check config /rules/prometheus.yml
+          docker run --rm --entrypoint /bin/promtool -v "$PWD/observability/prometheus:/rules:ro" prom/prometheus:v2.55.1 check rules /rules/alerts.yml /rules/recording_rules.yml /rules/incident_alerts.yml /rules/slo_rules.yml
+          docker run --rm --entrypoint /bin/promtool -v "$PWD/observability/prometheus:/rules:ro" -w /rules prom/prometheus:v2.55.1 test rules tests/baseline.test.yml
+      - name: Runbooks and dashboard JSON
+        run: |
+          python3 scripts/check-runbooks.py
+          python3 -c 'import json,pathlib; files=list(pathlib.Path("observability/grafana/dashboards").glob("*.json")); [json.loads(p.read_text()) for p in files]; print(f"Dashboard JSON OK: {len(files)} files")'
+      - name: Alertmanager rendered template
+        run: |
+          docker run --rm --entrypoint /bin/sh -v "$PWD/observability/alertmanager:/etc/alertmanager:ro" prom/alertmanager:v0.28.1 -ec '
+            sed -e "s|__DEVIN_WEBHOOK_URL__|https://example.invalid/devin|g" -e "s|__DEVIN_WEBHOOK_SECRET__|ci-placeholder|g" -e "s|__SLACK_WEBHOOK_URL__|https://example.invalid/slack|g" /etc/alertmanager/alertmanager.yml.tmpl > /tmp/alertmanager.yml
+            amtool check-config /tmp/alertmanager.yml
+            sed -e "/# BEGIN devin-external/,/# END devin-external/d" -e "s|__SLACK_WEBHOOK_URL__|http://alert-sink:9095/slack|g" /etc/alertmanager/alertmanager.yml.tmpl > /tmp/alertmanager.yml
+            amtool check-config /tmp/alertmanager.yml'
+          python3 -c 'import os,pathlib,yaml; config=yaml.safe_load(pathlib.Path("infrastructure/helm/kube-prometheus-stack/values.yaml").read_text())["alertmanager"]["config"]; pathlib.Path(os.environ["RUNNER_TEMP"], "stack-alertmanager.yml").write_text(yaml.safe_dump(config))'
+          docker run --rm --entrypoint /bin/sh -v "$RUNNER_TEMP/stack-alertmanager.yml:/config.yml:ro" prom/alertmanager:v0.28.1 -ec '
+            mkdir -p /etc/alertmanager/secrets/monitoring-webhooks
+            printf "https://example.invalid/devin" > /etc/alertmanager/secrets/monitoring-webhooks/devin-url
+            printf "https://example.invalid/slack" > /etc/alertmanager/secrets/monitoring-webhooks/slack-url
+            printf "ci-placeholder" > /etc/alertmanager/secrets/monitoring-webhooks/devin-secret
+            amtool check-config /config.yml'
+      - uses: azure/setup-helm@v4.2.0
+        with:
+          version: v3.16.4
+      - name: Install kubeconform
+        run: |
+          curl -fsSL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar xz kubeconform
+          sudo install kubeconform /usr/local/bin/kubeconform
+      - name: Helm lint, render and Kubernetes schemas
+        run: bash scripts/check-observability-charts.sh
+      - name: Compose and installer syntax
+        run: |
+          docker compose -f docker-compose.infra.yml config -q
+          bash -n scripts/install-monitoring.sh scripts/check-observability-charts.sh

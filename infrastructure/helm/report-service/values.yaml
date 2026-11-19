@@ -42,8 +42,11 @@ healthCheck:
   periodSeconds: 15
 
 monitoring:
+  serviceMonitor:
+    labels:
+      release: prometheus
   enabled: true
-  path: /metrics
+  path: /actuator/prometheus
   port: 8091
 
 networkPolicy:

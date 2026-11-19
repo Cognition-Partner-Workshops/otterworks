@@ -14,7 +14,7 @@ groups:
           description: >-
             {{ $labels.job }} on instance {{ $labels.instance }} has been
             unreachable for more than 1 minute.
-          runbook_url: https://docs.otterworks.dev/runbooks/service-down
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/service-down.md
 
       - alert: ServiceHighRestartRate
         expr: changes(process_start_time_seconds[15m]) > 2
@@ -22,6 +22,7 @@ groups:
         labels:
           severity: warning
         annotations:
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/service-down.md
           summary: "Service {{ $labels.job }} is restarting frequently"
           description: >-
             {{ $labels.job }} has restarted more than 2 times in the last
@@ -47,7 +48,7 @@ groups:
           description: >-
             {{ $labels.job }} is returning more than 5% server errors
             (current value: {{ $value | humanizePercentage }}).
-          runbook_url: https://docs.otterworks.dev/runbooks/high-error-rate
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/high-error-rate.md
 
       - alert: HighClientErrorRate
         expr: >-
@@ -60,6 +61,7 @@ groups:
         labels:
           severity: warning
         annotations:
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/high-error-rate.md
           summary: "High 4xx error rate on {{ $labels.job }}"
           description: >-
             {{ $labels.job }} is returning more than 25% client errors
@@ -84,7 +86,7 @@ groups:
             The 99th percentile latency for {{ $labels.job }} has exceeded
             2 seconds for the last 5 minutes
             (current value: {{ $value | humanizeDuration }}).
-          runbook_url: https://docs.otterworks.dev/runbooks/high-latency
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/high-latency.md
 
       - alert: HighLatencyP95
         expr: >-
@@ -95,6 +97,7 @@ groups:
         labels:
           severity: warning
         annotations:
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/high-latency.md
           summary: "P95 latency above 1s on {{ $labels.job }}"
           description: >-
             The 95th percentile latency for {{ $labels.job }} has exceeded
@@ -121,7 +124,7 @@ groups:
             {{ $labels.job }} on {{ $labels.instance }} is using more than
             80% of available memory
             (current: {{ $value | humanizePercentage }}).
-          runbook_url: https://docs.otterworks.dev/runbooks/high-memory
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/high-memory.md
 
       - alert: HighMemoryUsageCritical
         expr: >-
@@ -134,6 +137,7 @@ groups:
         labels:
           severity: critical
         annotations:
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/high-memory.md
           summary: "Critical memory usage on {{ $labels.job }}"
           description: >-
             {{ $labels.job }} on {{ $labels.instance }} is using more than
@@ -147,6 +151,7 @@ groups:
         labels:
           severity: warning
         annotations:
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/high-cpu.md
           summary: "High CPU usage on {{ $labels.job }}"
           description: >-
             {{ $labels.job }} on {{ $labels.instance }} CPU usage is above
@@ -168,7 +173,7 @@ groups:
             Less than 15% disk space remaining on {{ $labels.instance }}
             mountpoint {{ $labels.mountpoint }}
             (available: {{ $value | humanizePercentage }}).
-          runbook_url: https://docs.otterworks.dev/runbooks/low-disk-space
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/low-disk-space.md
 
       - alert: CriticalDiskSpace
         expr: >-
@@ -181,6 +186,7 @@ groups:
         labels:
           severity: critical
         annotations:
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/low-disk-space.md
           summary: "Critical disk space on {{ $labels.instance }}"
           description: >-
             Less than 5% disk space remaining on {{ $labels.instance }}.
@@ -201,7 +207,7 @@ groups:
             The SQS queue {{ $labels.queue_name }} has more than 1000
             messages visible (current: {{ $value }}). Messages may not be
             processing fast enough.
-          runbook_url: https://docs.otterworks.dev/runbooks/sqs-queue-depth
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/sqs-queue-depth.md
 
       - alert: SQSQueueDepthCritical
         expr: aws_sqs_approximate_number_of_messages_visible > 5000
@@ -209,6 +215,7 @@ groups:
         labels:
           severity: critical
         annotations:
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/sqs-queue-depth.md
           summary: "SQS queue critically backed up: {{ $labels.queue_name }}"
           description: >-
             The SQS queue {{ $labels.queue_name }} has more than 5000
@@ -221,6 +228,7 @@ groups:
         labels:
           severity: warning
         annotations:
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/sqs-queue-depth.md
           summary: "Dead letter queue has messages: {{ $labels.queue_name }}"
           description: >-
             The dead letter queue {{ $labels.queue_name }} contains
@@ -245,7 +253,7 @@ groups:
             DynamoDB table {{ $labels.table_name }} is experiencing throttled
             requests. Consider increasing provisioned capacity or switching
             to on-demand mode.
-          runbook_url: https://docs.otterworks.dev/runbooks/dynamodb-throttling
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/dynamodb-throttling.md
 
       - alert: DynamoDBHighLatency
         expr: >-
@@ -254,6 +262,7 @@ groups:
         labels:
           severity: warning
         annotations:
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/dynamodb-throttling.md
           summary: "DynamoDB high latency on {{ $labels.table_name }}"
           description: >-
             DynamoDB {{ $labels.operation }} on table
@@ -268,6 +277,7 @@ groups:
         labels:
           severity: critical
         annotations:
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/dynamodb-throttling.md
           summary: "DynamoDB system errors on {{ $labels.table_name }}"
           description: >-
             DynamoDB table {{ $labels.table_name }} is reporting system
@@ -284,6 +294,7 @@ groups:
         labels:
           severity: warning
         annotations:
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/collaboration.md
           summary: "High WebSocket connection count"
           description: >-
             The collaboration service has {{ $value }} active WebSocket
@@ -298,6 +309,7 @@ groups:
         labels:
           severity: warning
         annotations:
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/collaboration.md
           summary: "CRDT sync delay is high"
           description: >-
             The P99 CRDT sync delay is above 1 second, which may degrade

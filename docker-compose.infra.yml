@@ -94,13 +94,35 @@ services:
       retries: 5
     security_opt:
     - no-new-privileges:true
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.67.0
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+    - no-new-privileges:true
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.16.0
+    environment:
+      DATA_SOURCE_NAME: postgresql://otterworks:otterworks_dev@postgres:5432/otterworks?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+    - no-new-privileges:true
   prometheus:
     image: prom/prometheus:v2.51.0
     container_name: otterworks-prometheus
     command:
     - --config.file=/etc/prometheus/prometheus.yml
     - --storage.tsdb.path=/prometheus
-    - --storage.tsdb.retention.time=15d
+    - --storage.tsdb.retention.time=35d
     - --web.enable-lifecycle
     - --web.enable-admin-api
     ports:
@@ -110,6 +132,7 @@ services:
     - ./observability/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
     - ./observability/prometheus/recording_rules.yml:/etc/prometheus/recording_rules.yml:ro
     - ./observability/prometheus/incident_alerts.yml:/etc/prometheus/incident_alerts.yml:ro
+    - ./observability/prometheus/slo_rules.yml:/etc/prometheus/slo_rules.yml:ro
     - prometheus_data:/prometheus
     healthcheck:
       test:

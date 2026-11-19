@@ -1,0 +1,11 @@
+{{- range $path, $_ := .Files.Glob "files/*.yml" }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ $.Release.Name }}-{{ base $path | trimSuffix ".yml" | replace "_" "-" }}
+  labels:
+    {{- toYaml $.Values.labels | nindent 4 }}
+spec:
+  {{- $.Files.Get $path | fromYaml | toYaml | nindent 2 }}
+{{- end }}

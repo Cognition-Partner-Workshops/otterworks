@@ -1,0 +1,117 @@
+rule_files:
+  - ../slo_rules.yml
+  - ../alerts.yml
+evaluation_interval: 30s
+tests:
+  - name: fast availability burn pages
+    interval: 1m
+    input_series:
+      - series: 'api_gateway_http_requests_total{job="api-gateway",path="/api/v1/files",status="200",namespace="otterworks-test"}'
+        values: '0+90x90'
+      - series: 'api_gateway_http_requests_total{job="api-gateway",path="/api/v1/files",status="500",namespace="otterworks-test"}'
+        values: '0+10x90'
+    promql_expr_test:
+      - expr: 'count(ALERTS{alertname="SLOBurnRateHigh",service="api-gateway",slo="availability",severity="page",page="devin",window="1h",alertstate="firing"})'
+        eval_time: 90m
+        exp_samples:
+          - labels: '{}'
+            value: 1
+      - expr: 'abs(slo:burn_rate:rate1h{service="api-gateway",slo="availability"} - 20) < bool 1e-9'
+        eval_time: 90m
+        exp_samples:
+          - labels: '{service="api-gateway",slo="availability",namespace="otterworks-test"}'
+            value: 1
+  - name: healthy traffic without an emitted error series does not page
+    interval: 1m
+    input_series:
+      - series: 'api_gateway_http_requests_total{job="api-gateway",path="/api/v1/files",status="200"}'
+        values: '0+100x90'
+    promql_expr_test:
+      - expr: 'count(ALERTS{alertname="SLOBurnRateHigh",service="api-gateway",window="1h"}) or vector(0)'
+        eval_time: 90m
+        exp_samples:
+          - labels: '{}'
+            value: 0
+      - expr: 'slo:error_budget_remaining:ratio{service="api-gateway",slo="availability"}'
+        eval_time: 90m
+        exp_samples:
+          - labels: 'slo:error_budget_remaining:ratio{service="api-gateway",slo="availability"}'
+            value: 1
+  - name: recovered short window suppresses fast burn despite bad long window
+    interval: 1m
+    input_series:
+      - series: 'api_gateway_http_requests_total{job="api-gateway",path="/api/v1/files",status="200"}'
+        values: '0+90x60 5500+100x9'
+      - series: 'api_gateway_http_requests_total{job="api-gateway",path="/api/v1/files",status="500"}'
+        values: '0+10x60 600+0x9'
+    promql_expr_test:
+      - expr: 'count(slo:burn_rate:rate1h{service="api-gateway",slo="availability"} > 14.4)'
+        eval_time: 70m
+        exp_samples:
+          - labels: '{}'
+            value: 1
+      - expr: 'count(ALERTS{alertname="SLOBurnRateHigh",service="api-gateway",window="1h"}) or vector(0)'
+        eval_time: 70m
+        exp_samples:
+          - labels: '{}'
+            value: 0
+  - name: no traffic is no SLI and no burn page
+    interval: 1m
+    input_series:
+      - series: 'api_gateway_http_requests_total{job="api-gateway",path="/api/v1/files",status="200"}'
+        values: '0+0x90'
+    promql_expr_test:
+      - expr: 'slo:success_ratio:rate5m{service="api-gateway"}'
+        eval_time: 90m
+        exp_samples: []
+      - expr: 'ALERTS{alertname="SLOBurnRateHigh"}'
+        eval_time: 90m
+        exp_samples: []
+  - name: missing telemetry is not success
+    promql_expr_test:
+      - expr: 'slo:success_ratio:rate5m'
+        eval_time: 5m
+        exp_samples: []
+  - name: latency bucket burns and namespaces stay isolated
+    interval: 1m
+    input_series:
+      - series: 'search_service_request_duration_seconds_count{job="search-service",namespace="otterworks-bad"}'
+        values: '0+100x90'
+      - series: 'search_service_request_duration_seconds_bucket{job="search-service",namespace="otterworks-bad",le="0.5"}'
+        values: '0+20x90'
+      - series: 'search_service_request_duration_seconds_count{job="search-service",namespace="otterworks-good"}'
+        values: '0+100x90'
+      - series: 'search_service_request_duration_seconds_bucket{job="search-service",namespace="otterworks-good",le="0.5"}'
+        values: '0+100x90'
+    promql_expr_test:
+      - expr: 'count(ALERTS{alertname="SLOBurnRateHigh",service="search-service",slo="latency",window="1h",namespace="otterworks-bad",alertstate="firing"})'
+        eval_time: 90m
+        exp_samples:
+          - labels: '{}'
+            value: 1
+      - expr: 'ALERTS{alertname="SLOBurnRateHigh",namespace="otterworks-good"}'
+        eval_time: 90m
+        exp_samples: []
+  - name: existing service down and error rate alerts
+    interval: 1m
+    input_series:
+      - series: 'up{job="test-service",instance="test:8080"}'
+        values: '0+0x15'
+      - series: 'http_requests_total{job="test-service",status="500"}'
+        values: '0+10x15'
+      - series: 'http_requests_total{job="test-service",status="200"}'
+        values: '0+90x15'
+    promql_expr_test:
+      - expr: 'count(ALERTS{alertname="ServiceDown",alertstate="firing"})'
+        eval_time: 10m
+        exp_samples:
+          - labels: '{}'
+            value: 1
+      - expr: 'count(ALERTS{alertname="HighErrorRate",alertstate="firing"})'
+        eval_time: 10m
+        exp_samples:
+          - labels: '{}'
+            value: 1
+      - expr: 'ALERTS{alertname="ServiceDown",alertstate="firing"}'
+        eval_time: 30s
+        exp_samples: []

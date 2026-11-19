@@ -1,0 +1,264 @@
+{
+  "uid": "otterworks-slo-overview",
+  "title": "OtterWorks SLO overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "tags": [
+    "otterworks",
+    "slo"
+  ],
+  "refresh": "30s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "editable": true,
+  "templating": {
+    "list": [
+      {
+        "name": "DS_PROMETHEUS",
+        "label": "Prometheus",
+        "type": "datasource",
+        "query": "prometheus"
+      },
+      {
+        "name": "service",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$DS_PROMETHEUS"
+        },
+        "query": "label_values(slo:success_ratio:rate5m, service)",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "namespace",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$DS_PROMETHEUS"
+        },
+        "query": "label_values(slo:success_ratio:rate5m, namespace)",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Success SLI (5m)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$DS_PROMETHEUS"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "slo:success_ratio:rate5m{service=~\"$service\",namespace=~\"$namespace\"}",
+          "legendFormat": "{{namespace}} {{service}} {{slo}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "30d error budget remaining",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$DS_PROMETHEUS"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "slo:error_budget_remaining:ratio{service=~\"$service\",namespace=~\"$namespace\"}",
+          "legendFormat": "{{namespace}} {{service}} {{slo}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Fast burn (1h, page >14.4x with 5m)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$DS_PROMETHEUS"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "slo:burn_rate:rate1h{service=~\"$service\",namespace=~\"$namespace\"}",
+          "legendFormat": "{{namespace}} {{service}} {{slo}} 1h"
+        },
+        {
+          "refId": "B",
+          "expr": "slo:burn_rate:rate5m{service=~\"$service\",namespace=~\"$namespace\"}",
+          "legendFormat": "{{namespace}} {{service}} {{slo}} 5m"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Slow burn (6h, page >6x with 30m)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$DS_PROMETHEUS"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "slo:burn_rate:rate6h{service=~\"$service\",namespace=~\"$namespace\"}",
+          "legendFormat": "{{namespace}} {{service}} {{slo}} 6h"
+        },
+        {
+          "refId": "B",
+          "expr": "slo:burn_rate:rate30m{service=~\"$service\",namespace=~\"$namespace\"}",
+          "legendFormat": "{{namespace}} {{service}} {{slo}} 30m"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "text",
+      "title": "Scope and interpretation",
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "30d rolling objectives: 99.5% availability, 95% of measured operations within 500 ms. Collab availability is a persistence-operation proxy; latency covers completed document syncs. No traffic/missing telemetry is **No data**, not 100% success. New installs have partial 30d history. Negative remaining budget means overspent. See [runbook](https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/slo-burn-rate.md)."
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Ticket burn (1d & 2h, >3x)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$DS_PROMETHEUS"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "slo:burn_rate:rate1d{service=~\"$service\",namespace=~\"$namespace\"}",
+          "legendFormat": "{{namespace}} {{service}} {{slo}} 1d"
+        },
+        {
+          "refId": "B",
+          "expr": "slo:burn_rate:rate2h{service=~\"$service\",namespace=~\"$namespace\"}",
+          "legendFormat": "{{namespace}} {{service}} {{slo}} 2h"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Ticket burn (3d & 6h, >1x)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$DS_PROMETHEUS"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "slo:burn_rate:rate3d{service=~\"$service\",namespace=~\"$namespace\"}",
+          "legendFormat": "{{namespace}} {{service}} {{slo}} 3d"
+        },
+        {
+          "refId": "B",
+          "expr": "slo:burn_rate:rate6h{service=~\"$service\",namespace=~\"$namespace\"}",
+          "legendFormat": "{{namespace}} {{service}} {{slo}} 6h"
+        }
+      ]
+    }
+  ]
+}

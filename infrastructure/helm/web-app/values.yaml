@@ -45,6 +45,9 @@ env:
   API_GATEWAY_URL: "http://api-gateway:8080"
 
 monitoring:
+  serviceMonitor:
+    labels:
+      release: prometheus
   enabled: true
   path: /metrics
   port: 3000

@@ -1,0 +1,75 @@
+# Upstream prometheus-community/kube-prometheus-stack 65.8.1, release prometheus.
+alertmanager:
+  service:
+    type: ClusterIP
+  alertmanagerSpec:
+    image:
+      tag: v0.28.1
+    secrets:
+      - monitoring-webhooks
+  config:
+    global:
+      resolve_timeout: 2m
+    route:
+      receiver: slack-oncall
+      group_by: [namespace, service, alertname, slo]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      routes:
+        - matchers: ['page = devin']
+          receiver: devin-oncall
+          continue: true
+        - matchers: ['page = devin']
+          receiver: slack-oncall
+    receivers:
+      - name: devin-oncall
+        webhook_configs:
+          - url_file: /etc/alertmanager/secrets/monitoring-webhooks/devin-url
+            send_resolved: false
+            max_alerts: 1
+            http_config:
+              http_headers:
+                X-Webhook-Secret:
+                  files: [/etc/alertmanager/secrets/monitoring-webhooks/devin-secret]
+      - name: slack-oncall
+        slack_configs:
+          - api_url_file: /etc/alertmanager/secrets/monitoring-webhooks/slack-url
+            channel: '#otterworks-alerts'
+            send_resolved: true
+prometheus:
+  service:
+    type: ClusterIP
+  prometheusSpec:
+    retention: 35d
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector:
+      matchLabels:
+        release: prometheus
+    serviceMonitorNamespaceSelector:
+      matchLabels:
+        platform/team: otterworks
+    ruleSelectorNilUsesHelmValues: false
+    ruleSelector:
+      matchLabels:
+        release: prometheus
+    ruleNamespaceSelector:
+      matchLabels:
+        platform/team: otterworks
+grafana:
+  serviceMonitor:
+    labels:
+      release: prometheus
+  service:
+    type: ClusterIP
+  admin:
+    existingSecret: monitoring-grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
+# No ingress, public service, trace backend or log backend is installed here.
