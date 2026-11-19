@@ -3,7 +3,7 @@
 The source of truth is `openapi/billing-v1.yaml` (OpenAPI 3.1). The gateway
 forwards `/api/v1/billing` unchanged to `LEGACY_BILLING_URL` (default
 `http://legacy-billing:8096`), behind its JWT middleware. No module's v1
-operations are implemented yet. Unknown v1 paths already return the JSON
+operations other than dunning are implemented yet. Unknown v1 paths already return the JSON
 error envelope; legacy routes retain their existing behavior, without new
 deprecation headers until converted into adapters.
 
@@ -47,6 +47,22 @@ The extraction target and the modern client are separate components and are
 not part of this service.
 
 ## Modules
+
+### Dunning v1
+
+Dunning is implemented under `/api/v1/billing`: `GET /overdue-invoices`
+(required `as_of` query date, paginated), `POST /dunning-schedules` and
+`POST /suspensions` (required JSON `as_of` date). Mutation responses are
+`201` with `data: {as_of, status}`; these runs have no addressable resource
+and therefore no Location header. All domain decisions remain in PL/pgSQL.
+Overdue invoice `invoice_id` becomes `id` in v1.
+
+The three `/api/dunning/*` routes are compatibility adapters over the same
+implementation, retaining legacy bytes/statuses, form inputs, and the overdue
+default date while adding Deprecation and successor-version Link headers.
+They retain `invoice_id` and omit the mutation `as_of` echo.
+Parity, state, validation, pagination and adapter error tests live in
+`tests/contract/test_dunning_contract.py`.
 
 | Module | Procedures/functions | Routes |
 |---|---|---|
