@@ -1,0 +1,22 @@
+{
+  "billing": {
+    "branch": "devin/sfx1119-billing-parity",
+    "metric_source": {
+      "file": "migration/dw-exit/parity/ladder.py",
+      "sha256": "ff74de7d7423d01c959aaaec72a27d7149f23ce84ae772dad2b6fe721f5d110e",
+      "functions": {
+        "local_compare": {
+          "start_line": 38,
+          "end_line": 62
+        },
+        "local_measure": {
+          "start_line": 22,
+          "end_line": 35
+        }
+      }
+    }
+  },
+  "documents": {
+    "branch": "devin/sfx1119-documents-migration"
+  }
+}
