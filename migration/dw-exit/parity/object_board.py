@@ -24,7 +24,7 @@ from parity.local_billing import execute
 from parity.semantics import columns as source_columns, numeric_type
 from parity.ladder import local_compare as compare
 from parity.provenance import provenance, markdown
-from parity import report_outputs, spark_billing
+from parity import report_outputs, spark_billing, pc_users
 from parity.subjects import SUBJECTS
 
 
@@ -156,7 +156,7 @@ def materialize(before, names, conversion_dir, business_date='20261109', subject
     return after, ready, errors
 
 
-def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, preflight=None):
+def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, preflight=None, pc_results=None):
     if target not in ('duckdb', 'snowflake'):
         raise ValueError('Unsupported parity target')
     if preflight is not None and (preflight.get('run_token') != RunConfig.from_env().token
@@ -209,6 +209,19 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
                 if row['status'] == 'red':
                     row['reason'] = 'measured parity mismatch'
+        mapping = obj['name'].removeprefix('s_')
+        if target == 'duckdb' and obj['subject_area'] == 'users' and obj['kind'] in ('mapping','session') and pc_results is not None:
+            proof = pc_results[mapping]
+            row['bteq_relation_measurement'] = {k: row.get(k) for k in
+                ('status','reason','row_count','column_profile','keyed_row_hash','sampled_differences','comparison_rules')}
+            row.update(status=proof['status'],reason=proof['reason'],powercenter=proof,
+                       measurement_basis='actual PowerCenter runner targets vs shipped dbt model on captured inputs')
+            measurement = proof['measurement']
+            for field in ('row_count','column_profile','keyed_row_hash','sampled_differences','comparison_rules'):
+                row[field] = None if measurement is None else (measurement[field] if field == 'row_count' else
+                    {'SFX_USERS.'+pc_users.MAPPINGS[mapping]:measurement[field]})
+            if mapping == 'm_SFX_APP_USER':
+                row.update(status='red',reason='APP_USER remains stopped; isolated dbt mapping proof does not clear the escalated truncation decision')
         if obj['subject_area'] in SUBJECTS:
             row.update(local_duckdb=row['status'] if target == 'duckdb' else 'red',
                        snowflake='red', snowflake_reason=snowflake_reason,
@@ -273,7 +286,16 @@ def main():
             spark_ready,spark_errors,spark_evidence = spark_billing.materialize(before,after,manifest['objects'],ns)
             ready.update(spark_ready)
             errors.update(spark_errors)
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight)
+        pc_results = None
+        pc_evidence = None
+        if args.target == 'duckdb' and manifest['objects'] and (pc_users.OUT/'capture.json').exists():
+            try:
+                pc_results, pc_evidence = pc_users.proofs(ns,ROOT/'warehouse/landing',os.environ.get('BUSINESS_DATE','20261109'))
+            except (OSError,ValueError,duckdb.Error) as error:
+                pc_results = {m:dict(status='red',reason='PC evidence unavailable: '+str(error),measurement=None) for m in pc_users.MAPPINGS}
+        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight,pc_results=pc_results)
+        if pc_evidence is not None:
+            payload['powercenter_evidence'] = pc_evidence
         if args.target == 'duckdb' and manifest['objects']:
             payload['spark_evidence'] = spark_evidence
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')

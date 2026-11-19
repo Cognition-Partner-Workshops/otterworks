@@ -91,6 +91,28 @@ def _provenance(obj):
 
 def provenance(obj):
     result = _provenance(obj)
+    if obj.get('subject_area') == 'users' and obj['kind'] in ('mapping','session'):
+        mapping = obj['name'].removeprefix('s_')
+        table = mapping.removeprefix('m_SFX_')
+        source = Path('etl/informatica/repository/SFX_CONTENT/mappings')/(mapping+'.XML')
+        if obj['kind'] == 'session':
+            result['source'].append(link(source))
+        if obj['kind'] == 'session':
+            path = Path(obj['source'])
+            text = (ROOT/path).read_text()
+            match = re.search(r'<SESSION\b[^>]*\bNAME="'+re.escape(obj['name'])+r'"[^>]*>.*?</SESSION>',text,re.S)
+            if match:
+                result['source'][0] = link(path,text.count('\n',0,match.start())+1,text.count('\n',0,match.end())+1)
+        paths = [Path('warehouse/dbt/models/pc/content')/('pc_content__'+table.lower()+'.sql')]
+        macro = Path('warehouse/dbt/macros')/('pc_content_'+table.lower()+'.sql')
+        if (ROOT/macro).exists():
+            paths.append(macro)
+        if table == 'TEAM_MEMBER':
+            paths.append(Path('warehouse/dbt/macros/unt8_python_unicode.sql'))
+        result['converted'] = {'SFX_USERS.'+table:[link(p) for p in paths]}
+        result['conversion_note'] = 'PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output'
+        if table == 'APP_USER':
+            result['conversion_note'] += '; no TRANSFORM.M_SFX_APP_USER Snowpark implementation found; APP_USER remains stopped'
     if obj.get('subject_area') == 'users':
         for entry in result['source'] + list(result['metrics'].values()) + [e for entries in result['converted'].values() for e in entries]:
             entry['url'] = entry['url'].replace(BRANCH, 'devin/sfx1119-users-migration')
