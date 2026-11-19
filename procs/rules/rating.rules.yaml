@@ -1,0 +1,136 @@
+module: rating
+rules:
+  - id: RATING-001
+    statement: "Select the tenant's latest-starting subscription overlapping the inclusive period, regardless of status, and use its plan's included units and overage rate; equal starts have no defined tie-breaker."
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [31, 41]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: ["quota_units","overage_rate"]
+    confidence: high
+    scenarios: ["RATING-001","RATING-002","RATING-003","RATING-008"]
+    decision:
+      status: approved
+      reviewer: "cio-cto (requester; pending PR review)"
+      date: "2026-11-18"
+      note: Approved for extraction as recorded legacy behaviour; to be confirmed in PR review. Scenario claims identify executing paths, not exhaustive edge-case evidence.
+  - id: RATING-002
+    statement: "Used units are the tenant's summed event units whose occurred_at cast to date in the database session timezone falls within the inclusive period; no events means zero."
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [43, 46]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: ["used_units"]
+    confidence: medium
+    scenarios: ["RATING-001","RATING-003","RATING-008"]
+    question: "Should timestamp dates be interpreted in UTC or a tenant timezone?"
+    answer: "Preserve the legacy session-timezone date cast for parity; flag the timezone contract for business follow-up. The fixture uses postgres:16 with no TZ, PGTZ, server timezone, connection option or SET override in the checked-in Compose, schema, recorder or app. UTC is expected for that stock fixture, but no running legacy DB was available to verify SHOW TimeZone, and transcripts do not capture it; the original recording session timezone is unverified."
+    decision:
+      status: approved
+      reviewer: "cio-cto (requester; pending PR review)"
+      date: "2026-11-18"
+      note: Approved for extraction as recorded legacy behaviour; to be confirmed in PR review. Scenario claims identify executing paths, not exhaustive edge-case evidence.
+  - id: RATING-003
+    statement: "Sum stored rollover units from the tenant's rating results joined to periods starting at or after period_start minus three calendar months and strictly before period_start, capped at twice the selected plan's included units; no prior results means zero. There is no separate finalized-status or period-end filter."
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [48, 56]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: ["rollover_units"]
+    confidence: high
+    scenarios: ["RATING-001","RATING-002","RATING-008"]
+    decision:
+      status: approved
+      reviewer: "cio-cto (requester; pending PR review)"
+      date: "2026-11-18"
+      note: Approved for extraction as recorded legacy behaviour; to be confirmed in PR review. Scenario claims identify executing paths, not exhaustive edge-case evidence.
+  - id: RATING-004
+    statement: "Before suspension proration, billable units are max(used units minus applied rollover credit minus included units, zero)."
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [57, 57]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: ["billable_units"]
+    confidence: high
+    scenarios: ["RATING-001","RATING-003","RATING-004","RATING-005","RATING-006","RATING-008"]
+    decision:
+      status: approved
+      reviewer: "cio-cto (requester; pending PR review)"
+      date: "2026-11-18"
+      note: Approved for extraction as recorded legacy behaviour; to be confirmed in PR review. Scenario claims identify executing paths, not exhaustive edge-case evidence.
+  - id: RATING-005
+    statement: "Before suspension proration, first-tier units are min(billable units, 101), second-tier units are max(billable units minus 101, zero), and amount is first times rate plus second times rate times 1.5, rounded to two decimal places with PostgreSQL numeric half-away-from-zero rounding."
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [58, 60]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: ["first_tier_units","second_tier_units","overage_amount"]
+    confidence: high
+    scenarios: ["RATING-003","RATING-004","RATING-005","RATING-006"]
+    question: "Is the first-tier boundary intended to be 100 rather than 101?"
+    answer: "Preserve the recorded 101-unit boundary for legacy parity and flag for business follow-up; 101 units at 0.055 yields 5.555 rounded to 5.56."
+    decision:
+      status: approved
+      reviewer: "cio-cto (requester; pending PR review)"
+      date: "2026-11-18"
+      note: Approved for extraction as recorded legacy behaviour; to be confirmed in PR review. Scenario claims identify executing paths, not exhaustive edge-case evidence.
+  - id: RATING-006
+    statement: "Only a suspended subscription with a non-null suspension date inside the inclusive period prorates billable units and the already-rounded amount by inclusive days from suspension through period end divided by inclusive period days. Round billable units to an integer and amount to two decimals, half away from zero; leave used, quota, rollover and both tier counts unchanged."
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [62, 75]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: ["billable_units","overage_amount","first_tier_units","second_tier_units"]
+    confidence: high
+    scenarios: ["RATING-003"]
+    question: "Should suspension prorate the already-rounded amount and leave tier counts unprorated?"
+    answer: "Preserve legacy proration after rounding for parity and flag for business follow-up. Tenant 2 retains tier counts 101 and 99 while billable becomes 100 and 8.73 times 0.5 becomes 4.37."
+    decision:
+      status: approved
+      reviewer: "cio-cto (requester; pending PR review)"
+      date: "2026-11-18"
+      note: Approved for extraction as recorded legacy behaviour; to be confirmed in PR review. Scenario claims identify executing paths, not exhaustive edge-case evidence.
+  - id: RATING-007
+    statement: "Summarize only the tenant's events whose session-timezone dates fall within the inclusive period, returning event count and summed units per kind ordered by kind; no events returns no rows."
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [79, 93]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: ["kind","event_count","units"]
+    confidence: high
+    scenarios: ["RATING-007"]
+    decision:
+      status: approved
+      reviewer: "cio-cto (requester; pending PR review)"
+      date: "2026-11-18"
+      note: Approved for extraction as recorded legacy behaviour; to be confirmed in PR review. Scenario claims identify executing paths, not exhaustive edge-case evidence.
+  - id: RATING-008
+    statement: "Finalize upserts the period using md5(tenant UUID text concatenated with start date text) cast to UUID, updating only period_end on a tenant/start conflict. It rates that period and inserts a result with md5(period UUID text) cast to UUID, the latest overlapping subscription, used, quota, billable and amount, but stored rollover is max(quota minus used, zero), not applied credit. On insert created_at is period_end cast to timestamptz at session-local midnight."
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [95, 132]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: ["rating_periods","rating_results"]
+    confidence: high
+    scenarios: ["RATING-008"]
+    question: "Should stored rollover represent unused quota rather than the rollover credit applied, and should created_at use period end?"
+    answer: "Preserve legacy unused-quota rollover and session-local period-end timestamp for parity and flag for business follow-up."
+    decision:
+      status: approved
+      reviewer: "cio-cto (requester; pending PR review)"
+      date: "2026-11-18"
+      note: Approved for extraction as recorded legacy behaviour; to be confirmed in PR review. Scenario claims identify executing paths, not exhaustive edge-case evidence.
+  - id: RATING-009
+    statement: "On a result ID conflict, finalize updates only used_units, rollover_units, billable_units and overage_amount; existing quota_units, subscription_id, period_id and created_at are not refreshed."
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [133, 137]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: ["rating_results"]
+    confidence: high
+    scenarios: ["RATING-008"]
+    decision:
+      status: approved
+      reviewer: "cio-cto (requester; pending PR review)"
+      date: "2026-11-18"
+      note: Approved for extraction as recorded legacy behaviour; to be confirmed in PR review. Scenario claims identify executing paths, not exhaustive edge-case evidence.
