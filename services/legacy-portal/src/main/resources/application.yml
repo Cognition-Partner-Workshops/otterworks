@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: legacy-portal
+  # Keep the Spring Boot 2 / Jackson 2 wire format recorded in parity/java-reference.json
+  # (declaration-order properties, offset-style dates, lenient trailing tokens).
+  jackson:
+    use-jackson2-defaults: true
   # Default profile: embedded H2 with ONE SCHEMA PER BOUNDED CONTEXT. The schema
   # boundaries (announcements / user_preferences / feedback) are the decomposition seams —
   # each could become its own database when the monolith is split into services.
@@ -21,6 +25,9 @@ spring:
 
 management:
   endpoints:
+    # Serialize actuator JSON with the application mapper (Jackson 2 defaults above).
+    jackson:
+      isolated-json-mapper: false
     web:
       exposure:
         include: health,info
