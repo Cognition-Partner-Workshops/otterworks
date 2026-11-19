@@ -6,6 +6,8 @@ import os
 import re
 import zlib
 
+from psycopg import sql
+
 from lakehouse.billing.calendar import variables
 from lakehouse.orchestration.graph import business_date
 from lakehouse.runtime.layout import ROOT, data_root
@@ -33,8 +35,12 @@ def prepare(day):
                 raise RuntimeError(output.getvalue())
 
         def snapshot(name, source):
-            runner.conn.execute(f'DROP TABLE IF EXISTS sfx_billing_parity.{name}')
-            runner.conn.execute(f'CREATE TABLE sfx_billing_parity.{name} AS SELECT * FROM sfx_billing.{source}')
+            runner.conn.execute(sql.Composed([sql.SQL('DROP TABLE IF EXISTS '),
+                                             sql.Identifier('sfx_billing_parity', name)]))
+            runner.conn.execute(sql.Composed([sql.SQL('CREATE TABLE '),
+                                             sql.Identifier('sfx_billing_parity', name),
+                                             sql.SQL(' AS SELECT * FROM '),
+                                             sql.Identifier('sfx_billing', source)]))
 
         for name in ('load_account_history', '01_load_accounts', '02_load_subscriptions',
                      '03_load_invoices', '04_load_payments', '05_load_usage'):

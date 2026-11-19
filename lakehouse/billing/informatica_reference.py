@@ -50,7 +50,7 @@ def prepare(landing, day):
         source.autocommit = True
         exists = source.execute('SELECT 1 FROM pg_database WHERE datname=%s', (database,)).fetchone()
         if not exists:
-            source.execute(sql.SQL('CREATE DATABASE {}').format(sql.Identifier(database)))
+            source.execute(sql.Composed([sql.SQL('CREATE DATABASE '), sql.Identifier(database)]))
         connection = source.info.get_parameters()
         connection['password'] = source.info.password
         connection['dbname'] = database
@@ -64,13 +64,14 @@ def prepare(landing, day):
                 if not attributes:
                     raise RuntimeError('Missing baseline table: ' + name)
                 identity = sql.Identifier('sfx_billing', name)
-                target.execute(sql.SQL('DROP TABLE IF EXISTS {}').format(identity))
+                target.execute(sql.Composed([sql.SQL('DROP TABLE IF EXISTS '), identity]))
                 definitions = [sql.SQL('{} {}{}').format(sql.Identifier(n), sql.SQL(t),
                                    sql.SQL(' NOT NULL' if required else '')) for n, t, required in attributes]
                 constraints = source.execute('SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conrelid=to_regclass(%s)',
                                              ('sfx_billing.' + name,)).fetchall()
                 definitions += [sql.SQL(c[0]) for c in constraints]
-                target.execute(sql.SQL('CREATE TABLE {} ({})').format(identity, sql.SQL(',').join(definitions)))
+                target.execute(sql.Composed([sql.SQL('CREATE TABLE '), identity, sql.SQL(' ('),
+                                             sql.SQL(',').join(definitions), sql.SQL(')')]))
                 rows = [tuple(row.get(a[0]) for a in attributes) for row in prior[table]]
                 with target.cursor().copy(sql.SQL('COPY {} FROM STDIN').format(identity)) as copy:
                     for row in rows:
@@ -100,7 +101,8 @@ def prepare(landing, day):
         spark = create_session()
         with psycopg.connect(**connection) as target:
             for table in ORDER:
-                rows = target.execute(sql.SQL('SELECT * FROM {}').format(sql.Identifier('sfx_billing', table.lower())))
+                rows = target.execute(sql.Composed([sql.SQL('SELECT * FROM '),
+                                                    sql.Identifier('sfx_billing', table.lower())]))
                 names = [c.name.lower() for c in rows.description]
                 char_fields = {f.get('NAME').lower() for f in TARGETS[table] if f.get('DATATYPE') == 'char'}
                 values = [{k: v.rstrip(' ') if k in char_fields and isinstance(v, str) else v

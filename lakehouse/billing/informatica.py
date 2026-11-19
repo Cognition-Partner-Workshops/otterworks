@@ -10,10 +10,10 @@ import operator
 import os
 import re
 import tempfile
-import xml.etree.ElementTree as ET
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
 
+from defusedxml import ElementTree as ET
 from pyspark.sql import types as T
 
 from lakehouse.orchestration.graph import business_date
