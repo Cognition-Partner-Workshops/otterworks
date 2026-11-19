@@ -190,7 +190,7 @@
       "sampled_differences": {
         "SFX_USERS.APP_USER": []
       },
-      "reason": "APP_USER remains stopped; isolated dbt mapping proof does not clear the escalated truncation decision",
+      "reason": "Held on APP_USER display-name truncation decision; isolated PC/dbt proof has hash_difference=0 and does not clear the escalation",
       "provenance": {
         "source": [
           {
@@ -4161,7 +4161,7 @@
       "sampled_differences": {
         "SFX_USERS.APP_USER": []
       },
-      "reason": "APP_USER remains stopped; isolated dbt mapping proof does not clear the escalated truncation decision",
+      "reason": "Held on APP_USER display-name truncation decision; isolated PC/dbt proof has hash_difference=0 and does not clear the escalation",
       "provenance": {
         "source": [
           {
@@ -31016,14 +31016,60 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Spark source available; output not materialized locally",
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_SPARK.TEAM_GRAPH_COMPONENTS": {
+          "before": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "COMPONENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 196,
+              "distinct": 40
+            }
+          },
+          "after": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "COMPONENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 196,
+              "distinct": 40
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_SPARK.TEAM_GRAPH_COMPONENTS": {
+          "keys": [
+            "USER_ID"
+          ],
+          "difference": 0,
+          "before": "f1371c694fd019e82228ae09e08116368cc618e0d8b214cbea3f1d48f38921c7",
+          "after": "f1371c694fd019e82228ae09e08116368cc618e0d8b214cbea3f1d48f38921c7",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_SPARK.TEAM_GRAPH_COMPONENTS": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -31034,7 +31080,7 @@
           }
         ],
         "converted": {
-          "candidate:team_graph_components": [
+          "SFX_SPARK.TEAM_GRAPH_COMPONENTS": [
             {
               "file": "warehouse/snowpark/team_graph_components.py",
               "start_line": 1,
@@ -31043,7 +31089,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -31065,9 +31111,13 @@
           }
         }
       },
-      "source": "etl/spark/scala/src/main/scala/sfx/TeamGraphComponents.scala",
-      "source_ref": "demo-snowflake-dw-exit",
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_SPARK.TEAM_GRAPH_COMPONENTS": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -31091,14 +31141,108 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Spark source available; output not materialized locally",
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_SPARK.USER_PREF_JSON_FLATTEN": {
+          "before": {
+            "USER_PREF_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "PREF_JSON": {
+              "nulls": 0,
+              "min": "{\"theme\": \"dark\", \"notifications\": {\"email\": false, \"digest\": \"weekly\"}, \"locale\": \"de-DE\", \"timezone\": \"Europe/Berlin\"}",
+              "max": "{\"theme\": \"light\", \"notifications\": {\"email\": true, \"digest\": \"weekly\"}, \"locale\": \"fr-FR\", \"timezone\": \"Europe/Paris\"}",
+              "distinct": 8
+            },
+            "THEME": {
+              "nulls": 0,
+              "min": "dark",
+              "max": "light",
+              "distinct": 2
+            },
+            "NOTIFICATIONS": {
+              "nulls": 0,
+              "min": "{'email': False, 'digest': 'weekly'}",
+              "max": "{'email': True, 'digest': 'weekly'}",
+              "distinct": 2
+            },
+            "LOCALE": {
+              "nulls": 0,
+              "min": "de-DE",
+              "max": "fr-FR",
+              "distinct": 4
+            }
+          },
+          "after": {
+            "USER_PREF_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "PREF_JSON": {
+              "nulls": 0,
+              "min": "{\"theme\": \"dark\", \"notifications\": {\"email\": false, \"digest\": \"weekly\"}, \"locale\": \"de-DE\", \"timezone\": \"Europe/Berlin\"}",
+              "max": "{\"theme\": \"light\", \"notifications\": {\"email\": true, \"digest\": \"weekly\"}, \"locale\": \"fr-FR\", \"timezone\": \"Europe/Paris\"}",
+              "distinct": 8
+            },
+            "THEME": {
+              "nulls": 0,
+              "min": "dark",
+              "max": "light",
+              "distinct": 2
+            },
+            "NOTIFICATIONS": {
+              "nulls": 0,
+              "min": "{'email': False, 'digest': 'weekly'}",
+              "max": "{'email': True, 'digest': 'weekly'}",
+              "distinct": 2
+            },
+            "LOCALE": {
+              "nulls": 0,
+              "min": "de-DE",
+              "max": "fr-FR",
+              "distinct": 4
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_SPARK.USER_PREF_JSON_FLATTEN": {
+          "keys": [
+            "USER_PREF_ID"
+          ],
+          "difference": 0,
+          "before": "22c4affa0a8afad489ce02d50a441789e7fb8f6cbb461af0a914da12a3bee223",
+          "after": "22c4affa0a8afad489ce02d50a441789e7fb8f6cbb461af0a914da12a3bee223",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_SPARK.USER_PREF_JSON_FLATTEN": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -31109,7 +31253,7 @@
           }
         ],
         "converted": {
-          "candidate:user_pref_json_flatten": [
+          "SFX_SPARK.USER_PREF_JSON_FLATTEN": [
             {
               "file": "warehouse/snowpark/user_pref_json_flatten.py",
               "start_line": 1,
@@ -31118,7 +31262,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -31140,9 +31284,13 @@
           }
         }
       },
-      "source": "etl/spark/jobs/py/user_pref_json_flatten.py",
-      "source_ref": "demo-snowflake-dw-exit",
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_SPARK.USER_PREF_JSON_FLATTEN": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -31166,14 +31314,84 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Spark source available; output not materialized locally",
+      "row_count": {
+        "before": 7,
+        "after": 7
+      },
+      "column_profile": {
+        "SFX_SPARK.USERS_ACTIVE_DAILY": {
+          "before": {
+            "ACTIVITY_DATE": {
+              "nulls": 0,
+              "min": "2026-11-03",
+              "max": "2026-11-09",
+              "distinct": 7
+            },
+            "ACTIVE_USERS": {
+              "nulls": 0,
+              "min": 28,
+              "max": 29,
+              "distinct": 2
+            },
+            "LOGINS": {
+              "nulls": 0,
+              "min": 318,
+              "max": 419,
+              "distinct": 7
+            },
+            "ACTIONS": {
+              "nulls": 0,
+              "min": 5336,
+              "max": 7461,
+              "distinct": 7
+            }
+          },
+          "after": {
+            "ACTIVITY_DATE": {
+              "nulls": 0,
+              "min": "2026-11-03",
+              "max": "2026-11-09",
+              "distinct": 7
+            },
+            "ACTIVE_USERS": {
+              "nulls": 0,
+              "min": 28,
+              "max": 29,
+              "distinct": 2
+            },
+            "LOGINS": {
+              "nulls": 0,
+              "min": 318,
+              "max": 419,
+              "distinct": 7
+            },
+            "ACTIONS": {
+              "nulls": 0,
+              "min": 5336,
+              "max": 7461,
+              "distinct": 7
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_SPARK.USERS_ACTIVE_DAILY": {
+          "keys": [
+            "ACTIVITY_DATE"
+          ],
+          "difference": 0,
+          "before": "cb592c4cc8698e4cce9435d991933879d885e46b970d619f5af6ea4dba2ea41d",
+          "after": "cb592c4cc8698e4cce9435d991933879d885e46b970d619f5af6ea4dba2ea41d",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_SPARK.USERS_ACTIVE_DAILY": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -31184,7 +31402,7 @@
           }
         ],
         "converted": {
-          "candidate:users_active_daily": [
+          "SFX_SPARK.USERS_ACTIVE_DAILY": [
             {
               "file": "warehouse/dbt/models/spark/users_active_daily/users_active_daily.sql",
               "start_line": 1,
@@ -31193,7 +31411,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -31215,9 +31433,13 @@
           }
         }
       },
-      "source": "etl/spark/jobs/py/users_active_daily.py",
-      "source_ref": "demo-snowflake-dw-exit",
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_SPARK.USERS_ACTIVE_DAILY": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -31241,14 +31463,120 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Spark source available; output not materialized locally",
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_SPARK.USERS_LOGIN_USERAGENT_PARSE": {
+          "before": {
+            "LOGIN_EVENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "EVENT_AT": {
+              "nulls": 0,
+              "min": "2026-11-03 00:00:02",
+              "max": "2026-11-09 23:59:01",
+              "distinct": 200
+            },
+            "IP_ADDRESS": {
+              "nulls": 0,
+              "min": "192.0.2.10",
+              "max": "192.0.2.99",
+              "distinct": 200
+            },
+            "USER_AGENT": {
+              "nulls": 0,
+              "min": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 Version/17.6 Safari/605.1.15",
+              "max": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130.0 Safari/537.36",
+              "distinct": 3
+            },
+            "RAW_LINE": {
+              "nulls": 0,
+              "min": "2026-11-03T12:00:00Z level=INFO actor=adrian.patel@ternvale-materials.example document=99 action=login status=200 ip=192.0.2.100 agent=\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130.0 Safari/537.36\"",
+              "max": "2026-11-09T12:00:00Z level=INFO actor=theo.calder@willowmere-design.example document=133 action=login status=200 ip=192.0.2.134 agent=\"Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 Version/17.6 Safari/605.1.15\"",
+              "distinct": 200
+            },
+            "BROWSER": {
+              "nulls": 0,
+              "min": "Chrome/130.0",
+              "max": "Safari/605.1.15",
+              "distinct": 3
+            }
+          },
+          "after": {
+            "LOGIN_EVENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "EVENT_AT": {
+              "nulls": 0,
+              "min": "2026-11-03 00:00:02",
+              "max": "2026-11-09 23:59:01",
+              "distinct": 200
+            },
+            "IP_ADDRESS": {
+              "nulls": 0,
+              "min": "192.0.2.10",
+              "max": "192.0.2.99",
+              "distinct": 200
+            },
+            "USER_AGENT": {
+              "nulls": 0,
+              "min": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 Version/17.6 Safari/605.1.15",
+              "max": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130.0 Safari/537.36",
+              "distinct": 3
+            },
+            "RAW_LINE": {
+              "nulls": 0,
+              "min": "2026-11-03T12:00:00Z level=INFO actor=adrian.patel@ternvale-materials.example document=99 action=login status=200 ip=192.0.2.100 agent=\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130.0 Safari/537.36\"",
+              "max": "2026-11-09T12:00:00Z level=INFO actor=theo.calder@willowmere-design.example document=133 action=login status=200 ip=192.0.2.134 agent=\"Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 Version/17.6 Safari/605.1.15\"",
+              "distinct": 200
+            },
+            "BROWSER": {
+              "nulls": 0,
+              "min": "Chrome/130.0",
+              "max": "Safari/605.1.15",
+              "distinct": 3
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_SPARK.USERS_LOGIN_USERAGENT_PARSE": {
+          "keys": [
+            "LOGIN_EVENT_ID"
+          ],
+          "difference": 0,
+          "before": "844c7e2448b0ca623e9822a022c731c0112e531549bf1c4e47297af5cd727c27",
+          "after": "844c7e2448b0ca623e9822a022c731c0112e531549bf1c4e47297af5cd727c27",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_SPARK.USERS_LOGIN_USERAGENT_PARSE": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -31259,7 +31587,7 @@
           }
         ],
         "converted": {
-          "candidate:users_login_useragent_parse": [
+          "SFX_SPARK.USERS_LOGIN_USERAGENT_PARSE": [
             {
               "file": "warehouse/snowpark/users_login_useragent_parse.py",
               "start_line": 1,
@@ -31268,7 +31596,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -31290,9 +31618,13 @@
           }
         }
       },
-      "source": "etl/spark/jobs/py/users_login_useragent_parse.py",
-      "source_ref": "demo-snowflake-dw-exit",
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_SPARK.USERS_LOGIN_USERAGENT_PARSE": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -31316,14 +31648,108 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Spark source available; output not materialized locally",
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_SPARK.USERS_RISK_SCORE": {
+          "before": {
+            "USER_ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "ACTIVITY_DATE": {
+              "nulls": 0,
+              "min": "2026-11-03",
+              "max": "2026-11-09",
+              "distinct": 7
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 1,
+              "max": 24,
+              "distinct": 24
+            },
+            "ACTION_COUNT": {
+              "nulls": 0,
+              "min": 2,
+              "max": 446,
+              "distinct": 166
+            },
+            "RISK_SCORE": {
+              "nulls": 0,
+              "min": 0.10491201257792952,
+              "max": 0.10985725463327901,
+              "distinct": 172
+            }
+          },
+          "after": {
+            "USER_ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "ACTIVITY_DATE": {
+              "nulls": 0,
+              "min": "2026-11-03",
+              "max": "2026-11-09",
+              "distinct": 7
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 1,
+              "max": 24,
+              "distinct": 24
+            },
+            "ACTION_COUNT": {
+              "nulls": 0,
+              "min": 2,
+              "max": 446,
+              "distinct": 166
+            },
+            "RISK_SCORE": {
+              "nulls": 0,
+              "min": 0.10491201257792952,
+              "max": 0.10985725463327901,
+              "distinct": 172
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_SPARK.USERS_RISK_SCORE": {
+          "keys": [
+            "USER_ACTIVITY_ID"
+          ],
+          "difference": 0,
+          "before": "3d2cccf918f34957ec78b1e1eb5e89cd4cd129f576472bc928fb3ef8edd59613",
+          "after": "3d2cccf918f34957ec78b1e1eb5e89cd4cd129f576472bc928fb3ef8edd59613",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_SPARK.USERS_RISK_SCORE": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -31334,7 +31760,7 @@
           }
         ],
         "converted": {
-          "candidate:users_risk_score": [
+          "SFX_SPARK.USERS_RISK_SCORE": [
             {
               "file": "warehouse/snowpark/users_risk_score.py",
               "start_line": 1,
@@ -31343,7 +31769,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -31365,9 +31791,13 @@
           }
         }
       },
-      "source": "etl/spark/scala/src/main/scala/sfx/UsersRiskScore.scala",
-      "source_ref": "demo-snowflake-dw-exit",
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_SPARK.USERS_RISK_SCORE": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -31391,14 +31821,72 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Spark source available; output not materialized locally",
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_SPARK.USERS_TEAM_ROLLUP": {
+          "before": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Commercial Finance",
+              "max": "Security Operations Enablement",
+              "distinct": 72
+            },
+            "MEMBERS": {
+              "nulls": 0,
+              "min": 0,
+              "max": 5,
+              "distinct": 2
+            }
+          },
+          "after": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Commercial Finance",
+              "max": "Security Operations Enablement",
+              "distinct": 72
+            },
+            "MEMBERS": {
+              "nulls": 0,
+              "min": 0,
+              "max": 5,
+              "distinct": 2
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_SPARK.USERS_TEAM_ROLLUP": {
+          "keys": [
+            "TEAM_ID"
+          ],
+          "difference": 0,
+          "before": "cb46c35b1b5d64200dbb10a3dbc3c44665f12a8c3c26cda4dc2b7307789d40ce",
+          "after": "cb46c35b1b5d64200dbb10a3dbc3c44665f12a8c3c26cda4dc2b7307789d40ce",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_SPARK.USERS_TEAM_ROLLUP": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -31409,7 +31897,7 @@
           }
         ],
         "converted": {
-          "candidate:users_team_rollup": [
+          "SFX_SPARK.USERS_TEAM_ROLLUP": [
             {
               "file": "warehouse/dbt/models/spark/users_team_rollup/users_team_rollup.sql",
               "start_line": 1,
@@ -31418,7 +31906,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -31440,9 +31928,13 @@
           }
         }
       },
-      "source": "etl/spark/jobs/py/users_team_rollup.py",
-      "source_ref": "demo-snowflake-dw-exit",
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_SPARK.USERS_TEAM_ROLLUP": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -31477,9 +31969,9 @@
   },
   "summary": {
     "rows": 252,
-    "red": 138,
-    "green": 114,
-    "measured": 120,
+    "red": 132,
+    "green": 120,
+    "measured": 126,
     "migrated": 0,
     "licence_remaining": 252,
     "licence_total": 252,
@@ -31497,8 +31989,8 @@
     },
     "users": {
       "local_duckdb": "red",
-      "local_green": 39,
-      "local_red": 16,
+      "local_green": 45,
+      "local_red": 10,
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run"
     }
@@ -31724,6 +32216,174 @@
         "etl/spark/.data/sfx1119-before/landing/billing/USAGE_DAILY/20261109.psv": "e53de68b4f56e7d47bdd79ece3e151877dc717b55f5e0d1053fb07bf8b6c45c4"
       },
       "build": "initial; is_incremental()=false"
+    },
+    "team_graph_components": {
+      "legacy_output": "etl/spark/.data/sfx1119-before/lake/users/team_graph_components",
+      "landing_sha256": {
+        "etl/spark/.data/sfx1119-before/landing/users/APP_USER/20261109.psv": "a3714c9b6ed3e838d71864d6aaa0c52b9a14c4d828deafe8d572edc6cbf85493",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261103.psv": "d320bca874f52213c719640d1acb293ef55c77cac456a8bbfbb8fee522ce7e3e",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261104.psv": "50f90fb43d607e91eb0add408d3adaaeb6ab85ac5ccd16bb11ee57131ce34f84",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261105.psv": "22e4436d709ff11f3e5faae790331a61c05ab094e2c9cc01097eb8e0f33dc645",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261106.psv": "29e7418da1b5b46f6e6d4f0a9ce82a2b299e6d2bc5523fb8b5f813919f03b84f",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261107.psv": "4cae58e33f561aa45e54e8ca3c749a99ea7ba34fb4371e8f80903e479dcbd84d",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261108.psv": "64beb8e8d0f24c39cf0b3ab5a90d17cc9bd0ae68a0761179eeef39d45c2b7b26",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261109.psv": "49ba33ebec1c46c9b00c58bd1f7e1c252e7cdb8691d0bd295ab4cd6d92d87dbf",
+        "etl/spark/.data/sfx1119-before/landing/users/ROLE_GRANT/20261109.psv": "a7d69a1c742e172bfa48f7817b67354d307e0eb12221a28b11d3b14e989a0d64",
+        "etl/spark/.data/sfx1119-before/landing/users/SSO_IDENTITY/20261109.psv": "d711d4614e9e8e240ca5ebf40603dee9491a5f5c6a74594b4a9c4be0470620c1",
+        "etl/spark/.data/sfx1119-before/landing/users/TEAM/20261109.psv": "d6fd779e8cfa8d474e1c2b022b3bd60c16cbc4907f4f4e36833c8257ad68c7d7",
+        "etl/spark/.data/sfx1119-before/landing/users/TEAM_MEMBER/20261109.psv": "029a8c08be6d9c1e6c8680e772414c0796c0b548dd52a0e3c94f740fa5bd3db9",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261103.psv": "e9b3822b16880cd701996176f14be151d4d3621f8aa17dcc3f5420483c58de2a",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261104.psv": "45a670dfe6cf7a45d8fb9e73d9ff1ff267aaf1cd5db5a316aff13e3a0a50485e",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261105.psv": "d91285e01a0bddd6062b3f19d8ca33f1cd0246ba0f3246a1822eb4d415b0f912",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261106.psv": "9af244966528473b48b58c32d77896b3b4d9283223d3f88005fe69139034c80c",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261107.psv": "909011a18dbadc5c34b54213d5ae0999d74f8660a4b23eb6fe4ded79857a1a18",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261108.psv": "e440f9f1eb8cb127d87375de29f7f70fc882f4d983e69b618c7588f85d18c93b",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261109.psv": "c511abdd86c5b2aa487fbcf38a7138cd298e55d40f4a929b39cf9fc3d545c02a",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_PREF/20261109.psv": "f4d91a58f530b4f20ec5351050343f564218c7c2797c46edf4d169ffdc71cd68",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_PROFILE/20261109.psv": "a14dd973eecacfa456a33b12eb70789551cd4415126adde097173687c62e707b",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_STATUS_HIST/20261109.psv": "0662f18e72bdf2f3cd938a508f20be3729c3c79e3e52cbe7e934c8e382be0a82"
+      },
+      "build": "initial; shipped dbt SELECT or extracted shipped Snowpark Python body/projection"
+    },
+    "user_pref_json_flatten": {
+      "legacy_output": "etl/spark/.data/sfx1119-before/lake/users/user_pref_json_flatten",
+      "landing_sha256": {
+        "etl/spark/.data/sfx1119-before/landing/users/APP_USER/20261109.psv": "a3714c9b6ed3e838d71864d6aaa0c52b9a14c4d828deafe8d572edc6cbf85493",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261103.psv": "d320bca874f52213c719640d1acb293ef55c77cac456a8bbfbb8fee522ce7e3e",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261104.psv": "50f90fb43d607e91eb0add408d3adaaeb6ab85ac5ccd16bb11ee57131ce34f84",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261105.psv": "22e4436d709ff11f3e5faae790331a61c05ab094e2c9cc01097eb8e0f33dc645",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261106.psv": "29e7418da1b5b46f6e6d4f0a9ce82a2b299e6d2bc5523fb8b5f813919f03b84f",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261107.psv": "4cae58e33f561aa45e54e8ca3c749a99ea7ba34fb4371e8f80903e479dcbd84d",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261108.psv": "64beb8e8d0f24c39cf0b3ab5a90d17cc9bd0ae68a0761179eeef39d45c2b7b26",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261109.psv": "49ba33ebec1c46c9b00c58bd1f7e1c252e7cdb8691d0bd295ab4cd6d92d87dbf",
+        "etl/spark/.data/sfx1119-before/landing/users/ROLE_GRANT/20261109.psv": "a7d69a1c742e172bfa48f7817b67354d307e0eb12221a28b11d3b14e989a0d64",
+        "etl/spark/.data/sfx1119-before/landing/users/SSO_IDENTITY/20261109.psv": "d711d4614e9e8e240ca5ebf40603dee9491a5f5c6a74594b4a9c4be0470620c1",
+        "etl/spark/.data/sfx1119-before/landing/users/TEAM/20261109.psv": "d6fd779e8cfa8d474e1c2b022b3bd60c16cbc4907f4f4e36833c8257ad68c7d7",
+        "etl/spark/.data/sfx1119-before/landing/users/TEAM_MEMBER/20261109.psv": "029a8c08be6d9c1e6c8680e772414c0796c0b548dd52a0e3c94f740fa5bd3db9",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261103.psv": "e9b3822b16880cd701996176f14be151d4d3621f8aa17dcc3f5420483c58de2a",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261104.psv": "45a670dfe6cf7a45d8fb9e73d9ff1ff267aaf1cd5db5a316aff13e3a0a50485e",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261105.psv": "d91285e01a0bddd6062b3f19d8ca33f1cd0246ba0f3246a1822eb4d415b0f912",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261106.psv": "9af244966528473b48b58c32d77896b3b4d9283223d3f88005fe69139034c80c",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261107.psv": "909011a18dbadc5c34b54213d5ae0999d74f8660a4b23eb6fe4ded79857a1a18",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261108.psv": "e440f9f1eb8cb127d87375de29f7f70fc882f4d983e69b618c7588f85d18c93b",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261109.psv": "c511abdd86c5b2aa487fbcf38a7138cd298e55d40f4a929b39cf9fc3d545c02a",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_PREF/20261109.psv": "f4d91a58f530b4f20ec5351050343f564218c7c2797c46edf4d169ffdc71cd68",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_PROFILE/20261109.psv": "a14dd973eecacfa456a33b12eb70789551cd4415126adde097173687c62e707b",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_STATUS_HIST/20261109.psv": "0662f18e72bdf2f3cd938a508f20be3729c3c79e3e52cbe7e934c8e382be0a82"
+      },
+      "build": "initial; shipped dbt SELECT or extracted shipped Snowpark Python body/projection"
+    },
+    "users_active_daily": {
+      "legacy_output": "etl/spark/.data/sfx1119-before/lake/users/users_active_daily",
+      "landing_sha256": {
+        "etl/spark/.data/sfx1119-before/landing/users/APP_USER/20261109.psv": "a3714c9b6ed3e838d71864d6aaa0c52b9a14c4d828deafe8d572edc6cbf85493",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261103.psv": "d320bca874f52213c719640d1acb293ef55c77cac456a8bbfbb8fee522ce7e3e",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261104.psv": "50f90fb43d607e91eb0add408d3adaaeb6ab85ac5ccd16bb11ee57131ce34f84",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261105.psv": "22e4436d709ff11f3e5faae790331a61c05ab094e2c9cc01097eb8e0f33dc645",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261106.psv": "29e7418da1b5b46f6e6d4f0a9ce82a2b299e6d2bc5523fb8b5f813919f03b84f",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261107.psv": "4cae58e33f561aa45e54e8ca3c749a99ea7ba34fb4371e8f80903e479dcbd84d",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261108.psv": "64beb8e8d0f24c39cf0b3ab5a90d17cc9bd0ae68a0761179eeef39d45c2b7b26",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261109.psv": "49ba33ebec1c46c9b00c58bd1f7e1c252e7cdb8691d0bd295ab4cd6d92d87dbf",
+        "etl/spark/.data/sfx1119-before/landing/users/ROLE_GRANT/20261109.psv": "a7d69a1c742e172bfa48f7817b67354d307e0eb12221a28b11d3b14e989a0d64",
+        "etl/spark/.data/sfx1119-before/landing/users/SSO_IDENTITY/20261109.psv": "d711d4614e9e8e240ca5ebf40603dee9491a5f5c6a74594b4a9c4be0470620c1",
+        "etl/spark/.data/sfx1119-before/landing/users/TEAM/20261109.psv": "d6fd779e8cfa8d474e1c2b022b3bd60c16cbc4907f4f4e36833c8257ad68c7d7",
+        "etl/spark/.data/sfx1119-before/landing/users/TEAM_MEMBER/20261109.psv": "029a8c08be6d9c1e6c8680e772414c0796c0b548dd52a0e3c94f740fa5bd3db9",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261103.psv": "e9b3822b16880cd701996176f14be151d4d3621f8aa17dcc3f5420483c58de2a",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261104.psv": "45a670dfe6cf7a45d8fb9e73d9ff1ff267aaf1cd5db5a316aff13e3a0a50485e",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261105.psv": "d91285e01a0bddd6062b3f19d8ca33f1cd0246ba0f3246a1822eb4d415b0f912",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261106.psv": "9af244966528473b48b58c32d77896b3b4d9283223d3f88005fe69139034c80c",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261107.psv": "909011a18dbadc5c34b54213d5ae0999d74f8660a4b23eb6fe4ded79857a1a18",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261108.psv": "e440f9f1eb8cb127d87375de29f7f70fc882f4d983e69b618c7588f85d18c93b",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261109.psv": "c511abdd86c5b2aa487fbcf38a7138cd298e55d40f4a929b39cf9fc3d545c02a",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_PREF/20261109.psv": "f4d91a58f530b4f20ec5351050343f564218c7c2797c46edf4d169ffdc71cd68",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_PROFILE/20261109.psv": "a14dd973eecacfa456a33b12eb70789551cd4415126adde097173687c62e707b",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_STATUS_HIST/20261109.psv": "0662f18e72bdf2f3cd938a508f20be3729c3c79e3e52cbe7e934c8e382be0a82"
+      },
+      "build": "initial; shipped dbt SELECT or extracted shipped Snowpark Python body/projection"
+    },
+    "users_login_useragent_parse": {
+      "legacy_output": "etl/spark/.data/sfx1119-before/lake/users/users_login_useragent_parse",
+      "landing_sha256": {
+        "etl/spark/.data/sfx1119-before/landing/users/APP_USER/20261109.psv": "a3714c9b6ed3e838d71864d6aaa0c52b9a14c4d828deafe8d572edc6cbf85493",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261103.psv": "d320bca874f52213c719640d1acb293ef55c77cac456a8bbfbb8fee522ce7e3e",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261104.psv": "50f90fb43d607e91eb0add408d3adaaeb6ab85ac5ccd16bb11ee57131ce34f84",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261105.psv": "22e4436d709ff11f3e5faae790331a61c05ab094e2c9cc01097eb8e0f33dc645",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261106.psv": "29e7418da1b5b46f6e6d4f0a9ce82a2b299e6d2bc5523fb8b5f813919f03b84f",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261107.psv": "4cae58e33f561aa45e54e8ca3c749a99ea7ba34fb4371e8f80903e479dcbd84d",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261108.psv": "64beb8e8d0f24c39cf0b3ab5a90d17cc9bd0ae68a0761179eeef39d45c2b7b26",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261109.psv": "49ba33ebec1c46c9b00c58bd1f7e1c252e7cdb8691d0bd295ab4cd6d92d87dbf",
+        "etl/spark/.data/sfx1119-before/landing/users/ROLE_GRANT/20261109.psv": "a7d69a1c742e172bfa48f7817b67354d307e0eb12221a28b11d3b14e989a0d64",
+        "etl/spark/.data/sfx1119-before/landing/users/SSO_IDENTITY/20261109.psv": "d711d4614e9e8e240ca5ebf40603dee9491a5f5c6a74594b4a9c4be0470620c1",
+        "etl/spark/.data/sfx1119-before/landing/users/TEAM/20261109.psv": "d6fd779e8cfa8d474e1c2b022b3bd60c16cbc4907f4f4e36833c8257ad68c7d7",
+        "etl/spark/.data/sfx1119-before/landing/users/TEAM_MEMBER/20261109.psv": "029a8c08be6d9c1e6c8680e772414c0796c0b548dd52a0e3c94f740fa5bd3db9",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261103.psv": "e9b3822b16880cd701996176f14be151d4d3621f8aa17dcc3f5420483c58de2a",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261104.psv": "45a670dfe6cf7a45d8fb9e73d9ff1ff267aaf1cd5db5a316aff13e3a0a50485e",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261105.psv": "d91285e01a0bddd6062b3f19d8ca33f1cd0246ba0f3246a1822eb4d415b0f912",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261106.psv": "9af244966528473b48b58c32d77896b3b4d9283223d3f88005fe69139034c80c",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261107.psv": "909011a18dbadc5c34b54213d5ae0999d74f8660a4b23eb6fe4ded79857a1a18",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261108.psv": "e440f9f1eb8cb127d87375de29f7f70fc882f4d983e69b618c7588f85d18c93b",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261109.psv": "c511abdd86c5b2aa487fbcf38a7138cd298e55d40f4a929b39cf9fc3d545c02a",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_PREF/20261109.psv": "f4d91a58f530b4f20ec5351050343f564218c7c2797c46edf4d169ffdc71cd68",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_PROFILE/20261109.psv": "a14dd973eecacfa456a33b12eb70789551cd4415126adde097173687c62e707b",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_STATUS_HIST/20261109.psv": "0662f18e72bdf2f3cd938a508f20be3729c3c79e3e52cbe7e934c8e382be0a82"
+      },
+      "build": "initial; shipped dbt SELECT or extracted shipped Snowpark Python body/projection"
+    },
+    "users_risk_score": {
+      "legacy_output": "etl/spark/.data/sfx1119-before/lake/users/users_risk_score",
+      "landing_sha256": {
+        "etl/spark/.data/sfx1119-before/landing/users/APP_USER/20261109.psv": "a3714c9b6ed3e838d71864d6aaa0c52b9a14c4d828deafe8d572edc6cbf85493",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261103.psv": "d320bca874f52213c719640d1acb293ef55c77cac456a8bbfbb8fee522ce7e3e",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261104.psv": "50f90fb43d607e91eb0add408d3adaaeb6ab85ac5ccd16bb11ee57131ce34f84",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261105.psv": "22e4436d709ff11f3e5faae790331a61c05ab094e2c9cc01097eb8e0f33dc645",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261106.psv": "29e7418da1b5b46f6e6d4f0a9ce82a2b299e6d2bc5523fb8b5f813919f03b84f",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261107.psv": "4cae58e33f561aa45e54e8ca3c749a99ea7ba34fb4371e8f80903e479dcbd84d",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261108.psv": "64beb8e8d0f24c39cf0b3ab5a90d17cc9bd0ae68a0761179eeef39d45c2b7b26",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261109.psv": "49ba33ebec1c46c9b00c58bd1f7e1c252e7cdb8691d0bd295ab4cd6d92d87dbf",
+        "etl/spark/.data/sfx1119-before/landing/users/ROLE_GRANT/20261109.psv": "a7d69a1c742e172bfa48f7817b67354d307e0eb12221a28b11d3b14e989a0d64",
+        "etl/spark/.data/sfx1119-before/landing/users/SSO_IDENTITY/20261109.psv": "d711d4614e9e8e240ca5ebf40603dee9491a5f5c6a74594b4a9c4be0470620c1",
+        "etl/spark/.data/sfx1119-before/landing/users/TEAM/20261109.psv": "d6fd779e8cfa8d474e1c2b022b3bd60c16cbc4907f4f4e36833c8257ad68c7d7",
+        "etl/spark/.data/sfx1119-before/landing/users/TEAM_MEMBER/20261109.psv": "029a8c08be6d9c1e6c8680e772414c0796c0b548dd52a0e3c94f740fa5bd3db9",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261103.psv": "e9b3822b16880cd701996176f14be151d4d3621f8aa17dcc3f5420483c58de2a",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261104.psv": "45a670dfe6cf7a45d8fb9e73d9ff1ff267aaf1cd5db5a316aff13e3a0a50485e",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261105.psv": "d91285e01a0bddd6062b3f19d8ca33f1cd0246ba0f3246a1822eb4d415b0f912",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261106.psv": "9af244966528473b48b58c32d77896b3b4d9283223d3f88005fe69139034c80c",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261107.psv": "909011a18dbadc5c34b54213d5ae0999d74f8660a4b23eb6fe4ded79857a1a18",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261108.psv": "e440f9f1eb8cb127d87375de29f7f70fc882f4d983e69b618c7588f85d18c93b",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261109.psv": "c511abdd86c5b2aa487fbcf38a7138cd298e55d40f4a929b39cf9fc3d545c02a",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_PREF/20261109.psv": "f4d91a58f530b4f20ec5351050343f564218c7c2797c46edf4d169ffdc71cd68",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_PROFILE/20261109.psv": "a14dd973eecacfa456a33b12eb70789551cd4415126adde097173687c62e707b",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_STATUS_HIST/20261109.psv": "0662f18e72bdf2f3cd938a508f20be3729c3c79e3e52cbe7e934c8e382be0a82"
+      },
+      "build": "initial; shipped dbt SELECT or extracted shipped Snowpark Python body/projection"
+    },
+    "users_team_rollup": {
+      "legacy_output": "etl/spark/.data/sfx1119-before/lake/users/users_team_rollup",
+      "landing_sha256": {
+        "etl/spark/.data/sfx1119-before/landing/users/APP_USER/20261109.psv": "a3714c9b6ed3e838d71864d6aaa0c52b9a14c4d828deafe8d572edc6cbf85493",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261103.psv": "d320bca874f52213c719640d1acb293ef55c77cac456a8bbfbb8fee522ce7e3e",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261104.psv": "50f90fb43d607e91eb0add408d3adaaeb6ab85ac5ccd16bb11ee57131ce34f84",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261105.psv": "22e4436d709ff11f3e5faae790331a61c05ab094e2c9cc01097eb8e0f33dc645",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261106.psv": "29e7418da1b5b46f6e6d4f0a9ce82a2b299e6d2bc5523fb8b5f813919f03b84f",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261107.psv": "4cae58e33f561aa45e54e8ca3c749a99ea7ba34fb4371e8f80903e479dcbd84d",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261108.psv": "64beb8e8d0f24c39cf0b3ab5a90d17cc9bd0ae68a0761179eeef39d45c2b7b26",
+        "etl/spark/.data/sfx1119-before/landing/users/LOGIN_EVENT/20261109.psv": "49ba33ebec1c46c9b00c58bd1f7e1c252e7cdb8691d0bd295ab4cd6d92d87dbf",
+        "etl/spark/.data/sfx1119-before/landing/users/ROLE_GRANT/20261109.psv": "a7d69a1c742e172bfa48f7817b67354d307e0eb12221a28b11d3b14e989a0d64",
+        "etl/spark/.data/sfx1119-before/landing/users/SSO_IDENTITY/20261109.psv": "d711d4614e9e8e240ca5ebf40603dee9491a5f5c6a74594b4a9c4be0470620c1",
+        "etl/spark/.data/sfx1119-before/landing/users/TEAM/20261109.psv": "d6fd779e8cfa8d474e1c2b022b3bd60c16cbc4907f4f4e36833c8257ad68c7d7",
+        "etl/spark/.data/sfx1119-before/landing/users/TEAM_MEMBER/20261109.psv": "029a8c08be6d9c1e6c8680e772414c0796c0b548dd52a0e3c94f740fa5bd3db9",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261103.psv": "e9b3822b16880cd701996176f14be151d4d3621f8aa17dcc3f5420483c58de2a",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261104.psv": "45a670dfe6cf7a45d8fb9e73d9ff1ff267aaf1cd5db5a316aff13e3a0a50485e",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261105.psv": "d91285e01a0bddd6062b3f19d8ca33f1cd0246ba0f3246a1822eb4d415b0f912",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261106.psv": "9af244966528473b48b58c32d77896b3b4d9283223d3f88005fe69139034c80c",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261107.psv": "909011a18dbadc5c34b54213d5ae0999d74f8660a4b23eb6fe4ded79857a1a18",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261108.psv": "e440f9f1eb8cb127d87375de29f7f70fc882f4d983e69b618c7588f85d18c93b",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_ACTIVITY_DAILY/20261109.psv": "c511abdd86c5b2aa487fbcf38a7138cd298e55d40f4a929b39cf9fc3d545c02a",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_PREF/20261109.psv": "f4d91a58f530b4f20ec5351050343f564218c7c2797c46edf4d169ffdc71cd68",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_PROFILE/20261109.psv": "a14dd973eecacfa456a33b12eb70789551cd4415126adde097173687c62e707b",
+        "etl/spark/.data/sfx1119-before/landing/users/USER_STATUS_HIST/20261109.psv": "0662f18e72bdf2f3cd938a508f20be3729c3c79e3e52cbe7e934c8e382be0a82"
+      },
+      "build": "initial; shipped dbt SELECT or extracted shipped Snowpark Python body/projection"
     }
   }
 }
