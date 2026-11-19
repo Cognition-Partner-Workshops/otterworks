@@ -1,7 +1,7 @@
 replicaCount: 1
 image:
   repository: 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks/admin-dashboard
-  tag: odl-864279553@sha256:605f1a4a26355801e02748c45073ddec0cd50d620a7daceb88cc0cf54f21cdfe
+  tag: odl-e864785d8@sha256:dd376f24fbc2de077e810afc02ba8a8579d5ba743b978e0837408f3f2f4323b1
 service:
   type: ClusterIP
 networkPolicy:

@@ -28,8 +28,8 @@ def helm_stub(tmp_path, monkeypatch):
     return log
 
 
-def invoke(*args):
-    return subprocess.run(['bash', str(SCRIPTS / 'deploy-odl-ui.sh'), *args],
+def invoke(*args, script='deploy-odl-ui.sh'):
+    return subprocess.run(['bash', str(SCRIPTS / script), *args],
                           capture_output=True, text=True)
 
 
@@ -50,9 +50,20 @@ def test_ui_deployment_commands(helm_stub):
 
 
 @pytest.mark.parametrize('args', [(), ('main',), ('other',)])
-def test_ui_rejects_missing_or_other_tenant(helm_stub, args):
-    assert invoke(*args).returncode != 0
+@pytest.mark.parametrize('script', ['deploy-odl-ui.sh', 'deploy-odl-runtime.sh'])
+def test_ui_rejects_missing_or_other_tenant(helm_stub, args, script):
+    assert invoke(*args, script=script).returncode != 0
     assert not helm_stub.exists()
+
+
+def test_runtime_deploy_does_not_reseed_sources(helm_stub):
+    result = invoke('odl', script='deploy-odl-runtime.sh')
+    assert result.returncode == 0, result.stderr
+    runtime, gateway, admin = [json.loads(line) for line in helm_stub.read_text().splitlines()]
+    assert runtime[:3] == ['upgrade', '--install', 'operational-data-layer']
+    assert runtime[runtime.index('-n') + 1] == 'otterworks-odl'
+    assert '--post-renderer' in runtime and '--wait' in runtime
+    assert gateway[1] == 'api-gateway' and admin[2] == 'admin-dashboard'
 
 
 def test_ui_stops_on_failed_gateway(helm_stub, monkeypatch):

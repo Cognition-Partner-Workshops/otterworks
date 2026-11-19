@@ -134,6 +134,8 @@ ClusterIP Service on port 8098. `sync.enabled` defaults to true; `sync.image`,
 ```sh
 scripts/odl/deploy-target-observability.sh
 scripts/odl/deploy-odl.sh <ID> --mode after
+# Update t-odl's runtime and UI without re-seeding sources or redeploying core:
+scripts/odl/deploy-odl-runtime.sh odl
 # Restore just t-odl's pinned gateway and /admin/ dashboard:
 scripts/odl/deploy-odl-ui.sh odl
 # Or install only the target in an existing tenant:
