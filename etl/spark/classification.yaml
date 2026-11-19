@@ -12,8 +12,10 @@
   reason: "Computes payment aging with a left join and date arithmetic over billing tables."
 - job: billing_usage_append_daily
   language: python
-  target: dbt
-  reason: "Selects the latest usage date and materializes its rows; all transformations are SQL."
+  target: spark_standard_template
+  reason: "Selects the latest usage date and materializes its rows; runs on the standard Spark template with dynamic allocation."
+  original_target: dbt
+  change_reason: "Snowflake was not provisioned for run sfx1119, so a dbt move could not be measured; the template run was measured and cuts executor-hours."
 - job: docs_storage_by_owner
   language: python
   target: dbt
