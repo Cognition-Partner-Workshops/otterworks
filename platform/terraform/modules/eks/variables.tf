@@ -67,7 +67,7 @@ variable "node_max_size" {
 variable "ebs_csi_driver_version" {
   description = "Version of the EBS CSI driver addon"
   type        = string
-  default     = "v1.37.0-eksbuild.1"
+  default     = "v1.68.0-eksbuild.1"
 }
 
 variable "enable_karpenter" {
