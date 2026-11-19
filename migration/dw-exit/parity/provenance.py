@@ -145,4 +145,4 @@ def content_markdown(rows):
             hashes = result['keyed_row_hash']['difference']
             lines.append(f"| {relation} | {counts['before']} | {counts['after']} | {profiles} | {'match' if not hashes else str(hashes)+' unmatched occurrences'} |")
         lines += ['', 'Samples for every differing key are recorded in `board.json` → `sampled_differences`.', '']
-    return '\n'.join(lines)+'\n'
+    return '\n'.join(lines).rstrip()+'\n'

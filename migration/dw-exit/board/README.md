@@ -143,4 +143,3 @@ Decision evidence: [etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.
 | SFX_USERS.TEAM_MEMBER | 40 | 40 | match | match |
 
 Samples for every differing key are recorded in `board.json` → `sampled_differences`.
-
