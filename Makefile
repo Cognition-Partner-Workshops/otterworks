@@ -5,12 +5,6 @@ SHELL := /bin/bash
 RUN_TOKEN ?= sfx1119
 export RUN_TOKEN
 RUN_BEFORE_NAMESPACE := $(shell RUN_TOKEN='$(subst ','"'"',$(RUN_TOKEN))' python3 -c 'from warehouse.run_config import RunConfig; print(RunConfig.from_env().before_namespace)')
-ifneq ($(.SHELLSTATUS),0)
-$(error RunConfig failed for RUN_TOKEN)
-endif
-ifeq ($(strip $(RUN_BEFORE_NAMESPACE)),)
-$(error RunConfig returned an empty before namespace)
-endif
 .DEFAULT_GOAL := help
 
 .PHONY: sfx-observability-up sfx-observability-down sfx-feed-target-test sfx-target-sql
@@ -895,10 +889,6 @@ lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains
 # INFA_DB=teradata points the runner at the Teradata emulation's compose service instead.
 INFA_DIR = etl/informatica
 INFA_NS = $(or $(NS),$(RUN_BEFORE_NAMESPACE))
-INFA_NS_VALID := $(shell NS='$(subst ','"'"',$(INFA_NS))' python3 -c 'import os,re; print(bool(re.fullmatch("[a-z0-9][a-z0-9_-]*", os.environ["NS"])))')
-ifneq ($(INFA_NS_VALID),True)
-$(error INFA_NS must be a nonempty namespace containing lowercase letters, digits, underscores or hyphens)
-endif
 INFA_DB ?= fixture
 MAPPINGS ?= 20
 INFA_PORT_OFFSET = $(shell python3 -c "import zlib; print(zlib.crc32('$(INFA_NS)'.encode()) % 1000)")
@@ -909,6 +899,12 @@ INFA_ENV = RUN_TOKEN="$(RUN_TOKEN)" NS=$(INFA_NS) MAPPINGS='$(MAPPINGS)' TD_PORT
 INFA_COMPOSE = NS=$(INFA_NS) TD_PORT=$(INFA_TD_PORT) docker compose -f $(INFA_DIR)/docker-compose.informatica.yml
 INFA_WORKFLOWS ?= SFX_CONTENT:wf_SFX_CONTENT_DAILY SFX_BILLING:wf_SFX_BILLING_DAILY SFX_AUDIT:wf_SFX_AUDIT_DAILY
 
+define INFA_VALIDATE
+RUN_TOKEN='$(subst ','"'"',$(RUN_TOKEN))' python3 -c 'from warehouse.run_config import RunConfig; RunConfig.from_env()' || { echo 'RunConfig failed for RUN_TOKEN' >&2; exit 2; }; \
+infa_ns='$(subst ','"'"',$(INFA_NS))'; \
+[[ "$$infa_ns" =~ ^[a-z0-9][a-z0-9_-]*$$ ]] || { echo 'INFA_NS must be a nonempty namespace containing lowercase letters, digits, underscores or hyphens' >&2; exit 2; }
+endef
+
 sfx-informatica-up: ## Create the runner venv and start the warehouse database for NS (INFA_DB=fixture|teradata)
 	@test -x $(INFA_PY) || (python3 -m venv $(INFA_DIR)/.venv && $(INFA_DIR)/.venv/bin/pip install -q -r $(INFA_DIR)/requirements.txt)
 	@if [ "$(INFA_DB)" = teradata ]; then $(MAKE) sfx-teradata-up NS=$(INFA_NS); else \
@@ -917,6 +913,7 @@ sfx-informatica-up: ## Create the runner venv and start the warehouse database f
 	@echo "warehouse for $(INFA_NS): 127.0.0.1:$(INFA_TD_PORT) (INFA_DB=$(INFA_DB))"
 
 sfx-informatica-run: ## Run the daily workflows through the pmcmd emulator (NS=, MAPPINGS=all|N|names, INFA_DB=, LANDING_DIR=)
+	@$(INFA_VALIDATE)
 	@cd $(INFA_DIR) && for wf in $(INFA_WORKFLOWS); do \
 	  $(INFA_ENV) $(INFA_PY) -m runner startworkflow -f $${wf%%:*} $${wf##*:} || exit 1; done
 
@@ -924,8 +921,9 @@ sfx-informatica-test: ## Unit and integration tests of the runner against the NS
 	@cd $(INFA_DIR) && $(INFA_ENV) $(INFA_PY) -m pytest -q tests
 
 sfx-informatica-down: ## Stop the NS warehouse database, drop its volume and the run directory
-	@if [ "$(INFA_DB)" != teradata ]; then $(INFA_COMPOSE) down -v --remove-orphans; fi
-	@rm -rf -- "$(INFA_DIR)/infa_shared/$(INFA_NS)"
+	@$(INFA_VALIDATE); \
+	if [ "$(INFA_DB)" != teradata ]; then $(INFA_COMPOSE) down -v --remove-orphans || exit $$?; fi; \
+	rm -rf -- "$(INFA_DIR)/infa_shared/$$infa_ns"
 
 # SnowConvert AI (scai) on the workflow exports. scai reads the Snowflake password only from connections.toml;
 # SNOWFLAKE_CONNECTION names the connection (default: the TOML default). The raw output is kept untouched under
