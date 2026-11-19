@@ -23,8 +23,8 @@ from assess import board as wave_board
 from parity.local_billing import execute
 from parity.semantics import columns as source_columns, numeric_type
 from parity.ladder import local_compare as compare
-from parity.provenance import provenance, markdown
-from parity import report_outputs, spark_billing, spark_users, pc_users
+from parity.provenance import provenance, markdown, compact_markdown
+from parity import report_outputs, spark_billing, spark_users, pc_users, retirement_users
 from parity.subjects import SUBJECTS
 
 
@@ -173,6 +173,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
     result['measurement_contract']['conversions'].extend('users/'+s for s in SUBJECTS['users']['stages'])
     available, errors = set(available or ()), errors or {}
+    retire_evidence = retirement_users.verify() if any(o['subject_area'] == 'users' and o['target_type'] == 'retire' for o in objects) else None
     for obj in objects:
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
         row.update(status='red', migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'),
@@ -222,6 +223,13 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                     {'SFX_USERS.'+pc_users.MAPPINGS[mapping]:measurement[field]})
             if mapping == 'm_SFX_APP_USER':
                 row.update(status='red',reason='Held on APP_USER display-name truncation decision; isolated PC/dbt proof has hash_difference=0 and does not clear the escalation' if measurement and measurement['keyed_row_hash']['difference'] == 0 else 'Held on APP_USER display-name truncation decision; see independent PC/dbt proof for current measurements')
+        if target == 'duckdb' and obj['subject_area'] == 'users' and obj['target_type'] == 'retire':
+            approved = (obj['name'] in retirement_users.DEAD | retirement_users.DEPENDENTS
+                        and obj['name'] in manifest.get('dead' if obj['name'] in retirement_users.DEAD else 'dead_dependents', [])
+                        and retire_evidence['passed'])
+            row.update(status='retire_verified' if approved else 'red', retirement_evidence=retire_evidence,
+                       reason=(retire_evidence['reason'] if approved else 'Retirement evidence failed or manifest declaration disagrees')+'; '+retirement_users.CAVEAT,
+                       row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None)
         if obj['subject_area'] in SUBJECTS:
             row.update(local_duckdb=row['status'] if target == 'duckdb' else 'red',
                        snowflake='red', snowflake_reason=snowflake_reason,
@@ -229,6 +237,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         result['rows'].append(row)
     total = sum(r['licence_dependency_count'] for r in result['rows'])
     result['summary'] = dict(rows=len(objects), red=sum(r['status']=='red' for r in result['rows']),
+        retire_verified=sum(r['status']=='retire_verified' for r in result['rows']),
         green=sum(r['status']=='green' for r in result['rows']), measured=sum(r['row_count'] is not None for r in result['rows']),
         migrated=0, licence_remaining=total, licence_total=total,
         licence_by_system=dict(Counter(r['licence_dependency'] for r in result['rows'] if r['licence_dependency']!='none')))
@@ -240,8 +249,9 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     for subject in SUBJECTS.keys() - {'billing'}:
         rows = [row for row in result['rows'] if row['subject_area'] == subject]
         green = sum(row['local_duckdb'] == 'green' for row in rows)
+        retired = sum(row['local_duckdb'] == 'retire_verified' for row in rows)
         result['summary'][subject] = dict(local_duckdb='green' if rows and green == len(rows) else 'red',
-            local_green=green, local_red=len(rows)-green,
+            local_green=green, local_retire_verified=retired, local_red=len(rows)-green-retired,
             snowflake='red', snowflake_reason=snowflake_reason)
     return result
 
@@ -307,6 +317,7 @@ def main():
         if readme.exists():
             text = readme.read_text().split('\n## Billing parity provenance')[0]
             readme.write_text(text.rstrip()+'\n'+markdown(payload['rows']))
+        (args.output.parent/'users-pr.md').write_text(markdown(payload['rows'], 'users')+compact_markdown(payload['rows']))
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
         if before is not None:

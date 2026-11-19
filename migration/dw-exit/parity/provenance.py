@@ -114,6 +114,22 @@ def provenance(obj):
         if table == 'APP_USER':
             result['conversion_note'] += '; no TRANSFORM.M_SFX_APP_USER Snowpark implementation found; APP_USER remains stopped'
     if obj.get('subject_area') == 'users':
+        if obj['target_type'] == 'retire':
+            path = Path('migration/dw-exit/manifest.yaml')
+            text = (ROOT/path).read_text()
+            start = text.index('\ndead:') + 1
+            end = text.index('\nsetup_only:', start)
+            result['metrics']['retirement_manifest'] = link(path, text.count('\n', 0, start)+1, text.count('\n', 0, end))
+            path = Path('migration/dw-exit/tools/assess.py')
+            text = (ROOT/path).read_text()
+            for key, start_marker, end_marker in [('absence', 'def dbql(', '\ndef hidden_consumers('),
+                                                  ('propagation', '    # Dependency edges', '    dependencies = sorted(')]:
+                start, end = text.index(start_marker), text.index(end_marker)
+                result['metrics']['retirement_'+key] = link(path, text.count('\n', 0, start)+1, text.count('\n', 0, end))
+            for filename in ('qrylog.csv', 'objectusage.csv', 'tablesv.csv'):
+                result['metrics']['retirement_'+filename] = link('warehouse/teradata/dbql/'+filename)
+            result['metrics']['retirement_check'] = link('migration/dw-exit/parity/retirement_users.py')
+            result['conversion_note'] = 'Retirement evidence only, not migrated; keep Spark USER_PREF/PREF_JSON landing for user_pref_json_flatten'
         for entry in result['source'] + list(result['metrics'].values()) + [e for entries in result['converted'].values() for e in entries]:
             entry['url'] = entry['url'].replace(BRANCH, 'devin/sfx1119-users-migration')
     return result
@@ -122,11 +138,16 @@ def provenance(obj):
 def markdown(rows, subject='billing'):
     billing = [row for row in rows if row['subject_area'] == subject]
     green = sum(row['local_duckdb'] == 'green' for row in billing)
+    retired = sum(row['local_duckdb'] == 'retire_verified' for row in billing)
+    counts = (f'Local DuckDB: {green} green / {retired} retire_verified / {len(billing)-green-retired} red (retirement evidence is not green-migrated).'
+              if subject == 'users' else f'Local DuckDB: {green} green / {len(billing)-green} red (including unmeasured outputs).')
     lines = ['\n## '+subject.title()+' parity provenance', '',
-             f'Local DuckDB: {green} green / {len(billing)-green} red (including unmeasured outputs).',
+             counts,
              'Snowflake: **red** — '+(billing[0]['snowflake_reason'] if billing else 'No '+subject+' evidence')+'.',
              'These are separate evidence legs; local green does not imply live Snowflake parity.', '',
              '| Object | Local DuckDB | Snowflake | Source | Converted producers | Metrics |', '|---|---|---|---|---|---|']
+    if subject == 'users':
+        lines[6:6] = ['Retirement checks use current checked-out DBQL, 2026-08-12–2026-11-09, and dead-dependent propagation; failure returns red. Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten. No deletion/cutover approval.', '']
     def anchors(entries):
         return '<br>'.join(f"[{e['file']}:{e['start_line']}–{e['end_line']}]({e['url']})" for e in entries)
     for row in rows:
@@ -139,3 +160,22 @@ def markdown(rows, subject='billing'):
     if subject == 'billing':
         text += ''.join(markdown(rows, area) for area in SUBJECTS if area != 'billing')
     return text
+
+
+def compact_markdown(rows, subject='users'):
+    lines = ['\n## '+subject.title()+' compact parity', '',
+             'Counts sum declared output relations; hash diff sums multiset differences. PC rows use their independent runner proof. A red hold with zero diff is not cleared. Dashes mean no conversion measurement, not zero rows.', '',
+             '| Object | Status | Before | After | Hash diff |', '|---|---|---|---|---|']
+    for row in rows:
+        if row['subject_area'] != subject:
+            continue
+        metrics = row['provenance']['metrics']
+        counts = row['row_count']
+        hashes = row['keyed_row_hash']
+        def number(value, metric):
+            return '—' if value is None else f"[{value}]({metrics[metric]['url']})"
+        before = number(counts['before'] if counts else None, 'counts')
+        after = number(counts['after'] if counts else None, 'counts')
+        difference = number(sum(h['difference'] for h in hashes.values()) if hashes else None, 'hashes')
+        lines.append(f"| {row['name']} | {row['local_duckdb']} | {before} | {after} | {difference} |")
+    return '\n'.join(lines)+'\n'

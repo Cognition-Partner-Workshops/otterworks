@@ -6,7 +6,28 @@ resultset is measured as `SFX_USERS.M_TEAM_COUNTS_OUTPUT`; `10_activity_daily`
 also declares `SFX_USERS.USER_ACTIVITY_DAILY`. PowerCenter rows now use independent
 runner-versus-dbt proofs described below; the BTEQ relation measurement is retained
 as supplementary evidence. The six kept Spark jobs have independent landing/lake
-proofs below. The four Teradata retirement decisions remain deferred.
+proofs below. The four Teradata objects have current-DBQL retirement evidence,
+not green conversion parity or owner approval to delete them.
+
+## Retirement evidence
+
+The board reruns `assess.build(root=current checkout)` and checks current DBQL
+over 2026-08-12 through 2026-11-09 inclusive. USER_PREF and V_USER_SETTINGS must
+have zero reads and remain absent from usage; STG_USER_PREF and users_user_pref
+must remain retired through dead-dependent propagation. Missing/empty evidence,
+incomplete window coverage, new usage or a changed manifest declaration returns red.
+The board records input SHA-256 hashes and links the manifest, absence/window logic,
+propagation logic and three DBQL evidence files.
+
+Successful rows are `retire_verified`, counted separately from green-migrated and
+red. Migration status, licence counters and the Snowflake denial are unchanged.
+**Keep the independent Spark USER_PREF/PREF_JSON landing feed** for the retained
+user_pref_json_flatten job; Teradata DBQL absence does not retire this dependency.
+External consumers and deletion/cutover approval are not established by these checks.
+
+Make also generates `board/users-pr.md`: the exact users section of the board README
+followed by one compact parity row per users object, with metric numbers linked to
+the ladder implementation. It is ready to copy into a PR description.
 
 ## Stopped object: APP_USER implicit truncation
 
