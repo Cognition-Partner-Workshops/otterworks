@@ -64,6 +64,22 @@ They retain `invoice_id` and omit the mutation `as_of` echo.
 Parity, state, validation, pagination and adapter error tests live in
 `tests/contract/test_dunning_contract.py`.
 
+### Plans REST API
+
+Plans are implemented at `GET /api/v1/billing/plans` (cursor pagination),
+`GET /api/v1/billing/tenants/{tenant_id}/entitlement?on=YYYY-MM-DD`, and
+`POST /api/v1/billing/tenants/{tenant_id}/subscriptions` (JSON `plan_id` and
+`effective_on`). Creation returns 201, the entitlement, and its `Location`.
+An empty entitlement returns 404. Inputs are explicit and validated; database
+procedures still own all business decisions. Plan `plan_id` becomes `id` and
+entitlement `subscription_status` becomes `status` in v1.
+
+The three legacy plans routes share the implementation but preserve their
+original bodies, status codes, form inputs, default date, and redirect behavior,
+including HTML errors. They add `Deprecation: true` and a successor-version
+`Link`. Plans contract tests compare freshly seeded requests and subscription
+state; `tests/contract/legacy_snapshot.py` checks byte-level legacy parity.
+
 | Module | Procedures/functions | Routes |
 |---|---|---|
 | Plans | `fn_list_plans`, `fn_entitlement`, `sp_change_plan` | `/plans`, `/plans/<tenant>/entitlement`, `/plans/<tenant>/change` |
