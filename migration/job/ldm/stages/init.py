@@ -10,6 +10,7 @@ from ..context import RunContext
 from ..errors import ConfigError
 
 READER_USER_ENV = "AZSQL_READER_USER"
+# nosemgrep: custom.plaintext-password-literal -- environment variable name, not a credential
 READER_PASSWORD_ENV = "AZSQL_READER_PASSWORD"  # noqa: S105 - env var name, not a secret
 
 

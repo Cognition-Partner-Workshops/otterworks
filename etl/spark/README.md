@@ -65,6 +65,12 @@ The PostgreSQL emulator database is `sfx_teradata`, with schemas
 `sfx_billing`, `sfx_documents`, `sfx_users`, and `sfx_audit`.
 JDBC settings are `TD_JDBC_URL`, `TD_JDBC_USER`, and `TD_JDBC_PASSWORD`.
 Compose explicitly sets them; edit its environment block to use another endpoint.
+Legacy submit scripts require a nonempty `TD_JDBC_PASSWORD` from the caller and
+fail before `spark-submit` if it is missing. AWS clients use the default credential
+chain (IRSA/instance role, or caller-provided environment); the scripts never set
+static AWS keys. Kubernetes applications read the JDBC password from the existing
+`sfx-d1110-jdbc` Secret's `password` key (rendered for the current run). Provision
+that Secret through the deployment's secret store before submitting applications.
 The local loader operates on the Compose PostgreSQL service. A different JDBC
 implementation also requires its driver jar and the matching driver setting in
 `jobs/py/common/runtime.py` and `scala/src/main/scala/sfx/BatchSupport.scala`.

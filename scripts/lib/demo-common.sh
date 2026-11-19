@@ -31,10 +31,15 @@ AZURE_TF_DIR="${REPO_ROOT}/infrastructure/terraform/azure"
 DB2_CHART_DIR="${REPO_ROOT}/infrastructure/helm/db2-archive"
 ORACLE_CHART_DIR="${REPO_ROOT}/infrastructure/helm/oracle-archive"
 JOB_CHART_DIR="${REPO_ROOT}/infrastructure/helm/migration-job"
+# nosemgrep: custom.plaintext-secret-literal -- Kubernetes Secret resource name, not secret data
 DB2_CREDENTIALS_SECRET="db2-archive-credentials"
+# nosemgrep: custom.plaintext-secret-literal -- Kubernetes Secret resource name, not secret data
 ORACLE_CREDENTIALS_SECRET="oracle-archive-credentials"
+# nosemgrep: custom.plaintext-secret-literal -- Kubernetes Secret resource name, not secret data
 ARCHIVE_STORE_SECRET="archive-store-credentials"
+# nosemgrep: custom.plaintext-secret-literal -- Kubernetes Secret resource name, not secret data
 LDM_AZURE_SECRET="ldm-azure"
+# nosemgrep: custom.plaintext-secret-literal -- Kubernetes Secret resource name, not secret data
 LDM_POSTGRES_SECRET="ldm-postgres"
 DB2_RELEASE="db2-archive"
 ORACLE_RELEASE="oracle-archive"
