@@ -75,6 +75,44 @@ describe('OdlParityComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('No exceptions recorded');
   });
 
+  it('keeps exception rows and the table height while paging, including empty pages and failures', () => {
+    loadReport();
+    component.resetExceptions();
+    const item = { _id: 'e1', reason: 'candidate_match_unconfirmed', status: 'open', source_keys: ['db2:C0000003'] };
+    http.expectOne(r => r.url === '/api/v1/odl/exceptions').flush({ items: [item], next_cursor: 'e1' });
+    fixture.detectChanges();
+    const table = fixture.nativeElement.querySelector('.exceptions-results') as HTMLElement;
+    Object.defineProperty(table, 'offsetHeight', { value: 400 });
+    component.nextExceptions();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.exceptions-results')).toBe(table);
+    expect(table.textContent).toContain('e1');
+    expect(table.style.minHeight).toBe('400px');
+    expect(table.getAttribute('aria-busy')).toBe('true');
+    http.expectOne(r => r.params.get('cursor') === 'e1').flush({}, { status: 503, statusText: 'Unavailable' });
+    fixture.detectChanges();
+    expect(component.previousCursors).toEqual([]);
+    expect(table.textContent).toContain('e1');
+    component.nextExceptions();
+    http.expectOne(r => r.params.get('cursor') === 'e1').flush({ items: [], next_cursor: null });
+    fixture.detectChanges();
+    expect(table.style.minHeight).toBe('400px');
+    expect(table.textContent).toContain('No exceptions found.');
+    component.previousExceptions();
+    fixture.detectChanges();
+    expect(table.style.minHeight).toBe('400px');
+    http.expectOne(r => r.url === '/api/v1/odl/exceptions' && !r.params.has('cursor')).flush({ items: [item], next_cursor: 'e1' });
+    fixture.detectChanges();
+    expect(table.textContent).toContain('e1');
+  });
+
+  it('gives collapsed run selectors enough width to distinguish full audit IDs', () => {
+    loadReport();
+    const fields = fixture.nativeElement.querySelectorAll('.run-field') as NodeListOf<HTMLElement>;
+    expect(fields.length).toBe(2);
+    fields.forEach(field => expect(field.getBoundingClientRect().width).toBeGreaterThan(400));
+  });
+
   it('shows missing-report and retryable request errors', () => {
     http.expectOne('/api/v1/odl/parity/latest').flush({}, { status: 404, statusText: 'Not Found' });
     fixture.detectChanges();

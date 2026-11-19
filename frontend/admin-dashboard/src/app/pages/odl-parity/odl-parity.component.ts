@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -29,10 +29,10 @@ import { OdlException, ParityReport, ParityRun, ParityTable } from '../../core/m
       </div>
       <mat-card><mat-card-content>
         <form class="filters" (ngSubmit)="loadRun()">
-          <mat-form-field appearance="outline"><mat-label>Run ID</mat-label>
+          <mat-form-field class="run-field" appearance="outline"><mat-label>Run ID</mat-label>
             <input matInput name="runId" [(ngModel)]="runIdInput" placeholder="latest" />
           </mat-form-field>
-          <mat-form-field appearance="outline" *ngIf="runs.length"><mat-label>Known runs</mat-label>
+          <mat-form-field class="run-field" appearance="outline" *ngIf="runs.length"><mat-label>Known runs</mat-label>
             <mat-select name="knownRun" [(ngModel)]="runIdInput">
               <mat-option value="latest">Latest</mat-option>
               <mat-option *ngFor="let run of runs" [value]="run.run_id">{{ run.run_id }} · {{ run.passed ? 'PASS' : 'FAIL' }}</mat-option>
@@ -87,12 +87,12 @@ import { OdlException, ParityReport, ParityRun, ParityTable } from '../../core/m
               </mat-select>
             </mat-form-field>
             <p *ngIf="exceptionsError" role="alert">{{ exceptionsError }}</p>
-            <mat-spinner *ngIf="exceptionsLoading" diameter="24"></mat-spinner>
-            <div class="table-scroll" *ngIf="!exceptionsLoading">
+            <div #exceptionsTable class="table-scroll exceptions-results" [style.min-height.px]="exceptionsMinHeight" [attr.aria-busy]="exceptionsLoading">
+              <mat-spinner class="exceptions-spinner" *ngIf="exceptionsLoading" diameter="24"></mat-spinner>
               <table class="grid" aria-label="Mapping exceptions"><thead><tr><th>Exception</th><th>Reason</th><th>Status</th><th>Source keys</th></tr></thead>
                 <tbody><tr *ngFor="let item of exceptions"><td><code>{{ item._id }}</code></td><td>{{ item.reason }}</td><td>{{ item.status }}</td><td>{{ item.source_keys.join(', ') }}</td></tr></tbody>
               </table>
-              <p *ngIf="!exceptions.length && !exceptionsError">No exceptions found.</p>
+              <p *ngIf="!exceptions.length && !exceptionsError && !exceptionsLoading">No exceptions found.</p>
             </div>
             <div class="pagination">
               <button mat-stroked-button (click)="previousExceptions()" [disabled]="!previousCursors.length || exceptionsLoading">Previous</button>
@@ -108,6 +108,9 @@ import { OdlException, ParityReport, ParityRun, ParityTable } from '../../core/m
     mat-card { margin-bottom: 20px; }
     .filters, .status-row, .pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
     .filters { padding-top: 12px; }
+    .run-field { width: 36rem; max-width: 100%; }
+    .exceptions-results { position: relative; }
+    .exceptions-spinner { position: absolute; top: 8px; right: 8px; }
     .status-row { margin: 20px 0; }
     .badge { padding: 6px 12px; background: #e8f5e9; color: #1b5e20; border-radius: 4px; }
     .fail, .notice { color: #b71c1c; }
@@ -131,6 +134,8 @@ export class OdlParityComponent implements OnInit, OnDestroy {
   runsError = '';
   exceptionsError = '';
   exceptionsLoading = false;
+  exceptionsMinHeight = 0;
+  @ViewChild('exceptionsTable') private exceptionsTable?: ElementRef<HTMLElement>;
   exceptions: OdlException[] = [];
   reasonFilter = '';
   nextCursor: string | null = null;
@@ -176,29 +181,37 @@ export class OdlParityComponent implements OnInit, OnDestroy {
 
   resetExceptions(): void {
     this.previousCursors = [];
+    this.currentCursor = '';
+    this.nextCursor = null;
+    this.exceptions = [];
+    this.exceptionsMinHeight = 0;
     this.fetchExceptions('');
   }
 
   nextExceptions(): void {
-    if (!this.nextCursor) return;
-    this.previousCursors.push(this.currentCursor);
-    this.fetchExceptions(this.nextCursor);
+    if (!this.nextCursor || this.exceptionsLoading) return;
+    this.fetchExceptions(this.nextCursor, [...this.previousCursors, this.currentCursor]);
   }
 
   previousExceptions(): void {
-    const cursor = this.previousCursors.pop();
-    if (cursor !== undefined) this.fetchExceptions(cursor);
+    if (this.exceptionsLoading) return;
+    const cursor = this.previousCursors[this.previousCursors.length - 1];
+    if (cursor !== undefined) this.fetchExceptions(cursor, this.previousCursors.slice(0, -1));
   }
 
-  private fetchExceptions(cursor: string): void {
+  private fetchExceptions(cursor: string, history = this.previousCursors): void {
     this.exceptionsRequest?.unsubscribe();
-    this.currentCursor = cursor;
+    this.exceptionsMinHeight = Math.max(this.exceptionsMinHeight, this.exceptionsTable?.nativeElement.offsetHeight || 0);
     this.exceptionsLoading = true;
     this.exceptionsError = '';
-    this.exceptions = [];
-    this.nextCursor = null;
     this.exceptionsRequest = this.api.listExceptions(this.reasonFilter, cursor).pipe(takeUntil(this.destroy$)).subscribe({
-      next: result => { this.exceptions = result.items; this.nextCursor = result.next_cursor; this.exceptionsLoading = false; },
+      next: result => {
+        this.exceptions = result.items;
+        this.nextCursor = result.next_cursor;
+        this.currentCursor = cursor;
+        this.previousCursors = history;
+        this.exceptionsLoading = false;
+      },
       error: () => { this.exceptionsLoading = false; this.exceptionsError = 'Could not load exceptions. Select a reason to retry.'; },
     });
   }
