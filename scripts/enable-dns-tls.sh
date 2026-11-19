@@ -30,6 +30,7 @@ TF_DIR="${TF_DIR:-$(cd "$(dirname "$0")/.." && pwd)/demo-platform/infra/terrafor
 MANIFEST_DIR="$(cd "$(dirname "$0")/.." && pwd)/demo-platform/k8s/dns-tls"
 INGRESS_NS="${INGRESS_NS:-ingress-nginx}"
 INGRESS_RELEASE="${INGRESS_RELEASE:-ingress-nginx}"
+# nosemgrep: custom.plaintext-secret-literal -- Kubernetes namespace/name reference, not secret data
 WILDCARD_SECRET="ingress-nginx/otterworks-wildcard-tls"
 
 if [ -z "${ACME_EMAIL:-}" ]; then

@@ -1,14 +1,14 @@
 """Tests for document API endpoints."""
 
 import os
+import secrets
 import uuid
 
 import jwt
 import pytest
 from httpx import AsyncClient
 
-TEST_JWT_SECRET = "test-jwt-secret-for-unit-tests-pad32"  # noqa: S105
-os.environ.setdefault("JWT_SECRET", TEST_JWT_SECRET)
+TEST_JWT_SECRET = os.environ.setdefault("JWT_SECRET", secrets.token_urlsafe(32))
 
 
 def _make_jwt(user_id: str) -> str:

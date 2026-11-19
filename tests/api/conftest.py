@@ -1,4 +1,5 @@
 import os
+import secrets
 import time
 import uuid
 from collections.abc import Callable, Iterator
@@ -42,7 +43,7 @@ class ApiClient:
         return f"{prefix}-{self.run_id}-{uuid.uuid4().hex[:8]}@example.test"
 
     def register_user(self, prefix: str = "api-flow-user") -> RegisteredUser:
-        password = "OtterworksTest123!"
+        password = secrets.token_urlsafe(24) + "aA1!"
         payload = {
             "email": self.unique_email(prefix),
             "password": password,

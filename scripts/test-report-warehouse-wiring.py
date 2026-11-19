@@ -4,6 +4,7 @@ import os
 import json
 from pathlib import Path
 import re
+import secrets
 import subprocess
 import unittest
 
@@ -69,7 +70,7 @@ printf 'SECRET:%s\n' "${SECRET_KV[@]}"
                                           source, re.S).group()
                 self.assertNotIn("--args", serialization)
                 self.assertEqual(serialization.count('"${SECRET_KV[@]}"'), 1)
-                secret = 'throwaway multiline value\n"quoted" \\ text\n'
+                secret = secrets.token_urlsafe(32) + '\n"quoted" \\ text\n'
                 result = subprocess.run(["bash", "-c", """
 set -e
 SECRET_KV=(SNOWFLAKE_PRIVATE_KEY "$TEST_KEY" DB_PASSWORD dummy EMPTY_VALUE "")

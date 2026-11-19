@@ -26,6 +26,11 @@ JSON, or AWS access errors stop execution before the job runs. No shell evaluati
 of secret contents occurs. Direct job invocation requires the appropriate secret
 environment variables to be supplied by the caller.
 
+Legacy Spark submit scripts similarly require `TD_JDBC_PASSWORD` in the calling
+environment; they do not override AWS credentials. See `spark/README.md` for the
+JDBC Kubernetes Secret reference. Never put these values back in `config.ini` or
+the submit scripts/manifests, including demo credentials.
+
 Revoke the old committed AWS keys and rotate the database password and MeiliSearch
 key. Update Secrets Manager and any other consumers together. Removing plaintext
 from this branch does not remove it from Git history.

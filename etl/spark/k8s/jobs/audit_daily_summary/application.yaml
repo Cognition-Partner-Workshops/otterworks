@@ -41,11 +41,10 @@ spec:
       - name: "TD_JDBC_USER"
         value: "etl_batch"
       - name: "TD_JDBC_PASSWORD"
-        value: "Fake-sfx1119-jdbc"
-      - name: "AWS_ACCESS_KEY_ID"
-        value: "Fake-sfx1119-access"
-      - name: "AWS_SECRET_ACCESS_KEY"
-        value: "Fake-sfx1119-secret"
+        valueFrom:
+          secretKeyRef:
+            name: "sfx-d1110-jdbc"
+            key: "password"
     volumeMounts:
       - name: "workspace"
         mountPath: "/opt/sfx/spark"
@@ -72,11 +71,10 @@ spec:
       - name: "TD_JDBC_USER"
         value: "etl_batch"
       - name: "TD_JDBC_PASSWORD"
-        value: "Fake-sfx1119-jdbc"
-      - name: "AWS_ACCESS_KEY_ID"
-        value: "Fake-sfx1119-access"
-      - name: "AWS_SECRET_ACCESS_KEY"
-        value: "Fake-sfx1119-secret"
+        valueFrom:
+          secretKeyRef:
+            name: "sfx-d1110-jdbc"
+            key: "password"
     volumeMounts:
       - name: "workspace"
         mountPath: "/opt/sfx/spark"

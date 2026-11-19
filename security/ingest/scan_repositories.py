@@ -52,6 +52,7 @@ def main():
         time.sleep(5)
     else:
         raise RuntimeError("SonarQube did not become ready")
+    # nosemgrep: custom.plaintext-password-literal -- freshly generated password with a policy prefix
     password = "Aa9!" + secrets.token_urlsafe(32)
     default = "admin"  # gitleaks:allow
     response = requests.post(f"{host}/api/users/change_password", auth=(default, default),
