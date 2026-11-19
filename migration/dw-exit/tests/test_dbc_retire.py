@@ -1,0 +1,71 @@
+import pytest
+
+from parity import dbc_retire as dbc
+
+
+@pytest.fixture(scope='module')
+def database():
+    db = dbc.materialize()
+    yield db
+    db.close()
+
+
+@pytest.mark.parametrize('name', ['DBC_QRYLOG','DBC_QRYLOGOBJECTS','DBC_TABLESV','QRYLOGV','QRYLOGOBJECTSV','TABLESV'])
+def test_catalog_evidence_and_real_mismatches(database, name, monkeypatch):
+    obj = {'name': 'DBC.'+name, 'kind': 'catalog'}
+    proof = dbc.evidence(obj, [])
+    assert proof['passed'] and proof['window_reads']==(2 if name.startswith('DBC_') else 1)
+    assert proof['last_read_matches_snapshot']
+    monkeypatch.setattr(dbc, 'emulator', lambda *args: {'status':'red','reason':'not requested in unit test'})
+    result = dbc.measure(obj, database, [])
+    assert result['status']=='red' and result['snowflake']=='red'
+    assert result['keyed_row_hash']['difference']>0
+    assert result['owner_decision']['question']
+    assert result['reason'].startswith('Owner decision:')
+    assert result['mapped_columns_parity']['passed']
+    assert result['consumer_parity']['passed'] is False
+    assert result['consumer_mapped_columns_parity']['passed']
+    assert dbc.evidence(obj, [{'file':'services/caller.sql'}])['passed'] is False
+
+
+def test_empty_reads_fail_closed(monkeypatch):
+    monkeypatch.setattr(dbc, 'reads', lambda *args: [])
+    assert not dbc.evidence({'name':'DBC.TABLESV','kind':'catalog'}, [])['passed']
+
+
+def test_corrupt_feed_is_not_silently_green(monkeypatch, tmp_path):
+    monkeypatch.setattr(dbc, 'ROOT', tmp_path)
+    with pytest.raises(Exception):
+        dbc.materialize()
+
+
+def test_no_application_callers():
+    assert dbc.callers()==[]
+
+
+def test_writes_are_preserved(database):
+    assert database.execute("SELECT COUNT(*) FROM DBC.DBC_QRYLOGOBJECTS WHERE UsageType='WRITE'").fetchone()==database.execute("SELECT COUNT(*) FROM COMPAT.DBC_QRYLOGOBJECTS WHERE UsageType='WRITE'").fetchone()
+
+
+def test_empty_and_mismatched_mapped_ladder(database):
+    db = database
+    db.execute('BEGIN')
+    try:
+        db.execute('DELETE FROM DBC.DBC_QRYLOGOBJECTS')
+        db.execute('DELETE FROM ACCOUNT_USAGE.ACCESS_HISTORY')
+        assert dbc.mapped_compare(db, 'DBC_QRYLOGOBJECTS')['passed']
+        db.execute("INSERT INTO DBC.DBC_QRYLOGOBJECTS VALUES (1,'X','Y','T','WRITE')")
+        assert not dbc.mapped_compare(db, 'DBC_QRYLOGOBJECTS')['passed']
+    finally:
+        db.execute('ROLLBACK')
+
+
+def test_provenance_has_exact_ranges(database, monkeypatch):
+    monkeypatch.setattr(dbc, 'emulator', lambda *args: {})
+    obj = {'name':'DBC.QRYLOGV','kind':'catalog'}
+    row = {**obj, 'subject_area':'dbc', **dbc.measure(obj, database, [])}
+    text = dbc.markdown([row])
+    assert 'devin/sfx1119-dbc-parity/' in text
+    assert '10_account_usage.sql#L' in text
+    assert 'ladder.py#L' in text
+    assert 'inventory.csv#L' in text
