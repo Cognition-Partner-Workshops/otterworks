@@ -27,16 +27,17 @@ def main():
         conn.autocommit = True
         if not conn.execute('select 1 from pg_database where datname = %s', (database,)).fetchone():
             conn.execute(sql.SQL('CREATE DATABASE {}').format(sql.Identifier(database)))
-        config = {**conn.info.get_parameters(), 'password': conn.info.password}
+        config = {'HOST': conn.info.host, 'PORT': str(conn.info.port),
+                  'USER': conn.info.user, 'PASSWORD': conn.info.password}
     subprocess.run([str(repo / 'warehouse/.venv/bin/python'), '-m', 'bteq.setup'], check=True, cwd=repo,
                    env={**os.environ, 'TD_PG_DSN': '', 'TD_PG_DB': database,
                         'PYTHONPATH': str(repo / 'warehouse/teradata'),
-                        **{f'TD_PG_{k.upper()}': config[k] for k in ('host', 'port', 'user', 'password')}})
+                        **{f'TD_PG_{key}': value for key, value in config.items()}})
     params = root / 'users.par'
     params.write_text('[Global]\n$$LOAD_DATE=' + args.business_date + '\n')
     env = {**os.environ, 'TD_DB': database, 'LANDING_DIR': str(args.landing.resolve()),
            'PMROOTDIR': str(root),
-           **{f'TD_{k.upper()}': config[k] for k in ('host', 'port', 'user', 'password')}}
+           **{f'TD_{key}': value for key, value in config.items()}}
     for name in ('STG_APP_USER', 'APP_USER', 'ROLE_GRANT', 'LOGIN_EVENT', 'TEAM_MEMBER'):
         subprocess.run([sys.executable, '-m', 'runner', 'startsession', '-f', 'SFX_CONTENT',
                         '-w', 'wf_SFX_CONTENT_DAILY', '-paramfile', str(params), 's_m_SFX_' + name],
