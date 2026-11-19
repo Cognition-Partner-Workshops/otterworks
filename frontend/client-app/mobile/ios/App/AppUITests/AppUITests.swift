@@ -3,6 +3,42 @@ import XCTest
 class AppUITestCase: XCTestCase {
     let app = XCUIApplication()
 
+    func element(_ type: XCUIElement.ElementType, _ label: String, contains: Bool = false) -> XCUIElement {
+        app.webViews.descendants(matching: type).matching(NSPredicate(format: contains ? "label CONTAINS[c] %@" : "label == %@", label)).firstMatch
+    }
+
+    func reveal(_ target: XCUIElement) {
+        XCTAssertTrue(target.waitForExistence(timeout: 10))
+        for _ in 0..<6 {
+            if target.isHittable && app.frame.contains(target.frame) { return }
+            app.webViews.firstMatch.swipeUp()
+        }
+        XCTAssertTrue(target.isHittable, "Not hittable: \(target)")
+    }
+
+    func fill(_ field: XCUIElement, _ text: String) {
+        reveal(field)
+        field.tap()
+        if !app.keyboards.firstMatch.waitForExistence(timeout: 3) { field.tap() }
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+        let value = field.value as? String ?? ""
+        if value != field.placeholderValue {
+            field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: value.count))
+        }
+        field.typeText(text)
+    }
+
+    func rotate(_ orientation: UIDeviceOrientation) {
+        XCUIDevice.shared.orientation = orientation
+        let settled = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            let frame = self.app.frame
+            let landscape = frame.width > frame.height
+            let banner = self.element(.other, "banner")
+            return landscape == orientation.isLandscape && banner.exists && banner.frame.width <= frame.width + 1
+        }, object: nil)
+        wait(for: [settled], timeout: 10)
+    }
+
     override func tearDownWithError() throws {
         if (testRun?.failureCount ?? 0) > 0 {
             let hierarchy = XCTAttachment(string: app.debugDescription)
@@ -27,6 +63,7 @@ class AppUITestCase: XCTestCase {
             done.fulfill()
         }.resume()
         wait(for: [done], timeout: 10)
+        XCUIDevice.shared.orientation = .portrait
         app.launch()
         XCTAssertTrue(app.webViews.firstMatch.waitForExistence(timeout: 20))
         if app.links["Sign In"].firstMatch.waitForExistence(timeout: 3) {
@@ -42,17 +79,19 @@ class AppUITestCase: XCTestCase {
 
     func login(password: String = "HarborPass123!") {
         let email = app.textFields["you@example.com"]
-        email.tap()
-        email.typeText("tester@example.com")
+        fill(email, "tester@example.com")
         let field = app.secureTextFields.firstMatch
-        field.tap()
-        field.typeText(password)
+        fill(field, password)
+        let done = app.toolbars.buttons["Done"]
+        if done.exists {
+            done.tap()
+            XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5))
+        }
         app.buttons["Sign in"].tap()
         if password == "HarborPass123!" {
             XCTAssertTrue(app.links["Files"].waitForExistence(timeout: 10))
-            // iOS auto-zooms the app's sub-16px login fields. Restore the
-            // viewport with a real user gesture before following sidebar links.
-            app.webViews.firstMatch.pinch(withScale: 0.5, velocity: -1)
+            rotate(.landscapeLeft)
+            rotate(.portrait)
         }
     }
 
@@ -61,18 +100,25 @@ class AppUITestCase: XCTestCase {
     }
 
     func openSidebar() {
-        if !app.links["Files"].isHittable {
-            app.buttons["Open menu"].tap()
+        if !element(.button, "Sign out").exists {
+            rotate(.landscapeLeft)
+            element(.button, "Open menu").tap()
+            XCTAssertTrue(element(.button, "Sign out").waitForExistence(timeout: 5))
+            rotate(.portrait)
         }
     }
 
     func navigate(_ name: String, dismissSidebar: Bool = true) {
         openSidebar()
-        app.links[name].firstMatch.tap()
+        let link = element(.link, name)
+        reveal(link)
+        link.tap()
+        XCTAssertTrue(app.webViews.descendants(matching: .other).matching(NSPredicate(format: "label == %@ AND value == '1'", name)).firstMatch.waitForExistence(timeout: 10), app.debugDescription)
         if dismissSidebar {
-            // Known safe-area bug: the sidebar close button is under the status
-            // bar in portrait. Dismiss via the visible backdrop, as a user can.
-            app.webViews.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+            rotate(.landscapeLeft)
+            element(.button, "Toggle sidebar").tap()
+            XCTAssertTrue(element(.button, "Sign out").waitForNonExistence(timeout: 5), app.debugDescription)
+            rotate(.portrait)
         }
     }
 }
@@ -118,7 +164,9 @@ final class AppUITests: AppUITestCase {
     func testFileDetailDownloadButton() {
         login()
         navigate("Files")
-        app.links.matching(NSPredicate(format: "label CONTAINS %@", "Harbor report.txt")).firstMatch.tap()
+        let title = element(.staticText, "Harbor report.txt")
+        reveal(title)
+        title.doubleTap()
         XCTAssertTrue(app.buttons["Download"].firstMatch.waitForExistence(timeout: 10))
         app.buttons["Download"].firstMatch.tap()
         // Known native bug: blob-anchor downloads are not persisted via Filesystem.
@@ -129,22 +177,30 @@ final class AppUITests: AppUITestCase {
     func testDocumentEditing() {
         login()
         navigate("Documents")
-        app.links.matching(NSPredicate(format: "label CONTAINS %@", "Voyage notes")).firstMatch.tap()
+        let title = element(.staticText, "Voyage notes")
+        reveal(title)
+        title.doubleTap()
         let editor = app.webViews.textViews.firstMatch
         XCTAssertTrue(editor.waitForExistence(timeout: 10))
         XCTAssertTrue((editor.value as? String ?? "").contains("Welcome aboard the harbor."))
         editor.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
         editor.typeText(" Native voyage edit")
         app.buttons["Save"].tap()
         let saved = expectation(description: "HTTP document save persisted")
         var request = URLRequest(url: URL(string: "http://127.0.0.1:4010/api/v1/documents/doc-1")!)
         request.setValue("Bearer mock", forHTTPHeaderField: "Authorization")
-        URLSession.shared.dataTask(with: request) { data, _, error in
-            XCTAssertNil(error)
-            let json = data.flatMap { try? JSONSerialization.jsonObject(with: $0) } as? [String: Any]
-            XCTAssertTrue((json?["content"] as? String ?? "").contains("Native voyage edit"))
-            saved.fulfill()
-        }.resume()
+        Task {
+            for _ in 0..<40 {
+                let (data, _) = try await URLSession.shared.data(for: request)
+                let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                if (json?["content"] as? String ?? "").contains("Native voyage edit") {
+                    saved.fulfill()
+                    return
+                }
+                try await Task.sleep(nanoseconds: 100_000_000)
+            }
+        }
         wait(for: [saved], timeout: 10)
     }
 
@@ -176,6 +232,7 @@ final class AppUITests: AppUITestCase {
         assertText("HARBOR-01")
         XCTAssertTrue(app.buttons["Export CSV"].exists)
         app.buttons["Export CSV"].tap()
+        reveal(element(.staticText, "HARBOR-01"))
         assertText("HARBOR-01")
     }
 }
