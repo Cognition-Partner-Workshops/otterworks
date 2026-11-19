@@ -1,0 +1,6 @@
+apiVersion: v2
+name: operational-data-layer
+description: Authenticated MongoDB target and optional cluster-wide ODL observability
+type: application
+version: 0.1.0
+appVersion: "8.0.16"

@@ -1,0 +1,21 @@
+{{- if .Values.observability.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-rules
+  labels:
+    run_token: {{ .Values.runToken | quote }}
+spec:
+  {{- .Files.Get "files/odl_rules.yml" | fromYaml | toYaml | nindent 2 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-dashboard
+  labels:
+    run_token: {{ .Values.runToken | quote }}
+    grafana_dashboard: "1"
+data:
+  odl-overview.json: |
+    {{- .Files.Get "files/odl-overview.json" | nindent 4 }}
+{{- end }}

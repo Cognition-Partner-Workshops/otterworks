@@ -1,0 +1,135 @@
+{{- if .Values.mongodb.enabled }}
+{{- $secretName := printf "%s-mongo" .Release.Name }}
+{{- $existing := lookup "v1" "Secret" .Release.Namespace $secretName }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secretName }}
+  labels:
+    {{- include "odl-target.labels" . | nindent 4 }}
+type: Opaque
+data:
+  {{- if $existing }}
+  {{- range $key := list "root-username" "root-password" "username" "password" }}
+  {{ $key }}: {{ required (printf "Existing MongoDB Secret is missing %s" $key) (index $existing.data $key) | quote }}
+  {{- end }}
+  {{- else }}
+  root-username: {{ required "mongodb.rootUsername is required" .Values.mongodb.rootUsername | b64enc | quote }}
+  root-password: {{ randAlphaNum 40 | b64enc | quote }}
+  username: {{ required "mongodb.username is required" .Values.mongodb.username | b64enc | quote }}
+  password: {{ randAlphaNum 40 | b64enc | quote }}
+  {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-mongo-init
+  labels:
+    {{- include "odl-target.labels" . | nindent 4 }}
+data:
+  10-app-user.js: |
+    const app = db.getSiblingDB('odl');
+    app.createUser({
+      user: process.env.ODL_MONGO_USERNAME,
+      pwd: process.env.ODL_MONGO_PASSWORD,
+      roles: [{role: 'readWrite', db: 'odl'}]
+    });
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-mongo
+  labels:
+    {{- include "odl-target.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: operational-data-layer-mongo
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - {name: mongodb, port: 27017, targetPort: mongodb}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-mongo
+  labels:
+    {{- include "odl-target.labels" . | nindent 4 }}
+    otterworks.io/scale-with-tenant: "true"
+spec:
+  serviceName: {{ .Release.Name }}-mongo
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: operational-data-layer-mongo
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        {{- include "odl-target.labels" . | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext: {runAsUser: 999, runAsGroup: 999, fsGroup: 999}
+      containers:
+        - name: mongo
+          image: {{ .Values.mongodb.image | quote }}
+          args: [mongod, --auth, --bind_ip_all, --wiredTigerCacheSizeGB, "0.25"]
+          ports: [{name: mongodb, containerPort: 27017}]
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom: {secretKeyRef: {name: {{ $secretName }}, key: root-username}}
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom: {secretKeyRef: {name: {{ $secretName }}, key: root-password}}
+            - name: ODL_MONGO_USERNAME
+              valueFrom: {secretKeyRef: {name: {{ $secretName }}, key: username}}
+            - name: ODL_MONGO_PASSWORD
+              valueFrom: {secretKeyRef: {name: {{ $secretName }}, key: password}}
+            - {name: MONGO_INITDB_DATABASE, value: odl}
+          startupProbe:
+            exec:
+              command: &ping [mongosh, --quiet, --eval, "const a=db.getSiblingDB('odl'); a.auth(process.env.ODL_MONGO_USERNAME,process.env.ODL_MONGO_PASSWORD); quit(a.runCommand({ping:1}).ok ? 0 : 1)"]
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            exec: {command: *ping}
+            periodSeconds: 5
+            timeoutSeconds: 5
+          livenessProbe:
+            exec: {command: *ping}
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            {{- toYaml .Values.mongodb.resources | nindent 12 }}
+          volumeMounts:
+            - {name: data, mountPath: /data/db}
+            - {name: init, mountPath: /docker-entrypoint-initdb.d, readOnly: true}
+      volumes:
+        - name: init
+          configMap: {name: {{ .Release.Name }}-mongo-init}
+        - name: data
+          {{- if .Values.persistence.existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | quote }}
+          {{- else }}
+          emptyDir: {sizeLimit: {{ .Values.persistence.sizeLimit }}}
+          {{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-mongo
+  labels:
+    {{- include "odl-target.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: operational-data-layer-mongo
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes: [Ingress]
+  ingress:
+    - from: [{podSelector: {}}]
+      ports: [{protocol: TCP, port: 27017}]
+{{- end }}

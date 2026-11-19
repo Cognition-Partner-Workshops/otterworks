@@ -1,0 +1,48 @@
+groups:
+  - name: odl
+    interval: 30s
+    rules:
+      - record: odl:sync_lag_seconds:max
+        expr: max by (namespace, source) (odl_sync_lag_seconds)
+      - record: odl:sync_records:rate5m
+        expr: sum by (namespace, source) (rate(odl_sync_records_total[5m]))
+      - record: odl:sync_errors:rate5m
+        expr: sum by (namespace, source) (rate(odl_sync_errors_total[5m]))
+      - record: odl:read_requests:rate5m
+        expr: sum by (namespace, route) (rate(odl_read_requests_total[5m]))
+      - record: odl:read_request_duration_seconds:p50
+        expr: histogram_quantile(0.50, sum by (namespace, route, le) (rate(odl_read_request_duration_seconds_bucket[5m])))
+      - record: odl:read_request_duration_seconds:p95
+        expr: histogram_quantile(0.95, sum by (namespace, route, le) (rate(odl_read_request_duration_seconds_bucket[5m])))
+      - record: odl:read_request_duration_seconds:p99
+        expr: histogram_quantile(0.99, sum by (namespace, route, le) (rate(odl_read_request_duration_seconds_bucket[5m])))
+      - record: odl:read_errors:ratio5m
+        expr: (sum by (namespace, route) (rate(odl_read_requests_total{status=~"5.."}[5m])) or on (namespace, route) (0 * odl:read_requests:rate5m)) / clamp_min(odl:read_requests:rate5m, 1e-9)
+      - alert: ODLSyncLagHigh
+        expr: odl:sync_lag_seconds:max > 120
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: ODL sync lag is high
+          description: Source sync lag exceeds 120 seconds for 10 minutes.
+      - alert: ODLSyncLagCritical
+        expr: odl:sync_lag_seconds:max > 300
+        for: 10m
+        labels: {severity: critical, page: devin}
+        annotations:
+          summary: ODL sync lag is critical
+          description: Source sync lag exceeds 300 seconds for 10 minutes.
+      - alert: ODLReadLatencyHigh
+        expr: odl:read_request_duration_seconds:p95 > 0.5 and on (namespace, route) odl:read_requests:rate5m > 1
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: ODL read API p95 latency is high
+          description: Read p95 exceeds 0.5 seconds at more than 1 request per second for 10 minutes.
+      - alert: ODLReadLatencyCritical
+        expr: odl:read_request_duration_seconds:p99 > 2 and on (namespace, route) odl:read_requests:rate5m > 1
+        for: 10m
+        labels: {severity: critical, page: devin}
+        annotations:
+          summary: ODL read API p99 latency is critical
+          description: Read p99 exceeds 2 seconds at more than 1 request per second for 10 minutes.

@@ -27,3 +27,6 @@ terraform -chdir=infrastructure/terraform/odl destroy
 
 `force_delete` removes images on destroy. Plans/state may contain sensitive
 infrastructure data: do not commit them.
+
+The mongo repository mirrors the official `mongo:8.0.16` image to avoid Docker
+Hub limits.

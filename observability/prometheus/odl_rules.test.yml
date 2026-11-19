@@ -1,0 +1,40 @@
+rule_files: [odl_rules.yml]
+evaluation_interval: 30s
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'odl_sync_lag_seconds{namespace="otterworks-test",source="db2"}'
+        values: '600+0x20'
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: ODLSyncLagCritical
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: ODLSyncLagCritical
+        exp_alerts:
+          - exp_labels: {namespace: otterworks-test, source: db2, severity: critical, page: devin}
+            exp_annotations:
+              summary: ODL sync lag is critical
+              description: Source sync lag exceeds 300 seconds for 10 minutes.
+  - interval: 1m
+    input_series:
+      - series: 'odl_sync_lag_seconds{namespace="otterworks-test",source="oracle"}'
+        values: '10+0x20'
+      - series: 'odl_read_requests_total{namespace="otterworks-test",route="/customers",status="200"}'
+        values: '0+60x20'
+    promql_expr_test:
+      - expr: odl:read_errors:ratio5m
+        eval_time: 15m
+        exp_samples:
+          - labels: 'odl:read_errors:ratio5m{namespace="otterworks-test",route="/customers"}'
+            value: 0
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: ODLSyncLagCritical
+        exp_alerts: []
+  - interval: 1m
+    input_series: []
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: ODLSyncLagCritical
+        exp_alerts: []
