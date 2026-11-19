@@ -5,6 +5,7 @@ _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
 from warehouse.run_config import render as _run_render
 
 import os
+import json
 from pathlib import Path
 import stat
 import subprocess
@@ -80,7 +81,9 @@ def test_session_query_tag(tmp_path):
     assert invoke(values).returncode == 0
     text = _run_render((tmp_path / '.snowflake/connections.toml').read_text())
     if tomllib:
-        assert tomllib.loads(text)['sfx_d1110']['session_parameters']['QUERY_TAG'] == tag
+        actual = json.loads(tomllib.loads(text)['sfx_d1110']['session_parameters']['QUERY_TAG'])
+        assert actual.items() >= json.loads(tag).items()
+        assert all(actual[field] for field in ('workload', 'phase', 'commit', 'run_id'))
     assert 'session_parameters = { QUERY_TAG = ' in text
 
 

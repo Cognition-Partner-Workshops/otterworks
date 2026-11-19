@@ -14,6 +14,8 @@ import uuid
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import dry_run
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from sfx_conn import query_tag
 
 DATABASE = _run_render("__RUN_DATABASE__")
 MARTS = ("MART", "MART_SPARK", "COMPAT")
@@ -36,7 +38,7 @@ def main():
         private_key=key.private_bytes(serialization.Encoding.DER, serialization.PrivateFormat.PKCS8,
                                      serialization.NoEncryption()),
         role=_run_render("__RUN_DATABASE___ROLE"), database=DATABASE, warehouse=_run_render("__RUN_DATABASE___TRANSFORM_WH"),
-        session_parameters={"QUERY_TAG": json.dumps(tag, separators=(",", ":")), "TIMEZONE": "UTC"},
+        session_parameters={"QUERY_TAG": query_tag('ops', 'permissions', tag), "TIMEZONE": "UTC"},
     )
     evidence = []
     scratch = []

@@ -10,28 +10,21 @@ import json
 import os
 import re
 from pathlib import Path
-import subprocess
-import uuid
+import sys
 
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from warehouse.query_tags import query_tag as session_tag
+
 ROOT = Path(__file__).resolve().parent
 WORKLOADS = yaml.safe_load(_run_render((ROOT / "workloads.yml").read_text()))
-RUN_ID = os.environ.get("SFX_RUN_ID") or str(uuid.uuid4())
 
 
 def query_tag(workload, phase, extra=None, job=None):
     if workload not in WORKLOADS:
         raise ValueError(f"Unknown workload: {workload}")
-    commit = os.environ.get("SFX_COMMIT")
-    if not commit:
-        commit = subprocess.check_output(
-            ["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True
-        ).strip()
     tag = {
-        "workload": workload, "phase": phase, "commit": commit,
-        "run_id": os.environ.get("SFX_RUN_ID", RUN_ID),
-        "run_token": RunConfig.from_env().token,
         "executed_by": os.environ.get("SFX_EXECUTED_BY", "manual"),
         "built_with": os.environ.get("SFX_BUILT_WITH", "devin"),
     }
@@ -41,7 +34,7 @@ def query_tag(workload, phase, extra=None, job=None):
         if not re.fullmatch(r"[a-z_][a-z0-9_]*", job):
             raise ValueError("Invalid Spark job identifier")
         tag.update(run=_run_render("__RUN_TOKEN__"), act="spark", job=job)
-    return json.dumps(tag, separators=(",", ":"))
+    return session_tag(workload, phase, tag)
 
 
 def connect(workload, phase, extra_tag=None, job=None, **kw):

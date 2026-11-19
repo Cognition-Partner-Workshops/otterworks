@@ -8,12 +8,16 @@ import argparse
 import csv
 import os
 import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 from psycopg import sql
 
 from .runner import Runner
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'snowflake'))
+from telemetry import operation
 
 
 CONTROL_ROOT = Path(__file__).resolve().parents[1] / 'load'
@@ -84,6 +88,7 @@ def load_control(runner, path, variables=None):
     return count
 
 
+@operation
 def load_all(runner, landing, business_date='20261109', root=CONTROL_ROOT):
     result = {}
     variables = {'LANDING_DIR': str(Path(landing).resolve()), 'BUSINESS_DATE': business_date}

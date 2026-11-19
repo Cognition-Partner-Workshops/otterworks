@@ -69,7 +69,9 @@ def render_governance(policies=None, results=None, existing=(), missing=False, s
     return calls
 
 
-def test_scoped_token_uses_fixed_run_tag(monkeypatch):
+@pytest.mark.parametrize('run_token', ['sfx1119', 'sfx2220', 'sfx-d1110-alice'])
+def test_scoped_token_uses_fixed_run_tag(monkeypatch, run_token):
+    monkeypatch.setenv('RUN_TOKEN', run_token)
     token = _run_render("__RUN_TOKEN__-test'quoted")
     monkeypatch.setattr(governance, 'query_tag', lambda *args: json.dumps({'run_token':token}))
     calls = []

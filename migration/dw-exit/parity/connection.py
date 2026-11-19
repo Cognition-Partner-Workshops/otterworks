@@ -7,7 +7,12 @@ from warehouse.run_config import render as _run_render
 import json
 import os
 import re
+from pathlib import Path
+import sys
 from datetime import datetime
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / 'warehouse/snowflake'))
+from sfx_conn import query_tag
 
 COMMENT = _run_render('run_token=__RUN_TOKEN__ expires=2026-11-24')
 DATABASE = _run_render('__RUN_DATABASE__')
@@ -34,7 +39,7 @@ def connect(step, workload='PARITY'):
         private_key=key.private_bytes(serialization.Encoding.DER,
                                     serialization.PrivateFormat.PKCS8,
                                     serialization.NoEncryption()),
-        session_parameters={'QUERY_TAG': json.dumps(
+        session_parameters={'QUERY_TAG': query_tag(workload.lower(), 'prove',
             {'run': _run_render('__RUN_TOKEN__'), 'act': 'prove', 'step': step}),
             'CLIENT_STAGE_ARRAY_BINDING_THRESHOLD': 0,
             'TIMEZONE': 'UTC', 'DATE_OUTPUT_FORMAT': 'YYYY-MM-DD',

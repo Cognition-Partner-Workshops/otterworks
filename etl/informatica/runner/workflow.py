@@ -15,6 +15,7 @@ from . import expr as X
 from .db import Connection, load_connections
 from .engine import MappingRun, SessionFailed
 from .params import resolve
+from .run_scope import before_namespace
 from .sesslog import Log, append_rep_sess_log, pc_ts, write_load_summary
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -23,7 +24,8 @@ REPO_ROOT = os.path.dirname(os.path.dirname(ESTATE))
 
 
 def process_variables(root=None):
-    root = root or os.environ.get("PMROOTDIR") or os.path.join(ESTATE, "infa_shared")
+    root = root or os.environ.get("PMROOTDIR") or os.path.join(
+        ESTATE, "infa_shared", os.environ.get("NS") or before_namespace())
     landing = os.environ.get("LANDING_DIR") or os.path.join(REPO_ROOT, "warehouse", "landing")
     pv = {
         "$PMRootDir": root,

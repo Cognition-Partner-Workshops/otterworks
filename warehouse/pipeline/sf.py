@@ -8,12 +8,18 @@ from warehouse.run_config import render as _run_render
 import json
 import os
 from pathlib import Path
+import sys
 
 import tomlkit
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'snowflake'))
+from telemetry import operation, record_checks
+from sfx_conn import query_tag as session_tag
+
 
 def query_tag(step):
-    return json.dumps({"run": _run_render("__RUN_TOKEN__"), "act": "operate", "step": step}, separators=(",", ":"))
+    workload = 'transform' if step == 'dbt_build' else 'ops' if step == 'monitor' else 'load'
+    return session_tag(workload, 'operate', {"run": _run_render("__RUN_TOKEN__"), "act": "operate", "step": step})
 
 
 def connect(step, warehouse, connector=None):

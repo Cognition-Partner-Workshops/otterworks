@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 import json
 
 from sfx_conn import WORKLOADS, connect
+from warehouse.run_config import RunConfig
 
 
 def records(cursor, sql, params=()):
@@ -136,7 +137,7 @@ def summarize(queries, meters, recent, query_freshness):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--token", default=_run_render("__RUN_TOKEN__"))
+    parser.add_argument("--token", default=RunConfig.from_env().token)
     parser.add_argument("--days", type=int, default=14)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()

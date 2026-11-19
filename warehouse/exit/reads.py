@@ -10,9 +10,13 @@ import csv
 import datetime as dt
 import json
 import os
+import sys
 from pathlib import Path
 
 import yaml
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'snowflake'))
+from sfx_conn import query_tag
 
 ROOT = Path(__file__).resolve().parents[2]
 BASELINE = ('2026-10-11', '2026-11-10')
@@ -66,7 +70,7 @@ def snowflake(since, until, phase='reads'):
         role=os.environ['SNOWFLAKE_ROLE'], authenticator='SNOWFLAKE_JWT',
         private_key=key.private_bytes(serialization.Encoding.DER, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()),
         database=_run_render('__RUN_DATABASE__'), warehouse=_run_render('__RUN_DATABASE___OPS_WH'),
-        session_parameters={'TIMEZONE': 'UTC', 'QUERY_TAG': json.dumps({'run': _run_render('__RUN_TOKEN__'), 'act': 'exit', 'phase': phase})},
+        session_parameters={'TIMEZONE': 'UTC', 'QUERY_TAG': query_tag('ops', phase, {'run': _run_render('__RUN_TOKEN__'), 'act': 'exit'})},
     ) as conn:
         with conn.cursor() as cur:
             rows = []

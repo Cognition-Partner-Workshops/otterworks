@@ -9,11 +9,16 @@ import argparse
 import csv
 import json
 import os
+from pathlib import Path
+import sys
 from contextlib import contextmanager
 
 import yaml
 
 from assess import OUT, before_state_root, build
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / 'warehouse/snowflake'))
+from sfx_conn import query_tag as session_tag
 
 DATABASE = _run_render('__RUN_DATABASE__')
 WAREHOUSE = _run_render('__RUN_DATABASE___OPS_WH')
@@ -26,7 +31,7 @@ VIEWS = {'V_WAVE_SUMMARY', 'V_LICENCE_COUNTER', 'V_DEAD_OBJECTS', 'V_HIDDEN_CONS
 
 
 def query_tag(step):
-    return json.dumps({'run': _run_render('__RUN_TOKEN__'), 'act': 'assess', 'step': step}, separators=(',', ':'))
+    return session_tag('ops', 'assess', {'run': _run_render('__RUN_TOKEN__'), 'act': 'assess', 'step': step})
 
 
 def tag(cursor, step):

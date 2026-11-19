@@ -11,7 +11,7 @@ import json
 import os
 from pathlib import PurePosixPath
 
-from sf import connect
+from sf import connect, record_checks
 
 RUN = _run_render("__RUN_TOKEN__")
 MODEL = "stg_billing__usage_daily"
@@ -99,7 +99,7 @@ def run_checks(limits=None, connector=None):
             history = cursor.fetchall()
             cursor.execute("LIST @LANDING.LANDING_STAGE/pipeline/")
             retained = {"pipeline/" + PurePosixPath(row[0]).name for row in cursor.fetchall()}
-    return evaluate(days, history, retained, limits)
+    return record_checks(evaluate(days, history, retained, limits))
 
 
 if __name__ == "__main__":

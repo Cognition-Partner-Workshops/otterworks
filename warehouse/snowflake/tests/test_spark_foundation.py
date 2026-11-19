@@ -147,9 +147,14 @@ def test_registry_dispatch(tmp_path, monkeypatch):
         run_spark_job.run("../bad")
 
 
-def test_snowpark_runner(tmp_path, monkeypatch):
-    token = _run_render("__RUN_TOKEN__-test")
-    monkeypatch.setenv('RUN_TOKEN', token)
+@pytest.mark.parametrize('primary,legacy', [('sfx2220', None), (None, "sfx-d1110-test'quote")])
+def test_snowpark_runner(tmp_path, monkeypatch, primary, legacy):
+    for name, value in [('RUN_TOKEN', primary), ('SNOWFLAKE_RUN_TOKEN', legacy)]:
+        if value is None:
+            monkeypatch.delenv(name, raising=False)
+        else:
+            monkeypatch.setenv(name, value)
+    token = _run_render('__RUN_TOKEN__')
     spec = importlib.util.spec_from_file_location("spark_runner", ROOT.parent / "snowpark/run_job.py")
     runner = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(runner)
