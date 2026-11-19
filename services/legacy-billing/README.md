@@ -48,6 +48,22 @@ not part of this service.
 
 ## Modules
 
+### Dunning v1
+
+Dunning is implemented under `/api/v1/billing`: `GET /overdue-invoices`
+(required `as_of` query date, paginated), `POST /dunning-schedules` and
+`POST /suspensions` (required JSON `as_of` date). Mutation responses are
+`201` with `data: {as_of, status}`; these runs have no addressable resource
+and therefore no Location header. All domain decisions remain in PL/pgSQL.
+Overdue invoice `invoice_id` becomes `id` in v1.
+
+The three `/api/dunning/*` routes are compatibility adapters over the same
+implementation, retaining legacy bytes/statuses, form inputs, and the overdue
+default date while adding Deprecation and successor-version Link headers.
+They retain `invoice_id` and omit the mutation `as_of` echo.
+Parity, state, validation, pagination and adapter error tests live in
+`tests/contract/test_dunning_contract.py`.
+
 | Module | Procedures/functions | Routes |
 |---|---|---|
 | Plans | `fn_list_plans`, `fn_entitlement`, `sp_change_plan` | `/plans`, `/plans/<tenant>/entitlement`, `/plans/<tenant>/change` |
