@@ -12,8 +12,8 @@ RUN mvn -B dependency:go-offline
 COPY src/ src/
 RUN mvn -B package -DskipTests
 
-# Temurin JRE 25 on the same Ubuntu Jammy base.
-FROM eclipse-temurin:25-jre-jammy
+# Temurin JRE 25 on Ubuntu Noble, aligned with sibling services.
+FROM eclipse-temurin:25-jre-noble
 
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
