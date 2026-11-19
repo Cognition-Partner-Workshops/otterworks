@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from pathlib import Path
 import sys
 import subprocess
@@ -98,6 +99,38 @@ def test_empty_manifest_and_snowflake_plan(relations):
     assert row['reason']=='Snowflake target selected; execution disabled'
     with pytest.raises(ValueError):
         board.build_board({'objects':[]},target='unknown')
+
+
+def test_billing_records_independent_local_and_denied_live_legs(relations):
+    from parity.provenance import markdown
+    preflight=json.loads((ROOT/'migration/dw-exit/parity/snowflake-preflight.json').read_text())
+    before,after=relations
+    result=board.build_board({'objects':[obj()]},before,after,{'BILLING.T'},preflight=preflight)
+    row=result['rows'][0]
+    assert row['local_duckdb']=='green' and row['snowflake']=='red'
+    assert row['snowflake_reason']==preflight['reason']
+    assert row['snowflake_preflight']['capture_run'] is False
+    assert result['summary']['billing']['local_duckdb']=='green'
+    assert result['summary']['billing']['snowflake']=='red'
+    assert preflight['reason'] in markdown(result['rows'])
+    after.execute("INSERT INTO BILLING.T VALUES (1,'different')")
+    red=board.build_board({'objects':[obj()]},before,after,{'BILLING.T'},preflight=preflight)
+    assert red['rows'][0]['local_duckdb']=='red'
+    assert red['summary']['billing']['local_red']==1
+
+
+def test_missing_or_out_of_scope_live_evidence_is_closed():
+    empty=board.build_board({'objects':[]})
+    assert empty['summary']['billing']['local_duckdb']=='red'
+    assert empty['summary']['billing']['snowflake']=='red'
+    row=board.build_board({'objects':[obj(output_relations=[])]})['rows'][0]
+    assert row['local_duckdb']=='red' and row['snowflake']=='red'
+    assert 'No live Snowflake evidence' in row['snowflake_reason']
+    preflight=json.loads((ROOT/'migration/dw-exit/parity/snowflake-preflight.json').read_text())
+    for changes in ({'run_token':'other'}, {'database':'OTHER'}, {'status':'green'},
+                    {'reason':''}, {'capture_run':True}, {'prove_run':True}):
+        with pytest.raises(ValueError,match='current run scope'):
+            board.build_board({'objects':[]},preflight=dict(preflight,**changes))
 
 
 def test_straight_conversion_and_missing_input(tmp_path):

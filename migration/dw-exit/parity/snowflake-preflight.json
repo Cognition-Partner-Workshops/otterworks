@@ -1,0 +1,12 @@
+{
+  "run_token": "sfx1119",
+  "role": "SFX_D1110_ROLE",
+  "database": "SFX_1119",
+  "status": "red",
+  "error_code": "002003",
+  "checked_sql": "SHOW GRANTS ON DATABASE SFX_1119",
+  "visible_database_count": 0,
+  "reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
+  "capture_run": false,
+  "prove_run": false
+}

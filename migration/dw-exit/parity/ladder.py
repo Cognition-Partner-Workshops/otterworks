@@ -5,11 +5,61 @@ _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
 from warehouse.run_config import render as _run_render
 
 import argparse
+from collections import Counter
+import hashlib
 import json
 import re
 from pathlib import Path
 
 from .connection import connect
+from .semantics import char_columns
+
+
+def canonical(value):
+    return json.dumps(value, default=str, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
+
+
+def local_measure(connection, name, padded):
+    schema, table = name.split('.')
+    source = identifier(schema)+'.'+identifier(table)
+    cursor = connection.execute('SELECT * FROM '+source)
+    names = [c[0] for c in cursor.description]
+    expressions = [f'RTRIM({identifier(c)}, \x27 \x27)' if c in padded else identifier(c) for c in names]
+    expressions = [expression+' COLLATE "binary"' if str(info[1]) == 'VARCHAR' else expression
+                   for expression, info in zip(expressions, cursor.description)]
+    rows = connection.execute('SELECT '+', '.join(expressions)+' FROM '+source).fetchall()
+    profiles = {}
+    for column, expression in zip(names, expressions):
+        values = connection.execute(f'SELECT COUNT(*)-COUNT({expression}), MIN({expression}), MAX({expression}), COUNT(DISTINCT {expression}) FROM {source}').fetchone()
+        profiles[column] = dict(zip(('nulls','min','max','distinct'), values))
+    return names, rows, profiles
+
+
+def local_compare(before, after, source, target, sample_size=5):
+    padded = char_columns(source)
+    bcols, brows, bp = local_measure(before, source, padded)
+    acols, arows, ap = local_measure(after, target, padded)
+    if not bcols or bcols != acols:
+        raise ValueError('Output column names/order differ')
+    def digests(rows):
+        return Counter((canonical(row[:1]), hashlib.sha256(canonical(row).encode()).hexdigest()) for row in rows)
+    bh, ah = digests(brows), digests(arows)
+    def checksum(values):
+        return hashlib.sha256(canonical(sorted((key,digest,count) for (key,digest),count in values.items())).encode()).hexdigest()
+    delta = (bh-ah) + (ah-bh)
+    samples = []
+    for key in sorted({key for key, digest in delta})[:sample_size]:
+        samples.append({'key': json.loads(key),
+                        'before': sorted((r for r in brows if canonical(r[:1]) == key), key=canonical)[:sample_size],
+                        'after': sorted((r for r in arows if canonical(r[:1]) == key), key=canonical)[:sample_size]})
+    return {'row_count': {'before': len(brows), 'after': len(arows)},
+            'comparison_rules': {'trailing_pad_insensitive': padded, 'other_columns': 'exact'},
+            'column_profile': {'before': bp, 'after': ap},
+            'keyed_row_hash': {'keys': bcols[:1], 'difference': sum(delta.values()),
+                               'before': checksum(bh), 'after': checksum(ah),
+                               'key_policy': 'first declared column; full-row digest preserves multiplicity'},
+            'sampled_differences': samples,
+            'passed': len(brows) == len(arows) and canonical(bp) == canonical(ap) and not delta}
 
 
 def identifier(value):
@@ -48,6 +98,7 @@ class Ladder:
 
     def compare(self, name, before, after, keys):
         start = len(self.queries)
+        padded = char_columns(name)
         before, after = relation(before), relation(after)
         columns_b = self.query(f'DESC TABLE {before}')
         columns_a = self.query(f'DESC TABLE {after}')
@@ -57,6 +108,12 @@ class Ladder:
         if not keys or not set(keys) <= set(columns):
             raise ValueError(f'{name}: keys must name existing columns')
         quoted = list(map(identifier, columns))
+        projected = [((f'RTRIM({c}, \x27 \x27)' if col in padded else c)+f' COLLATE \x27\x27 AS {c}')
+                     if columns_b[i][1].startswith(('VARCHAR','TEXT','CHAR')) else c
+                     for i,(col,c) in enumerate(zip(columns,quoted))]
+        if padded or any(' COLLATE ' in value for value in projected):
+            before = f'(SELECT {", ".join(projected)} FROM {before})'
+            after = f'(SELECT {", ".join(projected)} FROM {after})'
         k = ', '.join(map(identifier, keys))
         counts = [self.query(f'SELECT COUNT(*) FROM {t}')[0][0] for t in (before, after)]
         profiles = ', '.join(expr for c in quoted for expr in (
@@ -87,13 +144,14 @@ class Ladder:
         if not sample_keys:
             sample_keys = self.query(f'SELECT DISTINCT {k} FROM {before} ORDER BY {k} LIMIT {self.sample_size}')
         samples = []
-        # Values are fetched independently; tests never trim, fold case or coerce them.
+        # Only DDL-declared CHAR trailing pads are ignored; VARCHAR remains exact.
         for key in sample_keys:
             where = ' AND '.join(f'EQUAL_NULL({identifier(column)}, ?)' for column in keys)
             b, a = [self.query(f'SELECT * FROM {t} WHERE {where} ORDER BY {digest}', key) for t in (before, after)]
             if b != a:
                 samples.append({'key': key, 'before': b, 'after': a})
         return {'name': name, 'before_count': counts[0], 'after_count': counts[1],
+                'comparison_rules': {'trailing_pad_insensitive': padded, 'other_columns': 'exact'},
                 'count_passed': counts[0] == counts[1],
                 'profile_mismatched_columns': len(profile_diffs), 'profiles': profile_diffs,
                 'hash_difference': int(hash_difference), 'sample_diffs': samples,
