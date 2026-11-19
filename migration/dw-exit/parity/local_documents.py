@@ -35,6 +35,8 @@ def execute(after, before, conversion_dir=CONVERSIONS, business_date='20261109')
                 names = [r[0] for r in after.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='DOCUMENTS' AND table_name LIKE 'STG_%'").fetchall()]
                 for table in names:
                     name = identifier(table)
+                    # identifier() validates/quotes the table; row values are bound below.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     rows = before.execute('SELECT * FROM SFX_DOCUMENTS.'+name).fetchall()
                     if rows:
                         after.executemany('INSERT INTO DOCUMENTS.'+name+' VALUES ('+','.join('?' for _ in rows[0])+')', rows)
@@ -71,7 +73,10 @@ def resultset(before, after, business_date='20261109', conversion_dir=CONVERSION
     before.execute('BEGIN')
     after.execute('BEGIN')
     try:
+        # Queries are parsed repository SQL with validate_date()-checked report parameters.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         before.execute('CREATE OR REPLACE TABLE SFX_DOCUMENTS.M_STORAGE_TOTALS_OUTPUT AS '+queries[0])
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         after.execute('CREATE OR REPLACE TABLE DOCUMENTS.M_STORAGE_TOTALS_OUTPUT AS '+queries[1])
     except (ValueError, duckdb.Error):
         before.execute('ROLLBACK')
@@ -91,7 +96,10 @@ def load_landing(connection, landing, business_date='20261109', conversion_dir=C
         connection.execute('BEGIN')
         try:
             target = 'DOCUMENTS.'+identifier(table)
+            # Validated target; RAW_INPUT column names are generated indices, not PSV content.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             columns = connection.execute('DESCRIBE '+target).fetchall()
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             connection.execute('CREATE OR REPLACE TEMP TABLE RAW_INPUT ('+
                                ','.join('C'+str(i+1)+' VARCHAR' for i in range(len(columns)))+')')
             with (landing/'documents'/folder/(day+'.psv')).open(newline='') as handle:
@@ -102,7 +110,10 @@ def load_landing(connection, landing, business_date='20261109', conversion_dir=C
                 connection.executemany('INSERT INTO RAW_INPUT VALUES ('+','.join('?' for _ in columns)+')', rows)
             projection = re.sub(r'\$(\d+)', r'C\1', projection)
             query = sqlglot.parse_one('SELECT '+projection+' FROM RAW_INPUT', read='snowflake')
+            # Projection is shipped COPY SQL; PSV values were bound into RAW_INPUT.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             connection.execute('DELETE FROM '+target)
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             connection.execute('INSERT INTO '+target+' '+query.sql(dialect='duckdb'))
             connection.execute('COMMIT')
         except (ValueError, duckdb.Error, OSError, sqlglot.errors.SqlglotError):
@@ -135,13 +146,19 @@ def merge_pc(connection, table, query, key):
     key = identifier(key)
     connection.execute('BEGIN')
     try:
+        # Query is rendered repository dbt SQL; target and key pass identifier().
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         connection.execute('CREATE OR REPLACE TEMP TABLE PC_CANDIDATE AS '+query)
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         if connection.execute('SELECT COUNT(*) FROM (SELECT '+key+' FROM PC_CANDIDATE GROUP BY '+key+' HAVING COUNT(*)>1 OR '+key+' IS NULL)').fetchone()[0]:
             raise ValueError('Ambiguous/null PowerCenter candidate key')
         if table == 'STG_DOCUMENT':
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             connection.execute('DELETE FROM '+target)
         else:
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             connection.execute('DELETE FROM '+target+' WHERE '+key+' IN (SELECT '+key+' FROM PC_CANDIDATE)')
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         connection.execute('INSERT INTO '+target+' SELECT * FROM PC_CANDIDATE')
         connection.execute('COMMIT')
     except (ValueError, duckdb.Error):

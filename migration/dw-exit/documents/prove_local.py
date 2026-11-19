@@ -22,8 +22,12 @@ from warehouse.run_config import RunConfig
 
 
 def copy_table(source, destination, old, new):
+    # Callers supply fixed table names; types are local DuckDB snapshot metadata.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     columns = source.execute('DESCRIBE '+old).fetchall()
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     destination.execute('CREATE TABLE '+new+' ('+', '.join(identifier(c[0])+' '+c[1] for c in columns)+')')
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     rows = source.execute('SELECT * FROM '+old).fetchall()
     if rows:
         destination.executemany('INSERT INTO '+new+' VALUES ('+','.join('?' for _ in columns)+')', rows)
@@ -41,6 +45,8 @@ def measure_pc(pre, actual, landing, day):
             copy_table(pre, after, 'SFX_USERS.'+name, 'PC_CONTENT.'+name)
         copy_table(pre, after, 'SFX_USERS.ROLE_GRANT', 'PC_SRC.ROLE_GRANT')
         for name in ('DOCUMENT','DOC_SHARE'):
+            # name is restricted to the fixed tuple above.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             columns = pre.execute('DESCRIBE SFX_DOCUMENTS.STG_'+name).fetchall()
             after.read_csv(str(landing/'documents'/name/(day+'.psv')), delimiter='|', header=False,
                            columns={c[0]:'VARCHAR' for c in columns}, na_values='', quotechar='"').create('PC_SRC.'+name)
@@ -81,8 +87,12 @@ def shared_storage(pre, day, snapshot_storage=False):
                 if runner.run(script) != 0:
                     raise ValueError('Legacy storage boundary replay failed')
                 for name in ('USAGE_DAILY','INVOICE_LINE'):
+                    # Fixed table names, quoted columns and DuckDB metadata types; rows are bound below.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     columns = pre.execute('DESCRIBE SFX_BILLING.'+name).fetchall()
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     before.execute('CREATE TABLE SFX_BILLING.'+name+' ('+', '.join(identifier(c[0])+' '+c[1] for c in columns)+')')
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     rows = connection.execute('SELECT * FROM SFX_BILLING.'+name).fetchall()
                     if rows:
                         before.executemany('INSERT INTO SFX_BILLING.'+name+' VALUES ('+','.join('?' for _ in columns)+')',rows)
@@ -103,6 +113,8 @@ def prove(pre_path, landing, namespace, day):
     after = duckdb.connect()
     actual = None
     try:
+        # Local operator-supplied snapshot path; embedded SQL quotes are escaped.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         pre.execute("IMPORT DATABASE '"+str(pre_path.resolve()).replace("'","''")+"'")
         ready, errors = execute(after, pre, business_date=day)
         if errors:

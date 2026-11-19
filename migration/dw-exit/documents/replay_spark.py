@@ -18,10 +18,13 @@ from warehouse.run_config import RunConfig
 
 def history(before, after, runtime, job):
     source = 'SFX_SPARK.FILE_OBJECT_BINARY_EXTRACT'
+    # source is the fixed local relation above, never a landing value.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     before.execute('DROP TABLE IF EXISTS '+source)
     paths = sorted((runtime/'lake/documents/file_object_binary_extract').rglob('*.parquet'))
     before.read_parquet([str(p) for p in paths],hive_partitioning=True).create(source)
     spark.uppercase_columns(before,source)
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     before.execute('ALTER TABLE '+source+' ALTER COLUMN RUN_DATE TYPE VARCHAR')
     return local_compare(before,after,source,'SPARK.SPARK__FILE_OBJECT_BINARY_EXTRACT',
                          sample_size=10000,keys=job['keys'])

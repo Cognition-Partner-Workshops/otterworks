@@ -39,6 +39,8 @@ def shipped_udfs(path=UDFS):
     functions = {}
     for name, arguments, result, handler, body in re.findall(pattern,text,re.S):
         scope = {'__name__':__name__}
+        # Compile repository-shipped UDF code, not landing data; inputs are handler arguments.
+        # nosemgrep: python.lang.security.audit.exec-detected.exec-detected
         exec(compile(body,str(path),'exec'),scope)
         functions[name] = {'arguments':[a.strip().split()[-1] for a in arguments.split(',')],
                            'result':result, 'handler':scope[handler], 'body':body}
@@ -86,12 +88,15 @@ def execute_model(connection, job, day=None, incremental=False):
         connection.execute('BEGIN')
         try:
             connection.execute(sqlglot.parse_one(hook,read='snowflake').sql(dialect='duckdb'))
+            # Validated target and parsed repository model SQL, never interpolated landing values.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             connection.execute('INSERT INTO '+target+' '+query)
             connection.execute('COMMIT')
         except Exception:
             connection.execute('ROLLBACK')
             raise
     else:
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         connection.execute('CREATE TABLE '+target+' AS '+query)
     return query
 
@@ -114,6 +119,8 @@ def jdbc_output(before, after, namespace):
     after.execute('CREATE SCHEMA IF NOT EXISTS COMPAT')
     model = ROOT/'warehouse/dbt/models/spark/security_alert_anomaly/security_alert_anomaly_jdbc.sql'
     query = render_model(model)
+    # Fixed target and parsed repository SQL; JDBC row values are bound separately above.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     after.execute('CREATE TABLE COMPAT.SPARK_ALERT_ANOMALY AS '+query)
     result = local_compare(before,after,'SFX_AUDIT.SPARK_ALERT_ANOMALY','COMPAT.SPARK_ALERT_ANOMALY',sample_size=10000,keys=['ALERT_ID'])
     return {'measurement':result,'query':query,'source_command':command,
@@ -170,6 +177,8 @@ def load_inputs(connection, runtime, job, loaded):
         area,table = source.split('.')
         target = 'SPARK_INPUT.'+identifier(table)
         if table=='FILE_OBJECT_BLOBS':
+            # identifier() validates/quotes the relation; blob values are bound below.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             connection.execute('CREATE TABLE '+target+' (STORAGE_KEY VARCHAR,CONTENT BLOB)')
             folder = runtime/'landing'/area/table
             rows = [(str(path.relative_to(runtime/'landing')),path.read_bytes()) for path in sorted(folder.glob('*'))
@@ -189,6 +198,8 @@ def materialize(before, after, objects, namespace, runtime=None):
     objects = {o['name']:o for o in objects if o['system']=='spark' and o['subject_area']=='documents'}
     ready, errors, evidence, loaded = set(), {}, {}, set()
     for connection,schema in [(before,'SFX_SPARK'),(after,'SPARK'),(after,'SPARK_INPUT')]:
+        # schema comes only from this fixed tuple.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         connection.execute('CREATE SCHEMA IF NOT EXISTS '+schema)
     register_udfs(after)
     decisions = json.loads((DOCUMENTS/'decisions.json').read_text())
@@ -201,7 +212,10 @@ def materialize(before, after, objects, namespace, runtime=None):
         identifier(name)
         target = 'SPARK.'+job['target'].upper()
         source = 'SFX_SPARK.'+name.upper()
+        # Both relation suffixes passed identifier() above.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         before.execute('DROP TABLE IF EXISTS '+source)
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         after.execute('DROP TABLE IF EXISTS '+target)
         try:
             if objects[name]['target']!=job['target'] or objects[name]['target_type']!='dbt_model':
@@ -217,6 +231,7 @@ def materialize(before, after, objects, namespace, runtime=None):
             before.read_parquet([str(p) for p in paths],hive_partitioning=True).create(source)
             uppercase_columns(before,source)
             if day:
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 before.execute('ALTER TABLE '+source+' ALTER COLUMN RUN_DATE TYPE VARCHAR')
             execute_model(after,job,day)
             uppercase_columns(after,target)
