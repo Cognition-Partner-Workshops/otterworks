@@ -3,8 +3,10 @@
 import uuid
 
 import pytest
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.document import Document, DocumentVersion
 from app.schemas.document import (
     CommentCreate,
     DocumentCreate,
@@ -13,6 +15,61 @@ from app.schemas.document import (
     TemplateCreate,
 )
 from app.services.document_service import DocumentService
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("document_count", [0, 1, 12])
+async def test_list_documents_batches_recent_versions(
+    db_session: AsyncSession, owner_id: uuid.UUID, document_count: int
+):
+    expected = {}
+    for number in range(document_count):
+        doc = Document(id=uuid.uuid4(), title=f"Document {number}", owner_id=owner_id)
+        db_session.add(doc)
+        version_count = 8 if number % 2 == 0 else 0
+        expected[doc.id] = []
+        for version_number in range(1, version_count + 1):
+            version = DocumentVersion(
+                id=uuid.uuid4(),
+                document_id=doc.id,
+                version_number=version_number,
+                title=f"Revision {version_number}",
+                content=f"Content {version_number}",
+                created_by=owner_id,
+            )
+            db_session.add(version)
+            expected[doc.id].insert(0, version.id)
+        expected[doc.id] = expected[doc.id][:5]
+    other_doc = Document(id=uuid.uuid4(), title="Other owner", owner_id=uuid.uuid4())
+    db_session.add(other_doc)
+    await db_session.commit()
+    db_session.expunge_all()
+
+    statements = []
+
+    def count_statement(conn, cursor, statement, parameters, context, executemany):
+        statements.append(statement)
+
+    engine = db_session.bind.sync_engine
+    event.listen(engine, "before_cursor_execute", count_statement)
+    try:
+        items, total = await DocumentService(db_session).list_documents(
+            owner_id=owner_id, size=100
+        )
+    finally:
+        event.remove(engine, "before_cursor_execute", count_statement)
+
+    assert total == document_count
+    assert len(items) == document_count
+    assert len(statements) == (5 if document_count else 2)
+    for doc in items:
+        assert [version.id for version in doc.recent_versions] == expected[doc.id]
+        assert [version.version_number for version in doc.recent_versions] == (
+            [8, 7, 6, 5, 4] if expected[doc.id] else []
+        )
+        for version in doc.recent_versions:
+            assert version.document_id == doc.id
+            assert version.content == f"Content {version.version_number}"
 
 
 @pytest.mark.asyncio
