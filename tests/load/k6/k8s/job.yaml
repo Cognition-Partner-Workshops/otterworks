@@ -1,0 +1,67 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ${JOB_NAME}
+  namespace: ${NAMESPACE}
+  labels:
+    app: loadtest
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 86400
+  activeDeadlineSeconds: ${DEADLINE}
+  template:
+    metadata:
+      labels:
+        app: loadtest
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 12345
+        fsGroup: 12345
+      containers:
+        - name: k6
+          image: grafana/k6:1.7.1
+          workingDir: /work
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              mkdir -p tests/load/k6/results
+              k6 run /source/otterworks.js
+              result=$?
+              tar -czf /work/results.tar.gz tests/load/k6/results
+              echo "K6_EXIT_CODE=$result"
+              touch /work/finished
+              while [ ! -f /work/collected ]; do sleep 2; done
+              exit "$result"
+          env:
+            - { name: BASE_URL, value: "${BASE_URL}" }
+            - { name: PROFILE, value: "${PROFILE}" }
+            - { name: USERS, value: "${USERS}" }
+            - { name: RATE, value: "${RATE}" }
+            - { name: VUS, value: "${VUS}" }
+            - { name: DURATION, value: "${DURATION}" }
+            - { name: RUN_ID, value: "${JOB_NAME}" }
+            - { name: TARGET_VUS, value: "${TARGET_VUS}" }
+            - { name: K6_OUT, value: "${K6_OUT}" }
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { cpu: "1", memory: 512Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+          volumeMounts:
+            - { name: source, mountPath: /source, readOnly: true }
+            - { name: work, mountPath: /work }
+      volumes:
+        - name: source
+          configMap:
+            name: ${JOB_NAME}
+            items:
+              - { key: otterworks.js, path: otterworks.js }
+              - { key: busy-season.js, path: busy-season.js }
+              - { key: config.js, path: lib/config.js }
+              - { key: auth.js, path: lib/auth.js }
+              - { key: http.js, path: lib/http.js }
+        - { name: work, emptyDir: {} }
