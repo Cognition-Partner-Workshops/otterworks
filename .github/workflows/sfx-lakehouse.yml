@@ -100,6 +100,7 @@ jobs:
       - name: Run the shared-input graph and parity
         run: |
           lakehouse/.venv/bin/python -m lakehouse.parity.documents_informatica_legacy --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE"
+          NS="$LEGACY_NS" PYTHONPATH=warehouse/teradata warehouse/.venv/bin/python -m dbql.load
           make sfx-lakehouse-run
       - name: Run the users Spark and activity-report parity graphs
         env:
