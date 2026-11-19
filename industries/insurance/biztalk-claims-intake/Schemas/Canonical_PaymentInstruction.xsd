@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="http://schemas.thistlecombe.example/canonical/payment" xmlns:b="http://schemas.microsoft.com/BizTalk/2003" targetNamespace="http://schemas.thistlecombe.example/canonical/payment" elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+    <xs:appinfo>
+      <b:schemaInfo root_reference="PaymentInstruction" displayroot_reference="PaymentInstruction" />
+      <b:properties>
+        <b:property name="ClaimsHub.ClaimNumber" xpath="/*[local-name()='PaymentInstruction']/*[local-name()='ClaimNumber']" />
+        <b:property name="ClaimsHub.PaymentVendorCd" xpath="/*[local-name()='PaymentInstruction']/*[local-name()='VendorCode']" />
+      </b:properties>
+    </xs:appinfo>
+  </xs:annotation>
+  <!-- Payment instruction dropped by the claims system; one instruction, one or more payment lines (indemnity, expense, salvage credit). -->
+  <xs:element name="PaymentInstruction">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="InstructionId" type="xs:string" />
+        <xs:element name="ClaimNumber" type="xs:string" />
+        <xs:element name="PolicyNumber" type="xs:string" />
+        <xs:element name="VendorCode" type="xs:string" />
+        <xs:element name="Payee">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Name" type="xs:string" />
+              <xs:element name="PayeeType" type="xs:string" />
+              <xs:element name="BankAccountMasked" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="ValueDate" type="xs:date" />
+        <xs:element name="CurrencyCd" type="xs:string" />
+        <xs:element name="Line" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="LineNo" type="xs:int" />
+              <xs:element name="LineType" type="xs:string" />
+              <xs:element name="Amount" type="xs:decimal" />
+              <xs:element name="GLAccount" type="xs:string" />
+              <xs:element name="Memo" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

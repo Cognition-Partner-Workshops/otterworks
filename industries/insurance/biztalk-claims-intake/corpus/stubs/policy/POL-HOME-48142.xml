@@ -1,0 +1,19 @@
+<ns0:PolicyInqRs xmlns:ns0="http://schemas.thistlecombe.example/acord/policy">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000006</RqUID>
+  <PolicyNumber>POL-HOME-48142</PolicyNumber>
+  <PolicyStatusCd>Active</PolicyStatusCd>
+  <LOBCd>HOME</LOBCd>
+  <EffectiveDt>2026-09-01</EffectiveDt>
+  <ExpirationDt>2027-08-31</ExpirationDt>
+  <DeductibleAmt>1000.00</DeductibleAmt>
+  <CoverageLimitAmt>300000.00</CoverageLimitAmt>
+  <InsuredPartyId>PTY-070186</InsuredPartyId>
+  <Coverage>
+    <CoverageCd>DWELL</CoverageCd>
+    <LimitAmt>300000.00</LimitAmt>
+  </Coverage>
+  <Coverage>
+    <CoverageCd>LIAB</CoverageCd>
+    <LimitAmt>300000.00</LimitAmt>
+  </Coverage>
+</ns0:PolicyInqRs>

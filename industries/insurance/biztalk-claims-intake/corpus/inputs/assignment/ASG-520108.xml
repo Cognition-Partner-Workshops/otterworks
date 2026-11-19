@@ -1,0 +1,12 @@
+<ns0:AssignmentRequest xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+  <RequestId>ASG-520108</RequestId>
+  <ClaimNumber>CLM-2026-100408</ClaimNumber>
+  <LineOfBusiness>HOME</LineOfBusiness>
+  <LossCause>LIAB</LossCause>
+  <Region>COASTAL</Region>
+  <Severity>HIGH</Severity>
+  <RequiredSkill>LIABILITY</RequiredSkill>
+  <RequestedDt>2026-10-02</RequestedDt>
+  <ClaimantName>Everett Lindqvist</ClaimantName>
+  <EstimatedAmount>48000.00</EstimatedAmount>
+</ns0:AssignmentRequest>

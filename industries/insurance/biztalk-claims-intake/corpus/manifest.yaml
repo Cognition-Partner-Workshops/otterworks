@@ -1,0 +1,36 @@
+# Manifest for tools/xslt-golden: every map in the claims hub, the corpus it runs over and where its goldens live.
+# Order matters: later maps read earlier maps' goldens as their inputs, the way the orchestrations chain them.
+base: ..
+maps:
+  - name: Fnol_to_CanonicalClaim
+    xslt: Maps/Fnol_to_CanonicalClaim.xslt
+    inputs: corpus/inputs/fnol
+    golden: corpus/golden/fnol-canonical
+  - name: CanonicalClaim_to_PolicyInqRq
+    xslt: Maps/CanonicalClaim_to_PolicyInqRq.xslt
+    inputs: corpus/golden/fnol-canonical
+    golden: corpus/golden/policy-inq-rq
+  - name: Claim_PolicyInqRs_to_InsertClaim
+    xslt: Maps/Claim_PolicyInqRs_to_InsertClaim.xslt
+    inputs: corpus/inputs/fnol-enriched
+    golden: corpus/golden/insert-claim
+  - name: InsertClaim_to_TriageFacts
+    xslt: Maps/InsertClaim_to_TriageFacts.golden.xslt
+    inputs: corpus/golden/insert-claim
+    golden: corpus/golden/triage-facts
+  - name: Payment_to_VendorRemittance
+    xslt: Maps/Payment_to_VendorRemittance.xslt
+    inputs: corpus/inputs/payment
+    golden: corpus/golden/vendor-remittance
+  - name: Payment_to_LedgerPost
+    xslt: Maps/Payment_to_LedgerPost.golden.xslt
+    inputs: corpus/inputs/payment
+    golden: corpus/golden/ledger-post
+  - name: AssignmentRequest_to_RosterQuery
+    xslt: Maps/AssignmentRequest_to_RosterQuery.xslt
+    inputs: corpus/inputs/assignment
+    golden: corpus/golden/roster-query
+  - name: Roster_AssignmentRequest_to_Notice
+    xslt: Maps/Roster_AssignmentRequest_to_Notice.xslt
+    inputs: corpus/inputs/assignment-enriched
+    golden: corpus/golden/assignment-notice

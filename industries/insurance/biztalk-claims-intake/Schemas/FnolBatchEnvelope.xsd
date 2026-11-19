@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="http://schemas.thistlecombe.example/acord/claims/fnol/envelope" xmlns:b="http://schemas.microsoft.com/BizTalk/2003" xmlns:fnol="http://schemas.thistlecombe.example/acord/claims/fnol" targetNamespace="http://schemas.thistlecombe.example/acord/claims/fnol/envelope" elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://schemas.thistlecombe.example/acord/claims/fnol" schemaLocation="ACORD_ClaimsNotificationAddRq.xsd" />
+  <xs:annotation>
+    <xs:appinfo>
+      <b:schemaInfo is_envelope="yes" root_reference="FnolBatch" displayroot_reference="FnolBatch" />
+      <b:properties>
+        <b:property name="ClaimsHub.AgencyId" xpath="/*[local-name()='FnolBatch']/*[local-name()='BatchHeader']/*[local-name()='AgencyId']" />
+        <b:property name="ClaimsHub.BatchId" xpath="/*[local-name()='FnolBatch']/*[local-name()='BatchHeader']/*[local-name()='BatchId']" />
+      </b:properties>
+    </xs:appinfo>
+  </xs:annotation>
+  <!-- Agencies drop one batch per night on SFTP. The XML disassembler debatches on Body/*, so every ClaimsSvcRq becomes its own message and the header promotes onto each of them. -->
+  <xs:element name="FnolBatch">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="BatchHeader">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="BatchId" type="xs:string" />
+              <xs:element name="AgencyId" type="xs:string" />
+              <xs:element name="CreatedDt" type="xs:dateTime" />
+              <xs:element name="MessageCount" type="xs:int" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Body">
+          <xs:annotation>
+            <xs:appinfo>
+              <b:recordInfo body_xpath="/*[local-name()='FnolBatch']/*[local-name()='Body']" />
+            </xs:appinfo>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:any namespace="http://schemas.thistlecombe.example/acord/claims/fnol" processContents="lax" maxOccurs="unbounded" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

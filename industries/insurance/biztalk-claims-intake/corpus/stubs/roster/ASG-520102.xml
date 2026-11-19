@@ -1,0 +1,32 @@
+<ns0:RosterResult xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+  <Adjuster>
+    <AdjusterId>ADJ-101</AdjusterId>
+    <Name>Sunniva Haraldsen</Name>
+    <Email>sunniva.haraldsen@thistlecombe.example</Email>
+    <Region>NORTHEAST</Region>
+    <Skills>AUTO-PD,AUTO-BI</Skills>
+    <OpenClaims>11</OpenClaims>
+    <MaxClaims>25</MaxClaims>
+    <Available>true</Available>
+  </Adjuster>
+  <Adjuster>
+    <AdjusterId>ADJ-102</AdjusterId>
+    <Name>Lorcan Byrne</Name>
+    <Email>lorcan.byrne@thistlecombe.example</Email>
+    <Region>NORTHEAST</Region>
+    <Skills>AUTO-PD</Skills>
+    <OpenClaims>9</OpenClaims>
+    <MaxClaims>20</MaxClaims>
+    <Available>true</Available>
+  </Adjuster>
+  <Adjuster>
+    <AdjusterId>ADJ-103</AdjusterId>
+    <Name>Ingrid Castellanos</Name>
+    <Email>ingrid.castellanos@thistlecombe.example</Email>
+    <Region>NORTHEAST</Region>
+    <Skills>PROPERTY,LARGE-LOSS</Skills>
+    <OpenClaims>19</OpenClaims>
+    <MaxClaims>20</MaxClaims>
+    <Available>true</Available>
+  </Adjuster>
+</ns0:RosterResult>

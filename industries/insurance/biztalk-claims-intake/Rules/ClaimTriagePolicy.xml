@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<brl xmlns="http://schemas.microsoft.com/businessruleslanguage/2002">
+  <ruleset name="ClaimTriage" description="Triage of a first notice of loss into decline, fraud review, fast track, large loss or standard handling. Rules fire by priority; the first to set Outcome wins, every fired rule adds a Reason.">
+    <version major="1" minor="2" description="New-policy large-loss rule added; fast-track limit raised from 1500 to 2500" modifiedby="claims-integration" date="2024-03-11T09:30:00" />
+    <configuration><factretriever /></configuration>
+    <bindings>
+      <xmldocument ref="facts" doctype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" instances="16" selectivity="1" instance="0"><selector>/*[local-name()='TriageFacts']</selector><selectoralias>TriageFacts</selectoralias></xmldocument>
+    </bindings>
+    <rule name="DeclineNotInForce" priority="100" active="true">
+      <description>Policy was not in force on the loss date; nothing is inserted and the FILE port routes the facts to the declines folder.</description>
+      <if><equal><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='InForceAtLoss']" type="boolean" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /><constant><boolean>false</boolean></constant></equal></if>
+      <then>
+        <function><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='Outcome']" type="string" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" sideeffects="true"><argument><constant><string>DECLINE_NOT_IN_FORCE</string></constant></argument></xmldocumentmember></function>
+        <function><classmember classref="ThistlecombeMutual.ClaimsHub.Helpers.TriageFactsHelper" member="AddReason" type="void" assembly="ThistlecombeMutual.ClaimsHub.Helpers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" sideeffects="true"><argument><xmldocumentmember xpath="/*[local-name()='TriageFacts']" type="System.Xml.XmlNode" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /></argument><argument><constant><string>Policy not in force at loss date</string></constant></argument></classmember></function>
+      </then>
+    </rule>
+    <rule name="FraudFlagLateReport" priority="90" active="true">
+      <description>A report more than 30 days after the loss goes to the fraud desk.</description>
+      <if><greaterthan><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='ReportDelayDays']" type="int" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /><constant><int>30</int></constant></greaterthan></if>
+      <then>
+        <function><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='Outcome']" type="string" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" sideeffects="true"><argument><constant><string>FRAUD_REVIEW</string></constant></argument></xmldocumentmember></function>
+        <function><classmember classref="ThistlecombeMutual.ClaimsHub.Helpers.TriageFactsHelper" member="AddReason" type="void" assembly="ThistlecombeMutual.ClaimsHub.Helpers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" sideeffects="true"><argument><xmldocumentmember xpath="/*[local-name()='TriageFacts']" type="System.Xml.XmlNode" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /></argument><argument><constant><string>Reported more than 30 days after loss</string></constant></argument></classmember></function>
+      </then>
+    </rule>
+    <rule name="FraudFlagNewPolicyLargeLoss" priority="90" active="true">
+      <description>A loss above 5000 inside 90 days of inception goes to the fraud desk.</description>
+      <if><and><lessthan><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='PolicyAgeDaysAtLoss']" type="int" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /><constant><int>90</int></constant></lessthan><greaterthan><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='EstimatedAmount']" type="decimal" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /><constant><decimal>5000.00</decimal></constant></greaterthan></and></if>
+      <then>
+        <function><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='Outcome']" type="string" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" sideeffects="true"><argument><constant><string>FRAUD_REVIEW</string></constant></argument></xmldocumentmember></function>
+        <function><classmember classref="ThistlecombeMutual.ClaimsHub.Helpers.TriageFactsHelper" member="AddReason" type="void" assembly="ThistlecombeMutual.ClaimsHub.Helpers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" sideeffects="true"><argument><xmldocumentmember xpath="/*[local-name()='TriageFacts']" type="System.Xml.XmlNode" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /></argument><argument><constant><string>Large loss within 90 days of inception</string></constant></argument></classmember></function>
+      </then>
+    </rule>
+    <rule name="FraudFlagPriorHistory" priority="90" active="true">
+      <description>A claimant with a prior fraud flag goes to the fraud desk.</description>
+      <if><equal><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='PriorFraudFlag']" type="boolean" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /><constant><boolean>true</boolean></constant></equal></if>
+      <then>
+        <function><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='Outcome']" type="string" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" sideeffects="true"><argument><constant><string>FRAUD_REVIEW</string></constant></argument></xmldocumentmember></function>
+        <function><classmember classref="ThistlecombeMutual.ClaimsHub.Helpers.TriageFactsHelper" member="AddReason" type="void" assembly="ThistlecombeMutual.ClaimsHub.Helpers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" sideeffects="true"><argument><xmldocumentmember xpath="/*[local-name()='TriageFacts']" type="System.Xml.XmlNode" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /></argument><argument><constant><string>Claimant has a prior fraud flag</string></constant></argument></classmember></function>
+      </then>
+    </rule>
+    <rule name="FastTrack" priority="50" active="true">
+      <description>Low exposure, no injury, eligible cause: settled from the desk without an adjuster.</description>
+      <if><and><equal><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='Outcome']" type="string" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /><constant><string></string></constant></equal><lessthanequal><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='NetExposure']" type="decimal" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /><constant><decimal>2500.00</decimal></constant></lessthanequal><equal><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='InjuryFlag']" type="boolean" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /><constant><boolean>false</boolean></constant></equal><function><classmember classref="ThistlecombeMutual.ClaimsHub.Helpers.TriageFactsHelper" member="InList" type="boolean" assembly="ThistlecombeMutual.ClaimsHub.Helpers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f"><argument><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='LossCause']" type="string" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /></argument><argument><constant><string>GLAS,TOWG,WIND</string></constant></argument></classmember></function></and></if>
+      <then>
+        <function><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='Outcome']" type="string" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" sideeffects="true"><argument><constant><string>FAST_TRACK</string></constant></argument></xmldocumentmember></function>
+        <function><classmember classref="ThistlecombeMutual.ClaimsHub.Helpers.TriageFactsHelper" member="AddReason" type="void" assembly="ThistlecombeMutual.ClaimsHub.Helpers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" sideeffects="true"><argument><xmldocumentmember xpath="/*[local-name()='TriageFacts']" type="System.Xml.XmlNode" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /></argument><argument><constant><string>Low exposure, no injury, fast-track cause</string></constant></argument></classmember></function>
+      </then>
+    </rule>
+    <rule name="LargeLoss" priority="40" active="true">
+      <description>Reserve at or above 50000 goes to the large-loss unit.</description>
+      <if><and><equal><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='Outcome']" type="string" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /><constant><string></string></constant></equal><greaterthanequal><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='ReserveEstimate']" type="decimal" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /><constant><decimal>50000.00</decimal></constant></greaterthanequal></and></if>
+      <then>
+        <function><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='Outcome']" type="string" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" sideeffects="true"><argument><constant><string>LARGE_LOSS</string></constant></argument></xmldocumentmember></function>
+        <function><classmember classref="ThistlecombeMutual.ClaimsHub.Helpers.TriageFactsHelper" member="AddReason" type="void" assembly="ThistlecombeMutual.ClaimsHub.Helpers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" sideeffects="true"><argument><xmldocumentmember xpath="/*[local-name()='TriageFacts']" type="System.Xml.XmlNode" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /></argument><argument><constant><string>Reserve at or above large-loss threshold</string></constant></argument></classmember></function>
+      </then>
+    </rule>
+    <rule name="StandardHandling" priority="10" active="true">
+      <description>Everything else is a standard claim with an adjuster.</description>
+      <if><equal><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='Outcome']" type="string" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /><constant><string></string></constant></equal></if>
+      <then>
+        <function><xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='Outcome']" type="string" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" sideeffects="true"><argument><constant><string>STANDARD</string></constant></argument></xmldocumentmember></function>
+        <function><classmember classref="ThistlecombeMutual.ClaimsHub.Helpers.TriageFactsHelper" member="AddReason" type="void" assembly="ThistlecombeMutual.ClaimsHub.Helpers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" sideeffects="true"><argument><xmldocumentmember xpath="/*[local-name()='TriageFacts']" type="System.Xml.XmlNode" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" /></argument><argument><constant><string>Standard handling</string></constant></argument></classmember></function>
+      </then>
+    </rule>
+  </ruleset>
+</brl>

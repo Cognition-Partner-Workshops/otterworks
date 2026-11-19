@@ -1,0 +1,10 @@
+{
+  "ClaimNumber": "CLM-2026-100410",
+  "Outcome": "FRAUD_REVIEW",
+  "Reasons": [
+    "Claimant has a prior fraud flag"
+  ],
+  "RulesFired": [
+    "FraudFlagPriorHistory"
+  ]
+}

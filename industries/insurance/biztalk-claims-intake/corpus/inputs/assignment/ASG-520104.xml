@@ -1,0 +1,12 @@
+<ns0:AssignmentRequest xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+  <RequestId>ASG-520104</RequestId>
+  <ClaimNumber>CLM-2026-100404</ClaimNumber>
+  <LineOfBusiness>HOME</LineOfBusiness>
+  <LossCause>LIAB</LossCause>
+  <Region>INLAND</Region>
+  <Severity>HIGH</Severity>
+  <RequiredSkill>LIABILITY</RequiredSkill>
+  <RequestedDt>2026-09-28</RequestedDt>
+  <ClaimantName>Tobias Whitcombe</ClaimantName>
+  <EstimatedAmount>25000.00</EstimatedAmount>
+</ns0:AssignmentRequest>
