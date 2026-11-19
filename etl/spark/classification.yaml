@@ -35,7 +35,7 @@
   target: spark_standard_template
   reason: "Summarizes event dates and types on the standard Spark template, preserving lake and PostgreSQL consumers because Snowflake was not measurable this run."
   original_target: dbt
-  change_reason: "No SFX_1119 database/warehouse was available and the run guard blocks SFX_D1110; retain Spark with rerun-safe snapshot outputs."
+  change_reason: "No SFX_1119 database/warehouse was available and the run guard blocks SFX_D1110; retain Spark with rerun-safe date partitions and a PostgreSQL refresh."
 - job: audit_actor_activity_join
   language: python
   target: dbt
