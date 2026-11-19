@@ -23,6 +23,7 @@ import PrivacyPage from "@/pages/privacy";
 import BillingPlansPage from "@/features/billing/plans-page";
 import BillingEntitlementPage from "@/features/billing/entitlement-page";
 import BillingChangePlanPage from "@/features/billing/change-plan-page";
+import AdminApp from "@/admin/AdminApp";
 
 const BILLING_FIXTURE_ENABLED =
   import.meta.env.VITE_ENABLE_BILLING_FIXTURE === "true" ||
@@ -40,6 +41,10 @@ function NotFound() {
 }
 
 export default function App() {
+  return <Routes><Route path="/admin/*" element={<AdminApp />} /><Route path="*" element={<ClientApp />} /></Routes>;
+}
+
+function ClientApp() {
   return (
     <QueryProvider>
       <AuthProvider>

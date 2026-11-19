@@ -24,11 +24,11 @@ import { DashboardStats } from '../../core/models/analytics.model';
 
       <div *ngIf="!loading && stats">
         <div class="stats-grid">
-          <mat-card class="stat-card">
+          <mat-card class="stat-card" data-testid="admin-stat-card">
             <mat-icon class="stat-icon users-icon">people</mat-icon>
             <div class="stat-info">
               <span class="stat-label">Total Users</span>
-              <span class="stat-value">{{ stats.totalUsers | number }}</span>
+              <span class="stat-value" data-testid="admin-stat-value">{{ stats.totalUsers | number }}</span>
               <span class="stat-growth" [class.positive]="stats.usersGrowth > 0" [class.negative]="stats.usersGrowth < 0">
                 <mat-icon>{{ stats.usersGrowth > 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
                 {{ stats.usersGrowth }}%
@@ -36,11 +36,11 @@ import { DashboardStats } from '../../core/models/analytics.model';
             </div>
           </mat-card>
 
-          <mat-card class="stat-card">
+          <mat-card class="stat-card" data-testid="admin-stat-card">
             <mat-icon class="stat-icon docs-icon">description</mat-icon>
             <div class="stat-info">
               <span class="stat-label">Active Documents</span>
-              <span class="stat-value">{{ stats.activeDocuments | number }}</span>
+              <span class="stat-value" data-testid="admin-stat-value">{{ stats.activeDocuments | number }}</span>
               <span class="stat-growth" [class.positive]="stats.documentsGrowth > 0" [class.negative]="stats.documentsGrowth < 0">
                 <mat-icon>{{ stats.documentsGrowth > 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
                 {{ stats.documentsGrowth }}%
@@ -48,11 +48,11 @@ import { DashboardStats } from '../../core/models/analytics.model';
             </div>
           </mat-card>
 
-          <mat-card class="stat-card">
+          <mat-card class="stat-card" data-testid="admin-stat-card">
             <mat-icon class="stat-icon storage-icon">cloud</mat-icon>
             <div class="stat-info">
               <span class="stat-label">Storage Used</span>
-              <span class="stat-value">{{ stats.storageUsed }}</span>
+              <span class="stat-value" data-testid="admin-stat-value">{{ stats.storageUsed }}</span>
               <span class="stat-growth" [class.positive]="stats.storageGrowth > 0" [class.negative]="stats.storageGrowth < 0">
                 <mat-icon>{{ stats.storageGrowth > 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
                 {{ stats.storageGrowth }}%
@@ -60,11 +60,11 @@ import { DashboardStats } from '../../core/models/analytics.model';
             </div>
           </mat-card>
 
-          <mat-card class="stat-card">
+          <mat-card class="stat-card" data-testid="admin-stat-card">
             <mat-icon class="stat-icon sessions-icon">devices</mat-icon>
             <div class="stat-info">
               <span class="stat-label">Active Sessions</span>
-              <span class="stat-value">{{ stats.activeSessions | number }}</span>
+              <span class="stat-value" data-testid="admin-stat-value">{{ stats.activeSessions | number }}</span>
               <span class="stat-growth" [class.positive]="stats.sessionsGrowth > 0" [class.negative]="stats.sessionsGrowth < 0">
                 <mat-icon>{{ stats.sessionsGrowth > 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
                 {{ stats.sessionsGrowth }}%

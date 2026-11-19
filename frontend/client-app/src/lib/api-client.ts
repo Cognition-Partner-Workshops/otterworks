@@ -60,7 +60,7 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error) => {
-    if (error.response?.status === 401 && typeof window !== "undefined") {
+    if (error.response?.status === 401 && typeof window !== "undefined" && !/^\/admin(?:\/|$)/.test(window.location.pathname)) {
       const url = error.config?.url || "";
       if (!url.includes("/auth/")) {
         if (isVerifyingToken) {
@@ -75,7 +75,7 @@ apiClient.interceptors.response.use(
           });
         } catch (verifyError: unknown) {
           const status = (verifyError as { response?: { status?: number } })?.response?.status;
-          if (status === 401) {
+          if (status === 401 && !/^\/admin(?:\/|$)/.test(window.location.pathname)) {
             localStorage.removeItem("otter_access_token");
             localStorage.removeItem("otter_refresh_token");
             window.location.href = "/login";

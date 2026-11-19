@@ -6,3 +6,6 @@
 3e3bb913f964e56dc9a9e16d4130abbc690c008d:infrastructure/terraform/azure/containerapps.tf:hashicorp-tf-password:171
 # Cypress auth fixture value is mock test data.
 b2af9224bda84f9a66c3c4fdf33cc4008520ad8f:tests/legacy-suites/cypress/cypress/fixtures/auth-tokens.json:generic-api-key:2
+# Offline admin demo JWT copied unchanged from Angular's mockLogin; not a production credential.
+3a3e907c91a57add3cea339e346bd1faae06903c:frontend/client-app/src/admin/auth.ts:jwt:15
+46cf04a47d57d830d4e8f44df065d85072e01d3b:frontend/client-app/src/admin/auth.ts:jwt:39
