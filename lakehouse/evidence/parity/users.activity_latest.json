@@ -1,0 +1,177 @@
+{
+  "NS": "users-after",
+  "business_date": "20261109",
+  "git_dirty": false,
+  "git_sha": "9dcb6a5e67bb4bfcc64ef4caa00fb68aacf703cf",
+  "id": "users.activity_latest",
+  "legacy_NS": "users-before",
+  "legacy_objects": [
+    "etl_script:etl/scripts/user_activity_daily.py"
+  ],
+  "results": {
+    "columns": [
+      "report_date",
+      "report_type",
+      "lookback_days",
+      "trends",
+      "daily_summaries",
+      "user_summaries",
+      "top_users"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "daily_summaries": {
+          "count": 1,
+          "hash": "f0441b8216ae61df602ba48df5bb0c137f59993c84ded864e1cdc1f180d46432",
+          "null_count": 0,
+          "sum": null
+        },
+        "lookback_days": {
+          "count": 1,
+          "hash": "30ef1b40cdd93b0006f28e6532547ffc14f2f733c85e736c7b1bfb5fc758bb24",
+          "null_count": 0,
+          "sum": "30"
+        },
+        "report_date": {
+          "count": 1,
+          "hash": "5bc986eba5013351de9e2980bfffced7c6cd1b8c6f0519ade64c771dfdf512f7",
+          "null_count": 0,
+          "sum": null
+        },
+        "report_type": {
+          "count": 1,
+          "hash": "6f861b91f467c209372fb41adf6fbb18002531e16a1ce3e13874f8e18ae8b583",
+          "null_count": 0,
+          "sum": null
+        },
+        "top_users": {
+          "count": 1,
+          "hash": "99e2a68dda51cc0bca8416a446134521dff92817951500b9a96b245266340e23",
+          "null_count": 0,
+          "sum": null
+        },
+        "trends": {
+          "count": 1,
+          "hash": "ee24f0b747585311411f68f972b4cab1a4ac7582c3a0028849b5d925adb9968c",
+          "null_count": 0,
+          "sum": null
+        },
+        "user_summaries": {
+          "count": 1,
+          "hash": "99e2a68dda51cc0bca8416a446134521dff92817951500b9a96b245266340e23",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "daily_summaries": {
+          "count": 1,
+          "hash": "f0441b8216ae61df602ba48df5bb0c137f59993c84ded864e1cdc1f180d46432",
+          "null_count": 0,
+          "sum": null
+        },
+        "lookback_days": {
+          "count": 1,
+          "hash": "30ef1b40cdd93b0006f28e6532547ffc14f2f733c85e736c7b1bfb5fc758bb24",
+          "null_count": 0,
+          "sum": "30"
+        },
+        "report_date": {
+          "count": 1,
+          "hash": "5bc986eba5013351de9e2980bfffced7c6cd1b8c6f0519ade64c771dfdf512f7",
+          "null_count": 0,
+          "sum": null
+        },
+        "report_type": {
+          "count": 1,
+          "hash": "6f861b91f467c209372fb41adf6fbb18002531e16a1ce3e13874f8e18ae8b583",
+          "null_count": 0,
+          "sum": null
+        },
+        "top_users": {
+          "count": 1,
+          "hash": "99e2a68dda51cc0bca8416a446134521dff92817951500b9a96b245266340e23",
+          "null_count": 0,
+          "sum": null
+        },
+        "trends": {
+          "count": 1,
+          "hash": "ee24f0b747585311411f68f972b4cab1a4ac7582c3a0028849b5d925adb9968c",
+          "null_count": 0,
+          "sum": null
+        },
+        "user_summaries": {
+          "count": 1,
+          "hash": "99e2a68dda51cc0bca8416a446134521dff92817951500b9a96b245266340e23",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "daily_summaries": {
+        "count": 0,
+        "samples": []
+      },
+      "lookback_days": {
+        "count": 0,
+        "samples": []
+      },
+      "report_date": {
+        "count": 0,
+        "samples": []
+      },
+      "report_type": {
+        "count": 0,
+        "samples": []
+      },
+      "top_users": {
+        "count": 0,
+        "samples": []
+      },
+      "trends": {
+        "count": 0,
+        "samples": []
+      },
+      "user_summaries": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 1,
+      "legacy": 1
+    }
+  },
+  "row_counts": {
+    "lakehouse": 1,
+    "legacy": 1
+  },
+  "spec_hash": "2f6b714df5fd406be47cadc26fec7a3adddcb5ec14772dbd7b98bb4f39a80a50",
+  "timestamp": "2026-11-19T08:14:23.957503+00:00"
+}

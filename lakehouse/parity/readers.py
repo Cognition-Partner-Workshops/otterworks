@@ -1,5 +1,7 @@
 import csv
+import json
 import os
+from datetime import datetime
 from pathlib import Path
 
 import psycopg
@@ -8,15 +10,18 @@ from lakehouse.runtime.layout import ROOT
 from lakehouse.runtime.session import create_session
 
 
-def postgres_connection():
+def postgres_connection(database=None):
     dsn = os.environ.get('TD_PG_DSN', '')
     defaults = {'host': ('HOST', 'localhost'), 'port': ('PORT', '5432'),
                 'dbname': ('DB', 'teradata'), 'user': ('USER', 'postgres'),
                 'password': ('PASSWORD', '')}
-    return psycopg.connect(dsn, **{
+    options = {
         key: os.environ.get('TD_PG_' + env, default)
         for key, (env, default) in defaults.items()
-        if not dsn or 'TD_PG_' + env in os.environ})
+        if not dsn or 'TD_PG_' + env in os.environ}
+    if database is not None:
+        options['dbname'] = database
+    return psycopg.connect(dsn, **options)
 
 
 class Readers:
@@ -30,8 +35,21 @@ class Readers:
 
     def read(self, side):
         kind = side['kind']
+        if kind in ('json', 'jsonl'):
+            path = self.path(side)
+            names = side['columns']
+            try:
+                with path.open(encoding='utf-8') as handle:
+                    rows = [json.load(handle)] if kind == 'json' else [json.loads(line) for line in handle if line.strip()]
+            except FileNotFoundError:
+                if kind == 'jsonl' and side.get('missing_is_empty', False):
+                    return [], names
+                raise
+            if any(not isinstance(row, dict) or not set(names) <= row.keys() for row in rows):
+                raise ValueError(f'{path}: JSON objects must contain the configured columns')
+            return rows, names
         if kind == 'postgres_sql':
-            with postgres_connection() as conn:
+            with postgres_connection(side.get('database')) as conn:
                 conn.read_only = True
                 with conn.cursor() as cursor:
                     cursor.execute(side['sql'].replace('{business_date}', self.business_date))
@@ -76,6 +94,7 @@ class Readers:
 
     def path(self, side):
         path = Path(side['path'].format(business_date=self.business_date,
+                                        iso_date=datetime.strptime(self.business_date, '%Y%m%d').date().isoformat(),
                                         NS=os.environ['NS']))
         return path if path.is_absolute() else ROOT.parent / path
 

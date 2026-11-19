@@ -1,0 +1,8 @@
+version: 2
+models:
+  - name: team_counts
+    columns:
+      - name: team_id
+        data_tests: [not_null, unique]
+      - name: member_count
+        data_tests: [not_null]

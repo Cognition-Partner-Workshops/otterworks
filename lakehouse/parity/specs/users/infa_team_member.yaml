@@ -1,0 +1,17 @@
+id: users.infa_team_member
+legacy_objects:
+  - informatica_mapping:SFX_CONTENT.m_SFX_TEAM_MEMBER
+  - informatica_session:SFX_CONTENT.s_m_SFX_TEAM_MEMBER
+  - informatica_source:SFX_CONTENT.FF_TEAM_MEMBER
+  - informatica_target:SFX_CONTENT.TEAM_MEMBER
+legacy:
+  kind: postgres_sql
+  database: users_infa
+  sql: SELECT * FROM sfx_users.team_member
+lakehouse:
+  kind: delta_table
+  table: silver_users.infa_team_member
+keys: [team_member_id]
+columns: [team_member_id, team_id, user_id, role_cd, joined_dt]
+normalize:
+  role_cd: {rstrip: true}

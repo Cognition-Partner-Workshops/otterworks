@@ -1,0 +1,13 @@
+id: users.stg_team_member
+legacy_objects:
+  - teradata_table:SFX_USERS.STG_TEAM_MEMBER
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.stg_team_member
+lakehouse:
+  kind: spark_sql
+  sql: >-
+    SELECT CAST(team_member_id AS bigint) AS team_member_id, CAST(team_id AS bigint) AS team_id, CAST(user_id AS bigint) AS user_id, CAST(role_cd AS string) AS role_cd, CAST(joined_dt AS date) AS joined_dt
+    FROM bronze_users.team_member WHERE _business_date = to_date('{business_date}', 'yyyyMMdd')
+keys: [team_member_id]
+columns: [team_member_id, team_id, user_id, role_cd, joined_dt]

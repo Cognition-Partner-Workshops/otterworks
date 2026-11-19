@@ -1,0 +1,14 @@
+id: users.app_user
+legacy_objects:
+  - teradata_table:SFX_USERS.APP_USER
+  - bteq_script:warehouse/teradata/scripts/users/01_load_users.bteq
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.app_user
+lakehouse:
+  kind: delta_table
+  table: silver_users.app_user
+keys: [user_id]
+columns: [user_id, display_name, email, status_cd, created_dt]
+normalize:
+  status_cd: {rstrip: true}

@@ -1,0 +1,109 @@
+{
+  "NS": "users-after",
+  "business_date": "20261109",
+  "git_dirty": false,
+  "git_sha": "9dcb6a5e67bb4bfcc64ef4caa00fb68aacf703cf",
+  "id": "users.users_team_rollup_jdbc",
+  "legacy_NS": "users-before",
+  "legacy_objects": [
+    "spark_job:users_team_rollup"
+  ],
+  "results": {
+    "columns": [
+      "team_id",
+      "team_name",
+      "members"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "members": {
+          "count": 70,
+          "hash": "1729a5983a6b9cd058714d7cc25e8b1b7b7694b29acd2d86220eff9cfb34ed43",
+          "null_count": 0,
+          "sum": "70"
+        },
+        "team_id": {
+          "count": 70,
+          "hash": "8fb543cd704dc73320aed8dcde50a0afe6068b0e30885baad7ce09bc844ffc48",
+          "null_count": 0,
+          "sum": "2485"
+        },
+        "team_name": {
+          "count": 70,
+          "hash": "4be78a39381ec0945eec51609f33d78538e53e2bd41980c1e4d860586f457896",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "members": {
+          "count": 70,
+          "hash": "1729a5983a6b9cd058714d7cc25e8b1b7b7694b29acd2d86220eff9cfb34ed43",
+          "null_count": 0,
+          "sum": "70"
+        },
+        "team_id": {
+          "count": 70,
+          "hash": "8fb543cd704dc73320aed8dcde50a0afe6068b0e30885baad7ce09bc844ffc48",
+          "null_count": 0,
+          "sum": "2485"
+        },
+        "team_name": {
+          "count": 70,
+          "hash": "4be78a39381ec0945eec51609f33d78538e53e2bd41980c1e4d860586f457896",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "members": {
+        "count": 0,
+        "samples": []
+      },
+      "team_id": {
+        "count": 0,
+        "samples": []
+      },
+      "team_name": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 70,
+      "legacy": 70
+    }
+  },
+  "row_counts": {
+    "lakehouse": 70,
+    "legacy": 70
+  },
+  "spec_hash": "114d3bf06e226abc9e0467f35fcee22df0c3929979ab2ad94a15212f3072c64a",
+  "timestamp": "2026-11-19T08:15:00.098441+00:00"
+}

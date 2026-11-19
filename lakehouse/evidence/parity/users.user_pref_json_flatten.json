@@ -1,0 +1,160 @@
+{
+  "NS": "users-after",
+  "business_date": "20261109",
+  "git_dirty": false,
+  "git_sha": "9dcb6a5e67bb4bfcc64ef4caa00fb68aacf703cf",
+  "id": "users.user_pref_json_flatten",
+  "legacy_NS": "users-before",
+  "legacy_objects": [
+    "spark_job:user_pref_json_flatten"
+  ],
+  "results": {
+    "columns": [
+      "user_pref_id",
+      "user_id",
+      "pref_json",
+      "theme",
+      "notifications",
+      "locale"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "locale": {
+          "count": 70,
+          "hash": "3885f37f0f3ef65791c6c993cb0ea4c7c776fa1eaa9bcd293f8eb52c0a74f1bb",
+          "null_count": 0,
+          "sum": null
+        },
+        "notifications": {
+          "count": 70,
+          "hash": "8a9d2da55b9dfc725fe825dcc9256763773070c1bb9bf490bce0b8e266a21f8c",
+          "null_count": 0,
+          "sum": null
+        },
+        "pref_json": {
+          "count": 70,
+          "hash": "4ca2ee61f9faddab413461b11066e9cec43756931915b554bf85a4e48212061f",
+          "null_count": 0,
+          "sum": null
+        },
+        "theme": {
+          "count": 70,
+          "hash": "d8b3911e4e4f879c147c82a6153e1a869f13021d06be804e25ea59b4c3b7ecf5",
+          "null_count": 0,
+          "sum": null
+        },
+        "user_id": {
+          "count": 70,
+          "hash": "8fb543cd704dc73320aed8dcde50a0afe6068b0e30885baad7ce09bc844ffc48",
+          "null_count": 0,
+          "sum": "2485"
+        },
+        "user_pref_id": {
+          "count": 70,
+          "hash": "8fb543cd704dc73320aed8dcde50a0afe6068b0e30885baad7ce09bc844ffc48",
+          "null_count": 0,
+          "sum": "2485"
+        }
+      },
+      "legacy": {
+        "locale": {
+          "count": 70,
+          "hash": "3885f37f0f3ef65791c6c993cb0ea4c7c776fa1eaa9bcd293f8eb52c0a74f1bb",
+          "null_count": 0,
+          "sum": null
+        },
+        "notifications": {
+          "count": 70,
+          "hash": "8a9d2da55b9dfc725fe825dcc9256763773070c1bb9bf490bce0b8e266a21f8c",
+          "null_count": 0,
+          "sum": null
+        },
+        "pref_json": {
+          "count": 70,
+          "hash": "4ca2ee61f9faddab413461b11066e9cec43756931915b554bf85a4e48212061f",
+          "null_count": 0,
+          "sum": null
+        },
+        "theme": {
+          "count": 70,
+          "hash": "d8b3911e4e4f879c147c82a6153e1a869f13021d06be804e25ea59b4c3b7ecf5",
+          "null_count": 0,
+          "sum": null
+        },
+        "user_id": {
+          "count": 70,
+          "hash": "8fb543cd704dc73320aed8dcde50a0afe6068b0e30885baad7ce09bc844ffc48",
+          "null_count": 0,
+          "sum": "2485"
+        },
+        "user_pref_id": {
+          "count": 70,
+          "hash": "8fb543cd704dc73320aed8dcde50a0afe6068b0e30885baad7ce09bc844ffc48",
+          "null_count": 0,
+          "sum": "2485"
+        }
+      }
+    },
+    "mismatches": {
+      "locale": {
+        "count": 0,
+        "samples": []
+      },
+      "notifications": {
+        "count": 0,
+        "samples": []
+      },
+      "pref_json": {
+        "count": 0,
+        "samples": []
+      },
+      "theme": {
+        "count": 0,
+        "samples": []
+      },
+      "user_id": {
+        "count": 0,
+        "samples": []
+      },
+      "user_pref_id": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 70,
+      "legacy": 70
+    }
+  },
+  "row_counts": {
+    "lakehouse": 70,
+    "legacy": 70
+  },
+  "spec_hash": "24d3c1beee195f02c96ed254887066ae9de4ef1f0b4a91eca42feaa7f154ad24",
+  "timestamp": "2026-11-19T08:14:55.546116+00:00"
+}

@@ -1,0 +1,126 @@
+{
+  "NS": "users-after",
+  "business_date": "20261109",
+  "git_dirty": false,
+  "git_sha": "9dcb6a5e67bb4bfcc64ef4caa00fb68aacf703cf",
+  "id": "users.stg_role_grant",
+  "legacy_NS": "users-before",
+  "legacy_objects": [
+    "teradata_table:SFX_USERS.STG_ROLE_GRANT"
+  ],
+  "results": {
+    "columns": [
+      "grant_id",
+      "user_id",
+      "role_cd",
+      "granted_dt"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "grant_id": {
+          "count": 200,
+          "hash": "e6112a17a14a7271363201ad4615c1acdf7b4c1128f9aaf72fb47bb69130d043",
+          "null_count": 0,
+          "sum": "20100"
+        },
+        "granted_dt": {
+          "count": 200,
+          "hash": "fc323652562232d39cf3a620f4ddc37239d741edd03b7c5c50c78a829f3c5e4c",
+          "null_count": 0,
+          "sum": null
+        },
+        "role_cd": {
+          "count": 200,
+          "hash": "e693c0afbbaee9277b1a78b285d8807e58ccc65b675ff9d1c205f6306e68947e",
+          "null_count": 0,
+          "sum": null
+        },
+        "user_id": {
+          "count": 200,
+          "hash": "e6112a17a14a7271363201ad4615c1acdf7b4c1128f9aaf72fb47bb69130d043",
+          "null_count": 0,
+          "sum": "20100"
+        }
+      },
+      "legacy": {
+        "grant_id": {
+          "count": 200,
+          "hash": "e6112a17a14a7271363201ad4615c1acdf7b4c1128f9aaf72fb47bb69130d043",
+          "null_count": 0,
+          "sum": "20100"
+        },
+        "granted_dt": {
+          "count": 200,
+          "hash": "fc323652562232d39cf3a620f4ddc37239d741edd03b7c5c50c78a829f3c5e4c",
+          "null_count": 0,
+          "sum": null
+        },
+        "role_cd": {
+          "count": 200,
+          "hash": "e693c0afbbaee9277b1a78b285d8807e58ccc65b675ff9d1c205f6306e68947e",
+          "null_count": 0,
+          "sum": null
+        },
+        "user_id": {
+          "count": 200,
+          "hash": "e6112a17a14a7271363201ad4615c1acdf7b4c1128f9aaf72fb47bb69130d043",
+          "null_count": 0,
+          "sum": "20100"
+        }
+      }
+    },
+    "mismatches": {
+      "grant_id": {
+        "count": 0,
+        "samples": []
+      },
+      "granted_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "role_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "user_id": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 200,
+      "legacy": 200
+    }
+  },
+  "row_counts": {
+    "lakehouse": 200,
+    "legacy": 200
+  },
+  "spec_hash": "112384f8be7c3f1f9face5eff61ffb39de2121f54a9e659430280db0136a023e",
+  "timestamp": "2026-11-19T08:14:46.414522+00:00"
+}

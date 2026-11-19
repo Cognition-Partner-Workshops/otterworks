@@ -1,0 +1,92 @@
+{
+  "NS": "users-after",
+  "business_date": "20261109",
+  "git_dirty": false,
+  "git_sha": "9dcb6a5e67bb4bfcc64ef4caa00fb68aacf703cf",
+  "id": "users.team_graph_components",
+  "legacy_NS": "users-before",
+  "legacy_objects": [
+    "spark_job:team_graph_components"
+  ],
+  "results": {
+    "columns": [
+      "team_id",
+      "component_id"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "component_id": {
+          "count": 70,
+          "hash": "8fb543cd704dc73320aed8dcde50a0afe6068b0e30885baad7ce09bc844ffc48",
+          "null_count": 0,
+          "sum": "2485"
+        },
+        "team_id": {
+          "count": 70,
+          "hash": "8fb543cd704dc73320aed8dcde50a0afe6068b0e30885baad7ce09bc844ffc48",
+          "null_count": 0,
+          "sum": "2485"
+        }
+      },
+      "legacy": {
+        "component_id": {
+          "count": 70,
+          "hash": "8fb543cd704dc73320aed8dcde50a0afe6068b0e30885baad7ce09bc844ffc48",
+          "null_count": 0,
+          "sum": "2485"
+        },
+        "team_id": {
+          "count": 70,
+          "hash": "8fb543cd704dc73320aed8dcde50a0afe6068b0e30885baad7ce09bc844ffc48",
+          "null_count": 0,
+          "sum": "2485"
+        }
+      }
+    },
+    "mismatches": {
+      "component_id": {
+        "count": 0,
+        "samples": []
+      },
+      "team_id": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 70,
+      "legacy": 70
+    }
+  },
+  "row_counts": {
+    "lakehouse": 70,
+    "legacy": 70
+  },
+  "spec_hash": "4748992500a041707ea34311dc00362a5c0b1aebd1a6132706cc95132c5719f4",
+  "timestamp": "2026-11-19T08:14:52.707380+00:00"
+}

@@ -1,0 +1,14 @@
+id: users.team_counts
+legacy_objects:
+  - teradata_macro:SFX_USERS.M_TEAM_COUNTS
+  - bteq_script:warehouse/teradata/scripts/users/10_activity_daily.bteq
+legacy:
+  kind: file
+  path: warehouse/exports/team_counts.psv
+  columns: [team_id, team_name, member_count]
+lakehouse:
+  kind: file
+  path: lakehouse/.data/{NS}/exports/{business_date}/team_counts.psv
+  columns: [team_id, team_name, member_count]
+keys: [team_id]
+columns: [team_id, team_name, member_count]

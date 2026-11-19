@@ -1,0 +1,13 @@
+id: users.stg_app_user
+legacy_objects:
+  - teradata_table:SFX_USERS.STG_APP_USER
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.stg_app_user
+lakehouse:
+  kind: spark_sql
+  sql: >-
+    SELECT CAST(user_id AS bigint) AS user_id, CAST(display_name AS string) AS display_name, CAST(email AS string) AS email, CAST(status_cd AS string) AS status_cd, CAST(created_dt AS date) AS created_dt
+    FROM bronze_users.app_user WHERE _business_date = to_date('{business_date}', 'yyyyMMdd')
+keys: [user_id]
+columns: [user_id, display_name, email, status_cd, created_dt]

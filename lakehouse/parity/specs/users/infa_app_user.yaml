@@ -1,0 +1,17 @@
+id: users.infa_app_user
+legacy_objects:
+  - informatica_mapping:SFX_CONTENT.m_SFX_APP_USER
+  - informatica_session:SFX_CONTENT.s_m_SFX_APP_USER
+  - informatica_source:SFX_CONTENT.STG_APP_USER
+  - informatica_target:SFX_CONTENT.APP_USER
+legacy:
+  kind: postgres_sql
+  database: users_infa
+  sql: SELECT * FROM sfx_users.app_user
+lakehouse:
+  kind: delta_table
+  table: silver_users.infa_app_user
+keys: [user_id]
+columns: [user_id, display_name, email, status_cd, created_dt]
+normalize:
+  status_cd: {rstrip: true}

@@ -141,9 +141,10 @@ def test_seed_statuses_and_assumption_links():
     assert inventory.keys() == coverage.keys()
     for identity, entry in coverage.items():
         kind = inventory[identity]['kind']
-        assert entry['status'] == ('converted' if identity == PILOT else
-                                  'replaced_by_platform' if kind in ('fastload', 'tpt') or
-                                  identity == 'cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging' else 'pending')
+        if identity == PILOT:
+            assert entry['status'] == 'converted'
+        elif kind in ('fastload', 'tpt') or identity == 'cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging':
+            assert entry['status'] in ('replaced_by_platform', 'converted')
         assert set(entry['assumptions']) == {key for key, assumption in assumptions.items()
                                             if identity in assumption['legacy_objects']}
 

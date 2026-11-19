@@ -1,0 +1,11 @@
+id: users.user_pref
+legacy_objects:
+  - teradata_table:SFX_USERS.USER_PREF
+legacy:
+  kind: postgres_sql
+  sql: SELECT * FROM sfx_users.user_pref
+lakehouse:
+  kind: delta_table
+  table: silver_users.user_pref
+keys: [pref_id]
+columns: [pref_id, user_id, pref_name, pref_value, updated_dt]

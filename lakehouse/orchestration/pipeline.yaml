@@ -542,6 +542,81 @@ dags:
     - bronze_users
     retries: 1
     retry_delay_seconds: 10
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/users/01_load_users.bteq
+    - bteq_script:warehouse/teradata/scripts/users/02_load_teams.bteq
+    - bteq_script:warehouse/teradata/scripts/users/03_load_identity.bteq
+    - bteq_script:warehouse/teradata/scripts/users/04_load_events.bteq
+  - id: export_users_team_counts
+    kind: export
+    command: ['{python}', '-m', 'lakehouse.runtime.users_exports', '--business-date', '{business_date}']
+    depends_on: ["dbt_users"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/users/10_activity_daily.bteq
+  - id: parity_users_warehouse
+    kind: parity
+    specs:
+    - users.app_user
+    - users.login_event
+    - users.role_grant
+    - users.sso_identity
+    - users.team
+    - users.team_counts
+    - users.team_member
+    - users.user_activity_daily
+    - users.user_pref
+    - users.user_profile
+    - users.user_status_hist
+    - users.v_team_members
+    - users.v_user_settings
+    - users.stg_app_user
+    - users.stg_login_event
+    - users.stg_role_grant
+    - users.stg_sso_identity
+    - users.stg_team
+    - users.stg_team_member
+    - users.stg_user_activity_daily
+    - users.stg_user_pref
+    - users.stg_user_profile
+    - users.stg_user_status_hist
+    depends_on: ["export_users_team_counts"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_users_app
+    kind: export
+    command: ['{python}', '-m', 'lakehouse.runtime.users_informatica', '--stage', 'app', '--business-date', '{business_date}']
+    depends_on: ["bronze_users"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - informatica_session:SFX_CONTENT.s_m_SFX_STG_APP_USER
+    - informatica_session:SFX_CONTENT.s_m_SFX_APP_USER
+  - id: infa_users_role_grant
+    kind: export
+    command: ['{python}', '-m', 'lakehouse.runtime.users_informatica', '--stage', 'roles', '--business-date', '{business_date}']
+    depends_on: ["infa_users_app"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - informatica_session:SFX_CONTENT.s_m_SFX_ROLE_GRANT
+  - id: infa_users_login_team
+    kind: export
+    command: ['{python}', '-m', 'lakehouse.runtime.users_informatica', '--stage', 'events', '--business-date', '{business_date}']
+    depends_on: ["infa_users_app"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - informatica_session:SFX_CONTENT.s_m_SFX_LOGIN_EVENT
+    - informatica_session:SFX_CONTENT.s_m_SFX_TEAM_MEMBER
+  - id: parity_users_informatica
+    kind: parity
+    specs: [users.infa_stg_app_user, users.infa_app_user, users.infa_role_grant, users.infa_login_event, users.infa_team_member]
+    depends_on: [infa_users_role_grant, infa_users_login_team]
+    retries: 1
+    retry_delay_seconds: 10
     legacy_objects: []
   - id: bronze_audit
     kind: bronze_ingest
@@ -588,6 +663,80 @@ dags:
     - dbt_documents
     - dbt_users
     - dbt_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+- id: lakehouse_users_spark
+  schedule: '@daily'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: users_spark_outputs
+    kind: export
+    command: ['{python}', '-m', 'lakehouse.runtime.users_spark', '--landing', '{landing}/spark/{business_date}']
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - spark_job:users_active_daily
+    - spark_submit:etl/spark/submit/users_active_daily.sh
+    - cron_entry:etl/crontab#042e9e7fa551
+    - spark_job:users_team_rollup
+    - spark_submit:etl/spark/submit/users_team_rollup.sh
+    - cron_entry:etl/crontab#a1a53c82cfb3
+    - spark_job:users_login_useragent_parse
+    - spark_submit:etl/spark/submit/users_login_useragent_parse.sh
+    - cron_entry:etl/crontab#9d492d3cabc6
+    - spark_job:users_risk_score
+    - spark_submit:etl/spark/submit/users_risk_score.sh
+    - cron_entry:etl/crontab#bb89194e6e7e
+    - spark_job:team_graph_components
+    - spark_submit:etl/spark/submit/team_graph_components.sh
+    - cron_entry:etl/crontab#8256b4d51699
+    - spark_job:user_pref_json_flatten
+    - spark_submit:etl/spark/submit/user_pref_json_flatten.sh
+    - cron_entry:etl/crontab#b8eef1610f31
+  - id: parity_users_spark
+    kind: parity
+    specs:
+    - users.users_active_daily
+    - users.users_team_rollup
+    - users.users_team_rollup_jdbc
+    - users.users_login_useragent_parse
+    - users.users_risk_score
+    - users.users_risk_score_jdbc
+    - users.team_graph_components
+    - users.user_pref_json_flatten
+    depends_on: [users_spark_outputs]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+- id: lakehouse_users_activity
+  schedule: '@daily'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: true
+  nodes:
+  - id: users_activity_report
+    kind: export
+    command: ['{python}', '-m', 'lakehouse.runtime.users_activity_report', '--source', '{landing}/activity', '--business-date', '{business_date}']
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - etl_script:etl/scripts/user_activity_daily.py
+    - cron_entry:etl/crontab#d28d753c053a
+  - id: parity_users_activity
+    kind: parity
+    specs: [users.activity_report, users.activity_user_summaries, users.activity_latest]
+    depends_on: [users_activity_report]
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []
