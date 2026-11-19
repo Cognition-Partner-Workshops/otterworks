@@ -17,7 +17,72 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  languages:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        if: github.event_name == 'pull_request'
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
+        if: github.event_name == 'pull_request'
+        id: changes
+        with:
+          filters: |
+            all:
+              - '.github/workflows/codeql.yml'
+              - '.github/codeql/**'
+            actions:
+              - '.github/**'
+            csharp:
+              - '**/*.{cs,csproj,sln,props,targets}'
+              - 'services/audit-service/**'
+            go:
+              - '**/*.go'
+              - '**/go.{mod,sum}'
+              - 'services/api-gateway/**'
+            java-kotlin:
+              - '**/*.{java,kt,kts,gradle}'
+              - '**/pom.xml'
+              - 'services/{auth-service,notification-service,report-service,legacy-portal*}/**'
+            javascript-typescript:
+              - '**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}'
+              - '**/package{,-lock}.json'
+              - '**/pnpm-lock.yaml'
+              - '**/yarn.lock'
+            python:
+              - '**/*.py'
+              - '**/pyproject.toml'
+              - '**/requirements*.txt'
+              - '**/{poetry,uv,Pipfile}.lock'
+            ruby:
+              - '**/*.{rb,rake,gemspec}'
+              - '**/Gemfile{,.lock}'
+            rust:
+              - '**/*.rs'
+              - '**/Cargo.{toml,lock}'
+      - name: Select languages
+        id: matrix
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          CHANGES: ${{ steps.changes.outputs.changes }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const languages = ['actions', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'rust'];
+          const changed = JSON.parse(process.env.CHANGES || '[]');
+          const selected = process.env.EVENT_NAME !== 'pull_request' || changed.includes('all')
+            ? languages : languages.filter(language => changed.includes(language));
+          const matrix = selected.map(language => ({ language, 'build-mode': language === 'go' ? 'autobuild' : 'none' }));
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify(matrix)}\n`);
+          NODE
+
   analyze:
+    needs: languages
+    if: needs.languages.outputs.matrix != '[]'
     name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -29,24 +94,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - language: actions
-            build-mode: none
-          - language: csharp
-            build-mode: none
-          - language: go
-            build-mode: autobuild
-          # Kotlin needs a real build; build-mode none covers the Java sources only.
-          - language: java-kotlin
-            build-mode: none
-          - language: javascript-typescript
-            build-mode: none
-          - language: python
-            build-mode: none
-          - language: ruby
-            build-mode: none
-          - language: rust
-            build-mode: none
+        include: ${{ fromJSON(needs.languages.outputs.matrix) }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
