@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 import os
 from pathlib import Path
 import re
@@ -42,7 +43,8 @@ def collect(tmp_path, job_name, lines, filename):
 
 @pytest.mark.parametrize('run', ['sfx1119', 'sfx2220', 'sfx-d1110-alice'])
 def test_warehouse_uses_event_run(tmp_path, run):
-    result = collect(tmp_path, 'warehouse', [json.dumps({'run': run, 'event': 'load_failure'})],
+    result = collect(tmp_path, 'warehouse', [json.dumps({'run': run, 'event': 'load_failure',
+                                                       'timestamp': '2026-11-19T16:26:10Z'})],
                      '/logs/warehouse/pipeline.jsonl')
     assert f'run="{run}"' in result
     if run != 'sfx1119':
@@ -70,4 +72,36 @@ def test_unattributed_warehouse_events_are_dropped(tmp_path, lines):
 def test_unattributed_runner_events_are_dropped(tmp_path):
     result = collect(tmp_path, 'runner', ['2026-11-19 16:26:10 : ERROR : failure'],
                      '/logs/runner/unknown/SessLogs/session.log')
+    assert 'component="runner"' not in result
+
+
+@pytest.mark.parametrize('job,line,filename,expected', [
+    ('warehouse', json.dumps({'run': 'sfx1119', 'timestamp': '2020-01-02T03:04:05.123456+00:00',
+                             'event': 'load_failure'}), '/logs/warehouse/pipeline.jsonl',
+     '2020-01-02T03:04:05.123456+00:00'),
+    ('warehouse', json.dumps({'run': 'sfx1119', 'timestamp': '2020-01-02T05:04:05+02:00',
+                             'event': 'load_failure'}), '/logs/warehouse/pipeline.jsonl',
+     '2020-01-02T03:04:05+00:00'),
+    ('runner', '2020-01-02 03:04:05 : ERROR : old failure',
+     '/logs/runner/sfx-1119-before/SessLogs/session.log', '2020-01-02T03:04:05+00:00'),
+])
+def test_retained_logs_keep_event_timestamps(tmp_path, job, line, filename, expected):
+    result = collect(tmp_path, job, [line], filename)
+    entry = next(line for line in result.splitlines() if f'component="{job}"' in line)
+    actual = datetime.fromisoformat(entry.partition('{')[0].strip().replace('Z', '+00:00'))
+    assert actual.astimezone(timezone.utc) == datetime.fromisoformat(expected)
+
+
+@pytest.mark.parametrize('timestamp', [None, '', 'not-a-date', '2020-02-30T03:04:05Z'])
+def test_missing_or_invalid_warehouse_timestamp_is_dropped(tmp_path, timestamp):
+    result = collect(tmp_path, 'warehouse', [json.dumps({'run': 'sfx1119', 'timestamp': timestamp,
+                                                       'event': 'load_failure'})],
+                     '/logs/warehouse/pipeline.jsonl')
+    assert 'component="warehouse"' not in result
+
+
+@pytest.mark.parametrize('line', ['', 'not-a-date : ERROR : failure',
+                                '2020-02-30 03:04:05 : ERROR : failure'])
+def test_missing_or_invalid_runner_timestamp_is_dropped(tmp_path, line):
+    result = collect(tmp_path, 'runner', [line], '/logs/runner/sfx-1119-before/SessLogs/session.log')
     assert 'component="runner"' not in result
