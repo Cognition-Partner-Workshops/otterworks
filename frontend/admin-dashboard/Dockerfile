@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:22.23.5-alpine AS builder
 
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -6,7 +6,10 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.25-alpine
+FROM ghcr.io/nginx/nginx-unprivileged:1.30.7-alpine
+USER 0
+RUN apk upgrade --no-cache
+USER 101
 COPY --from=builder /app/dist/admin-dashboard/browser /usr/share/nginx/html
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY docker-entrypoint.d/15-peer.envsh /docker-entrypoint.d/15-peer.envsh

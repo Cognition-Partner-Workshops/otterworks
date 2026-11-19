@@ -23,7 +23,7 @@ expect fail SECRET-01 "password as a literal env value"    t1 --set env.DB_PASSW
 expect fail RES-01   "limits removed"                      t1 --set resources.limits=null
 POST_RENDER="$here/tests/strip-label-post-renderer.sh" expect fail LABEL-01 "label stripped" t1
 cp "$ex/Dockerfile" /tmp/Dockerfile.bad
-sed -i 's#python:3.12-slim@sha256:[0-9a-f]*$#python:3.12-slim#; s#^USER 10001#USER root#' /tmp/Dockerfile.bad
+sed -i 's#@sha256:[0-9a-f]\{64\}##; s#^USER 10001#USER root#' /tmp/Dockerfile.bad
 out="$(conftest test --no-color --parser dockerfile --policy "$here/policy/conftest" --data "$here/base-images.yaml" \
      --namespace platform.dockerfile /tmp/Dockerfile.bad 2>&1)"
 if [[ "$out" == *BASE-01* && "$out" == *BASE-02* ]]; then echo "ok   unpinned base and root user"; else echo "FAIL unpinned base"; fail=1; fi
