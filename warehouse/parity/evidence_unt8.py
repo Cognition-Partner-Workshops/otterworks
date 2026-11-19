@@ -1,4 +1,10 @@
 """UNT-8 isolated oracle and opt-in, explicitly scoped Snowflake evidence."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from collections import Counter
 from contextlib import contextmanager
@@ -23,8 +29,8 @@ from .inventory import ROOT
 DEST = OUT / 'unt8'
 FIXTURES = Path(__file__).parent / 'fixtures/unt8'
 MAPPING = 'm_SFX_TEAM_MEMBER'
-SCHEMA = 'SFX_D1110_AFTER.PC_FX_UNT8_TEAM_MEMBER'
-TARGET = 'SFX_D1110_AFTER.PC_CONTENT.TEAM_MEMBER'
+SCHEMA = _run_render('__RUN_DATABASE__.PC_FX_UNT8_TEAM_MEMBER')
+TARGET = _run_render('__RUN_DATABASE__.PC_CONTENT.TEAM_MEMBER')
 COLUMNS = ['TEAM_MEMBER_ID', 'TEAM_ID', 'USER_ID', 'ROLE_CD', 'JOINED_DT']
 SUBJECTS = ('production', 'seeded', 'dup_key')
 KEYS = ['TEAM_MEMBER_ID']
@@ -64,9 +70,9 @@ def continuation(path):
 
 
 def content_inventory(q):
-    names, rows = q.run("SELECT TABLE_NAME,TABLE_TYPE,CREATED,ROW_COUNT FROM "
-                        "SFX_D1110_AFTER.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='PC_CONTENT' "
-                        "ORDER BY TABLE_NAME")
+    names, rows = q.run(_run_render("SELECT TABLE_NAME,TABLE_TYPE,CREATED,ROW_COUNT FROM "
+                        "__RUN_DATABASE__.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='PC_CONTENT' "
+                        "ORDER BY TABLE_NAME"))
     return [dict(zip(names, [cell(v) for v in row])) for row in rows]
 
 
@@ -161,7 +167,7 @@ def table(subject):
 
 
 def source(subject):
-    return 'SFX_D1110_AFTER.PC_SRC.TEAM_MEMBER' if subject == 'production' else SCHEMA + '.' + subject.upper() + '_SOURCE'
+    return _run_render('__RUN_DATABASE__.PC_SRC.TEAM_MEMBER') if subject == 'production' else SCHEMA + '.' + subject.upper() + '_SOURCE'
 
 
 def model(subject):
@@ -196,7 +202,7 @@ def oracle(subject):
         admin.execute(pgsql.Composed([pgsql.SQL('CREATE DATABASE '), pgsql.Identifier(db)]))
         try:
             with psycopg.connect(dbname=db, autocommit=True, **params) as pg:
-                pg.execute(BOOTSTRAP.read_text())
+                pg.execute(_run_render(BOOTSTRAP.read_text()))
                 if seed(subject):
                     with pg.cursor() as cursor:
                         cursor.executemany('INSERT INTO sfx_users.team_member VALUES (%s,%s,%s,%s,%s)', seed(subject))
@@ -222,13 +228,13 @@ def oracle(subject):
                     with (root / 'REP_SESS_LOG.psv').open() as stream:
                         session = list(csv.DictReader(stream, delimiter='|'))[-1]
                     dump(dest / 'session_results.json', session)
-                    dump(dest / 'writer_stats.json', parse_stats(next((dest / 'SessLogs').glob('*.log')).read_text()))
+                    dump(dest / 'writer_stats.json', parse_stats(_run_render(next((dest / 'SessLogs').glob('*.log')).read_text())))
                     actual = snapshot(pg, 'sfx_users.team_member')
                     dump(dest / 'target.json', actual)
                     want = {**initial, 'rows': sorted([[cell(v) for v in r]
                             for r in expected(seed(subject), read_psv(landing(subject)))], key=json.dumps)}
                     equal(want, actual, dest / 'expected_comparison.json')
-                    bad = [line for f in (root / 'BadFiles').glob('*.bad') for line in f.read_text().splitlines()]
+                    bad = [line for f in (root / 'BadFiles').glob('*.bad') for line in _run_render(f.read_text()).splitlines()]
                     dump(dest / 'rejects.json', bad)
                     counts = Counter(route(r)['classification'] for r in read_psv(landing(subject)))
                     prior = seed(subject) if number == 1 else expected(seed(subject), read_psv(landing(subject)))
@@ -259,13 +265,13 @@ def queries(path, step, workload='parity'):
 
 
 def protected(q, path):
-    _, relations = q.run("SELECT TABLE_SCHEMA,TABLE_NAME FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.TABLES "
+    _, relations = q.run(_run_render("SELECT TABLE_SCHEMA,TABLE_NAME FROM __RUN_DATABASE__.INFORMATION_SCHEMA.TABLES "
                         "WHERE TABLE_SCHEMA IN ('PC_CONTENT','PC_AUDIT','PC_BILLING') "
                         "OR STARTSWITH(TABLE_SCHEMA,'PC_FX_') "
-                        "OR TABLE_SCHEMA LIKE '%FIXTURE%'")
+                        "OR TABLE_SCHEMA LIKE '%FIXTURE%'"))
     values = {}
     for schema, name in sorted(relations):
-        relation = 'SFX_D1110_AFTER.' + schema + '.' + name
+        relation = _run_render('__RUN_DATABASE__.') + schema + '.' + name
         if relation == TARGET or schema == SCHEMA.split('.')[1]:
             continue
         if not re.fullmatch(r'[A-Z0-9_]+', schema + name):
@@ -275,13 +281,13 @@ def protected(q, path):
         values[relation] = {'columns': columns, 'types': [[cell(v) for v in r] for r in types],
                             'rows': sorted([[cell(v) for v in r] for r in rows], key=json.dumps)}
     for name, count in [('LOGIN_EVENT', 412), ('ROLE_GRANT', 149)]:
-        if len(values['SFX_D1110_AFTER.PC_CONTENT.' + name]['rows']) != count:
+        if len(values[_run_render('__RUN_DATABASE__.PC_CONTENT.') + name]['rows']) != count:
             raise ValueError('Protected row count changed: ' + name)
     required = {'PC_CONTENT.' + name for name in ('LOGIN_EVENT', 'ROLE_GRANT', 'STG_APP_USER', 'APP_USER',
                                                 'STG_DOCUMENT', 'DOCUMENT', 'DOC_SHARE')}
     required |= {'PC_AUDIT.' + name for name in ('STG_AUDIT_EVENT', 'AUDIT_EVENT', 'AUDIT_EVENT_ARCHIVE',
                                               'AUDIT_DAILY_SUMMARY', 'SECURITY_ALERT')}
-    if not {'SFX_D1110_AFTER.' + name for name in required} <= values.keys():
+    if not {_run_render('__RUN_DATABASE__.') + name for name in required} <= values.keys():
         raise ValueError('Required protected target missing')
     dump(path / 'protected.json', values)
     dump(path / 'protected_sha256.json', {'sha256': sha(path / 'protected.json'), 'relations': list(values)})
@@ -312,15 +318,15 @@ def preflight():
         controls(q, path)
         protected(q, path)
         state = target_state(q, TARGET)
-        _, exists = q.run("SELECT SCHEMA_NAME FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.SCHEMATA "
-                          "WHERE SCHEMA_NAME='PC_FX_UNT8_TEAM_MEMBER'")
+        _, exists = q.run(_run_render("SELECT SCHEMA_NAME FROM __RUN_DATABASE__.INFORMATION_SCHEMA.SCHEMATA "
+                          "WHERE SCHEMA_NAME='PC_FX_UNT8_TEAM_MEMBER'"))
         if state['exists'] or exists:
             raise ValueError('Production target or fixture schema already exists')
         template = load(DEST / 'oracle/production/input.json')
         actual = fetched(q, source('production'), template, source_loading=True)
         equal(template, actual, path / 'source_comparison.json')
         dump(path / 'source.json', actual)
-        before = 'SFX_D1110_AFTER.PC_BEFORE.TEAM_MEMBER'
+        before = _run_render('__RUN_DATABASE__.PC_BEFORE.TEAM_MEMBER')
         state = target_state(q, before)
         dump(path / 'before_state.json', state)
         if state['exists']:
@@ -345,8 +351,8 @@ def fixture_load():
     records = []
     with queries(path, 'unt8-fixture-load', 'load') as q:
         unchanged(q, path)
-        _, existing = q.run("SELECT SCHEMA_NAME FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.SCHEMATA "
-                            "WHERE SCHEMA_NAME='PC_FX_UNT8_TEAM_MEMBER'")
+        _, existing = q.run(_run_render("SELECT SCHEMA_NAME FROM __RUN_DATABASE__.INFORMATION_SCHEMA.SCHEMATA "
+                            "WHERE SCHEMA_NAME='PC_FX_UNT8_TEAM_MEMBER'"))
         if existing:
             raise ValueError('Fixture schema already exists')
         def write(sql, values=None):
@@ -378,9 +384,9 @@ def fixture_load():
 def identity(q, relation):
     state = target_state(q, relation)
     metadata = state['metadata']
-    _, ids = q.run("SELECT TABLE_ID FROM SNOWFLAKE.ACCOUNT_USAGE.TABLES "
-                  f"WHERE TABLE_CATALOG='SFX_D1110_AFTER' AND TABLE_SCHEMA='{relation.split('.')[1]}' "
-                  f"AND TABLE_NAME='{relation.split('.')[2]}' AND DELETED IS NULL")
+    _, ids = q.run(_run_render("SELECT TABLE_ID FROM SNOWFLAKE.ACCOUNT_USAGE.TABLES "
+                  f"WHERE TABLE_CATALOG='__RUN_DATABASE__' AND TABLE_SCHEMA='{relation.split('.')[1]}' "
+                  f"AND TABLE_NAME='{relation.split('.')[2]}' AND DELETED IS NULL"))
     return {'exists': state['exists'], 'created': metadata[0]['CREATED'] if metadata else None,
             'table_id': [str(r[0]) for r in ids],
             'table_id_limitation': 'ACCOUNT_USAGE may lag; no numeric identity claim when absent'}
@@ -392,14 +398,14 @@ def history(q, start, end):
         raise ValueError('History requires an ordered timezone-aware interval')
 
     def page(lo, hi, depth=0):
-        _, raw = q.run(f"SELECT {HISTORY}, COUNT(*) OVER () AS RAW_COUNT, "
+        _, raw = q.run(_run_render(f"SELECT {HISTORY}, COUNT(*) OVER () AS RAW_COUNT, "
                       f"(START_TIME >= '{first.isoformat()}'::TIMESTAMP_LTZ AND "
                       f"END_TIME <= '{last.isoformat()}'::TIMESTAMP_LTZ AND END_TIME >= START_TIME "
                       "AND EXECUTION_STATUS <> 'RUNNING') AS IN_STEP "
-                      "FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
+                      "FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
                       f"END_TIME_RANGE_START=>'{lo.isoformat()}'::TIMESTAMP_LTZ,"
                       f"END_TIME_RANGE_END=>'{hi.isoformat()}'::TIMESTAMP_LTZ,RESULT_LIMIT=>10000)) "
-                      "ORDER BY START_TIME")
+                      "ORDER BY START_TIME"))
         if raw and int(raw[0][9]) >= 10000:
             middle = lo + (hi - lo) / 2
             if depth >= 30 or middle in (lo, hi):
@@ -511,7 +517,7 @@ def run(subject, number):
 def classify(q, path, subject, step, env):
     env['DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY'] = env['SNOWFLAKE_PRIVATE_KEY']
     env['DBT_SEND_ANONYMOUS_USAGE_STATS'] = 'false'
-    env['SFX_QUERY_TAG'] = json.dumps(dict(run='sfx-d1110', act='scale', mapping=MAPPING, step=step + '-rejects'))
+    env['SFX_QUERY_TAG'] = json.dumps(dict(run=_run_render('__RUN_TOKEN__'), act='scale', mapping=MAPPING, step=step + '-rejects'))
     project = ROOT / 'warehouse/dbt'
     compile_argv = [str(Path(sys.executable).with_name('dbt')), 'compile', '--project-dir', str(project),
                     '--profiles-dir', str(project), '--select', 'unt8_team_member_rejects',
@@ -522,7 +528,7 @@ def classify(q, path, subject, step, env):
                                                   'implementation': binding()})
     if compiled.returncode:
         raise ValueError('Reject compile failed')
-    sql = (project / 'target/compiled/sfx_warehouse/analyses/unt8_team_member_rejects.sql').read_text()
+    sql = _run_render((project / 'target/compiled/sfx_warehouse/analyses/unt8_team_member_rejects.sql').read_text())
     (path / 'rejects.sql').write_text(sql)
     names, rows = q.run('SELECT * FROM (' + sql.strip().rstrip(';') + ')')
     dump(path / 'classified.json', {'columns': names, 'rows': [[cell(v) for v in r] for r in rows]})
@@ -587,7 +593,7 @@ def postflight():
         unchanged(q, path)
         template = load(DEST / 'oracle/production/input.json')
         equal(template, fetched(q, source('production'), template, source_loading=True), path / 'source_comparison.json')
-        before = 'SFX_D1110_AFTER.PC_BEFORE.TEAM_MEMBER'
+        before = _run_render('__RUN_DATABASE__.PC_BEFORE.TEAM_MEMBER')
         state = target_state(q, before)
         initial_state = load(DEST / 'preflight/before_state.json')
         if state['exists'] != initial_state['exists']:

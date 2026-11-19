@@ -1,4 +1,10 @@
 """Offline, deterministic assessment of the checked-out warehouse estate."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import csv
 import hashlib
 import json
@@ -105,7 +111,7 @@ def hidden_consumers(root, readers, commit=None):
         path = root / name
         if not path.is_file():
             continue
-        data = path.read_text(errors='ignore')
+        data = _run_render(path.read_text(errors='ignore'))
         for user in readers:
             if re.search(r'(?<![\w])' + re.escape(user) + r'(?![\w])', data):
                 hits[user].append(name)
@@ -163,11 +169,11 @@ def build(root=None):
         return row['id']
     td = root / 'warehouse/teradata'
     for path in sorted((td / 'ddl').glob('*/*.sql')):
-        for kind, name, text in ddl_objects(path.read_text()):
+        for kind, name, text in ddl_objects(_run_render(path.read_text())):
             add(kind, name, path.relative_to(root), text)
     for folder, pattern, kind in [('scripts', '*/*.bteq', 'bteq'), ('macros', '*.sql', 'macro'), ('procedures', '*.sql', 'procedure'), ('load/fastload', '*.fl', 'fastload'), ('load/tpt', '*.tpt', 'tpt')]:
         for path in sorted((td / folder).glob(pattern)):
-            text = path.read_text()
+            text = _run_render(path.read_text())
             match = re.search(r'REPLACE\s+(?:MACRO|PROCEDURE)\s+(' + OBJ + ')', text, re.I)
             name = match[1].upper() if match else path.stem
             node = add(kind, name, path.relative_to(root), text)
@@ -179,7 +185,7 @@ def build(root=None):
                     links.add(('feed:' + feed, node))
     mapping_files = sorted((root / 'etl/informatica/repository').glob('*/mappings/*.XML'))
     for path in mapping_files:
-        tree = ET.fromstring(path.read_text())
+        tree = ET.fromstring(_run_render(path.read_text()))
         mapping = tree.find('.//MAPPING')
         text = ET.tostring(mapping, encoding='unicode')
         types = [e.get('TYPE', '') for e in mapping.findall('TRANSFORMATION')]
@@ -205,7 +211,7 @@ def build(root=None):
                 key = (owner + '.' + name).upper() if owner else candidates[0]
             links.add((key, node) if inst.get('TYPE') == 'SOURCE' else (node, key))
     for path in sorted((root / 'etl/informatica/repository').glob('*/wf_*.XML')):
-        tree = ET.fromstring(path.read_text())
+        tree = ET.fromstring(_run_render(path.read_text()))
         for kind in ['session', 'worklet', 'workflow']:
             for elem in tree.findall('.//' + kind.upper()):
                 node = add(kind, elem.get('NAME'), path.relative_to(root), ET.tostring(elem, encoding='unicode'))
@@ -222,7 +228,7 @@ def build(root=None):
     by_name = {r['name']: r['id'] for r in artifacts}
     for row in artifacts:
         if row['system'] == 'teradata' and row['kind'] != 'catalog':
-            text = (root / row['file']).read_text()
+            text = _run_render((root / row['file']).read_text())
             if row['kind'] in ('table', 'view'):
                 text = next(t for k, n, t in ddl_objects(text) if n == row['name'])
             reads, writes = sql_refs(text)
@@ -234,7 +240,7 @@ def build(root=None):
         a, b = by_name.get(a, a), by_name.get(b, b)
         if (a in nodes or a.startswith('feed:')) and b in nodes and a != b:
             normalized.add((a, b))
-    registry = yaml.safe_load((root / 'consumers/registry.yaml').read_text())['consumers']
+    registry = yaml.safe_load(_run_render((root / 'consumers/registry.yaml').read_text()))['consumers']
     registered = {c['teradata_service_account']: c for c in registry}
     reads = defaultdict(list)
     principals = set()
@@ -310,7 +316,7 @@ def build(root=None):
             reachable = expanded
         scores = Counter(q['UserName'] for r in artifacts if r['id'] in reachable for q in reads[r['name']] if q['UserName'] in registered)
         account = sorted(scores, key=lambda a: (-scores[a], a))[0] if scores else None
-        manifest.append({**{k: row[k] for k in ('id', 'system', 'kind', 'name', 'complexity')}, 'source': row['file'], 'target_type': target_type, 'target': target, 'wave': wave,
+        manifest.append({**{k: row[k] for k in ('id', 'system', 'kind', 'name', 'complexity')}, 'subject_area': area.lower(), 'licence_dependency': row['system'], 'source': row['file'], 'target_type': target_type, 'target': target, 'wave': wave,
                          'owner': registered[account]['team'] if account else '@otterworks/data-platform', 'owner_source': 'DBQL readership via consumers/registry.yaml' if account else 'proposed',
                          'risk': 'high' if reasons or row['complexity'] == 'high' else 'med' if row['complexity'] == 'medium' else 'low', 'risk_reasons': reasons, 'status': 'not_started'})
     # Dependency edges describe data availability, not execution sequencing within a wave.
@@ -346,9 +352,41 @@ def build(root=None):
             entries[b]['wave'] = max(entries[a]['wave'], entries[b]['wave'])
         if before == [r['wave'] for r in manifest]:
             break
+    for row in manifest:
+        pending = [row['id']]
+        visited, outputs = set(), set()
+        while pending:
+            node = pending.pop()
+            if node in visited:
+                continue
+            visited.add(node)
+            artifact = entries[node]
+            if artifact['kind'] in ('table', 'view'):
+                outputs.add(artifact['name'])
+                continue
+            pending.extend(b for a, b in normalized if a == node and b in entries
+                           and entries[b]['kind'] in ('table', 'view'))
+            if artifact['kind'] in ('session', 'workflow', 'worklet'):
+                pending.extend(a for a, b in normalized if b == node and a in entries
+                               and entries[a]['kind'] in ('mapping', 'session', 'worklet'))
+        row['output_relations'] = sorted(outputs)
+    for job in json.loads((Path(__file__).parent / 'spark_objects.json').read_text()):
+        node = add('spark_job', job['name'], job['source'], '')
+        artifacts[-1]['system'] = 'spark'
+        manifest.append(dict(id=node, system='spark', kind='spark_job', name=job['name'],
+            complexity='medium', subject_area=job['subject_area'], licence_dependency='spark',
+            source=job['source'], source_ref='demo-snowflake-dw-exit',
+            output_relations=[], target_type='dbt_model', target='spark__'+job['name'],
+            wave=3, owner='@otterworks/data-platform', owner_source='proposed', risk='med',
+            risk_reasons=[], status='not_started'))
     setup_only = sorted(name for name, qs in reads.items() if qs and all(q['StartTime'][:10] == '2026-08-12' for q in qs))
-    cost = yaml.safe_load((root / 'etl/informatica/licence.yaml').read_text())['variables']
+    cost = yaml.safe_load(_run_render((root / 'etl/informatica/licence.yaml').read_text()))['variables']
     counters = {'teradata_objects': {'remaining': len(catalog), 'target': 0}, 'powercenter_mappings': {'remaining': len(mapping_files), 'target': 0}, 'spark_executor_hours': {'remaining': 0, 'target': 0, 'status': 'no Spark estate on branch yet'}, 'powercenter_annual_cost': {'value': cost['ANNUAL_COST'], 'currency': cost['ANNUAL_COST_CURRENCY']}}
+    counters.pop('spark_executor_hours')
+    counters['teradata_objects']['remaining'] = sum(r['licence_dependency'] == 'teradata' for r in manifest)
+    counters['powercenter_objects'] = {'remaining': sum(r['licence_dependency'] == 'powercenter' for r in manifest), 'target': 0}
+    counters['spark_jobs'] = {'remaining': 30, 'target': 0}
+    counters['licence_dependencies'] = {'remaining': len(manifest), 'total': len(manifest), 'target': 0}
     return {'artifacts': sorted(artifacts, key=lambda r: r['id']), 'objects': manifest, 'consumers': consumers, 'dead': dead, 'dead_dependents': dependents, 'setup_only': setup_only, 'scans': scans, 'links': sorted(normalized), 'dependencies': dependencies, 'feeds': sorted(feeds), 'counters': counters}
 
 
@@ -368,7 +406,7 @@ def main():
     (OUT / 'board/board.json').write_text(json.dumps(b, indent=2) + '\n')
     summary = {'by_kind': dict(sorted(Counter(r['kind'] for r in data['artifacts']).items())), 'total': len(data['artifacts']), 'loc_total': sum(r['loc'] for r in data['artifacts']), 'complexity': dict(Counter(r['complexity'] for r in data['artifacts'])), 'dead': data['dead'], 'setup_only_reads_not_dead': data['setup_only'], 'not_in_warehouse_etl': [u for u, v in data['scans'].items() if not v['warehouse_etl_hits']], 'not_in_any_repo_code': [u for u, v in data['scans'].items() if not v['repo_hits']], 'waves': b['waves'], 'licence_counters': data['counters']}
     summary['dead_dependents'] = data['dead_dependents']
-    (OUT / 'inventory.md').write_text('# Inventory\n\nAs of 2026-11-10; DBQL window 2026-08-12 through 2026-11-09 inclusive.\n\n```json\n' + json.dumps(summary, indent=2) + '\n```\n\n0 Spark jobs found. `etl/spark` absent. `migration/job/ldm/engines/spark_load.py` is a separate legacy demo, excluded.\n\nScan evidence for every DBQL reader (tracked repository text, excluding DBQL, tests and generated assessment):\n\n```json\n' + json.dumps(data['scans'], indent=2) + '\n```\n')
+    (OUT / 'inventory.md').write_text('# Inventory\n\nDBQL window 2026-08-12 through 2026-11-09 inclusive.\n\n```json\n' + json.dumps(summary, indent=2) + '\n```\n\n30 Spark jobs linked to merged sources on demo-snowflake-dw-exit.\n\nScan evidence for every DBQL reader:\n\n```json\n' + json.dumps(data['scans'], indent=2) + '\n```\n')
     lines = ['# Lineage', '', '```mermaid', 'flowchart LR']
     groups = defaultdict(list)
     for r in data['artifacts']:
@@ -391,7 +429,7 @@ def main():
     for field in ('by_kind', 'by_target'):
         for key in sorted({k for v in b['waves'].values() for k in v[field]}):
             table += '| ' + field + ': ' + key + ' | ' + ' | '.join(str(b['waves'][str(w)][field].get(key, 0)) for w in range(1, 5)) + ' |\n'
-    (OUT / 'board/README.md').write_text('# Migration board\n\n' + table + '\n## Licence counters\n\n| Counter | Remaining | Target |\n|---|---:|---:|\n' + '\n'.join(f"| {k} | {v['remaining']} | {v['target']} |" for k, v in data['counters'].items() if 'remaining' in v) + f"\n\nPowerCenter annual cost: {data['counters']['powercenter_annual_cost']['value']} USD. Spark: 0 measured executor-hours; no Spark estate on branch yet. Later acts drive remaining counters to zero via MIGRATION_CONTROL status. Consumer repointing (including hidden accounts) and decommission are Wave 4 gates.\n")
+    (OUT / 'board/README.md').write_text('# Migration board\n\n' + table + '\n## Licence counters\n\n| Counter | Remaining | Target |\n|---|---:|---:|\n' + '\n'.join(f"| {k} | {v['remaining']} | {v['target']} |" for k, v in data['counters'].items() if 'remaining' in v) + '\n\nAll objects remain not_started. Parity measurements do not migrate or retire objects.\n')
     print(json.dumps(summary, indent=2))
 
 

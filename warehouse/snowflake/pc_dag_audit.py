@@ -1,4 +1,10 @@
 """Generate pc_dag/audit.yml task bodies from the SQL dbt executed for wf_SFX_AUDIT_DAILY sessions."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from pathlib import Path
 import re
@@ -9,9 +15,9 @@ from jinja2.sandbox import SandboxedEnvironment
 import yaml
 
 ROOT = Path(__file__).resolve().parent
-DATABASE = 'SFX_D1110_AFTER'
+DATABASE = _run_render('__RUN_DATABASE__')
 SCHEMAS = ('PC_AUDIT', 'PC_FX_UNT9_AUDIT_WF')
-COMMENT = 'run_token=sfx-d1110 expires=2026-11-24'
+COMMENT = _run_render('run_token=__RUN_TOKEN__ expires=2026-11-24')
 # Enabled sessions of wf_SFX_AUDIT_DAILY; archive is disabled in the canonical workflow and has no task.
 TASKS = {
     'STG_AUDIT_EVENT': ('s_m_SFX_STG_AUDIT_EVENT', ['START']),
@@ -41,7 +47,7 @@ def summary_hooks(schema):
     config = {}
     # Renders the repository's own dbt SQL model, not HTML: autoescape stays off for strings.
     env = SandboxedEnvironment(autoescape=select_autoescape(default_for_string=False, default=False))
-    env.from_string(model.read_text()).render(
+    env.from_string(_run_render(model.read_text())).render(
         config=lambda **kw: config.update(kw) or '',
         this=relation(schema, 'AUDIT_DAILY_SUMMARY'),
         ref=lambda name: relation(schema, name.split('__', 1)[1].upper()),
@@ -51,7 +57,7 @@ def summary_hooks(schema):
 
 def body(session_dir, schema, name):
     """Snowflake Scripting block replaying the session's dbt write: CTAS for tables, temp view + MERGE for incrementals."""
-    run_sql = unwrap((session_dir / 'run.sql').read_text())
+    run_sql = unwrap(_run_render((session_dir / 'run.sql').read_text()))
     target = relation(schema, name)
     if not re.search(re.escape(target), run_sql.replace('"', ''), re.I):
         raise ValueError(f'{session_dir.name}: run SQL does not write {target}')
@@ -59,7 +65,7 @@ def body(session_dir, schema, name):
         raise ValueError('Dollar quoting inside dbt SQL is unsupported')
     statements = []
     if re.match(r'(?is)^merge\s+into', run_sql):
-        compiled = strip((session_dir / 'compiled.sql').read_text())
+        compiled = strip(_run_render((session_dir / 'compiled.sql').read_text()))
         if '$$' in compiled:
             raise ValueError('Dollar quoting inside dbt SQL is unsupported')
         statements.append(f'CREATE OR REPLACE TEMPORARY VIEW {target}__dbt_tmp AS (\n{compiled}\n)')
@@ -82,7 +88,7 @@ def generate(run_dir, source_schema, schema):
     for name, (session, after) in TASKS.items():
         sql = body(Path(run_dir) / session, source_schema, name)
         sql = re.sub(re.escape(f'{DATABASE}.{source_schema}.'), f'{DATABASE}.{schema}.', sql, flags=re.I)
-        tasks[name] = {'after': after, 'warehouse': 'SFX_D1110_TRANSFORM_WH', 'sql': sql}
+        tasks[name] = {'after': after, 'warehouse': _run_render('__RUN_DATABASE___TRANSFORM_WH'), 'sql': sql}
     return {'root': 'START', 'tasks': tasks}
 
 

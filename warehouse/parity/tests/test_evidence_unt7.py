@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from collections import Counter
 from contextlib import contextmanager
 from datetime import date
@@ -132,7 +138,7 @@ def test_write_scope_and_fresh_guard(tmp_path):
         with pytest.raises(ValueError):
             u.landing(value)
     for sql in ['GRANT SELECT TO ROLE X', 'TRUNCATE TABLE ' + u.TARGET,
-                'INSERT INTO SFX_D1110_AFTER.PC_SRC.ROLE_GRANT VALUES (1)']:
+                _run_render('INSERT INTO __RUN_DATABASE__.PC_SRC.ROLE_GRANT VALUES (1)')]:
         with pytest.raises(ValueError):
             u.fixture_write(None, [], sql)
     with pytest.raises(ValueError, match='Never overwrite'):
@@ -175,7 +181,7 @@ def test_control_requires_twenty_rows(monkeypatch, tmp_path):
 
 
 def test_compiled_sql_and_model_enablement():
-    macro = (u.ROOT / 'warehouse/dbt/macros/pc_content_role_grant.sql').read_text()
+    macro = _run_render((u.ROOT / 'warehouse/dbt/macros/pc_content_role_grant.sql').read_text())
     module = Environment().from_string(macro).module
     for raw in (False, True):
         for rejects in (False, True):
@@ -190,11 +196,11 @@ def test_compiled_sql_and_model_enablement():
     rejects = module.pc_content_role_grant('SRC', rejects=True)
     assert 'select 0::number(38,0) as ROW_TYPE' in rejects
     for subject in u.SCENARIOS[1:]:
-        text = (u.ROOT / ('warehouse/dbt/models/pc/content/unt7_fixture/' + u.model(subject) + '.sql')).read_text()
+        text = _run_render((u.ROOT / ('warehouse/dbt/models/pc/content/unt7_fixture/' + u.model(subject) + '.sql')).read_text())
         assert "enabled=env_var('SFX_UNT7_ROLE_FIXTURE','0') == '1'" in text
         assert "schema='PC_FX_UNT7_ROLE_GRANT'" in text
         assert "materialized='table'" in text and "full_refresh=false" in text
-    schema_macro = (u.ROOT / 'warehouse/dbt/macros/generate_schema_name.sql').read_text()
+    schema_macro = _run_render((u.ROOT / 'warehouse/dbt/macros/generate_schema_name.sql').read_text())
     assert 'custom_schema_name | trim if custom_schema_name else target.schema' in schema_macro
 
 

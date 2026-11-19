@@ -1,4 +1,10 @@
 """Scoped offline oracle capture and full snapshot gates; never publishes control results."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from collections import Counter
 import csv
@@ -36,7 +42,7 @@ def sha(path):
 
 
 def scope():
-    config = yaml.safe_load(Path(__file__).with_name('evidence_scope.yml').read_text())
+    config = yaml.safe_load(_run_render(Path(__file__).with_name('evidence_scope.yml').read_text()))
     rows = []
     for row in inventory():
         if row['mapping'] not in config['mappings']:
@@ -174,7 +180,7 @@ def verify_provenance():
         current = provenance()
     except FileNotFoundError as error:
         raise ValueError(f'Oracle artifact missing: {error.filename}') from error
-    if json.loads(path.read_text()) != current:
+    if json.loads(_run_render(path.read_text())) != current:
         raise ValueError('Oracle artifacts differ from the verified paired capture')
 
 
@@ -182,7 +188,7 @@ def local_params():
     host = os.environ.get('TD_HOST', '127.0.0.1')
     if host not in ('127.0.0.1', 'localhost'):
         raise ValueError('Oracle capture restricted to local PostgreSQL')
-    port = os.environ.get('TD_PORT', str(55500 + zlib.crc32(b'sfx-d1110-before') % 1000))
+    port = os.environ.get('TD_PORT', str(55500 + zlib.crc32(b'__BEFORE_NAMESPACE__') % 1000))
     return dict(host=host, port=port, user=os.environ.get('TD_USER', 'postgres'),
                 password=os.environ.get('TD_PASSWORD', ''), autocommit=True)
 
@@ -201,7 +207,7 @@ def manifest_data(pg):
         dump(OUT / mapping / 'routing_notes.json', note)
     return {'business_date': sorted({r['parameters']['$$LOAD_DATE'] for r in rows}),
             'routing_notes': notes,
-            'landing': [{'path': p, 'sha256': sha(Path(p)), 'row_count': len(Path(p).read_text().splitlines())} for p in files],
+            'landing': [{'path': p, 'sha256': sha(Path(p)), 'row_count': len(_run_render(Path(p).read_text()).splitlines())} for p in files],
             'parameter_file': {'path': str(PARAM), 'sha256': sha(PARAM)},
             'bootstrap_sha256': sha(BOOTSTRAP), 'scope': rows,
             'initial_tables': {t: snapshot(pg, t) for t in tables},
@@ -224,14 +230,14 @@ def capture(command):
             admin.execute(sql.Composed([sql.SQL('CREATE DATABASE '), sql.Identifier(db)]))
             try:
                 with psycopg.connect(dbname=db, **params) as pg:
-                    pg.execute(BOOTSTRAP.read_text())
+                    pg.execute(_run_render(BOOTSTRAP.read_text()))
                     manifest = manifest_data(pg)
                     dump(runroot / 'manifest.json', manifest)
                     if command == 'manifest':
                         dump(OUT / 'manifest.json', manifest)
                         print('Manifest:', OUT / 'manifest.json')
                         return
-                    frozen = json.loads((OUT / 'manifest.json').read_text())
+                    frozen = json.loads(_run_render((OUT / 'manifest.json').read_text()))
                     if manifest != frozen:
                         raise ValueError('Inputs/initial state differ from frozen manifest')
                     env = {k: v for k, v in os.environ.items() if not k.startswith(('SNOWFLAKE_', 'TD_'))}
@@ -257,7 +263,7 @@ def capture(command):
                         for row in scope():
                             if row['folder'] != 'SFX_CONTENT':
                                 continue
-                            before = json.loads((OUT / row['mapping'] / 'oracle1/target.json').read_text())
+                            before = json.loads(_run_render((OUT / row['mapping'] / 'oracle1/target.json').read_text()))
                             after = snapshot(pg, target_relation(row['target_table']))
                             reports[row['mapping']] = full_compare(before, after, row['key_columns'])
                         dump(OUT / 'content_workflow_equivalence.json', {'runroot': str(runroot), 'commands': results, 'comparisons': reports})
@@ -279,7 +285,7 @@ def capture(command):
                         for name in r['reject_files']:
                             matches = list(runroot.rglob(name))
                             rejects.append({'name': name, 'present': bool(matches),
-                                            'rows': matches[0].read_text().splitlines() if matches else [],
+                                            'rows': _run_render(matches[0].read_text()).splitlines() if matches else [],
                                             'absence_reason': None if matches else 'Runner removes empty reject files (engine.write_target); see session result for transformation errors.'})
                         dump(dest / 'rejects.json', rejects)
                         with (dest / 'rejects.csv').open('w', newline='') as f:
@@ -301,7 +307,7 @@ def capture(command):
     reports = {}
     for r in scope():
         report = full_compare(captures[0][r['mapping']], captures[1][r['mapping']], r['key_columns'])
-        rejects = [json.loads((OUT / r['mapping'] / f'oracle{n}' / 'rejects.json').read_text()) for n in (1, 2)]
+        rejects = [json.loads(_run_render((OUT / r['mapping'] / f'oracle{n}' / 'rejects.json').read_text())) for n in (1, 2)]
         report['rejects_identical'] = rejects[0] == rejects[1]
         report['reject_counts'] = [{x['name']: len(x['rows']) if x['rows'] is not None else None for x in run} for run in rejects]
         dump(OUT / r['mapping'] / 'oracle_determinism.json', report)
@@ -334,7 +340,7 @@ def main():
         capture(args.command)
         return
     row = next(r for r in scope() if r['mapping'] == args.mapping)
-    load = lambda p: json.loads(p.read_text())
+    load = lambda p: json.loads(_run_render(p.read_text()))
     if args.command == 'compare':
         result = full_compare(load(args.oracle), load(args.run1), row['key_columns'])
         passed = result['equal']

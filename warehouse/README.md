@@ -5,10 +5,10 @@ Requires Python 3.10 or later and Docker Compose v2.
 From the repository root:
 
 ```sh
-make sfx-teradata-up NS=sfx-d1110-before # default 200000 rows per fact table
-make sfx-teradata-run NS=sfx-d1110-before
-make sfx-teradata-test NS=sfx-d1110-before
-make sfx-teradata-down NS=sfx-d1110-before
+make sfx-teradata-up NS=__BEFORE_NAMESPACE__ # default 200000 rows per fact table
+make sfx-teradata-run NS=__BEFORE_NAMESPACE__
+make sfx-teradata-test NS=__BEFORE_NAMESPACE__
+make sfx-teradata-down NS=__BEFORE_NAMESPACE__
 ```
 
 Use `ROWS_PER_TABLE=2000` on `-up` for a smaller dataset. `BUSINESS_DATE=20261109`
@@ -21,7 +21,7 @@ for every target. `SFX_TD_PYTHON=/path/to/python3` selects the bootstrap interpr
 `TD_PG_PORT` can override namespace port derivation. CI uses the Python entry
 points below directly against its PostgreSQL service, without nested Compose.
 
-`make sfx-teradata-snowconvert NS=sfx-d1110-before [SCAI=/path/to/scai]` runs
+`make sfx-teradata-snowconvert NS=__BEFORE_NAMESPACE__ [SCAI=/path/to/scai]` runs
 SnowConvert separately; it is never part of up/run and does not deploy output.
 See [Teradata tooling](teradata/README.md) for source layout and conversion details.
 When the CLI is present, conversion also requires `SNOWFLAKE_ACCOUNT`,
@@ -34,7 +34,7 @@ python3 -m venv warehouse/.venv
 warehouse/.venv/bin/pip install -r warehouse/requirements.txt
 docker pull mirror.gcr.io/library/postgres:16
 docker tag mirror.gcr.io/library/postgres:16 postgres:16
-export NS=sfx-d1110-before
+export NS=__BEFORE_NAMESPACE__
 export TD_PG_PORT=$(python3 -c 'import os,zlib; print(54500+zlib.crc32(os.environ["NS"].encode())%1000)')
 warehouse/teradata/bin/compose up -d --wait --pull never
 warehouse/.venv/bin/python warehouse/seed/generate.py --rows 200000 --seed 1110

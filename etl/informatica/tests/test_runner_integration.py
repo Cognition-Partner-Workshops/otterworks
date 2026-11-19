@@ -1,4 +1,10 @@
 """End-to-end runs of the exported workflows against a throwaway PostgreSQL database."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import os
 import subprocess
 import sys
@@ -56,7 +62,7 @@ def test_rerun_upserts_and_appends(warehouse):
     after = q(warehouse, "select count(*), min(summary_id), max(summary_id) from sfx_audit.audit_daily_summary")[0]
     assert after[0] == 2 * before[0]
     assert after[2] == before[1] + before[0]                          # sequence continues across runs
-    log = open(os.path.join(os.environ["PMROOTDIR"], "WorkflowLogs", "wf_SFX_AUDIT_DAILY.log"), encoding="utf-8").read()
+    log = _run_render(open(os.path.join(os.environ["PMROOTDIR"], "WorkflowLogs", "wf_SFX_AUDIT_DAILY.log"), encoding="utf-8").read())
     assert "WRT_8170" in log and "audit_daily_summary" in log
 
 
@@ -95,7 +101,7 @@ def test_pmcmd_cli_writes_logs(warehouse):
     assert "completed with status [SUCCEEDED]" in res.stdout
     root = os.environ["PMROOTDIR"]
     assert os.path.exists(os.path.join(root, "SessLogs", "s_m_SFX_AUDIT_EVENT.log"))
-    hist = open(os.path.join(root, "REP_SESS_LOG.psv"), encoding="utf-8").read().splitlines()
+    hist = _run_render(open(os.path.join(root, "REP_SESS_LOG.psv"), encoding="utf-8").read()).splitlines()
     assert hist[0].startswith("SUBJECT_AREA|") and len(hist) == 5
     bad = subprocess.run([sys.executable, "-m", "runner", "startworkflow", "-f", "SFX_AUDIT", "wf_NOPE"], cwd=ESTATE, env=env,
                          capture_output=True, text=True)

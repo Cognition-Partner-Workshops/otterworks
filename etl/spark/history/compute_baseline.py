@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 """Recompute the batch baseline from the compressed event logs."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from datetime import datetime, timezone
 import json
@@ -137,10 +143,10 @@ def main():
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     try:
-        expected_jobs = (ROOT.parent / "jobs.txt").read_text().splitlines()
+        expected_jobs = _run_render((ROOT.parent / "jobs.txt").read_text()).splitlines()
         baseline = compute(args.log_dir, expected_jobs)
         if args.check:
-            if not args.output.exists() or json.loads(args.output.read_text()) != baseline:
+            if not args.output.exists() or json.loads(_run_render(args.output.read_text())) != baseline:
                 print("Baseline differs from event logs; run compute_baseline.py", file=sys.stderr)
                 return 1
             print(f"Baseline matches {len(baseline['jobs'])} applications.")

@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import importlib.util
 import json
 from pathlib import Path
@@ -19,7 +25,7 @@ def test_spark_tag(monkeypatch):
     monkeypatch.setenv("SFX_COMMIT", "test")
     original = json.loads(sfx_conn.query_tag("transform", "dbt"))
     tagged = json.loads(sfx_conn.query_tag("transform", "dbt", job="example"))
-    assert tagged == {**original, "run": "sfx-d1110", "act": "spark", "job": "example"}
+    assert tagged == {**original, "run": _run_render("__RUN_TOKEN__"), "act": "spark", "job": "example"}
     monkeypatch.setenv("SFX_SPARK_JOB", "env_job")
     assert json.loads(sfx_conn.query_tag("ops", "measure"))["job"] == "env_job"
     with pytest.raises(ValueError):
@@ -31,11 +37,11 @@ def test_dbt_macro_preserves_extra_keys():
         pass
     def return_value(value):
         raise Returned(value)
-    tag = {"workload": "ops", "phase": "old", "run_token": "sfx-d1110", "run": "sfx-d1110", "act": "spark", "job": "_smoke", "extra": "retained"}
+    tag = {"workload": "ops", "phase": "old", "run_token": _run_render("__RUN_TOKEN__"), "run": _run_render("__RUN_TOKEN__"), "act": "spark", "job": "_smoke", "extra": "retained"}
     env = Environment(extensions=["jinja2.ext.do"])
-    module = env.from_string((ROOT.parent / "dbt/macros/query_tag.sql").read_text()).make_module({
+    module = env.from_string(_run_render((ROOT.parent / "dbt/macros/query_tag.sql").read_text())).make_module({
         "fromjson": json.loads, "tojson": json.dumps, "env_var": lambda key: json.dumps(tag),
-        "var": lambda key, default=None: {"phase": "dbt", "run_token": "sfx-d1110"}.get(key, default),
+        "var": lambda key, default=None: {"phase": "dbt", "run_token": _run_render("__RUN_TOKEN__")}.get(key, default),
         "return": return_value,
     })
     with pytest.raises(Returned) as result:
@@ -44,7 +50,7 @@ def test_dbt_macro_preserves_extra_keys():
 
 
 def test_sources_match_spark():
-    sources = yaml.safe_load((ROOT.parent / "dbt/models/staging/spark/sources.yml").read_text())["sources"]
+    sources = yaml.safe_load(_run_render((ROOT.parent / "dbt/models/staging/spark/sources.yml").read_text()))["sources"]
     assert {source["name"]: {table["name"]: [column["name"] for column in table["columns"]]
                             for table in source["tables"]} for source in sources} == {
         "spark_" + area: {table: [name for name, _ in spark_landing.SCHEMAS[table]] for table in tables}
@@ -142,7 +148,8 @@ def test_registry_dispatch(tmp_path, monkeypatch):
 
 
 def test_snowpark_runner(tmp_path, monkeypatch):
-    monkeypatch.setenv('SNOWFLAKE_RUN_TOKEN', "sfx-d1110-test'quote")
+    token = _run_render("__RUN_TOKEN__-test")
+    monkeypatch.setenv('RUN_TOKEN', token)
     spec = importlib.util.spec_from_file_location("spark_runner", ROOT.parent / "snowpark/run_job.py")
     runner = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(runner)
@@ -157,13 +164,18 @@ def test_snowpark_runner(tmp_path, monkeypatch):
     active = session.configs.return_value.create.return_value.__enter__.return_value
     assert json.loads(active.query_tag)["job"] == "example"
     assert json.loads(active.query_tag)["act"] == "spark"
-    assert any('SET TAG' in call.args[0] and "= 'sfx-d1110'" in call.args[0]
+    assert any('SET TAG' in call.args[0] and _run_render("= '__RUN_TOKEN__'") in call.args[0]
                for call in active.sql.call_args_list)
     cursor = connect.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
     statement, params = cursor.execute.call_args.args
     assert statement.startswith('COMMENT ON TABLE ')
     assert statement.endswith(' IS %s')
-    assert params == ("sfx-d1110-test'quote Spark output example",)
+    assert params == (token + ' Spark output example',)
+    active.sql.reset_mock()
+    monkeypatch.setenv('RUN_TOKEN', token + "'quote")
+    with pytest.raises(ValueError, match='RUN_TOKEN'):
+        runner.run('example')
+    active.sql.assert_not_called()
     with pytest.raises(FileNotFoundError):
         runner.run("missing")
     with pytest.raises(ValueError):

@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import csv
 import json
 from pathlib import Path
@@ -20,13 +26,13 @@ from prometheus_client import generate_latest
 
 def test_connection_is_injectable():
     connector = Mock()
-    sf.connect("load_break", "SFX_D1110_LOAD_WH", connector)
+    sf.connect("load_break", _run_render("__RUN_DATABASE___LOAD_WH"), connector)
     args = connector.call_args.kwargs
     assert args["connection_name"] == "sfx_d1110"
-    assert args["database"] == "SFX_D1110_AFTER"
+    assert args["database"] == _run_render("__RUN_DATABASE__")
     assert args["session_parameters"]["TIMEZONE"] == "UTC"
     assert json.loads(args["session_parameters"]["QUERY_TAG"]) == {
-        "run": "sfx-d1110", "act": "operate", "step": "load_break"}
+        "run": _run_render("__RUN_TOKEN__"), "act": "operate", "step": "load_break"}
     with pytest.raises(ValueError):
         sf.connect("load", "OTHER_WH", connector)
 
@@ -43,7 +49,7 @@ def test_vendor_change_preserves_volume_but_shifts_columns(tmp_path, monkeypatch
     landing = tmp_path / "landing"
     landing.mkdir()
     source = load_daily.ROOT / "landing" / "2026-11-09.csv"
-    (landing / source.name).write_text(source.read_text())
+    (landing / source.name).write_text(_run_render(source.read_text()))
     monkeypatch.setattr(break_upstream, "ROOT", tmp_path)
     day = break_upstream.generate()
     with (landing / f"{day}.csv").open() as handle:
@@ -63,19 +69,19 @@ def test_empty_feed_is_still_header_only(tmp_path, monkeypatch):
         "UNIT_PRICE,AMOUNT,CURRENCY_CODE,CREATED_AT,IS_ACTIVE\n")
     monkeypatch.setattr(break_upstream, "ROOT", tmp_path)
     day = break_upstream.generate()
-    assert len((landing / f"{day}.csv").read_text().splitlines()) == 1
+    assert len(_run_render((landing / f"{day}.csv").read_text()).splitlines()) == 1
 
 
 def test_dbt_environment_uses_local_config(tmp_path):
     key = tmp_path / "dummy.p8"
     key.write_text("offline-dummy-key")
     config = tmp_path / "connections.toml"
-    config.write_text('[sfx_d1110]\naccount="dummy"\nuser="dummy"\nrole="dummy"\n'
-                      f'database="SFX_D1110_AFTER"\nprivate_key_file="{key}"\n')
+    config.write_text(_run_render('[sfx_d1110]\naccount="dummy"\nuser="dummy"\nrole="dummy"\n'
+                      f'database="__RUN_DATABASE__"\nprivate_key_file="{key}"\n'))
     env = sf.dbt_env(config)
     assert env["DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY"] == "offline-dummy-key"
     assert json.loads(env["SFX_QUERY_TAG"])["step"] == "dbt_build"
-    config.write_text(config.read_text().replace("SFX_D1110_AFTER", "OTHER"))
+    config.write_text(_run_render(config.read_text()).replace(_run_render("__RUN_DATABASE__"), "OTHER"))
     with pytest.raises(ValueError):
         sf.dbt_env(config)
 
@@ -144,8 +150,8 @@ def test_missing_headers_fail_before_connect(tmp_path, monkeypatch, header):
     connector.assert_not_called()
 
 
-@pytest.mark.parametrize("schema,warehouse", [("OTHER", "SFX_D1110_LOAD_WH"),
-                                              ("RAW_BILLING;DROP", "SFX_D1110_LOAD_WH"),
+@pytest.mark.parametrize("schema,warehouse", [("OTHER", _run_render("__RUN_DATABASE___LOAD_WH")),
+                                              ("RAW_BILLING;DROP", _run_render("__RUN_DATABASE___LOAD_WH")),
                                               ("RAW_BILLING", "OTHER_WH")])
 def test_invalid_target(schema, warehouse):
     with pytest.raises(ValueError):
@@ -164,12 +170,12 @@ def test_header_only_reordered_feed_and_clone_target(tmp_path, monkeypatch, caps
     monkeypatch.setattr(load_daily, "connect", connector)
     build = Mock()
     monkeypatch.setattr(load_daily, "build", build)
-    load_daily.load(load_daily.GOOD_DATE, "backfill", "RAW_BILLING_SFX_D1110_BACKFILL",
-                    "SFX_D1110_TRANSFORM_WH", True)
-    connector.assert_called_once_with("backfill", "SFX_D1110_TRANSFORM_WH")
+    load_daily.load(load_daily.GOOD_DATE, "backfill", _run_render("RAW_BILLING___RUN_DATABASE___BACKFILL"),
+                    _run_render("__RUN_DATABASE___TRANSFORM_WH"), True)
+    connector.assert_called_once_with("backfill", _run_render("__RUN_DATABASE___TRANSFORM_WH"))
     cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
     sql = cursor.execute.call_args_list[4].args[0]
-    assert "COPY INTO RAW_BILLING_SFX_D1110_BACKFILL.USAGE_DAILY" in sql
+    assert _run_render("COPY INTO RAW_BILLING___RUN_DATABASE___BACKFILL.USAGE_DAILY") in sql
     assert "TRY_TO_NUMBER($10),TRY_TO_NUMBER($9),TRY_TO_DATE($8)" in sql
     assert "TRY_TO_DECIMAL(REGEXP_REPLACE($5, '[^0-9.+-]', ''),12,2)" in sql
     assert "ignored extra columns: DISCOUNT_CODE" in capsys.readouterr().out
@@ -193,7 +199,7 @@ def monitoring_fixture(broken=False):
 def test_shared_checks_with_mocked_connector(broken):
     connector = monitoring_fixture(broken)
     result = checks.run_checks(connector=connector)
-    connector.assert_called_once_with("monitor", "SFX_D1110_OPS_WH")
+    connector.assert_called_once_with("monitor", _run_render("__RUN_DATABASE___OPS_WH"))
     cursor = connector.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
     assert "FILE_NAME LIKE '%%pipeline/%%'" in cursor.execute.call_args_list[1].args[0]
     assert all(c["firing"] == broken for c in result["checks"].values())
@@ -263,10 +269,10 @@ def test_exporter_refresh_and_failure_with_mocked_connector():
         return checks.run_checks(limits, connector=monitoring_fixture(True))
     assert exporter.refresh(checks.Thresholds(), checker)
     metrics = generate_latest(exporter.registry).decode()
-    assert 'sfx_pipeline_load_errors{model="stg_billing__usage_daily",run="sfx-d1110"} 6.0' in metrics
+    assert _run_render('sfx_pipeline_load_errors{model="stg_billing__usage_daily",run="__RUN_TOKEN__"} 6.0') in metrics
     assert 'check="null_spike"' in metrics
     assert not exporter.refresh(checks.Thresholds(), Mock(side_effect=RuntimeError("offline")))
-    assert 'sfx_pipeline_last_scrape_success{model="stg_billing__usage_daily",run="sfx-d1110"} 0.0' in generate_latest(exporter.registry).decode()
+    assert _run_render('sfx_pipeline_last_scrape_success{model="stg_billing__usage_daily",run="__RUN_TOKEN__"} 0.0') in generate_latest(exporter.registry).decode()
 
 
 def test_fixture_end_to_end_good_then_break(tmp_path, monkeypatch, capsys):
@@ -318,7 +324,7 @@ def test_fixture_end_to_end_good_then_break(tmp_path, monkeypatch, capsys):
     landing = tmp_path / "landing"
     landing.mkdir()
     (landing / "2026-11-09.csv").write_text(
-        (load_daily.ROOT / "landing/2026-11-09.csv").read_text())
+        _run_render((load_daily.ROOT / "landing/2026-11-09.csv").read_text()))
     cursor = FixtureCursor()
     connection = MagicMock()
     connection.__enter__.return_value.cursor.return_value = cursor

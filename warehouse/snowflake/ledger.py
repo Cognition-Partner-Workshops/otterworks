@@ -1,4 +1,10 @@
 """Allocate metered warehouse compute to tagged execution time."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -55,19 +61,19 @@ def read_usage(cursor, token, days):
         FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY
         WHERE START_TIME >= DATEADD('day', -%s, CURRENT_TIMESTAMP())
     """, (days,))[0]["query_max_start"]
-    recent = records(cursor, """
+    recent = records(cursor, _run_render("""
         SELECT QUERY_ID, START_TIME, WAREHOUSE_NAME,
                TRY_PARSE_JSON(QUERY_TAG):workload::VARCHAR AS WORKLOAD,
                TRY_PARSE_JSON(QUERY_TAG):phase::VARCHAR AS PHASE,
                TRY_PARSE_JSON(QUERY_TAG):executed_by::VARCHAR AS EXECUTED_BY,
                TRY_PARSE_JSON(QUERY_TAG):built_with::VARCHAR AS BUILT_WITH
-        FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY(
+        FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.QUERY_HISTORY(
             END_TIME_RANGE_START=>DATEADD('hour', -3, CURRENT_TIMESTAMP()),
             RESULT_LIMIT=>10000))
         WHERE QUERY_TAG ILIKE %s
           AND (TRY_PARSE_JSON(QUERY_TAG):run_token::VARCHAR = %s
                OR TRY_PARSE_JSON(QUERY_TAG):run::VARCHAR = %s)
-    """, ("%" + token + "%", token, token))
+    """), ("%" + token + "%", token, token))
     return queries, meters, recent, freshness
 
 
@@ -130,7 +136,7 @@ def summarize(queries, meters, recent, query_freshness):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--token", default="sfx-d1110")
+    parser.add_argument("--token", default=_run_render("__RUN_TOKEN__"))
     parser.add_argument("--days", type=int, default=14)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()

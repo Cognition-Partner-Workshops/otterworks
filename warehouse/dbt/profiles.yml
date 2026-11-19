@@ -9,7 +9,7 @@ sfx_warehouse:
       database: "{{ env_var('SNOWFLAKE_DATABASE') }}"
       private_key: "{{ env_var('DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY') }}"
       authenticator: snowflake_jwt
-      warehouse: "{{ env_var('SNOWFLAKE_TRANSFORM_WAREHOUSE', 'SFX_D1110_TRANSFORM_WH') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_TRANSFORM_WAREHOUSE', 'SFX_1119_TRANSFORM_WH') }}"
       schema: "{{ env_var('SNOWFLAKE_SCHEMA', 'CORE_BILLING') }}"
       threads: 2
       query_tag: "{{ env_var('SFX_QUERY_TAG') }}"

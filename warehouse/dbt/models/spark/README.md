@@ -1,7 +1,7 @@
 # Spark SQL job models
 
 Each job owns `spark/<job>/`. Put SQL, schema tests and any job-specific macros
-under that directory. Models materialize as tables in `SFX_D1110_AFTER.MART_SPARK`.
+under that directory. Models materialize as tables in `SFX_1119.MART_SPARK`.
 All 42 Spark input tables are declared in `staging/spark/sources.yml`:
 `source('spark_billing', 'INVOICE_LINE')`, `source('spark_documents', 'DOCUMENT')`,
 `source('spark_users', 'APP_USER')`, and `source('spark_audit', 'AUDIT_EVENT')`.

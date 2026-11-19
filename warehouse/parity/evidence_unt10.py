@@ -1,4 +1,10 @@
 """UNT-10: stage accepted mapping evidence for the shared mark command and read back control state."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import hashlib
 import json
@@ -38,7 +44,7 @@ TEAM = ('unt8/production/comparison/parity1.json', 'unt8/production/comparison/p
 
 
 def member(tar, name):
-    data = tar.extractfile(tar.getmember(name)).read()
+    data = _run_render(tar.extractfile(tar.getmember(name)).read())
     return json.loads(data), hashlib.sha256(data).hexdigest()
 
 
@@ -99,7 +105,7 @@ def readback(label):
     path = RUN / label
     with queries(path, 'unt10_readback') as q:
         result = control_snapshot(q, path)
-    control = json.loads((path / 'control.json').read_text())
+    control = json.loads(_run_render((path / 'control.json').read_text()))
     cols = control['columns']
     keyed = {}
     for r in control['rows']:
@@ -115,8 +121,8 @@ def readback(label):
 
 
 def diff(a, b):
-    before = json.loads((RUN / a / 'readback.json').read_text())['rows']
-    after = json.loads((RUN / b / 'readback.json').read_text())['rows']
+    before = json.loads(_run_render((RUN / a / 'readback.json').read_text()))['rows']
+    after = json.loads(_run_render((RUN / b / 'readback.json').read_text()))['rows']
     if set(before) != set(after):
         raise ValueError('Control key set changed')
     changed = sorted(k for k in before if before[k]['row_sha256'] != after[k]['row_sha256'])

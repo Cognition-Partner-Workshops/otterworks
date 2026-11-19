@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+eval "$(python3 "$(git rev-parse --show-toplevel)/warehouse/run_config.py" env)"
 set -uo pipefail
 cd "$(dirname "$0")/../.."
-ns=${NS:-sfx-d1110-before}
+ns=${NS:-${RUN_BEFORE_NAMESPACE}}
 limit=${SPARK_JOBS:-30}
 logs="etl/spark/.data/$ns/logs"
 mkdir -p "$logs"
@@ -29,7 +30,7 @@ for job in "${jobs[@]}"; do
         script=/opt/sfx/spark/template/submit.sh
         args=("$job")
     fi
-    if docker compose -f docker-compose.spark.yml -p "sfx-d1110-spark-$ns" exec -T spark-master \
+    if docker compose -f docker-compose.spark.yml -p "${RUN_TOKEN}-spark-$ns" exec -T spark-master \
         bash "$script" "${args[@]}" > "$logs/$job.log" 2>&1; then
         status=OK
     else

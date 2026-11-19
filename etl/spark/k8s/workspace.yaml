@@ -1,10 +1,10 @@
 apiVersion: "v1"
 kind: "PersistentVolumeClaim"
 metadata:
-  name: "sfx-d1110-workspace"
-  namespace: "sfx-d1110-before"
+  name: "__RUN_TOKEN__-workspace"
+  namespace: "__BEFORE_NAMESPACE__"
   labels:
-    otterworks.run-token: "sfx-d1110"
+    otterworks.run-token: "__RUN_TOKEN__"
 spec:
   accessModes:
     - "ReadWriteMany"

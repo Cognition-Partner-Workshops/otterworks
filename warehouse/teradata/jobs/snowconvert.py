@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import datetime as dt
 import os
@@ -47,7 +53,7 @@ def convert(scai, namespace):
     print(f'SnowConvert input: {count} files; output: {output}', flush=True)
     project = output / 'project'
     with (output / 'command.log').open('w') as log:
-        for stage, arguments, cwd in [('init', ['init', 'project', '-n', 'sfx-d1110-teradata-'+namespace, '-l', 'Teradata', '-c', 'sfx_d1110'], output),
+        for stage, arguments, cwd in [('init', ['init', 'project', '-n', _run_render('__RUN_TOKEN__-teradata-')+namespace, '-l', 'Teradata', '-c', 'sfx_d1110'], output),
                                       ('add', ['code', 'add', '-i', str(source)], project),
                                       ('convert', ['code', 'convert', '--show-ewis'], project)]:
             command = [executable, *arguments]
@@ -57,7 +63,7 @@ def convert(scai, namespace):
             environment['SNOWFLAKE_CONNECTION'] = 'sfx_d1110'
             with (output / (stage+'.log')).open('w') as stage_log:
                 result = subprocess.run(command, cwd=cwd, stdout=stage_log, stderr=subprocess.STDOUT, env=environment)
-            log.write((output / (stage+'.log')).read_text())
+            log.write(_run_render((output / (stage+'.log')).read_text()))
             log.write(f'EXIT {result.returncode}\n')
             log.flush()
             if result.returncode:

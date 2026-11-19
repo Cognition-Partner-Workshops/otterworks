@@ -1,4 +1,10 @@
 """Export processed emulator billing outputs without translating their logic."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import csv
 import gzip
@@ -55,7 +61,7 @@ def prepare_before(destination, date, python):
     prepared = [(area, table, Path(path), count) for area, table, path, count in json.loads(process.stdout)]
     if [table for area, table, path, count in prepared] != list(TABLES):
         raise ValueError('Incomplete processed billing export')
-    contract = yaml.safe_load((ROOT / 'landing_columns.yml').read_text())
+    contract = yaml.safe_load(_run_render((ROOT / 'landing_columns.yml').read_text()))
     for area, table, path, count in prepared:
         with gzip.open(path, 'rt', newline='', encoding='utf-8') as stream:
             columns = next(csv.reader(stream, delimiter='|'))

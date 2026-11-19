@@ -1,4 +1,10 @@
 """Guarded Snowflake evidence operations for the eight owned baselines only."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import csv
 from datetime import datetime, date
 from decimal import Decimal
@@ -122,17 +128,17 @@ def upload(q, table, snap):
     allowed = {r['target_table'] for r in scope()}
     if table not in allowed | {t + '__REJECTS' for t in allowed}:
         raise ValueError('Unowned baseline target')
-    relation = 'SFX_D1110_AFTER.PC_BEFORE.' + table
+    relation = _run_render('__RUN_DATABASE__.PC_BEFORE.') + table
     ddl = ', '.join(c + ' ' + sf_type(snap['types'][c]) for c in snap['columns'])
     q.run(f"CREATE OR REPLACE TABLE {relation} ({ddl}) COMMENT='{COMMENT}'")
     path = (LIVE / (table + '.csv')).resolve()
     with path.open('w', newline='') as f:
         writer = csv.writer(f)
         writer.writerows([[r'\N' if v[0] == 'null' else v[1] for v in row] for row in snap['rows']])
-    q.run(f"PUT '{path.as_uri()}' @SFX_D1110_AFTER.PC_BEFORE.CAPTURE_STAGE/{table}/ AUTO_COMPRESS=FALSE OVERWRITE=TRUE")
-    q.run(f"""COPY INTO {relation} FROM @SFX_D1110_AFTER.PC_BEFORE.CAPTURE_STAGE/{table}/ FILES=('{table}.csv')
+    q.run(_run_render(f"PUT '{path.as_uri()}' @__RUN_DATABASE__.PC_BEFORE.CAPTURE_STAGE/{table}/ AUTO_COMPRESS=FALSE OVERWRITE=TRUE"))
+    q.run(_run_render(f"""COPY INTO {relation} FROM @__RUN_DATABASE__.PC_BEFORE.CAPTURE_STAGE/{table}/ FILES=('{table}.csv')
         FILE_FORMAT=(TYPE=CSV FIELD_OPTIONALLY_ENCLOSED_BY='"' NULL_IF=('\\\\N')
-        EMPTY_FIELD_AS_NULL=FALSE ESCAPE_UNENCLOSED_FIELD=NONE) FORCE=TRUE""")
+        EMPTY_FIELD_AS_NULL=FALSE ESCAPE_UNENCLOSED_FIELD=NONE) FORCE=TRUE"""))
     actual = fetched(q, relation, snap)
     result = full_compare(snap, actual, snap['columns'])
     result['label'] = 'UPLOAD FIDELITY — not mapping parity'
@@ -143,15 +149,15 @@ def upload(q, table, snap):
 
 def baselines(q):
     verify_provenance()
-    names, tables = q.run('SHOW TABLES IN SCHEMA SFX_D1110_AFTER.PC_BEFORE')
+    names, tables = q.run(_run_render('SHOW TABLES IN SCHEMA __RUN_DATABASE__.PC_BEFORE'))
     targets = {r['target_table'] for r in scope()}
     dump(LIVE / 'existing_baselines.json', [dict(zip(names, [cell(v) for v in r]))
           for r in tables if r[names.index('NAME')] in targets])
-    q.run(f"CREATE STAGE IF NOT EXISTS SFX_D1110_AFTER.PC_BEFORE.CAPTURE_STAGE COMMENT='{COMMENT}'")
+    q.run(_run_render(f"CREATE STAGE IF NOT EXISTS __RUN_DATABASE__.PC_BEFORE.CAPTURE_STAGE COMMENT='{COMMENT}'"))
     for row in scope():
-        snap = json.loads((OUT / row['mapping'] / 'oracle1/target.json').read_text())
+        snap = json.loads(_run_render((OUT / row['mapping'] / 'oracle1/target.json').read_text()))
         upload(q, row['target_table'], snap)
-        rejects = json.loads((OUT / row['mapping'] / 'oracle1/rejects.json').read_text())
+        rejects = json.loads(_run_render((OUT / row['mapping'] / 'oracle1/rejects.json').read_text()))
         records = [[cell(r['name']), cell(i), cell(line)] for r in rejects for i, line in enumerate(r['rows'], 1)]
         if records:
             upload(q, row['target_table'] + '__REJECTS', {
@@ -162,13 +168,13 @@ def baselines(q):
 
 
 def smoke(q):
-    schema = 'SFX_D1110_AFTER.PC_EVIDENCE_SMOKE'
+    schema = _run_render('__RUN_DATABASE__.PC_EVIDENCE_SMOKE')
     # Never replace or drop another execution's scratch schema.
     q.run(f"CREATE SCHEMA {schema} COMMENT='{COMMENT}'")
     results = {'label': 'HARNESS SMOKE — not mapping parity'}
-    snap = json.loads((OUT / 'm_SFX_SECURITY_ALERT/oracle1/target.json').read_text())
+    snap = json.loads(_run_render((OUT / 'm_SFX_SECURITY_ALERT/oracle1/target.json').read_text()))
     try:
-        q.run(f'CREATE TABLE {schema}.RUN1 AS SELECT * FROM SFX_D1110_AFTER.PC_BEFORE.SECURITY_ALERT')
+        q.run(_run_render(f'CREATE TABLE {schema}.RUN1 AS SELECT * FROM __RUN_DATABASE__.PC_BEFORE.SECURITY_ALERT'))
         run1 = fetched(q, schema + '.RUN1', snap)
         for case, mutation in [('identical', None),
                                ('duplicate_key', f'INSERT INTO {schema}.RUN2 SELECT * FROM {schema}.RUN1 LIMIT 1'),
@@ -192,7 +198,7 @@ def smoke(q):
 
 def live(preflight_only=False):
     LIVE.mkdir(parents=True, exist_ok=True)
-    manifest = json.loads((OUT / 'manifest.json').read_text())
+    manifest = json.loads(_run_render((OUT / 'manifest.json').read_text()))
     with connection('parity', 'evidence_smoke') as conn, conn.cursor() as cur:
         q = Queries(cur)
         q.run('SELECT CURRENT_ACCOUNT(), CURRENT_ROLE(), CURRENT_DATABASE(), CURRENT_WAREHOUSE()')
@@ -219,7 +225,7 @@ def live(preflight_only=False):
                     finally:
                         admin.execute(sql.Composed([sql.SQL('DROP DATABASE '), sql.Identifier(db), sql.SQL(' WITH (FORCE)')]))
                 expected = expected_landing(manifest, row, template)
-                actual = fetched(q, 'SFX_D1110_AFTER.PC_SRC.' + table, template, source_loading=True)
+                actual = fetched(q, _run_render('__RUN_DATABASE__.PC_SRC.') + table, template, source_loading=True)
                 comparisons[table] = full_compare(expected, actual, template['columns'])
                 dump(LIVE / 'input_freeze.json', comparisons)
             if not all(r['equal'] for r in comparisons.values()):

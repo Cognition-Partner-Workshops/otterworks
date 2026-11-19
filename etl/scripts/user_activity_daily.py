@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 #!/usr/bin/env python3
 # user_activity_daily.py - Daily user activity report generation
 # Originally Python 2.7, minimally ported to Python 3 in 2021
@@ -31,7 +37,7 @@ def read_activity_day(s3_client, bucket, bucket_owner, key):
         if e.response.get("Error", {}).get("Code") in ("NoSuchKey", "404"):
             return None
         raise
-    return response["Body"].read()
+    return _run_render(response["Body"].read())
 
 
 def main():

@@ -1,0 +1,152 @@
+[
+  {
+    "name": "audit_actor_activity_join",
+    "source": "etl/spark/jobs/py/audit_actor_activity_join.py",
+    "subject_area": "audit"
+  },
+  {
+    "name": "audit_archive_resort",
+    "source": "etl/spark/jobs/py/audit_archive_resort.py",
+    "subject_area": "audit"
+  },
+  {
+    "name": "audit_daily_summary",
+    "source": "etl/spark/scala/src/main/scala/sfx/AuditDailySummary.scala",
+    "subject_area": "audit"
+  },
+  {
+    "name": "billing_churn_score",
+    "source": "etl/spark/jobs/py/billing_churn_score.py",
+    "subject_area": "billing"
+  },
+  {
+    "name": "billing_gl_trial_balance",
+    "source": "etl/spark/jobs/py/billing_gl_trial_balance.py",
+    "subject_area": "billing"
+  },
+  {
+    "name": "billing_invoice_summary_daily",
+    "source": "etl/spark/jobs/py/billing_invoice_summary_daily.py",
+    "subject_area": "billing"
+  },
+  {
+    "name": "billing_payment_aging",
+    "source": "etl/spark/jobs/py/billing_payment_aging.py",
+    "subject_area": "billing"
+  },
+  {
+    "name": "billing_revenue_by_plan",
+    "source": "etl/spark/jobs/py/billing_revenue_by_plan.py",
+    "subject_area": "billing"
+  },
+  {
+    "name": "billing_usage_append_daily",
+    "source": "etl/spark/jobs/py/billing_usage_append_daily.py",
+    "subject_area": "billing"
+  },
+  {
+    "name": "collab_session_sessionize",
+    "source": "etl/spark/jobs/py/collab_session_sessionize.py",
+    "subject_area": "documents"
+  },
+  {
+    "name": "compliance_flag_rules",
+    "source": "etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala",
+    "subject_area": "audit"
+  },
+  {
+    "name": "doc_share_graph_reach",
+    "source": "etl/spark/jobs/py/doc_share_graph_reach.py",
+    "subject_area": "documents"
+  },
+  {
+    "name": "doc_version_diff_stats",
+    "source": "etl/spark/jobs/py/doc_version_diff_stats.py",
+    "subject_area": "documents"
+  },
+  {
+    "name": "docs_event_export_hourly",
+    "source": "etl/spark/jobs/py/docs_event_export_hourly.py",
+    "subject_area": "documents"
+  },
+  {
+    "name": "docs_folder_legacy_report",
+    "source": "etl/spark/jobs/py/docs_folder_legacy_report.py",
+    "subject_area": "documents"
+  },
+  {
+    "name": "docs_folder_tree_walk",
+    "source": "etl/spark/jobs/py/docs_folder_tree_walk.py",
+    "subject_area": "documents"
+  },
+  {
+    "name": "docs_search_log_parse",
+    "source": "etl/spark/jobs/py/docs_search_log_parse.py",
+    "subject_area": "documents"
+  },
+  {
+    "name": "docs_share_activity",
+    "source": "etl/spark/scala/src/main/scala/sfx/DocsShareActivity.scala",
+    "subject_area": "documents"
+  },
+  {
+    "name": "docs_storage_by_owner",
+    "source": "etl/spark/jobs/py/docs_storage_by_owner.py",
+    "subject_area": "documents"
+  },
+  {
+    "name": "docs_tag_normalize",
+    "source": "etl/spark/jobs/py/docs_tag_normalize.py",
+    "subject_area": "documents"
+  },
+  {
+    "name": "file_object_binary_extract",
+    "source": "etl/spark/jobs/py/file_object_binary_extract.py",
+    "subject_area": "documents"
+  },
+  {
+    "name": "lake_compaction_audit",
+    "source": "etl/spark/jobs/py/lake_compaction_audit.py",
+    "subject_area": "audit"
+  },
+  {
+    "name": "lake_compaction_documents",
+    "source": "etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala",
+    "subject_area": "documents"
+  },
+  {
+    "name": "security_alert_anomaly",
+    "source": "etl/spark/jobs/py/security_alert_anomaly.py",
+    "subject_area": "documents"
+  },
+  {
+    "name": "team_graph_components",
+    "source": "etl/spark/scala/src/main/scala/sfx/TeamGraphComponents.scala",
+    "subject_area": "users"
+  },
+  {
+    "name": "user_pref_json_flatten",
+    "source": "etl/spark/jobs/py/user_pref_json_flatten.py",
+    "subject_area": "users"
+  },
+  {
+    "name": "users_active_daily",
+    "source": "etl/spark/jobs/py/users_active_daily.py",
+    "subject_area": "users"
+  },
+  {
+    "name": "users_login_useragent_parse",
+    "source": "etl/spark/jobs/py/users_login_useragent_parse.py",
+    "subject_area": "users"
+  },
+  {
+    "name": "users_risk_score",
+    "source": "etl/spark/scala/src/main/scala/sfx/UsersRiskScore.scala",
+    "subject_area": "users"
+  },
+  {
+    "name": "users_team_rollup",
+    "source": "etl/spark/jobs/py/users_team_rollup.py",
+    "subject_area": "users"
+  }
+]

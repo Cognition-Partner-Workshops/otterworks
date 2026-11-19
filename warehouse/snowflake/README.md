@@ -6,9 +6,9 @@ To land invoiced before-state outputs without implementing legacy invoice logic
 in Snowflake, first run the emulator, then replace only the three billing outputs:
 
 ```sh
-make sfx-teradata-run NS=sfx-d1110-before BUSINESS_DATE=20261109
+make sfx-teradata-run NS=__BEFORE_NAMESPACE__ BUSINESS_DATE=20261109
 make sfx-snowflake-deploy
-make sfx-snowflake-load-before NS=sfx-d1110-before BUSINESS_DATE=20261109
+make sfx-snowflake-load-before NS=__BEFORE_NAMESPACE__ BUSINESS_DATE=20261109
 make sfx-snowflake-dbt
 ```
 
@@ -45,8 +45,8 @@ Use Python 3.10. Snowflake targets install into warehouse/snowflake/.venv,
 separate from Teradata's warehouse/.venv; SFX_VENV overrides that location.
 Supply SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE,
 SNOWFLAKE_DATABASE, SNOWFLAKE_PRIVATE_KEY (unencrypted PEM text), and
-SNOWFLAKE_RUN_TOKEN through environment injection. Never put credentials in files.
-The database is SFX_D1110_AFTER; workloads.yml selects the warehouse.
+RUN_TOKEN through environment injection. Never put credentials in files.
+The database is __RUN_DATABASE__; workloads.yml selects the warehouse.
 
 ```sh
 make sfx-snowflake-test
@@ -154,9 +154,9 @@ CUSTOMER_ACCOUNT and INVOICE_HDR views. Quantity comes from seeded UNITS;
 DAILY_USAGE.AMOUNT remains NULL when the source has no amount. These are plain
 projections, joins and aggregates, not Teradata-semantics emulation.
 
-Tag consumer SELECT sessions with JSON containing run=sfx-d1110, act=consumers,
+Tag consumer SELECT sessions with JSON containing run=__RUN_TOKEN__, act=consumers,
 and consumer=<service-name>. Additional run_id/executed_by/built_with fields allow
-cycle attribution. Use consumer_reads.py --run sfx-d1110 --hours 24 or
+cycle attribution. Use consumer_reads.py --run __RUN_TOKEN__ --hours 24 or
 make sfx-snowflake-consumers. The report merges ACCOUNT_USAGE with visible recent
 history by query ID, reports observed counts and marks unlanded usage pending.
 Missing consumers are reported as no reads yet, not proof of zero activity.
@@ -171,7 +171,7 @@ sets graph config and task query tags from the cycle environment, resumes only
 children, manually executes the suspended root, polls TASK_HISTORY, prints log
 rows, and suspends/verifies every DAG task even on failure. The root cron is
 never enabled. task_dag.yml maps the log-only steps to the billing workflow names
-found on origin/devin/sfx-d1110-informatica; it does not implement their mappings.
+found on 7b0ad48b1602af8232facae68d70c12eb26ec76a; it does not implement their mappings.
 tools/render_dag.py regenerates V005 from the map. ORCH.RUN_STEP only logs; the
 decision accepts the fixed CONTINUE result from D. No converted logic runs.
 
@@ -192,14 +192,14 @@ decisions fail compilation. No decisions are recorded by the scaffold.
 ```sh
 make sfx-snowflake-roles-dry-run
 make sfx-snowflake-ledger
-make sfx-snowflake-up NS=sfx-d1110
-make sfx-snowflake-run NS=sfx-d1110
-make sfx-snowflake-down NS=sfx-d1110
+make sfx-snowflake-up NS=__RUN_TOKEN__
+make sfx-snowflake-run NS=__RUN_TOKEN__
+make sfx-snowflake-down NS=__RUN_TOKEN__
 make sfx-snowflake-teardown TEARDOWN_ARGS=--dry-run
 ```
 
 up deploys; run loads, builds billing staging and reports credits; down suspends
-tagged tasks and warehouses without dropping objects. For NS=sfx-d1110-before,
+tagged tasks and warehouses without dropping objects. For NS=__BEFORE_NAMESPACE__,
 these three lifecycle targets are no-ops. The test target always runs.
 
 roles/dry_run.py validates and prints the ordered SQL plan. --check-live inspects
@@ -213,7 +213,7 @@ schemas. The loader writes SPARK_RAW_*; the transformer reads those sources and
 retains table/view creation and table writes in MART and MART_SPARK.
 After an administrator provisions the functional roles, run
 `python warehouse/snowflake/roles/verify.py --apply` with the injected credentials.
-It applies only V010 and the scoped grants as SFX_D1110_ROLE, disables secondary
+It applies only V010 and the scoped grants as __RUN_DATABASE___ROLE, disables secondary
 roles, then tests analyst reads/denials and transformer writes using tagged scratch
 objects. It prints query IDs and drops its scratch objects. Omit `--apply` to check
 the already-deployed plan. Snowflake permits session-local temporary tables with
@@ -222,7 +222,7 @@ session-local scratch creation.
 Validation rejects analyst write grants, inherited functional roles, and access
 to RAW_*, LANDING or SCHEMACHANGE.
 
-ledger.py --token sfx-d1110 --days 14 [--json] allocates warehouse-hour compute
+ledger.py --token __RUN_TOKEN__ --days 14 [--json] allocates warehouse-hour compute
 credits using tagged execution time divided by all queries' execution time in
 that hour. Query cloud-services credits are added directly. Missing metering or
 recent activity absent from ACCOUNT_USAGE marks cells pending; it does not imply
@@ -234,7 +234,7 @@ TEARDOWN_ARGS=--dry-run to preview. It preserves the provisioned role, user,
 database, warehouses and resource monitor unless --include-provisioned is
 explicitly passed. That flag can remove the active service identity and database.
 Cleanup suspends before dropping. Database and account-level object names must
-start with SFX_D1110_ (or the scoped token prefix); comment-only matches remain
+start with __RUN_DATABASE___ (or the scoped token prefix); comment-only matches remain
 in the inventory and affect the exit code but are never modified. Schema-local
 comment matches may be removed only inside a name-scoped database. Eligible
 schemas/databases are dropped with CASCADE, including their contents. Discovery is
@@ -247,8 +247,8 @@ pause/resume use.
 
 V010 provisions `SPARK_RAW_BILLING`, `SPARK_RAW_DOCUMENTS`, `SPARK_RAW_USERS`,
 `SPARK_RAW_AUDIT` and `MART_SPARK` before any Spark landing or migrated job runs.
-V011 creates database roles `SFX_D1110_AFTER.SFX_D1110_TRANSFORMER` and
-`SFX_D1110_AFTER.SFX_D1110_ANALYST`, and grants them to `SFX_D1110_ROLE`.
+V011 creates database roles `__RUN_DATABASE__.__RUN_DATABASE___TRANSFORMER` and
+`__RUN_DATABASE__.__RUN_DATABASE___ANALYST`, and grants them to `__RUN_DATABASE___ROLE`.
 The database owner can apply both migrations without account-level role admin.
 V010 creates the five Spark schemas WITH MANAGED ACCESS so their owner can grant
 future privileges without the account-level MANAGE GRANTS privilege. Creating
@@ -265,7 +265,7 @@ For the separate account-role deployment, requester action is required: have a
 role administrator apply `roles/01_roles.sql` through `roles/06_spark_grants.sql`
 using `roles/dry_run.py --apply`. This additionally sets up the account-level
 loader, parity and Snowpark roles and their warehouse access. The database-role
-deployment inherits warehouse access from `SFX_D1110_ROLE`; database roles cannot
+deployment inherits warehouse access from `__RUN_DATABASE___ROLE`; database roles cannot
 hold warehouse privileges or be activated with USE ROLE.
 
 The loader only creates
@@ -274,15 +274,15 @@ CREATE SCHEMA privilege. Transformer and Snowpark roles read the landing tables
 and create tables, views and Python functions in `MART_SPARK`. Parity and analyst
 roles receive read access on existing and future output tables and views.
 
-`GOVERNANCE.SFX_RUN` always stores the fixed run identifier `sfx-d1110`, matching
-V006's allowed value. A scoped `SNOWFLAKE_RUN_TOKEN` remains in query attribution
+`GOVERNANCE.SFX_RUN` always stores the fixed run identifier `__RUN_TOKEN__`, matching
+V006's allowed value. The configured `RUN_TOKEN` remains in query attribution
 and object comments. Both the dbt hook and the Snowpark runner restore this tag
 after publishing; their roles receive APPLY on this single tag. Snowpark table
 replacements must use `copy_grants=True` to preserve explicit consumer grants.
 Spark dbt tables likewise have `+copy_grants: true` so full refreshes retain
 explicit grants as well as the schema's future grants.
 
-Deploy V006 before running dbt. `deploy.py` restores `GOVERNANCE.SFX_RUN='sfx-d1110'`
+Deploy V006 before running dbt. `deploy.py` restores `GOVERNANCE.SFX_RUN='__RUN_TOKEN__'`
 and token comments on the V003/V005 tasks and procedures after every deployment,
 including no-op deployments. The dbt `on-run-end` hook calls `reapply_governance`
 for successful model/seed/snapshot relations; ephemeral, failed and skipped nodes
@@ -293,7 +293,7 @@ with the same secret-safe profile environment as `run_dbt.py`.
 `governance_policies` defaults to `{}`. Optional entries are keyed by dbt model
 name, with `masking: [{column: EMAIL, policy: DB.GOVERNANCE.EMAIL_MASK}]`,
 `row_access: {policy: DB.GOVERNANCE.TENANT_FILTER, columns: [CUSTOMER_ID]}` and
-`column_tags: {EMAIL: {DB.GOVERNANCE.SFX_RUN: sfx-d1110}}`. Policy and tag names
+`column_tags: {EMAIL: {DB.GOVERNANCE.SFX_RUN: __RUN_TOKEN__}}`. Policy and tag names
 must be fully qualified; these objects must already exist. No policies are
 created. Masking associations are restored with FORCE. An identical row-access
 association is retained; a different existing policy fails rather than silently
@@ -328,7 +328,7 @@ The user-local installer verifies its archive checksum and bundles the runtime;
 no license, login, Java change or separate runtime installation was needed for
 stable CLI 2.52.5 on this VM. The wrapper looks for SQL,
 BTEQ and BTQ files under `warehouse/teradata/`, and PowerCenter XML under
-`etl/informatica/` (the path on `origin/devin/sfx-d1110-informatica`). It does not
+`etl/informatica/` (the path on `7b0ad48b1602af8232facae68d70c12eb26ec76a`). It does not
 fetch or check out sibling builders automatically. With no input it reports the
 searched locations. A missing CLI fails with installation guidance before any
 credential files are written.

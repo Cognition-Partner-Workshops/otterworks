@@ -1,4 +1,10 @@
 """Capture and materialize the BTEQ exports using their actual SELECT statements."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import datetime as dt
 import io
@@ -17,7 +23,7 @@ def source_queries(business_date):
     end = day.replace(day=1) - dt.timedelta(days=1)
     start = end.replace(day=1)
     encoded = lambda d: (d.year-1900)*10000+d.month*100+d.day
-    text = (ROOT / 'warehouse/teradata/scripts/billing/13_period_close.bteq').read_text()
+    text = _run_render((ROOT / 'warehouse/teradata/scripts/billing/13_period_close.bteq').read_text())
     for name, value in {'BUSINESS_DATE': business_date, 'PERIOD_START_INT': encoded(start),
                         'PERIOD_END_INT': encoded(end)}.items():
         text = text.replace('${' + name + '}', str(value))
@@ -25,8 +31,8 @@ def source_queries(business_date):
 
 
 CONVERTED_QUERIES = {
-    'INVOICE_PERIODS': "SELECT INVOICE_ID, PRIOR_PERIOD_END_DT AS PRIOR_DT, INVOICE_MONTH AS MONTH_NO, PERIOD_KEY, INVOICE_PERIOD, TO_DATE(?,'YYYYMMDD') AS RUN_DT FROM SFX_D1110_AFTER.BILLING.INVOICE_HDR",
-    'PERIOD_CLOSE': "SELECT MIN(RTRIM(CURRENCY_CD)) AS CURRENCY_CD, COUNT(*) AS INVOICE_COUNT, SUM(TOTAL_AMOUNT) AS TOTAL_AMOUNT FROM SFX_D1110_AFTER.BILLING.INVOICE_HDR WHERE BILL_DT >= DATEADD(month, -1, DATE_TRUNC(month, TO_DATE(?,'YYYYMMDD'))) AND BILL_DT < DATE_TRUNC(month, TO_DATE(?,'YYYYMMDD')) GROUP BY UPPER(RTRIM(CURRENCY_CD))",
+    'INVOICE_PERIODS': _run_render("SELECT INVOICE_ID, PRIOR_PERIOD_END_DT AS PRIOR_DT, INVOICE_MONTH AS MONTH_NO, PERIOD_KEY, INVOICE_PERIOD, TO_DATE(?,'YYYYMMDD') AS RUN_DT FROM __RUN_DATABASE__.BILLING.INVOICE_HDR"),
+    'PERIOD_CLOSE': _run_render("SELECT MIN(RTRIM(CURRENCY_CD)) AS CURRENCY_CD, COUNT(*) AS INVOICE_COUNT, SUM(TOTAL_AMOUNT) AS TOTAL_AMOUNT FROM __RUN_DATABASE__.BILLING.INVOICE_HDR WHERE BILL_DT >= DATEADD(month, -1, DATE_TRUNC(month, TO_DATE(?,'YYYYMMDD'))) AND BILL_DT < DATE_TRUNC(month, TO_DATE(?,'YYYYMMDD')) GROUP BY UPPER(RTRIM(CURRENCY_CD))"),
 }
 
 
@@ -53,7 +59,7 @@ def run(capture, business_date):
                 for name, (query, parameters) in queries.items():
                     cursor.execute(query, parameters)
                     cursor.execute('CREATE OR REPLACE TABLE IDENTIFIER(?) COMMENT = ? AS SELECT * FROM TABLE(RESULT_SCAN(?))',
-                                   ('SFX_D1110_AFTER.BILLING.' + name, COMMENT, cursor.sfqid))
+                                   (_run_render('__RUN_DATABASE__.BILLING.') + name, COMMENT, cursor.sfqid))
 
 
 if __name__ == '__main__':

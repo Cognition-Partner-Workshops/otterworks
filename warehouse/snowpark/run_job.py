@@ -1,4 +1,10 @@
 """Run one job module with the shared, tagged Snowpark session."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import importlib.util
 import os
@@ -30,8 +36,8 @@ def run(job):
             relation = f'{database}."MART_SPARK"."{job.upper()}"'
             # Database comes from Snowpark (quoted); job is validated above.
             # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-            session.sql(f"ALTER TABLE {relation} SET TAG {database}.GOVERNANCE.SFX_RUN = 'sfx-d1110'").collect()
-            token = os.environ.get("SNOWFLAKE_RUN_TOKEN", "sfx-d1110")
+            session.sql(_run_render(f"ALTER TABLE {relation} SET TAG {database}.GOVERNANCE.SFX_RUN = '__RUN_TOKEN__'")).collect()
+            token = os.environ.get("RUN_TOKEN", _run_render("__RUN_TOKEN__"))
             # The shared connector uses pyformat, while Session.sql params require qmark.
             with connection.cursor() as cursor:
                 # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query

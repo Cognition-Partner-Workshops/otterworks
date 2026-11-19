@@ -1,5 +1,6 @@
 #!/bin/sh
 set -eu
+eval "$(python3 "$(dirname "$0")/../../run_config.py" env)"
 : "${NS:?NS is required}"
 TD_PG_PORT=${TD_PG_PORT:-$(python3 -c 'import os,zlib; print(54500+zlib.crc32(os.environ["NS"].encode())%1000)')}
 export TD_PG_PORT

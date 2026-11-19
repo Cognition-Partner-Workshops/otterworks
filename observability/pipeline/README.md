@@ -38,7 +38,7 @@ Lookback accepts 1–336 hours (COPY_HISTORY retention). No previous pipeline da
 means no row-drop comparison; an empty feed set returns zero values and no firing
 checks. No new data-freshness check is included.
 
-All checks use SFX_D1110_OPS_WH with step=monitor. Daily view metrics join to raw
+All checks use __RUN_DATABASE___OPS_WH with step=monitor. Daily view metrics join to raw
 records scoped by `_SRC_FILE LIKE 'pipeline/%'`. For COPY history, only the newest
 attempt for each currently retained pipeline stage file is evaluated. This lets a
 successful replay supersede a failure and reset's staged-file removal retire the
@@ -65,7 +65,7 @@ dry runs, not an enabled Grafana webhook receiver.
 
 Rules use datasource UID Prometheus and shared check_firing gauges (one rule per
 check). The existing org-1 Default notification tree remains the root; its child
-route matches pipeline=sfx-d1110 and groups those alerts by pipeline. Grafana
+route matches pipeline=__RUN_TOKEN__ and groups those alerts by pipeline. Grafana
 provisions the entire notification-policy tree, not independent additive trees.
 Loki is not deployed or provisioned in this Compose stack; no Loki rule is added.
 
@@ -92,10 +92,10 @@ Grafana's native notification may include additional optional fields.
     {
       "status": "firing",
       "labels": {
-        "run": "sfx-d1110",
+        "run": "__RUN_TOKEN__",
         "model": "stg_billing__usage_daily",
         "severity": "critical",
-        "pipeline": "sfx-d1110",
+        "pipeline": "__RUN_TOKEN__",
         "team": "otterworks",
         "alertname": "SfxPipeline_load_failure",
         "check": "load_failure"
@@ -115,19 +115,19 @@ Grafana's native notification may include additional optional fields.
     }
   ],
   "groupLabels": {
-    "pipeline": "sfx-d1110"
+    "pipeline": "__RUN_TOKEN__"
   },
   "commonLabels": {
-    "run": "sfx-d1110",
+    "run": "__RUN_TOKEN__",
     "model": "stg_billing__usage_daily",
     "severity": "critical",
-    "pipeline": "sfx-d1110",
+    "pipeline": "__RUN_TOKEN__",
     "team": "otterworks"
   },
   "commonAnnotations": {},
   "externalURL": "http://localhost:3001/",
   "version": "1",
-  "groupKey": "{}:{pipeline=\"sfx-d1110\"}",
+  "groupKey": "{}:{pipeline=\"__RUN_TOKEN__\"}",
   "truncatedAlerts": 0,
   "title": "1 pipeline checks firing",
   "state": "alerting",

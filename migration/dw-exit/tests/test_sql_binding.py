@@ -1,4 +1,10 @@
 """Runtime values reach Snowflake as bind parameters, never as SQL text."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import importlib.util
 import sys
 from pathlib import Path
@@ -77,7 +83,7 @@ def test_upload_binds_table_name_and_comment():
     connection = Connection([(1, 'USD')])
     CAPTURE.upload(connection, 'INVOICE_HDR', [('ID', 'NUMBER'), ('CURRENCY_CD', 'VARCHAR(3)')], [(1, 'USD')])
     calls = connection.cursor_.calls
-    target = 'SFX_D1110_AFTER.TD_BASELINE."INVOICE_HDR"'
+    target = _run_render('__RUN_DATABASE__.TD_BASELINE."INVOICE_HDR"')
     executed = [(sql, params) for sql, params in calls if params is not None]
     assert executed[0] == ('CREATE TABLE IDENTIFIER(?) ("ID" NUMBER(38,0), "CURRENCY_CD" VARCHAR(3)) COMMENT = ?',
                            (target, CAPTURE.COMMENT))

@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from contextlib import nullcontext
 from copy import deepcopy
 import json
@@ -27,7 +33,7 @@ class FileCursor:
             path = Path(unquote(urlparse(uri).path))
             key = stage.split('/', 1)[1] + path.name
             if key not in self.staged or 'OVERWRITE=TRUE' in sql:
-                self.staged[key] = path.read_text().splitlines()[1:]
+                self.staged[key] = _run_render(path.read_text()).splitlines()[1:]
         elif sql == 'BEGIN':
             self.original = deepcopy(self.data)
         elif sql == 'ROLLBACK':

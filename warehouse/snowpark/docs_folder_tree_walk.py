@@ -1,5 +1,11 @@
 """Replaces the Spark lake output documents/docs_folder_tree_walk."""
 
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
+
 
 def run(session):
     database = session.get_current_database()
@@ -39,5 +45,5 @@ $$
     result.write.save_as_table(
         [database, "MART_SPARK", "DOCS_FOLDER_TREE_WALK"],
         mode="overwrite",
-        comment="sfx-d1110 Replaces the Spark lake output documents/docs_folder_tree_walk.",
+        comment=_run_render("__RUN_TOKEN__ Replaces the Spark lake output documents/docs_folder_tree_walk."),
     )

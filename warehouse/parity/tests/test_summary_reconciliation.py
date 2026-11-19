@@ -1,4 +1,10 @@
 """Execute the rendered summary query and hooks offline with SQLite."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from pathlib import Path
 import sqlite3
 
@@ -30,7 +36,7 @@ def test_incremental_summary_reconciles_moved_and_removed_groups(events):
                    ref=lambda name: 'events', this='summary', is_incremental=lambda: True)
     env = Environment()
     model = Path(__file__).resolve().parents[2] / 'dbt/models/pc/audit/pc_audit__audit_daily_summary.sql'
-    sql = env.from_string(model.read_text()).render(**context)
+    sql = env.from_string(_run_render(model.read_text())).render(**context)
     def execute(sql):
         return db.execute(sqlglot.transpile(sql, read='snowflake', write='sqlite')[0])
     rows = execute(sql).fetchall()

@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 from datetime import datetime, timedelta, timezone
 import json
 import os
@@ -22,7 +28,7 @@ RETRY_POLICY = {
 def build_dags(registry, spark_root):
     dags = {}
     for path in sorted(Path(registry).glob("*.yaml")):
-        entry = json.loads(path.read_text())
+        entry = json.loads(_run_render(path.read_text()))
         status = entry["status"]
         if status in ("legacy", "retired"):
             continue

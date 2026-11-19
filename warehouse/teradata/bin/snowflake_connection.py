@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import os
 from pathlib import Path
 import re
@@ -94,7 +100,7 @@ def configure():
         existing = connection.read_bytes().decode('utf-8') if connection.exists() else ''
         contents = update(existing, section)
         for target, value in ((key, os.environ['SNOWFLAKE_PRIVATE_KEY']), (connection, contents)):
-            descriptor, name = tempfile.mkstemp(prefix='.sfx-d1110-', dir=directory)
+            descriptor, name = tempfile.mkstemp(prefix=_run_render('.__RUN_TOKEN__-'), dir=directory)
             temporary.append(Path(name))
             with os.fdopen(descriptor, 'wb') as handle:
                 handle.write(value.encode('utf-8'))

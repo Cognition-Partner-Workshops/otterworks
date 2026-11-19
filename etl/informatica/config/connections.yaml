@@ -12,4 +12,4 @@ connections:
     default_database: SFX_BILLING
     code_page: UTF-8
     labels:
-      sfx.run_token: sfx-d1110
+      sfx.run_token: __RUN_TOKEN__

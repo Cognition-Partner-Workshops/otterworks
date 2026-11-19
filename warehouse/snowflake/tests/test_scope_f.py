@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from datetime import datetime, timedelta, timezone
 import json
 import os
@@ -26,14 +32,14 @@ def test_post_deploy_governance():
     assert len(governance.objects()) == 28
     assert len(calls) == 56
     assert all('SET TAG GOVERNANCE.SFX_RUN' in sql for sql, _ in calls[::2])
-    assert all('COMMENT ON' in sql and 'sfx-d1110' in params[0] for sql, params in calls[1::2])
+    assert all('COMMENT ON' in sql and _run_render('__RUN_TOKEN__') in params[0] for sql, params in calls[1::2])
     assert len(set(governance.objects())) == 28
-    assert 'reapply(cursor)' in (ROOT / 'deploy.py').read_text()
-    assert "ALLOWED_VALUES 'sfx-d1110'" in (ROOT / 'migrations/V006__governance.sql').read_text()
+    assert 'reapply(cursor)' in _run_render((ROOT / 'deploy.py').read_text())
+    assert _run_render("ALLOWED_VALUES '__RUN_TOKEN__'") in _run_render((ROOT / 'migrations/V006__governance.sql').read_text())
 
 
 def render_governance(policies=None, results=None, existing=(), missing=False, standalone=False,
-                      token='sfx-d1110'):
+                      token=_run_render('__RUN_TOKEN__')):
     calls = []
     class Relation:
         is_view = True
@@ -55,7 +61,7 @@ def render_governance(policies=None, results=None, existing=(), missing=False, s
                        exceptions=SimpleNamespace(raise_compiler_error=fail),
                        graph=SimpleNamespace(nodes={'customer': node}),
                        log=lambda *args, **kw: '', **{'return': lambda value: value})
-    module = env.from_string((ROOT.parent / 'dbt/macros/reapply_governance.sql').read_text()).module
+    module = env.from_string(_run_render((ROOT.parent / 'dbt/macros/reapply_governance.sql').read_text())).module
     if standalone:
         module.reapply_governance()
     else:
@@ -64,15 +70,15 @@ def render_governance(policies=None, results=None, existing=(), missing=False, s
 
 
 def test_scoped_token_uses_fixed_run_tag(monkeypatch):
-    token = "sfx-d1110-test'quoted"
-    monkeypatch.setenv('SNOWFLAKE_RUN_TOKEN', token)
+    token = _run_render("__RUN_TOKEN__-test'quoted")
+    monkeypatch.setattr(governance, 'query_tag', lambda *args: json.dumps({'run_token':token}))
     calls = []
     governance.reapply(SimpleNamespace(execute=lambda sql, params: calls.append((sql, params))))
-    assert all(params == ('sfx-d1110',) for sql, params in calls if 'SET TAG' in sql)
+    assert all(params == (_run_render('__RUN_TOKEN__'),) for sql, params in calls if 'SET TAG' in sql)
     assert all(params[0].startswith(token + ' ') for sql, params in calls if 'COMMENT ON' in sql)
     rendered = render_governance(token=token)
-    assert rendered[0].endswith(".GOVERNANCE.SFX_RUN = 'sfx-d1110'")
-    assert "sfx-d1110-test''quoted customer" in rendered[1]
+    assert rendered[0].endswith(_run_render(".GOVERNANCE.SFX_RUN = '__RUN_TOKEN__'"))
+    assert token.replace("'", "''") + ' customer' in rendered[1]
 
 
 def test_dbt_governance_normal_empty_missing_and_policies():
@@ -81,7 +87,7 @@ def test_dbt_governance_normal_empty_missing_and_policies():
     assert render_governance(results=[]) == []
     assert render_governance(missing=True) == []
     policies = {'customer': {'masking': [{'column': 'EMAIL', 'policy': 'DB.GOVERNANCE.EMAIL_MASK'}],
-                            'column_tags': {'EMAIL': {'DB.GOVERNANCE.SFX_RUN': 'sfx-d1110'}},
+                            'column_tags': {'EMAIL': {'DB.GOVERNANCE.SFX_RUN': _run_render('__RUN_TOKEN__')}},
                             'row_access': {'policy': 'DB.GOVERNANCE.TENANT', 'columns': ['CUSTOMER_ID']}}}
     calls = render_governance(policies)
     assert any('modify column "EMAIL" set tag' in sql for sql in calls)
@@ -94,7 +100,7 @@ def test_dbt_governance_normal_empty_missing_and_policies():
     with pytest.raises(ValueError, match='database.schema.name'):
         render_governance({'customer': {'masking': [{'column': 'EMAIL', 'policy': 'BAD'}]}})
     assert not any('create ' in sql.lower() for sql in calls)
-    config = yaml.safe_load((ROOT.parent / 'dbt/dbt_project.yml').read_text())
+    config = yaml.safe_load(_run_render((ROOT.parent / 'dbt/dbt_project.yml').read_text()))
     assert config['vars']['governance_policies'] == {}
     assert '{{ reapply_governance(results) }}' in config['on-run-end']
 
@@ -134,21 +140,21 @@ class Inventory:
         if sql == self.denied:
             raise ProgrammingError(msg='insufficient privileges', errno=3001)
         rows = []
-        name = 'SFX_D1110_EXTRA' if self.name_mode else 'EXTRA'
-        comment = '' if self.name_mode else 'sfx-d1110'
+        name = _run_render('__RUN_DATABASE___EXTRA') if self.name_mode else 'EXTRA'
+        comment = '' if self.name_mode else _run_render('__RUN_TOKEN__')
         if sql.startswith('SHOW DATABASES'):
-            rows = [dict(name='SFX_D1110_AFTER', comment=''),
+            rows = [dict(name=_run_render('__RUN_DATABASE__'), comment=''),
                     dict(name=name, comment=comment),
                     dict(name='DROPPED_USER$FOREIGN', comment='', owner='OTHER')]
             orphan = f'DROPPED_USER${name}_123456'
             if self.user_dropped and f'DROP DATABASE IF EXISTS "{orphan}" CASCADE' not in self.calls:
                 rows += [dict(name=orphan, comment='', owner='OTHER')]
         elif sql.startswith('SHOW SCHEMAS'):
-            rows = [dict(name='GOVERNANCE', comment='sfx-d1110')] if not self.name_mode else [dict(name=name, comment=comment)]
+            rows = [dict(name='GOVERNANCE', comment=_run_render('__RUN_TOKEN__'))] if not self.name_mode else [dict(name=name, comment=comment)]
         elif sql == 'SHOW USERS':
             rows = [] if self.user_dropped else [dict(name=name, comment=comment)]
         elif sql.startswith('SHOW '):
-            rows = [dict(name=name, comment=comment, database_name='SFX_D1110_AFTER', schema_name='GOVERNANCE')]
+            rows = [dict(name=name, comment=comment, database_name=_run_render('__RUN_DATABASE__'), schema_name='GOVERNANCE')]
         elif sql.startswith('DROP USER'):
             self.user_dropped = True
         self.description = [(k,) for k in (list(rows[0]) if rows else ['name', 'comment'])]
@@ -160,7 +166,7 @@ class Inventory:
 
 @pytest.mark.parametrize('name_mode', [True, False])
 def test_inventory_matches_names_and_comments(name_mode):
-    objects, denied = teardown.discover(Inventory(name_mode), 'sfx-d1110')
+    objects, denied = teardown.discover(Inventory(name_mode), _run_render('__RUN_TOKEN__'))
     assert not denied
     assert {obj.kind for obj in objects} == {'DATABASE', 'SCHEMA', 'TASK', 'STAGE', 'TAG',
         'USER', 'ROLE', 'WAREHOUSE', 'RESOURCE MONITOR', 'INTEGRATION', 'APPLICATION', 'COMPUTE POOL', 'SERVICE'}
@@ -175,21 +181,21 @@ def test_inventory_matches_names_and_comments(name_mode):
 
 
 @pytest.mark.parametrize('command', ['SHOW INTEGRATIONS', 'SHOW APPLICATIONS', 'SHOW COMPUTE POOLS',
-    'SHOW SERVICES IN ACCOUNT', 'SHOW TAGS IN SCHEMA "SFX_D1110_AFTER"."GOVERNANCE"'])
+    'SHOW SERVICES IN ACCOUNT', _run_render('SHOW TAGS IN SCHEMA "__RUN_DATABASE__"."GOVERNANCE"')])
 def test_inventory_privilege_per_type(command, capsys):
-    _, denied = teardown.discover(Inventory(denied=command), 'sfx-d1110')
+    _, denied = teardown.discover(Inventory(denied=command), _run_render('__RUN_TOKEN__'))
     assert denied
     assert 'not visible to role' in capsys.readouterr().out
 
 
 def test_dropped_user_database_sweep_and_guard(capsys):
     cur = Inventory(name_mode=True)
-    teardown.cleanup(cur, 'sfx-d1110')
-    assert 'DROP DATABASE IF EXISTS "DROPPED_USER$SFX_D1110_EXTRA_123456" CASCADE' in cur.calls
+    teardown.cleanup(cur, _run_render('__RUN_TOKEN__'))
+    assert _run_render('DROP DATABASE IF EXISTS "DROPPED_USER$__RUN_DATABASE___EXTRA_123456" CASCADE') in cur.calls
     assert not any('DROP DATABASE IF EXISTS "DROPPED_USER$FOREIGN"' in sql for sql in cur.calls)
     assert 'unattributed DROPPED_USER database; not removed' in capsys.readouterr().out
     cur = Inventory()
-    teardown.cleanup(cur, 'sfx-d1110', dry_run=True)
+    teardown.cleanup(cur, _run_render('__RUN_TOKEN__'), dry_run=True)
     assert not any(sql.startswith('DROP ') for sql in cur.calls)
 
 
@@ -198,11 +204,11 @@ def test_dropped_user_database_sweep_and_guard(capsys):
     'INTEGRATION', 'APPLICATION', 'COMPUTE POOL',
 ])
 def test_comment_only_account_objects_are_never_modified(kind):
-    obj = teardown.Object(kind, ('SHARED',), 'sfx-d1110')
+    obj = teardown.Object(kind, ('SHARED',), _run_render('__RUN_TOKEN__'))
     assert teardown.plan([obj]) == []
     assert teardown.plan([obj], include_provisioned=True) == []
     assert teardown.plan([obj], suspend_only=True) == []
-    owned = teardown.Object(kind, ('SFX_D1110_EXTRA',))
+    owned = teardown.Object(kind, (_run_render('__RUN_DATABASE___EXTRA'),))
     assert any(sql.startswith('DROP ') for sql in teardown.plan([owned]))
 
 
@@ -212,15 +218,15 @@ def test_comment_only_account_objects_are_never_modified(kind):
     ('SERVICE', ('SCHEMA', 'SERVICE')),
 ])
 def test_comment_only_children_require_a_name_scoped_database(kind, tail):
-    shared = teardown.Object(kind, ('SHARED', *tail), 'sfx-d1110')
+    shared = teardown.Object(kind, ('SHARED', *tail), _run_render('__RUN_TOKEN__'))
     assert teardown.plan([shared]) == []
-    scoped = teardown.Object(kind, ('SFX_D1110_AFTER', *tail), 'sfx-d1110')
+    scoped = teardown.Object(kind, (_run_render('__RUN_DATABASE__'), *tail), _run_render('__RUN_TOKEN__'))
     assert any(sql.startswith('DROP ') for sql in teardown.plan([scoped]))
 
 
 def test_comment_only_database_is_reported_remaining(capsys):
     cur = Inventory()
-    assert teardown.cleanup(cur, 'sfx-d1110', dry_run=True) == 1
+    assert teardown.cleanup(cur, _run_render('__RUN_TOKEN__'), dry_run=True) == 1
     output = capsys.readouterr().out
     assert 'REMAINS DATABASE EXTRA (not name-scoped; retained)' in output
     assert 'PLAN DROP DATABASE IF EXISTS "EXTRA"' not in output
@@ -241,17 +247,17 @@ def test_connection_modes_and_merge(tmp_path):
     config.write_text('# keep\n[other]\naccount = "untouched"\n[sfx_d1110]\npassword = "dummy"\n')
     env = dummy_env(tmp_path)
     snowconvert.configure_connection(tmp_path, env)
-    doc = tomlkit.parse(config.read_text())
+    doc = tomlkit.parse(_run_render(config.read_text()))
     assert doc['other'] == {'account': 'untouched'}
-    assert '# keep' in config.read_text()
+    assert '# keep' in _run_render(config.read_text())
     assert set(doc['sfx_d1110']) == {'account', 'user', 'role', 'warehouse', 'database', 'authenticator', 'private_key_file'}
     assert doc['sfx_d1110']['authenticator'] == 'SNOWFLAKE_JWT'
     key = Path(doc['sfx_d1110']['private_key_file'])
-    assert key.read_text() == env['SNOWFLAKE_PRIVATE_KEY']
+    assert _run_render(key.read_text()) == env['SNOWFLAKE_PRIVATE_KEY']
     assert directory.stat().st_mode & 0o777 == 0o700
     assert config.stat().st_mode & 0o777 == key.stat().st_mode & 0o777 == 0o600
     snowconvert.configure_connection(tmp_path, env)
-    assert tomlkit.parse(config.read_text()) == doc
+    assert tomlkit.parse(_run_render(config.read_text())) == doc
 
 
 @pytest.mark.parametrize('rejected', [False, True])
@@ -276,7 +282,7 @@ def test_fake_scai_receives_connection_and_keeps_raw(tmp_path, rejected):
     code = snowconvert.run(repo, tmp_path, env)
     assert code == (2 if rejected else 0)
     output = next((repo / 'warehouse/snowconvert/raw').iterdir())
-    summary = json.loads((output / 'summary.json').read_text())
+    summary = json.loads(_run_render((output / 'summary.json').read_text()))
     assert len(summary) == (1 if rejected else 6)
     if not rejected:
         assert summary[-1]['command'] == ['code', 'convert', '--show-ewis']
@@ -305,8 +311,8 @@ def test_snowconvert_prepares_split_sql_and_self_contained_workflows(tmp_path):
     assert len(list(prepared['teradata'].rglob('*.sql'))) == 2
     assert not (prepared['teradata'] / 'bteq').exists()
     assert [p.name for p in prepared['informatica'].rglob('*.XML')] == ['wf_daily.XML']
-    assert (ddl / 'tables.sql').read_text() == sql
-    assert len(json.loads((output / 'inputs.json').read_text())) == 2
+    assert _run_render((ddl / 'tables.sql').read_text()) == sql
+    assert len(json.loads(_run_render((output / 'inputs.json').read_text()))) == 2
 
 
 def test_snowconvert_stages_dbql_schema_with_consumer_reads(tmp_path):
@@ -325,11 +331,11 @@ def test_snowconvert_stages_dbql_schema_with_consumer_reads(tmp_path):
     staged = dict(snowconvert.prepare_inputs(tmp_path, output, found))['teradata']
     statements = sorted((staged / 'dbql').glob('schema_*.sql'))
     assert len(statements) == 2
-    assert 'CREATE DATABASE DBC;' in statements[0].read_text()
-    assert 'CREATE MULTISET TABLE DBC.DBQLogTbl' in statements[1].read_text()
-    assert (staged / 'dbql/consumer_reads.bteq').read_text() == consumer
+    assert 'CREATE DATABASE DBC;' in _run_render(statements[0].read_text())
+    assert 'CREATE MULTISET TABLE DBC.DBQLogTbl' in _run_render(statements[1].read_text())
+    assert _run_render((staged / 'dbql/consumer_reads.bteq').read_text()) == consumer
     assert not (staged / 'bteq/bootstrap.sql').exists()
-    assert set(json.loads((output / 'inputs.json').read_text())) == {
+    assert set(json.loads(_run_render((output / 'inputs.json').read_text()))) == {
         'warehouse/teradata/dbql/schema.sql', 'warehouse/teradata/dbql/consumer_reads.bteq',
     }
 

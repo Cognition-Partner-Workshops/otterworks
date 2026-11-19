@@ -1,4 +1,10 @@
 """Isolated role-grant oracle and explicitly scoped live evidence commands."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from collections import Counter
 from contextlib import contextmanager
@@ -23,8 +29,8 @@ from .inventory import ROOT
 DEST = OUT / 'unt7'
 FIXTURES = Path(__file__).parent / 'fixtures/unt7'
 MAPPING = 'm_SFX_ROLE_GRANT'
-SCHEMA = 'SFX_D1110_AFTER.PC_FX_UNT7_ROLE_GRANT'
-TARGET = 'SFX_D1110_AFTER.PC_CONTENT.ROLE_GRANT'
+SCHEMA = _run_render('__RUN_DATABASE__.PC_FX_UNT7_ROLE_GRANT')
+TARGET = _run_render('__RUN_DATABASE__.PC_CONTENT.ROLE_GRANT')
 COLUMNS = ['GRANT_ID', 'USER_ID', 'ROLE_CD', 'GRANTED_DT']
 FROZEN_SHA = 'a833d990104666dfc08d1ab7bcc50b8a4101b3c473e88ae5614e2df9525a1788'
 SCENARIOS = ('frozen', 'seeded', 'dup_key')
@@ -82,8 +88,8 @@ def control_snapshot(q, path):
 
 
 def history_capture(q, step):
-    _, rows = q.run(f'SELECT {HISTORY_COLUMNS} FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.'
-                    f"QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) WHERE TRY_PARSE_JSON(QUERY_TAG):step::string='{step}' ORDER BY START_TIME")
+    _, rows = q.run(_run_render(f'SELECT {HISTORY_COLUMNS} FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.'
+                    f"QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) WHERE TRY_PARSE_JSON(QUERY_TAG):step::string='{step}' ORDER BY START_TIME"))
     if len(rows) >= 10000:
         raise ValueError('History truncated')
     return rows
@@ -92,8 +98,8 @@ def history_capture(q, step):
 def collect_target(q, subject, path):
     template = load(DEST / 'oracle' / scenario(subject) / 'initial_target.json')
     dump(path / 'target.json', fetched(q, target(subject), template))
-    _, comments = q.run("SELECT COMMENT FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.TABLES "
-                       f"WHERE TABLE_SCHEMA='{target(subject).split('.')[1]}' AND TABLE_NAME='{target(subject).split('.')[2]}'")
+    _, comments = q.run(_run_render("SELECT COMMENT FROM __RUN_DATABASE__.INFORMATION_SCHEMA.TABLES "
+                       f"WHERE TABLE_SCHEMA='{target(subject).split('.')[1]}' AND TABLE_NAME='{target(subject).split('.')[2]}'"))
     dump(path / 'comment.json', comments)
     if comments != [(COMMENT,)]:
         raise ValueError('Object comment mismatch')
@@ -234,7 +240,7 @@ def target(subject):
 
 
 def source(subject):
-    return 'SFX_D1110_AFTER.PC_SRC.ROLE_GRANT' if subject == 'production' else f'{SCHEMA}.{subject.upper()}_SOURCE'
+    return _run_render('__RUN_DATABASE__.PC_SRC.ROLE_GRANT') if subject == 'production' else f'{SCHEMA}.{subject.upper()}_SOURCE'
 
 
 def scenario(subject):
@@ -273,7 +279,7 @@ def oracle(name):
         admin.execute(pgsql.Composed([pgsql.SQL('CREATE DATABASE '), pgsql.Identifier(db)]))
         try:
             with psycopg.connect(dbname=db, **params) as pg:
-                pg.execute(BOOTSTRAP.read_text())
+                pg.execute(_run_render(BOOTSTRAP.read_text()))
                 if name != 'frozen':
                     with pg.cursor() as cursor:
                         cursor.executemany('INSERT INTO sfx_users.role_grant VALUES (%s,%s,%s,%s)',
@@ -303,14 +309,14 @@ def oracle(name):
                     rejects = []
                     for bad in sorted((runroot / 'BadFiles').glob('*.bad')):
                         shutil.copy2(bad, dest / bad.name)
-                        rejects.append({'name': bad.name, 'rows': bad.read_text().splitlines()})
+                        rejects.append({'name': bad.name, 'rows': _run_render(bad.read_text()).splitlines()})
                     dump(dest / 'rejects.json', rejects)
                     shutil.copytree(runroot / 'SessLogs', dest / 'SessLogs')
                     shutil.copy2(runroot / 'REP_SESS_LOG.psv', dest / 'REP_SESS_LOG.psv')
                     with (runroot / 'REP_SESS_LOG.psv').open() as stream:
                         sessions = list(csv.DictReader(stream, delimiter='|'))
                     dump(dest / 'session_results.json', sessions[-1:])
-                    stats = parse_stats(next((dest / 'SessLogs').glob('*.log')).read_text())
+                    stats = parse_stats(_run_render(next((dest / 'SessLogs').glob('*.log')).read_text()))
                     dump(dest / 'writer_stats.json', stats)
                     summary = {'scenario': name, 'run': number, 'returncode': rc,
                                'rows': len(load(dest / 'target.json')['rows']),
@@ -398,12 +404,12 @@ def preflight():
         template = load(DEST / 'oracle/frozen/initial_target.json')
         if result['target']['exists']:
             raise ValueError('Production target exists; refusing to replace')
-        _, existing = q.run("SELECT SCHEMA_NAME FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.SCHEMATA "
-                            "WHERE SCHEMA_NAME='PC_FX_UNT7_ROLE_GRANT'")
+        _, existing = q.run(_run_render("SELECT SCHEMA_NAME FROM __RUN_DATABASE__.INFORMATION_SCHEMA.SCHEMATA "
+                            "WHERE SCHEMA_NAME='PC_FX_UNT7_ROLE_GRANT'"))
         if existing:
             raise ValueError('Fixture schema exists; refusing to overwrite')
         protected_snapshot(q, path)
-        before = 'SFX_D1110_AFTER.PC_BEFORE.ROLE_GRANT'
+        before = _run_render('__RUN_DATABASE__.PC_BEFORE.ROLE_GRANT')
         result['before'] = target_state(q, before)
         if result['before']['exists']:
             expected = load(DEST / 'oracle/frozen/run1/target.json')
@@ -419,12 +425,12 @@ PROTECTED = ('STG_APP_USER', 'APP_USER', 'STG_DOCUMENT', 'DOCUMENT', 'DOC_SHARE'
 def protected_snapshot(q, path):
     snapshots = {}
     for name in PROTECTED:
-        relation = 'SFX_D1110_AFTER.PC_CONTENT.' + name
+        relation = _run_render('__RUN_DATABASE__.PC_CONTENT.') + name
         state = target_state(q, relation)
         names, rows = q.run('SELECT * FROM ' + relation) if state['exists'] else ([], [])
-        _, types = q.run("SELECT COLUMN_NAME,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION,NUMERIC_SCALE "
-                        "FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.COLUMNS "
-                        f"WHERE TABLE_SCHEMA='PC_CONTENT' AND TABLE_NAME='{name}' ORDER BY ORDINAL_POSITION")
+        _, types = q.run(_run_render("SELECT COLUMN_NAME,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION,NUMERIC_SCALE "
+                        "FROM __RUN_DATABASE__.INFORMATION_SCHEMA.COLUMNS "
+                        f"WHERE TABLE_SCHEMA='PC_CONTENT' AND TABLE_NAME='{name}' ORDER BY ORDINAL_POSITION"))
         snapshots[name] = {'exists': state['exists'], 'columns': names, 'types': types,
                            'rows': sorted([[cell(v) for v in row] for row in rows], key=json.dumps)}
     dump(path / 'protected.json', snapshots)
@@ -449,8 +455,8 @@ def fixture_load():
     fresh(path)
     records = []
     with queries(path, 'unt7-fixture-load', workload='load') as q:
-        _, existing = q.run("SELECT SCHEMA_NAME FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.SCHEMATA "
-                            "WHERE SCHEMA_NAME='PC_FX_UNT7_ROLE_GRANT'")
+        _, existing = q.run(_run_render("SELECT SCHEMA_NAME FROM __RUN_DATABASE__.INFORMATION_SCHEMA.SCHEMATA "
+                            "WHERE SCHEMA_NAME='PC_FX_UNT7_ROLE_GRANT'"))
         if existing:
             raise ValueError('Fixture schema exists; refusing to overwrite')
         fixture_write(q.cursor, records, f"CREATE SCHEMA {SCHEMA} COMMENT='{COMMENT}'")
@@ -494,7 +500,7 @@ def compile_rejects(subject, path):
         subprocess.run(command, env=env, stdout=output, stderr=subprocess.STDOUT, check=True)
     compiled = project / 'target/compiled/sfx_warehouse/analyses/unt7_role_grant_rejects.sql'
     shutil.copy2(compiled, path / 'rejects.sql')
-    return compiled.read_text()
+    return _run_render(compiled.read_text())
 
 
 def run(subject, number):
@@ -611,10 +617,10 @@ def compare(subject):
                                    'materialization': 'atomic table replacement, not merge'}
     a, b = [load(path / f'run{n}/execution.json') for n in (1, 2)]
     with queries(output / 'between_runs', 'unt7-between-runs') as q:
-        _, history = q.run("SELECT QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS,ERROR_CODE,ERROR_MESSAGE "
-                           "FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
+        _, history = q.run(_run_render("SELECT QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS,ERROR_CODE,ERROR_MESSAGE "
+                           "FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
                            f"END_TIME_RANGE_START=>'{a['end_utc']}'::TIMESTAMP_LTZ,"
-                           f"END_TIME_RANGE_END=>'{b['start_utc']}'::TIMESTAMP_LTZ,RESULT_LIMIT=>10000)) ORDER BY START_TIME")
+                           f"END_TIME_RANGE_END=>'{b['start_utc']}'::TIMESTAMP_LTZ,RESULT_LIMIT=>10000)) ORDER BY START_TIME"))
     writes, failed = intervening_statements(history, target(subject))
     if len(history) >= 10000:
         raise ValueError('Query history truncated; cannot prove absence of intervening writes')

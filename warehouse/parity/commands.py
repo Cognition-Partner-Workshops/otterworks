@@ -1,4 +1,10 @@
 """Mapping-scoped capture, comparison and guarded result publication."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import csv
 import json
 import os
@@ -18,7 +24,7 @@ OUT = Path(__file__).parent / 'out'
 
 def build(mapping=None, folder=None, load_date=None):
     if os.environ.get('SNOWFLAKE_DATABASE') != DATABASE:
-        raise ValueError('SNOWFLAKE_DATABASE must be SFX_D1110_AFTER')
+        raise ValueError(_run_render('SNOWFLAKE_DATABASE must be __RUN_DATABASE__'))
     rows = inventory()
     if mapping:
         row = next((r for r in rows if r['mapping'] == mapping), None)
@@ -50,14 +56,14 @@ def relation(value):
     if len(parts) == 2:
         parts.insert(0, DATABASE)
     if len(parts) != 3 or parts[0].upper() != DATABASE:
-        raise ValueError('Relations must be in SFX_D1110_AFTER')
+        raise ValueError(_run_render('Relations must be in __RUN_DATABASE__'))
     return '.'.join(identifier(p) for p in parts)
 
 
 def save(row, result):
     OUT.mkdir(exist_ok=True)
     path = OUT / (row['mapping'] + '.json')
-    data = json.loads(path.read_text()) if path.exists() else {}
+    data = json.loads(_run_render(path.read_text())) if path.exists() else {}
     data.update(result)
     data['config'] = row
     path.write_text(json.dumps(data, indent=2, default=str))
@@ -66,7 +72,7 @@ def save(row, result):
 def before(row):
     import psycopg
 
-    ns = os.environ.get('NS', 'sfx-d1110-before')
+    ns = os.environ.get('NS', _run_render('__BEFORE_NAMESPACE__'))
     port = os.environ.get('TD_PORT', str(55500 + zlib.crc32(ns.encode()) % 1000))
     host = os.environ.get('TD_HOST', '127.0.0.1')
     if host not in ('127.0.0.1', 'localhost'):
@@ -81,7 +87,7 @@ def before(row):
         admin.execute(f'CREATE DATABASE {database}')
         try:
             with psycopg.connect(dbname=database, **params) as pg:
-                pg.execute(BOOTSTRAP.read_text())
+                pg.execute(_run_render(BOOTSTRAP.read_text()))
                 env = {k: v for k, v in os.environ.items() if not k.startswith('SNOWFLAKE_')}
                 env.update(TD_HOST=host, TD_PORT=str(port), TD_DB=database,
                            LANDING_DIR=str(ESTATE / 'tests/fixture/landing'), PMROOTDIR=str(runroot))
@@ -179,7 +185,7 @@ def parity(row, sample):
             save(row, dict(rowcount_match=False, keyed_hash_match=False, rerun_duplicates=None,
                            parity_error='Missing comparison/key columns'))
             raise SystemExit(f'Missing comparison/key columns: {sorted(missing)}')
-        captured = json.loads((OUT / (row['mapping'] + '.json')).read_text())
+        captured = json.loads(_run_render((OUT / (row['mapping'] + '.json')).read_text()))
         result = compare(b, a, columns, keys, sample, types=source_types(row, captured))
         result['parity_query_tag'] = query_tag('parity', 'parity_parity', tag('parity', row['mapping']))
         result['parity_error'] = None
@@ -226,7 +232,7 @@ def mark_sql():
 def mark(row, args):
     with connection('ops', 'mark', row['mapping']) as conn, conn.cursor() as cur:
         require_owner(cur, row['mapping'], args.owner, row['folder'])
-        result = json.loads((OUT / (row['mapping'] + '.json')).read_text())
+        result = json.loads(_run_render((OUT / (row['mapping'] + '.json')).read_text()))
         if result.get('config') != row:
             raise ValueError('Mapping configuration changed; regenerate evidence')
         decision = status(result, args.amber)

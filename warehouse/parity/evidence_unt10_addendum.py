@@ -1,4 +1,10 @@
 """Read-only follow-up evidence for the already completed UNT-10 mark runs."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 from collections import Counter
 from datetime import timedelta
 import json
@@ -60,7 +66,7 @@ def merge_checks(text):
 
 def collect(q):
     summary = {'control': control_snapshot(q, DEST)}
-    control = json.loads((DEST / 'control.json').read_text())
+    control = json.loads(_run_render((DEST / 'control.json').read_text()))
     rows = [{c: v[1] for c, v in zip(control['columns'], row)} for row in control['rows']]
     summary['control'].update(
         expected_sha256=EXPECTED_SHA, sha_matches=summary['control']['sha256'] == EXPECTED_SHA,
@@ -96,10 +102,10 @@ def collect(q):
     summary['result_scans'] = {r['QUERY_ID']: capture(q, 'result_scan_' + r['QUERY_ID'],
         f"SELECT * FROM TABLE(RESULT_SCAN({literal(r['QUERY_ID'])}))", True) for r in merges}
     summary['tasks'] = capture(q, 'tasks',
-        "SHOW TASKS LIKE 'SFX_D1110_PC_AUDIT%' IN SCHEMA SFX_D1110_AFTER.PC_AUDIT")
+        _run_render("SHOW TASKS LIKE '__RUN_DATABASE___PC_AUDIT%' IN SCHEMA __RUN_DATABASE__.PC_AUDIT"))
     summary['task_history'] = capture(q, 'task_history',
-        'SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.TASK_HISTORY WHERE RUN_ID=1794358031749 '
-        "AND DATABASE_NAME='SFX_D1110_AFTER' AND SCHEMA_NAME='PC_AUDIT' ORDER BY SCHEDULED_TIME")
+        _run_render('SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.TASK_HISTORY WHERE RUN_ID=1794358031749 '
+        "AND DATABASE_NAME='__RUN_DATABASE__' AND SCHEMA_NAME='PC_AUDIT' ORDER BY SCHEDULED_TIME"))
     summary['merge_checks_pass'] = len(merges) == 16 and all(
         all(m[k] for k in ('key_guard', 'owner_guard', 'no_insert_delete', 'literals'))
         for m in summary['merges'])

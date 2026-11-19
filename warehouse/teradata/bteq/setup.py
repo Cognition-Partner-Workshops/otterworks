@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import re
 from pathlib import Path
@@ -32,7 +38,7 @@ def setup(runner, root=DDL_ROOT):
     paths += sorted((root.parent / 'macros').glob('*.sql'))
     paths += sorted((root.parent / 'procedures').glob('*.sql'))
     for path in paths:
-        for statement in commands(path.read_text()):
+        for statement in commands(_run_render(path.read_text())):
             database = re.match(r'CREATE DATABASE\s+(\w+)', statement, re.I)
             relation = re.match(r'CREATE\s+(?:(?:SET|MULTISET)\s+TABLE|VIEW)\s+([\w.]+)', statement, re.I)
             if database and runner.conn.execute('SELECT 1 FROM pg_namespace WHERE nspname=%s', (database[1].lower(),)).fetchone():

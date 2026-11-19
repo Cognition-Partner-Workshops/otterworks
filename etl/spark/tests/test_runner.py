@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import os
 import json
 from pathlib import Path
@@ -27,7 +33,7 @@ class RunnerTest(unittest.TestCase):
             docker = binary / "docker"
             docker.write_text('#!/usr/bin/env bash\n[[ "${*: -1}" != */second.sh ]]\n')
             docker.chmod(0o755)
-            env = dict(os.environ, PATH=str(binary) + ":" + os.environ["PATH"], JOB="", SPARK_JOBS="30", NS="sfx-d1110-check")
+            env = dict(os.environ, PATH=str(binary) + ":" + os.environ["PATH"], JOB="", SPARK_JOBS="30", NS=_run_render("__RUN_TOKEN__-check"))
             env.update(settings)
             result = subprocess.run(["bash", str(spark / "run.sh")], env=env, capture_output=True, text=True)
             self.assertTrue((spark / ".data" / env["NS"] / "logs").is_dir())
@@ -69,7 +75,7 @@ class RunnerTest(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
 
     def test_job_inventory(self):
-        entries = [json.loads(path.read_text()) for path in sorted((ROOT / "jobs/registry").glob("*.yaml"))]
+        entries = [json.loads(_run_render(path.read_text())) for path in sorted((ROOT / "jobs/registry").glob("*.yaml"))]
         jobs = [entry["job"] for entry in entries]
         self.assertEqual(len(jobs), 30)
         self.assertEqual(len(set(jobs)), 30)

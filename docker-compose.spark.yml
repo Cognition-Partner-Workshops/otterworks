@@ -26,6 +26,7 @@ services:
       ROWS_PER_TABLE: ${ROWS_PER_TABLE:-200000}
     volumes:
       - ./etl/spark:/opt/sfx/spark:ro
+      - ./warehouse/run_config.py:/opt/warehouse/run_config.py:ro
       - ./etl/spark/.data/${NS:-sfx-d1110-before}:/opt/runtime
       - ${LANDING_DIR:-./etl/spark/.data/${NS:-sfx-d1110-before}/landing}:/opt/landing
       - ./etl/spark/.cache/${NS:-sfx-d1110-before}:/opt/sfx/spark/.cache

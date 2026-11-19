@@ -1,4 +1,10 @@
 """Run wf_SFX_AUDIT_DAILY as scoped dbt sessions with PowerCenter link semantics."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import json
 import os
 from pathlib import Path
@@ -99,7 +105,7 @@ def dbt_executor(schema, step, out=None, fail=()):
         env = os.environ.copy()
         env['DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY'] = env['SNOWFLAKE_PRIVATE_KEY']
         env['DBT_SEND_ANONYMOUS_USAGE_STATS'] = 'false'
-        tag = json.loads(query_tag('transform', 'dbt', {'run': 'sfx-d1110', 'act': 'scale', 'step': step,
+        tag = json.loads(query_tag('transform', 'dbt', {'run': _run_render('__RUN_TOKEN__'), 'act': 'scale', 'step': step,
                                                         'workflow': WORKFLOW, 'session': session}))
         env['SFX_QUERY_TAG'] = json.dumps(tag, separators=(',', ':'))
         command = dbt_command(model, schema)
@@ -113,9 +119,9 @@ def dbt_executor(schema, step, out=None, fail=()):
             target = ROOT / 'warehouse/dbt/target'
             for kind in ('compiled', 'run'):
                 for path in (target / kind).rglob(model + '.sql'):
-                    (dest / f'{kind}.sql').write_text(path.read_text())
+                    (dest / f'{kind}.sql').write_text(_run_render(path.read_text()))
             if (target / 'run_results.json').exists():
-                (dest / 'run_results.json').write_text((target / 'run_results.json').read_text())
+                (dest / 'run_results.json').write_text(_run_render((target / 'run_results.json').read_text()))
         return result.returncode
     return execute
 
@@ -132,8 +138,8 @@ def main(argv=None):
     if args.select_only:
         print(' '.join(selector(tasks)))
         return 0
-    if os.environ.get('SNOWFLAKE_DATABASE') != 'SFX_D1110_AFTER':
-        parser.error('SNOWFLAKE_DATABASE must be SFX_D1110_AFTER')
+    if os.environ.get('SNOWFLAKE_DATABASE') != _run_render('__RUN_DATABASE__'):
+        parser.error(_run_render('SNOWFLAKE_DATABASE must be __RUN_DATABASE__'))
     result = run(tasks, dbt_executor(args.schema, args.step, args.out))
     print(json.dumps(result, indent=2))
     if args.out:

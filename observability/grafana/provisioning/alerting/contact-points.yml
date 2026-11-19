@@ -4,7 +4,7 @@ contactPoints:
   - orgId: 1
     name: devin-pipeline-webhook
     receivers:
-      - uid: sfx-d1110-pipeline-webhook
+      - uid: __RUN_TOKEN__-pipeline-webhook
         type: webhook
         settings:
           url: $DEVIN_PIPELINE_WEBHOOK_URL

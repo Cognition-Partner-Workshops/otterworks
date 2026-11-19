@@ -1,4 +1,10 @@
 """Read the exported estate without modifying the repository exports."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 from pathlib import Path
 import re
 from defusedxml import ElementTree as ET
@@ -13,7 +19,7 @@ BOOTSTRAP = ESTATE / "tests/fixture/bootstrap.sql"
 def table_definitions():
     return {f"{schema}.{table}": body.strip() for schema, table, body in re.findall(
         r"CREATE TABLE IF NOT EXISTS (\w+)\.(\w+)\s*\((.*?)\);",
-        BOOTSTRAP.read_text(), re.S)}
+        _run_render(BOOTSTRAP.read_text()), re.S)}
 
 
 def target_relation(name):
@@ -38,7 +44,7 @@ def inventory(repository=None, overrides=None):
             for session in doc.findall(".//SESSION"):
                 sessions[session.get("MAPPINGNAME")] = (session.get("NAME"), workflow)
         config_path = overrides / (folder.name.lower() + ".yml")
-        config = yaml.safe_load(config_path.read_text()) if config_path.exists() else {}
+        config = yaml.safe_load(_run_render(config_path.read_text())) if config_path.exists() else {}
         config = config or {}
         if not isinstance(config, dict):
             raise ValueError(f"Expected mapping-name dictionary in {config_path}")

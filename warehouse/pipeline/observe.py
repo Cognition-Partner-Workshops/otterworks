@@ -1,4 +1,10 @@
 """Read-only, pipeline-scoped verification snapshots and tagged history."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 
 from sf import connect
@@ -8,7 +14,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--history", action="store_true")
     args = parser.parse_args()
-    with connect("observe", "SFX_D1110_OPS_WH") as connection:
+    with connect("observe", _run_render("__RUN_DATABASE___OPS_WH")) as connection:
         with connection.cursor() as cursor:
             cursor.execute("""SELECT s.USAGE_DATE, COUNT(*) AS ROW_COUNT,
                 COUNT_IF(s.AMOUNT IS NULL) AS NULL_AMOUNT,

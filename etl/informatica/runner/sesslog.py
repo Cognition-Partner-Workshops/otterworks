@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
+
 import csv
 import datetime as dt
 import os
@@ -26,7 +32,7 @@ def pc_ts(d: dt.datetime) -> str:
 class Log:
     """PowerCenter-style message log: '<time> : <SEV> : (<pid> | <thread>) : (<IS>) : node01 : <CODE> : <msg>'."""
 
-    def __init__(self, path, service="IS_SFX_D1110", node="node01_sfx", pid=0, clock=None, echo=None):
+    def __init__(self, path, service=_run_render("IS___RUN_DATABASE__"), node="node01_sfx", pid=0, clock=None, echo=None):
         self.path = path
         self.service, self.node, self.pid = service, node, pid or os.getpid()
         self.clock = clock or (lambda: dt.datetime.now().replace(microsecond=0))

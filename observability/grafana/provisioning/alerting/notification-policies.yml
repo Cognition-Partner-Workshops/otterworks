@@ -12,5 +12,5 @@ policies:
     routes:
       - receiver: devin-pipeline-webhook
         object_matchers:
-          - ['pipeline', '=', 'sfx-d1110']
+          - ['pipeline', '=', '__RUN_TOKEN__']
         group_by: ['pipeline']

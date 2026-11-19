@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from datetime import datetime, timedelta, timezone
 import io
 import json
@@ -39,7 +45,7 @@ class MeasureTest(unittest.TestCase):
 
     def test_snowflake_intervals(self):
         start = datetime(2026, 11, 10, tzinfo=timezone.utc)
-        rows = [{"WAREHOUSE_NAME": "SFX_D1110_TRANSFORM_WH", "WAREHOUSE_SIZE": "X-Small",
+        rows = [{"WAREHOUSE_NAME": _run_render("__RUN_DATABASE___TRANSFORM_WH"), "WAREHOUSE_SIZE": "X-Small",
                  "START_TIME": start + timedelta(seconds=a), "END_TIME": start + timedelta(seconds=b),
                  "EXECUTION_TIME": 1000, "EXECUTION_STATUS": "SUCCESS"} for a, b in ((0, 10), (5, 15), (20, 25))]
         metrics = measure.snowflake_metrics(rows, "job")

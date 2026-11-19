@@ -1,4 +1,10 @@
 """Validate the offline assessment, including against the source estate."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import csv
 import json
 import sys
@@ -17,7 +23,7 @@ def validate(out=OUT, source=True):
         return errors
     try:
         inventory = list(csv.DictReader((out / 'inventory.csv').open()))
-        manifest = yaml.safe_load((out / 'manifest.yaml').read_text())
+        manifest = yaml.safe_load(_run_render((out / 'manifest.yaml').read_text()))
         objects = manifest['objects']
         ids = [r['id'] for r in inventory]
         mids = [r['id'] for r in objects]
@@ -28,9 +34,13 @@ def validate(out=OUT, source=True):
             for key, allowed in {'kind': {'bteq', 'catalog', 'fastload', 'tpt', 'table', 'view', 'macro', 'procedure', 'mapping', 'session', 'worklet', 'workflow', 'spark_job'}, 'system': {'teradata', 'powercenter', 'spark'}, 'target_type': {'dbt_model', 'snowpark', 'snowflake_scripting', 'compatibility_view', 'retire'}, 'wave': {1, 2, 3, 4}, 'risk': {'low', 'med', 'high'}, 'complexity': {'low', 'medium', 'high'}, 'status': {'not_started'}}.items():
                 if row.get(key) not in allowed:
                     errors.append(f"invalid {key}: {row['id']}")
-            for key in ('name', 'source', 'target', 'owner', 'owner_source', 'risk_reasons'):
+            for key in ('name', 'source', 'target', 'owner', 'owner_source', 'risk_reasons', 'subject_area', 'licence_dependency', 'output_relations'):
                 if key not in row:
                     errors.append(f"missing {key}: {row['id']}")
+            if row.get('licence_dependency') not in {'teradata', 'powercenter', 'spark', 'none'}:
+                errors.append('invalid licence dependency: '+row['id'])
+            if not row.get('subject_area'):
+                errors.append('missing subject area: '+row['id'])
             if row['name'] in manifest['dead'] and row['target_type'] != 'retire':
                 errors.append('dead object not retired: ' + row['name'])
             if row['kind'] == 'catalog' and row['target_type'] != 'retire':
@@ -38,13 +48,13 @@ def validate(out=OUT, source=True):
         for a, b in manifest['dependencies']:
             if a not in index or b not in index or index[a]['wave'] > index[b]['wave']:
                 errors.append(f'dependency wave order: {a} -> {b}')
-        lineage = (out / 'lineage.md').read_text()
+        lineage = _run_render((out / 'lineage.md').read_text())
         for node in ids + [r['id'] for r in manifest['consumers']]:
             if node + '["' not in lineage:
                 errors.append('lineage missing node: ' + node)
         if lineage.count('flowchart LR') != 1 or lineage.count('```mermaid') != 1:
             errors.append('lineage must contain one LR Mermaid graph')
-        actual_board = json.loads((out / 'board/board.json').read_text())
+        actual_board = json.loads(_run_render((out / 'board/board.json').read_text()))
         if actual_board['waves'] != board(objects, {})['waves']:
             errors.append('board counts differ from manifest')
         if source:

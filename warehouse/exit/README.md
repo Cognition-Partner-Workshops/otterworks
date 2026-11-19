@@ -1,4 +1,4 @@
-# Finance warehouse reader exit — sfx-d1110
+# Finance warehouse reader exit — __RUN_TOKEN__
 
 Run from the repository root with Python 3.10+. Install
 `warehouse/requirements.txt`; live Snowflake additionally needs
@@ -35,8 +35,8 @@ means no reads). `--json` renders reads as machine-readable JSON.
 
 Snowflake JWT uses `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`,
 `SNOWFLAKE_PRIVATE_KEY` (PEM text, never persisted). Database and warehouse are
-fixed to `SFX_D1110_AFTER` and `SFX_D1110_OPS_WH`. Reporter sessions carry
-`run=sfx-d1110,act=exit,phase=reads|board|decommission`; they cannot count as
+fixed to `__RUN_DATABASE__` and `__RUN_DATABASE___OPS_WH`. Reporter sessions carry
+`run=__RUN_TOKEN__,act=exit,phase=reads|board|decommission`; they cannot count as
 consumer reads. Successful SELECTs tagged `act=consumers` are merged by query ID
 from ACCOUNT_USAGE and recent INFORMATION_SCHEMA history. ACCOUNT_USAGE can lag;
 the recent endpoint is limited to 10,000 records and seven days (a full 10,000-row

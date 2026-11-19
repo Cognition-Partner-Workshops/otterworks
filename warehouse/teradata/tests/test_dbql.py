@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import csv
 import datetime as dt
 from pathlib import Path
@@ -69,14 +75,14 @@ def test_consumer_clients_and_daily_reads(estate):
     assert daily and all(isinstance(row[1], dt.date) and row[2] > 0 for row in daily)
     excel = query(estate, "SELECT StartTime FROM DBC.QryLogV WHERE UserName='FIN_ANALYST_JMORALES'")
     assert all(timestamp.weekday()<5 and 9<=timestamp.hour<=16 for timestamp, in excel)
-    script = (ROOT / 'dbql/consumer_reads.bteq').read_text()
+    script = _run_render((ROOT / 'dbql/consumer_reads.bteq').read_text())
     assert estate.run(script) == 0, estate.output.getvalue()
     assert estate.rows[0][0] == 'svc_analytics_dash'
     assert {'FIN_ANALYST_JMORALES', 'svc_partner_sftp'} <= {r[0] for r in estate.rows}
     for directory in ('scripts', 'macros', 'procedures', 'jobs', 'load', 'ddl'):
         for path in (ROOT / directory).rglob('*'):
             if path.is_file() and '__pycache__' not in path.parts:
-                source = path.read_text()
+                source = _run_render(path.read_text())
                 assert 'FIN_ANALYST_JMORALES' not in source and 'svc_partner_sftp' not in source
 
 

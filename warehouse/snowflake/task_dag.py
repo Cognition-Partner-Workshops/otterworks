@@ -1,4 +1,10 @@
 """Execute the placeholder graph once without enabling the root schedule."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import json
 import re
@@ -11,7 +17,7 @@ from sfx_conn import ROOT, connect, query_tag
 
 
 def step_map():
-    steps = yaml.safe_load((ROOT / 'task_dag.yml').read_text())['steps']
+    steps = yaml.safe_load(_run_render((ROOT / 'task_dag.yml').read_text()))['steps']
     seen = set()
     for name, step in steps.items():
         if not re.fullmatch(r'[A-Z][A-Z0-9_]*', step['task']):
@@ -65,12 +71,12 @@ def run_once(cursor, timeout=180, poll_seconds=2):
         cursor.execute(f'EXECUTE TASK ORCH.{root}')
         deadline = time.monotonic() + timeout
         while True:
-            history = records(cursor, '''SELECT NAME, STATE, SCHEDULED_TIME,
+            history = records(cursor, _run_render('''SELECT NAME, STATE, SCHEDULED_TIME,
                 QUERY_START_TIME, COMPLETED_TIME, QUERY_ID, ERROR_MESSAGE, GRAPH_RUN_GROUP_ID
                 FROM TABLE(INFORMATION_SCHEMA.TASK_HISTORY(
                     SCHEDULED_TIME_RANGE_START=>TO_TIMESTAMP_LTZ(%s), RESULT_LIMIT=>10000))
-                WHERE DATABASE_NAME='SFX_D1110_AFTER' AND SCHEMA_NAME='ORCH'
-                ORDER BY SCHEDULED_TIME''', (since,))
+                WHERE DATABASE_NAME='__RUN_DATABASE__' AND SCHEMA_NAME='ORCH'
+                ORDER BY SCHEDULED_TIME'''), (since,))
             roots = [r for r in history if r['name'] == root]
             if roots:
                 graph = roots[0]['graph_run_group_id']
@@ -91,7 +97,7 @@ def run_once(cursor, timeout=180, poll_seconds=2):
             for step in steps.values():
                 try:
                     cursor.execute('SELECT SYSTEM$USER_TASK_CANCEL_ONGOING_EXECUTIONS(%s)',
-                                   ('SFX_D1110_AFTER.ORCH.' + step['task'],))
+                                   (_run_render('__RUN_DATABASE__.ORCH.') + step['task'],))
                 except Exception as error:
                     print(f"Cancellation check for {step['task']}: {error}")
         suspend_tasks(cursor, steps)

@@ -6,7 +6,7 @@ model-paths: ["models"]
 macro-paths: ["macros"]
 clean-targets: ["target", "dbt_packages"]
 vars:
-  run_token: "{{ env_var('SNOWFLAKE_RUN_TOKEN', 'sfx-d1110') }}"
+  run_token: "{{ env_var('RUN_TOKEN', 'sfx1119') }}"
   governance_policies: {}
 on-run-end:
   - "{{ reapply_governance(results) }}"

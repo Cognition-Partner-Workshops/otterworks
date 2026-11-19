@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import csv
 import datetime
 from decimal import Decimal
@@ -42,7 +48,7 @@ class Runner:
                 ('dbname', 'DB', 'teradata'), ('user', 'USER', 'postgres'),
                 ('password', 'PASSWORD', '')] if not dsn or 'TD_PG_' + v in os.environ})
         self.conn.autocommit = True
-        self.conn.execute(Path(__file__).with_name('bootstrap.sql').read_text())
+        self.conn.execute(_run_render(Path(__file__).with_name('bootstrap.sql').read_text()))
         self.conn.execute('SET search_path TO public,sfx_td')
         self.variables = {**os.environ, **(variables or {})}
         self.output = output or sys.stdout
@@ -144,7 +150,7 @@ class Runner:
         elif name == 'REPEAT':
             self.repeat = True
         elif name == 'RUN':
-            returncode = self.run(Path(re.sub(r'^FILE\s*=\s*', '', rest, flags=re.I).strip("'\"")).read_text())
+            returncode = self.run(_run_render(Path(re.sub(r'^FILE\s*=\s*', '', rest, flags=re.I).strip("'\"")).read_text()))
             if returncode:
                 return ('quit', returncode)
         elif name not in {'IF', 'LOGON', 'LOGOFF', 'LABEL', 'REMARK'}:

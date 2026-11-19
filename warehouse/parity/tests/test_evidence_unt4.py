@@ -1,4 +1,10 @@
 """Offline UNT-4 checks: fixture construction, guards and gate negative controls; not live parity."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from copy import deepcopy
 from datetime import date, datetime, timedelta
 
@@ -35,19 +41,19 @@ def test_fixture_boundaries():
 
 
 @pytest.mark.parametrize('sql', [
-    'CREATE SCHEMA IF NOT EXISTS SFX_D1110_AFTER.PC_AUDIT_UNT4_FIXTURE COMMENT = 1',
-    'CREATE TABLE SFX_D1110_AFTER.PC_AUDIT_UNT4_FIXTURE.AUDIT_EVENT (A INT)',
-    'INSERT INTO SFX_D1110_AFTER.PC_AUDIT_UNT4_FIXTURE.AUDIT_EVENT VALUES (1)'])
+    _run_render('CREATE SCHEMA IF NOT EXISTS __RUN_DATABASE__.PC_AUDIT_UNT4_FIXTURE COMMENT = 1'),
+    _run_render('CREATE TABLE __RUN_DATABASE__.PC_AUDIT_UNT4_FIXTURE.AUDIT_EVENT (A INT)'),
+    _run_render('INSERT INTO __RUN_DATABASE__.PC_AUDIT_UNT4_FIXTURE.AUDIT_EVENT VALUES (1)')])
 def test_fixture_writes_allowed(sql):
     assert unt4.WRITE.match(sql)
 
 
 @pytest.mark.parametrize('sql', [
-    'INSERT INTO SFX_D1110_AFTER.PC_AUDIT.AUDIT_EVENT_ARCHIVE VALUES (1)',
-    'CREATE OR REPLACE TABLE SFX_D1110_AFTER.PC_AUDIT_UNT4_FIXTURE.AUDIT_EVENT (A INT)',
-    'DELETE FROM SFX_D1110_AFTER.PC_AUDIT_UNT4_FIXTURE.AUDIT_EVENT',
-    'UPDATE SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS SET STATUS=1',
-    'INSERT INTO SFX_D1110_AFTER.PC_AUDIT_UNT4_FIXTURE_X.T VALUES (1)'])
+    _run_render('INSERT INTO __RUN_DATABASE__.PC_AUDIT.AUDIT_EVENT_ARCHIVE VALUES (1)'),
+    _run_render('CREATE OR REPLACE TABLE __RUN_DATABASE__.PC_AUDIT_UNT4_FIXTURE.AUDIT_EVENT (A INT)'),
+    _run_render('DELETE FROM __RUN_DATABASE__.PC_AUDIT_UNT4_FIXTURE.AUDIT_EVENT'),
+    _run_render('UPDATE __RUN_DATABASE__.MIGRATION_CONTROL.MAPPINGS SET STATUS=1'),
+    _run_render('INSERT INTO __RUN_DATABASE__.PC_AUDIT_UNT4_FIXTURE_X.T VALUES (1)')])
 def test_other_writes_refused(sql):
     assert not unt4.WRITE.match(sql)
 

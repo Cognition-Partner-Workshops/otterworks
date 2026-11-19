@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from contextlib import nullcontext
 import csv
 from datetime import datetime, timezone
@@ -26,8 +32,8 @@ NOW = datetime(2026, 11, 10, 12, tzinfo=timezone.utc)
 
 
 def test_compat_shapes_normal_and_empty():
-    spec = yaml.safe_load((ROOT / 'fixture_columns.yml').read_text())
-    sql = (ROOT / 'migrations/V004__compat.sql').read_text()
+    spec = yaml.safe_load(_run_render((ROOT / 'fixture_columns.yml').read_text()))
+    sql = _run_render((ROOT / 'migrations/V004__compat.sql').read_text())
     views = dict(re.findall(r'CREATE OR REPLACE VIEW COMPAT\.(\w+).*?\nAS (SELECT.*?);', sql, re.S))
     expected = dict(CUSTOMER='CUSTOMER_ACCOUNT', ACCOUNT='CUSTOMER_ACCOUNT', INVOICE='INVOICE_HDR',
                     INVOICE_LINE='INVOICE_LINE', PAYMENT='PAYMENT', GL_JOURNAL_LINE='GL_JOURNAL_LINE')
@@ -72,25 +78,25 @@ def test_compat_shapes_normal_and_empty():
             db.execute(f'delete from COMPAT.{name}')
         assert all(db.execute(query).fetchall() == [] for query in views.values())
     assert 'GRANT SELECT ON FUTURE VIEWS' not in sql
-    assert 'GRANT USAGE ON SCHEMA COMPAT TO ROLE SFX_D1110_ROLE' in sql
-    assert 'GRANT SELECT ON ALL VIEWS IN SCHEMA COMPAT TO ROLE SFX_D1110_ROLE' in sql
+    assert _run_render('GRANT USAGE ON SCHEMA COMPAT TO ROLE __RUN_DATABASE___ROLE') in sql
+    assert _run_render('GRANT SELECT ON ALL VIEWS IN SCHEMA COMPAT TO ROLE __RUN_DATABASE___ROLE') in sql
     roles.validate(roles.statements())
 
 
 def test_repeatable_procedure_discovery_and_comments(tmp_path):
     from schemachange.session.Script import get_all_scripts_recursively
-    config = yaml.safe_load((ROOT / 'schemachange-config.yml').read_text())
+    config = yaml.safe_load(_run_render((ROOT / 'schemachange-config.yml').read_text()))
     deploy_root = (ROOT / config['root-folder']).resolve()
     assert deploy_root == ROOT
     assert (ROOT / 'procedures').is_relative_to(deploy_root)
     for path in (ROOT / 'procedures').glob('R__*.sql'):
-        for statement in re.split(r'(?im)(?=^CREATE )', path.read_text()):
+        for statement in re.split(r'(?im)(?=^CREATE )', _run_render(path.read_text())):
             if statement.startswith('CREATE '):
-                assert re.search(r"COMMENT\s*=\s*'sfx-d1110[^']*'", statement)
-        assert 'sfx-d1110' in path.read_text()
+                assert re.search(_run_render(r"COMMENT\s*=\s*'__RUN_TOKEN__[^']*'"), statement)
+        assert _run_render('__RUN_TOKEN__') in _run_render(path.read_text())
     folder = tmp_path / 'procedures'
     folder.mkdir()
-    (folder / 'R__ORCH__example.sql').write_text("CREATE PROCEDURE x() RETURNS VARCHAR LANGUAGE SQL COMMENT='sfx-d1110 test' AS $$ BEGIN RETURN 'ok'; END; $$;")
+    (folder / 'R__ORCH__example.sql').write_text(_run_render("CREATE PROCEDURE x() RETURNS VARCHAR LANGUAGE SQL COMMENT='__RUN_TOKEN__ test' AS $$ BEGIN RETURN 'ok'; END; $$;"))
     scripts = get_all_scripts_recursively(tmp_path)
     assert scripts['r__orch__example.sql'].type == 'R'
 
@@ -99,7 +105,7 @@ def test_dag_matches_map():
     module_spec = importlib.util.spec_from_file_location('renderer', ROOT / 'tools/render_dag.py')
     renderer = importlib.util.module_from_spec(module_spec)
     module_spec.loader.exec_module(renderer)
-    assert renderer.TARGET.read_text() == renderer.render()
+    assert _run_render(renderer.TARGET.read_text()) == renderer.render()
     steps = task_dag.step_map()
     assert steps['session_b']['after'] == steps['session_c']['after'] == ['worklet_a']
     assert steps['session_d']['after'] == ['session_b', 'session_c']
@@ -169,7 +175,7 @@ def test_dag_suspension_verification(monkeypatch):
 
 def read(qid='q1', rows=5, consumer='compat-smoke'):
     return dict(query_id=qid, start_time=NOW, rows_produced=rows,
-                query_text='select * from "SFX_D1110_AFTER"."COMPAT"."INVOICE"', consumer=consumer)
+                query_text=_run_render('select * from "__RUN_DATABASE__"."COMPAT"."INVOICE"'), consumer=consumer)
 
 
 def test_consumers_union_dedupe_objects_pending_and_empty():
@@ -186,13 +192,13 @@ def test_consumers_union_dedupe_objects_pending_and_empty():
 def test_consumer_sql_filters_and_parameters():
     columns = list(read())
     cursor = Cursor([(columns, [tuple(read().values())]), (columns, []), (['QUERY_MAX_START'], [(NOW,)])])
-    landed, recent, fresh = consumer_reads.read_history(cursor, 'sfx-d1110', 24)
+    landed, recent, fresh = consumer_reads.read_history(cursor, _run_render('__RUN_TOKEN__'), 24)
     assert landed == [read()] and recent == [] and fresh == NOW
     for sql, params in cursor.calls[:2]:
         assert ':act::VARCHAR' in sql and "'consumers'" in sql
         assert ':run::VARCHAR = %s' in sql
         assert 'QUERY_TYPE' in sql and 'EXECUTION_STATUS' in sql
-        assert params[-2:] == ('%sfx-d1110%', 'sfx-d1110')
+        assert params[-2:] == (_run_render('%__RUN_TOKEN__%'), _run_render('__RUN_TOKEN__'))
 
 
 def test_consumers_missing_and_argument_error(monkeypatch, capsys):
@@ -215,15 +221,15 @@ def test_teardown_discovers_new_schemas_and_tasks():
         def execute(self, sql):
             super().execute(sql)
             if sql.startswith('SHOW SCHEMAS'):
-                self.rows += [('COMPAT', 'sfx-d1110 compat'), ('ORCH', 'sfx-d1110 orchestration')]
+                self.rows += [('COMPAT', _run_render('__RUN_TOKEN__ compat')), ('ORCH', _run_render('__RUN_TOKEN__ orchestration'))]
             if sql.startswith('SHOW TASKS') and '"ORCH"' in sql:
-                self.rows = [(s['task'], 'sfx-d1110 placeholder') for s in task_dag.step_map().values()]
-    objects, denied = teardown.discover(NewCursor(), 'sfx-d1110')
+                self.rows = [(s['task'], _run_render('__RUN_TOKEN__ placeholder')) for s in task_dag.step_map().values()]
+    objects, denied = teardown.discover(NewCursor(), _run_render('__RUN_TOKEN__'))
     assert not denied
     commands = teardown.plan(objects)
-    assert 'DROP SCHEMA IF EXISTS "SFX_D1110_AFTER"."COMPAT" CASCADE' in commands
-    assert 'DROP SCHEMA IF EXISTS "SFX_D1110_AFTER"."ORCH" CASCADE' in commands
-    assert 'ALTER TASK "SFX_D1110_AFTER"."ORCH"."DAG_START" SUSPEND' in commands
+    assert _run_render('DROP SCHEMA IF EXISTS "__RUN_DATABASE__"."COMPAT" CASCADE') in commands
+    assert _run_render('DROP SCHEMA IF EXISTS "__RUN_DATABASE__"."ORCH" CASCADE') in commands
+    assert _run_render('ALTER TASK "__RUN_DATABASE__"."ORCH"."DAG_START" SUSPEND') in commands
 
 
 @pytest.mark.parametrize('decision, expected', [

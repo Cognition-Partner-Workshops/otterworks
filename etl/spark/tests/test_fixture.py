@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import contextlib
 import csv
 from decimal import Decimal
@@ -45,7 +51,7 @@ class FixtureTest(unittest.TestCase):
             root = Path(directory)
             self.generate(root, 0)
             for path in root.rglob("*.psv"):
-                self.assertEqual(len(path.read_text().splitlines()), 1)
+                self.assertEqual(len(_run_render(path.read_text()).splitlines()), 1)
 
     def test_invalid_rows(self):
         with self.assertRaisesRegex(ValueError, "nonnegative"):
