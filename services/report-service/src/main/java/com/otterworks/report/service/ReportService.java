@@ -1,21 +1,21 @@
 package com.otterworks.report.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.otterworks.report.config.AppConfig;
 import com.otterworks.report.model.Report;
 import com.otterworks.report.model.ReportRequest;
 import com.otterworks.report.model.ReportStatus;
 import com.otterworks.report.repository.ReportRepository;
 import com.otterworks.report.util.ReportDateUtils;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
-import javax.transaction.Transactional;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
@@ -25,8 +25,6 @@ import java.util.Optional;
  * Core report orchestration service.
  *
  * LEGACY PATTERNS:
- * - javax.transaction.Transactional (target: jakarta.transaction.Transactional
- *   or org.springframework.transaction.annotation.Transactional)
  * - java.util.Date throughout
  * - @Async delegated to ReportGenerationWorker (fire-and-forget, no error propagation)
  * - Manual JSON serialization for parameters
@@ -49,7 +47,7 @@ public class ReportService {
         this.reportRepository = reportRepository;
         this.generationWorker = generationWorker;
         this.appConfig = appConfig;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = JsonMapper.builder().build();
     }
 
     /**
@@ -73,7 +71,7 @@ public class ReportService {
         if (request.getParameters() != null) {
             try {
                 report.setParameters(objectMapper.writeValueAsString(request.getParameters()));
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.warn("Failed to serialize report parameters: {}", e.getMessage());
             }
         }

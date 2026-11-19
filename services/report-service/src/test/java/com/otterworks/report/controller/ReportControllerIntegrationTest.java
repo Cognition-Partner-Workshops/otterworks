@@ -1,25 +1,26 @@
 package com.otterworks.report.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.otterworks.report.model.ReportCategory;
 import com.otterworks.report.model.ReportRequest;
 import com.otterworks.report.model.ReportType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -53,6 +54,27 @@ public class ReportControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Test
+    public void openApiDocumentsReportEndpointsAndRequestSchema() throws Exception {
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.info.title").value("OtterWorks Report Service API"))
+                .andExpect(jsonPath("$.paths['/api/v1/reports'].post.responses['202'].description")
+                        .value("Report request accepted"))
+                .andExpect(jsonPath("$.paths['/api/v1/reports/{id}'].get.parameters[0].name").value("id"))
+                .andExpect(jsonPath("$.components.schemas.ReportRequest.required").value(hasItem("reportName")));
+    }
+
+    @Test
+    public void swaggerUiAndItsConfigurationAreAvailable() throws Exception {
+        mockMvc.perform(get("/swagger-ui/index.html"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
+        mockMvc.perform(get("/v3/api-docs/swagger-config"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.url").value("/v3/api-docs"));
+    }
 
     // ---- POST /api/v1/reports ----
 
