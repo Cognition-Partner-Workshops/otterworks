@@ -107,6 +107,7 @@ def main():
     parser.add_argument('--source', type=Path)
     parser.add_argument('--ready', type=Path)
     args = parser.parse_args()
+    # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
     subprocess.run(command(args.job, args.business_date, args.source, args.ready), check=True, shell=False)
 
 

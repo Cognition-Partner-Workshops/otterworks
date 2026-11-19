@@ -73,8 +73,8 @@ jobs:
           python=lakehouse/.venv/bin/python
           "$python" -m lakehouse.billing.consumer_reference --business-date "$BUSINESS_DATE"
           tables="$("$python" -c 'from warehouse.seed.columns import TABLES; print(" ".join(t.name for t in TABLES if t.area == "billing"))')"
-          "$python" -m lakehouse.runtime.ingest --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE" --tables $tables
-          "$python" -m lakehouse.runtime.dbt --select tag:billing
+          "$python" -m lakehouse.runtime.ingest --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE" --tables $tables STORAGE_USAGE_DAILY
+          "$python" -m lakehouse.runtime.dbt --select +tag:billing
           "$python" -m lakehouse.billing.informatica --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE"
           "$python" -m lakehouse.billing.informatica_reference --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE" --replay-next-run
       - name: Prepare the audit Spark oracle on the same headered landing

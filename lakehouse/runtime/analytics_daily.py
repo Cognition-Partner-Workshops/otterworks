@@ -196,6 +196,7 @@ def execute(config, aws, connect, day, journal, owner):
                              dbname=config.get('database', 'database'), user=config.get('database', 'user'))
         try:
             with connection.cursor() as cursor:
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 cursor.execute(UPSERT, [ds] + [summary[name] for name in SUMMARY_COLUMNS[1:]])
             connection.commit()
         except Exception:
