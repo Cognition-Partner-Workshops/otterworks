@@ -16,7 +16,7 @@ name: Deploy tenant environment
 # golden image for everything else (see resolve_tag in scripts/deploy-tenant.sh).
 # Deployment goes through the ops dashboard API, never straight at the cluster:
 # the dashboard runs the work as a runner Job under its own IRSA role, so this
-# workflow needs no EKS access.
+# workflow needs no EKS access. Completion is checked through the dashboard audit API.
 
 on:
   push:
@@ -216,7 +216,9 @@ jobs:
           manifest="$(jq -r '.imageManifest' <<<"${image}")"
           media_type="$(jq -r '.imageManifestMediaType' <<<"${image}")"
           digest="$(jq -r '.imageId.imageDigest' <<<"${image}")"
-          [ -n "${manifest}" ] && [ "${manifest}" != "null" ] || { echo "::error::${REPOSITORY}:${IMAGE_TAG} not found"; exit 1; }
+          if [ -z "${manifest}" ] || [ "${manifest}" = "null" ]; then
+            echo "::error::${REPOSITORY}:${IMAGE_TAG} not found"; exit 1
+          fi
 
           tags=("${TENANT_TAG}")
           if [ "${GOLDEN}" = "true" ]; then tags+=(main); fi
@@ -253,6 +255,10 @@ jobs:
     # a failed build must not deploy, hence the explicit result check.
     if: always() && needs.plan.outputs.deploy == 'true' && needs.build.result != 'failure' && needs.build.result != 'cancelled'
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name == 'main' && 't-main' || 'workshop' }}
+      url: ${{ steps.sync.outputs.url }}
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
@@ -268,6 +274,14 @@ jobs:
       # `tenant.sh persist`), so a missing t-main is an error, not a silent
       # ephemeral tenant on the golden branch.
       - name: Sync tenant environment
+        id: sync
         env:
           TENANT_PREFIX: ${{ vars.TENANT_PREFIX }}
-        run: demo-platform/scripts/tenant.sh sync "${GITHUB_REF_NAME}"
+        run: demo-platform/scripts/tenant.sh sync "${GITHUB_REF_NAME}" --wait --smoke
+
+      - name: Deployment result
+        if: always()
+        env:
+          RESULT: ${{ steps.sync.outcome }}
+        run: |
+          printf '## Tenant CD\nBranch: %s\n\nSync + runner completion + ingress smoke: **%s**\n' "$GITHUB_REF_NAME" "$RESULT" >> "$GITHUB_STEP_SUMMARY"

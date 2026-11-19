@@ -1,0 +1,70 @@
+name: Roll back tenant environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      tenant:
+        description: Tenant id (main or a canonical lowercase tenant id)
+        required: true
+        type: string
+      service:
+        description: App service name or all (all includes intentionally broken services)
+        required: true
+        default: all
+        type: string
+      revision:
+        description: Helm revision (empty selects previous per release)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: rollback-${{ inputs.tenant }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    environment:
+      name: ${{ inputs.tenant == 'main' && 't-main' || 'workshop' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Validate tenant id
+        env:
+          TENANT: ${{ inputs.tenant }}
+        run: |
+          [[ "$TENANT" =~ ^[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?$ && "$TENANT" != *--* ]] || { echo 'Use a canonical tenant id'; exit 1; }
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLLBACK_ROLE_ARN || secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4
+      - uses: azure/setup-kubectl@3e0aec4d80787158d308d7b364cb1b702e7feb7f # v4
+      - name: Kubeconfig
+        run: aws eks update-kubeconfig --name otterworks-dev --region "$AWS_REGION"
+      - name: Roll back
+        id: rollback
+        env:
+          TENANT: ${{ inputs.tenant }}
+          SERVICE: ${{ inputs.service }}
+          REVISION: ${{ inputs.revision }}
+        run: |
+          args=("$TENANT" "$SERVICE")
+          if [ -n "$REVISION" ]; then args+=(--to-revision "$REVISION"); fi
+          scripts/rollback-tenant.sh "${args[@]}"
+      - name: Rollback result
+        if: always()
+        env:
+          TENANT: ${{ inputs.tenant }}
+          SERVICE: ${{ inputs.service }}
+          RESULT: ${{ steps.rollback.outcome }}
+        run: |
+          printf '## Tenant rollback\nTenant %s, service %s: **%s**\n' "$TENANT" "$SERVICE" "$RESULT" >> "$GITHUB_STEP_SUMMARY"

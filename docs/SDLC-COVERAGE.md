@@ -71,6 +71,10 @@ excellent **polyglot CI demo**.
 
 ## 3. CD / deployment — Partial (works, but app comes up unconfigured)
 
+Current tenant rollout controls, approval prerequisites, maturity assessment and
+rollback runbook: [CD rollout and rollback](CD-ROLLOUT-ROLLBACK.md). The observations
+below describe the earlier baseline, not a new live validation of those controls.
+
 **Evidence.** `scripts/deploy-dev.sh` orchestrates the full path: terraform apply (platform → app),
 `aws eks update-kubeconfig`, namespace create, ECR login, `docker build --platform linux/amd64` +
 push for all 13 units, then `helm upgrade --install` per service from `infrastructure/helm/<svc>`.
