@@ -124,6 +124,21 @@ class AppUITestCase: XCTestCase {
 }
 
 final class AppUITests: AppUITestCase {
+    func testBundledWebAppRendersAndRoutes() {
+        XCTAssertTrue(app.webViews.textFields["you@example.com"].waitForExistence(timeout: 10))
+        XCTAssertTrue(element(.button, "Sign in").exists)
+        login()
+        assertText("Harbor report.txt")
+        navigate("Documents")
+        assertText("Voyage notes")
+        navigate("Files")
+        assertText("Harbor report.txt")
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Bundled web app after routing"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
     func testPortraitMenuReopens() {
         login()
         navigate("Files")
