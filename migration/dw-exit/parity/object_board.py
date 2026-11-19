@@ -25,6 +25,7 @@ from parity.semantics import columns as source_columns, numeric_type
 from parity.ladder import local_compare as compare
 from parity.provenance import provenance, markdown
 from parity import report_outputs, spark_billing, dbc_retire, documents_board
+from parity import local_audit, powercenter_audit, spark_audit
 
 
 def quote(name):
@@ -167,7 +168,8 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     result = wave_board(objects, counters or {})
     result.update(run_token=RunConfig.from_env().token, target=target, rows=[])
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
-        'local_target': 'DuckDB', 'conversions': ['billing/'+s for s in ('10_load.sql','15_storage.sql','20_routines.sql','30_views.sql','40_close.sql')],
+        'local_target': 'DuckDB', 'conversions': ['billing/'+s for s in ('10_load.sql','15_storage.sql','20_routines.sql','30_views.sql','40_close.sql')]
+            + ['audit/'+s for s in ('00_tables.sql','05_landing.sql',*local_audit.STAGES,'20_routines.sql','50_powercenter.sql','52_sessions.sql','55_workflow.sql')],
         'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
     available, errors = set(available or ()), errors or {}
     dbc = dbc_retire.materialize() if target == 'duckdb' and any(o['subject_area']=='dbc' for o in objects) else None
@@ -176,7 +178,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
         row.update(status='red', migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'),
                    row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
-        if obj['subject_area'] in ('billing','documents'):
+        if obj['subject_area'] in ('billing','documents','audit'):
             row['provenance'] = provenance(obj)
         if obj['subject_area']=='documents':
             detail = (subject_evidence or {}).get('documents',{}).get(obj['name']) if target=='duckdb' else None
@@ -202,6 +204,8 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 row['reason'] = 'Spark source available; output not materialized locally'
             else:
                 row['reason'] = 'source on Spark baseline PR'
+        elif obj.get('target_type') == 'retire' and obj['subject_area'] == 'audit':
+            row['reason'] = 'retirement proposed; not converted or retired'
         elif target == 'snowflake':
             row['reason'] = 'Snowflake target selected; execution disabled'
         elif not obj.get('output_relations'):
@@ -226,7 +230,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
                 if row['status'] == 'red':
                     row['reason'] = 'measured parity mismatch'
-        if obj['subject_area'] == 'billing':
+        if obj['subject_area'] in ('billing', 'audit'):
             row.update(local_duckdb=row['status'] if target == 'duckdb' else 'red',
                        snowflake='red', snowflake_reason=snowflake_reason,
                        snowflake_preflight=preflight)
@@ -249,6 +253,10 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         result['summary']['documents'] = dict(total=len(documents),local_green=counts['green'],local_red=counts['red'],
             retired=counts['retired'],local_duckdb='red' if counts['red'] else 'green',snowflake='red',snowflake_reason=snowflake_reason)
         result['summary']['retired'] = sum(row['status']=='retired' for row in result['rows'])
+    audit = [row for row in result['rows'] if row['subject_area'] == 'audit']
+    audit_green = sum(row['local_duckdb'] == 'green' for row in audit)
+    result['summary']['audit'] = dict(local_green=audit_green, local_red=len(audit)-audit_green,
+        snowflake='red', snowflake_reason=snowflake_reason)
     return result
 
 
@@ -270,7 +278,8 @@ def main():
     try:
         if args.target == 'duckdb' and manifest['objects']:
             names = {r for obj in manifest['objects'] for r in obj.get('output_relations',[])
-                     if not r.startswith('SFX_SPARK.') and r.split('.')[-1] not in report_outputs.OUTPUTS}
+                     if not r.startswith(('SFX_SPARK.', 'SFX_AUDIT_PC.'))
+                     and r.split('.')[-1] not in report_outputs.OUTPUTS | {'M_RECON_TOTALS_OUTPUT'}}
             ns = os.environ.get('NS',RunConfig.from_env().before_namespace)
             port = os.environ.get('TD_PG_PORT',str(54500+zlib.crc32(ns.encode())%1000))
             dsn = os.environ.get('BOARD_SOURCE_DSN',f'host=127.0.0.1 port={port} dbname=teradata user=postgres')
@@ -285,9 +294,21 @@ def main():
             if any(o['subject_area']=='documents' for o in manifest['objects']):
                 documents_evidence = documents_board.measure(manifest,ns,os.environ.get('BUSINESS_DATE','20261109'))
                 subject_evidence['documents'] = documents_board.object_measurements(manifest,documents_evidence)
+            audit_spark_ready, audit_spark_errors, audit_spark_evidence = spark_audit.materialize(before,after,manifest['objects'],ns)
+            ready.update(audit_spark_ready)
+            errors.update(audit_spark_errors)
+            audit_errors, audit_evidence = local_audit.materialize(before,after,source_ready,dsn,ready,
+                os.environ.get('BUSINESS_DATE','20261109'))
+            errors.update(audit_errors)
+            pc_errors, pc_evidence = powercenter_audit.materialize(before,after,dsn,ready,
+                os.environ.get('BUSINESS_DATE','20261109'))
+            errors.update(pc_errors)
         payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight,subject_evidence=subject_evidence)
         if args.target == 'duckdb' and manifest['objects']:
             payload['spark_evidence'] = spark_evidence
+            payload['audit_evidence'] = audit_evidence
+            payload['audit_powercenter_evidence'] = pc_evidence
+            payload['audit_spark_evidence'] = audit_spark_evidence
         if documents_evidence is not None:
             payload['documents_evidence'] = {'file':'migration/dw-exit/documents/evidence.json',
                 'binary_replay':'migration/dw-exit/documents/spark-replay.json'}
