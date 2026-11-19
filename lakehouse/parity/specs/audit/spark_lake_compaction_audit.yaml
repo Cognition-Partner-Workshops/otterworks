@@ -1,0 +1,20 @@
+id: audit.spark_lake_compaction_audit
+legacy_objects:
+- spark_job:lake_compaction_audit
+- spark_submit:etl/spark/submit/lake_compaction_audit.sh
+description: 'A-406: same Spark landing snapshot; Parquet/JDBC logical output replaced by Delta. Physical
+  ordering and file layout are not relational outputs.'
+legacy:
+  kind: parquet
+  path: etl/spark/.data/{LEGACY_NS}/lake/audit/lake_compaction_audit
+lakehouse:
+  kind: delta_table
+  table: gold_audit.spark_audit_daily_summary
+keys:
+- event_date
+- event_type
+columns:
+- event_date
+- event_type
+- event_count
+- actors

@@ -1,6 +1,6 @@
 # Migration assumptions
 
-Entries: 63. Validation errors: 0.
+Entries: 72. Validation errors: 0.
 
 ## A-001 — PSV empty fields and nulls
 
@@ -1135,3 +1135,165 @@ Entries: 63. Validation errors: 0.
 **verification:** test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 
 **sources:** etl/crontab
+
+## A-400 — Daily BTEQ load is authoritative over Informatica alternatives
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/audit/01_load_events.bteq, bteq_script:warehouse/teradata/scripts/audit/03_load_reviews.bteq, informatica_mapping:SFX_AUDIT.m_SFX_STG_AUDIT_EVENT, informatica_session:SFX_AUDIT.s_m_SFX_STG_AUDIT_EVENT, informatica_mapping:SFX_AUDIT.m_SFX_AUDIT_EVENT, informatica_session:SFX_AUDIT.s_m_SFX_AUDIT_EVENT, informatica_mapping:SFX_AUDIT.m_SFX_SECURITY_ALERT, informatica_session:SFX_AUDIT.s_m_SFX_SECURITY_ALERT, teradata_table:SFX_AUDIT.AUDIT_EVENT, cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/01_load_events, informatica_source:SFX_AUDIT.STG_AUDIT_EVENT, informatica_target:SFX_AUDIT.AUDIT_EVENT, teradata_table:SFX_AUDIT.STG_AUDIT_EVENT, informatica_source:SFX_AUDIT.FF_AUDIT_EVENT, informatica_source:SFX_AUDIT.AUDIT_EVENT, informatica_target:SFX_AUDIT.STG_AUDIT_EVENT, teradata_table:SFX_AUDIT.SECURITY_ALERT, cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/03_load_reviews, informatica_source:SFX_AUDIT.FF_SECURITY_ALERT, informatica_target:SFX_AUDIT.SECURITY_ALERT
+
+**ambiguity:** Informatica trims and uppercases events, replaces invalid IDs/details, and updates/escalates or rejects alerts; BTEQ truncates and inserts all staging rows unchanged.
+
+**decision:** Use the BTEQ path actually dispatched by daily_chain. Do not apply Informatica trimming, default details, DD_UPDATE escalation, or severity rejects to these snapshots. Informatica identities are accounted for as superseded alternative producer semantics, not equivalent concurrent engines.
+
+**rationale:** The requested system of record is the executed daily chain. Applying inactive alternative semantics would change final legacy outputs.
+
+**verification:** test:lakehouse/tests/test_audit.py::test_daily_chain_does_not_apply_informatica_transformations
+
+**sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/audit/01_load_events.bteq, warehouse/teradata/scripts/audit/03_load_reviews.bteq, etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_STG_AUDIT_EVENT.XML, etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_EVENT.XML, etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_SECURITY_ALERT.XML, etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML
+
+## A-401 — Audit-local count projections until other domain models merge
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq, teradata_table:SFX_AUDIT.AUDIT_RECON, teradata_view:SFX_AUDIT.V_EVENT_ACTORS
+
+**ambiguity:** Fetched remote branches and open lakehouse PRs expose only the foundation customer_account silver model; most external base models are absent.
+
+**decision:** Use ref(customer_account) now. For absent models use audit-local ephemeral typed bronze projections with the legacy row-selection rules, including latest document version, SET storage deduplication, user activity generation, monthly billing usage and invoice-line additions. Explicit DAG edges require all three bronze domains and dbt_billing. Swap these projections to domain ref() dependencies once their models merge.
+
+**rationale:** Counts must describe final base state rather than assume every base count equals staging. This does not claim ownership or full conversion of external domains.
+
+**verification:** audit.audit_recon
+
+**sources:** warehouse/teradata/scripts/audit/11_reconciliation.bteq, warehouse/teradata/jobs/daily_chain, warehouse/teradata/procedures/activity_daily.sql, warehouse/teradata/scripts/documents/02_current_versions.bteq, warehouse/teradata/scripts/documents/05_load_sessions.bteq, warehouse/teradata/scripts/documents/10_storage_monthly.bteq, warehouse/teradata/procedures/monthly_invoice.sql
+
+## A-402 — Exclude the one shared reconciliation runner row
+
+**status:** accepted
+
+**risk:** low
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq, teradata_table:SFX_AUDIT.AUDIT_RECON, teradata_view:SFX_AUDIT.V_CUSTOMER_RECON, teradata_macro:SFX_AUDIT.M_RECON_TOTALS
+
+**ambiguity:** The full chain writes recon_id 21000000001 through shared jobs/reconcile; that responsibility is handed to integration.
+
+**decision:** Exclude exactly recon_id=21000000001 from both comparison populations and audit publication. Preserve every audit-generated 20000000001..20000000037 row and every other load row. Number the ordered multiset for the customer-recon view because it exposes no unique key.
+
+**rationale:** User explicitly assigned shared runner output to integration; this is an ownership filter, not numerical tolerance or hidden mismatch.
+
+**verification:** audit.audit_recon
+
+**sources:** warehouse/teradata/jobs/reconcile, warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/audit/11_reconciliation.bteq, warehouse/teradata/ddl/audit/10_views.sql
+
+## A-403 — Disabled archive defaults and enabled replay limitation
+
+**status:** open
+
+**risk:** high
+
+**legacy_objects:** teradata_table:SFX_AUDIT.AUDIT_EVENT_ARCHIVE, informatica_mapping:SFX_AUDIT.m_SFX_AUDIT_EVENT_ARCHIVE, informatica_session:SFX_AUDIT.s_m_SFX_AUDIT_EVENT_ARCHIVE, teradata_macro:SFX_AUDIT.M_ARCHIVE_OVERVIEW
+
+**ambiguity:** Archive task is disabled, with 2555-day session override and a non-resetting sequence; an enabled production run would append and advance persisted sequence state.
+
+**decision:** Default audit_archive_enabled=false produces empty archive, matching the fresh legacy fixture. Enabled model selects events strictly older than business date minus 2555 days and assigns deterministic event-ID-ordered row numbers from 1. Enabled snapshots are not a migration of prior archive history or persistent Informatica sequence state.
+
+**rationale:** Requested gated implementation is replayable and testable; no wall-clock dependency is introduced. Persistent enabled append/sequence equivalence remains explicitly unverified. Archive mapping/session coverage replaces only the disabled scheduling responsibility under A-408, not enabled history migration.
+
+**verification:** test:lakehouse/tests/test_audit.py::test_summary_final_and_archive_gate
+
+**sources:** etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML, etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_EVENT_ARCHIVE.XML, etl/informatica/params/sfx_d1110_daily.par
+
+## A-404 — Final chain summaries and reconciliation override load snapshots
+
+**status:** accepted
+
+**risk:** low
+
+**legacy_objects:** teradata_table:SFX_AUDIT.AUDIT_DAILY_SUMMARY, teradata_table:SFX_AUDIT.AUDIT_RECON, teradata_procedure:SFX_AUDIT.P_DAILY_SUMMARY, teradata_procedure:SFX_AUDIT.P_RECON_COUNTS, informatica_mapping:SFX_AUDIT.m_SFX_AUDIT_DAILY_SUMMARY, informatica_session:SFX_AUDIT.s_m_SFX_AUDIT_DAILY_SUMMARY, bteq_script:warehouse/teradata/scripts/audit/03_load_reviews.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/03_load_reviews, bteq_script:warehouse/teradata/scripts/audit/10_summary_daily.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/10_summary_daily, bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/11_reconciliation
+
+**ambiguity:** Load snapshot tables are later changed by report procedures. Informatica summary instead counts DOC_EXPORT and uses a sequence.
+
+**decision:** Keep load rows in silver. Gold summary preserves IDs below 10000000000 and appends business-day customer counts with synthetic IDs and zero exports. Gold recon replaces the 37 audit count IDs, then recomputes differences only for the business day. Informatica summary remains pending as an alternative producer.
+
+**rationale:** Final full-chain legacy parity, rather than intermediate load-stage parity, is the requested contract.
+
+**verification:** audit.audit_daily_summary
+
+**sources:** warehouse/teradata/scripts/audit/03_load_reviews.bteq, warehouse/teradata/scripts/audit/10_summary_daily.bteq, warehouse/teradata/scripts/audit/11_reconciliation.bteq, warehouse/teradata/procedures/summary_daily.sql, warehouse/teradata/procedures/recon_counts.sql, etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_DAILY_SUMMARY.XML
+
+## A-405 — Atomic date-scoped reconciliation publication
+
+**status:** accepted
+
+**risk:** low
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq, teradata_macro:SFX_AUDIT.M_RECON_TOTALS
+
+**ambiguity:** Legacy exports a mutable reconciliation.psv with no header and rows ordered by recon ID; the file contains a shared runner row outside audit ownership.
+
+**decision:** Publish the audit-owned macro projection as exports/<business_date>/reconciliation.psv, same four integer columns and ordering, excluding only A-402 shared ID. Write and fsync a same-directory temporary file then os.replace; failures preserve the previous publication and retries replace it. File parity compares the scoped legacy macro SQL to the published file.
+
+**rationale:** Date scoping supports replay/backfill and atomic replacement avoids partial output; no claim is made to integration-owned file rows.
+
+**verification:** test:lakehouse/tests/test_audit.py::test_export_empty_retry_and_failure
+
+**sources:** warehouse/teradata/scripts/audit/11_reconciliation.bteq, warehouse/teradata/macros/recon_totals.sql, warehouse/teradata/jobs/reconcile
+
+## A-406 — Spark snapshot feeds and Delta replace Parquet plus JDBC sinks
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** spark_job:audit_actor_activity_join, spark_job:audit_archive_resort, spark_job:audit_daily_summary, spark_job:compliance_flag_rules, spark_job:lake_compaction_audit, spark_job:security_alert_anomaly, spark_submit:etl/spark/submit/audit_actor_activity_join.sh, spark_submit:etl/spark/submit/audit_archive_resort.sh, spark_submit:etl/spark/submit/audit_daily_summary.sh, spark_submit:etl/spark/submit/compliance_flag_rules.sh, spark_submit:etl/spark/submit/lake_compaction_audit.sh, spark_submit:etl/spark/submit/security_alert_anomaly.sh
+
+**ambiguity:** The Spark estate uses headered feeds with different schemas from warehouse landing; legacy jobs read all files in each table directory and publish both Parquet and optional JDBC copies.
+
+**decision:** Use the separate Spark fixture/production landing snapshot selected by AUDIT_SPARK_LANDING (default etl/spark/.data/<LEGACY_NS>/landing), identical for both Spark engines. Preserve every landed row, stamp the explicit BUSINESS_DATE batch into bronze_audit.spark_* and publish gold_audit.spark_* Delta snapshots instead of duplicate Parquet/JDBC sinks. Cross-domain user feeds are declared dependencies. Sorting/file layout are physical, not relational outputs; Delta OPTIMIZE replaces coalescing. Allow only 1e-10 absolute Z-score error for parallel floating reduction ordering. Backfills require a frozen matching Spark source directory.
+
+**rationale:** Schema guessing or reusing the incompatible warehouse feeds would compare different data. Local legacy submit scripts and converted outputs run against the exact same Spark fixture.
+
+**verification:** audit.spark_audit_daily_summary
+
+**sources:** etl/spark/jobs/py/common/schemas.py, etl/spark/jobs/py/common/runtime.py, etl/spark/fixture/generate_fixture.py, etl/spark/scala/src/main/scala/sfx/BatchSupport.scala, etl/spark/jobs/py/lake_compaction_audit.py, etl/spark/jobs/py/security_alert_anomaly.py
+
+## A-407 — Business-date weekly archive with resumable publication and deletion
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** etl_script:etl/scripts/audit_archive_weekly.py, cron_entry:etl/crontab#33854636d6ba
+
+**ambiguity:** Legacy uses UTC wall-clock midnight minus 90 days, nondeterministic gzip headers/report time, overwrites the weekly key, and swallows deletion failures.
+
+**decision:** Use BUSINESS_DATE midnight UTC minus 90 days with the same strict timestamp-string cutoff. Canonically sort JSONL and use deterministic gzip; report generated_at is business-date midnight. Compare decompressed event multisets and all report fields except generated_at/compressed_size_bytes against the frozen-clock legacy script. Publish Glacier first, then a conditional Standard manifest of immutable event keys and SHA256, then delete, then conditionally publish the report. Retry resumes the manifest without reading Glacier; an existing completed report is immutable. Require immutable DynamoDB event keys/content during archival and explicit bucket/owner configuration. New late arrivals for an already published business date wait for the next weekly run; a conflicting incomplete snapshot fails closed.
+
+**rationale:** Avoids partial-file exposure, silent deletion loss and needing Glacier restoration on retry; the safety improvement is deliberate, not hidden parity normalization. Extra manifests contain keys, not event payloads.
+
+**verification:** test:lakehouse/tests/test_audit_archive.py::test_archive_legacy_file_parity
+
+**sources:** etl/scripts/audit_archive_weekly.py, etl/crontab
+
+## A-408 — Audit schedules and inactive Informatica alternatives converge on Airflow
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** cron_entry:etl/crontab#21215b59c160, cron_entry:etl/crontab#33854636d6ba, cron_entry:etl/crontab#77635c543e02, cron_entry:etl/crontab#949f96b6edeb, cron_entry:etl/crontab#ae80e15b906a, cron_entry:etl/crontab#d0caaba38c97, cron_entry:etl/crontab#d793014c2fb2, cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/01_load_events, cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/02_load_controls, cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/03_load_reviews, cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/10_summary_daily, cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/11_reconciliation, informatica_config:SFX_AUDIT.default_session_config, informatica_mapping:SFX_AUDIT.m_SFX_AUDIT_DAILY_SUMMARY, informatica_mapping:SFX_AUDIT.m_SFX_AUDIT_EVENT_ARCHIVE, informatica_scheduler:SFX_AUDIT.wf_SFX_AUDIT_DAILY.Scheduler, informatica_session:SFX_AUDIT.s_m_SFX_AUDIT_DAILY_SUMMARY, informatica_session:SFX_AUDIT.s_m_SFX_AUDIT_EVENT_ARCHIVE, informatica_target:SFX_AUDIT.AUDIT_DAILY_SUMMARY, informatica_target:SFX_AUDIT.AUDIT_EVENT_ARCHIVE, informatica_task:SFX_AUDIT.wf_SFX_AUDIT_DAILY.Start, informatica_workflow:SFX_AUDIT.wf_SFX_AUDIT_DAILY
+
+**ambiguity:** Legacy audit tasks have independent cron times, Informatica daily 03:00 scheduling/session settings, an inactive archive session, and alternative summary semantics.
+
+**decision:** Converge active SQL and Spark snapshots into the UTC @daily dependency graph. Use a separate UTC @weekly (Sunday 00:00 timetable) audit archive DAG, with BUSINESS_DATE equal to logical date minus one day per the guide (Sunday logical date archives as of Saturday). Dependency success, one active run/task, retries and namespace locking replace workflow Start/config controls; no independent Informatica task is dispatched. Summary alternatives use the A-404 authoritative final SQL output. Archive mapping/session/target metadata replaces only its disabled scheduling responsibility and default-false model gate; enabled persistent append/sequence equivalence remains unverified under open A-403.
+
+**rationale:** A named Airflow DagBag/template test verifies cadence, success gating, source edges and date semantics. Replaced disabled responsibility is not a claim that an enabled persistent archive migration is complete.
+
+**verification:** test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
+
+**sources:** etl/crontab, warehouse/teradata/jobs/daily_chain, etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML, etl/informatica/params/sfx_d1110_daily.par

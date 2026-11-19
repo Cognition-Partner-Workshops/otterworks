@@ -51,8 +51,8 @@ def load(path=PIPELINE, inventory=None, specs=None):
             raise ValueError('Invalid DAG id')
         if dag['id'] in dags:
             raise ValueError('Duplicate DAG id: ' + dag['id'])
-        if dag.get('schedule') not in ('@daily', '@hourly') or dag.get('timezone') != 'UTC':
-            raise ValueError('DAG schedule must be @daily/@hourly in UTC')
+        if dag.get('schedule') not in ('@daily', '@hourly', '@weekly') or dag.get('timezone') != 'UTC':
+            raise ValueError('DAG schedule must be @daily/@hourly/@weekly in UTC')
         business_date(dag.get('start_date'))
         if dag.get('catchup') is not True or dag.get('max_active_runs') != 1 or dag.get('max_active_tasks') != 1:
             raise ValueError('DAGs require catchup and one active run/task for embedded Derby')

@@ -1,0 +1,29 @@
+id: audit.security_alert
+legacy_objects:
+- teradata_table:SFX_AUDIT.SECURITY_ALERT
+- bteq_script:warehouse/teradata/scripts/audit/03_load_reviews.bteq
+- cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/03_load_reviews
+- informatica_mapping:SFX_AUDIT.m_SFX_SECURITY_ALERT
+- informatica_session:SFX_AUDIT.s_m_SFX_SECURITY_ALERT
+- informatica_source:SFX_AUDIT.FF_SECURITY_ALERT
+- informatica_target:SFX_AUDIT.SECURITY_ALERT
+legacy:
+  kind: postgres_sql
+  sql: select * from sfx_audit.security_alert
+lakehouse:
+  kind: spark_sql
+  sql: select * from silver_audit.security_alert
+keys:
+- alert_id
+columns:
+- alert_id
+- actor_user_id
+- document_id
+- alert_ts
+- severity_cd
+- status_cd
+normalize:
+  severity_cd:
+    rstrip: true
+  status_cd:
+    rstrip: true

@@ -1,0 +1,161 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "ab6faab17f6e1aabcc80faf1586fb585801c8f0f",
+  "id": "audit.spark_audit_archive_resort",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "spark_job:audit_archive_resort",
+    "spark_submit:etl/spark/submit/audit_archive_resort.sh"
+  ],
+  "results": {
+    "columns": [
+      "audit_event_archive_id",
+      "actor_user_id",
+      "document_id",
+      "event_type",
+      "event_at",
+      "details"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "actor_user_id": {
+          "count": 2000,
+          "hash": "55a7dcfcd3f38fe94491d493b4b5e53983dab264b6267d38fe14d8d80eb8f03a",
+          "null_count": 0,
+          "sum": "2001000"
+        },
+        "audit_event_archive_id": {
+          "count": 2000,
+          "hash": "55a7dcfcd3f38fe94491d493b4b5e53983dab264b6267d38fe14d8d80eb8f03a",
+          "null_count": 0,
+          "sum": "2001000"
+        },
+        "details": {
+          "count": 2000,
+          "hash": "d6bb636026c7a27f51799327ea058317313cc5901d911ab45fca6d10fa687188",
+          "null_count": 0,
+          "sum": null
+        },
+        "document_id": {
+          "count": 2000,
+          "hash": "55a7dcfcd3f38fe94491d493b4b5e53983dab264b6267d38fe14d8d80eb8f03a",
+          "null_count": 0,
+          "sum": "2001000"
+        },
+        "event_at": {
+          "count": 2000,
+          "hash": "9b7e6f103477676678b7c745b4864f03b287dc3c7de45c445c0cd2fdc6889aad",
+          "null_count": 0,
+          "sum": null
+        },
+        "event_type": {
+          "count": 2000,
+          "hash": "13a006b00d6a75d1440b66c086f899df4e073a2fcc433e016632f62ca9268c68",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "actor_user_id": {
+          "count": 2000,
+          "hash": "55a7dcfcd3f38fe94491d493b4b5e53983dab264b6267d38fe14d8d80eb8f03a",
+          "null_count": 0,
+          "sum": "2001000"
+        },
+        "audit_event_archive_id": {
+          "count": 2000,
+          "hash": "55a7dcfcd3f38fe94491d493b4b5e53983dab264b6267d38fe14d8d80eb8f03a",
+          "null_count": 0,
+          "sum": "2001000"
+        },
+        "details": {
+          "count": 2000,
+          "hash": "d6bb636026c7a27f51799327ea058317313cc5901d911ab45fca6d10fa687188",
+          "null_count": 0,
+          "sum": null
+        },
+        "document_id": {
+          "count": 2000,
+          "hash": "55a7dcfcd3f38fe94491d493b4b5e53983dab264b6267d38fe14d8d80eb8f03a",
+          "null_count": 0,
+          "sum": "2001000"
+        },
+        "event_at": {
+          "count": 2000,
+          "hash": "9b7e6f103477676678b7c745b4864f03b287dc3c7de45c445c0cd2fdc6889aad",
+          "null_count": 0,
+          "sum": null
+        },
+        "event_type": {
+          "count": 2000,
+          "hash": "13a006b00d6a75d1440b66c086f899df4e073a2fcc433e016632f62ca9268c68",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "actor_user_id": {
+        "count": 0,
+        "samples": []
+      },
+      "audit_event_archive_id": {
+        "count": 0,
+        "samples": []
+      },
+      "details": {
+        "count": 0,
+        "samples": []
+      },
+      "document_id": {
+        "count": 0,
+        "samples": []
+      },
+      "event_at": {
+        "count": 0,
+        "samples": []
+      },
+      "event_type": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 2000,
+      "legacy": 2000
+    }
+  },
+  "row_counts": {
+    "lakehouse": 2000,
+    "legacy": 2000
+  },
+  "spec_hash": "4804327271d9c9f01ca4a9b8143d3ab69c8ce1bceea7d11d8b5b581d11bd22a6",
+  "timestamp": "2026-11-19T08:41:21.968828+00:00"
+}

@@ -1,0 +1,18 @@
+id: audit.m_recon_totals
+legacy_objects:
+- teradata_macro:SFX_AUDIT.M_RECON_TOTALS
+description: 'A-402: M_RECON_TOTALS SQL with shared jobs/reconcile row excluded.'
+legacy:
+  kind: postgres_sql
+  sql: select recon_id, source_count, target_count, difference_count from sfx_audit.audit_recon where
+    business_dt=to_date('{business_date}', 'YYYYMMDD') and recon_id <> 21000000001 order by recon_id
+lakehouse:
+  kind: delta_table
+  table: gold_audit.m_recon_totals
+keys:
+- recon_id
+columns:
+- recon_id
+- source_count
+- target_count
+- difference_count

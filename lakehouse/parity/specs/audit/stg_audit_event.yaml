@@ -1,0 +1,24 @@
+id: audit.stg_audit_event
+legacy_objects:
+- teradata_table:SFX_AUDIT.STG_AUDIT_EVENT
+- informatica_mapping:SFX_AUDIT.m_SFX_STG_AUDIT_EVENT
+- informatica_session:SFX_AUDIT.s_m_SFX_STG_AUDIT_EVENT
+- informatica_source:SFX_AUDIT.FF_AUDIT_EVENT
+- informatica_source:SFX_AUDIT.AUDIT_EVENT
+- informatica_target:SFX_AUDIT.STG_AUDIT_EVENT
+legacy:
+  kind: postgres_sql
+  sql: select * from sfx_audit.stg_audit_event
+lakehouse:
+  kind: delta_table
+  table: silver_audit.stg_audit_event
+keys:
+- event_id
+columns:
+- event_id
+- actor_user_id
+- document_id
+- customer_id
+- event_ts
+- event_type
+- details
