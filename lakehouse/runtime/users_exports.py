@@ -5,6 +5,7 @@ import csv
 import os
 import tempfile
 from contextlib import contextmanager
+from pathlib import Path
 
 from .ingest import business_date
 from .layout import data_root

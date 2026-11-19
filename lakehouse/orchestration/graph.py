@@ -91,10 +91,14 @@ def load(path=PIPELINE, inventory=None, specs=None):
                 raise ValueError('dbt requires selector')
             if kind == 'parity':
                 selected = node.get('specs', [node.get('spec')])
-                if (('spec' in node and 'specs' in node) or not isinstance(selected, list) or not selected
-                        or any(not isinstance(spec, str) or spec not in specs for spec in selected)
-                        or len(selected) != len(set(selected))):
-                    raise ValueError('Unknown or duplicate parity spec')
+                if 'spec' in node and 'specs' in node:
+                    raise ValueError('Parity node cannot specify both spec and specs')
+                if not isinstance(selected, list) or not selected:
+                    raise ValueError('Parity nodes require a nonempty list of specs')
+                if any(not isinstance(spec, str) or spec not in specs for spec in selected):
+                    raise ValueError('Unknown parity spec')
+                if len(selected) != len(set(selected)):
+                    raise ValueError('Duplicate parity spec')
             if kind == 'export' and (not isinstance(node.get('command'), list) or not node['command']
                                      or any(not isinstance(v, str) or not v for v in node['command'])):
                 raise ValueError('export requires command argv')
