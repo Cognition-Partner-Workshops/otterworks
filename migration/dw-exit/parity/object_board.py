@@ -38,12 +38,15 @@ def canonical(value):
 
 
 def measure(connection, name):
+    # Relation and column identifiers are double-quoted, not SQL value parameters.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     cursor = connection.execute('SELECT * FROM ' + relation(name))
     columns = [col[0] for col in cursor.description]
     rows = cursor.fetchall()
     profiles = {}
     for column in columns:
         c = quote(column)
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         values = connection.execute(f'SELECT COUNT(*)-COUNT({c}), MIN({c}), MAX({c}), COUNT(DISTINCT {c}) FROM {relation(name)}').fetchone()
         profiles[column] = dict(zip(('nulls', 'min', 'max', 'distinct'), values))
     return columns, rows, profiles
@@ -101,8 +104,13 @@ def source_snapshot(dsn, names):
                             kind = f'DECIMAL({precision or 38},{scale or 0})'
                         definitions.append(quote(column.upper())+' '+kind)
                     source_schema, source_table = name.split('.')
+                    # Identifiers are quoted; column types come from the fixed mapping above.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     connection.execute('CREATE SCHEMA IF NOT EXISTS '+quote(source_schema))
+                    # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     connection.execute(f'CREATE TABLE {relation(name)} ({", ".join(definitions)})')
+                    # psycopg Identifier quotes both catalog-derived identifiers.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     cursor.execute(sql.SQL('SELECT * FROM {}.{}').format(sql.Identifier(schema),sql.Identifier(table)))
                     rows = cursor.fetchall()
                     if rows:
@@ -125,9 +133,13 @@ def materialize(before, names, conversion_dir):
         if table.startswith('V_'):
             continue
         target = 'BILLING.'+table
+        # DuckDB metadata and identifiers are local; relation()/quote() escape identifiers.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         definitions = before.execute('DESCRIBE '+relation(name)).fetchall()
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         after.execute(f'CREATE TABLE {relation(target)} ({", ".join(quote(c[0])+" "+c[1] for c in definitions)})')
         if table.startswith('STG_'):
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             rows = before.execute('SELECT * FROM '+relation(name)).fetchall()
             if rows:
                 after.executemany(f'INSERT INTO {relation(target)} VALUES ({", ".join("?" for _ in definitions)})', rows)
