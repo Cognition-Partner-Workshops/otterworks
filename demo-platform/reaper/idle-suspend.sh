@@ -36,6 +36,7 @@
 # Sourced by reaper.sh; also runnable standalone.
 # ------------------------------------------------------------------------------
 set -uo pipefail
+# shellcheck source=/dev/null
 source "$(dirname "${BASH_SOURCE[0]}")/../../scripts/lib/tenant-workloads.sh"
 
 CONTROL_TABLE="${CONTROL_TABLE:-otterworks-demo-control}"
