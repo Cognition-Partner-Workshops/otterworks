@@ -5,6 +5,18 @@
 	};
 	objectVersion = 60;
 	objects = {
+		A00000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUITests/AppUITests.swift; sourceTree = "<group>"; };
+		A00000000000000000000002 = {isa = PBXBuildFile; fileRef = A00000000000000000000001; };
+		A00000000000000000000003 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = AppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000000000000000000004 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000002,); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000005 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000006 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000007 = {isa = PBXContainerItemProxy; containerPortal = 504EC2FC1FED79650016851F; proxyType = 1; remoteGlobalIDString = 504EC3031FED79650016851F; remoteInfo = App; };
+		A00000000000000000000008 = {isa = PBXTargetDependency; target = 504EC3031FED79650016851F; targetProxy = A00000000000000000000007; };
+		A00000000000000000000009 = {isa = PBXNativeTarget; buildConfigurationList = A0000000000000000000000A; buildPhases = (A00000000000000000000004,A00000000000000000000005,A00000000000000000000006,); buildRules = (); dependencies = (A00000000000000000000008,); name = AppUITests; productName = AppUITests; productReference = A00000000000000000000003; productType = "com.apple.product-type.bundle.ui-testing"; };
+		A0000000000000000000000A = {isa = XCConfigurationList; buildConfigurations = (A0000000000000000000000B,A0000000000000000000000C,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		A0000000000000000000000B = {isa = XCBuildConfiguration; buildSettings = {GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 15.0; PRODUCT_BUNDLE_IDENTIFIER = com.otterworks.app.uitests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; TEST_TARGET_NAME = App; CODE_SIGN_STYLE = Automatic; }; name = Debug; };
+		A0000000000000000000000C = {isa = XCBuildConfiguration; buildSettings = {GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 15.0; PRODUCT_BUNDLE_IDENTIFIER = com.otterworks.app.uitests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; TEST_TARGET_NAME = App; CODE_SIGN_STYLE = Automatic; }; name = Release; };
 
 /* Begin PBXBuildFile section */
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
@@ -45,6 +57,7 @@
 		504EC2FB1FED79650016851F = {
 			isa = PBXGroup;
 			children = (
+				A00000000000000000000001,
 				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
 				504EC3051FED79650016851F /* Products */,
@@ -54,6 +67,7 @@
 		504EC3051FED79650016851F /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				A00000000000000000000003,
 				504EC3041FED79650016851F /* App.app */,
 			);
 			name = Products;
@@ -129,6 +143,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				A00000000000000000000009,
 				504EC3031FED79650016851F /* App */,
 			);
 		};
