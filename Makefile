@@ -76,7 +76,7 @@ warehouse/.venv/.billing-requirements: migration/dw-exit/requirements.txt wareho
 	$(SFX_TD_PY) -m pip install -r migration/dw-exit/requirements.txt
 	@touch $@
 
-.PHONY: sfx-billing-capture sfx-billing-prove sfx-billing-promote sfx-billing-test
+.PHONY: sfx-billing-capture sfx-billing-prove sfx-billing-promote sfx-area-promote sfx-billing-test
 sfx-billing-capture: sfx-teradata-validate warehouse/.venv/.billing-requirements ## Freeze the post-chain BEFORE, once per fresh baseline schema
 	@mkdir -p "$(PARITY_OUT)"
 	$(SFX_TD_ENV) $(SFX_TD_PY) $(SFX_BILLING)/capture.py --business-date "$(BUSINESS_DATE)" --output "$(PARITY_OUT)/capture.json"
@@ -90,9 +90,9 @@ sfx-billing-prove: warehouse/.venv/.billing-requirements ## Load converted billi
 	$(SFX_TD_PY) $(SFX_BILLING)/reports.py --business-date "$(BUSINESS_DATE)"
 	SFX_LIVE_PARITY=1 SFX_PARITY_STEP=billing_$(CANDIDATE) SFX_PARITY_OUTPUT="$(PARITY_OUT)/billing-$(CANDIDATE).json" $(SFX_TD_PY) -m pytest -q migration/dw-exit/tests -k test_live_parity
 
-sfx-billing-promote: warehouse/.venv/.billing-requirements ## Recheck live parity, then mark billing migrated/verified
-	@mkdir -p "$(PARITY_OUT)"
-	$(SFX_TD_PY) $(SFX_BILLING)/promote.py --output "$(PARITY_OUT)/migration-control.json"
+sfx-billing-promote sfx-area-promote: NS ?= $(RUN_BEFORE_NAMESPACE)
+sfx-billing-promote sfx-area-promote: warehouse/.venv/.billing-requirements ## Promote objects with fresh two-leg parity (AREA required for sfx-area-promote)
+	$(SFX_TD_ENV) $(SFX_TD_PY) migration/dw-exit/parity/promote.py --subject-area '$(if $(filter sfx-billing-promote,$@),billing,$(subst ','"'"',$(AREA)))' --output "$(PARITY_OUT)/migration-control.json"
 
 sfx-billing-test: warehouse/.venv/.billing-requirements ## Offline parity tool regression tests (no Snowflake credentials)
 	$(SFX_TD_PY) -m pytest -q migration/dw-exit/tests

@@ -129,6 +129,18 @@ def test_generated_check():
     assert check.validate() == []
 
 
+def test_assessment_regeneration_preserves_promotion(tmp_path, estate):
+    objects = copy.deepcopy(estate['objects'])
+    manifest = tmp_path / 'manifest.yaml'
+    manifest.write_text(yaml.safe_dump({'objects': [dict(objects[0], status='migrated')]}))
+    assess.preserve_migration_status(objects, manifest)
+    assert objects[0]['status'] == 'migrated'
+    assert all(obj['status'] == 'not_started' for obj in objects[1:])
+    counters = assess.licence_counters(objects, estate['counters'])
+    assert counters['licence_dependencies']['remaining'] == len(objects) - 1
+    assert counters['licence_dependencies']['total'] == len(objects)
+
+
 @pytest.mark.parametrize('fault', ['duplicate', 'enum', 'dead', 'lineage', 'board', 'wave'])
 def test_validator_rejects(tmp_path, fault):
     import shutil

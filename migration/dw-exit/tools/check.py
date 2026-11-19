@@ -13,7 +13,7 @@ from pathlib import Path
 
 import yaml
 
-from assess import OUT, board, build
+from assess import OUT, board, build, licence_counters
 
 
 def validate(out=OUT, source=True):
@@ -31,7 +31,7 @@ def validate(out=OUT, source=True):
             errors.append('inventory/manifest must have exactly one entry per object')
         index = {r['id']: r for r in objects}
         for row in objects:
-            for key, allowed in {'kind': {'bteq', 'catalog', 'fastload', 'tpt', 'table', 'view', 'macro', 'procedure', 'mapping', 'session', 'worklet', 'workflow', 'spark_job'}, 'system': {'teradata', 'powercenter', 'spark'}, 'target_type': {'dbt_model', 'snowpark', 'snowflake_scripting', 'compatibility_view', 'retire'}, 'wave': {1, 2, 3, 4}, 'risk': {'low', 'med', 'high'}, 'complexity': {'low', 'medium', 'high'}, 'status': {'not_started'}}.items():
+            for key, allowed in {'kind': {'bteq', 'catalog', 'fastload', 'tpt', 'table', 'view', 'macro', 'procedure', 'mapping', 'session', 'worklet', 'workflow', 'spark_job'}, 'system': {'teradata', 'powercenter', 'spark'}, 'target_type': {'dbt_model', 'snowpark', 'snowflake_scripting', 'compatibility_view', 'retire'}, 'wave': {1, 2, 3, 4}, 'risk': {'low', 'med', 'high'}, 'complexity': {'low', 'medium', 'high'}, 'status': {'not_started', 'migrated'}}.items():
                 if row.get(key) not in allowed:
                     errors.append(f"invalid {key}: {row['id']}")
             for key in ('name', 'source', 'target', 'owner', 'owner_source', 'risk_reasons', 'subject_area', 'licence_dependency', 'output_relations'):
@@ -70,9 +70,9 @@ def validate(out=OUT, source=True):
             expected_inventory = [{k: str(v) for k, v in r.items()} for r in expected['artifacts']]
             if inventory != expected_inventory:
                 errors.append('inventory content differs from source estate')
-            if objects != expected['objects']:
+            if [dict(row, status='not_started') for row in objects] != expected['objects']:
                 errors.append('manifest content differs from assessment rules')
-            if actual_board['licence_counters'] != expected['counters']:
+            if actual_board['licence_counters'] != licence_counters(objects, expected['counters']):
                 errors.append('licence counters differ from source')
     except (KeyError, TypeError, ValueError, OSError, yaml.YAMLError) as exc:
         errors.append('invalid assessment: ' + str(exc))
