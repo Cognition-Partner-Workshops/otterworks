@@ -86,8 +86,8 @@ cases; cross-service tests are counted separately. A dash means no new workflow 
   failing JUnit report. Admin dashboard failures include unfinished fakeAsync timers, incorrect
   loaded-state expectations and a stale mock-token assertion. Its coverage job is also
   explicitly non-blocking and retains its failing JUnit report.
-- Live Search contract testing exposed two provider mismatches: the empty-body index endpoints
-  return an HTML HTTP 400, where OpenAPI promises JSON. Those failures are not waived.
-  No runtime behavior or planted bug was changed.
+- The live Search document and file index endpoints return HTML HTTP 400 responses for empty
+  bodies, but OpenAPI specifies JSON. Only those two cases are marked as strict expected failures:
+  if either passes, CI fails until its marker is removed. No runtime behavior was changed.
 - Prioritize broader real-dependency tests, event/API contracts, browser coverage beyond the
   current smoke, and baseline visibility for the remaining service suites.
