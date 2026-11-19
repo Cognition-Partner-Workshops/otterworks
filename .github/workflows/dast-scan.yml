@@ -25,6 +25,8 @@ on:
     paths:
       - 'services/**'
       - 'infrastructure/helm/**'
+      - 'docker-compose.infra.yml'
+      - 'docker-compose.yml'
       - 'security/dast/**'
       - '.github/workflows/dast-scan.yml'
   schedule:
@@ -39,6 +41,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   dast-local:
     name: Attack the local stack
@@ -50,6 +56,8 @@ jobs:
       (github.event_name == 'workflow_dispatch' && inputs.target == '')
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      COMPOSE_PROJECT_NAME: otterworks
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
@@ -62,9 +70,42 @@ jobs:
       - name: Unit-test the harness
         run: make dast-test
 
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Build the application images
+        uses: docker/bake-action@5be5f02ff8819ecd3092ea6b2e6261c31774f2b4 # v6
+        with:
+          source: .
+          files: |
+            docker-compose.infra.yml
+            docker-compose.yml
+          targets: |
+            auth-service
+            api-gateway
+            document-service
+            search-service
+            file-service
+          load: true
+          set: |
+            auth-service.tags=otterworks-auth-service
+            auth-service.cache-from=type=gha,scope=dast-auth-service
+            auth-service.cache-to=type=gha,mode=max,scope=dast-auth-service
+            api-gateway.tags=otterworks-api-gateway
+            api-gateway.cache-from=type=gha,scope=dast-api-gateway
+            api-gateway.cache-to=type=gha,mode=max,scope=dast-api-gateway
+            document-service.tags=otterworks-document-service
+            document-service.cache-from=type=gha,scope=dast-document-service
+            document-service.cache-to=type=gha,mode=max,scope=dast-document-service
+            search-service.tags=otterworks-search-service
+            search-service.cache-from=type=gha,scope=dast-search-service
+            search-service.cache-to=type=gha,mode=max,scope=dast-search-service
+            file-service.tags=otterworks-file-service
+            file-service.cache-from=type=gha,scope=dast-file-service
+            file-service.cache-to=type=gha,mode=max,scope=dast-file-service
+
       - name: Start the application stack
         run: |
-          docker compose -f docker-compose.infra.yml -f docker-compose.yml up -d --build \
+          docker compose -f docker-compose.infra.yml -f docker-compose.yml up -d --no-build \
             postgres redis localstack meilisearch \
             auth-service api-gateway document-service search-service file-service
 

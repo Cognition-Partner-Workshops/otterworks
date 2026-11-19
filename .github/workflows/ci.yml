@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, workshop, 'review-base-**', 'demo-**']
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   AWS_REGION: us-east-1
   ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/workshop
@@ -40,6 +44,7 @@ jobs:
       report-service: ${{ steps.changes.outputs.report-service }}
       legacy-portal: ${{ steps.changes.outputs.legacy-portal }}
       api-tests: ${{ steps.changes.outputs.api-tests }}
+      ldm: ${{ steps.changes.outputs.ldm }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
@@ -47,41 +52,59 @@ jobs:
         with:
           filters: |
             api-gateway:
+              - &ci '.github/workflows/ci.yml'
               - 'services/api-gateway/**'
             auth-service:
+              - *ci
               - 'services/auth-service/**'
             file-service:
+              - *ci
               - 'services/file-service/**'
             document-service:
+              - *ci
               - 'services/document-service/**'
             collab-service:
+              - *ci
               - 'services/collab-service/**'
             notification-service:
+              - *ci
               - 'services/notification-service/**'
             search-service:
+              - *ci
               - 'services/search-service/**'
             analytics-service:
+              - *ci
               - 'services/analytics-service/**'
             admin-service:
+              - *ci
               - 'services/admin-service/**'
             audit-service:
+              - *ci
               - 'services/audit-service/**'
             web-app:
+              - *ci
               - 'frontend/client-app/**'
             admin-dashboard:
+              - *ci
               - 'frontend/admin-dashboard/**'
             workbench:
+              - *ci
               - 'frontend/workbench/**'
             demo-platform:
+              - *ci
               - 'demo-platform/**'
               - 'scripts/**'
             infrastructure:
+              - *ci
               - 'infrastructure/**'
             report-service:
+              - *ci
               - 'services/report-service/**'
             legacy-portal:
+              - *ci
               - 'services/legacy-portal/**'
             api-tests:
+              - *ci
               - 'tests/api/**'
               - 'tests/compliance/**'
               - 'compliance/control-catalogs/**'
@@ -89,6 +112,18 @@ jobs:
               - 'services/api-gateway/internal/config/**'
               - 'docker-compose*.yml'
               - 'Makefile'
+            ldm:
+              - *ci
+              - 'migration/job/**'
+              - 'migration/target/sql/**'
+              - 'migration/target/postgresql/**'
+              - 'migration/manifest.yaml'
+              - 'migration/manifests/**'
+              - 'migration/source/copybooks/**'
+              - 'migration/source/oracle/**'
+              - 'migration/source/seed/**'
+              - 'infrastructure/helm/migration-job/**'
+              - 'infrastructure/helm/oracle-archive/**'
 
   # Go - API Gateway
   api-gateway:
@@ -100,9 +135,10 @@ jobs:
         working-directory: services/api-gateway
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
-          go-version: '1.22'
+          go-version-file: services/api-gateway/go.mod
+          cache-dependency-path: services/api-gateway/go.sum
       - run: go vet ./...
       - run: go test -race -coverprofile=coverage.out ./...
       - run: go build -o /dev/null ./cmd/server
@@ -136,12 +172,51 @@ jobs:
         working-directory: services/file-service
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
         with:
+          toolchain: stable
           components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          workspaces: services/file-service
+          shared-key: file-service-lint
       - run: cargo fmt --check
       - run: cargo clippy -- -D warnings
+
+  file-service-test:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.file-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/file-service
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          workspaces: services/file-service
+          shared-key: file-service-test
       - run: cargo test
+
+  file-service-release:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.file-service == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/file-service
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          workspaces: services/file-service
+          shared-key: file-service-release
       - run: cargo build --release
 
   # Python - Document Service
@@ -154,9 +229,15 @@ jobs:
         working-directory: services/document-service
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
         with:
           python-version: '3.12'
+          cache: pip
+          cache-dependency-path: services/document-service/poetry.lock
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-python-3.12-poetry-1.8.2-${{ hashFiles('services/document-service/poetry.lock', 'services/document-service/pyproject.toml') }}
       - run: pip install poetry==1.8.2
       - run: poetry install
       - run: poetry run ruff check .
@@ -172,9 +253,11 @@ jobs:
         working-directory: services/collab-service
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '20'
+          cache: npm
+          cache-dependency-path: services/collab-service/package-lock.json
       - run: npm ci
       - run: npm run lint
       - run: npm test
@@ -209,9 +292,11 @@ jobs:
         working-directory: services/search-service
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
         with:
           python-version: '3.12'
+          cache: pip
+          cache-dependency-path: services/search-service/requirements*.txt
       - run: pip install -r requirements-dev.txt
       - run: python -m pytest --cov=app
 
@@ -225,16 +310,15 @@ jobs:
         working-directory: services/analytics-service
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Install sbt
-        run: |
-          echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /etc/apt/sources.list.d/sbt.list
-          curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | sudo apt-key add -
-          sudo apt-get update
-          sudo apt-get install -y sbt
+          cache: sbt
+          cache-dependency-path: |
+            services/analytics-service/build.sbt
+            services/analytics-service/project/build.properties
+      - uses: sbt/setup-sbt@7e114eae4f32ec3f93c851c2793376a77f384409 # v1
       - run: sbt compile
       - run: sbt test
 
@@ -303,9 +387,11 @@ jobs:
         working-directory: frontend/client-app
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/client-app/package-lock.json
       - run: npm ci
       - run: npm run lint
       - run: npm test
@@ -324,6 +410,8 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/workbench/package-lock.json
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
@@ -340,9 +428,11 @@ jobs:
         working-directory: frontend/admin-dashboard
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/admin-dashboard/package-lock.json
       - run: npm ci
       - run: npm run lint || true
       - run: npm test || true
@@ -358,10 +448,12 @@ jobs:
         working-directory: services/report-service
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: temurin
           java-version: '8'
+          cache: maven
+          cache-dependency-path: services/report-service/pom.xml
       - run: mvn compile -B -q
       - run: mvn test -B
       - run: mvn package -DskipTests -B -q
@@ -455,9 +547,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
         with:
           python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tests/api/requirements.txt
       - run: python -m pip install -r tests/api/requirements.txt
       - run: python -m py_compile tests/api/*.py
       - run: python -m pytest tests/api --collect-only -q
@@ -465,8 +559,10 @@ jobs:
 
   # Legacy data migration job (migration/job): ruff + pytest (in-memory drivers, a real PostgreSQL
   # service for the default target, PySpark local mode for the Spark LOAD engine), Helm lint of the
-  # one-shot Job chart. Self-contained path filter so the existing detect-changes job is untouched.
+  # one-shot Job chart.
   migration-job:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.ldm == 'true'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -483,60 +579,37 @@ jobs:
       LDM_TEST_PG_PORT: "55432"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
-        id: changes
-        with:
-          filters: |
-            ldm:
-              - 'migration/job/**'
-              - 'migration/target/sql/**'
-              - 'migration/target/postgresql/**'
-              - 'migration/manifest.yaml'
-              - 'migration/manifests/**'
-              - 'migration/source/copybooks/**'
-              - 'migration/source/oracle/**'
-              - 'migration/source/seed/**'
-              - 'infrastructure/helm/migration-job/**'
-              - 'infrastructure/helm/oracle-archive/**'
-      - if: steps.changes.outputs.ldm == 'true'
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
         with:
           python-version: '3.12'
-      - if: steps.changes.outputs.ldm == 'true'
-        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+          cache: pip
+          cache-dependency-path: migration/job/pyproject.toml
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: temurin
           java-version: '17'
-      - if: steps.changes.outputs.ldm == 'true'
-        run: python -m pip install -e '.[dev,postgresql,s3,spark]'
+      - run: python -m pip install -e '.[dev,postgresql,s3,spark]'
         working-directory: migration/job
-      - if: steps.changes.outputs.ldm == 'true'
-        run: ruff check . && ruff format --check .
+      - run: ruff check . && ruff format --check .
         working-directory: migration/job
-      - if: steps.changes.outputs.ldm == 'true'
-        run: python -m pytest -q
+      - run: python -m pytest -q
         working-directory: migration/job
-      - if: steps.changes.outputs.ldm == 'true'
-        run: python -m pytest -q test_oracle_seed.py
+      - run: python -m pytest -q test_oracle_seed.py
         working-directory: migration/source/seed
-      - if: steps.changes.outputs.ldm == 'true'
-        uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4
-      - if: steps.changes.outputs.ldm == 'true'
-        run: >
+      - uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4
+      - run: >
           helm lint infrastructure/helm/migration-job --strict
           --set namespaceToken=ci1-after --set stage=extract --set runId=ci
           --set image.tag=ci --set expires=2026-01-01T00:00:00Z
           --set-file manifest.base=migration/manifest.yaml
           --set-file manifest.overlay=migration/manifests/d24-after.yaml
-      - if: steps.changes.outputs.ldm == 'true'
-        run: >
+      - run: >
           helm lint infrastructure/helm/migration-job --strict
           --set namespaceToken=ci1-after --set stage=extract --set runId=ci
           --set image.tag=ci --set expires=2026-01-01T00:00:00Z
           --set-file manifest.base=migration/manifest.yaml
           --set-file manifest.overlay=migration/manifests/o27-after.yaml
-      - if: steps.changes.outputs.ldm == 'true'
-        run: >
+      - run: >
           helm lint infrastructure/helm/oracle-archive --strict
           --set namespaceToken=ci1-after --set expires=2026-01-01T00:00:00Z
           --set pv.volumeName=pv-ci

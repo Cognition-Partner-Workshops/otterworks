@@ -110,7 +110,6 @@ test.describe("Margins dashboard", () => {
 });
 
 const MOCK_LATENCY_MS = 450;
-const MOCK_LATENCY_JITTER_MS = 180;
 
 test.describe("Margins rendering", () => {
   test("renders a mocked SKU row", async ({ page }) => {
@@ -118,9 +117,7 @@ test.describe("Margins rendering", () => {
       const { pathname } = new URL(route.request().url());
 
       if (pathname.endsWith("/analytics/margins")) {
-        const latency =
-          MOCK_LATENCY_MS + Math.floor(Math.random() * MOCK_LATENCY_JITTER_MS);
-        await new Promise((resolve) => setTimeout(resolve, latency));
+        await new Promise((resolve) => setTimeout(resolve, MOCK_LATENCY_MS));
         await route.fulfill({
           json: {
             as_of_date: "2026-07-16",
@@ -171,7 +168,8 @@ test.describe("Margins rendering", () => {
 
     await page.goto("/margins");
     const firstRow = page.getByTestId("margins-grid").locator("tbody tr").first();
-    await page.waitForTimeout(600);
-    expect(await firstRow.isVisible()).toBe(true);
+    await expect(firstRow).toBeVisible();
+    await expect(firstRow).toContainText("SLM-001");
+    await expect(firstRow).toContainText("Atlantic Salmon");
   });
 });
