@@ -30,6 +30,19 @@ class ExportArchive:
         ``FileNotFoundError`` when the export does not exist.
         """
         path = os.path.join(self.base_dir, name)
+        requested = os.fspath(name)
+        components = requested.replace(os.altsep, os.sep) if os.altsep else requested
+        if os.path.isabs(requested) or ".." in components.split(os.sep):
+            raise FileNotFoundError(2, os.strerror(2), path)
+        archive_root = os.path.realpath(self.base_dir)
+        resolved = os.path.realpath(path)
+        if os.path.commonpath((archive_root, resolved)) != archive_root:
+            raise FileNotFoundError(2, os.strerror(2), path)
         logger.debug("export_read", name=name)
-        with open(path, encoding="utf-8") as handle:
-            return handle.read()
+        try:
+            with open(resolved, encoding="utf-8") as handle:
+                return handle.read()
+        except OSError as exc:
+            if exc.filename is not None:
+                exc.filename = path
+            raise
