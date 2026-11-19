@@ -136,7 +136,7 @@ def test_storage_set_and_macro_boundaries(spark):
 
 def test_documents_graph_and_ownership():
     specs = {key: value for key, value in discover().items() if key.startswith('documents.')}
-    assert len(specs) == 24
+    assert len(specs) == 28
     nodes = {node['id']: node for node in load()['lakehouse_daily']['nodes']}
     for identity in specs:
         assert nodes['parity_' + identity.replace('.', '_')]['depends_on'] == ['dbt_documents']

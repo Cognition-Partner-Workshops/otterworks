@@ -49,7 +49,10 @@ class Readers:
                 raise ValueError(f'{path}: JSON objects must contain the configured columns')
             return rows, names
         if kind == 'postgres_sql':
-            with postgres_connection(side.get('database')) as conn:
+            database = side.get('database')
+            connection = (postgres_connection(database.format(NS=os.environ['NS']))
+                          if database else postgres_connection())
+            with connection as conn:
                 conn.read_only = True
                 with conn.cursor() as cursor:
                     cursor.execute(side['sql'].replace('{business_date}', self.business_date))

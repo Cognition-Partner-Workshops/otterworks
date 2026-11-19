@@ -1637,17 +1637,33 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-207
+  - A-208
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_DOC_SHARE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_doc_share
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_doc_share
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-208
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_LOGIN_EVENT
   status: converted
   targets:
@@ -1679,11 +1695,17 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_STG_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_stg_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_stg_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_mapping:SFX_CONTENT.m_SFX_TEAM_MEMBER
   status: converted
   targets:
@@ -1829,17 +1851,33 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-207
+  - A-208
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_DOC_SHARE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_doc_share
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_doc_share
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-208
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_LOGIN_EVENT
   status: converted
   targets:
@@ -1871,11 +1909,17 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_STG_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_stg_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_stg_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_session:SFX_CONTENT.s_m_SFX_TEAM_MEMBER
   status: converted
   targets:
@@ -1973,17 +2017,31 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_source:SFX_CONTENT.FF_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_stg_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_stg_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_source:SFX_CONTENT.FF_DOC_SHARE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_doc_share
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_doc_share
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-208
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_source:SFX_CONTENT.FF_LOGIN_EVENT
   status: converted
   targets:
@@ -2025,11 +2083,19 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_source:SFX_CONTENT.STG_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-207
+  - A-208
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_target:SFX_AUDIT.AUDIT_DAILY_SUMMARY
   status: replaced_by_platform
   targets:
@@ -2134,17 +2200,33 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_target:SFX_CONTENT.DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-207
+  - A-208
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_target:SFX_CONTENT.DOC_SHARE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_doc_share
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_doc_share
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-206
+  - A-208
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_target:SFX_CONTENT.LOGIN_EVENT
   status: converted
   targets:
@@ -2176,11 +2258,17 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_target:SFX_CONTENT.STG_DOCUMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_documents.infa_stg_document
+  - silver_documents.infa_metrics
+  parity:
+  - documents.infa_stg_document
+  - documents.infa_metrics
+  assumptions:
+  - A-205
+  - A-209
+  notes: Distinct Informatica port and stateful-writer outputs; not BTEQ snapshot evidence.
 - id: informatica_target:SFX_CONTENT.TEAM_MEMBER
   status: converted
   targets:

@@ -1,5 +1,14 @@
 version: 2
 sources:
+  - name: documents_informatica_runtime
+    schema: silver_documents
+    tables:
+      - name: infa_runtime_stg_document
+      - name: infa_runtime_document
+      - name: infa_runtime_doc_share
+      - name: infa_runtime_metrics
+      - name: infa_runtime_rejects
+      - name: infa_runtime_filtered
   - name: bronze_billing
     schema: bronze_billing
     tables:

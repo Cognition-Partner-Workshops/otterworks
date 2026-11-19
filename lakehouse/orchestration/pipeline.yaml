@@ -497,12 +497,61 @@ dags:
     - tpt:warehouse/teradata/load/tpt/documents_search_index_log.tpt
     - tpt:warehouse/teradata/load/tpt/documents_storage_usage_daily.tpt
     - cron_entry:warehouse/teradata/jobs/daily_chain#stage=staging
+  - id: documents_informatica
+    kind: export
+    depends_on: [bronze_documents, bronze_users]
+    retries: 1
+    retry_delay_seconds: 10
+    command: ['{python}', '-m', lakehouse.runtime.documents_informatica, --landing, '{landing}', --business-date, '{business_date}']
+    legacy_objects:
+    - informatica_mapping:SFX_CONTENT.m_SFX_STG_DOCUMENT
+    - informatica_session:SFX_CONTENT.s_m_SFX_STG_DOCUMENT
+    - informatica_source:SFX_CONTENT.FF_DOCUMENT
+    - informatica_target:SFX_CONTENT.STG_DOCUMENT
+    - informatica_mapping:SFX_CONTENT.m_SFX_DOCUMENT
+    - informatica_session:SFX_CONTENT.s_m_SFX_DOCUMENT
+    - informatica_source:SFX_CONTENT.STG_DOCUMENT
+    - informatica_target:SFX_CONTENT.DOCUMENT
+    - informatica_mapping:SFX_CONTENT.m_SFX_DOC_SHARE
+    - informatica_session:SFX_CONTENT.s_m_SFX_DOC_SHARE
+    - informatica_source:SFX_CONTENT.FF_DOC_SHARE
+    - informatica_target:SFX_CONTENT.DOC_SHARE
+  - id: parity_documents_infa_stg_document
+    kind: parity
+    spec: documents.infa_stg_document
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_infa_document
+    kind: parity
+    spec: documents.infa_document
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_infa_doc_share
+    kind: parity
+    spec: documents.infa_doc_share
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_infa_metrics
+    kind: parity
+    spec: documents.infa_metrics
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
   - id: dbt_documents
     kind: dbt
     domain: documents
     selector: tag:documents
     depends_on:
     - bronze_documents
+    - bronze_users
+    - documents_informatica
     retries: 1
     retry_delay_seconds: 10
     legacy_objects:

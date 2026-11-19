@@ -1,0 +1,54 @@
+{
+  "id": "documents.infa_document",
+  "legacy_objects": [
+    "informatica_mapping:SFX_CONTENT.m_SFX_DOCUMENT",
+    "informatica_session:SFX_CONTENT.s_m_SFX_DOCUMENT",
+    "informatica_source:SFX_CONTENT.STG_DOCUMENT",
+    "informatica_target:SFX_CONTENT.DOCUMENT"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "database": "lakehouse_documents_infa_{NS}",
+    "sql": "SELECT document_id, folder_id, owner_user_id, customer_id, document_name, created_dt, status_cd, file_type FROM sfx_documents.document"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.infa_document"
+  },
+  "keys": [
+    "document_id"
+  ],
+  "columns": [
+    "document_id",
+    "folder_id",
+    "owner_user_id",
+    "customer_id",
+    "document_name",
+    "created_dt",
+    "status_cd",
+    "file_type"
+  ],
+  "normalize": {
+    "document_id": {
+      "numeric_scale": 0
+    },
+    "folder_id": {
+      "numeric_scale": 0
+    },
+    "owner_user_id": {
+      "numeric_scale": 0
+    },
+    "customer_id": {
+      "numeric_scale": 0
+    },
+    "created_dt": {
+      "date_format": "%Y-%m-%d"
+    },
+    "status_cd": {
+      "rstrip": true
+    },
+    "file_type": {
+      "rstrip": true
+    }
+  }
+}
