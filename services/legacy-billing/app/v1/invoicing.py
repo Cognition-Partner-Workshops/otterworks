@@ -30,6 +30,11 @@ def _lines(kind, identifier, values, legacy=False):
         result = select("SELECT * FROM billing.fn_invoice_lines(%s)", (identifier,))
     if legacy:
         return jsonify(result)
+    for row in result:
+        for field in ("amount", "tax_amount", "credit_applied", "total"):
+            value = row.get(field)
+            if isinstance(value, str) and "." not in value:
+                row[field] = value + ".0"
     result = [{({"line_no": "number", "line_type": "type"}.get(key, key)): value
                for key, value in row.items()} for row in result]
     return jsonify(paginate(result))

@@ -1,4 +1,8 @@
+from pathlib import Path
+
 import pytest
+import yaml
+from jsonschema import validate
 from werkzeug.exceptions import BadRequest, InternalServerError
 
 from app import select
@@ -12,6 +16,14 @@ PREVIEW = f"{BASE}/tenants/{TENANT}/invoice-preview"
 ISSUE = f"{BASE}/tenants/{TENANT}/invoices"
 LINES = f"{BASE}/invoices/{INVOICE}/lines"
 LEGACY_RENAMES = {"number": "line_no", "type": "line_type"}  # adapter keeps the old names
+LEGACY_MONEY_FORMAT = ("amount", "tax_amount", "credit_applied", "total")
+
+
+def legacy_decimal_body(response):
+    """v1 appends .0 to integral money strings; legacy preserves DB text."""
+    return [{key: value + ".0" if key in LEGACY_MONEY_FORMAT and isinstance(value, str)
+             and "." not in value else value for key, value in row.items()}
+            for row in response.json]
 
 
 def state():
@@ -31,7 +43,7 @@ def test_reads(compare_requests, kind, identifier):
     old, new = compare_requests(
         {"path": f"/api/invoices/{identifier}/{kind}"},
         {"path": successor, "query_string": PERIOD if kind == "preview" else {}},
-        unwrap=True, renames=LEGACY_RENAMES)
+        unwrap=True, renames=LEGACY_RENAMES, legacy_body=legacy_decimal_body)
     headers(old, successor)
     assert new.json["pagination"] == {"limit": 50, "next_cursor": None}
 
@@ -147,3 +159,17 @@ def test_unknown_tenant_preview(client):
     assert response.status_code == 404
     assert response.content_type == "application/json"
     assert response.json == {"error": {"code": "not_found", "message": "Not Found"}}
+
+
+@pytest.mark.parametrize("path,schema,filters", [
+    (PREVIEW, "PreviewLine", PERIOD),
+    (f"{BASE}/tenants/00000000-0000-0000-0000-000000000003/invoice-preview", "PreviewLine", PERIOD),
+    (LINES, "InvoiceLine", {}),
+])
+def test_line_response_schema(client, path, schema, filters):
+    contract = yaml.safe_load((Path(__file__).resolve().parents[2] / "openapi/billing-v1.yaml").read_text())
+    response = client.get(path, query_string=filters)
+    assert response.status_code == 200
+    assert response.json["data"]
+    for row in response.json["data"]:
+        validate(row, contract["components"]["schemas"][schema])
