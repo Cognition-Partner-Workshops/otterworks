@@ -45,9 +45,12 @@ export default function BillingPlansPage() {
           <p className="text-sm font-semibold uppercase tracking-wide text-otter-600">Billing</p>
           <h1 className="text-3xl font-bold text-gray-900">Plans</h1>
         </div>
-        <Link className="text-sm text-otter-700 hover:underline" to={`/billing/entitlement/${DEFAULT_TENANT}`}>
-          View tenant entitlement
-        </Link>
+        <nav aria-label="Billing" className="flex flex-wrap gap-4 text-sm text-otter-700">
+          <Link className="hover:underline" to={`/billing/entitlement/${DEFAULT_TENANT}`}>
+            View tenant entitlement
+          </Link>
+          <Link className="hover:underline" to="/billing/rating">Usage rating</Link>
+        </nav>
       </header>
       {error && <BillingAlert message={error} onDismiss={() => setError("")} />}
       <button
