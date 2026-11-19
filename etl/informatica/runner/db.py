@@ -8,6 +8,8 @@ import zlib
 
 import yaml
 
+from .run_scope import before_namespace
+
 DEFAULTS = {
     "TD_HOST": "127.0.0.1",
     "TD_DB": "teradata",
@@ -18,7 +20,7 @@ DEFAULTS = {
 
 def default_port(ns=None):
     """Host port of the warehouse compose service for a namespace."""
-    ns = ns or os.environ.get("NS") or "sfx-d1110-before"
+    ns = ns or os.environ.get("NS") or before_namespace()
     return str(54500 + zlib.crc32(ns.encode()) % 1000)
 
 
