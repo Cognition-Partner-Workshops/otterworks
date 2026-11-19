@@ -1,8 +1,8 @@
 {
   "job": "audit_archive_resort",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "27 3 * * *",
   "profile": "small"
 }
