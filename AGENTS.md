@@ -153,6 +153,24 @@ then bills indefinitely. Four were stranded this way in June 2026.
   groups, EBS volumes and DNS records whose owning cluster or Service no longer exists. It
   only touches resources carrying an ownership tag, and defaults to `DRY_RUN=true`.
 
+## Shared integration mocks
+
+Every branch can use one set of mock integrations that runs once on the shared cluster,
+so a demo that needs a ticket tracker, a pager or a wiki doesn't have to bring its own.
+
+- Jira: https://jira-odl.demo.otterworks.app
+- PagerDuty: https://pagerduty-odl.demo.otterworks.app
+- Confluence: https://confluence-odl.demo.otterworks.app/wiki
+
+They run in the `odl-mocks` namespace from `infrastructure/k8s/shared-mocks`, deployed with
+`scripts/deploy-shared-mocks.sh`. Services are ClusterIP behind the shared ingress-nginx.
+Each host uses basic auth. The credentials are in the Kubernetes Secrets
+`jira-mock-basic-auth`, `pagerduty-mock-basic-auth` and `confluence-mock-basic-auth` in
+that namespace (keys `username` and `password`). The deploy script creates them only if
+they're missing and never overwrites them. Read them from the Secret at runtime and never
+print or commit them. Mock state doesn't survive a pod restart. Seed whatever a demo needs from
+that demo's own branch.
+
 ## Deploy
 
 - `scripts/deploy-dev.sh` wires all services' config/secrets from Terraform outputs and
