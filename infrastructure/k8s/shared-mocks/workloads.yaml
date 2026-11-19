@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jira
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: jira
+  template:
+    metadata:
+      labels:
+        app: jira
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+      containers:
+        - name: jira
+          securityContext:
+            allowPrivilegeEscalation: false
+          image: 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks-odl/mock-jira:0fbc19b96a72611ecdb626b00bfc45efc5cd93f8
+          ports:
+            - containerPort: 8080
+          resources:
+            requests: {cpu: 25m, memory: 64Mi}
+            limits: {cpu: 250m, memory: 192Mi}
+          readinessProbe:
+            httpGet: {path: /rest/api/3/myself, port: 8080}
+          livenessProbe:
+            httpGet: {path: /rest/api/3/myself, port: 8080}
+            initialDelaySeconds: 20
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pagerduty
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: pagerduty
+  template:
+    metadata:
+      labels:
+        app: pagerduty
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+      containers:
+        - name: pagerduty
+          securityContext:
+            allowPrivilegeEscalation: false
+          image: 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks-odl/mock-pagerduty:0fbc19b96a72611ecdb626b00bfc45efc5cd93f8
+          env:
+            - {name: DB_PATH, value: /data/pagerduty.db}
+            - {name: BASE_URL, value: 'https://pagerduty-odl.demo.otterworks.app'}
+          ports:
+            - containerPort: 8080
+          resources:
+            requests: {cpu: 25m, memory: 64Mi}
+            limits: {cpu: 250m, memory: 192Mi}
+          readinessProbe:
+            httpGet: {path: /health, port: 8080}
+          livenessProbe:
+            httpGet: {path: /health, port: 8080}
+            initialDelaySeconds: 20
+          volumeMounts:
+            - {name: data, mountPath: /data}
+      volumes:
+        - name: data
+          emptyDir: {sizeLimit: 128Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jira
+spec:
+  type: ClusterIP
+  selector: {app: jira}
+  ports:
+    - {port: 8080, targetPort: 8080}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pagerduty
+spec:
+  type: ClusterIP
+  selector: {app: pagerduty}
+  ports:
+    - {port: 8080, targetPort: 8080}
