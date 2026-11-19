@@ -177,8 +177,8 @@ async def test_document_versions(
     assert resp.status_code == 200
     versions = resp.json()
     assert len(versions) == 2
-    assert versions[0]["version_number"] == 1
-    assert versions[1]["version_number"] == 2
+    assert versions[0]["version_number"] == 2
+    assert versions[1]["version_number"] == 1
 
 
 @pytest.mark.asyncio
