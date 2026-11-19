@@ -7,8 +7,9 @@ import org.apache.spark.sql.functions.col
 object TeamGraphComponents {
   def main(args: Array[String]): Unit = {
     val spark = BatchSupport.session("team_graph_components")
+    val runDate = sys.env.getOrElse("SFX_RUN_DATE", java.time.LocalDate.now(java.time.ZoneOffset.UTC).toString)
     val result = transform(BatchSupport.landing(spark, "users", "TEAM_MEMBER"))
-    BatchSupport.save(result, "users", "team_graph_components")
+    BatchSupport.savePartition(result, "users", "team_graph_components", runDate)
     spark.stop()
   }
 
