@@ -8,9 +8,20 @@ import importlib.util
 from pathlib import Path
 
 import yaml
+import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 DBT = ROOT / "dbt"
+
+
+@pytest.mark.parametrize('platform,name', [('win32', 'dbt.exe'), ('linux', 'dbt')])
+def test_dbt_executable_is_adjacent_and_platform_specific(monkeypatch, platform, name):
+    monkeypatch.syspath_prepend(str(ROOT / 'snowflake'))
+    spec = importlib.util.spec_from_file_location('run_dbt', ROOT / 'snowflake/run_dbt.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr(module.sys, 'platform', platform)
+    assert module.dbt_executable() == Path(module.sys.executable).with_name(name)
 
 
 def helper(filename):

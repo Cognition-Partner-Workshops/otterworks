@@ -4,6 +4,7 @@ import sys
 import subprocess
 
 import duckdb
+from decimal import Decimal
 import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -12,6 +13,24 @@ spec = importlib.util.spec_from_file_location('object_board', ROOT/'migration/dw
 board = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(board)
 from warehouse.run_config import RunConfig
+
+
+@pytest.mark.parametrize('precision,scale,values,expected', [
+    (None, None, [Decimal('947.57'), Decimal('1974244.60')], 'DECIMAL(38,2)'),
+    (None, None, [None, Decimal('1.2345'), Decimal('2.00')], 'DECIMAL(38,4)'),
+    (None, None, [], 'DECIMAL(38,0)'),
+    (None, None, [None], 'DECIMAL(38,0)'),
+    (14, 0, [Decimal('12')], 'DECIMAL(14,0)'),
+    (14, 2, [Decimal('12.00')], 'DECIMAL(14,2)'),
+])
+def test_unconstrained_numeric_snapshot_preserves_scale(precision, scale, values, expected):
+    kind = board.numeric_type(precision, scale, values)
+    assert kind == expected
+    with duckdb.connect() as con:
+        con.execute('CREATE TABLE values_to_copy (value ' + kind + ')')
+        if values:
+            con.executemany('INSERT INTO values_to_copy VALUES (?)', [(v,) for v in values])
+        assert [r[0] for r in con.execute('SELECT * FROM values_to_copy').fetchall()] == values
 
 
 def obj(**changes):

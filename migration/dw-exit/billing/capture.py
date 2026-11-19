@@ -15,7 +15,7 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-sys.path[:0] = [str(ROOT / 'warehouse/teradata'), str(ROOT / 'warehouse'), str(Path(__file__).resolve().parents[1])]
+sys.path[:0] = [str(Path(__file__).resolve().parents[1]), str(ROOT / 'warehouse/teradata'), str(ROOT / 'warehouse')]
 
 from bteq import Runner
 from seed.columns import TABLES

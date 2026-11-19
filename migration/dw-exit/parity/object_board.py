@@ -1,6 +1,7 @@
 """Measure declared outputs without changing migration or retirement state."""
 import argparse
 from collections import Counter
+from decimal import Decimal
 import hashlib
 import json
 import os
@@ -78,7 +79,14 @@ def compare(before, after, source, target, sample_size=5):
             'passed': len(brows) == len(arows) and canonical(bp) == canonical(ap) and not delta}
 
 
-def source_snapshot(dsn, names):
+def numeric_type(precision, scale, values):
+    if scale is None:
+        scale = max((max(0, -Decimal(v).as_tuple().exponent)
+                     for v in values if v is not None), default=0)
+    return f'DECIMAL({precision or 38},{scale})'
+
+
+def source_snapshot(dsn, names, copy_rows=None):
     connection = duckdb.connect()
     ready, errors = set(), {}
     with psycopg.connect(dsn) as source:
@@ -94,14 +102,18 @@ def source_snapshot(dsn, names):
                     continue
                 schema, table, cols = index[name]
                 try:
+                    # psycopg Identifier quotes both catalog-derived identifiers.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+                    cursor.execute(sql.SQL('SELECT * FROM {}.{}').format(sql.Identifier(schema),sql.Identifier(table)))
+                    rows = cursor.fetchall()
                     definitions = []
-                    for column, dtype, precision, scale in cols:
+                    for column_index, (column, dtype, precision, scale) in enumerate(cols):
                         kind = {'smallint': 'SMALLINT', 'integer': 'INTEGER', 'bigint': 'BIGINT',
                                 'date': 'DATE', 'timestamp without time zone': 'TIMESTAMP',
                                 'timestamp with time zone': 'TIMESTAMPTZ', 'boolean': 'BOOLEAN',
                                 'real': 'FLOAT', 'double precision': 'DOUBLE', 'bytea': 'BLOB'}.get(dtype, 'VARCHAR')
                         if dtype == 'numeric':
-                            kind = f'DECIMAL({precision or 38},{scale or 0})'
+                            kind = numeric_type(precision, scale, (row[column_index] for row in rows))
                         definitions.append(quote(column.upper())+' '+kind)
                     source_schema, source_table = name.split('.')
                     # Identifiers are quoted; column types come from the fixed mapping above.
@@ -109,12 +121,11 @@ def source_snapshot(dsn, names):
                     connection.execute('CREATE SCHEMA IF NOT EXISTS '+quote(source_schema))
                     # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     connection.execute(f'CREATE TABLE {relation(name)} ({", ".join(definitions)})')
-                    # psycopg Identifier quotes both catalog-derived identifiers.
-                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-                    cursor.execute(sql.SQL('SELECT * FROM {}.{}').format(sql.Identifier(schema),sql.Identifier(table)))
-                    rows = cursor.fetchall()
                     if rows:
-                        connection.executemany(f'INSERT INTO {relation(name)} VALUES ({", ".join("?" for _ in cols)})', rows)
+                        if copy_rows:
+                            copy_rows(connection, name, rows)
+                        else:
+                            connection.executemany(f'INSERT INTO {relation(name)} VALUES ({", ".join("?" for _ in cols)})', rows)
                     ready.add(name)
                 except (duckdb.Error, psycopg.Error, ValueError) as error:
                     errors[name] = 'source snapshot: '+type(error).__name__
@@ -122,7 +133,7 @@ def source_snapshot(dsn, names):
     return connection, ready, errors
 
 
-def materialize(before, names, conversion_dir):
+def materialize(before, names, conversion_dir, copy_rows=None):
     after = duckdb.connect()
     ready, errors = set(), {}
     after.execute('CREATE SCHEMA BILLING')
@@ -142,7 +153,10 @@ def materialize(before, names, conversion_dir):
             # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             rows = before.execute('SELECT * FROM '+relation(name)).fetchall()
             if rows:
-                after.executemany(f'INSERT INTO {relation(target)} VALUES ({", ".join("?" for _ in definitions)})', rows)
+                if copy_rows:
+                    copy_rows(after, target, rows)
+                else:
+                    after.executemany(f'INSERT INTO {relation(target)} VALUES ({", ".join("?" for _ in definitions)})', rows)
             ready.add(target)
     for filename in ('10_load.sql', '30_views.sql'):
         text = RunConfig.from_env().render((conversion_dir / filename).read_text())

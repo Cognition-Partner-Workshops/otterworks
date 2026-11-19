@@ -14,6 +14,16 @@ from sfx_conn import query_tag
 from warehouse.run_config import RunConfig
 
 
+@pytest.mark.parametrize('label', [None, '', 'sfx1119'])
+def test_optional_query_tag_label(monkeypatch, label):
+    if label is None:
+        monkeypatch.delenv('SFX_QUERY_TAG_LABEL', raising=False)
+    else:
+        monkeypatch.setenv('SFX_QUERY_TAG_LABEL', label)
+    value = json.loads(query_tag('ops', 'close'))
+    assert value.get('tag') == (label or None)
+
+
 @pytest.mark.parametrize("current,legacy,expected", [
     (None, None, "sfx1119"),
     (None, "sfx-d1110", "sfx-d1110"),

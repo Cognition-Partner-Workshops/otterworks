@@ -18,6 +18,10 @@ import tempfile
 from sfx_conn import ROOT, query_tag
 
 
+def dbt_executable():
+    return Path(sys.executable).with_name('dbt.exe' if sys.platform == 'win32' else 'dbt')
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=["parse", "build"])
@@ -63,7 +67,7 @@ def main():
             destination = project / relative
             destination.parent.mkdir(parents=True,exist_ok=True)
             destination.write_text(config.render(path.read_text()))
-    command = [str(Path(sys.executable).with_name("dbt")), args.command,
+    command = [str(dbt_executable()), args.command,
                "--project-dir", str(project), "--profiles-dir", str(project),
                "--target-path", str(target), "--log-path", str(source_project / 'logs')]
     if args.command == "build":
