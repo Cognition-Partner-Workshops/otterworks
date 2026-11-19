@@ -1,0 +1,179 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "f881778cb103861a7bb41f818500f0febd1e5a20",
+  "id": "billing.monthly_invoice_line",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.INVOICE_LINE",
+    "bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq",
+    "teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE"
+  ],
+  "results": {
+    "columns": [
+      "invoice_line_id",
+      "invoice_id",
+      "line_no",
+      "description",
+      "quantity",
+      "unit_price",
+      "line_amount"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "description": {
+          "count": 4184,
+          "hash": "b21a094aa77e5a0f32551499b18c6bd59ffd36447bc58da963ac9d4a76028df5",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_id": {
+          "count": 4184,
+          "hash": "e9edd430c00a3eb0d4dedf41aa1e11f0605d19124089056784abd15002cde927",
+          "null_count": 0,
+          "sum": "756004090484"
+        },
+        "invoice_line_id": {
+          "count": 4184,
+          "hash": "31a36cf8721ea56d08bbb76d2b1b2f2d3865327ac2ec8caff4f2af2367281b7a",
+          "null_count": 0,
+          "sum": "665956004011284"
+        },
+        "line_amount": {
+          "count": 4184,
+          "hash": "5f95eec493e1341b439ca347808c437bc976e842ea897116d260e1b2bff6c84c",
+          "null_count": 0,
+          "sum": "648419.61"
+        },
+        "line_no": {
+          "count": 4184,
+          "hash": "ccd70b3e55ab572566fd5fd2c0e979f9f80d62243ee2d5efc4980edc7f9eb030",
+          "null_count": 0,
+          "sum": "230400"
+        },
+        "quantity": {
+          "count": 4184,
+          "hash": "f3b82ee878e28c100766f5fcd948ec7e6502d11c5c2dd2d137b4ba5d33509f48",
+          "null_count": 0,
+          "sum": "4184"
+        },
+        "unit_price": {
+          "count": 4184,
+          "hash": "5f95eec493e1341b439ca347808c437bc976e842ea897116d260e1b2bff6c84c",
+          "null_count": 0,
+          "sum": "648419.61"
+        }
+      },
+      "legacy": {
+        "description": {
+          "count": 4184,
+          "hash": "b21a094aa77e5a0f32551499b18c6bd59ffd36447bc58da963ac9d4a76028df5",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_id": {
+          "count": 4184,
+          "hash": "e9edd430c00a3eb0d4dedf41aa1e11f0605d19124089056784abd15002cde927",
+          "null_count": 0,
+          "sum": "756004090484"
+        },
+        "invoice_line_id": {
+          "count": 4184,
+          "hash": "31a36cf8721ea56d08bbb76d2b1b2f2d3865327ac2ec8caff4f2af2367281b7a",
+          "null_count": 0,
+          "sum": "665956004011284"
+        },
+        "line_amount": {
+          "count": 4184,
+          "hash": "5f95eec493e1341b439ca347808c437bc976e842ea897116d260e1b2bff6c84c",
+          "null_count": 0,
+          "sum": "648419.61"
+        },
+        "line_no": {
+          "count": 4184,
+          "hash": "ccd70b3e55ab572566fd5fd2c0e979f9f80d62243ee2d5efc4980edc7f9eb030",
+          "null_count": 0,
+          "sum": "230400"
+        },
+        "quantity": {
+          "count": 4184,
+          "hash": "f3b82ee878e28c100766f5fcd948ec7e6502d11c5c2dd2d137b4ba5d33509f48",
+          "null_count": 0,
+          "sum": "4184"
+        },
+        "unit_price": {
+          "count": 4184,
+          "hash": "5f95eec493e1341b439ca347808c437bc976e842ea897116d260e1b2bff6c84c",
+          "null_count": 0,
+          "sum": "648419.61"
+        }
+      }
+    },
+    "mismatches": {
+      "description": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_id": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_line_id": {
+        "count": 0,
+        "samples": []
+      },
+      "line_amount": {
+        "count": 0,
+        "samples": []
+      },
+      "line_no": {
+        "count": 0,
+        "samples": []
+      },
+      "quantity": {
+        "count": 0,
+        "samples": []
+      },
+      "unit_price": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 4184,
+      "legacy": 4184
+    }
+  },
+  "row_counts": {
+    "lakehouse": 4184,
+    "legacy": 4184
+  },
+  "spec_hash": "fb52400153a119315c10b5562dc8cf8cc4c92b4c3e74270affe5ee967b285b3f",
+  "timestamp": "2026-11-19T08:36:42.878355+00:00"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "billing.monthly_invoice_result",
+  "legacy_objects": [
+    "teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE",
+    "bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT n FROM sfx_billing_parity.monthly_invoice_result"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "gold_billing.monthly_invoice_result"
+  },
+  "keys": [
+    "n"
+  ],
+  "columns": [
+    "n"
+  ],
+  "normalize": {}
+}

@@ -6,7 +6,7 @@
   ],
   "legacy": {
     "kind": "postgres_sql",
-    "sql": "SELECT journal_line_id, invoice_id, credit_note_id, gl_account_id, posting_dt, currency_cd, debit_amount, credit_amount, description FROM sfx_billing.gl_journal_line"
+    "sql": "SELECT journal_line_id, invoice_id, credit_note_id, gl_account_id, posting_dt, currency_cd, debit_amount, credit_amount, description FROM sfx_billing_parity.load_gl_journal_line"
   },
   "lakehouse": {
     "kind": "delta_table",

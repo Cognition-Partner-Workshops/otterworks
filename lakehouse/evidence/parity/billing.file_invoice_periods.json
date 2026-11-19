@@ -1,0 +1,160 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "f881778cb103861a7bb41f818500f0febd1e5a20",
+  "id": "billing.file_invoice_periods",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq"
+  ],
+  "results": {
+    "columns": [
+      "invoice_id",
+      "prior_dt",
+      "month_no",
+      "period_key",
+      "invoice_period",
+      "run_dt"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "invoice_id": {
+          "count": 2100,
+          "hash": "7c43fef4c5d46997ecd3bd490f2441784c34657c3c6d304c81f9964d964a9066",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_period": {
+          "count": 2100,
+          "hash": "e3280456f257a0b3604ada7eebe391ff37730deb681bc202e838299c2048c20d",
+          "null_count": 0,
+          "sum": null
+        },
+        "month_no": {
+          "count": 2100,
+          "hash": "f3ad49913dffc262378f2a314673a2a6af99e6e868e15b1ddaf4f8e4fc9a1f7e",
+          "null_count": 0,
+          "sum": null
+        },
+        "period_key": {
+          "count": 2100,
+          "hash": "65ad3616b4cd6f449f120fc9162d5a3c0a4663e4b1fb5082a71c7c4ad4185c40",
+          "null_count": 0,
+          "sum": null
+        },
+        "prior_dt": {
+          "count": 2100,
+          "hash": "814a04bd3940fb6a99e3deedd036701055698ab14b9966f036930b8d9e5a76e3",
+          "null_count": 0,
+          "sum": null
+        },
+        "run_dt": {
+          "count": 2100,
+          "hash": "a7264019dc53a63449fd4b191bd76703506ad88402182815230ad5c8e475db87",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "invoice_id": {
+          "count": 2100,
+          "hash": "7c43fef4c5d46997ecd3bd490f2441784c34657c3c6d304c81f9964d964a9066",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_period": {
+          "count": 2100,
+          "hash": "e3280456f257a0b3604ada7eebe391ff37730deb681bc202e838299c2048c20d",
+          "null_count": 0,
+          "sum": null
+        },
+        "month_no": {
+          "count": 2100,
+          "hash": "f3ad49913dffc262378f2a314673a2a6af99e6e868e15b1ddaf4f8e4fc9a1f7e",
+          "null_count": 0,
+          "sum": null
+        },
+        "period_key": {
+          "count": 2100,
+          "hash": "65ad3616b4cd6f449f120fc9162d5a3c0a4663e4b1fb5082a71c7c4ad4185c40",
+          "null_count": 0,
+          "sum": null
+        },
+        "prior_dt": {
+          "count": 2100,
+          "hash": "814a04bd3940fb6a99e3deedd036701055698ab14b9966f036930b8d9e5a76e3",
+          "null_count": 0,
+          "sum": null
+        },
+        "run_dt": {
+          "count": 2100,
+          "hash": "a7264019dc53a63449fd4b191bd76703506ad88402182815230ad5c8e475db87",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "invoice_id": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_period": {
+        "count": 0,
+        "samples": []
+      },
+      "month_no": {
+        "count": 0,
+        "samples": []
+      },
+      "period_key": {
+        "count": 0,
+        "samples": []
+      },
+      "prior_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "run_dt": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 2100,
+      "legacy": 2100
+    }
+  },
+  "row_counts": {
+    "lakehouse": 2100,
+    "legacy": 2100
+  },
+  "spec_hash": "b08e62f24d845fb9ce9e7eee8c102721492901468867b492bd35a00ba28467ec",
+  "timestamp": "2026-11-19T08:36:37.806713+00:00"
+}

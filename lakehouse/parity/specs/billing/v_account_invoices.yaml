@@ -1,0 +1,30 @@
+{
+  "id": "billing.v_account_invoices",
+  "legacy_objects": [
+    "teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT customer_id, account_name, invoice_id, invoice_dt, currency_cd, total_amount FROM sfx_billing.v_account_invoices"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "gold_billing.v_account_invoices"
+  },
+  "keys": [
+    "invoice_id"
+  ],
+  "columns": [
+    "customer_id",
+    "account_name",
+    "invoice_id",
+    "invoice_dt",
+    "currency_cd",
+    "total_amount"
+  ],
+  "normalize": {
+    "currency_cd": {
+      "rstrip": true
+    }
+  }
+}

@@ -6,7 +6,7 @@
   ],
   "legacy": {
     "kind": "postgres_sql",
-    "sql": "SELECT invoice_line_id, invoice_id, line_no, description, quantity, unit_price, line_amount FROM sfx_billing.invoice_line"
+    "sql": "SELECT invoice_line_id, invoice_id, line_no, description, quantity, unit_price, line_amount FROM sfx_billing_parity.load_invoice_line"
   },
   "lakehouse": {
     "kind": "delta_table",

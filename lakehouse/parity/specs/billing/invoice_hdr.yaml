@@ -6,7 +6,7 @@
   ],
   "legacy": {
     "kind": "postgres_sql",
-    "sql": "SELECT invoice_id, customer_id, subscription_id, invoice_dt, bill_dt, period_start_dt, currency_cd, total_amount, invoice_number, tax_rate_id, subtotal_amount, tax_amount, invoice_period, period_key, prior_period_end_dt, invoice_month, period_closed_cd, currency_control_total FROM sfx_billing.invoice_hdr"
+    "sql": "SELECT invoice_id, customer_id, subscription_id, invoice_dt, bill_dt, period_start_dt, currency_cd, total_amount, invoice_number, tax_rate_id, subtotal_amount, tax_amount, invoice_period, period_key, prior_period_end_dt, invoice_month, period_closed_cd, currency_control_total FROM sfx_billing_parity.load_invoice_hdr"
   },
   "lakehouse": {
     "kind": "delta_table",

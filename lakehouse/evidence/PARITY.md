@@ -4,13 +4,26 @@
 |---|---|---|---|---:|---:|---|
 | [billing.account_hist_batch](parity/billing.account_hist_batch.json) | teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH, bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq | sfx-d1110-after | 20261109 | 1 | 1 | PASS |
 | [billing.billing_adj](parity/billing.billing_adj.json) | teradata_table:SFX_BILLING.BILLING_ADJ, bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq | sfx-d1110-after | 20261109 | 100 | 100 | PASS |
+| [billing.closed_invoice_hdr](parity/billing.closed_invoice_hdr.json) | teradata_table:SFX_BILLING.INVOICE_HDR, bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq | sfx-d1110-after | 20261109 | 2100 | 2100 | PASS |
 | [billing.credit_note](parity/billing.credit_note.json) | teradata_table:SFX_BILLING.CREDIT_NOTE, bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq | sfx-d1110-after | 20261109 | 100 | 100 | PASS |
+| [billing.currency_totals](parity/billing.currency_totals.json) | teradata_macro:SFX_BILLING.M_CURRENCY_TOTALS, bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq | sfx-d1110-after | 20261109 | 6 | 6 | PASS |
 | [billing.customer_account](parity/billing.customer_account.json) | teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT, bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq | sfx-d1110-after | 20261109 | 300 | 300 | PASS |
 | [billing.customer_account_hist](parity/billing.customer_account_hist.json) | teradata_table:SFX_BILLING.CUSTOMER_ACCOUNT_HIST, bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq | sfx-d1110-after | 20261109 | 300 | 300 | PASS |
+| [billing.file_account_status](parity/billing.file_account_status.json) | bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq | sfx-d1110-after | 20261109 | 6 | 6 | PASS |
+| [billing.file_currency_daily](parity/billing.file_currency_daily.json) | bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq | sfx-d1110-after | 20261109 | 6 | 6 | PASS |
+| [billing.file_gl_trial_balance](parity/billing.file_gl_trial_balance.json) | bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq | sfx-d1110-after | 20261109 | 11 | 11 | PASS |
+| [billing.file_invoice_monthly](parity/billing.file_invoice_monthly.json) | bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq | sfx-d1110-after | 20261109 | 6 | 6 | PASS |
+| [billing.file_invoice_periods](parity/billing.file_invoice_periods.json) | bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq | sfx-d1110-after | 20261109 | 2100 | 2100 | PASS |
+| [billing.file_period_close](parity/billing.file_period_close.json) | bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq | sfx-d1110-after | 20261109 | 1 | 1 | PASS |
+| [billing.file_subscription_plans](parity/billing.file_subscription_plans.json) | bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq | sfx-d1110-after | 20261109 | 500 | 500 | PASS |
 | [billing.gl_account](parity/billing.gl_account.json) | teradata_table:SFX_BILLING.GL_ACCOUNT, bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq | sfx-d1110-after | 20261109 | 10 | 10 | PASS |
 | [billing.gl_journal_line](parity/billing.gl_journal_line.json) | teradata_table:SFX_BILLING.GL_JOURNAL_LINE, bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq | sfx-d1110-after | 20261109 | 830 | 830 | PASS |
 | [billing.invoice_hdr](parity/billing.invoice_hdr.json) | teradata_table:SFX_BILLING.INVOICE_HDR, bteq_script:warehouse/teradata/scripts/billing/03_load_invoices.bteq | sfx-d1110-after | 20261109 | 2100 | 2100 | PASS |
 | [billing.invoice_line](parity/billing.invoice_line.json) | teradata_table:SFX_BILLING.INVOICE_LINE, bteq_script:warehouse/teradata/scripts/billing/03_load_invoices.bteq | sfx-d1110-after | 20261109 | 2000 | 2000 | PASS |
+| [billing.monthly_gl_journal_line](parity/billing.monthly_gl_journal_line.json) | teradata_table:SFX_BILLING.GL_JOURNAL_LINE, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq | sfx-d1110-after | 20261109 | 9466 | 9466 | PASS |
+| [billing.monthly_invoice_hdr](parity/billing.monthly_invoice_hdr.json) | teradata_table:SFX_BILLING.INVOICE_HDR, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE | sfx-d1110-after | 20261109 | 2100 | 2100 | PASS |
+| [billing.monthly_invoice_line](parity/billing.monthly_invoice_line.json) | teradata_table:SFX_BILLING.INVOICE_LINE, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE | sfx-d1110-after | 20261109 | 4184 | 4184 | PASS |
+| [billing.monthly_invoice_result](parity/billing.monthly_invoice_result.json) | teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq | sfx-d1110-after | 20261109 | 1 | 1 | PASS |
 | [billing.payment](parity/billing.payment.json) | teradata_table:SFX_BILLING.PAYMENT, bteq_script:warehouse/teradata/scripts/billing/04_load_payments.bteq | sfx-d1110-after | 20261109 | 2000 | 2000 | PASS |
 | [billing.plan_catalog](parity/billing.plan_catalog.json) | teradata_table:SFX_BILLING.PLAN_CATALOG, bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq | sfx-d1110-after | 20261109 | 40 | 40 | PASS |
 | [billing.stg_billing_adj](parity/billing.stg_billing_adj.json) | teradata_table:SFX_BILLING.STG_BILLING_ADJ | sfx-d1110-after | 20261109 | 100 | 100 | PASS |
@@ -26,5 +39,10 @@
 | [billing.stg_tax_rate](parity/billing.stg_tax_rate.json) | teradata_table:SFX_BILLING.STG_TAX_RATE | sfx-d1110-after | 20261109 | 200 | 200 | PASS |
 | [billing.stg_usage_daily](parity/billing.stg_usage_daily.json) | teradata_table:SFX_BILLING.STG_USAGE_DAILY | sfx-d1110-after | 20261109 | 2000 | 2000 | PASS |
 | [billing.subscription](parity/billing.subscription.json) | teradata_table:SFX_BILLING.SUBSCRIPTION, bteq_script:warehouse/teradata/scripts/billing/02_load_subscriptions.bteq | sfx-d1110-after | 20261109 | 500 | 500 | PASS |
+| [billing.subscription_plans](parity/billing.subscription_plans.json) | teradata_macro:SFX_BILLING.M_SUBSCRIPTION_PLANS, bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq | sfx-d1110-after | 20261109 | 500 | 500 | PASS |
 | [billing.tax_rate](parity/billing.tax_rate.json) | teradata_table:SFX_BILLING.TAX_RATE, bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq | sfx-d1110-after | 20261109 | 200 | 200 | PASS |
 | [billing.usage_daily](parity/billing.usage_daily.json) | teradata_table:SFX_BILLING.USAGE_DAILY, bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq | sfx-d1110-after | 20261109 | 2000 | 2000 | PASS |
+| [billing.v_account_invoices](parity/billing.v_account_invoices.json) | teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES | sfx-d1110-after | 20261109 | 2100 | 2100 | PASS |
+| [billing.v_invoice_base](parity/billing.v_invoice_base.json) | teradata_view:SFX_BILLING.V_INVOICE_BASE | sfx-d1110-after | 20261109 | 2100 | 2100 | PASS |
+| [billing.v_invoice_revenue](parity/billing.v_invoice_revenue.json) | teradata_view:SFX_BILLING.V_INVOICE_REVENUE | sfx-d1110-after | 20261109 | 11 | 11 | PASS |
+| [billing.v_subscription_plans](parity/billing.v_subscription_plans.json) | teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS | sfx-d1110-after | 20261109 | 500 | 500 | PASS |

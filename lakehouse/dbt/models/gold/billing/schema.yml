@@ -1,0 +1,50 @@
+version: 2
+models:
+  - name: monthly_invoice_hdr
+    data_tests: [billing_monthly_amounts]
+    columns:
+      - name: invoice_id
+        data_tests: [unique, not_null]
+  - name: monthly_invoice_line
+    columns:
+      - name: invoice_line_id
+        data_tests: [unique, not_null]
+  - name: monthly_gl_journal_line
+    data_tests: [billing_journal_balance]
+    columns:
+      - name: journal_line_id
+        data_tests: [not_null]
+  - name: closed_invoice_hdr
+    columns:
+      - name: invoice_id
+        data_tests: [unique, not_null]
+  - name: v_account_invoices
+    columns:
+      - name: invoice_id
+        data_tests: [unique, not_null]
+  - name: v_invoice_base
+    columns:
+      - name: invoice_id
+        data_tests: [unique, not_null]
+  - name: v_invoice_revenue
+  - name: v_subscription_plans
+    columns:
+      - name: subscription_id
+        data_tests: [not_null]
+  - name: subscription_plans
+    columns:
+      - name: subscription_id
+        data_tests: [not_null]
+  - name: currency_daily
+  - name: currency_totals
+  - name: gl_trial_balance
+  - name: invoice_periods
+    columns:
+      - name: invoice_id
+        data_tests: [unique, not_null]
+  - name: period_close
+  - name: account_status
+  - name: monthly_invoice_result
+    columns:
+      - name: n
+        data_tests: [unique, not_null]

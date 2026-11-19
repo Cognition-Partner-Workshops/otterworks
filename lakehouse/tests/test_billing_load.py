@@ -186,7 +186,7 @@ def test_billing_journal_posting_date_append(spark):
 def test_billing_load_stage_replacement():
     nodes = {n['id']: n for n in load()['lakehouse_daily']['nodes']}
     dbt = nodes['dbt_billing']
-    assert dbt['selector'] == 'tag:billing'
+    assert dbt['selector'] == 'path:models/silver/billing'
     assert dbt['depends_on'] == ['bronze_billing']
     names = ['01_load_accounts', '02_load_subscriptions', '03_load_invoices',
              '04_load_payments', '05_load_usage', 'load_account_history']

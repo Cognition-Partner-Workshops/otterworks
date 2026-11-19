@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "d48c11e07c4315a30d5a4eee747e2e7426d15a42",
+  "git_sha": "f881778cb103861a7bb41f818500f0febd1e5a20",
   "id": "billing.stg_subscription",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -156,5 +156,5 @@
     "legacy": 500
   },
   "spec_hash": "47df6f6cc67fd1d5a48600428881b5fa4292e722710a26092dcf673fc9b74e7b",
-  "timestamp": "2026-11-19T08:16:21.659382+00:00"
+  "timestamp": "2026-11-19T08:36:49.492675+00:00"
 }

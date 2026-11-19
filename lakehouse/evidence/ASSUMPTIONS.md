@@ -1,6 +1,6 @@
 # Migration assumptions
 
-Entries: 55. Validation errors: 0.
+Entries: 63. Validation errors: 0.
 
 ## A-001 — PSV empty fields and nulls
 
@@ -991,3 +991,147 @@ Entries: 55. Validation errors: 0.
 **verification:** test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 
 **sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/jobs/crontab.example
+
+## A-108 — Immutable load, monthly and close boundaries
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq, bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq, bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/10_subscription_report, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/11_currency_daily, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/12_invoice_monthly, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/13_period_close, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/14_account_history_extract, teradata_macro:SFX_BILLING.M_CURRENCY_TOTALS, teradata_macro:SFX_BILLING.M_SUBSCRIPTION_PLANS, teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES, teradata_view:SFX_BILLING.V_INVOICE_BASE, teradata_view:SFX_BILLING.V_INVOICE_REVENUE, teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE
+
+**ambiguity:** Monthly and period-close overwrite the same legacy tables and early reports observe different state from final views.
+
+**decision:** Keep silver load snapshots immutable; gold monthly invoice lines feed monthly header amounts/control totals and journal, then closed_invoice_hdr applies period-close fields. Final views read closed headers. Early currency_daily reads silver. The reporting dbt node follows silver; export stages run in legacy order. Legacy parity fixture snapshots the three load tables and the three monthly tables so all stages can be compared in one run.
+
+**rationale:** Avoid cyclic in-place mutation and preserve Step 2 parity while providing explicit final gold serving surfaces.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_billing_reporting_stage_replacement
+
+**sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, warehouse/teradata/scripts/billing/13_period_close.bteq
+
+## A-109 — Monthly procedure joins, dates, decimals and OUT count
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE
+
+**ambiguity:** The monthly procedure has cumulative date predicates, global line deletion, conditional header updates and an OUT parameter.
+
+**decision:** Delete generated descriptions globally, including future invoices; preserve null descriptions. Insert monthly fees and adjustments for invoice_dt <= BUSINESS_DATE, with no adjustment-date or month restriction. Recompute only headers with subscription/plan/tax joins; retain other headers. Use decimal arithmetic and half-up rounding, cast updated targets to DECIMAL(14,2), then compute case-insensitive currency control totals over every header. Expose actual eligible-update count as monthly_invoice_result.n.
+
+**rationale:** Replicate statements rather than infer a conventional current-month billing policy. Capture legacy OUT n from actual procedure log in fixture.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_monthly_states_and_edges
+
+**sources:** warehouse/teradata/procedures/monthly_invoice.sql, warehouse/teradata/ddl/billing/00_tables.sql
+
+## A-110 — Monthly journal replacement and balance
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, teradata_table:SFX_BILLING.GL_JOURNAL_LINE
+
+**ambiguity:** Journal deletion is month-scoped but inserted invoices and credits are cumulative and SQL null predicates matter.
+
+**decision:** Retain journal rows outside the current calendar month, including null posting dates. Regenerate four invoice postings and three eligible credit reversals dated BUSINESS_DATE using legacy numeric IDs and account/sign rules. Null currency cannot join the grouped currency set; null amounts use the original CASE ELSE 0 behavior. Check per-currency debit/credit equality with the same NULL aggregate semantics.
+
+**rationale:** Preserve rerun behavior from an immutable silver prior-state snapshot, not a deduplication/upsert approximation.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_monthly_states_and_edges
+
+**sources:** warehouse/teradata/scripts/billing/12_invoice_monthly.bteq
+
+## A-111 — Period-close date encoding and previous-month window
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq, teradata_table:SFX_BILLING.INVOICE_HDR
+
+**ambiguity:** Teradata date-to-integer arithmetic is not Unix days; PERIOD_START_INT/END_INT refer to the previous calendar month.
+
+**decision:** Apply monthly first. Derive prior date, month number, YYYYMMDD period key and YYYY-MM text for all headers. Set closed=Y only for bill dates in the previous calendar month, retaining other flags. Use explicit BUSINESS_DATE and calendar boundaries, including year/leap transitions.
+
+**rationale:** Matches daily_chain.variables and emulator date_int translation; period-close does not filter the entire header snapshot.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_monthly_states_and_edges
+
+**sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/billing/13_period_close.bteq, warehouse/teradata/bteq/runner.py
+
+## A-112 — DATA/REPORT file contract and atomic publication
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq, bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq, bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq
+
+**ambiguity:** Native BTEQ REPORT layout differs from the executable emulator and unordered SQL does not define physical row order.
+
+**decision:** Publish seven actual headerless UTF-8 PSV files with LF records, null as empty and no CSV quoting, matching Runner.render. Use deterministic sorting; compare file rows ignoring unspecified order, declared CHAR trailing blanks and decimal display scale. Case-fold only case-insensitive grouped key representatives. Preserve required invoice/status ordering. Write a same-directory temporary file, fsync and atomic replace per file; empty results publish an empty file. Reject delimiter/newline fields rather than emitting malformed unquoted records.
+
+**rationale:** Certifies emulator files, not proprietary headings/pagination; avoids partially published files and silent stale data on retries.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_report_atomic_publication
+
+**sources:** warehouse/teradata/bteq/runner.py, warehouse/teradata/scripts/billing/10_subscription_report.bteq, warehouse/teradata/scripts/billing/11_currency_daily.bteq, warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, warehouse/teradata/scripts/billing/13_period_close.bteq, warehouse/teradata/scripts/billing/14_account_history_extract.bteq
+
+## A-113 — Reporting collation and inert macro parameters
+
+**status:** open
+
+**risk:** med
+
+**legacy_objects:** teradata_macro:SFX_BILLING.M_CURRENCY_TOTALS, teradata_macro:SFX_BILLING.M_SUBSCRIPTION_PLANS, teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES, teradata_view:SFX_BILLING.V_INVOICE_BASE, teradata_view:SFX_BILLING.V_INVOICE_REVENUE, teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq, bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq, bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq, teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE
+
+**ambiguity:** NOT CASESPECIFIC ICU text and CHAR padding are not native Spark semantics; both macro date parameters are unused.
+
+**decision:** Join plans by lowercase/rtrim and group currencies/status and GL account numbers by lowercase/rtrim, retaining case-sensitive account names. Currency window partitions use the same keys. Choose a deterministic min spelling for group display and normalize only case-insensitive representative fields in parity. Preserve subscription macro s.PLAN_CODE versus view p.PLAN_CODE and do not date-filter either macro. Non-ASCII ICU accent/locale equivalence beyond tested case/trailing-space examples remains unverified.
+
+**rationale:** Avoid duplicate mixed-case currency groups and incorrect window totals; never case-fold case-sensitive descriptions or account names.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_monthly_states_and_edges
+
+**sources:** warehouse/teradata/bteq/bootstrap.sql, warehouse/teradata/bteq/runner.py, warehouse/teradata/macros/currency_totals.sql, warehouse/teradata/macros/subscription_plans.sql, warehouse/teradata/ddl/billing/10_views.sql, warehouse/teradata/ddl/billing/20_views.sql
+
+## A-114 — Reporting failure and publication boundaries
+
+**status:** open
+
+**risk:** high
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq, bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq, bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq, bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/10_subscription_report, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/11_currency_daily, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/12_invoice_monthly, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/13_period_close, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/14_account_history_extract, teradata_macro:SFX_BILLING.M_CURRENCY_TOTALS, teradata_macro:SFX_BILLING.M_SUBSCRIPTION_PLANS, teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES, teradata_view:SFX_BILLING.V_INVOICE_BASE, teradata_view:SFX_BILLING.V_INVOICE_REVENUE, teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS, teradata_table:SFX_BILLING.INVOICE_HDR, teradata_table:SFX_BILLING.INVOICE_LINE, teradata_table:SFX_BILLING.GL_JOURNAL_LINE, teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE
+
+**ambiguity:** Legacy scripts commit mutations and may export before a later balance failure; dbt and independent files cannot provide the same global transaction.
+
+**decision:** Keep A-105 open. Gold tables publish atomically per model; post-build constraints/balance failures block export tasks but may leave some gold outputs. Files publish atomically individually, not as a multi-file transaction. Retries replace rather than append. Do not claim legacy partial-commit ordering, cross-model rollback, native procedure error codes or production cutover safety. Invalid dates and Spark ANSI arithmetic errors fail visibly.
+
+**rationale:** Explicitly retain differing failure boundaries instead of treating fixture row parity as operational equivalence.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_report_atomic_publication
+
+**sources:** warehouse/teradata/scripts/billing/12_invoice_monthly.bteq, warehouse/teradata/scripts/billing/13_period_close.bteq, warehouse/teradata/procedures/monthly_invoice.sql
+
+## A-115 — History extract as-of interval and null groups
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/14_account_history_extract
+
+**ambiguity:** History extract reads validity intervals rather than current customer rows and includes null group keys.
+
+**decision:** Filter VALID_FROM_DT <= BUSINESS_DATE < VALID_TO_DT, group status/currency case-insensitively with nulls retained, output BUSINESS_DATE, and sort status/currency NULLS LAST. Serialize nulls as empty fields as the emulator does; the table history itself retains null distinctions.
+
+**rationale:** Do not substitute current account status or infer the newest history date.
+
+**verification:** test:lakehouse/tests/test_billing_reporting.py::test_monthly_states_and_edges
+
+**sources:** warehouse/teradata/scripts/billing/14_account_history_extract.bteq, warehouse/teradata/ddl/billing/00_type2_account.sql

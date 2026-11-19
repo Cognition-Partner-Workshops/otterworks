@@ -463,7 +463,7 @@ dags:
   - id: dbt_billing
     kind: dbt
     domain: billing
-    selector: tag:billing
+    selector: path:models/silver/billing
     depends_on:
     - bronze_billing
     retries: 1
@@ -801,6 +801,195 @@ dags:
     kind: parity
     spec: billing.usage_daily
     depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: dbt_billing_reporting
+    kind: dbt
+    domain: billing
+    selector: path:models/gold/billing
+    depends_on: [dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq
+    - bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/10_subscription_report
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/11_currency_daily
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/12_invoice_monthly
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/13_period_close
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/14_account_history_extract
+    - teradata_macro:SFX_BILLING.M_CURRENCY_TOTALS
+    - teradata_macro:SFX_BILLING.M_SUBSCRIPTION_PLANS
+    - teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES
+    - teradata_view:SFX_BILLING.V_INVOICE_BASE
+    - teradata_view:SFX_BILLING.V_INVOICE_REVENUE
+    - teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS
+    - teradata_table:SFX_BILLING.INVOICE_HDR
+    - teradata_table:SFX_BILLING.INVOICE_LINE
+    - teradata_table:SFX_BILLING.GL_JOURNAL_LINE
+    - teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE
+  - id: export_billing_10_subscription_report
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.reports", "--business-date", "{business_date}", "--reports", "subscription_plans"]
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq"]
+  - id: export_billing_11_currency_daily
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.reports", "--business-date", "{business_date}", "--reports", "currency_daily"]
+    depends_on: [dbt_billing_reporting, export_billing_10_subscription_report]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq"]
+  - id: export_billing_12_invoice_monthly
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.reports", "--business-date", "{business_date}", "--reports", "invoice_monthly", "gl_trial_balance"]
+    depends_on: [dbt_billing_reporting, export_billing_11_currency_daily]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq"]
+  - id: export_billing_13_period_close
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.reports", "--business-date", "{business_date}", "--reports", "invoice_periods", "period_close"]
+    depends_on: [dbt_billing_reporting, export_billing_12_invoice_monthly]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq"]
+  - id: export_billing_14_account_history_extract
+    kind: export
+    command: ["{python}", "-m", "lakehouse.billing.reports", "--business-date", "{business_date}", "--reports", "account_status"]
+    depends_on: [dbt_billing_reporting, export_billing_13_period_close]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq"]
+  - id: parity_billing_monthly_invoice_hdr
+    kind: parity
+    spec: billing.monthly_invoice_hdr
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_monthly_invoice_line
+    kind: parity
+    spec: billing.monthly_invoice_line
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_monthly_gl_journal_line
+    kind: parity
+    spec: billing.monthly_gl_journal_line
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_closed_invoice_hdr
+    kind: parity
+    spec: billing.closed_invoice_hdr
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_v_account_invoices
+    kind: parity
+    spec: billing.v_account_invoices
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_v_invoice_base
+    kind: parity
+    spec: billing.v_invoice_base
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_v_invoice_revenue
+    kind: parity
+    spec: billing.v_invoice_revenue
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_v_subscription_plans
+    kind: parity
+    spec: billing.v_subscription_plans
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_subscription_plans
+    kind: parity
+    spec: billing.subscription_plans
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_currency_totals
+    kind: parity
+    spec: billing.currency_totals
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_monthly_invoice_result
+    kind: parity
+    spec: billing.monthly_invoice_result
+    depends_on: [dbt_billing_reporting]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_subscription_plans
+    kind: parity
+    spec: billing.file_subscription_plans
+    depends_on: [export_billing_10_subscription_report]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_currency_daily
+    kind: parity
+    spec: billing.file_currency_daily
+    depends_on: [export_billing_11_currency_daily]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_invoice_monthly
+    kind: parity
+    spec: billing.file_invoice_monthly
+    depends_on: [export_billing_12_invoice_monthly]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_gl_trial_balance
+    kind: parity
+    spec: billing.file_gl_trial_balance
+    depends_on: [export_billing_12_invoice_monthly]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_invoice_periods
+    kind: parity
+    spec: billing.file_invoice_periods
+    depends_on: [export_billing_13_period_close]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_period_close
+    kind: parity
+    spec: billing.file_period_close
+    depends_on: [export_billing_13_period_close]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_file_account_status
+    kind: parity
+    spec: billing.file_account_status
+    depends_on: [export_billing_14_account_history_extract]
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []

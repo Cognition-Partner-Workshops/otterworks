@@ -1,0 +1,126 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "f881778cb103861a7bb41f818500f0febd1e5a20",
+  "id": "billing.v_subscription_plans",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS"
+  ],
+  "results": {
+    "columns": [
+      "subscription_id",
+      "customer_id",
+      "plan_code",
+      "monthly_fee"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "customer_id": {
+          "count": 500,
+          "hash": "b5ff0d5f2efbbdd23438cde5e15adc64defdaa3fb25c7bb458a54adb44b1f6f0",
+          "null_count": 0,
+          "sum": "900000045250"
+        },
+        "monthly_fee": {
+          "count": 500,
+          "hash": "72bf55b42198b23144e682f79015c600f526bbfa832a6f8e020763f6c689bfb1",
+          "null_count": 0,
+          "sum": "79084.5"
+        },
+        "plan_code": {
+          "count": 500,
+          "hash": "8b0259de496dc201cfec7f827f741162abc4597c9f45aaa8a51b81b408e6380d",
+          "null_count": 0,
+          "sum": null
+        },
+        "subscription_id": {
+          "count": 500,
+          "hash": "1745ff875163d498bb070d45716ca2518650592eba9a2c15a5f9cb21848a6fd4",
+          "null_count": 0,
+          "sum": "900000085250"
+        }
+      },
+      "legacy": {
+        "customer_id": {
+          "count": 500,
+          "hash": "b5ff0d5f2efbbdd23438cde5e15adc64defdaa3fb25c7bb458a54adb44b1f6f0",
+          "null_count": 0,
+          "sum": "900000045250"
+        },
+        "monthly_fee": {
+          "count": 500,
+          "hash": "72bf55b42198b23144e682f79015c600f526bbfa832a6f8e020763f6c689bfb1",
+          "null_count": 0,
+          "sum": "79084.5"
+        },
+        "plan_code": {
+          "count": 500,
+          "hash": "8b0259de496dc201cfec7f827f741162abc4597c9f45aaa8a51b81b408e6380d",
+          "null_count": 0,
+          "sum": null
+        },
+        "subscription_id": {
+          "count": 500,
+          "hash": "1745ff875163d498bb070d45716ca2518650592eba9a2c15a5f9cb21848a6fd4",
+          "null_count": 0,
+          "sum": "900000085250"
+        }
+      }
+    },
+    "mismatches": {
+      "customer_id": {
+        "count": 0,
+        "samples": []
+      },
+      "monthly_fee": {
+        "count": 0,
+        "samples": []
+      },
+      "plan_code": {
+        "count": 0,
+        "samples": []
+      },
+      "subscription_id": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 500,
+      "legacy": 500
+    }
+  },
+  "row_counts": {
+    "lakehouse": 500,
+    "legacy": 500
+  },
+  "spec_hash": "795455302679bc6357b573c66b441a4a067dea6a55a35a3a900208742984b1e8",
+  "timestamp": "2026-11-19T08:36:53.791061+00:00"
+}

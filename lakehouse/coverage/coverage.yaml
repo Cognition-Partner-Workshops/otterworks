@@ -159,35 +159,87 @@ objects:
   - A-106
   notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/reports.py
+  - lakehouse/dbt/models/gold/billing/subscription_plans.sql
+  parity:
+  - billing.file_subscription_plans
+  - billing.subscription_plans
+  assumptions:
+  - A-108
+  - A-112
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: bteq_script:warehouse/teradata/scripts/billing/11_currency_daily.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/currency_totals.sql
+  - lakehouse/billing/reports.py
+  parity:
+  - billing.currency_totals
+  - billing.file_currency_daily
+  assumptions:
+  - A-108
+  - A-112
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/currency_totals.sql
+  - lakehouse/billing/reports.py
+  - lakehouse/dbt/models/gold/billing/monthly_gl_journal_line.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_hdr.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_line.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_result.sql
+  parity:
+  - billing.currency_totals
+  - billing.file_gl_trial_balance
+  - billing.file_invoice_monthly
+  - billing.monthly_gl_journal_line
+  - billing.monthly_invoice_hdr
+  - billing.monthly_invoice_line
+  - billing.monthly_invoice_result
+  assumptions:
+  - A-108
+  - A-109
+  - A-110
+  - A-112
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/closed_invoice_hdr.sql
+  - lakehouse/billing/reports.py
+  parity:
+  - billing.closed_invoice_hdr
+  - billing.file_invoice_periods
+  - billing.file_period_close
+  assumptions:
+  - A-108
+  - A-111
+  - A-112
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: bteq_script:warehouse/teradata/scripts/billing/14_account_history_extract.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/reports.py
+  parity:
+  - billing.file_account_status
+  assumptions:
+  - A-108
+  - A-112
+  - A-113
+  - A-114
+  - A-115
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: bteq_script:warehouse/teradata/scripts/billing/load_account_history.bteq
   status: converted
   targets:
@@ -688,40 +740,66 @@ objects:
   notes: Only this billing load stage is replaced by bronze_billing -> dbt_billing and table parity tasks. Shared runner/global schedule and later billing reports remain pending.
   verification: test:lakehouse/tests/test_billing_load.py::test_billing_load_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/10_subscription_report
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing_reporting
+  - lakehouse/billing/reports.py
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-108
+  - A-114
+  notes: Only this billing stage is replaced by ordered gold models and atomic report exports, not the shared runner/global schedule. A-114 failure boundaries remain open.
+  verification: test:lakehouse/tests/test_billing_reporting.py::test_billing_reporting_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/11_currency_daily
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing_reporting
+  - lakehouse/billing/reports.py
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-108
+  - A-114
+  notes: Only this billing stage is replaced by ordered gold models and atomic report exports, not the shared runner/global schedule. A-114 failure boundaries remain open.
+  verification: test:lakehouse/tests/test_billing_reporting.py::test_billing_reporting_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/12_invoice_monthly
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing_reporting
+  - lakehouse/billing/reports.py
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-108
+  - A-114
+  notes: Only this billing stage is replaced by ordered gold models and atomic report exports, not the shared runner/global schedule. A-114 failure boundaries remain open.
+  verification: test:lakehouse/tests/test_billing_reporting.py::test_billing_reporting_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/13_period_close
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing_reporting
+  - lakehouse/billing/reports.py
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-108
+  - A-114
+  notes: Only this billing stage is replaced by ordered gold models and atomic report exports, not the shared runner/global schedule. A-114 failure boundaries remain open.
+  verification: test:lakehouse/tests/test_billing_reporting.py::test_billing_reporting_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/14_account_history_extract
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/orchestration/pipeline.yaml#dbt_billing_reporting
+  - lakehouse/billing/reports.py
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-108
+  - A-114
+  - A-115
+  notes: Only this billing stage is replaced by ordered gold models and atomic report exports, not the shared runner/global schedule. A-114 failure boundaries remain open.
+  verification: test:lakehouse/tests/test_billing_reporting.py::test_billing_reporting_stage_replacement
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/load_account_history
   status: replaced_by_platform
   targets:
@@ -2413,17 +2491,27 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_macro:SFX_BILLING.M_CURRENCY_TOTALS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/currency_totals.sql
+  parity:
+  - billing.currency_totals
+  assumptions:
+  - A-108
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_macro:SFX_BILLING.M_SUBSCRIPTION_PLANS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/subscription_plans.sql
+  parity:
+  - billing.subscription_plans
+  assumptions:
+  - A-108
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_macro:SFX_DOCUMENTS.M_STORAGE_TOTALS
   status: pending
   targets: []
@@ -2449,11 +2537,21 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_hdr.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_line.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_result.sql
+  parity:
+  - billing.monthly_invoice_hdr
+  - billing.monthly_invoice_line
+  - billing.monthly_invoice_result
+  assumptions:
+  - A-108
+  - A-109
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_procedure:SFX_USERS.P_ACTIVITY_DAILY
   status: pending
   targets: []
@@ -2706,41 +2804,62 @@ objects:
   status: converted
   targets:
   - lakehouse/dbt/models/silver/billing/gl_journal_line.sql
+  - lakehouse/dbt/models/gold/billing/monthly_gl_journal_line.sql
   parity:
   - billing.gl_journal_line
+  - billing.monthly_gl_journal_line
   assumptions:
   - A-100
   - A-101
   - A-103
   - A-105
   - A-106
-  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
+  - A-108
+  - A-110
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_table:SFX_BILLING.INVOICE_HDR
   status: converted
   targets:
   - lakehouse/dbt/models/silver/billing/invoice_hdr.sql
+  - lakehouse/dbt/models/gold/billing/closed_invoice_hdr.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_hdr.sql
   parity:
   - billing.invoice_hdr
+  - billing.closed_invoice_hdr
+  - billing.monthly_invoice_hdr
   assumptions:
   - A-100
   - A-101
   - A-103
   - A-105
   - A-106
-  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
+  - A-108
+  - A-109
+  - A-111
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_table:SFX_BILLING.INVOICE_LINE
   status: converted
   targets:
   - lakehouse/dbt/models/silver/billing/invoice_line.sql
+  - lakehouse/dbt/models/gold/billing/monthly_invoice_line.sql
   parity:
   - billing.invoice_line
+  - billing.monthly_invoice_line
   assumptions:
   - A-100
   - A-101
   - A-103
   - A-105
   - A-106
-  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
+  - A-108
+  - A-109
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_table:SFX_BILLING.PAYMENT
   status: converted
   targets:
@@ -3233,29 +3352,49 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/v_account_invoices.sql
+  parity:
+  - billing.v_account_invoices
+  assumptions:
+  - A-108
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_view:SFX_BILLING.V_INVOICE_BASE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/v_invoice_base.sql
+  parity:
+  - billing.v_invoice_base
+  assumptions:
+  - A-108
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_view:SFX_BILLING.V_INVOICE_REVENUE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/v_invoice_revenue.sql
+  parity:
+  - billing.v_invoice_revenue
+  assumptions:
+  - A-108
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/dbt/models/gold/billing/v_subscription_plans.sql
+  parity:
+  - billing.v_subscription_plans
+  assumptions:
+  - A-108
+  - A-113
+  - A-114
+  notes: Stage-specific load/monthly/closed outputs and actual report files have PASS evidence. Gold is the final serving layer; silver remains the load snapshot. See A-108 and open A-113/A-114 limits.
 - id: teradata_view:SFX_DOCUMENTS.V_DOCUMENT_VERSIONS
   status: pending
   targets: []

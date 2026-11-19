@@ -1,0 +1,365 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "f881778cb103861a7bb41f818500f0febd1e5a20",
+  "id": "billing.closed_invoice_hdr",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_BILLING.INVOICE_HDR",
+    "bteq_script:warehouse/teradata/scripts/billing/13_period_close.bteq"
+  ],
+  "results": {
+    "columns": [
+      "invoice_id",
+      "customer_id",
+      "subscription_id",
+      "invoice_dt",
+      "bill_dt",
+      "period_start_dt",
+      "currency_cd",
+      "total_amount",
+      "invoice_number",
+      "tax_rate_id",
+      "subtotal_amount",
+      "tax_amount",
+      "invoice_period",
+      "period_key",
+      "prior_period_end_dt",
+      "invoice_month",
+      "period_closed_cd",
+      "currency_control_total"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "bill_dt": {
+          "count": 2100,
+          "hash": "feda0608e6a632b8e7aff149c3f59bba63b483846b82044b5aee5bc241a733e7",
+          "null_count": 0,
+          "sum": null
+        },
+        "currency_cd": {
+          "count": 2100,
+          "hash": "ca6fbe16b0b466f7c9e645117a2b5f6286c7ea4e24277210d2180f1984c4d80d",
+          "null_count": 0,
+          "sum": null
+        },
+        "currency_control_total": {
+          "count": 2100,
+          "hash": "a92eb56256cebdf1fc5aa67ea6f8618c2fe03bab068aedeb127d444075d079e0",
+          "null_count": 0,
+          "sum": "292074314.00"
+        },
+        "customer_id": {
+          "count": 2100,
+          "hash": "9462ea07660073f392ec6ce93bb9995a59f432819033b2f6f09d7f9a80ba623b",
+          "null_count": 0,
+          "sum": "900000206050"
+        },
+        "invoice_dt": {
+          "count": 2100,
+          "hash": "feda0608e6a632b8e7aff149c3f59bba63b483846b82044b5aee5bc241a733e7",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_id": {
+          "count": 2100,
+          "hash": "bb30fbd0ca99554326490a83a33944a00176186282ef331041371c29240080b9",
+          "null_count": 0,
+          "sum": "900002006050"
+        },
+        "invoice_month": {
+          "count": 2100,
+          "hash": "2620c961622c55275c0c6d95a854d5a4a5a96e075dee62e5f1cf54fb4be43025",
+          "null_count": 0,
+          "sum": "22793"
+        },
+        "invoice_number": {
+          "count": 2100,
+          "hash": "4fc967319899f753488e7c29bc725d52d968835f4826c0d7e20f9b46bcbf7257",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_period": {
+          "count": 2100,
+          "hash": "e3280456f257a0b3604ada7eebe391ff37730deb681bc202e838299c2048c20d",
+          "null_count": 0,
+          "sum": null
+        },
+        "period_closed_cd": {
+          "count": 2100,
+          "hash": "e4e7dc4c006bd4a02271154d0929f819639181086a65c2796433554c70cbc3f4",
+          "null_count": 0,
+          "sum": null
+        },
+        "period_key": {
+          "count": 2100,
+          "hash": "0d8535cb1e3104094aa8ba74da390abdcea201c98c3249fedd8dd066e9fe47c3",
+          "null_count": 0,
+          "sum": "42543451400"
+        },
+        "period_start_dt": {
+          "count": 2100,
+          "hash": "1bb8e7f4b1df41fc330bf11abdb906622b4d93b6fa0058f21ac181cd44d54468",
+          "null_count": 0,
+          "sum": null
+        },
+        "prior_period_end_dt": {
+          "count": 2100,
+          "hash": "814a04bd3940fb6a99e3deedd036701055698ab14b9966f036930b8d9e5a76e3",
+          "null_count": 0,
+          "sum": null
+        },
+        "subscription_id": {
+          "count": 2100,
+          "hash": "5887bd033c453bdb274e7e72ad81c17c6727c291f77cf600df9e6ecb935446a3",
+          "null_count": 0,
+          "sum": "900000406050"
+        },
+        "subtotal_amount": {
+          "count": 2100,
+          "hash": "2b9b3ae2b6063aed19cb97a3a49d2acf97a7962d68c1780b524a4488d82e6e0e",
+          "null_count": 0,
+          "sum": "651583.13"
+        },
+        "tax_amount": {
+          "count": 2100,
+          "hash": "cc0b4a477ee2fcc6ded97337c268d22bb8fd185397b1b4d544c4d74fb94f3689",
+          "null_count": 0,
+          "sum": "93513.10"
+        },
+        "tax_rate_id": {
+          "count": 2100,
+          "hash": "f382ae607ab6b6192fe18f6bcf27d63a7550ba4729893a104f8efbaa2684db6a",
+          "null_count": 0,
+          "sum": "9442"
+        },
+        "total_amount": {
+          "count": 2100,
+          "hash": "ac7fd4879e28e9245982184093b2560f9bb66993eb7a4368eccf7142d4365a38",
+          "null_count": 0,
+          "sum": "745096.23"
+        }
+      },
+      "legacy": {
+        "bill_dt": {
+          "count": 2100,
+          "hash": "feda0608e6a632b8e7aff149c3f59bba63b483846b82044b5aee5bc241a733e7",
+          "null_count": 0,
+          "sum": null
+        },
+        "currency_cd": {
+          "count": 2100,
+          "hash": "ca6fbe16b0b466f7c9e645117a2b5f6286c7ea4e24277210d2180f1984c4d80d",
+          "null_count": 0,
+          "sum": null
+        },
+        "currency_control_total": {
+          "count": 2100,
+          "hash": "a92eb56256cebdf1fc5aa67ea6f8618c2fe03bab068aedeb127d444075d079e0",
+          "null_count": 0,
+          "sum": "292074314.00"
+        },
+        "customer_id": {
+          "count": 2100,
+          "hash": "9462ea07660073f392ec6ce93bb9995a59f432819033b2f6f09d7f9a80ba623b",
+          "null_count": 0,
+          "sum": "900000206050"
+        },
+        "invoice_dt": {
+          "count": 2100,
+          "hash": "feda0608e6a632b8e7aff149c3f59bba63b483846b82044b5aee5bc241a733e7",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_id": {
+          "count": 2100,
+          "hash": "bb30fbd0ca99554326490a83a33944a00176186282ef331041371c29240080b9",
+          "null_count": 0,
+          "sum": "900002006050"
+        },
+        "invoice_month": {
+          "count": 2100,
+          "hash": "2620c961622c55275c0c6d95a854d5a4a5a96e075dee62e5f1cf54fb4be43025",
+          "null_count": 0,
+          "sum": "22793"
+        },
+        "invoice_number": {
+          "count": 2100,
+          "hash": "4fc967319899f753488e7c29bc725d52d968835f4826c0d7e20f9b46bcbf7257",
+          "null_count": 0,
+          "sum": null
+        },
+        "invoice_period": {
+          "count": 2100,
+          "hash": "e3280456f257a0b3604ada7eebe391ff37730deb681bc202e838299c2048c20d",
+          "null_count": 0,
+          "sum": null
+        },
+        "period_closed_cd": {
+          "count": 2100,
+          "hash": "e4e7dc4c006bd4a02271154d0929f819639181086a65c2796433554c70cbc3f4",
+          "null_count": 0,
+          "sum": null
+        },
+        "period_key": {
+          "count": 2100,
+          "hash": "0d8535cb1e3104094aa8ba74da390abdcea201c98c3249fedd8dd066e9fe47c3",
+          "null_count": 0,
+          "sum": "42543451400"
+        },
+        "period_start_dt": {
+          "count": 2100,
+          "hash": "1bb8e7f4b1df41fc330bf11abdb906622b4d93b6fa0058f21ac181cd44d54468",
+          "null_count": 0,
+          "sum": null
+        },
+        "prior_period_end_dt": {
+          "count": 2100,
+          "hash": "814a04bd3940fb6a99e3deedd036701055698ab14b9966f036930b8d9e5a76e3",
+          "null_count": 0,
+          "sum": null
+        },
+        "subscription_id": {
+          "count": 2100,
+          "hash": "5887bd033c453bdb274e7e72ad81c17c6727c291f77cf600df9e6ecb935446a3",
+          "null_count": 0,
+          "sum": "900000406050"
+        },
+        "subtotal_amount": {
+          "count": 2100,
+          "hash": "2b9b3ae2b6063aed19cb97a3a49d2acf97a7962d68c1780b524a4488d82e6e0e",
+          "null_count": 0,
+          "sum": "651583.13"
+        },
+        "tax_amount": {
+          "count": 2100,
+          "hash": "cc0b4a477ee2fcc6ded97337c268d22bb8fd185397b1b4d544c4d74fb94f3689",
+          "null_count": 0,
+          "sum": "93513.10"
+        },
+        "tax_rate_id": {
+          "count": 2100,
+          "hash": "f382ae607ab6b6192fe18f6bcf27d63a7550ba4729893a104f8efbaa2684db6a",
+          "null_count": 0,
+          "sum": "9442"
+        },
+        "total_amount": {
+          "count": 2100,
+          "hash": "ac7fd4879e28e9245982184093b2560f9bb66993eb7a4368eccf7142d4365a38",
+          "null_count": 0,
+          "sum": "745096.23"
+        }
+      }
+    },
+    "mismatches": {
+      "bill_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "currency_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "currency_control_total": {
+        "count": 0,
+        "samples": []
+      },
+      "customer_id": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_id": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_month": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_number": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_period": {
+        "count": 0,
+        "samples": []
+      },
+      "period_closed_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "period_key": {
+        "count": 0,
+        "samples": []
+      },
+      "period_start_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "prior_period_end_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "subscription_id": {
+        "count": 0,
+        "samples": []
+      },
+      "subtotal_amount": {
+        "count": 0,
+        "samples": []
+      },
+      "tax_amount": {
+        "count": 0,
+        "samples": []
+      },
+      "tax_rate_id": {
+        "count": 0,
+        "samples": []
+      },
+      "total_amount": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 2100,
+      "legacy": 2100
+    }
+  },
+  "row_counts": {
+    "lakehouse": 2100,
+    "legacy": 2100
+  },
+  "spec_hash": "e16072d1bae8a6665404008311bc2fc5d391f6652ceee11e472de6f3d6035a92",
+  "timestamp": "2026-11-19T08:36:34.385029+00:00"
+}

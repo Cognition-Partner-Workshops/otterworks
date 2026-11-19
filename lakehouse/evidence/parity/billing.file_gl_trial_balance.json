@@ -1,0 +1,126 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "f881778cb103861a7bb41f818500f0febd1e5a20",
+  "id": "billing.file_gl_trial_balance",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "bteq_script:warehouse/teradata/scripts/billing/12_invoice_monthly.bteq"
+  ],
+  "results": {
+    "columns": [
+      "account_number",
+      "account_name",
+      "debit_amount",
+      "credit_amount"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "account_name": {
+          "count": 11,
+          "hash": "842a90f175d81038b567835e3361d5c2523671652ead3d43e595548561c18585",
+          "null_count": 0,
+          "sum": null
+        },
+        "account_number": {
+          "count": 11,
+          "hash": "52c27d5585eb88d02410fce35fdabd916ba2970052ccabf798ecfdebbfd87465",
+          "null_count": 0,
+          "sum": null
+        },
+        "credit_amount": {
+          "count": 11,
+          "hash": "8cdd4c6daeb29936c6c7e3242b113c82157bab6c1f92a98f4ca353a3d7966a09",
+          "null_count": 0,
+          "sum": "1659152.64"
+        },
+        "debit_amount": {
+          "count": 11,
+          "hash": "3425256b865fe131017666c9de5ff7d716023cfd17b518039116c6ef406992bc",
+          "null_count": 0,
+          "sum": "1659152.64"
+        }
+      },
+      "legacy": {
+        "account_name": {
+          "count": 11,
+          "hash": "842a90f175d81038b567835e3361d5c2523671652ead3d43e595548561c18585",
+          "null_count": 0,
+          "sum": null
+        },
+        "account_number": {
+          "count": 11,
+          "hash": "52c27d5585eb88d02410fce35fdabd916ba2970052ccabf798ecfdebbfd87465",
+          "null_count": 0,
+          "sum": null
+        },
+        "credit_amount": {
+          "count": 11,
+          "hash": "8cdd4c6daeb29936c6c7e3242b113c82157bab6c1f92a98f4ca353a3d7966a09",
+          "null_count": 0,
+          "sum": "1659152.64"
+        },
+        "debit_amount": {
+          "count": 11,
+          "hash": "3425256b865fe131017666c9de5ff7d716023cfd17b518039116c6ef406992bc",
+          "null_count": 0,
+          "sum": "1659152.64"
+        }
+      }
+    },
+    "mismatches": {
+      "account_name": {
+        "count": 0,
+        "samples": []
+      },
+      "account_number": {
+        "count": 0,
+        "samples": []
+      },
+      "credit_amount": {
+        "count": 0,
+        "samples": []
+      },
+      "debit_amount": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 11,
+      "legacy": 11
+    }
+  },
+  "row_counts": {
+    "lakehouse": 11,
+    "legacy": 11
+  },
+  "spec_hash": "75cddff44226e24a6c82652f7e5c0cd15f272e1d470634e19088b1020ff4cd17",
+  "timestamp": "2026-11-19T08:36:37.805148+00:00"
+}
