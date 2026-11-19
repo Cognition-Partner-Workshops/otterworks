@@ -142,6 +142,13 @@ Airflow environment. All paths must be available on the same host. Metadata and
 logs live under `.data/<NS>/airflow`. This is a local test setup, not a production
 scheduler installation. No Docker Compose service is required or provided.
 
+CI uses the same target with `SFX_LH_AF_DAG_TEST=0` for a DagBag/task/template-only
+check, without PostgreSQL, Java or the Spark/dbt environment. The default remains
+`1`, including the full local DAG execution. The runtime CI job connects directly
+to a PostgreSQL 16 service using `TD_PG_HOST`/`TD_PG_PORT`, loads legacy inputs
+through Python entry points and runs the graph on that same landing directory;
+none of the lakehouse CI targets starts Docker or Compose.
+
 ## Definition of done
 
 1. Ownership includes every domain output, control-flow object and consumer.

@@ -113,7 +113,9 @@ def test_command_environment_and_exports(tmp_path, monkeypatch):
     monkeypatch.setenv('LEGACY_NS', 'sfx-d1110-before')
     assert runner.task_environment('20261109')['TD_PG_PORT'] == '55395'
     monkeypatch.setenv('TD_PG_PORT', '1234')
+    monkeypatch.setenv('TD_PG_HOST', 'ci-postgres')
     assert runner.task_environment('20261109')['TD_PG_PORT'] == '1234'
+    assert runner.task_environment('20261109')['TD_PG_HOST'] == 'ci-postgres'
     monkeypatch.delenv('TD_PG_PORT')
     monkeypatch.setenv('TD_PG_DSN', 'dbname=example')
     assert 'TD_PG_PORT' not in runner.task_environment('20261109')
@@ -174,3 +176,27 @@ def test_cli_check_and_invalid_graph(tmp_path, monkeypatch, capsys):
     with pytest.raises(SystemExit) as exc:
         main()
     assert exc.value.code == 2
+
+
+@pytest.mark.parametrize('execute_dag', ['0', '1'])
+def test_airflow_make_ci_plan(execute_dag, monkeypatch):
+    monkeypatch.setenv('TD_PG_PORT', '5432')
+    result = subprocess.run(['make', '-Bn', 'sfx-lakehouse-airflow-test', 'NS=test-ci',
+                             'SFX_LH_AF_DAG_TEST=' + execute_dag],
+                            cwd=ROOT.parent, text=True, capture_output=True, check=True)
+    assert '-m pytest -q lakehouse/airflow/tests' in result.stdout
+    assert 'TD_PG_PORT="5432"' in result.stdout
+    assert 'docker' not in result.stdout.lower()
+    for command in ('-m pip install -r lakehouse/requirements.txt',
+                    'airflow db migrate', 'airflow dags test lakehouse_daily'):
+        assert (command in result.stdout) == (execute_dag == '1')
+
+
+@pytest.mark.parametrize('execute_dag', ['', '2'])
+def test_airflow_make_invalid_mode(execute_dag):
+    result = subprocess.run(['make', 'sfx-lakehouse-airflow-test', 'NS=test-ci',
+                             '-o', 'lakehouse/.venv-airflow/.requirements',
+                             'SFX_LH_AF_DAG_TEST=' + execute_dag],
+                            cwd=ROOT.parent, text=True, capture_output=True)
+    assert result.returncode != 0
+    assert '-m pytest' not in result.stdout

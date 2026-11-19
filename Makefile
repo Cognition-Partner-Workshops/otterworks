@@ -44,6 +44,7 @@ sfx-lakehouse-coverage: sfx-lakehouse-validate lakehouse/.venv/.requirements ## 
 	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.orchestration check
 
 SFX_LH_AF_PY = lakehouse/.venv-airflow/bin/python
+SFX_LH_AF_DAG_TEST ?= 1
 SFX_LH_AF_ENV = $(SFX_LH_ENV) LEGACY_NS="$(LEGACY_NS)" $(SFX_LH_PG_PORT_ENV) SFX_LH_LANDING="$(abspath $(SFX_LH_LANDING))" AIRFLOW_HOME="$(CURDIR)/lakehouse/.data/$(NS)/airflow" AIRFLOW__CORE__DAGS_FOLDER="$(CURDIR)/lakehouse/airflow/dags" AIRFLOW__CORE__LOAD_EXAMPLES=False AIRFLOW__CORE__EXECUTOR=SequentialExecutor AIRFLOW__CORE__DEFAULT_TIMEZONE=utc AIRFLOW_CONN_FS_DEFAULT='{"conn_type":"fs","extra":{"path":"/"}}'
 SFX_LH_LOGICAL_DATE = $(shell $(SFX_LH_PY) -c 'from datetime import datetime,timedelta; print((datetime.strptime("$(BUSINESS_DATE)","%Y%m%d")+timedelta(days=1)).isoformat()+"+00:00")')
 
@@ -53,10 +54,13 @@ lakehouse/.venv-airflow/.requirements: lakehouse/requirements-airflow.txt
 	@touch $@
 
 .PHONY: sfx-lakehouse-airflow-test
-sfx-lakehouse-airflow-test: sfx-lakehouse-validate lakehouse/.venv/.requirements lakehouse/.venv-airflow/.requirements ## Import generated DAGs and execute one logical date locally
+sfx-lakehouse-airflow-test: sfx-lakehouse-validate $(if $(filter 1,$(SFX_LH_AF_DAG_TEST)),lakehouse/.venv/.requirements) lakehouse/.venv-airflow/.requirements ## Import generated DAGs; optionally execute one logical date
+	@test "$(SFX_LH_AF_DAG_TEST)" = 0 || test "$(SFX_LH_AF_DAG_TEST)" = 1
 	$(SFX_LH_AF_ENV) $(SFX_LH_AF_PY) -m pytest -q lakehouse/airflow/tests
+ifeq ($(SFX_LH_AF_DAG_TEST),1)
 	$(SFX_LH_AF_ENV) lakehouse/.venv-airflow/bin/airflow db migrate
 	$(SFX_LH_AF_ENV) lakehouse/.venv-airflow/bin/airflow dags test lakehouse_daily "$(SFX_LH_LOGICAL_DATE)"
+endif
 
 .PHONY: sfx-teradata-up sfx-teradata-run sfx-teradata-test sfx-teradata-down sfx-teradata-validate
 

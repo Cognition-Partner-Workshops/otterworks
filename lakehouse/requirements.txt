@@ -3,5 +3,6 @@ delta-spark==3.2.1
 dbt-core==1.8.9
 dbt-spark[session]==1.8.0
 PyYAML==6.0.2
+defusedxml==0.7.1
 psycopg[binary]==3.2.3
 pytest==8.3.4

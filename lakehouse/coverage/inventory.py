@@ -3,10 +3,10 @@
 import ast
 import hashlib
 import re
-import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import yaml
+from defusedxml import ElementTree as ET
 
 from lakehouse.runtime.layout import ROOT
 

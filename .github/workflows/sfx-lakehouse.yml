@@ -1,0 +1,127 @@
+name: Lakehouse foundation checks
+
+on:
+  push:
+    paths:
+      - "lakehouse/**"
+      - ".github/workflows/sfx-lakehouse.yml"
+      - "Makefile"
+      - "warehouse/**"
+      - "etl/**"
+      - "consumers/**"
+  pull_request:
+    paths:
+      - "lakehouse/**"
+      - ".github/workflows/sfx-lakehouse.yml"
+      - "Makefile"
+      - "warehouse/**"
+      - "etl/**"
+      - "consumers/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lakehouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: teradata
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d teradata" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      NS: sfx-ci-after
+      LEGACY_NS: sfx-ci-before
+      BUSINESS_DATE: '20261109'
+      ROWS_PER_TABLE: '2000'
+      SFX_LH_LANDING: warehouse/landing
+      TD_PG_HOST: localhost
+      TD_PG_PORT: '5432'
+      TD_PG_DB: teradata
+      TD_PG_USER: postgres
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+        with:
+          python-version: "3.12"
+      - name: Prepare the legacy oracle without Compose
+        env:
+          PYTHONPATH: warehouse/teradata
+        run: |
+          make warehouse/.venv/.requirements SFX_TD_PYTHON=python3
+          warehouse/.venv/bin/python warehouse/seed/generate.py --rows "$ROWS_PER_TABLE" --seed 1110 --business-date "$BUSINESS_DATE"
+          warehouse/.venv/bin/python -m bteq.setup
+          warehouse/.venv/bin/python -m bteq.load --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE"
+          warehouse/.venv/bin/python warehouse/teradata/jobs/daily_chain --reuse-landing --rows "$ROWS_PER_TABLE" --business-date "$BUSINESS_DATE"
+      - name: Run the shared-input graph and pilot parity
+        run: make sfx-lakehouse-run
+      - name: Validate coverage and assumptions
+        run: make sfx-lakehouse-coverage
+      - name: Test the lakehouse
+        run: make sfx-lakehouse-test
+      - name: Upload parity and migration evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: lakehouse-evidence
+          path: lakehouse/evidence/
+          if-no-files-found: error
+
+  airflow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NS: sfx-ci-airflow
+      SFX_LH_AF_DAG_TEST: '0'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+        with:
+          python-version: "3.12"
+      - name: Import DAGs and verify task IDs, dependencies and templates
+        run: make sfx-lakehouse-airflow-test
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+      - name: Install Gitleaks
+        run: |
+          curl --fail --silent --show-error --location https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz -o "$RUNNER_TEMP/gitleaks.tar.gz"
+          tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
+      - name: Check pull request commits
+        env:
+          BASE_REF: ${{ github.base_ref || 'demo-data-platform-before' }}
+        run: |
+          git fetch --no-tags origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
+          "$RUNNER_TEMP/gitleaks" detect --redact --log-opts "origin/$BASE_REF..HEAD"
+
+  semgrep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - name: Check pull request changes
+        env:
+          BASE_REF: ${{ github.base_ref || 'demo-data-platform-before' }}
+        run: |
+          git fetch --no-tags origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
+          base="$(git merge-base "origin/$BASE_REF" HEAD)"
+          uv run --python 3.11 --with semgrep==1.108.0 --with "setuptools<70" semgrep scan \
+            --config p/default --config p/owasp-top-ten --config p/security-audit \
+            --metrics off --error --baseline-commit "$base" \
+            lakehouse .github/workflows/sfx-lakehouse.yml Makefile

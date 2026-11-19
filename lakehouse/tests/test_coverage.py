@@ -5,6 +5,7 @@ import json
 import xml.etree.ElementTree as ET
 
 import pytest
+from defusedxml.common import EntitiesForbidden
 
 from lakehouse.coverage import checker
 from lakehouse.coverage.inventory import REPO, discover
@@ -100,6 +101,17 @@ def test_inventory_empty_and_new_sources(tmp_path):
     original_ids = set(inventory)
     write(tmp_path, 'etl/crontab', '# inserted line\n# comment\n# 0 1 * * * disabled_job\n0 2 * * * new_job\n')
     assert original_ids == discover(tmp_path).keys()
+
+
+@pytest.mark.parametrize(('text', 'error'), [
+    ('<POWERMART>', ET.ParseError),
+    ('<!DOCTYPE POWERMART [<!ENTITY name "expanded">]>'
+     '<POWERMART><FOLDER NAME="&name;"/></POWERMART>', EntitiesForbidden),
+])
+def test_inventory_rejects_malformed_and_entity_xml(tmp_path, text, error):
+    write(tmp_path, 'etl/informatica/repository/untrusted.xml', text)
+    with pytest.raises(error):
+        discover(tmp_path)
 
 
 @pytest.fixture
