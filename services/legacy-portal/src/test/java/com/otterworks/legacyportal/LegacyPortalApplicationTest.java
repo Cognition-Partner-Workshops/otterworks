@@ -55,6 +55,31 @@ class LegacyPortalApplicationTest {
     }
 
     @Test
+    void trailingSlashRoutesRemainAvailable() throws Exception {
+        mockMvc.perform(get("/health/")).andExpect(status().isOk());
+        mockMvc.perform(get("/api/announcements/")).andExpect(status().isOk());
+        mockMvc.perform(get("/api/preferences/newuser/")).andExpect(status().isOk());
+        mockMvc.perform(get("/api/feedback/?userId=unknown")).andExpect(status().isOk());
+        mockMvc.perform(get("/api/feedback/average-rating/")).andExpect(status().isOk());
+    }
+
+    @Test
+    void missingAnnouncementRetainsErrorBody() throws Exception {
+        mockMvc.perform(get("/api/announcements/999999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").isString());
+    }
+
+    @Test
+    void blankAnnouncementIsRejected() throws Exception {
+        mockMvc.perform(post("/api/announcements/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"\",\"body\":\"\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void feedbackModuleValidatesRating() throws Exception {
         mockMvc.perform(
                         post("/api/feedback")
