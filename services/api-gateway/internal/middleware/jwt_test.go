@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,6 +13,41 @@ import (
 )
 
 const testSecret = "test-secret-key-for-jwt-signing"
+
+func TestJWTAuth_BillingErrorShape(t *testing.T) {
+	handler := JWTAuth(JWTConfig{Secret: testSecret})(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Fatal("unauthorized request reached backend")
+	}))
+	for _, token := range []string{"", "invalid-token"} {
+		message := "missing or invalid authorization header"
+		if token != "" {
+			_, err := validateToken(token, testSecret)
+			require.Error(t, err)
+			message = "invalid token: " + err.Error()
+		}
+		legacyBody, err := json.Marshal(map[string]string{"error": message})
+		require.NoError(t, err)
+		for _, path := range []string{"/api/v1/billing", "/api/v1/billing/", "/api/v1/billing/plans", "/api/v1/files", "/api/v1/billingX", "/api/v1/billingX/plans"} {
+			t.Run(path+"/"+token, func(t *testing.T) {
+				req := httptest.NewRequest(http.MethodGet, path, nil)
+				if token != "" {
+					req.Header.Set("Authorization", "Bearer "+token)
+				}
+				rec := httptest.NewRecorder()
+				handler.ServeHTTP(rec, req)
+				assert.Equal(t, http.StatusUnauthorized, rec.Code)
+				assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
+				if path == "/api/v1/files" || path == "/api/v1/billingX" || path == "/api/v1/billingX/plans" {
+					assert.Equal(t, string(legacyBody)+"\n", rec.Body.String())
+				} else {
+					body, err := json.Marshal(map[string]interface{}{"error": map[string]string{"code": "unauthorized", "message": message}})
+					require.NoError(t, err)
+					assert.Equal(t, string(body)+"\n", rec.Body.String())
+				}
+			})
+		}
+	}
+}
 
 func generateTestToken(t *testing.T, secret string, claims JWTClaims) string {
 	t.Helper()

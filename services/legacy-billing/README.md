@@ -1,3 +1,40 @@
+# Versioned REST foundation
+
+The source of truth is `openapi/billing-v1.yaml` (OpenAPI 3.1). The gateway
+forwards `/api/v1/billing` unchanged to `LEGACY_BILLING_URL` (default
+`http://legacy-billing:8096`), behind its JWT middleware. No module's v1
+operations are implemented yet. Unknown v1 paths already return the JSON
+error envelope; legacy routes retain their existing behavior, without new
+deprecation headers until converted into adapters.
+
+Modules own `app/v1/{plans,rating,invoicing,dunning}.py`. Each auto-discovered
+`register(app, blueprint)` runs after the original legacy routes exist.
+Add v1 routes to `blueprint`, and replace the module's legacy callables in
+`app.view_functions` by their existing endpoint names (see `app.py`). This
+preserves rules and `url_for` names without editing `app.py` or a registry.
+Keep adapters and shared module implementation in that module file. Import
+`select`/`execute` from `app` inside handlers to avoid initialization cycles.
+Shared helpers: `v1.validation` (`required`, `uuid_value`, `date_value`,
+`json_body`) and `v1.pagination.paginate` (stable DB order, default 50/max 200).
+Raise Werkzeug exceptions for resource lookup failures; v1-only error handling
+also maps unique/FK/check violations without exposing SQL.
+
+Run `make billing-contract` (Docker, uv; optional `NS=<unique-name>`). It starts
+only Postgres using the procs namespace-derived port scheme in a separate
+Compose project, runs pytest and OpenAPI validation, then destroys its volume.
+Never point the tests at a shared database: every request drops/reloads the
+billing schema, all procedures, and seed. To prepare multi-request state,
+use `reset_db` then a raw `app.test_client()` rather than the seeded `client`.
+
+Module tests go in `tests/contract/test_<module>_contract.py`. The
+`compare_requests` fixture takes Flask `open` kwargs for legacy and v1,
+`unwrap=True` for `data`, `renames={"id": "plan_id"}` (v1 to legacy),
+`status_map={201: 200}`, and optional `legacy_body`/`v1_body` extractors for
+explicit adapter projections (including redirect/error HTML). Nothing else
+is normalized. Pass a deterministic `state_probe()` for mutations: it runs
+after each request before the next fresh seed, and both results must match.
+Assert legacy errors separately and assert v1's error code/content type.
+
 # Legacy Billing — database-centric before state
 
 `legacy-billing` is a deliberately database-centric billing application. It
