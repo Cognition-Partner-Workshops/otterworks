@@ -91,11 +91,15 @@ def test_provisioning(monkeypatch):
     monkeypatch.setenv('RUN_TOKEN', 'sfx2220')
     document = yaml.safe_load(module.render())
     assert document['contactPoints'][0]['receivers'][0]['settings']['url'] == '$SFX_ALERT_WEBHOOK_URL'
+    assert document['contactPoints'][0]['receivers'][0]['settings']['headers'] == {
+        'X-Webhook-Secret': '$SFX_ALERT_WEBHOOK_SECRET'}
     rules = document['groups'][0]['rules']
     assert {r['labels']['check'] for r in rules} == {'load_failure', 'row_count_drop', 'null_spike'}
     assert all('run="sfx2220"' in r['data'][0]['model']['expr'] for r in rules)
     compose = (ROOT / 'docker-compose.observability.yml').read_text()
     assert '${SFX_ALERT_WEBHOOK_URL:?' in compose
+    assert 'SFX_ALERT_WEBHOOK_SECRET: ${SFX_ALERT_WEBHOOK_SECRET:-}' in compose
+    assert 'grafana/grafana:12.0.0' in compose
     assert '127.0.0.1:' in compose
     promtail = yaml.safe_load((ROOT / 'observability/pipeline/promtail.yml').read_text())
     assert {c['job_name'] for c in promtail['scrape_configs']} == {'warehouse', 'runner'}

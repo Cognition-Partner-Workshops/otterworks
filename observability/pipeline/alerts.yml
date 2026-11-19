@@ -8,6 +8,8 @@ contactPoints:
         settings:
           url: $SFX_ALERT_WEBHOOK_URL
           httpMethod: POST
+          headers:
+            X-Webhook-Secret: $SFX_ALERT_WEBHOOK_SECRET
 policies:
   - orgId: 1
     receiver: sfx-webhook
