@@ -17,6 +17,16 @@ sources:
         identifier: "spark_runtime_docs_event_export_hourly_{{ env_var('BUSINESS_DATE') }}"
       - name: spark_runtime_lake_compaction_documents
         identifier: "spark_runtime_lake_compaction_documents_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_docs_folder_tree_walk
+        identifier: "spark_runtime_docs_folder_tree_walk_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_doc_share_graph_reach
+        identifier: "spark_runtime_doc_share_graph_reach_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_collab_session_sessionize
+        identifier: "spark_runtime_collab_session_sessionize_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_doc_version_diff_stats
+        identifier: "spark_runtime_doc_version_diff_stats_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_file_object_binary_extract
+        identifier: "spark_runtime_file_object_binary_extract_{{ env_var('BUSINESS_DATE') }}"
   - name: documents_informatica_runtime
     schema: silver_documents
     tables:

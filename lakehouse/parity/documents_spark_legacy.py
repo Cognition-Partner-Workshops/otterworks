@@ -11,12 +11,12 @@ from pathlib import Path
 
 import pyspark
 
-from lakehouse.runtime.documents_spark import INPUTS, verify_inputs
+from lakehouse.runtime.documents_spark import INPUTS, SECOND_INPUTS, verify_inputs
 from lakehouse.runtime.ingest import business_date
 from lakehouse.runtime.layout import ROOT, data_root
 
 
-def run(landing, day, jar):
+def run(landing, day, jar, jobs=None):
     business_date(day)
     fixture = (Path(landing) / 'spark' / day).resolve()
     manifest = verify_inputs(fixture)
@@ -47,8 +47,13 @@ def run(landing, day, jar):
              '--conf', 'spark.sql.shuffle.partitions=2', '--conf', 'spark.sql.session.timeZone=UTC']
     dependencies = ['etl/spark/jobs/py/common/runtime.py', 'etl/spark/jobs/py/common/schemas.py',
                     'etl/spark/scala/src/main/scala/sfx/BatchSupport.scala', 'etl/spark/scala/build.sbt']
+    provenance_name = ('provenance-' + hashlib.sha256('|'.join(jobs).encode()).hexdigest()[:12] + '.json'
+                       if jobs else 'provenance.json')
+    jobs = jobs if jobs is not None else [job for job in INPUTS if job not in SECOND_INPUTS]
+    if 'file_object_binary_extract' in jobs:
+        dependencies.append('etl/spark/jobs/py/common/binary_documents.py')
     sources = {path: hashlib.sha256((repo / path).read_bytes()).hexdigest() for path in dependencies}
-    for job in INPUTS:
+    for job in jobs:
         if job in ('docs_share_activity', 'lake_compaction_documents'):
             name = {'docs_share_activity': 'DocsShareActivity', 'lake_compaction_documents': 'LakeCompactionDocuments'}[job]
             source = repo / f'etl/spark/scala/src/main/scala/sfx/{name}.scala'
@@ -67,7 +72,7 @@ def run(landing, day, jar):
                       image_id=subprocess.check_output(['docker', 'image', 'inspect', 'postgres:16', '--format', '{{.Id}}'], text=True).strip(),
                       java=subprocess.check_output([str(java_home / 'bin/java'), '-version'], stderr=subprocess.STDOUT, text=True),
                       note='Existing local image is only an isolated filesystem/runtime; host Java, Python and Spark are read-only bind mounts.')
-    (output / 'provenance.json').write_text(json.dumps(provenance, indent=2) + '\n')
+    (output / provenance_name).write_text(json.dumps(provenance, indent=2) + '\n')
 
 
 def main():
@@ -75,8 +80,9 @@ def main():
     parser.add_argument('--landing', type=Path, required=True)
     parser.add_argument('--business-date', required=True)
     parser.add_argument('--jar', type=Path, required=True)
+    parser.add_argument('--jobs', nargs='+', choices=list(INPUTS))
     args = parser.parse_args()
-    run(args.landing, args.business_date, args.jar)
+    run(args.landing, args.business_date, args.jar, args.jobs)
 
 
 if __name__ == '__main__':

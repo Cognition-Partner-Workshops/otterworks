@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+import difflib
 import hashlib
 import json
 import os
@@ -11,7 +12,10 @@ from pathlib import Path
 
 from pyspark.sql import functions as F
 from pyspark.sql.types import StringType
+from pyspark.sql.types import DoubleType, LongType, StructField, StructType
+from pyspark.sql.window import Window
 
+from .documents_binary import extract_document
 from .ingest import business_date
 from .layout import data_root, delta_path
 from .session import create_session
@@ -35,6 +39,48 @@ INPUTS = {
     'docs_event_export_hourly': ['DOCUMENT'],
     'lake_compaction_documents': [],
 }
+SECOND_SCHEMAS = {
+    'DOC_VERSION': ('documents', 'DOC_VERSION_ID long, DOCUMENT_ID long, VERSION_NUMBER long, BODY string, CREATED_AT timestamp'),
+    'COLLAB_SESSION': ('documents', 'COLLAB_SESSION_ID long, DOCUMENT_ID long, USER_ID long, SESSION_ID string, EVENT_AT timestamp'),
+}
+SECOND_INPUTS = {
+    'docs_folder_tree_walk': ['FOLDER'],
+    'doc_share_graph_reach': ['DOC_SHARE'],
+    'collab_session_sessionize': ['COLLAB_SESSION'],
+    'doc_version_diff_stats': ['DOC_VERSION'],
+    'file_object_binary_extract': ['FILE_OBJECT', 'FILE_OBJECT_BLOBS'],
+}
+INPUTS.update(SECOND_INPUTS)
+EXTRACT_SCHEMA = StructType([StructField('MEDIA_TYPE', StringType()), StructField('TEXT', StringType()),
+                             StructField('PAGE_COUNT', LongType()), StructField('SHA256', StringType()),
+                             StructField('ERROR', StringType())])
+
+
+def walk_folder(folder, parents):
+    current, depth = folder, 0
+    for _ in range(20):
+        parent = parents.get(current)
+        current, depth = parent or current, depth + int(parent is not None)
+    return folder, current, depth
+
+
+def sessionize(group):
+    (user, document), times = group
+    ordered = sorted(times)
+    if not ordered:
+        return []
+    start = previous = ordered[0]
+    number, result = 1, []
+    for timestamp in ordered[1:]:
+        if (timestamp - previous).total_seconds() > 1800:
+            result.append((user, document, number, start, previous))
+            number, start = number + 1, timestamp
+        previous = timestamp
+    return result + [(user, document, number, start, previous)]
+
+
+def similarity(before, after):
+    return difflib.SequenceMatcher(None, before or '', after or '').ratio()
 
 
 def parse_action(value):
@@ -52,8 +98,8 @@ def verify_inputs(root, tables=None, expected=None):
         raise ValueError('Spark manifest changed during execution')
     files = {key: value for key, value in manifest['files'].items()
              if tables is None or key.split('/')[1] in tables}
-    actual = {str(path.relative_to(root)) for path in root.glob('*/*/*.psv')
-              if tables is None or path.parent.name in tables}
+    actual = {str(path.relative_to(root)) for path in root.glob('*/*/*')
+              if path.is_file() and (tables is None or path.parent.name in tables)}
     if actual != set(files) or tables is not None and {key.split('/')[1] for key in files} != set(tables):
         raise ValueError('Spark manifest does not describe the requested input files')
     for relative, digest in files.items():
@@ -64,7 +110,9 @@ def verify_inputs(root, tables=None, expected=None):
 
 
 def read_input(spark, root, table, infer=False):
-    area, schema = SCHEMAS[table]
+    if table == 'FILE_OBJECT_BLOBS':
+        return spark.read.format('binaryFile').load(str(root / 'documents/FILE_OBJECT_BLOBS/*'))
+    area, schema = {**SCHEMAS, **SECOND_SCHEMAS}[table]
     paths = sorted((root / area / table).glob('*.psv'))
     if not paths:
         raise FileNotFoundError(f'Spark feed missing: {area}/{table}')
@@ -79,6 +127,31 @@ def read_input(spark, root, table, infer=False):
 
 
 def transform(spark, job, frames, exported=None):
+    if job == 'docs_folder_tree_walk':
+        folders = frames['FOLDER'].select('FOLDER_ID', 'PARENT_FOLDER_ID').rdd
+        parents = spark.sparkContext.broadcast(dict(folders.map(tuple).collect()))
+        return spark.createDataFrame(folders.map(lambda row: walk_folder(row.FOLDER_ID, parents.value)),
+                                     'FOLDER_ID long, ROOT_FOLDER_ID long, DEPTH long')
+    if job == 'doc_share_graph_reach':
+        edges = frames['DOC_SHARE'].select('OWNER_USER_ID', 'SHARED_WITH_USER_ID').rdd.map(tuple).cache()
+        visited = frontier = spark.sparkContext.parallelize([(1, 0)], 2)
+        for depth in range(1, 5):
+            frontier = frontier.join(edges).map(lambda row: (row[1][1], depth)).subtractByKey(visited).cache()
+            visited = visited.union(frontier).reduceByKey(min)
+        return spark.createDataFrame(visited, 'USER_ID long, DISTANCE long')
+    if job == 'collab_session_sessionize':
+        events = frames['COLLAB_SESSION'].rdd.map(lambda row: ((row.USER_ID, row.DOCUMENT_ID), row.EVENT_AT))
+        return spark.createDataFrame(events.groupByKey().flatMap(sessionize),
+                                     'USER_ID long, DOCUMENT_ID long, SESSION_NUMBER long, START_AT timestamp, END_AT timestamp')
+    if job == 'doc_version_diff_stats':
+        previous = F.lag('BODY').over(Window.partitionBy('DOCUMENT_ID').orderBy('VERSION_NUMBER'))
+        return frames['DOC_VERSION'].withColumn('PREVIOUS_BODY', previous).withColumn(
+            'SIMILARITY', F.udf(similarity, DoubleType())('PREVIOUS_BODY', 'BODY'))
+    if job == 'file_object_binary_extract':
+        extracted = frames['FILE_OBJECT_BLOBS'].select(
+            F.regexp_extract('path', r'(documents/FILE_OBJECT_BLOBS/[^/]+)$', 1).alias('STORAGE_KEY'),
+            F.udf(extract_document, EXTRACT_SCHEMA)('content').alias('EXTRACT')).select('STORAGE_KEY', 'EXTRACT.*')
+        return frames['FILE_OBJECT'].join(extracted, 'STORAGE_KEY')
     if job == 'docs_storage_by_owner':
         joined = (frames['DOCUMENT'].alias('d').join(frames['FILE_OBJECT'].alias('f'), 'DOCUMENT_ID')
                   .join(frames['APP_USER'].alias('u'), F.col('d.OWNER_USER_ID') == F.col('u.USER_ID')))

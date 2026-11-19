@@ -442,12 +442,20 @@ objects:
     DAG. Includes explicit users input edge and success gating; no independent legacy runner.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#5c3511fa77a1
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_docs_folder_tree_walk.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_docs_folder_tree_walk"
+  parity:
+  - documents.spark_docs_folder_tree_walk
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-217
+  - A-222
+  - A-223
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_second_cron_replacements
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: cron_entry:etl/crontab#5f21c41e60ca
   status: pending
   targets: []
@@ -509,12 +517,19 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#817f451e90ab
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_doc_share_graph_reach.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_doc_share_graph_reach"
+  parity:
+  - documents.spark_doc_share_graph_reach
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-218
+  - A-223
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_second_cron_replacements
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: cron_entry:etl/crontab#8256b4d51699
   status: replaced_by_platform
   targets:
@@ -547,12 +562,20 @@ objects:
   notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
   verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#9f970c1cb2a8
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/runtime/documents_binary.py"
+  - "lakehouse/dbt/models/silver/documents/spark_file_object_binary_extract.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_file_object_binary_extract"
+  parity:
+  - documents.spark_file_object_binary_extract
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-221
+  - A-223
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_second_cron_replacements
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: cron_entry:etl/crontab#a1a53c82cfb3
   status: replaced_by_platform
   targets:
@@ -575,12 +598,19 @@ objects:
     DAG. Includes explicit users input edge and success gating; no independent legacy runner.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#afa009bc6185
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_collab_session_sessionize.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_collab_session_sessionize"
+  parity:
+  - documents.spark_collab_session_sessionize
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-219
+  - A-223
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_second_cron_replacements
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: cron_entry:etl/crontab#b40205d7056e
   status: converted
   targets:
@@ -662,12 +692,20 @@ objects:
   verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
   notes: Daily 02:19 DAG remains paused with its producer; committed-source readiness and coalesce(4).
 - id: cron_entry:etl/crontab#d54b23093fd1
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_doc_version_diff_stats.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_doc_version_diff_stats"
+  parity:
+  - documents.spark_doc_version_diff_stats
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-220
+  - A-222
+  - A-223
+  verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_second_cron_replacements
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: cron_entry:etl/crontab#d793014c2fb2
   status: replaced_by_platform
   targets:
@@ -2481,11 +2519,17 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_job:collab_session_sessionize
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_collab_session_sessionize.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_collab_session_sessionize"
+  parity:
+  - documents.spark_collab_session_sessionize
+  assumptions:
+  - A-219
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_job:compliance_flag_rules
   status: converted
   targets:
@@ -2498,17 +2542,30 @@ objects:
   notes: Fresh same-landing fixture parity. A-406 limits the Z-score floating-reduction tolerance and
     retires duplicate Parquet/JDBC sinks in favor of Delta.
 - id: spark_job:doc_share_graph_reach
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_doc_share_graph_reach.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_doc_share_graph_reach"
+  parity:
+  - documents.spark_doc_share_graph_reach
+  assumptions:
+  - A-218
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_job:doc_version_diff_stats
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_doc_version_diff_stats.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_doc_version_diff_stats"
+  parity:
+  - documents.spark_doc_version_diff_stats
+  assumptions:
+  - A-220
+  - A-222
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_job:docs_event_export_hourly
   status: converted
   targets:
@@ -2541,11 +2598,18 @@ objects:
   verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
   notes: Logic converted; manual-only unscheduled paused DAG preserves disabled cron.
 - id: spark_job:docs_folder_tree_walk
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_docs_folder_tree_walk.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_docs_folder_tree_walk"
+  parity:
+  - documents.spark_docs_folder_tree_walk
+  assumptions:
+  - A-217
+  - A-222
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_job:docs_search_log_parse
   status: converted
   targets:
@@ -2599,11 +2663,18 @@ objects:
   verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
   notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: spark_job:file_object_binary_extract
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/runtime/documents_binary.py"
+  - "lakehouse/dbt/models/silver/documents/spark_file_object_binary_extract.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_file_object_binary_extract"
+  parity:
+  - documents.spark_file_object_binary_extract
+  assumptions:
+  - A-221
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_job:lake_compaction_audit
   status: replaced_by_platform
   targets:
@@ -2704,11 +2775,18 @@ objects:
   - A-308
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: spark_library:etl/spark/jobs/py/common/binary_documents.py
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/runtime/documents_binary.py"
+  - "lakehouse/dbt/models/silver/documents/spark_file_object_binary_extract.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_file_object_binary_extract"
+  parity:
+  - documents.spark_file_object_binary_extract
+  assumptions:
+  - A-221
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_library:etl/spark/jobs/py/common/package.py
   status: pending
   targets: []
@@ -2806,11 +2884,17 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_submit:etl/spark/submit/collab_session_sessionize.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_collab_session_sessionize.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_collab_session_sessionize"
+  parity:
+  - documents.spark_collab_session_sessionize
+  assumptions:
+  - A-219
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_submit:etl/spark/submit/compliance_flag_rules.sh
   status: converted
   targets:
@@ -2824,17 +2908,30 @@ objects:
     retires duplicate Parquet/JDBC sinks in favor of Delta.
   verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: spark_submit:etl/spark/submit/doc_share_graph_reach.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_doc_share_graph_reach.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_doc_share_graph_reach"
+  parity:
+  - documents.spark_doc_share_graph_reach
+  assumptions:
+  - A-218
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_submit:etl/spark/submit/doc_version_diff_stats.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_doc_version_diff_stats.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_doc_version_diff_stats"
+  parity:
+  - documents.spark_doc_version_diff_stats
+  assumptions:
+  - A-220
+  - A-222
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_submit:etl/spark/submit/docs_event_export_hourly.sh
   status: converted
   targets:
@@ -2866,11 +2963,18 @@ objects:
   verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
   notes: Logic converted; manual-only unscheduled paused DAG preserves disabled cron.
 - id: spark_submit:etl/spark/submit/docs_folder_tree_walk.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/dbt/models/silver/documents/spark_docs_folder_tree_walk.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_docs_folder_tree_walk"
+  parity:
+  - documents.spark_docs_folder_tree_walk
+  assumptions:
+  - A-217
+  - A-222
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_submit:etl/spark/submit/docs_search_log_parse.sh
   status: converted
   targets:
@@ -2924,11 +3028,18 @@ objects:
   verification: test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements
   notes: Unmodified legacy Spark job and converted output consumed the same dated, hashed Spark fixture; original UTC cron cadence retained.
 - id: spark_submit:etl/spark/submit/file_object_binary_extract.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - "lakehouse/runtime/documents_spark.py"
+  - "lakehouse/runtime/documents_binary.py"
+  - "lakehouse/dbt/models/silver/documents/spark_file_object_binary_extract.sql"
+  - "lakehouse/orchestration/pipeline.yaml#lakehouse_file_object_binary_extract"
+  parity:
+  - documents.spark_file_object_binary_extract
+  assumptions:
+  - A-221
+  - A-223
+  notes: Independent second-batch Spark output; unchanged legacy job parity on identical dated CSV/blob files.
 - id: spark_submit:etl/spark/submit/lake_compaction_audit.sh
   status: replaced_by_platform
   targets:

@@ -39,7 +39,7 @@ def test_dagbag_contract_and_templates():
                 else:
                     assert task.filepath.endswith('/20261109/docs_event_export_hourly/_SUCCESS')
                 if node.get('landing_prefix'):
-                    assert '/spark/20261109/' in task.filepath
+                    assert '/' + node['landing_prefix'].format(business_date='20261109') + '/' in task.filepath
                 assert task.mode == 'reschedule' and task.timeout == node['timeout_seconds']
             elif node['kind'] == 'noop':
                 assert isinstance(task, EmptyOperator)

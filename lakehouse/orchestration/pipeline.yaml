@@ -1596,3 +1596,213 @@ dags:
     - lakehouse.audit.archive
     - --business-date
     - '{business_date}'
+
+- id: lakehouse_docs_folder_tree_walk
+  schedule: '21 3 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_folder
+    kind: feed_sensor
+    domain: documents
+    table: FOLDER
+    landing_prefix: 'documents-second/spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_docs_folder_tree_walk
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}/documents-second', --business-date, '{business_date}', --jobs, docs_folder_tree_walk]
+    depends_on: ["feed_spark_folder"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:docs_folder_tree_walk","spark_submit:etl/spark/submit/docs_folder_tree_walk.sh","cron_entry:etl/crontab#5c3511fa77a1"]
+  - id: dbt_spark_docs_folder_tree_walk
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=docs_folder_tree_walk, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_docs_folder_tree_walk]
+    depends_on: [spark_docs_folder_tree_walk]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_docs_folder_tree_walk
+    kind: parity
+    spec: documents.spark_docs_folder_tree_walk
+    depends_on: [dbt_spark_docs_folder_tree_walk]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_doc_share_graph_reach
+  schedule: '23 3 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_doc_share
+    kind: feed_sensor
+    domain: documents
+    table: DOC_SHARE
+    landing_prefix: 'documents-second/spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_doc_share_graph_reach
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}/documents-second', --business-date, '{business_date}', --jobs, doc_share_graph_reach]
+    depends_on: ["feed_spark_doc_share"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:doc_share_graph_reach","spark_submit:etl/spark/submit/doc_share_graph_reach.sh","cron_entry:etl/crontab#817f451e90ab"]
+  - id: dbt_spark_doc_share_graph_reach
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=doc_share_graph_reach, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_doc_share_graph_reach]
+    depends_on: [spark_doc_share_graph_reach]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_doc_share_graph_reach
+    kind: parity
+    spec: documents.spark_doc_share_graph_reach
+    depends_on: [dbt_spark_doc_share_graph_reach]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_collab_session_sessionize
+  schedule: '24 3 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_collab_session
+    kind: feed_sensor
+    domain: documents
+    table: COLLAB_SESSION
+    landing_prefix: 'documents-second/spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_collab_session_sessionize
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}/documents-second', --business-date, '{business_date}', --jobs, collab_session_sessionize]
+    depends_on: ["feed_spark_collab_session"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:collab_session_sessionize","spark_submit:etl/spark/submit/collab_session_sessionize.sh","cron_entry:etl/crontab#afa009bc6185"]
+  - id: dbt_spark_collab_session_sessionize
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=collab_session_sessionize, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_collab_session_sessionize]
+    depends_on: [spark_collab_session_sessionize]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_collab_session_sessionize
+    kind: parity
+    spec: documents.spark_collab_session_sessionize
+    depends_on: [dbt_spark_collab_session_sessionize]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_doc_version_diff_stats
+  schedule: '25 3 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_doc_version
+    kind: feed_sensor
+    domain: documents
+    table: DOC_VERSION
+    landing_prefix: 'documents-second/spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_doc_version_diff_stats
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}/documents-second', --business-date, '{business_date}', --jobs, doc_version_diff_stats]
+    depends_on: ["feed_spark_doc_version"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:doc_version_diff_stats","spark_submit:etl/spark/submit/doc_version_diff_stats.sh","cron_entry:etl/crontab#d54b23093fd1"]
+  - id: dbt_spark_doc_version_diff_stats
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=doc_version_diff_stats, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_doc_version_diff_stats]
+    depends_on: [spark_doc_version_diff_stats]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_doc_version_diff_stats
+    kind: parity
+    spec: documents.spark_doc_version_diff_stats
+    depends_on: [dbt_spark_doc_version_diff_stats]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+
+- id: lakehouse_file_object_binary_extract
+  schedule: '26 3 * * *'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: feed_spark_file_object
+    kind: feed_sensor
+    domain: documents
+    table: FILE_OBJECT
+    landing_prefix: 'documents-second/spark/{business_date}'
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    timeout_seconds: 3600
+    poke_interval_seconds: 30
+    legacy_objects: []
+  - id: spark_file_object_binary_extract
+    kind: export
+    command: ['{python}', '-m', lakehouse.runtime.documents_spark, --landing, '{landing}/documents-second', --business-date, '{business_date}', --jobs, file_object_binary_extract]
+    depends_on: ["feed_spark_file_object"]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: ["spark_job:file_object_binary_extract","spark_submit:etl/spark/submit/file_object_binary_extract.sh","cron_entry:etl/crontab#9f970c1cb2a8","spark_library:etl/spark/jobs/py/common/binary_documents.py"]
+  - id: dbt_spark_file_object_binary_extract
+    kind: export
+    command: [env, DOCUMENTS_SPARK_JOB=file_object_binary_extract, '{python}', '-m', lakehouse.runtime.dbt, --select, spark_file_object_binary_extract]
+    depends_on: [spark_file_object_binary_extract]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_documents_spark_file_object_binary_extract
+    kind: parity
+    spec: documents.spark_file_object_binary_extract
+    depends_on: [dbt_spark_file_object_binary_extract]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []

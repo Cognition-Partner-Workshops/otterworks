@@ -136,7 +136,7 @@ def test_storage_set_and_macro_boundaries(spark):
 
 def test_documents_graph_and_ownership():
     specs = {key: value for key, value in discover().items() if key.startswith('documents.')}
-    assert len(specs) == 35
+    assert len(specs) == 40
     nodes = {node['id']: node for dag in load().values() for node in dag['nodes']}
     for identity in specs:
         target = ('dbt_spark_' + identity.removeprefix('documents.spark_')
