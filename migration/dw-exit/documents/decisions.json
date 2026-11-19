@@ -1,0 +1,23 @@
+[
+  {
+    "object": "SFX_DOCUMENTS.STORAGE_USAGE_DAILY / 05_load_sessions",
+    "old_behaviour": "SET table silently removes exact duplicate rows. Seeded staging has 300 rows, 250 distinct; source has 250. runner.py enforces UNIQUE NULLS NOT DISTINCT plus ON CONFLICT DO NOTHING.",
+    "new_behaviour": "Plain Snowflake table keeps all 300 rows. No DISTINCT or owner-approved SET decision has been added.",
+    "question": "Should exact duplicate storage usage be discarded or retained for charging? Choose distinct or keep_all explicitly; warehouse/dbt/macros/set_table_semantics.sql already requires that decision.",
+    "blocks": ["SFX_DOCUMENTS.STORAGE_USAGE_DAILY", "SFX_DOCUMENTS.M_STORAGE_TOTALS_OUTPUT", "SFX_BILLING.USAGE_DAILY", "SFX_BILLING.INVOICE_LINE"]
+  },
+  {
+    "object": "02_current_versions / SFX_DOCUMENTS.DOC_VERSION",
+    "old_behaviour": "ROW_NUMBER partitions by DOCUMENT_ID and sorts only VERSION_TS DESC. Fifty seeded documents have two distinct versions at the same latest timestamp; winner is unspecified.",
+    "new_behaviour": "Candidate keeps the same incomplete ordering. A local matching winner does not establish deterministic parity across engines.",
+    "question": "Which version wins equal latest timestamps? No VERSION_NO/ID tie breaker will be invented.",
+    "blocks": ["SFX_DOCUMENTS.DOC_VERSION", "SFX_DOCUMENTS.V_DOCUMENT_VERSIONS", "SFX_DOCUMENTS.V_WORKSPACE_STORAGE"]
+  },
+  {
+    "object": "m_SFX_DOC_SHARE / s_m_SFX_DOC_SHARE duplicate role lookup",
+    "old_behaviour": "XML lookup policy is Use First Value. For multiple role grants per USER_ID the runner selects the first cached match.",
+    "new_behaviour": "Existing pc_content__doc_share joins every matching role. The local merge guard rejects duplicate SHARE_IDs instead of choosing a role. Seeded 20-row ROLE_GRANT has unique USER_IDs, so this is a synthetic error-case difference, not an observed seeded mismatch.",
+    "question": "Which role wins for users with multiple grants? Preserve first cached match or choose an explicit role precedence? Existing dbt model is unchanged.",
+    "blocks": ["powercenter.m_SFX_DOC_SHARE", "powercenter.s_m_SFX_DOC_SHARE"]
+  }
+]

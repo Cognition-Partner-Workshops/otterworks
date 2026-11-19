@@ -1,0 +1,10 @@
+"""Publish the existing pc_content__document dbt result at the mapping target."""
+
+
+def run(session):
+    database = session.get_current_database()
+    return session.sql(f'''MERGE INTO {database}.DOCUMENTS.DOCUMENT t
+        USING {database}.PC_CONTENT.DOCUMENT s ON t.DOCUMENT_ID=s.DOCUMENT_ID
+        WHEN MATCHED THEN UPDATE SET t.FOLDER_ID=s.FOLDER_ID, t.OWNER_USER_ID=s.OWNER_USER_ID, t.CUSTOMER_ID=s.CUSTOMER_ID, t.DOCUMENT_NAME=s.DOCUMENT_NAME, t.CREATED_DT=s.CREATED_DT, t.STATUS_CD=s.STATUS_CD, t.FILE_TYPE=s.FILE_TYPE
+        WHEN NOT MATCHED THEN INSERT (DOCUMENT_ID,FOLDER_ID,OWNER_USER_ID,CUSTOMER_ID,DOCUMENT_NAME,CREATED_DT,STATUS_CD,FILE_TYPE)
+        VALUES (s.DOCUMENT_ID,s.FOLDER_ID,s.OWNER_USER_ID,s.CUSTOMER_ID,s.DOCUMENT_NAME,s.CREATED_DT,s.STATUS_CD,s.FILE_TYPE)''').collect()

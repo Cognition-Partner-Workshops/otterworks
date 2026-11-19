@@ -53,6 +53,8 @@ def main():
             urlretrieve(f"{base}/{artifact}", temporary)
             temporary.replace(target)
     with ZipFile(cache / "common.zip", "w", ZIP_DEFLATED) as archive:
+        archive.writestr('warehouse/__init__.py', '')
+        archive.write(ROOT.parents[1] / 'warehouse/run_config.py', 'warehouse/run_config.py')
         for path in sorted((ROOT / "jobs/py/common").glob("*.py")):
             if path.name != "package.py":
                 archive.write(path, "common/" + path.name)

@@ -24,7 +24,7 @@ from parity.local_billing import execute
 from parity.semantics import columns as source_columns, numeric_type
 from parity.ladder import local_compare as compare
 from parity.provenance import provenance, markdown
-from parity import report_outputs, spark_billing
+from parity import report_outputs, spark_billing, documents_board
 
 
 def quote(name):
@@ -154,7 +154,7 @@ def materialize(before, names, conversion_dir, business_date='20261109'):
     return after, ready, errors
 
 
-def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, preflight=None):
+def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, preflight=None, subject_evidence=None):
     if target not in ('duckdb', 'snowflake'):
         raise ValueError('Unsupported parity target')
     if preflight is not None and (preflight.get('run_token') != RunConfig.from_env().token
@@ -174,8 +174,24 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
         row.update(status='red', migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'),
                    row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
-        if obj['subject_area'] == 'billing':
+        if obj['subject_area'] in ('billing','documents'):
             row['provenance'] = provenance(obj)
+        if obj['subject_area']=='documents':
+            detail = (subject_evidence or {}).get('documents',{}).get(obj['name']) if target=='duckdb' else None
+            if detail:
+                row.update(status=detail['status'],reason=detail['reason'])
+                measured = detail['measurements']
+                if measured:
+                    row['row_count'] = {side:sum(r['row_count'][side] for r in measured.values()) for side in ('before','after')}
+                    for field in ('column_profile','keyed_row_hash','sampled_differences','comparison_rules'):
+                        row[field] = {name:values[field] for name,values in measured.items()}
+                row['metric_evidence'] = detail.get('metric_evidence',{})
+            else:
+                row['reason'] = 'Documents proof unavailable' if target=='duckdb' else 'Snowflake target selected; execution disabled'
+            row.update(local_duckdb=row['status'] if target=='duckdb' else 'red',snowflake='red',
+                       snowflake_reason=snowflake_reason,snowflake_preflight=preflight)
+            result['rows'].append(row)
+            continue
         if obj['system'] == 'spark' and not any(name.startswith('SFX_SPARK.') for name in obj.get('output_relations', [])):
             if obj.get('source') and (ROOT / obj['source']).is_file():
                 row.update(source=obj['source'], source_ref=obj.get('source_ref'))
@@ -221,6 +237,12 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     result['summary']['billing'] = dict(local_duckdb='green' if billing and local_green == len(billing) else 'red',
         local_green=local_green, local_red=len(billing)-local_green,
         snowflake='red', snowflake_reason=snowflake_reason)
+    documents = [row for row in result['rows'] if row['subject_area']=='documents']
+    if documents:
+        counts = Counter(row['status'] for row in documents)
+        result['summary']['documents'] = dict(total=len(documents),local_green=counts['green'],local_red=counts['red'],
+            retired=counts['retired'],local_duckdb='red' if counts['red'] else 'green',snowflake='red',snowflake_reason=snowflake_reason)
+        result['summary']['retired'] = sum(row['status']=='retired' for row in result['rows'])
     return result
 
 
@@ -237,6 +259,8 @@ def main():
     counters = build()['counters']
     before = after = None
     ready, errors = set(), {}
+    documents_evidence = None
+    subject_evidence = {}
     try:
         if args.target == 'duckdb' and manifest['objects']:
             names = {r for obj in manifest['objects'] for r in obj.get('output_relations',[])
@@ -252,14 +276,23 @@ def main():
             spark_ready,spark_errors,spark_evidence = spark_billing.materialize(before,after,manifest['objects'],ns)
             ready.update(spark_ready)
             errors.update(spark_errors)
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight)
+            if any(o['subject_area']=='documents' for o in manifest['objects']):
+                documents_evidence = documents_board.measure(manifest,ns,os.environ.get('BUSINESS_DATE','20261109'))
+                subject_evidence['documents'] = documents_board.object_measurements(manifest,documents_evidence)
+        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight,subject_evidence=subject_evidence)
         if args.target == 'duckdb' and manifest['objects']:
             payload['spark_evidence'] = spark_evidence
+        if documents_evidence is not None:
+            payload['documents_evidence'] = {'file':'migration/dw-exit/documents/evidence.json',
+                'binary_replay':'migration/dw-exit/documents/spark-replay.json'}
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         readme = args.output.parent / 'README.md'
         if readme.exists():
             text = readme.read_text().split('\n## Billing parity provenance')[0]
-            readme.write_text(text.rstrip()+'\n'+markdown(payload['rows']))
+            readme.write_text(text.rstrip()+'\n'+markdown(payload['rows'],documents_evidence))
+        if documents_evidence is not None:
+            from parity.provenance import documents_table
+            (ROOT/'migration/dw-exit/documents/parity-table.md').write_text(documents_table(documents_evidence))
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
         if before is not None:
