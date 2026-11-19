@@ -40,6 +40,9 @@ func NewRouter(cfg RouterConfig) chi.Router {
 		})
 	}
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		if middleware.WriteBillingError(w, r, http.StatusNotFound, "not_found", "route not found") {
+			return
+		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -86,6 +89,9 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 			Str("method", r.Method).
 			Msg("proxy error")
 
+		if middleware.WriteBillingError(w, r, http.StatusBadGateway, "internal", "service unavailable") {
+			return
+		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadGateway)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -108,6 +114,9 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 				Str("state", cb.State().String()).
 				Msg("circuit breaker rejected request")
 
+			if middleware.WriteBillingError(w, r, http.StatusServiceUnavailable, "internal", "service temporarily unavailable") {
+				return
+			}
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusServiceUnavailable)
 			json.NewEncoder(w).Encode(map[string]string{

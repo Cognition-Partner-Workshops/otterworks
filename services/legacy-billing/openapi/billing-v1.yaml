@@ -499,6 +499,7 @@ components:
               enum:
               - invalid_request
               - unauthorized
+              - rate_limited
               - not_found
               - method_not_allowed
               - conflict
@@ -867,11 +868,15 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
     '401':
-      description: Unauthorized
+      description: Gateway rejected a missing or invalid bearer JWT.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: unauthorized
+              message: missing or invalid authorization header
     '404':
       description: Not found
       content:

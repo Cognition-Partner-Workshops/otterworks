@@ -68,7 +68,7 @@ func JWTAuth(cfg JWTConfig) func(http.Handler) http.Handler {
 
 			tokenStr := extractBearerToken(r)
 			if tokenStr == "" {
-				writeJSONError(w, http.StatusUnauthorized, "missing or invalid authorization header")
+				writeJSONError(w, r, http.StatusUnauthorized, "missing or invalid authorization header")
 				return
 			}
 
@@ -77,7 +77,7 @@ func JWTAuth(cfg JWTConfig) func(http.Handler) http.Handler {
 				claims, err = validateToken(tokenStr, cfg.PeerSecret)
 			}
 			if err != nil {
-				writeJSONError(w, http.StatusUnauthorized, fmt.Sprintf("invalid token: %v", err))
+				writeJSONError(w, r, http.StatusUnauthorized, fmt.Sprintf("invalid token: %v", err))
 				return
 			}
 
@@ -156,7 +156,10 @@ func isProtectedPath(path string, protectedPrefixes []string) bool {
 	return false
 }
 
-func writeJSONError(w http.ResponseWriter, status int, message string) {
+func writeJSONError(w http.ResponseWriter, r *http.Request, status int, message string) {
+	if WriteBillingError(w, r, status, "unauthorized", message) {
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(map[string]string{
