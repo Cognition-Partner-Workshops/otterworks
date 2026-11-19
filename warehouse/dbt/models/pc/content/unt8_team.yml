@@ -1,12 +1,12 @@
 version: 2
 sources:
   - name: unt8_pc_src
-    database: SFX_1119
+    database: "{{ env_var('RUN_DATABASE', target.database) }}"
     schema: PC_SRC
     tables:
       - name: TEAM_MEMBER
   - name: unt8_fixture
-    database: SFX_1119
+    database: "{{ env_var('RUN_DATABASE', target.database) }}"
     schema: PC_FX_UNT8_TEAM_MEMBER
     tables:
       - name: SEEDED_SOURCE

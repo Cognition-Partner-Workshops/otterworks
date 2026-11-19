@@ -1,12 +1,12 @@
 version: 2
 sources:
   - name: unt7_pc_src
-    database: SFX_1119
+    database: "{{ env_var('RUN_DATABASE', target.database) }}"
     schema: PC_SRC
     tables:
       - name: ROLE_GRANT
   - name: unt7_fixture
-    database: SFX_1119
+    database: "{{ env_var('RUN_DATABASE', target.database) }}"
     schema: PC_FX_UNT7_ROLE_GRANT
     tables:
       - name: SEEDED_SOURCE

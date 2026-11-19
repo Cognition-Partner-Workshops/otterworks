@@ -1,7 +1,7 @@
 version: 2
 sources:
   - name: unt4_archive_fixture
-    database: SFX_1119
+    database: "{{ env_var('RUN_DATABASE', target.database) }}"
     schema: PC_AUDIT_UNT4_FIXTURE
     tables:
       - name: AUDIT_EVENT
