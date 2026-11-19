@@ -40,8 +40,8 @@
   reason: "Combines audit actors, daily activity and login aggregates through SQL joins and string aggregation."
 - job: billing_gl_trial_balance
   language: python
-  target: dbt
-  reason: "Set-based SQL only: journal debit/credit/net and credit-note sums by account, month and currency, unioned and joined to GL_ACCOUNT. Migrated to dbt model MART_SPARK.BILLING_GL_TRIAL_BALANCE."
+  target: spark_standard_template
+  reason: "Retains journal debit/credit/net and credit-note sums by account, month and currency on the standard Spark template with adaptive execution and rerun-safe lake and JDBC outputs."
 - job: docs_folder_legacy_report
   language: python
   target: retired

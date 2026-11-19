@@ -1,8 +1,8 @@
 {
   "job": "billing_gl_trial_balance",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "10 2 * * *",
   "profile": "small"
 }
