@@ -43,15 +43,16 @@ jobs:
       attempt_count: ${{ steps.counter.outputs.attempt_count }}
       exceeded_max: ${{ steps.counter.outputs.exceeded_max }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Count prior fix attempts
         id: counter
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           ATTEMPT_COUNT=$(gh api \
-            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits?per_page=100" \
+            "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits?per_page=100" \
             --jq '[.[] | select(.author.login == "devin-ai-integration[bot]")] | length')
           echo "attempt_count=${ATTEMPT_COUNT}" >> "$GITHUB_OUTPUT"
           if [ "$ATTEMPT_COUNT" -ge "${{ env.MAX_FIX_ATTEMPTS }}" ]; then
@@ -62,8 +63,11 @@ jobs:
 
       - name: Install Trivy
         run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-            | sh -s -- -b /usr/local/bin v${{ env.TRIVY_VERSION }}
+          installer="$(mktemp)"
+          trap 'rm -f "$installer"' EXIT
+          curl -fsSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh -o "$installer"
+          echo "e00df553be558995b994758bc8995956554a16937f456dc6615b0cc411bfec7a  $installer" | sha256sum --check --strict
+          sh "$installer" -b /usr/local/bin "v${TRIVY_VERSION}"
 
       - name: Run Trivy filesystem scan
         run: |
@@ -118,7 +122,7 @@ jobs:
 
       - name: Upload scan artifact
         if: steps.parse.outputs.has_findings == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: trivy-results
           path: trivy-results.json
@@ -273,12 +277,12 @@ jobs:
     outputs:
       gate_failed: ${{ steps.gate.outputs.gate_failed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@2f77a1ec69fb1d595b06f35ab27e97605bdef703 # v5.3.2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
