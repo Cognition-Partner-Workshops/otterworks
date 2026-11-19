@@ -1,7 +1,9 @@
 - job: billing_invoice_summary_daily
   language: python
-  target: dbt
+  target: spark_standard_template
   reason: "Aggregates invoice headers and lines by customer and invoice date; the result is a relational summary."
+  original_target: dbt
+  change_reason: "Keep both existing Parquet and JDBC outputs and avoid an unmeasured Snowflake migration."
 - job: billing_revenue_by_plan
   language: python
   target: dbt
