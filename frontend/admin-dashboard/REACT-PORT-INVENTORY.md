@@ -128,8 +128,53 @@ No adjacent unit specs exist for user-detail, audit, features, announcements, qu
 6. Once coverage and cutover are accepted, remove/replace the Karma target in `angular.json`, `karma.conf.js`, `tsconfig.spec.json`, Angular/Jasmine test files and test-only dependencies/scripts in `package.json`/lockfile as appropriate. Current command is `npm test` → `ng test --watch=false --browsers=ChromeHeadless`; Karma also defines a `ChromeHeadlessNoSandbox` launcher, but the npm script overrides the browser choice. Any pre-retirement run needs an appropriate Chrome binary/launcher for the environment.
 7. Update the Angular job in `.github/workflows/ci.yml` (currently `npm test || true`, so it is not an enforced retirement gate), the root Makefile's Angular test target, and the `admin-parity` job's Angular installation/server/project only at the agreed end of the comparison period. Make React replacement checks required rather than silently losing coverage. This document changes none of that wiring.
 
+## Which two pages, and why
+
+There is no page-level usage telemetry for the admin app. Navigation is client-side, ingress-nginx access logs on `otterworks-dev` are not retained (the controller had restarted minutes before this was checked), and nothing in the repo or Prometheus records admin page views. The pick is therefore a proxy, not a measurement:
+
+- **Dashboard (`/`)** is the post-login landing route, so every admin session loads it.
+- **Users (`/users`)** is the first nav item and the only page that the user-management flows (suspend, restore, delete) run through. It is also the page with the most legacy Selenium coverage.
+
+Login and the shell (sidebar, toolbar, guard, JWT handling) were ported too, because the two pages cannot be used without them. These are one-time costs that the remaining pages do not pay again.
+
 ## Estimate
 
-**PLACEHOLDER — owner to fill in.**
+### What the two pages actually took
 
-No effort, schedule, staffing or cost estimate is supplied here. Size buckets above are inventory triage only.
+| Item | Angular lines | React lines written | Agent build time |
+| --- | ---: | ---: | --- |
+| Shell + auth + API client/mappers (one-time) | 296 + 159 + 95 | 387 | about 4 min, included in the first pass below |
+| Login | 167 | 109 | (same pass) |
+| Dashboard | 230 | 184 | (same pass) |
+| Users (+ confirm dialog) | 271 + 38 | 578 | (same pass) |
+| First working pass | | | 3 min |
+| Rewrite to client-app conventions after review | | | 4 min |
+| Shared Playwright parity suite (17 tests x 2 apps) + fixture gateway + CI job | | 547 | 4 min |
+| Unit tests for the mappers | | 136 | (in the first pass) |
+
+The time it took to write the code was small. The cost was in pinning down the behavior contract first: reading every quirk out of the Angular code and running it. That included the 5-row default page size, no default sort, search that matches only name and email, an infinite spinner on error, and a mock-login fallback. The parity suite was then needed to prove the React side matched. **No behavior differences turned up once the contract was written down.** The suite found zero mismatches, which shows that writing the spec first is what made the port safe.
+
+Per page, React came out at about **0.8x (Dashboard) to 1.9x (Users)** the Angular line count, about 1.3x overall. Material gave Angular its table, paginator, sort, menu and dialog for free, and React had to write them. Users needed 578 lines for that reason. That code is now reusable by Audit, Quotas and User detail.
+
+### The rest of the port
+
+The remaining pages are **2,945 Angular lines**, about **4.4x** the three pages ported here (668). Two of them are disproportionately risky:
+
+- **Incidents (710 lines, XL):** polling, chaos triggers, Devin session triggers and auto-investigate. These need fixture-safe stubs before they can be tested at all.
+- **Migration + archive-compare (758 lines, XL):** peer-deployment config read from `/config/peer.json`, written by nginx. They also need the `PEER_REQUEST` 401 exemption and cross-origin comparison. This means deployment wiring (nginx, Helm), not just page code.
+
+| Work package | Pages | Size | Human engineer-days | Devin sessions (plus human review) |
+| --- | --- | --- | ---: | ---: |
+| A. Table pages, reusing the Users table, paginator and dialog | Audit, Quotas, User detail | M, M, L | 4-5 | 1 |
+| B. Simple CRUD / status pages | Features, Health, Announcements | S, M, M | 3-4 | 0.5-1 |
+| C. Charts | Analytics (5 charts) | L | 1.5-2 | 0.5 |
+| D. Incidents, with safe stubs for chaos and Devin triggers | Incidents | XL | 4-5 | 1 |
+| E. Migration + archive-compare, peer config, nginx/Helm wiring | Migration, Archive-compare | XL | 4-6 | 1-1.5 |
+| F. Cutover: serve `/admin` from the client-app image, redirect old deep links, retire the Angular image/Helm chart, Karma and the CI job, delete dead mock-data (528 lines) | - | - | 3-4 | 1 |
+| **Total** | | | **20-26 engineer-days** (about 5 weeks for one engineer, 3 calendar weeks for two) | **5-6 sessions, one PR per package** |
+
+How the numbers were derived:
+
+- **Human days:** I estimate the work in this PR at about 4-5 engineer-days for one engineer who knows both stacks: shell/auth about 1.5, Dashboard about 1, Users about 1.5, parity harness about 1. That is my judgement, not a measurement. Scaling the page work by 4.4x, adding about 30% for the two XL pages and about 0.5 day per page for parity tests, and adding the cutover gives the range above.
+- **Devin sessions:** the build time above is real, but most of a session goes to setup, contract discovery, review rounds and recordings. Human PR review (about half a day per package) is the bottleneck, not writing code.
+- **What would move it:** (1) the risky part is E's deployment wiring. Its peer behavior can only be fully verified on a deployed tenant pair, not locally. (2) These estimates are against a deterministic fixture gateway, not the real admin-service. On the `main` tenant the admin-service crash-loops (a known planted bug), so a real-backend check needs a `workshop-*` tenant. (3) Several faithfully preserved quirks, listed in the PR, look like bugs. Fixing them during the port would add scope and break parity, so the plan is to port first and fix afterwards.
