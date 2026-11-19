@@ -43,6 +43,8 @@ describe('SidebarComponent', () => {
     expect(labels).toContain('Announcements');
     expect(labels).toContain('Storage Quotas');
     expect(labels).toContain('Analytics');
+    expect(labels[labels.indexOf('Migration') + 1]).toBe('ODL Parity');
+    expect(component.navItems.find(item => item.label === 'ODL Parity')?.route).toBe('/odl-parity');
   });
 
   it('should toggle collapsed state', () => {

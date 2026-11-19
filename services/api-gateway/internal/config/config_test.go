@@ -8,3 +8,10 @@ func TestBillingRoute(t *testing.T) {
 		t.Fatalf("billing route = %q", got)
 	}
 }
+
+func TestODLRoute(t *testing.T) {
+	t.Setenv("ODL_SERVICE_URL", "http://test-odl:8098")
+	if got := Load().ServiceRoutes()["/api/v1/odl"]; got != "http://test-odl:8098" {
+		t.Fatalf("ODL route = %q", got)
+	}
+}

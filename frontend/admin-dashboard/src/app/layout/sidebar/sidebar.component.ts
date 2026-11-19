@@ -171,6 +171,7 @@ export class SidebarComponent {
     { label: 'Incidents', icon: 'report_problem', route: '/incidents' },
     { label: 'Analytics', icon: 'bar_chart', route: '/analytics' },
     { label: 'Migration', icon: 'swap_horiz', route: '/migration' },
+    { label: 'ODL Parity', icon: 'fact_check', route: '/odl-parity' },
   ];
 
   toggleCollapsed(): void {

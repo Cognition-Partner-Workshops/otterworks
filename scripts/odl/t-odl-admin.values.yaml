@@ -1,0 +1,24 @@
+replicaCount: 1
+image:
+  repository: 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks/admin-dashboard
+  tag: odl-e864785d8@sha256:dd376f24fbc2de077e810afc02ba8a8579d5ba743b978e0837408f3f2f4323b1
+service:
+  type: ClusterIP
+networkPolicy:
+  enabled: false
+monitoring:
+  enabled: false
+config:
+  API_GATEWAY_URL: http://api-gateway:8080
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  hosts:
+    - host: t-odl.demo.otterworks.app
+      paths:
+        - path: /admin(/|$)(.*)
+          pathType: ImplementationSpecific
+  tls: []

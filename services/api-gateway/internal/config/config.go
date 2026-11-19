@@ -25,6 +25,7 @@ type Config struct {
 	AuditServiceURL        string
 	ReportServiceURL       string
 	LegacyBillingURL       string
+	ODLServiceURL          string
 
 	// Tenant Redis holding the chaos flags; empty disables chaos.
 	RedisHost string
@@ -80,6 +81,7 @@ func Load() *Config {
 		AuditServiceURL:        getEnv("AUDIT_SERVICE_URL", "http://audit-service:8090"),
 		ReportServiceURL:       getEnv("REPORT_SERVICE_URL", "http://report-service:8091"),
 		LegacyBillingURL:       getEnv("LEGACY_BILLING_URL", "http://legacy-billing:8096"),
+		ODLServiceURL:          getEnv("ODL_SERVICE_URL", "http://operational-data-layer:8098"),
 
 		RedisHost: getEnv("REDIS_HOST", ""),
 		RedisPort: getEnv("REDIS_PORT", "6379"),
@@ -130,6 +132,7 @@ func (c *Config) ServiceRoutes() map[string]string {
 		"/api/v1/reports":       c.ReportServiceURL,
 		"/api/v1/settings":      c.AuthServiceURL,
 		"/api/v1/billing":       c.LegacyBillingURL,
+		"/api/v1/odl":           c.ODLServiceURL,
 	}
 }
 

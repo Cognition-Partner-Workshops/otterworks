@@ -1,0 +1,7 @@
+image:
+  repository: 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks/api-gateway
+  tag: odl-864279553@sha256:376d19ce016d112022aa4851a0feeb94d20a85af6a002fff2ff0fb2a469bb29f
+env:
+  ODL_SERVICE_URL: http://operational-data-layer:8098
+service:
+  type: ClusterIP
