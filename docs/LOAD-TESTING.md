@@ -313,7 +313,7 @@ CPU peaks. These short, small-corpus runs are not a production capacity guarante
    recommending production capacity. Their short-run throughput knee is an
    observation, not a guaranteed RPS ceiling or a tested HA improvement.
 
-### Prepared CPU-limit intervention and HA quota
+### CPU-limit intervention and HA quota
 
 The measured CPU saturation motivates two sequential interventions: document-service
 **500m → 1 core**, then auth-service **1 → 1.5 cores**. The service-specific
@@ -322,14 +322,17 @@ overlays change only CPU limits. CPU requests and memory remain unchanged.
 `scripts/scale-for-load.sh <id> up` applies these after the shared HA overlay;
 direct Helm upgrades must include the matching service overlay explicitly.
 Default chart values and single-replica tenant deployment are unchanged.
-The document limit has been applied to chaostest, but authentication blocked
-the benchmark during setup; the auth limit has not yet been applied.
+Both limits have now been applied to chaostest and the paired peaks passed
+after the tenant-local JWT compatibility workaround below.
 
 The default HA profile has HPA min 2 / **max 6**, not chaostest's experimental
 max 3. The original tenant quota (12 CPU limits, 4 CPU requests, 8Gi requested
 memory, 40 pods) cannot accommodate a full tenant with all five core HPAs at
 max. Before HA upgrades, the scaling script applies
 `infrastructure/k8s/tenant-ha-quota.yaml` to that tenant only:
+
+This larger quota is applied **only through `scale-for-load.sh ... up`** (or
+an explicit operator apply), not by `deploy-tenant.sh` or direct Helm upgrades.
 
 | Resource | Full tenant, five core HPAs at max 6 + auth rollout surge + k6 Job | HA quota |
 |---|---:|---:|
@@ -393,8 +396,8 @@ with that token and valid payload returned HTTP 401, requiring `owner_id` or
 JWT authentication. The running document image's validator accepts only
 `HS256` and `HS384`. Both services' JWT secrets have identical hashes and
 64-byte lengths, ruling out differing stored keys as the explanation. No
-secret or token values are recorded here. No auth upgrade or second peak was
-attempted pending authorization for a tenant-scoped compatibility correction;
+secret or token values are recorded here. At this point, no auth upgrade or
+second peak was attempted pending authorization for a tenant-scoped correction;
 changing the shared JWT key would invalidate the chaos session's existing
 tokens and requires coordination. The tenant was not torn down or reconfigured
 beyond the approved CPU changes.
@@ -402,6 +405,116 @@ beyond the approved CPU changes.
 Ignored evidence: `tests/load/k6/results/chaostest-doc{.log,-monitor.json,
 -before.txt,-after.txt,-start.txt,-end.txt}`, the run's JSON/Markdown summary,
 raw k6 metrics and `loadtest-1795125098.tar.gz`.
+
+#### Chaostest reruns after tenant-local JWT rotation
+
+With the owning session's approval, a fresh value from `openssl rand -hex 24`
+was applied to all five runtime Secrets holding `JWT_SECRET`: auth, document,
+gateway, collab and admin. No ConfigMap held that key. Their deployments were
+restarted sequentially; admin remained at zero replicas. Real login then
+returned **HS384**, document creation returned **201**, and deletion of the
+preflight document returned **204**. No application code or image was changed.
+
+The subsequent auth CPU upgrade supplied the current JWT value to Helm through
+stdin along with the CPU overlay, preserving the rotation despite
+`--reuse-values`. **The other releases still have old JWT values in their Helm
+release configuration:** future Helm upgrades must explicitly preserve the
+current tenant Secret value or they can restore the incompatible key. Do not
+print the key or commit it to a values file. Existing tokens were invalidated;
+new test users/tokens were created for each run.
+
+Both in-cluster runs used the same `PROFILE=peak RATE=1 VUS=2 DURATION=5m
+USERS=10`: a 30-journey/s plateau (3× baseline), with 60 preallocated VUs.
+Document and auth had three replicas throughout both runs; gateway, files and
+web had two. The four auxiliary deployments remained at zero. Their CPU
+requests and memory resources were not changed.
+
+| Run | Document/auth CPU limits | HTTP count / wall-average RPS | Plateau journey HTTP RPS | Journey p95 / p99 | Login p95 / p99 | Exit / failing thresholds |
+|---|---|---|---:|---|---|---|
+| `loadtest-1795125530` (21:59–22:04Z) | 1 / 1 cores | 18,953 / 61.14 | 69.99 | 59.53 / 391.74ms | 664.03 / 1187.20ms | 0 / none |
+| `loadtest-1795125987` (22:06–22:11Z) | 1 / 1.5 cores | 18,953 / 61.22 | 70.00 | 50.86 / 356.69ms | 432.38 / 521.48ms | 0 / none |
+
+Wall averages use k6's full test duration (309.97s / 309.60s), including setup;
+plateau RPS counts journey HTTP requests in the 240-second plateau and includes
+health and signed S3 downloads. Each run completed 8,099 iterations and 18,898
+journey HTTP requests. Both had **zero failed checks, HTTP errors, 429s, server
+errors, dropped arrivals and interrupted iterations**. All per-endpoint latency
+and coverage thresholds passed; thresholds were not relaxed.
+
+Maximum per-pod CPU / throttled-period fraction over each capture window:
+
+| Service | Document-first | Auth raised |
+|---|---:|---:|
+| Document | 0.2470 core / 0% | 0.2825 core / 0% |
+| Auth | 0.3567 core / 17.91% | 0.5946 core / 70.77% |
+| Gateway | 0.0353 core / 0% | 0.0342 core / 0% |
+| Files | 0.0196 core / 0% | 0.0095 core / 0% |
+| Search | 0.0164 core / 0% | 0.0160 core / 0% |
+| Notifications | 0.0119 core / 0% | 0.0181 core / 0.94% |
+| Collab | 0.0182 core / 5.70% | 0.0054 core / 0% |
+| Audit | 0.00094 core / 0% | 0.00088 core / 0% |
+| Web | 0.00008 core / 0% | 0.00007 core / 0% |
+| Redis | 0.0066 core / 0% | 0.0060 core / 0% |
+| MeiliSearch | 0.0073 core / 0% | 0.0072 core / 0% |
+| Generator | 0.0940 core / 1.15% | 0.0930 core / 0.93% |
+
+CPU and throttling are one-minute rates sampled every 15 seconds; maxima can
+belong to different pods/times. The second auth throttle peak was at capture
+start, **before journey traffic**, and its trailing-minute window includes the
+fresh JVM rollout. To exclude setup/ramp and trailing-window overlap, the
+steady slice from 90 to 270 seconds after first journey request had auth
+maxima of **0.2983 core / 9.60%** before versus **0.5159 core / 3.77%** after.
+Generator throttling was zero in that slice in both runs. Auth memory peaked
+at 276/284MiB, document at 79/81MiB, generator at 56/56MiB; all pod restart
+counters remained zero. The latency improvement is an observed pair, not proof
+that CPU limits alone caused it: the auth rollout also changed JVM warm-up and
+pod placement, and node contention differed.
+
+**No next SLO-breaking bottleneck was demonstrated at this peak.** Auth remains
+the slowest endpoint and the next headroom candidate: its HPA was observed
+`ScalingLimited=True / TooManyReplicas` during the second run. Both auth and
+document stayed at the experimental max of three, but a maxed HPA with 100m
+requests (70m CPU target) is not itself evidence of CPU-limit saturation.
+Further load would be needed to establish the next breaking point; it was not
+generated beyond the approved 30-journey/s peaks.
+
+Checks against alternative capacity explanations:
+
+- **Generator/scheduling:** generator used <0.095 of its 1-core limit and
+  <57MiB of 512MiB, with no dropped arrivals. Sampled Pending pod count was zero
+  in both runs. Cluster CPU requests were 60.12–61.39% / 60.12–66.58% of 11.76
+  allocatable cores. One node briefly reached 87.56% busy in the first run
+  while the other two stayed below 33%; the second run's highest node was
+  58.33% busy. Minimum node available-memory fraction was 41.24% across runs.
+- **Shared RDS (`otterworks-postgres-dev`, db.t3.small):** CloudWatch one-minute
+  CPU maxima were 9.91% / 9.72%, connections 50 / 55, read latency maxima
+  1.76 / 0.80ms, write latency 2.91 / 1.92ms, disk queue <0.05, CPU credits 576
+  and burst balance 99%. Freeable memory stayed above 814MiB. These argue
+  against CPU/IO exhaustion, not all possible DB locks or connection-pool waits;
+  internal wait/pool instrumentation was not collected.
+- **Redis/MeiliSearch/gateway:** low observed CPU, no HTTP errors, no search
+  latency failures and zero gateway 429s. No evidence makes them the next
+  bottleneck at this traffic level.
+
+**Additional nodes indicated for this demonstrated peak: zero.** Three existing
+t3.xlarge nodes scheduled the experiment. If a future experiment needs more
+request headroom, the permitted fourth node adds roughly 3.92 allocatable CPU
+at the supplied spot estimate of $0.032–0.055/hour; it would not increase HPA
+maxima or fix application/DB constraints automatically. No node was added.
+
+Tenant state left for the chaos session: document 1 core, auth 1.5 cores,
+HPA min 2 / max 3, CPU quota 18 (13.75 used after Job completion), four auxiliary
+deployments at zero, and the new matching 48-character JWT values. No lifecycle,
+TTL, pin, control-table or image changes were made; **chaostest was not torn
+down**. Completed load Jobs retain their normal TTL; the runners removed their
+ConfigMaps. The general 35-core / 43-pod HA quota was **not** applied here.
+
+Evidence remains ignored under `tests/load/k6/results/`:
+`chaostest-{doc48,auth48}-{monitor.json,supplement.json,raw.json,before.txt,
+after.txt,start.txt,end.txt}`, the two `.log` files, per-run JSON/Markdown
+summaries and the two Job tarballs. Supplemental captures include HPA/current
+and desired replicas, Pending/available pods, cluster/node metrics and the
+RDS CloudWatch datapoints.
 
 ### Cleanup
 
