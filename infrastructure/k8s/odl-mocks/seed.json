@@ -1,0 +1,35 @@
+[
+  {
+    "seed_label": "odl-read-filter",
+    "fields": {
+      "project": {"key": "ENG"},
+      "issuetype": {"name": "Story"},
+      "summary": "Filter operational customer records by source and update time",
+      "description": "As a customer operations analyst, I want to filter the ODL customers read API by source system and updated-since, so that I can reconcile just the records changed in the system I am investigating. Today a full export makes reconciliation slow and mixes unrelated source records.\n\nAcceptance criteria\n- [ ] A source-system filter returns only customers from that source.\n- [ ] An updated-since timestamp returns only records updated after that instant, consistently across time zones.\n- [ ] Combining the filters applies both restrictions while preserving pagination.\n- [ ] Unknown sources return an empty list and malformed timestamps return an actionable client error.",
+      "priority": {"name": "High"},
+      "labels": ["odl-seed", "odl-read-filter", "odl-1795112287"]
+    }
+  },
+  {
+    "seed_label": "odl-billing-validation",
+    "fields": {
+      "project": {"key": "ENG"},
+      "issuetype": {"name": "Bug"},
+      "summary": "Prevent backdated billing plan changes from creating overlapping subscriptions",
+      "description": "As a billing operations owner, I want invalid effective dates rejected when changing a tenant's plan, so that subscription history remains trustworthy. The billing-service POST /api/tenants/{tenant_id}/plan-change request includes effective_on. A date before the existing subscription starts can currently be accepted and leave conflicting plan history.\n\nAcceptance criteria\n- [ ] An effective_on before the current subscription starts is rejected with a clear client error.\n- [ ] A rejected request leaves subscription dates, statuses and row counts unchanged.\n- [ ] A valid future effective_on closes the prior subscription the day before and starts the selected plan on that date.\n- [ ] Repeating the same accepted request does not create a second plan change.",
+      "priority": {"name": "High"},
+      "labels": ["odl-seed", "odl-billing-validation", "odl-1795112287"]
+    }
+  },
+  {
+    "seed_label": "odl-search-flaky-test",
+    "fields": {
+      "project": {"key": "ENG"},
+      "issuetype": {"name": "Bug"},
+      "summary": "Make the search no-results browser check reliable on busy CI workers",
+      "description": "As the release owner, I want the Search Page check 'shows no results for gibberish query' in frontend/client-app/e2e/search.spec.ts to give a reliable release signal. In this demo's CI scenario the check intermittently times out waiting for the no-results or loading state on busy workers, while an immediate retry succeeds. This is a seeded investigation scenario, not a verified historical CI incident.\n\nAcceptance criteria\n- [ ] Repeated runs on a throttled CI worker reach a conclusive no-results state for xyznonexistent9999.\n- [ ] A failed search request produces a clear failing assertion instead of a successful loading-only check.\n- [ ] A genuine matching result still causes the no-results check to fail.\n- [ ] The check remains reliable without blanket retries or an arbitrary long sleep.",
+      "priority": {"name": "Medium"},
+      "labels": ["odl-seed", "odl-search-flaky-test", "odl-1795112287"]
+    }
+  }
+]
