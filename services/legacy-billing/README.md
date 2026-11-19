@@ -2,10 +2,10 @@
 
 The source of truth is `openapi/billing-v1.yaml` (OpenAPI 3.1). The gateway
 forwards `/api/v1/billing` unchanged to `LEGACY_BILLING_URL` (default
-`http://legacy-billing:8096`), behind its JWT middleware. No module's v1
-operations are implemented yet. Unknown v1 paths already return the JSON
-error envelope; legacy routes retain their existing behavior, without new
-deprecation headers until converted into adapters.
+`http://legacy-billing:8096`), behind its JWT middleware. Invoicing's v1
+operations are implemented; the other modules remain pending. Unknown v1
+paths return the JSON error envelope; legacy routes retain their existing
+behavior, with deprecation headers on converted invoicing adapters.
 
 Modules own `app/v1/{plans,rating,invoicing,dunning}.py`. Each auto-discovered
 `register(app, blueprint)` runs after the original legacy routes exist.
@@ -70,6 +70,20 @@ Parity, state, validation, pagination and adapter error tests live in
 | Rating | `fn_usage_rating`, `fn_usage_summary`, `sp_finalize_rating` | v1: `GET /api/v1/billing/tenants/{tenant_id}/rating`, `POST /api/v1/billing/tenants/{tenant_id}/rating-periods`; deprecated adapters: `POST /api/rating/preview`, `POST /api/rating/finalize` |
 | Invoicing | `fn_invoice_preview`, `fn_invoice_lines`, `sp_issue_invoice` | `/api/invoices/<tenant>/preview`, `/api/invoices/<tenant>/issue`, `/api/invoices/<invoice>/lines` |
 | Dunning | `fn_overdue_accounts`, `sp_schedule_dunning`, `sp_suspend_overdue` | `/api/dunning/overdue`, `/api/dunning/schedule`, `/api/dunning/suspend` |
+
+### Invoicing v1
+
+Invoicing is implemented at `/api/v1/billing`: `GET
+/tenants/{tenant_id}/invoice-preview`, `POST /tenants/{tenant_id}/invoices`,
+and `GET /invoices/{invoice_id}/lines`. Preview requires `period_start` and
+`period_end` query parameters; issue requires those fields in a JSON body.
+Collections use cursor pagination and rename `line_no`/`line_type` to
+`number`/`type`. Issue returns 201, an enveloped invoice read back from the
+database, and a Location pointing to its lines. All domain decisions remain
+in the stored procedures. Legacy invoicing adapters retain their original
+defaults, form inputs, field names, response bytes and statuses (including
+HTML errors), adding Deprecation and successor-version Link headers.
+`tests/contract/test_invoicing_contract.py` covers parity and mutation state.
 
 The Flask layer intentionally binds request values, calls a database
 entrypoint, and renders the returned values. It does not reproduce domain
