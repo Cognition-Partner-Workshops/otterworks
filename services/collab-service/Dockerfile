@@ -7,7 +7,7 @@ COPY src ./src
 RUN npm run build
 
 FROM node:22.23.5-alpine
-RUN apk --no-cache add curl
+RUN apk upgrade --no-cache && apk add --no-cache curl
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
