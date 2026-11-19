@@ -2,8 +2,8 @@
 # Each workflow link has the condition $<session>.Status=SUCCEEDED, which maps to AFTER:
 # a child task runs only when its predecessor succeeds.
 # The workflow has no worklets, decisions, timers or event waits.
-# s_m_SFX_ROLE_GRANT, s_m_SFX_LOGIN_EVENT and s_m_SFX_TEAM_MEMBER (disabled) belong to another
-# effort and have no task here. The DOC_SHARE model reads the ROLE_GRANT landing file itself.
+# s_m_SFX_TEAM_MEMBER is disabled in the source workflow and has no task here.
+# These tasks validate dbt-built outputs; content/workflow.sql executes the session writes.
 # Each session task checks the dbt-built relation: it fails on an empty table (division by zero)
 # or a duplicate business key, so a bad build stops the downstream tasks.
 root: START
@@ -22,14 +22,22 @@ tasks:
     after: [APP_USER]
     warehouse: __RUN_DATABASE___TRANSFORM_WH
     sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT DOCUMENT_ID), 1, 0) FROM __RUN_DATABASE__.PC_CONTENT.STG_DOCUMENT
+  ROLE_GRANT:
+    after: [APP_USER]
+    warehouse: __RUN_DATABASE___TRANSFORM_WH
+    sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT GRANT_ID), 1, 0) FROM __RUN_DATABASE__.PC_CONTENT.ROLE_GRANT
+  LOGIN_EVENT:
+    after: [APP_USER]
+    warehouse: __RUN_DATABASE___TRANSFORM_WH
+    sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT LOGIN_ID), 1, 0) FROM __RUN_DATABASE__.PC_CONTENT.LOGIN_EVENT
   DOCUMENT:
     after: [STG_DOCUMENT]
     warehouse: __RUN_DATABASE___TRANSFORM_WH
     sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT DOCUMENT_ID), 1, 0) FROM __RUN_DATABASE__.PC_CONTENT.DOCUMENT
   DOC_SHARE:
-    after: [DOCUMENT]
+    after: [DOCUMENT, ROLE_GRANT]
     warehouse: __RUN_DATABASE___TRANSFORM_WH
     sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT SHARE_ID), 1, 0) FROM __RUN_DATABASE__.PC_CONTENT.DOC_SHARE
   FINISH:
-    after: [DOC_SHARE]
+    after: [DOC_SHARE, LOGIN_EVENT]
     sql: SELECT 1
