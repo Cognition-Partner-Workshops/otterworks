@@ -66,6 +66,62 @@ class SeedTests(unittest.TestCase):
 
 
 class RelayTests(unittest.TestCase):
+    def make_gate(self):
+        state = relay.ConfigMapState.__new__(relay.ConfigMapState)
+        persisted = {}
+
+        def configmap(method="GET", body=None):
+            if method == "PATCH":
+                for key, value in json.loads(body)["data"].items():
+                    if value is None:
+                        persisted.pop(key, None)
+                    else:
+                        persisted[key] = value
+            return {"data": persisted.copy()}
+
+        state.request = configmap
+        return relay.LabelGate(state)
+
+    def test_forward_only_labelled_creations_and_supported_events(self):
+        gate = self.make_gate()
+        issue = {"key": "ENG-7", "fields": {"labels": ["not-devin"]}}
+        created = {"webhookEvent": "jira:issue_created", "issue": issue}
+        self.assertEqual(gate.skip_reason(created, "ENG-7"), "devin_label_absent")
+        issue["fields"]["labels"].append("devin")
+        self.assertIsNone(gate.skip_reason(created, "ENG-7"))
+        self.assertEqual(gate.skip_reason({**created, "webhookEvent": "comment_created"}, "ENG-7"),
+                         "unsupported_event")
+        self.assertEqual(gate.skip_reason({**created, "webhookEvent": "jira:issue_updated"}, "ENG-7"),
+                         "devin_label_already_seen")
+
+    def test_explicit_changelog_does_not_fall_back_to_snapshot(self):
+        for field, old, new, reason in (
+            ("labels", "other, devin", "devin", "changelog_did_not_add_devin"),
+            ("labels", "other", "devin-secondary", "changelog_did_not_add_devin"),
+            ("status", None, "devin", "changelog_did_not_add_devin"),
+            ("labels", "not-devin, other", "other, devin", None),
+            ("labels", None, "devin", None),
+        ):
+            with self.subTest(field=field, old=old, new=new):
+                gate = self.make_gate()
+                update = {"webhookEvent": "jira:issue_updated",
+                          "issue": {"key": "ENG-7", "fields": {"labels": ["devin"]}},
+                          "changelog": {"items": [{"field": field, "fromString": old, "toString": new}]}}
+                self.assertEqual(gate.skip_reason(update, "ENG-7"), reason)
+
+    def test_snapshot_transition_persists_and_clears_observed_removals(self):
+        gate = self.make_gate()
+        issue = {"key": "ENG-7", "fields": {"labels": ["devin"]}}
+        update = {"webhookEvent": "jira:issue_updated", "issue": issue}
+        self.assertIsNone(gate.skip_reason(update, "ENG-7"))
+        gate = relay.LabelGate(gate.state)
+        self.assertEqual(gate.skip_reason(update, "ENG-7"), "devin_label_already_seen")
+        issue["fields"]["labels"] = []
+        self.assertEqual(gate.skip_reason(update, "ENG-7"), "devin_label_absent")
+        gate = relay.LabelGate(gate.state)
+        issue["fields"]["labels"] = ["devin"]
+        self.assertIsNone(gate.skip_reason(update, "ENG-7"))
+
     def start_server(self, handler):
         server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
         thread = Thread(target=server.serve_forever, daemon=True)
@@ -97,20 +153,28 @@ class RelayTests(unittest.TestCase):
         server, url = self.start_server(relay.Relay)
         server.upstream_url = upstream + "/accept"
         server.upstream_secret = "test-secret"
-        body = b'{ "issue": {"key": "ENG-7"}, "webhookEvent": "jira:issue_updated" }\n'
+        server.gate = self.make_gate()
+        body = (b'{ "issue": {"key": "ENG-7", "fields": {"labels": ["devin"]}},'
+                b' "webhookEvent": "jira:issue_updated" }\n')
         delivery = Request(url + "/webhook", data=body, headers={"Content-Type": "application/json"})
         with redirect_stdout(io.StringIO()) as output:
             with urlopen(delivery, timeout=3) as response:
                 self.assertEqual(response.status, 202)
+            with urlopen(delivery, timeout=3) as response:
+                self.assertEqual(response.status, 204)
+            with urlopen(Request(url + "/webhook", data=b""), timeout=3) as response:
+                self.assertEqual(response.status, 204)
             server.upstream_url = upstream + "/redirect"
+            redirect_body = body.replace(b"ENG-7", b"ENG-8")
             with self.assertRaises(HTTPError) as rejected:
-                urlopen(delivery, timeout=3)
+                urlopen(Request(url + "/webhook", data=redirect_body, headers=delivery.headers), timeout=3)
             self.assertEqual(rejected.exception.code, 502)
             rejected.exception.close()
-        self.assertEqual(received, [(path, "test-secret", "application/json", body)
-                                    for path in ("/accept", "/redirect")])
+        self.assertEqual(received, [("/accept", "test-secret", "application/json", body),
+                                    ("/redirect", "test-secret", "application/json", redirect_body)])
         self.assertEqual(output.getvalue().splitlines(), [
-            "issue=ENG-7 upstream_status=202", "issue=ENG-7 upstream_status=307"])
+            "issue=ENG-7 upstream_status=202", "issue=ENG-7 skip_reason=devin_label_already_seen",
+            "issue=- skip_reason=invalid_payload", "issue=ENG-8 upstream_status=307"])
 
 
 class RoutingTests(unittest.TestCase):

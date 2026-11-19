@@ -27,6 +27,12 @@ issue key and upstream status. For initial provisioning, supply
 script's environment. The script stores them in the `jira-devin-webhook`
 Kubernetes Secret and preserves that Secret on subsequent runs.
 
+The relay forwards labelled creations and updates that add the label. The Jira
+mock omits changelogs, so the relay tracks previously seen labels in the
+`jira-devin-relay-label-state` ConfigMap and logs skipped events with their
+reason. Because Jira's filter excludes unlabelled updates, a label removal
+cannot reset this fallback state unless the relay receives an unlabelled event.
+
 PagerDuty SQLite uses **emptyDir**, so incidents and other changes are
 lost and its built-in demo data **reseeds on pod restart**. Neither needs a PVC.
 

@@ -4,6 +4,8 @@ metadata:
   name: jira-devin-relay
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels: {app: jira-devin-relay}
   template:
@@ -11,7 +13,7 @@ spec:
       labels:
         app: jira-devin-relay
     spec:
-      automountServiceAccountToken: false
+      serviceAccountName: jira-devin-relay
       containers:
         - name: relay
           image: mirror.gcr.io/library/python:3.12-slim
@@ -50,3 +52,35 @@ spec:
   selector: {app: jira-devin-relay}
   ports:
     - {port: 8080, targetPort: 8080}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jira-devin-relay-label-state
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jira-devin-relay
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: jira-devin-relay
+rules:
+  - apiGroups: [""]
+    resources: [configmaps]
+    resourceNames: [jira-devin-relay-label-state]
+    verbs: [get, patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jira-devin-relay
+subjects:
+  - kind: ServiceAccount
+    name: jira-devin-relay
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: jira-devin-relay
