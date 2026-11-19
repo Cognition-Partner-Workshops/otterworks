@@ -14,15 +14,16 @@ outside documents ownership.
 ## Verification
 
 - Latest DOC_VERSION and dependent views build: `Done. PASS=12 WARN=0 ERROR=0 SKIP=0 TOTAL=12`.
-- `make sfx-lakehouse-parity`: failed; see individual JSON reports and PARITY.md.
+- The earlier exact-only full parity run failed on the three tied-version specs.
+  All three now PASS their explicitly approved candidate-set comparisons.
 - After fixing duplicate-aware staging comparison,
   `documents.stg_storage_usage_daily: PASS {'legacy': 2100, 'lakehouse': 2100}`.
-- Current reports: 21 documents specs PASS, three FAIL.
-- `make sfx-lakehouse-test`: `100 passed, 1 warning in 43.08s`.
+- Current reports: 24 documents specs PASS; three use tie-aware candidate sets.
+- `make sfx-lakehouse-test`: `111 passed, 1 warning in 41.95s`.
 - Coverage and assumptions validation: zero errors, with pending work retained.
 - Graph: `Pipeline: 2 DAGs, 76 tasks, valid`.
 
-## Approved tie policy and remaining exact-parity blocker (A-200)
+## Approved tie policy and candidate-set parity (A-200)
 
 The fixture deliberately supplies 50 document groups with tied VERSION_TS.
 The legacy SQL orders only by VERSION_TS DESC. The approved deterministic
@@ -30,15 +31,30 @@ policy selects the latest timestamp, then highest VERSION_ID. A-200 is
 accepted, risk med. A read-only comparison of all 450 emulator winners
 against this ordering found 49 different winners, starting at document
 9000000001. Of the 50 tied groups, the emulator agrees in one and differs
-in 49. Exact parity was rerun without normalizing either side and failed.
-The failed specs are documents.doc_version, documents.v_document_versions and
-documents.v_workspace_storage. Their three inventory objects plus BTEQ
-02_current_versions and its stage identity remain pending.
+in 49. Exact-only parity failed; it was not silently normalized to PASS.
 
 The approved deterministic tie-breaker is implemented and tested on multiple
 tied groups, including a newer timestamp with a lower VERSION_ID. No parity
-normalization or legacy edits were made. The current JSON evidence records
-the failures; the five inventory IDs remain pending rather than converted.
+normalization or legacy edits were made. The three specs now explicitly expand
+legal tied winners from legacy staging, matching every candidate column:
+
+| Spec | Exact matched | Tie resolved | Mismatches |
+|---|---:|---:|---:|
+| documents.doc_version | 400 | 50 | 0 |
+| documents.v_document_versions | 400 | 50 | 0 |
+| documents.v_workspace_storage | 200 | 50 | 0 |
+
+Untied documents retain exact comparisons to the published legacy outputs.
+Workspace totals are recomputed from legacy candidate contributions matching
+the lakehouse's selected version IDs, then checked against possible per-owner
+minimum and maximum totals. Untied owners also match the legacy published
+count and total exactly. All 250 owner bounds are checked. Candidate input
+counts are 500 legacy rows and 450 lakehouse contribution rows, not 250 owners.
+See `lakehouse/parity/README.md` for the opt-in generic comparison contract.
+
+The three output inventory IDs plus BTEQ 02_current_versions and its stage
+identity are now converted using fresh PASS evidence. Later documents work
+and shared integration objects remain pending.
 
 ## Other preserved behavior
 

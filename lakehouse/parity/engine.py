@@ -103,6 +103,9 @@ def compare(legacy_rows, lakehouse_rows, spec, legacy_columns=None, lakehouse_co
     columns = spec.get('columns') or sorted(left_names & right_names)
     keys = spec['keys']
     required = set(columns) | set(keys) | set(spec.get('filters', {}))
+    aggregate = spec.get('candidate_aggregate')
+    if aggregate:
+        required |= set(aggregate['group_keys']) | {aggregate['value'], aggregate['count'], aggregate['total']}
     if not columns or required - (left_names & right_names):
         raise ValueError(f'No common columns or required columns missing: {sorted(required - (left_names & right_names))}')
     if set(keys) - set(columns):
@@ -112,6 +115,8 @@ def compare(legacy_rows, lakehouse_rows, spec, legacy_columns=None, lakehouse_co
         raise ValueError('Tolerances must be nonnegative and reference comparison columns')
     left = prepare(legacy_rows, sorted(required), spec)
     right = prepare(lakehouse_rows, sorted(required), spec)
+    if spec.get('comparison') == 'candidates':
+        return compare_candidates(left, right, columns, keys, aggregate, sample_limit)
 
     def index(rows):
         groups = defaultdict(list)
@@ -156,3 +161,89 @@ def compare(legacy_rows, lakehouse_rows, spec, legacy_columns=None, lakehouse_co
             'mismatches': mismatches,
             'fingerprints': {'legacy': fingerprints(left, columns),
                              'lakehouse': fingerprints(right, columns)}}
+
+
+def compare_candidates(left, right, columns, keys, aggregate, sample_limit):
+    def index(rows, fields):
+        groups = defaultdict(list)
+        for row in rows:
+            groups[tuple(row[field] for field in fields)].append(row)
+        return groups
+
+    candidates, selected = index(left, keys), index(right, keys)
+    failures = set()
+    tied = set()
+    matched = {}
+    for key in candidates.keys() | selected.keys():
+        choices, winners = candidates.get(key, []), selected.get(key, [])
+        if len(choices) > 1:
+            tied.add(key)
+        matches = [row for row in choices if len(winners) == 1 and
+                   all(row[column] == winners[0][column] for column in columns)]
+        if any(value is None for value in key) or not matches:
+            failures.add(key)
+        else:
+            matched[key] = matches[0]
+
+    bounds = []
+    if aggregate:
+        group_keys = aggregate['group_keys']
+        if any(len(index(rows, group_keys)) != 1 for rows in candidates.values()):
+            raise ValueError('Candidates for a key must share aggregate group keys')
+        left_groups, right_groups = index(left, group_keys), index(right, group_keys)
+        tied_groups, failed_groups = set(), set()
+
+        def total(values):
+            present = [number(value) for value in values if value is not None]
+            return sum(present, Decimal(0)) if present else None
+
+        for group in left_groups.keys() | right_groups.keys():
+            choices, winners = left_groups.get(group, []), right_groups.get(group, [])
+            contributions = index(choices, keys)
+            group_ids = set(contributions) | set(index(winners, keys))
+            if group_ids & tied:
+                tied_groups.add(group)
+            low, high, present, nullable = [], [], [], []
+            for rows in contributions.values():
+                values = [number(row[aggregate['value']]) for row in rows
+                          if row[aggregate['value']] is not None]
+                present.extend(values)
+                nullable.append(any(row[aggregate['value']] is None for row in rows))
+                options = values + ([Decimal(0)] if nullable[-1] else [])
+                low.append(min(options))
+                high.append(max(options))
+            minimum, maximum = total(low), total(high)
+            if all(nullable):
+                minimum = min(present) if present and minimum == 0 and min(present) > 0 else minimum
+                maximum = max(present) if present and maximum == 0 and max(present) < 0 else maximum
+            if not present:
+                minimum = maximum = None
+            expected = total(matched[key][aggregate['value']] for key in group_ids if key in matched)
+            observed = {(row[aggregate['count']], row[aggregate['total']]) for row in winners}
+            legacy_observed = {(row[aggregate['count']], row[aggregate['total']]) for row in choices}
+            valid = (bool(choices) and bool(winners) and not group_ids & failures and
+                     observed == {(Decimal(len(contributions)), expected)} and
+                     (expected is None and all(nullable) or
+                      expected is not None and minimum is not None and maximum is not None and
+                      minimum <= expected <= maximum))
+            if group not in tied_groups:
+                valid = valid and observed == legacy_observed
+            if not valid:
+                failed_groups.add(group)
+            bounds.append({'key': group, 'minimum': minimum, 'maximum': maximum,
+                           'recomputed': expected})
+        all_keys = left_groups.keys() | right_groups.keys()
+        failures, tied = failed_groups, tied_groups
+    else:
+        all_keys = candidates.keys() | selected.keys()
+    result = {'passed': not failures,
+              'comparison': 'candidates',
+              'row_counts': {'legacy': len(left), 'lakehouse': len(right)},
+              'exact_matched_rows': len(all_keys - tied - failures),
+              'tie_resolved_rows': len(tied - failures),
+              'mismatches': len(failures),
+              'mismatch_samples': sorted(failures, key=encoded)[:sample_limit]}
+    if aggregate:
+        result['aggregate_bounds_checked'] = len(bounds)
+        result['aggregate_bounds'] = sorted(bounds, key=lambda row: encoded(row['key']))[:sample_limit]
+    return result

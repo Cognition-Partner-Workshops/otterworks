@@ -2,179 +2,111 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "1c9f575e97ec86cc27294cfd4104e32c8f3a1864",
+  "git_sha": "36bd8a99356461e12e1321eacf9241a5bda58169",
   "id": "documents.v_workspace_storage",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
     "teradata_view:SFX_DOCUMENTS.V_WORKSPACE_STORAGE"
   ],
   "results": {
-    "columns": [
-      "owner_user_id",
-      "document_count",
-      "total_bytes"
+    "aggregate_bounds": [
+      {
+        "key": [
+          "1"
+        ],
+        "maximum": "440054",
+        "minimum": "440054",
+        "recomputed": "440054"
+      },
+      {
+        "key": [
+          "1.1E+2"
+        ],
+        "maximum": "873799",
+        "minimum": "873799",
+        "recomputed": "873799"
+      },
+      {
+        "key": [
+          "1.2E+2"
+        ],
+        "maximum": "2207528",
+        "minimum": "2207528",
+        "recomputed": "2207528"
+      },
+      {
+        "key": [
+          "1.3E+2"
+        ],
+        "maximum": "674784",
+        "minimum": "674784",
+        "recomputed": "674784"
+      },
+      {
+        "key": [
+          "1.4E+2"
+        ],
+        "maximum": "253537",
+        "minimum": "253537",
+        "recomputed": "253537"
+      },
+      {
+        "key": [
+          "1.5E+2"
+        ],
+        "maximum": "273179",
+        "minimum": "273179",
+        "recomputed": "273179"
+      },
+      {
+        "key": [
+          "1.6E+2"
+        ],
+        "maximum": "515790",
+        "minimum": "515790",
+        "recomputed": "515790"
+      },
+      {
+        "key": [
+          "1.7E+2"
+        ],
+        "maximum": "1741023",
+        "minimum": "1741023",
+        "recomputed": "1741023"
+      },
+      {
+        "key": [
+          "1.8E+2"
+        ],
+        "maximum": "972278",
+        "minimum": "972278",
+        "recomputed": "972278"
+      },
+      {
+        "key": [
+          "1.9E+2"
+        ],
+        "maximum": "192702",
+        "minimum": "192702",
+        "recomputed": "192702"
+      }
     ],
-    "duplicate_keys": {
-      "lakehouse": {
-        "key_count": 0,
-        "row_count": 0,
-        "samples": []
-      },
-      "legacy": {
-        "key_count": 0,
-        "row_count": 0,
-        "samples": []
-      }
-    },
-    "fingerprints": {
-      "lakehouse": {
-        "document_count": {
-          "count": 250,
-          "hash": "242822b92e1883d990e8c098e6ded31002ca3a7f0277577a2af9d24c8a129f1b",
-          "null_count": 0,
-          "sum": "450"
-        },
-        "owner_user_id": {
-          "count": 250,
-          "hash": "a9fdc13132e22eac1cef8de3956437769cf5fd92ec66ca131bfa3eae7eaa1987",
-          "null_count": 0,
-          "sum": "450000021375"
-        },
-        "total_bytes": {
-          "count": 250,
-          "hash": "6351af8102431e2c7d8cf6801f5a95a885810c46e68e9bf17e9dc50a48a6b5fe",
-          "null_count": 0,
-          "sum": "289200344"
-        }
-      },
-      "legacy": {
-        "document_count": {
-          "count": 250,
-          "hash": "242822b92e1883d990e8c098e6ded31002ca3a7f0277577a2af9d24c8a129f1b",
-          "null_count": 0,
-          "sum": "450"
-        },
-        "owner_user_id": {
-          "count": 250,
-          "hash": "a9fdc13132e22eac1cef8de3956437769cf5fd92ec66ca131bfa3eae7eaa1987",
-          "null_count": 0,
-          "sum": "450000021375"
-        },
-        "total_bytes": {
-          "count": 250,
-          "hash": "360f2009207c581d0904111f91124e951706a22a23c8c4f204d86fa46f95a520",
-          "null_count": 0,
-          "sum": "289200295"
-        }
-      }
-    },
-    "mismatches": {
-      "document_count": {
-        "count": 0,
-        "samples": []
-      },
-      "owner_user_id": {
-        "count": 0,
-        "samples": []
-      },
-      "total_bytes": {
-        "count": 49,
-        "samples": [
-          {
-            "key": [
-              "9.00000001E+9"
-            ],
-            "lakehouse": "4115",
-            "legacy": "4114"
-          },
-          {
-            "key": [
-              "9.00000002E+9"
-            ],
-            "lakehouse": "4135",
-            "legacy": "4134"
-          },
-          {
-            "key": [
-              "9.00000003E+9"
-            ],
-            "lakehouse": "4155",
-            "legacy": "4154"
-          },
-          {
-            "key": [
-              "9.00000004E+9"
-            ],
-            "lakehouse": "4175",
-            "legacy": "4174"
-          },
-          {
-            "key": [
-              "9.00000005E+9"
-            ],
-            "lakehouse": "4195",
-            "legacy": "4194"
-          },
-          {
-            "key": [
-              "9000000001"
-            ],
-            "lakehouse": "4097",
-            "legacy": "4096"
-          },
-          {
-            "key": [
-              "9000000002"
-            ],
-            "lakehouse": "4099",
-            "legacy": "4098"
-          },
-          {
-            "key": [
-              "9000000003"
-            ],
-            "lakehouse": "4101",
-            "legacy": "4.1E+3"
-          },
-          {
-            "key": [
-              "9000000004"
-            ],
-            "lakehouse": "4103",
-            "legacy": "4102"
-          },
-          {
-            "key": [
-              "9000000005"
-            ],
-            "lakehouse": "4105",
-            "legacy": "4104"
-          }
-        ]
-      }
-    },
-    "null_key_rows": {
-      "lakehouse": 0,
-      "legacy": 0
-    },
-    "only_in_lakehouse": {
-      "count": 0,
-      "samples": []
-    },
-    "only_in_legacy": {
-      "count": 0,
-      "samples": []
-    },
-    "passed": false,
+    "aggregate_bounds_checked": 250,
+    "comparison": "candidates",
+    "exact_matched_rows": 200,
+    "mismatch_samples": [],
+    "mismatches": 0,
+    "passed": true,
     "row_counts": {
-      "lakehouse": 250,
-      "legacy": 250
-    }
+      "lakehouse": 450,
+      "legacy": 500
+    },
+    "tie_resolved_rows": 50
   },
   "row_counts": {
-    "lakehouse": 250,
-    "legacy": 250
+    "lakehouse": 450,
+    "legacy": 500
   },
-  "spec_hash": "9c19725aca62f580cf41ad591a665d0e6eda1d7f2e59cd04360a05da0dbb1e05",
-  "timestamp": "2026-11-19T08:13:30.336806+00:00"
+  "spec_hash": "a3023143c2ba33862de134e7e2326f6dd3e9e64a0c5117971d8bea4a7ff1692f",
+  "timestamp": "2026-11-19T08:17:56.034465+00:00"
 }

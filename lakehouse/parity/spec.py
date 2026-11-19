@@ -18,10 +18,25 @@ def load_spec(path):
     if not isinstance(keys, list) or not keys or any(not isinstance(k, str) or k != k.lower() for k in keys) or len(keys) != len(set(keys)):
         raise ValueError('keys requires unique lowercase column names')
     columns = spec.get('columns')
+    if spec.get('comparison', 'exact') not in ('exact', 'candidates'):
+        raise ValueError('comparison must be exact or candidates')
+    aggregate = spec.get('candidate_aggregate')
+    if aggregate is not None:
+        if (spec.get('comparison') != 'candidates' or not isinstance(aggregate, dict) or
+                set(aggregate) != {'group_keys', 'value', 'count', 'total'} or
+                not isinstance(aggregate['group_keys'], list) or not aggregate['group_keys'] or
+                not all(isinstance(c, str) and c == c.lower() for c in aggregate['group_keys']) or
+                not all(isinstance(aggregate[c], str) and aggregate[c] == aggregate[c].lower()
+                        for c in ('value', 'count', 'total'))):
+            raise ValueError('candidate_aggregate requires group_keys, value, count and total column names')
     if columns is not None and (not isinstance(columns, list) or not columns or
                                any(not isinstance(c, str) or c != c.lower() for c in columns) or
                                len(columns) != len(set(columns))):
         raise ValueError('columns requires unique lowercase column names')
+    if aggregate and (not columns or set(aggregate['group_keys'] + [aggregate['value']]) - set(columns)):
+        raise ValueError('candidate aggregate groups and value must be comparison columns')
+    if spec.get('comparison') == 'candidates' and spec.get('tolerance'):
+        raise ValueError('candidate comparison requires exact candidate values, not tolerances')
     for field in ('normalize', 'tolerance', 'filters'):
         if not isinstance(spec.get(field, {}), dict):
             raise ValueError(f'{field} must be a mapping')

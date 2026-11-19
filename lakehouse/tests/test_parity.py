@@ -13,6 +13,93 @@ from lakehouse.parity.spec import discover, load_spec
 SPEC = {'keys': ['id']}
 
 
+def test_candidate_comparison_exact_ties_and_empty():
+    spec = {'comparison': 'candidates', 'keys': ['id'], 'columns': ['id', 'version', 'value']}
+    rows = [{'id': 1, 'version': 1, 'value': 'exact'},
+            {'id': 2, 'version': 2, 'value': 'first'},
+            {'id': 2, 'version': 3, 'value': 'second'}]
+    result = compare(rows, [rows[0], rows[2]], spec)
+    assert result['passed']
+    assert (result['exact_matched_rows'], result['tie_resolved_rows'], result['mismatches']) == (1, 1, 0)
+    assert compare(rows, rows[:2], spec)['passed']
+    assert compare([], [], spec, spec['columns'], spec['columns'])['passed']
+    for winners in ([rows[0]], [rows[0], rows[2], rows[2]],
+                    [rows[0], {**rows[2], 'value': 'corrupt'}],
+                    [{**rows[0], 'value': 'corrupt'}, rows[2]],
+                    [rows[0], rows[2], {**rows[0], 'id': 3}]):
+        assert not compare(rows, winners, spec)['passed']
+    assert not compare([{'id': None}], [{'id': None}],
+                       {'comparison': 'candidates', 'keys': ['id']})['passed']
+    with pytest.raises(ValueError, match='Missing row columns'):
+        compare(rows, [{'id': 1}], spec, spec['columns'], spec['columns'])
+
+
+def test_candidate_aggregate_recomputes_selected_legacy_contributions():
+    spec = {'comparison': 'candidates', 'keys': ['id'],
+            'columns': ['id', 'owner', 'version', 'value'],
+            'candidate_aggregate': {'group_keys': ['owner'], 'value': 'value',
+                                    'count': 'count', 'total': 'total'}}
+    rows = [dict(id=1, owner=1, version=1, value=10, count=2, total=15),
+            dict(id=1, owner=1, version=2, value=20, count=2, total=15),
+            dict(id=2, owner=1, version=3, value=5, count=2, total=15),
+            dict(id=3, owner=2, version=4, value=7, count=1, total=7)]
+    winners = [{**rows[1], 'total': 25}, {**rows[2], 'total': 25}, rows[3]]
+    result = compare(rows, winners, spec)
+    assert result['passed']
+    assert (result['exact_matched_rows'], result['tie_resolved_rows'], result['mismatches']) == (1, 1, 0)
+    assert result['aggregate_bounds'][0] == {'key': (Decimal(1),), 'minimum': 15,
+                                             'maximum': 25, 'recomputed': 25}
+    for changes in ({'total': 20}, {'total': 26}, {'count': 3}, {'value': 19}, {'version': 99}):
+        broken = [{**winners[0], **changes}, {**winners[1], **changes}, rows[3]]
+        assert not compare(rows, broken, spec)['passed']
+    assert not compare(rows, winners[:-1], spec)['passed']
+    assert not compare(rows, winners + [winners[0]], spec)['passed']
+    assert not compare(rows, winners + [{**rows[3], 'owner': 3, 'id': 4}], spec)['passed']
+    # An untied owner's published legacy total is still checked exactly.
+    assert not compare([{**row, 'total': 8} if row['owner'] == 2 else row for row in rows],
+                       winners, spec)['passed']
+    names = spec['columns'] + ['count', 'total']
+    assert compare([], [], spec, names, names)['passed']
+    with pytest.raises(ValueError, match='share aggregate group keys'):
+        compare([rows[0], {**rows[1], 'owner': 2}], winners, spec)
+
+
+@pytest.mark.parametrize('changes', [
+    {'comparison': 'unknown'},
+    {'comparison': 'candidates', 'candidate_aggregate': {}},
+    {'comparison': 'candidates', 'tolerance': {'id': 1}},
+    {'comparison': 'exact', 'candidate_aggregate': {'group_keys': ['id'], 'value': 'id',
+                                                 'count': 'count', 'total': 'total'}},
+    {'comparison': 'candidates', 'candidate_aggregate': {'group_keys': ['missing'], 'value': 'id',
+                                                       'count': 'count', 'total': 'total'}},
+])
+def test_candidate_spec_rejects_invalid_configuration(tmp_path, changes):
+    spec = {**discover()['billing.customer_account'][1], **changes}
+    path = tmp_path / 'invalid.yaml'
+    path.write_text(json.dumps(spec))
+    with pytest.raises(ValueError):
+        load_spec(path)
+
+
+@pytest.mark.parametrize('values,selected,expected,minimum,maximum', [
+    ([None, 10], 0, None, 10, 10),
+    ([None, 10], 1, 10, 10, 10),
+    ([None, None], 0, None, None, None),
+    ([-10, -5], 1, -5, -10, -5),
+])
+def test_candidate_aggregate_null_and_negative_totals(values, selected, expected, minimum, maximum):
+    spec = {'comparison': 'candidates', 'keys': ['id'],
+            'columns': ['id', 'owner', 'version', 'value'],
+            'candidate_aggregate': {'group_keys': ['owner'], 'value': 'value',
+                                    'count': 'count', 'total': 'total'}}
+    rows = [dict(id=1, owner=1, version=i, value=value, count=1, total=values[0])
+            for i, value in enumerate(values)]
+    result = compare(rows, [{**rows[selected], 'total': expected}], spec)
+    assert result['passed']
+    assert result['aggregate_bounds'] == [{'key': (Decimal(1),), 'minimum': minimum,
+                                           'maximum': maximum, 'recomputed': expected}]
+
+
 def test_equal_order_independent_and_fingerprints():
     rows = [{'id': 2, 'amount': Decimal('1.20'), 'name': None},
             {'id': 1, 'amount': Decimal('2.30'), 'name': 'A'}]

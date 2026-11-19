@@ -200,7 +200,7 @@ objects:
   - A-203
   notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: bteq_script:warehouse/teradata/scripts/documents/02_current_versions.bteq
-  status: pending
+  status: converted
   targets:
   - silver_documents.doc_version
   parity:
@@ -208,7 +208,7 @@ objects:
   assumptions:
   - A-200
   - A-203
-  notes: Implemented but exact parity blocked by unspecified timestamp ties; see A-200.
+  notes: 'PASS candidate-set parity: exact untied outputs, legal tied winners and bounded recomputed workspace totals; see A-200.'
 - id: bteq_script:warehouse/teradata/scripts/documents/03_load_access.bteq
   status: converted
   targets:
@@ -834,7 +834,7 @@ objects:
   - A-037
   notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/02_current_versions
-  status: pending
+  status: converted
   targets:
   - silver_documents.doc_version
   parity:
@@ -843,7 +843,7 @@ objects:
   - A-200
   - A-203
   - A-037
-  notes: Implemented but exact parity blocked by unspecified timestamp ties; see A-200.
+  notes: 'PASS candidate-set parity: exact untied outputs, legal tied winners and bounded recomputed workspace totals; see A-200.'
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/03_load_access
   status: converted
   targets:
@@ -3268,7 +3268,7 @@ objects:
   - A-203
   notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_table:SFX_DOCUMENTS.DOC_VERSION
-  status: pending
+  status: converted
   targets:
   - silver_documents.doc_version
   parity:
@@ -3276,7 +3276,7 @@ objects:
   assumptions:
   - A-200
   - A-203
-  notes: Implemented but exact parity blocked by unspecified timestamp ties; see A-200.
+  notes: 'PASS candidate-set parity: exact untied outputs, legal tied winners and bounded recomputed workspace totals; see A-200.'
 - id: teradata_table:SFX_DOCUMENTS.FILE_OBJECT
   status: converted
   targets:
@@ -3658,14 +3658,14 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_view:SFX_DOCUMENTS.V_DOCUMENT_VERSIONS
-  status: pending
+  status: converted
   targets:
   - gold_documents.v_document_versions
   parity:
   - documents.v_document_versions
   assumptions:
   - A-200
-  notes: Implemented but exact parity blocked by unspecified timestamp ties; see A-200.
+  notes: 'PASS candidate-set parity: exact untied outputs, legal tied winners and bounded recomputed workspace totals; see A-200.'
 - id: teradata_view:SFX_DOCUMENTS.V_SEARCH_HISTORY
   status: converted
   targets:
@@ -3676,14 +3676,14 @@ objects:
   - A-201
   notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: teradata_view:SFX_DOCUMENTS.V_WORKSPACE_STORAGE
-  status: pending
+  status: converted
   targets:
   - gold_documents.v_workspace_storage
   parity:
   - documents.v_workspace_storage
   assumptions:
   - A-200
-  notes: Implemented but exact parity blocked by unspecified timestamp ties; see A-200.
+  notes: 'PASS candidate-set parity: exact untied outputs, legal tied winners and bounded recomputed workspace totals; see A-200.'
 - id: teradata_view:SFX_USERS.V_TEAM_MEMBERS
   status: converted
   targets:
