@@ -1,1 +1,0 @@
-12 2 * * * /opt/etl/spark/submit/docs_search_log_parse.sh >> /var/log/etl/spark-docs_search_log_parse.log 2>&1

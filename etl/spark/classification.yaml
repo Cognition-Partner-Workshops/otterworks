@@ -50,8 +50,10 @@
   change_reason: "Although the left-join folder count is SQL-shaped, the disabled cron and absence of in-repository output readers make retirement preferable to creating a replacement model."
 - job: docs_search_log_parse
   language: python
-  target: snowpark_python
-  reason: "Applies a Python regular-expression parser to raw search-index log records."
+  target: spark_standard_template
+  reason: "Keeps the Python regular-expression parser and existing Parquet output on the standard small Spark profile."
+  original_target: snowpark_python
+  change_reason: "Dynamic allocation can serve this short landing-to-Parquet job without a fixed executor reservation or a new warehouse ingestion step."
 - job: users_login_useragent_parse
   language: python
   target: snowpark_python

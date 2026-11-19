@@ -1,8 +1,8 @@
 {
   "job": "docs_search_log_parse",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "12 2 * * *",
   "profile": "small"
 }
