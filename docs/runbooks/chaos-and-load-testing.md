@@ -12,10 +12,14 @@ The chaos script refuses t-main; the load script only allows `READ_ONLY=1` there
 ## 1. Stand up a test tenant at busy-season shape
 
 ```bash
-./scripts/deploy-tenant.sh loadtest --profile core --ttl 24h
+# Register through the dashboard: a tenant made with deploy-tenant.sh alone is
+# reaped as an orphan within 15 minutes.
+./demo-platform/scripts/tenant.sh checkout loadtest main 6h
 ./scripts/scale-for-load.sh loadtest up          # HPA 2..6, PDB, node + zone spread
 ```
 
+The tenant ResourceQuota caps limits.cpu at 12: on the full profile, scale unused
+services to 0 or raise the quota, or HPA scale-out fails with `exceeded quota`.
 Check headroom first: `cluster:cpu_requests:ratio` in Prometheus must stay under ~0.85
 after scaling, or HPA scale-ups will go Pending (`OtterworksPodsUnschedulable`).
 
@@ -56,5 +60,5 @@ Run a chaos experiment while `PROFILE=load` is running to test failure under loa
 ```bash
 ./scripts/inject-bug.sh loadtest reset
 ./scripts/scale-for-load.sh loadtest down
-./scripts/teardown-tenant.sh loadtest
+./demo-platform/scripts/tenant.sh checkin loadtest
 ```
