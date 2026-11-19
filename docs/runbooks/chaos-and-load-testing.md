@@ -1,7 +1,9 @@
 # Runbook: Chaos and load testing
 
 Run both against a **disposable tenant**, never t-main (`otterworks-main`).
-The chaos script refuses t-main; the load script only allows `READ_ONLY=1` there.
+The chaos script refuses t-main; the load script requires `READ_ONLY=1`,
+`PROFILE=smoke` and explicit `ALLOW_MAIN=1` there. Do not use that escape hatch
+for capacity testing.
 
 ## 0. One-time cluster prerequisites
 
@@ -11,21 +13,31 @@ The chaos script refuses t-main; the load script only allows `READ_ONLY=1` there
 
 ## 1. Stand up a test tenant at busy-season shape
 
+Register and deploy through the dashboard checkout below, or follow
+[Busy-season load testing](../LOAD-TESTING.md) for manual registration and a
+24h deployment. A direct unregistered deploy is orphan-reaped despite its TTL.
+Use the full profile for
+the complete search/notification journey; leave replicas at one initially.
+The guide documents profiles, in-cluster execution, evidence and measured findings.
+
 ```bash
 # Register through the dashboard: a tenant made with deploy-tenant.sh alone is
 # reaped as an orphan within 15 minutes.
 ./demo-platform/scripts/tenant.sh checkout loadtest main 6h
+# Optional HA comparison, only after checking scheduling headroom:
 ./scripts/scale-for-load.sh loadtest up          # HPA 2..6, PDB, node + zone spread
 ```
 
-The tenant ResourceQuota caps limits.cpu at 12: on the full profile, scale unused
-services to 0 or raise the quota, or HPA scale-out fails with `exceeded quota`.
+Ordinary tenants have a 12-core CPU-limit quota. `scale-for-load.sh ... up`
+applies the separate 35-core / 43-pod HA quota and service-specific CPU overlays;
+see the [quota budget](../LOAD-TESTING.md#cpu-limit-intervention-and-ha-quota).
 Check headroom first: `cluster:cpu_requests:ratio` in Prometheus must stay under ~0.85
 after scaling, or HPA scale-ups will go Pending (`OtterworksPodsUnschedulable`).
 
 ## 2. Load test (k6)
 
 ```bash
+mkdir -p tests/load/k6/results
 BASE=https://api-t-loadtest.<domain>
 k6 run -e BASE_URL=$BASE -e PROFILE=smoke  tests/load/k6/otterworks.js   # sanity, 1 min
 k6 run -e BASE_URL=$BASE -e PROFILE=load   -e TARGET_VUS=50  tests/load/k6/otterworks.js
@@ -34,6 +46,8 @@ k6 run -e BASE_URL=$BASE -e PROFILE=spike  -e TARGET_VUS=200 tests/load/k6/otter
 ```
 
 Thresholds match the paging SLOs: <1% errors, read p95 < 800 ms, p99 < 1.5 s.
+Baseline and peak arrival-rate profiles, login SLOs and smoke correctness-only
+aborts are detailed in the [load-testing guide](../LOAD-TESTING.md).
 While it runs, watch Grafana *OtterWorks Overview* and `kubectl get hpa -n otterworks-loadtest -w`.
 Record for each profile: max sustained VUs/RPS within SLO, first service to saturate,
 replica count at peak, and whether any pod restarted or OOMKilled.
@@ -62,3 +76,7 @@ Run a chaos experiment while `PROFILE=load` is running to test failure under loa
 ./scripts/scale-for-load.sh loadtest down
 ./demo-platform/scripts/tenant.sh checkin loadtest
 ```
+
+Dashboard check-in schedules full teardown, including the namespace, database,
+DNS and IRSA trust. For manually registered tenants, follow the teardown and
+control-record cleanup instructions in the [load-testing guide](../LOAD-TESTING.md).

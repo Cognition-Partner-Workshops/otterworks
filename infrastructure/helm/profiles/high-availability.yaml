@@ -1,6 +1,7 @@
 # Busy-season / production availability overlay for any OtterWorks service chart.
 #   helm upgrade <svc> infrastructure/helm/<svc> --reuse-values -f infrastructure/helm/profiles/high-availability.yaml
 # or for a whole tenant: scripts/scale-for-load.sh <ID> up
+# The script also applies the HA quota and service-specific CPU overlays.
 # Requires metrics-server (scripts/install-cluster-addons.sh) for the HPA to act.
 replicaCount: 2
 

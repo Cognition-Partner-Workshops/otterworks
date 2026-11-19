@@ -5,6 +5,37 @@ SHELL := /bin/bash
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
+BASE_URL ?= $(TARGET)
+.PHONY: loadtest-smoke loadtest-load loadtest-baseline loadtest-peak loadtest-stress loadtest-spike loadtest-soak
+
+loadtest-load: ## Run the original VU-based load model (TARGET_VUS defaults to 50)
+	@mkdir -p tests/load/k6/results
+	BASE_URL="$(BASE_URL)" PROFILE=load k6 run tests/load/k6/otterworks.js
+
+loadtest-smoke: ## Gate an isolated tenant with 1-2 k6 VUs (BASE_URL or TARGET required)
+	@mkdir -p tests/load/k6/results
+	BASE_URL="$(BASE_URL)" PROFILE=smoke k6 run tests/load/k6/otterworks.js
+
+loadtest-baseline: ## Run normal traffic with k6 (BASE_URL or TARGET required)
+	@mkdir -p tests/load/k6/results
+	BASE_URL="$(BASE_URL)" PROFILE=baseline k6 run tests/load/k6/otterworks.js
+
+loadtest-peak: ## Run sustained 3x busy-season traffic with k6
+	@mkdir -p tests/load/k6/results
+	BASE_URL="$(BASE_URL)" PROFILE=peak k6 run tests/load/k6/otterworks.js
+
+loadtest-stress: ## Ramp k6 traffic until SLOs break
+	@mkdir -p tests/load/k6/results
+	BASE_URL="$(BASE_URL)" PROFILE=stress k6 run tests/load/k6/otterworks.js
+
+loadtest-spike: ## Burst to 10x the initial VU count then recover
+	@mkdir -p tests/load/k6/results
+	BASE_URL="$(BASE_URL)" PROFILE=spike k6 run tests/load/k6/otterworks.js
+
+loadtest-soak: ## Run a 1h VU plateau plus ramps (DURATION overrides total time)
+	@mkdir -p tests/load/k6/results
+	BASE_URL="$(BASE_URL)" PROFILE=soak k6 run tests/load/k6/otterworks.js
+
 PROCS_COMPOSE = docker compose -f docker-compose.procs.yml -p otterworks-procs-$(NS)
 PROCS_UV = uv run --with psycopg[binary]==3.2.9 --with pyyaml==6.0.2
 PROCS_PORT_OFFSET = $(shell if command -v python3 >/dev/null 2>&1 && test -n "$(NS)"; then python3 -c "import zlib; print(zlib.crc32('$(NS)'.encode()) % 1000)"; fi)

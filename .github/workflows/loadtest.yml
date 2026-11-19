@@ -1,0 +1,67 @@
+name: Load Testing
+
+on:
+  pull_request:
+    paths:
+      - 'tests/load/k6/**'
+      - '.github/workflows/loadtest.yml'
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Traffic profile
+        type: choice
+        options: [smoke, load, baseline, peak, stress, spike, soak]
+        default: smoke
+      base_url:
+        description: Dedicated tenant API origin (never main)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: loadtest-${{ github.event.inputs.base_url || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: grafana/setup-k6-action@ffe7d7290dfa715e48c2ccc924d068444c94bde2 # v1.1.0
+        with:
+          k6-version: '1.7.1'
+      - name: Inspect every profile without contacting a tenant
+        env:
+          BASE_URL: https://api-t-inspect.demo.otterworks.app
+        run: |
+          for profile in smoke load baseline peak stress spike soak; do
+            k6 inspect -e BASE_URL="$BASE_URL" -e PROFILE="$profile" tests/load/k6/otterworks.js
+          done
+      - name: Test configuration safety
+        run: node --test tests/load/k6/tests/*.test.mjs
+  run:
+    if: github.event_name == 'workflow_dispatch'
+    needs: inspect
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: grafana/setup-k6-action@ffe7d7290dfa715e48c2ccc924d068444c94bde2 # v1.1.0
+        with:
+          k6-version: '1.7.1'
+      - name: Run against dedicated tenant
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+          PROFILE: ${{ inputs.profile }}
+        run: |
+          mkdir -p tests/load/k6/results
+          k6 run tests/load/k6/otterworks.js
+      - name: Upload load-test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: loadtest-${{ inputs.profile }}-${{ github.run_id }}
+          path: tests/load/k6/results/
+          if-no-files-found: warn

@@ -41,7 +41,7 @@ below the knee; use `PROFILE=stress` to find it.
 
 Found during the run:
 - With 1 replica (the current default for every tenant), losing one pod is a user-visible outage of about 13 s.
-- The tenant `ResourceQuota` caps `limits.cpu` at 12. The full profile plus HA on 5 services hits it, and HPA scale-out then fails with `exceeded quota`. Raise `limits.cpu` in `deploy-tenant.sh` before enabling HA tenant-wide.
+- The ordinary tenant `ResourceQuota` caps `limits.cpu` at 12. The full profile plus HA on 5 services hit it during the game day, blocking HPA scale-out with `exceeded quota`. `scale-for-load.sh ... up` now applies a separate HA quota without raising cheap default tenants' quotas; see the [quota budget](LOAD-TESTING.md#cpu-limit-intervention-and-ha-quota).
 - The new chart values originally broke `helm upgrade --reuse-values`, which `inject-bug.sh` uses, on existing releases. Fixed: the templates are nil-safe.
 - A tenant created with `deploy-tenant.sh` alone is garbage-collected by the demo-platform reaper within 15 minutes. Use `demo-platform/scripts/tenant.sh checkout`.
 

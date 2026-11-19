@@ -25,12 +25,19 @@ require_bins kubectl helm
 NS="$(tenant_namespace "${ATTENDEE_ID}")"
 PROFILE="${REPO_ROOT}/infrastructure/helm/profiles/high-availability.yaml"
 
+if [ "${DIRECTION}" = up ]; then
+  kubectl apply -n "${NS}" -f "${REPO_ROOT}/infrastructure/k8s/tenant-ha-quota.yaml"
+fi
+
 for svc in "${SERVICES[@]}"; do
   helm status "${svc}" -n "${NS}" >/dev/null 2>&1 || { warn "${svc} not deployed in ${NS}; skipping"; continue; }
   case "${DIRECTION}" in
     up)
       log "${NS}/${svc}: high-availability profile"
-      helm upgrade "${svc}" "${REPO_ROOT}/infrastructure/helm/${svc}" -n "${NS}" --reuse-values -f "${PROFILE}" --wait --timeout 10m ;;
+      PROFILE_ARGS=(-f "${PROFILE}")
+      SERVICE_PROFILE="${REPO_ROOT}/infrastructure/helm/profiles/high-availability-${svc}.yaml"
+      if [ -f "${SERVICE_PROFILE}" ]; then PROFILE_ARGS+=(-f "${SERVICE_PROFILE}"); fi
+      helm upgrade "${svc}" "${REPO_ROOT}/infrastructure/helm/${svc}" -n "${NS}" --reuse-values "${PROFILE_ARGS[@]}" --wait --timeout 10m ;;
     down)
       log "${NS}/${svc}: back to single replica"
       helm upgrade "${svc}" "${REPO_ROOT}/infrastructure/helm/${svc}" -n "${NS}" --reuse-values \
