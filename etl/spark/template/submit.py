@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import json
 import os
 from pathlib import Path
@@ -11,7 +17,7 @@ PROFILES = {"small": "1g", "large": "2g"}
 def arguments(job):
     if not re.fullmatch(r"[a-z][a-z0-9_]*", job):
         raise ValueError("Invalid job identifier")
-    entry = json.loads((ROOT / "jobs/registry" / f"{job}.yaml").read_text())
+    entry = json.loads(_run_render((ROOT / "jobs/registry" / f"{job}.yaml").read_text()))
     if entry["status"] in ("snowflake", "retired"):
         raise ValueError("Snowflake or retired jobs cannot be submitted to Spark")
     args = ["/opt/spark/bin/spark-submit", "--master", "spark://spark-master:7077",

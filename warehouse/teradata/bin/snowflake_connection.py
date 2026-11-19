@@ -7,6 +7,7 @@ import tempfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'snowflake'))
 from sfx_conn import query_tag
+from warehouse.run_config import render as _run_render
 
 
 FIELDS = ('ACCOUNT', 'USER', 'ROLE', 'WAREHOUSE', 'DATABASE')
@@ -98,7 +99,7 @@ def configure():
         existing = connection.read_bytes().decode('utf-8') if connection.exists() else ''
         contents = update(existing, section)
         for target, value in ((key, os.environ['SNOWFLAKE_PRIVATE_KEY']), (connection, contents)):
-            descriptor, name = tempfile.mkstemp(prefix='.sfx-d1110-', dir=directory)
+            descriptor, name = tempfile.mkstemp(prefix=_run_render('.__RUN_TOKEN__-'), dir=directory)
             temporary.append(Path(name))
             with os.fdopen(descriptor, 'wb') as handle:
                 handle.write(value.encode('utf-8'))

@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import csv
 from decimal import Decimal
 import gzip
@@ -18,8 +24,8 @@ def test_additive_seed_contract():
     renderer = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(renderer)
     merged, sql = renderer.render()
-    assert yaml.safe_load((ROOT / 'landing_columns.yml').read_text()) == merged
-    assert renderer.TARGET.read_text() == sql
+    assert yaml.safe_load(_run_render((ROOT / 'landing_columns.yml').read_text())) == merged
+    assert _run_render(renderer.TARGET.read_text()) == sql
     for area, tables in seed_spec().items():
         for table, columns in tables.items():
             assert columns.keys() <= merged[area][table].keys()
@@ -40,7 +46,7 @@ def test_prepare_seed_balanced_and_lossless(tmp_path):
     prepared = prepare_seed(source, output, '20261109')
     assert len(prepared) == 42
     journals = {}
-    contract = yaml.safe_load((ROOT / 'landing_columns.yml').read_text())
+    contract = yaml.safe_load(_run_render((ROOT / 'landing_columns.yml').read_text()))
     for area, table, path, count in prepared:
         with gzip.open(path, 'rt', newline='') as stream:
             reader = csv.DictReader(stream, delimiter='|')

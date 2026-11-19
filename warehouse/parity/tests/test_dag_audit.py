@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from pathlib import Path
 import sys
 
@@ -7,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'snowflake'))
 import pc_dag
 import pc_dag_audit
 
-FX = 'SFX_D1110_AFTER.PC_FX_UNT9_AUDIT_WF.'
+FX = _run_render('__RUN_DATABASE__.PC_FX_UNT9_AUDIT_WF.')
 MERGES = {'s_m_SFX_AUDIT_EVENT': 'AUDIT_EVENT', 's_m_SFX_AUDIT_DAILY_SUMMARY': 'AUDIT_DAILY_SUMMARY',
           's_m_SFX_SECURITY_ALERT': 'SECURITY_ALERT'}
 
@@ -41,12 +47,12 @@ def test_generated_dag_matches_workflow(tmp_path):
     assert not any('ARCHIVE' in n for n in tasks)
     for name, task in tasks.items():
         sql = pc_dag.create_sql(folder, task, tasks)
-        assert 'SCHEDULE' not in sql and 'WAREHOUSE=SFX_D1110_TRANSFORM_WH' in sql
+        assert 'SCHEDULE' not in sql and _run_render('WAREHOUSE=__RUN_DATABASE___TRANSFORM_WH') in sql
         assert 'PC_FX_UNT9' not in sql
         if name != 'START':
-            assert 'SFX_D1110_AFTER.PC_AUDIT.' + name in task['sql']
+            assert _run_render('__RUN_DATABASE__.PC_AUDIT.') + name in task['sql']
             assert task['sql'].startswith('EXECUTE IMMEDIATE $$') and 'SELECT COUNT' not in task['sql']
-    assert 'create or replace transient table SFX_D1110_AFTER.PC_AUDIT.STG_AUDIT_EVENT' in tasks['STG_AUDIT_EVENT']['sql']
+    assert _run_render('create or replace transient table __RUN_DATABASE__.PC_AUDIT.STG_AUDIT_EVENT') in tasks['STG_AUDIT_EVENT']['sql']
     for name in MERGES.values():
         sql = tasks[name]['sql']
         assert sql.index('CREATE OR REPLACE TEMPORARY VIEW') < sql.index('merge into') < sql.index('DROP VIEW')
@@ -67,12 +73,12 @@ def test_summary_task_replays_model_reconciliation(tmp_path):
 
     model = Path(__file__).resolve().parents[2] / 'dbt/models/pc/audit/pc_audit__audit_daily_summary.sql'
     config = {}
-    Environment().from_string(model.read_text()).render(
-        config=lambda **kw: config.update(kw) or '', this='SFX_D1110_AFTER.PC_AUDIT.AUDIT_DAILY_SUMMARY',
-        ref=lambda name: 'SFX_D1110_AFTER.PC_AUDIT.AUDIT_EVENT',
+    Environment().from_string(_run_render(model.read_text())).render(
+        config=lambda **kw: config.update(kw) or '', this=_run_render('__RUN_DATABASE__.PC_AUDIT.AUDIT_DAILY_SUMMARY'),
+        ref=lambda name: _run_render('__RUN_DATABASE__.PC_AUDIT.AUDIT_EVENT'),
         var=lambda name, default: default, is_incremental=lambda: True)
     generated = pc_dag_audit.generate(fake_run(tmp_path), 'PC_FX_UNT9_AUDIT_WF', 'PC_AUDIT')
-    committed = yaml.safe_load((pc_dag_audit.ROOT / 'pc_dag/audit.yml').read_text())
+    committed = yaml.safe_load(_run_render((pc_dag_audit.ROOT / 'pc_dag/audit.yml').read_text()))
     for doc in (generated, committed):
         sql = doc['tasks']['AUDIT_DAILY_SUMMARY']['sql']
         assert config['post_hook'][0].strip() in sql

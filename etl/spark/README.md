@@ -14,7 +14,7 @@ make sfx-spark-test
 make sfx-spark-down
 ```
 
-Defaults: `NS=sfx-d1110-before`, `ROWS_PER_TABLE=200000`,
+Defaults: `NS=__BEFORE_NAMESPACE__`, `ROWS_PER_TABLE=200000`,
 `SPARK_JOBS=30`. `SPARK_JOBS=N` runs the first N non-Snowflake registry entries
 in filename order;
 `JOB=<id>` selects one entry, including docs_folder_legacy_report.
@@ -107,7 +107,7 @@ the contents of etl/spark, then copy the selected namespace's cache contents to
 .cache/ and its runtime contents to .data/ at the claim root. This supplies
 .cache/common.zip, the compiled Scala jar, JDBC jars, and .data/landing,
 .data/lake and .data/eventlogs as referenced by the manifests.
-Supply the referenced sfx-d1110-jdbc object with a password entry and a PostgreSQL
+Supply the referenced __RUN_TOKEN__-jdbc object with a password entry and a PostgreSQL
 service reachable as sfx-tdemu, or adjust the JDBC environment references.
 Driver and executor pods mount the same workspace. Legacy schedules are in
 `cron.d/<job>`; install their unchanged lines into the batch user's crontab.

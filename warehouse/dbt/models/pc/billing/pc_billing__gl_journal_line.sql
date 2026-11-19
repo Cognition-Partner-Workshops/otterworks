@@ -1,4 +1,4 @@
-{% set prior_keys = "{% if is_incremental() %}create or replace temporary table {{ this.database }}.{{ this.schema }}.GL_JOURNAL_LINE_PRIOR_KEYS comment='run_token=sfx-d1110 expires=2026-11-24' as select JOURNAL_NO, GL_ACCOUNT_ID, JOURNAL_LINE_ID, row_number() over (partition by JOURNAL_NO, GL_ACCOUNT_ID order by JOURNAL_LINE_ID) as OCCURRENCE from {{ this }} where JOURNAL_NO like 'JE-{{ var(\"load_date\", \"20261109\") }}-%'{% endif %}" %}
+{% set prior_keys = "{% if is_incremental() %}create or replace temporary table {{ this.database }}.{{ this.schema }}.GL_JOURNAL_LINE_PRIOR_KEYS comment='run_token=__RUN_TOKEN__ expires=2026-11-24' as select JOURNAL_NO, GL_ACCOUNT_ID, JOURNAL_LINE_ID, row_number() over (partition by JOURNAL_NO, GL_ACCOUNT_ID order by JOURNAL_LINE_ID) as OCCURRENCE from {{ this }} where JOURNAL_NO like 'JE-{{ var(\"load_date\", \"20261109\") }}-%'{% endif %}" %}
 {% set delete_load = "{% if is_incremental() %}delete from {{ this }} where JOURNAL_NO like 'JE-{{ var(\"load_date\", \"20261109\") }}-%'{% endif %}" %}
 {{ config(materialized='incremental', incremental_strategy='merge', unique_key='JOURNAL_LINE_ID', pre_hook=[prior_keys, delete_load]) }}
 
@@ -29,7 +29,7 @@ routed as (
 ),
 accounts as (
     select rtrim(ACCOUNT_CODE) as ACCOUNT_CODE, GL_ACCOUNT_ID
-    from SFX_D1110_AFTER.PC_SRC.GL_ACCOUNT
+    from __RUN_DATABASE__.PC_SRC.GL_ACCOUNT
     qualify row_number() over (partition by ACCOUNT_CODE order by ACCOUNT_CODE) = 1
 ),
 keyed as (

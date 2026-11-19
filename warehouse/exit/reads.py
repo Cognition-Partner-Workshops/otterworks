@@ -1,4 +1,10 @@
 """Read attribution for the finance warehouse exit (all windows are UTC, half-open)."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import csv
 import datetime as dt
@@ -24,7 +30,7 @@ def timestamp(value):
 
 
 def registry():
-    return yaml.safe_load((ROOT / 'consumers/registry.yaml').read_text())['consumers']
+    return yaml.safe_load(_run_render((ROOT / 'consumers/registry.yaml').read_text()))['consumers']
 
 
 def classify(row, consumers):
@@ -63,8 +69,8 @@ def snowflake(since, until, phase='reads'):
         account=os.environ['SNOWFLAKE_ACCOUNT'], user=os.environ['SNOWFLAKE_USER'],
         role=os.environ['SNOWFLAKE_ROLE'], authenticator='SNOWFLAKE_JWT',
         private_key=key.private_bytes(serialization.Encoding.DER, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()),
-        database='SFX_D1110_AFTER', warehouse='SFX_D1110_OPS_WH',
-        session_parameters={'TIMEZONE': 'UTC', 'QUERY_TAG': query_tag('ops', phase, {'run': 'sfx-d1110', 'act': 'exit'})},
+        database=_run_render('__RUN_DATABASE__'), warehouse=_run_render('__RUN_DATABASE___OPS_WH'),
+        session_parameters={'TIMEZONE': 'UTC', 'QUERY_TAG': query_tag('ops', phase, {'run': _run_render('__RUN_TOKEN__'), 'act': 'exit'})},
     ) as conn:
         with conn.cursor() as cur:
             rows = []
@@ -116,7 +122,7 @@ def summarize(td, sf, consumers, since, until):
             tag = json.loads(row['query_tag'] or '{}')
         except (ValueError, TypeError):
             continue
-        if not isinstance(tag, dict) or tag.get('run') != 'sfx-d1110' or tag.get('act') != 'consumers':
+        if not isinstance(tag, dict) or tag.get('run') != _run_render('__RUN_TOKEN__') or tag.get('act') != 'consumers':
             continue
         name = tag.get('consumer')
         time = timestamp(row['start_time'])
@@ -141,7 +147,7 @@ def arguments(description):
 def collect(args, phase='reads'):
     if timestamp(args.since) >= timestamp(args.until):
         raise ValueError('--since must precede --until')
-    sf = json.loads(args.snowflake_json.read_text()) if args.snowflake_json else snowflake(args.since, args.until, phase)
+    sf = json.loads(_run_render(args.snowflake_json.read_text())) if args.snowflake_json else snowflake(args.since, args.until, phase)
     return summarize(teradata(args.csv), sf, registry(), args.since, args.until)
 
 

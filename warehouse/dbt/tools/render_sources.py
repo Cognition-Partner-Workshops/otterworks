@@ -1,4 +1,10 @@
 """Generate dbt source declarations from the landing contract."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from pathlib import Path
 
 import yaml
@@ -17,7 +23,7 @@ def column_spec(area, table, name):
 
 
 def render():
-    spec = yaml.safe_load(SPEC.read_text())
+    spec = yaml.safe_load(_run_render(SPEC.read_text()))
     return yaml.safe_dump({
         "version": 2,
         "sources": [

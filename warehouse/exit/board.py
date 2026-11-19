@@ -1,4 +1,10 @@
 """Consumer migration parity board, with workflow-specific PR evidence."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import html
 import json
 from pathlib import Path
@@ -17,7 +23,7 @@ def pull_requests(consumers):
     records = []
     for consumer in consumers:
         name = consumer['name']
-        prs = api(f'repos/{REPO}/pulls?state=all&base=demo-snowflake-dw-exit&head=Cognition-Partner-Workshops:devin/sfx-d1110-consumer-{name}&per_page=100')
+        prs = api(_run_render(f'repos/{REPO}/pulls?state=all&base=demo-snowflake-dw-exit&head=Cognition-Partner-Workshops:devin/__RUN_TOKEN__-consumer-{name}&per_page=100'))
         for pr in prs:
             if pr['state'] == 'closed' and not pr.get('merged_at'):
                 continue
@@ -37,7 +43,7 @@ def rows(data, consumers, prs):
     for consumer in consumers:
         name = consumer['name']
         matches = [p for p in prs if p['base']['ref'] == 'demo-snowflake-dw-exit' and
-                   p['head']['ref'] == f'devin/sfx-d1110-consumer-{name}' and
+                   p['head']['ref'] == _run_render(f'devin/__RUN_TOKEN__-consumer-{name}') and
                    (p['state'] == 'open' or p.get('merged_at'))]
         pr = max(matches, key=lambda p: p['number']) if matches else None
         ci = 'missing'
@@ -70,11 +76,11 @@ def markdown(records):
 def document(records):
     def cells(row, tag):
         return '<tr>' + ''.join(f'<{tag}>{html.escape(str(value))}</{tag}>' for value in row) + '</tr>'
-    return ('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width">'
+    return (_run_render('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width">'
             '<title>Finance warehouse consumer exit</title><style>body{font:16px system-ui;margin:2rem;color:#172b3a}'
             'table{border-collapse:collapse;width:100%}td,th{padding:.7rem;border:1px solid #ccd;text-align:left}'
             'th{background:#edf3f8}tr:nth-child(even){background:#f8fafc}</style><h1>Finance warehouse consumer exit</h1>'
-            '<p>Run sfx-d1110 · UTC half-open reporting window · baseline 2026-10-11 to 2026-11-10</p><table><thead>' +
+            '<p>Run __RUN_TOKEN__ · UTC half-open reporting window · baseline 2026-10-11 to 2026-11-10</p><table><thead>') +
             cells(HEADERS, 'th') + '</thead><tbody>' + ''.join(cells(row, 'td') for row in records) + '</tbody></table></html>')
 
 
@@ -85,7 +91,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     data = collect(args, 'board')
     consumers = registry()
-    prs = json.loads(args.prs_json.read_text()) if args.prs_json else pull_requests(consumers)
+    prs = json.loads(_run_render(args.prs_json.read_text())) if args.prs_json else pull_requests(consumers)
     records = rows(data, consumers, prs)
     args.html.write_text(document(records))
     print(markdown(records))

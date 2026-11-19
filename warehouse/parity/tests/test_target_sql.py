@@ -4,6 +4,7 @@ import sqlite3
 
 import pytest
 import sqlglot
+from warehouse.run_config import RunConfig
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -33,7 +34,7 @@ def test_share_projection(grants, expected):
 
 @pytest.mark.parametrize("rows", [[], [(1, "abc")], [(1, "abcdefgh"), (1, "abcdefgh"), (2, None)]])
 def test_table_projections(rows):
-    source = (ROOT.parent / "migration/dw-exit/billing/supplemental.sql").read_text()
+    source = RunConfig.from_env().render((ROOT.parent / "migration/dw-exit/billing/supplemental.sql").read_text())
     with sqlite3.connect(":memory:") as db:
         db.execute("CREATE TABLE feed (ID, VALUE)")
         db.executemany("INSERT INTO feed VALUES (?,?)", rows)
@@ -41,7 +42,7 @@ def test_table_projections(rows):
             statement = next(s for s in source.split(";") if "CREATE OR REPLACE TABLE" in s and
                              f"BILLING_PROBES.{table}\n" in s)
             query = "SELECT " + statement.split("AS SELECT ", 1)[1]
-            query = query.replace("SFX_D1110_AFTER.BILLING_PROBES.FEED", "feed")
+            query = query.replace(RunConfig.from_env().database + ".BILLING_PROBES.FEED", "feed")
             assert db.execute(query).fetchall() == rows
 
 

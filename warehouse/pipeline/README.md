@@ -1,9 +1,9 @@
-# sfx-d1110 daily billing feed
+# __RUN_TOKEN__ daily billing feed
 
 Use the existing named `sfx_d1110` connection in `~/.snowflake/connections.toml`
 and its private-key file. Credentials never belong here. All operations use
-`SFX_D1110_AFTER`; load/reset use `SFX_D1110_LOAD_WH`, dbt uses
-`SFX_D1110_TRANSFORM_WH`, and observation uses `SFX_D1110_OPS_WH`.
+`__RUN_DATABASE__`; load/reset use `__RUN_DATABASE___LOAD_WH`, dbt uses
+`__RUN_DATABASE___TRANSFORM_WH`, and observation uses `__RUN_DATABASE___OPS_WH`.
 
 ```
 make sfx-operate-load
@@ -35,10 +35,10 @@ The vendor change inserts DISCOUNT_CODE after a currency-formatted AMOUNT.
 The old positional loader loaded only 42 of 48 rows with null financial fields.
 The fixed loader ignores DISCOUNT_CODE and loads all 48 rows correctly.
 
-For isolated backfills, use `--schema RAW_BILLING_SFX_D1110_BACKFILL`
-`--warehouse SFX_D1110_TRANSFORM_WH --step backfill --no-build` with `--date`.
-Schemas must be RAW_BILLING or an identifier containing SFX_D1110; warehouses
-must start with SFX_D1110_. Defaults remain RAW_BILLING and SFX_D1110_LOAD_WH.
+For isolated backfills, use `--schema RAW_BILLING___RUN_DATABASE___BACKFILL`
+`--warehouse __RUN_DATABASE___TRANSFORM_WH --step backfill --no-build` with `--date`.
+Schemas must be RAW_BILLING or an identifier containing __RUN_DATABASE__; warehouses
+must start with __RUN_DATABASE___. Defaults remain RAW_BILLING and __RUN_DATABASE___LOAD_WH.
 `--no-build` skips dbt (whose sources still point at production RAW_BILLING).
 Target overrides and --no-build are not supported for reset.
 

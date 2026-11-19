@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import json
 import re
@@ -106,7 +112,7 @@ def main():
         ladder = Ladder(connection)
         results = []
         args.output.parent.mkdir(parents=True, exist_ok=True)
-        for entry in json.loads(args.manifest.read_text()):
+        for entry in json.loads(_run_render(args.manifest.read_text())):
             r = ladder.compare(**entry)
             results.append(r)
             args.output.write_text(json.dumps(results, indent=2, default=str) + '\n')

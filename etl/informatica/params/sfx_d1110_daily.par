@@ -1,4 +1,4 @@
-# Parameter file for the daily batch (Integration Service IS_SFX_D1110).
+# Parameter file for the daily batch (Integration Service IS___RUN_DATABASE__).
 # Sections follow [folder.WF:workflow] / [folder.WF:workflow.ST:session] precedence.
 [Global]
 $DBConnection_SRC=TD_SFX_EDW

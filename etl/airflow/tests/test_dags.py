@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import json
 import os
 from pathlib import Path
@@ -19,7 +25,7 @@ class DagTest(unittest.TestCase):
         self.assertEqual(bag.import_errors, {})
         registry = ROOT.parent / "spark/jobs/registry"
         expected = {f'sfx_spark_{entry["job"]}' for path in registry.glob("*.yaml")
-                    if (entry := json.loads(path.read_text()))["status"] in ("template", "snowflake")}
+                    if (entry := json.loads(_run_render(path.read_text())))["status"] in ("template", "snowflake")}
         self.assertEqual(set(bag.dags), expected)
 
     def test_factory_routes_and_retries(self):
@@ -76,7 +82,7 @@ class DagTest(unittest.TestCase):
         registry = ROOT.parent / "spark/jobs/registry"
         dags = build_dags(registry, "/spark")
         for path in registry.glob("*.yaml"):
-            entry = json.loads(path.read_text())
+            entry = json.loads(_run_render(path.read_text()))
             if entry["status"] == "snowflake" and entry["schedule"] is not None:
                 self.assertIn("ingest", dags[f'sfx_spark_{entry["job"]}'].get_task("run").upstream_task_ids)
 

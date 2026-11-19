@@ -4,6 +4,8 @@ objects:
   kind: mapping
   name: m_SFX_APP_USER
   complexity: high
+  subject_area: users
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_APP_USER.XML
   target_type: snowpark
   target: TRANSFORM.M_SFX_APP_USER
@@ -14,11 +16,15 @@ objects:
   risk_reasons:
   - high complexity
   status: not_started
+  output_relations:
+  - SFX_USERS.APP_USER
 - id: n72218f3784bfa85d
   system: powercenter
   kind: mapping
   name: m_SFX_AUDIT_DAILY_SUMMARY
   complexity: high
+  subject_area: audit
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_DAILY_SUMMARY.XML
   target_type: snowpark
   target: TRANSFORM.M_SFX_AUDIT_DAILY_SUMMARY
@@ -29,11 +35,15 @@ objects:
   risk_reasons:
   - high complexity
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
 - id: n9912ea8ce8887d9a
   system: powercenter
   kind: mapping
   name: m_SFX_AUDIT_EVENT
   complexity: medium
+  subject_area: audit
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_EVENT.XML
   target_type: dbt_model
   target: core_audit__m_sfx_audit_event
@@ -43,11 +53,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_EVENT
 - id: ncf58434800570afc
   system: powercenter
   kind: mapping
   name: m_SFX_AUDIT_EVENT_ARCHIVE
   complexity: high
+  subject_area: audit
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_EVENT_ARCHIVE.XML
   target_type: retire
   target: NONE
@@ -59,11 +73,15 @@ objects:
   - high complexity
   - feeds only dead objects
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
 - id: n6aaec9f5432be4e3
   system: powercenter
   kind: mapping
   name: m_SFX_CUSTOMER_ACCOUNT
   complexity: high
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_CUSTOMER_ACCOUNT.XML
   target_type: snowpark
   target: TRANSFORM.M_SFX_CUSTOMER_ACCOUNT
@@ -74,11 +92,15 @@ objects:
   risk_reasons:
   - high complexity
   status: not_started
+  output_relations:
+  - SFX_BILLING.CUSTOMER_ACCOUNT
 - id: n4120240510221fa9
   system: powercenter
   kind: mapping
   name: m_SFX_DOCUMENT
   complexity: high
+  subject_area: documents
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_DOCUMENT.XML
   target_type: snowpark
   target: TRANSFORM.M_SFX_DOCUMENT
@@ -89,11 +111,15 @@ objects:
   risk_reasons:
   - high complexity
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOCUMENT
 - id: nb64c2c6bce79c145
   system: powercenter
   kind: mapping
   name: m_SFX_DOC_SHARE
   complexity: high
+  subject_area: documents
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_DOC_SHARE.XML
   target_type: snowpark
   target: TRANSFORM.M_SFX_DOC_SHARE
@@ -104,11 +130,15 @@ objects:
   risk_reasons:
   - high complexity
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOC_SHARE
 - id: nc6e232bf5387a7d8
   system: powercenter
   kind: mapping
   name: m_SFX_GL_JOURNAL_LINE
   complexity: high
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_GL_JOURNAL_LINE.XML
   target_type: snowpark
   target: TRANSFORM.M_SFX_GL_JOURNAL_LINE
@@ -119,11 +149,15 @@ objects:
   risk_reasons:
   - high complexity
   status: not_started
+  output_relations:
+  - SFX_BILLING.GL_JOURNAL_LINE
 - id: n507935ec69aff51f
   system: powercenter
   kind: mapping
   name: m_SFX_INVOICE_HDR
   complexity: high
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_INVOICE_HDR.XML
   target_type: snowpark
   target: TRANSFORM.M_SFX_INVOICE_HDR
@@ -134,11 +168,15 @@ objects:
   risk_reasons:
   - high complexity
   status: not_started
+  output_relations:
+  - SFX_BILLING.INVOICE_HDR
 - id: n80bc3cbe04337687
   system: powercenter
   kind: mapping
   name: m_SFX_INVOICE_LINE
   complexity: high
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_INVOICE_LINE.XML
   target_type: dbt_model
   target: core_billing__m_sfx_invoice_line
@@ -149,11 +187,15 @@ objects:
   risk_reasons:
   - high complexity
   status: not_started
+  output_relations:
+  - SFX_BILLING.INVOICE_LINE
 - id: n42c8c3678ac93f94
   system: powercenter
   kind: mapping
   name: m_SFX_LOGIN_EVENT
   complexity: high
+  subject_area: users
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_LOGIN_EVENT.XML
   target_type: dbt_model
   target: core_users__m_sfx_login_event
@@ -164,11 +206,15 @@ objects:
   risk_reasons:
   - high complexity
   status: not_started
+  output_relations:
+  - SFX_USERS.LOGIN_EVENT
 - id: n0a885de029170919
   system: powercenter
   kind: mapping
   name: m_SFX_PAYMENT
   complexity: high
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_PAYMENT.XML
   target_type: dbt_model
   target: core_billing__m_sfx_payment
@@ -179,11 +225,15 @@ objects:
   risk_reasons:
   - high complexity
   status: not_started
+  output_relations:
+  - SFX_BILLING.PAYMENT
 - id: n82db93afad5cb04b
   system: powercenter
   kind: mapping
   name: m_SFX_ROLE_GRANT
   complexity: medium
+  subject_area: users
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_ROLE_GRANT.XML
   target_type: dbt_model
   target: core_users__m_sfx_role_grant
@@ -193,11 +243,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.ROLE_GRANT
 - id: n42d621438ac20a11
   system: powercenter
   kind: mapping
   name: m_SFX_SECURITY_ALERT
   complexity: high
+  subject_area: audit
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_SECURITY_ALERT.XML
   target_type: dbt_model
   target: core_audit__m_sfx_security_alert
@@ -208,11 +262,15 @@ objects:
   risk_reasons:
   - high complexity
   status: not_started
+  output_relations:
+  - SFX_AUDIT.SECURITY_ALERT
 - id: n2f5adf79707598c4
   system: powercenter
   kind: mapping
   name: m_SFX_STG_APP_USER
   complexity: medium
+  subject_area: users
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_STG_APP_USER.XML
   target_type: dbt_model
   target: stg_users__m_sfx_stg_app_user
@@ -222,11 +280,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_APP_USER
 - id: n9f30c3fd3b30fdad
   system: powercenter
   kind: mapping
   name: m_SFX_STG_AUDIT_EVENT
   complexity: medium
+  subject_area: audit
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_STG_AUDIT_EVENT.XML
   target_type: dbt_model
   target: stg_audit__m_sfx_stg_audit_event
@@ -236,11 +298,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_AUDIT_EVENT
 - id: n2949244725eedc48
   system: powercenter
   kind: mapping
   name: m_SFX_STG_CUSTOMER_ACCOUNT
   complexity: medium
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_STG_CUSTOMER_ACCOUNT.XML
   target_type: dbt_model
   target: stg_billing__m_sfx_stg_customer_account
@@ -250,11 +316,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_CUSTOMER_ACCOUNT
 - id: n9be69430933a863f
   system: powercenter
   kind: mapping
   name: m_SFX_STG_DOCUMENT
   complexity: medium
+  subject_area: documents
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_STG_DOCUMENT.XML
   target_type: dbt_model
   target: stg_documents__m_sfx_stg_document
@@ -264,11 +334,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_DOCUMENT
 - id: n9da968be9406803e
   system: powercenter
   kind: mapping
   name: m_SFX_STG_INVOICE_HDR
   complexity: medium
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_STG_INVOICE_HDR.XML
   target_type: dbt_model
   target: stg_billing__m_sfx_stg_invoice_hdr
@@ -278,11 +352,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_INVOICE_HDR
 - id: n836f8884b17bb209
   system: powercenter
   kind: mapping
   name: m_SFX_TEAM_MEMBER
   complexity: medium
+  subject_area: users
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_TEAM_MEMBER.XML
   target_type: dbt_model
   target: core_users__m_sfx_team_member
@@ -292,11 +370,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.TEAM_MEMBER
 - id: ne9bc408e114b18b9
   system: powercenter
   kind: session
   name: s_m_SFX_APP_USER
   complexity: medium
+  subject_area: users
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
   target_type: dbt_model
   target: core_users__s_m_sfx_app_user
@@ -306,11 +388,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.APP_USER
 - id: nb292817d7dbbf313
   system: powercenter
   kind: session
   name: s_m_SFX_AUDIT_DAILY_SUMMARY
   complexity: medium
+  subject_area: audit
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML
   target_type: dbt_model
   target: core_audit__s_m_sfx_audit_daily_summary
@@ -320,11 +406,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
 - id: n871f62d3691a3f87
   system: powercenter
   kind: session
   name: s_m_SFX_AUDIT_EVENT
   complexity: medium
+  subject_area: audit
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML
   target_type: dbt_model
   target: core_audit__s_m_sfx_audit_event
@@ -334,11 +424,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_EVENT
 - id: nd28651dfba442ad6
   system: powercenter
   kind: session
   name: s_m_SFX_AUDIT_EVENT_ARCHIVE
   complexity: medium
+  subject_area: audit
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML
   target_type: retire
   target: NONE
@@ -349,11 +443,15 @@ objects:
   risk_reasons:
   - feeds only dead objects
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
 - id: n4752fbb3cc9908e1
   system: powercenter
   kind: session
   name: s_m_SFX_CUSTOMER_ACCOUNT
   complexity: medium
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML
   target_type: dbt_model
   target: core_billing__s_m_sfx_customer_account
@@ -363,11 +461,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.CUSTOMER_ACCOUNT
 - id: n8c4f1371cd88fbd6
   system: powercenter
   kind: session
   name: s_m_SFX_DOCUMENT
   complexity: medium
+  subject_area: documents
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
   target_type: dbt_model
   target: core_documents__s_m_sfx_document
@@ -377,11 +479,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOCUMENT
 - id: ndea27aebd8808486
   system: powercenter
   kind: session
   name: s_m_SFX_DOC_SHARE
   complexity: medium
+  subject_area: documents
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
   target_type: dbt_model
   target: core_documents__s_m_sfx_doc_share
@@ -391,11 +497,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOC_SHARE
 - id: n461e2b42ddf1d426
   system: powercenter
   kind: session
   name: s_m_SFX_GL_JOURNAL_LINE
   complexity: medium
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML
   target_type: dbt_model
   target: core_billing__s_m_sfx_gl_journal_line
@@ -405,11 +515,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.GL_JOURNAL_LINE
 - id: n5ab39469d70e6e70
   system: powercenter
   kind: session
   name: s_m_SFX_INVOICE_HDR
   complexity: medium
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML
   target_type: dbt_model
   target: core_billing__s_m_sfx_invoice_hdr
@@ -419,11 +533,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.INVOICE_HDR
 - id: nbfc31857a3fa8bac
   system: powercenter
   kind: session
   name: s_m_SFX_INVOICE_LINE
   complexity: medium
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML
   target_type: dbt_model
   target: core_billing__s_m_sfx_invoice_line
@@ -433,11 +551,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.INVOICE_LINE
 - id: n6ef643cd421ba7da
   system: powercenter
   kind: session
   name: s_m_SFX_LOGIN_EVENT
   complexity: medium
+  subject_area: users
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
   target_type: dbt_model
   target: core_users__s_m_sfx_login_event
@@ -447,11 +569,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.LOGIN_EVENT
 - id: nc132a28c351d5659
   system: powercenter
   kind: session
   name: s_m_SFX_PAYMENT
   complexity: medium
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML
   target_type: dbt_model
   target: core_billing__s_m_sfx_payment
@@ -461,11 +587,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.PAYMENT
 - id: neecc7039dfeb4698
   system: powercenter
   kind: session
   name: s_m_SFX_ROLE_GRANT
   complexity: medium
+  subject_area: users
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
   target_type: dbt_model
   target: core_users__s_m_sfx_role_grant
@@ -475,11 +605,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.ROLE_GRANT
 - id: n21ff1c42e3c9b57a
   system: powercenter
   kind: session
   name: s_m_SFX_SECURITY_ALERT
   complexity: medium
+  subject_area: audit
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML
   target_type: dbt_model
   target: core_audit__s_m_sfx_security_alert
@@ -489,11 +623,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.SECURITY_ALERT
 - id: n3d22b7a534acc0bb
   system: powercenter
   kind: session
   name: s_m_SFX_STG_APP_USER
   complexity: medium
+  subject_area: users
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
   target_type: dbt_model
   target: stg_users__s_m_sfx_stg_app_user
@@ -503,11 +641,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_APP_USER
 - id: n1f9acfe77103914f
   system: powercenter
   kind: session
   name: s_m_SFX_STG_AUDIT_EVENT
   complexity: medium
+  subject_area: audit
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML
   target_type: dbt_model
   target: stg_audit__s_m_sfx_stg_audit_event
@@ -517,11 +659,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_AUDIT_EVENT
 - id: n314aedf512c71123
   system: powercenter
   kind: session
   name: s_m_SFX_STG_CUSTOMER_ACCOUNT
   complexity: medium
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML
   target_type: dbt_model
   target: stg_billing__s_m_sfx_stg_customer_account
@@ -531,11 +677,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_CUSTOMER_ACCOUNT
 - id: n36558a0ededd2006
   system: powercenter
   kind: session
   name: s_m_SFX_STG_DOCUMENT
   complexity: medium
+  subject_area: documents
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
   target_type: dbt_model
   target: stg_documents__s_m_sfx_stg_document
@@ -545,11 +695,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_DOCUMENT
 - id: n228b7a12a3c5e1bb
   system: powercenter
   kind: session
   name: s_m_SFX_STG_INVOICE_HDR
   complexity: medium
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML
   target_type: dbt_model
   target: stg_billing__s_m_sfx_stg_invoice_hdr
@@ -559,11 +713,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_INVOICE_HDR
 - id: n4480339208f0dc43
   system: powercenter
   kind: session
   name: s_m_SFX_TEAM_MEMBER
   complexity: medium
+  subject_area: users
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
   target_type: dbt_model
   target: core_users__s_m_sfx_team_member
@@ -573,11 +731,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.TEAM_MEMBER
 - id: nce8bdc8c53ca38b7
   system: powercenter
   kind: workflow
   name: wf_SFX_AUDIT_DAILY
   complexity: medium
+  subject_area: audit
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML
   target_type: snowflake_scripting
   target: OPS.WF_SFX_AUDIT_DAILY
@@ -587,11 +749,19 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
+  - SFX_AUDIT.AUDIT_EVENT
+  - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
+  - SFX_AUDIT.SECURITY_ALERT
+  - SFX_AUDIT.STG_AUDIT_EVENT
 - id: n04c6b6b63a36b7db
   system: powercenter
   kind: workflow
   name: wf_SFX_BILLING_DAILY
   complexity: medium
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML
   target_type: snowflake_scripting
   target: OPS.WF_SFX_BILLING_DAILY
@@ -601,11 +771,21 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.CUSTOMER_ACCOUNT
+  - SFX_BILLING.GL_JOURNAL_LINE
+  - SFX_BILLING.INVOICE_HDR
+  - SFX_BILLING.INVOICE_LINE
+  - SFX_BILLING.PAYMENT
+  - SFX_BILLING.STG_CUSTOMER_ACCOUNT
+  - SFX_BILLING.STG_INVOICE_HDR
 - id: n851dc039fa6a47f3
   system: powercenter
   kind: workflow
   name: wf_SFX_CONTENT_DAILY
   complexity: medium
+  subject_area: content
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
   target_type: snowflake_scripting
   target: OPS.WF_SFX_CONTENT_DAILY
@@ -615,11 +795,22 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOCUMENT
+  - SFX_DOCUMENTS.DOC_SHARE
+  - SFX_DOCUMENTS.STG_DOCUMENT
+  - SFX_USERS.APP_USER
+  - SFX_USERS.LOGIN_EVENT
+  - SFX_USERS.ROLE_GRANT
+  - SFX_USERS.STG_APP_USER
+  - SFX_USERS.TEAM_MEMBER
 - id: nfb832e1489ab265c
   system: powercenter
   kind: worklet
   name: wklt_SFX_BILLING_STAGE
   complexity: low
+  subject_area: billing
+  licence_dependency: powercenter
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML
   target_type: snowflake_scripting
   target: OPS.WKLT_SFX_BILLING_STAGE
@@ -629,11 +820,17 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.CUSTOMER_ACCOUNT
+  - SFX_BILLING.STG_CUSTOMER_ACCOUNT
+  - SFX_BILLING.STG_INVOICE_HDR
 - id: nc6b43eea6c8ff0bf
   system: teradata
   kind: bteq
   name: 01_load_accounts
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/billing/01_load_accounts.bteq
   target_type: snowflake_scripting
   target: OPS.01_LOAD_ACCOUNTS
@@ -643,11 +840,18 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.CUSTOMER_ACCOUNT
+  - SFX_BILLING.GL_ACCOUNT
+  - SFX_BILLING.PLAN_CATALOG
+  - SFX_BILLING.TAX_RATE
 - id: n15ab1bde481ca440
   system: teradata
   kind: bteq
   name: 01_load_events
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/audit/01_load_events.bteq
   target_type: snowflake_scripting
   target: OPS.01_LOAD_EVENTS
@@ -657,11 +861,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_EVENT
 - id: ned5c84172e82cd20
   system: teradata
   kind: bteq
   name: 01_load_folders
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/documents/01_load_folders.bteq
   target_type: snowflake_scripting
   target: OPS.01_LOAD_FOLDERS
@@ -671,11 +879,16 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOCUMENT
+  - SFX_DOCUMENTS.FOLDER
 - id: nbcf25336ae235f75
   system: teradata
   kind: bteq
   name: 01_load_users
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/users/01_load_users.bteq
   target_type: snowflake_scripting
   target: OPS.01_LOAD_USERS
@@ -685,11 +898,16 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.APP_USER
+  - SFX_USERS.USER_PROFILE
 - id: n8e844039a21420a5
   system: teradata
   kind: bteq
   name: 02_current_versions
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/documents/02_current_versions.bteq
   target_type: snowflake_scripting
   target: OPS.02_CURRENT_VERSIONS
@@ -699,11 +917,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOC_VERSION
 - id: nfc77ae74ea868828
   system: teradata
   kind: bteq
   name: 02_load_controls
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/audit/02_load_controls.bteq
   target_type: snowflake_scripting
   target: OPS.02_LOAD_CONTROLS
@@ -713,11 +935,18 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.ACCESS_REVIEW
+  - SFX_AUDIT.COMPLIANCE_FLAG
+  - SFX_AUDIT.DATA_EXPORT_REQ
+  - SFX_AUDIT.RETENTION_POLICY
 - id: n4973826e5a2f58c2
   system: teradata
   kind: bteq
   name: 02_load_subscriptions
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/billing/02_load_subscriptions.bteq
   target_type: snowflake_scripting
   target: OPS.02_LOAD_SUBSCRIPTIONS
@@ -727,11 +956,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.SUBSCRIPTION
 - id: nea506c6f70b8cca9
   system: teradata
   kind: bteq
   name: 02_load_teams
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/users/02_load_teams.bteq
   target_type: snowflake_scripting
   target: OPS.02_LOAD_TEAMS
@@ -741,11 +974,17 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.ROLE_GRANT
+  - SFX_USERS.TEAM
+  - SFX_USERS.TEAM_MEMBER
 - id: nb773b05ad273fd3c
   system: teradata
   kind: bteq
   name: 03_load_access
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/documents/03_load_access.bteq
   target_type: snowflake_scripting
   target: OPS.03_LOAD_ACCESS
@@ -755,11 +994,16 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOC_SHARE
+  - SFX_DOCUMENTS.DOC_TAG
 - id: n9370b20aebb2bf09
   system: teradata
   kind: bteq
   name: 03_load_identity
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/users/03_load_identity.bteq
   target_type: snowflake_scripting
   target: OPS.03_LOAD_IDENTITY
@@ -769,11 +1013,16 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.SSO_IDENTITY
+  - SFX_USERS.USER_STATUS_HIST
 - id: n6ef7c748ddb91848
   system: teradata
   kind: bteq
   name: 03_load_invoices
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/billing/03_load_invoices.bteq
   target_type: snowflake_scripting
   target: OPS.03_LOAD_INVOICES
@@ -783,11 +1032,16 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.INVOICE_HDR
+  - SFX_BILLING.INVOICE_LINE
 - id: n20b2133ac50829f7
   system: teradata
   kind: bteq
   name: 03_load_reviews
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/audit/03_load_reviews.bteq
   target_type: snowflake_scripting
   target: OPS.03_LOAD_REVIEWS
@@ -797,11 +1051,18 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
+  - SFX_AUDIT.AUDIT_RECON
+  - SFX_AUDIT.LEGAL_HOLD
+  - SFX_AUDIT.SECURITY_ALERT
 - id: n9c864a5529054222
   system: teradata
   kind: bteq
   name: 04_load_events
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/users/04_load_events.bteq
   target_type: snowflake_scripting
   target: OPS.04_LOAD_EVENTS
@@ -811,11 +1072,16 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.LOGIN_EVENT
+  - SFX_USERS.USER_ACTIVITY_DAILY
 - id: n72c97d50fd30bdf3
   system: teradata
   kind: bteq
   name: 04_load_objects
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/documents/04_load_objects.bteq
   target_type: snowflake_scripting
   target: OPS.04_LOAD_OBJECTS
@@ -825,11 +1091,16 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOC_COMMENT
+  - SFX_DOCUMENTS.FILE_OBJECT
 - id: n4bf64f7e164e6d9a
   system: teradata
   kind: bteq
   name: 04_load_payments
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/billing/04_load_payments.bteq
   target_type: snowflake_scripting
   target: OPS.04_LOAD_PAYMENTS
@@ -839,11 +1110,17 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.BILLING_ADJ
+  - SFX_BILLING.CREDIT_NOTE
+  - SFX_BILLING.PAYMENT
 - id: nce49ec3b894a0e12
   system: teradata
   kind: bteq
   name: 05_load_sessions
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/documents/05_load_sessions.bteq
   target_type: snowflake_scripting
   target: OPS.05_LOAD_SESSIONS
@@ -853,11 +1130,16 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.COLLAB_SESSION
+  - SFX_DOCUMENTS.STORAGE_USAGE_DAILY
 - id: n00694db68750e5f5
   system: teradata
   kind: bteq
   name: 05_load_usage
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/billing/05_load_usage.bteq
   target_type: snowflake_scripting
   target: OPS.05_LOAD_USAGE
@@ -867,11 +1149,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.USAGE_DAILY
 - id: n1b1458f718efb391
   system: teradata
   kind: bteq
   name: 10_activity_daily
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/users/10_activity_daily.bteq
   target_type: snowflake_scripting
   target: OPS.10_ACTIVITY_DAILY
@@ -881,11 +1167,14 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations: []
 - id: na532938d4b40bb58
   system: teradata
   kind: bteq
   name: 10_storage_monthly
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/documents/10_storage_monthly.bteq
   target_type: snowflake_scripting
   target: OPS.10_STORAGE_MONTHLY
@@ -895,11 +1184,16 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.INVOICE_LINE
+  - SFX_BILLING.USAGE_DAILY
 - id: n49bdf9d9fa4697b2
   system: teradata
   kind: bteq
   name: 10_subscription_report
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/billing/10_subscription_report.bteq
   target_type: snowflake_scripting
   target: OPS.10_SUBSCRIPTION_REPORT
@@ -909,11 +1203,14 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations: []
 - id: n34596a73305b4db2
   system: teradata
   kind: bteq
   name: 10_summary_daily
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/audit/10_summary_daily.bteq
   target_type: snowflake_scripting
   target: OPS.10_SUMMARY_DAILY
@@ -923,11 +1220,14 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations: []
 - id: n978bec82e829a7bd
   system: teradata
   kind: bteq
   name: 11_currency_daily
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/billing/11_currency_daily.bteq
   target_type: snowflake_scripting
   target: OPS.11_CURRENCY_DAILY
@@ -937,11 +1237,14 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations: []
 - id: nacd21346feee23f6
   system: teradata
   kind: bteq
   name: 11_reconciliation
   complexity: high
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/audit/11_reconciliation.bteq
   target_type: snowflake_scripting
   target: OPS.11_RECONCILIATION
@@ -952,11 +1255,15 @@ objects:
   risk_reasons:
   - high complexity
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_RECON
 - id: ncee0b600709603e1
   system: teradata
   kind: bteq
   name: 12_invoice_monthly
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/billing/12_invoice_monthly.bteq
   target_type: snowflake_scripting
   target: OPS.12_INVOICE_MONTHLY
@@ -966,11 +1273,14 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations: []
 - id: n4bd29833185d98c9
   system: teradata
   kind: bteq
   name: 13_period_close
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/scripts/billing/13_period_close.bteq
   target_type: snowflake_scripting
   target: OPS.13_PERIOD_CLOSE
@@ -980,11 +1290,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.INVOICE_HDR
 - id: nb0721a93c9ea4800
   system: teradata
   kind: catalog
   name: DBC.DBC_QRYLOG
   complexity: low
+  subject_area: dbc
+  licence_dependency: teradata
   source: warehouse/teradata/dbql/tablesv.csv
   target_type: retire
   target: SNOWFLAKE.ACCOUNT_USAGE
@@ -995,11 +1309,14 @@ objects:
   risk_reasons:
   - replaced by SNOWFLAKE.ACCOUNT_USAGE
   status: not_started
+  output_relations: []
 - id: n3a3914073bbdc5a1
   system: teradata
   kind: catalog
   name: DBC.DBC_QRYLOGOBJECTS
   complexity: low
+  subject_area: dbc
+  licence_dependency: teradata
   source: warehouse/teradata/dbql/tablesv.csv
   target_type: retire
   target: SNOWFLAKE.ACCOUNT_USAGE
@@ -1010,11 +1327,14 @@ objects:
   risk_reasons:
   - replaced by SNOWFLAKE.ACCOUNT_USAGE
   status: not_started
+  output_relations: []
 - id: nead75e45ecc6b8c1
   system: teradata
   kind: catalog
   name: DBC.DBC_TABLESV
   complexity: low
+  subject_area: dbc
+  licence_dependency: teradata
   source: warehouse/teradata/dbql/tablesv.csv
   target_type: retire
   target: SNOWFLAKE.ACCOUNT_USAGE
@@ -1025,11 +1345,14 @@ objects:
   risk_reasons:
   - replaced by SNOWFLAKE.ACCOUNT_USAGE
   status: not_started
+  output_relations: []
 - id: nb66dbaba0e618e92
   system: teradata
   kind: catalog
   name: DBC.QRYLOGOBJECTSV
   complexity: low
+  subject_area: dbc
+  licence_dependency: teradata
   source: warehouse/teradata/dbql/tablesv.csv
   target_type: retire
   target: SNOWFLAKE.ACCOUNT_USAGE
@@ -1040,11 +1363,14 @@ objects:
   risk_reasons:
   - replaced by SNOWFLAKE.ACCOUNT_USAGE
   status: not_started
+  output_relations: []
 - id: n86d47bca6ce013e3
   system: teradata
   kind: catalog
   name: DBC.QRYLOGV
   complexity: low
+  subject_area: dbc
+  licence_dependency: teradata
   source: warehouse/teradata/dbql/tablesv.csv
   target_type: retire
   target: SNOWFLAKE.ACCOUNT_USAGE
@@ -1055,11 +1381,14 @@ objects:
   risk_reasons:
   - replaced by SNOWFLAKE.ACCOUNT_USAGE
   status: not_started
+  output_relations: []
 - id: nf8cc8d95c6ba4dcd
   system: teradata
   kind: catalog
   name: DBC.TABLESV
   complexity: low
+  subject_area: dbc
+  licence_dependency: teradata
   source: warehouse/teradata/dbql/tablesv.csv
   target_type: retire
   target: SNOWFLAKE.ACCOUNT_USAGE
@@ -1070,11 +1399,14 @@ objects:
   risk_reasons:
   - replaced by SNOWFLAKE.ACCOUNT_USAGE
   status: not_started
+  output_relations: []
 - id: nee272b6a4740c39c
   system: teradata
   kind: fastload
   name: billing_billing_adj
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/billing_billing_adj.fl
   target_type: snowflake_scripting
   target: RAW_BILLING.LOAD_BILLING
@@ -1084,11 +1416,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_BILLING_ADJ
 - id: n4d4dacece81c8d31
   system: teradata
   kind: fastload
   name: billing_credit_note
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/billing_credit_note.fl
   target_type: snowflake_scripting
   target: RAW_BILLING.LOAD_BILLING
@@ -1098,11 +1434,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_CREDIT_NOTE
 - id: n625a7a2365905f32
   system: teradata
   kind: fastload
   name: billing_customer_account
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/billing_customer_account.fl
   target_type: snowflake_scripting
   target: RAW_BILLING.LOAD_BILLING
@@ -1112,11 +1452,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_CUSTOMER_ACCOUNT
 - id: nb63db0271553cd31
   system: teradata
   kind: fastload
   name: billing_gl_account
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/billing_gl_account.fl
   target_type: snowflake_scripting
   target: RAW_BILLING.LOAD_BILLING
@@ -1126,11 +1470,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_GL_ACCOUNT
 - id: n012c083ea3f176bc
   system: teradata
   kind: fastload
   name: billing_gl_journal_line
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/billing_gl_journal_line.fl
   target_type: snowflake_scripting
   target: RAW_BILLING.LOAD_BILLING
@@ -1140,11 +1488,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_GL_JOURNAL_LINE
 - id: nc74c3a48716696b0
   system: teradata
   kind: fastload
   name: billing_invoice_hdr
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/billing_invoice_hdr.fl
   target_type: snowflake_scripting
   target: RAW_BILLING.LOAD_BILLING
@@ -1154,11 +1506,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_INVOICE_HDR
 - id: n1098a9801691255c
   system: teradata
   kind: fastload
   name: billing_invoice_line
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/billing_invoice_line.fl
   target_type: snowflake_scripting
   target: RAW_BILLING.LOAD_BILLING
@@ -1168,11 +1524,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_INVOICE_LINE
 - id: n02d06d89a56c1b37
   system: teradata
   kind: fastload
   name: billing_payment
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/billing_payment.fl
   target_type: snowflake_scripting
   target: RAW_BILLING.LOAD_BILLING
@@ -1182,11 +1542,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_PAYMENT
 - id: n7a2198bf157fd258
   system: teradata
   kind: fastload
   name: billing_plan_catalog
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/billing_plan_catalog.fl
   target_type: snowflake_scripting
   target: RAW_BILLING.LOAD_BILLING
@@ -1196,11 +1560,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_PLAN_CATALOG
 - id: n8bed42e6e57c8ee6
   system: teradata
   kind: fastload
   name: billing_subscription
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/billing_subscription.fl
   target_type: snowflake_scripting
   target: RAW_BILLING.LOAD_BILLING
@@ -1210,11 +1578,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_SUBSCRIPTION
 - id: nbdeca66135c8557d
   system: teradata
   kind: fastload
   name: billing_tax_rate
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/billing_tax_rate.fl
   target_type: snowflake_scripting
   target: RAW_BILLING.LOAD_BILLING
@@ -1224,11 +1596,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_TAX_RATE
 - id: n0223f8cb2e49599c
   system: teradata
   kind: fastload
   name: billing_usage_daily
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/billing_usage_daily.fl
   target_type: snowflake_scripting
   target: RAW_BILLING.LOAD_BILLING
@@ -1238,11 +1614,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_USAGE_DAILY
 - id: n5cfa3c4afcb4b359
   system: teradata
   kind: fastload
   name: users_app_user
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/users_app_user.fl
   target_type: snowflake_scripting
   target: RAW_USERS.LOAD_USERS
@@ -1252,11 +1632,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_APP_USER
 - id: n26eb854933fb16a3
   system: teradata
   kind: fastload
   name: users_login_event
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/users_login_event.fl
   target_type: snowflake_scripting
   target: RAW_USERS.LOAD_USERS
@@ -1266,11 +1650,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_LOGIN_EVENT
 - id: n9cb752fa5a7e6656
   system: teradata
   kind: fastload
   name: users_role_grant
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/users_role_grant.fl
   target_type: snowflake_scripting
   target: RAW_USERS.LOAD_USERS
@@ -1280,11 +1668,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_ROLE_GRANT
 - id: n7afd80efc14db228
   system: teradata
   kind: fastload
   name: users_sso_identity
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/users_sso_identity.fl
   target_type: snowflake_scripting
   target: RAW_USERS.LOAD_USERS
@@ -1294,11 +1686,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_SSO_IDENTITY
 - id: nacba7b3de7583ddb
   system: teradata
   kind: fastload
   name: users_team
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/users_team.fl
   target_type: snowflake_scripting
   target: RAW_USERS.LOAD_USERS
@@ -1308,11 +1704,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_TEAM
 - id: n58dfe8d308715b9f
   system: teradata
   kind: fastload
   name: users_team_member
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/users_team_member.fl
   target_type: snowflake_scripting
   target: RAW_USERS.LOAD_USERS
@@ -1322,11 +1722,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_TEAM_MEMBER
 - id: nb36b77faa1a490f0
   system: teradata
   kind: fastload
   name: users_user_activity_daily
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/users_user_activity_daily.fl
   target_type: snowflake_scripting
   target: RAW_USERS.LOAD_USERS
@@ -1336,11 +1740,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_USER_ACTIVITY_DAILY
 - id: n087e07637015719b
   system: teradata
   kind: fastload
   name: users_user_pref
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/users_user_pref.fl
   target_type: retire
   target: NONE
@@ -1351,11 +1759,15 @@ objects:
   risk_reasons:
   - feeds only dead objects
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_USER_PREF
 - id: n877eaed6968f6f98
   system: teradata
   kind: fastload
   name: users_user_profile
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/users_user_profile.fl
   target_type: snowflake_scripting
   target: RAW_USERS.LOAD_USERS
@@ -1365,11 +1777,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_USER_PROFILE
 - id: n2d7643f3f42bc7df
   system: teradata
   kind: fastload
   name: users_user_status_hist
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/load/fastload/users_user_status_hist.fl
   target_type: snowflake_scripting
   target: RAW_USERS.LOAD_USERS
@@ -1379,11 +1795,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_USER_STATUS_HIST
 - id: nb471d5cb61dc6b40
   system: teradata
   kind: macro
   name: SFX_AUDIT.M_ARCHIVE_OVERVIEW
   complexity: low
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/macros/archive_overview.sql
   target_type: retire
   target: NONE
@@ -1394,11 +1814,14 @@ objects:
   risk_reasons:
   - no DBQL usage in 90-day window
   status: not_started
+  output_relations: []
 - id: ncc8932a645bd1e39
   system: teradata
   kind: macro
   name: SFX_AUDIT.M_RECON_TOTALS
   complexity: low
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/macros/recon_totals.sql
   target_type: snowflake_scripting
   target: OPS.SFX_AUDIT_M_RECON_TOTALS
@@ -1408,11 +1831,14 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations: []
 - id: nc70e3f09535ab2b8
   system: teradata
   kind: macro
   name: SFX_BILLING.M_CURRENCY_TOTALS
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/macros/currency_totals.sql
   target_type: snowflake_scripting
   target: OPS.SFX_BILLING_M_CURRENCY_TOTALS
@@ -1422,11 +1848,14 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations: []
 - id: nb4507f31f948976c
   system: teradata
   kind: macro
   name: SFX_BILLING.M_SUBSCRIPTION_PLANS
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/macros/subscription_plans.sql
   target_type: snowflake_scripting
   target: OPS.SFX_BILLING_M_SUBSCRIPTION_PLANS
@@ -1436,11 +1865,14 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations: []
 - id: n2d399290c37850ff
   system: teradata
   kind: macro
   name: SFX_DOCUMENTS.M_STORAGE_TOTALS
   complexity: low
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/macros/storage_totals.sql
   target_type: snowflake_scripting
   target: OPS.SFX_DOCUMENTS_M_STORAGE_TOTALS
@@ -1450,11 +1882,14 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations: []
 - id: nb5c179d7a1d96e03
   system: teradata
   kind: macro
   name: SFX_USERS.M_TEAM_COUNTS
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/macros/team_counts.sql
   target_type: snowflake_scripting
   target: OPS.SFX_USERS_M_TEAM_COUNTS
@@ -1464,11 +1899,14 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations: []
 - id: n1e025701f054c8fd
   system: teradata
   kind: procedure
   name: SFX_AUDIT.P_DAILY_SUMMARY
   complexity: low
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/procedures/summary_daily.sql
   target_type: snowflake_scripting
   target: OPS.SFX_AUDIT_P_DAILY_SUMMARY
@@ -1478,11 +1916,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
 - id: n3c0bc1392beec25d
   system: teradata
   kind: procedure
   name: SFX_AUDIT.P_RECON_COUNTS
   complexity: low
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/procedures/recon_counts.sql
   target_type: snowflake_scripting
   target: OPS.SFX_AUDIT_P_RECON_COUNTS
@@ -1492,11 +1934,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_RECON
 - id: nfaafe218caac7323
   system: teradata
   kind: procedure
   name: SFX_BILLING.P_MONTHLY_INVOICE
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/procedures/monthly_invoice.sql
   target_type: snowflake_scripting
   target: OPS.SFX_BILLING_P_MONTHLY_INVOICE
@@ -1506,11 +1952,17 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.GL_JOURNAL_LINE
+  - SFX_BILLING.INVOICE_HDR
+  - SFX_BILLING.INVOICE_LINE
 - id: n18d91c4923da39f4
   system: teradata
   kind: procedure
   name: SFX_USERS.P_ACTIVITY_DAILY
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/procedures/activity_daily.sql
   target_type: snowflake_scripting
   target: OPS.SFX_USERS_P_ACTIVITY_DAILY
@@ -1520,11 +1972,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.USER_ACTIVITY_DAILY
 - id: n9ee1d4dc548187ae
   system: teradata
   kind: table
   name: SFX_AUDIT.ACCESS_REVIEW
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: core_audit__access_review
@@ -1534,11 +1990,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.ACCESS_REVIEW
 - id: nf13967053236fe77
   system: teradata
   kind: table
   name: SFX_AUDIT.AUDIT_DAILY_SUMMARY
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: core_audit__audit_daily_summary
@@ -1548,11 +2008,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_DAILY_SUMMARY
 - id: n5a1ee10b77084fef
   system: teradata
   kind: table
   name: SFX_AUDIT.AUDIT_EVENT
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: core_audit__audit_event
@@ -1562,11 +2026,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_EVENT
 - id: n7fe8704cb752389d
   system: teradata
   kind: table
   name: SFX_AUDIT.AUDIT_EVENT_ARCHIVE
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: retire
   target: NONE
@@ -1577,11 +2045,15 @@ objects:
   risk_reasons:
   - no DBQL usage in 90-day window
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_EVENT_ARCHIVE
 - id: n21217e4029e00d59
   system: teradata
   kind: table
   name: SFX_AUDIT.AUDIT_RECON
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: core_audit__audit_recon
@@ -1591,11 +2063,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.AUDIT_RECON
 - id: nb406e0734c3286ee
   system: teradata
   kind: table
   name: SFX_AUDIT.COMPLIANCE_FLAG
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: core_audit__compliance_flag
@@ -1605,11 +2081,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.COMPLIANCE_FLAG
 - id: n1f11d0480f828545
   system: teradata
   kind: table
   name: SFX_AUDIT.DATA_EXPORT_REQ
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: core_audit__data_export_req
@@ -1619,11 +2099,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.DATA_EXPORT_REQ
 - id: nd31706706cbac17e
   system: teradata
   kind: table
   name: SFX_AUDIT.LEGAL_HOLD
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: core_audit__legal_hold
@@ -1633,11 +2117,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.LEGAL_HOLD
 - id: n746fd0a9a21b77f1
   system: teradata
   kind: table
   name: SFX_AUDIT.RETENTION_POLICY
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: core_audit__retention_policy
@@ -1647,11 +2135,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.RETENTION_POLICY
 - id: n0dabe06183584ed0
   system: teradata
   kind: table
   name: SFX_AUDIT.SECURITY_ALERT
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: core_audit__security_alert
@@ -1661,11 +2153,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.SECURITY_ALERT
 - id: nf7e5d0b9bba5e7ef
   system: teradata
   kind: table
   name: SFX_AUDIT.STG_ACCESS_REVIEW
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: stg_audit__access_review
@@ -1675,11 +2171,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_ACCESS_REVIEW
 - id: n045340b2a200df4e
   system: teradata
   kind: table
   name: SFX_AUDIT.STG_AUDIT_DAILY_SUMMARY
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: stg_audit__audit_daily_summary
@@ -1689,11 +2189,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_AUDIT_DAILY_SUMMARY
 - id: n5b74281a9cfd442e
   system: teradata
   kind: table
   name: SFX_AUDIT.STG_AUDIT_EVENT
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: stg_audit__audit_event
@@ -1703,11 +2207,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_AUDIT_EVENT
 - id: n21ffe85c86206094
   system: teradata
   kind: table
   name: SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: retire
   target: NONE
@@ -1718,11 +2226,15 @@ objects:
   risk_reasons:
   - feeds only dead objects
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE
 - id: ne92ffdc17fbda312
   system: teradata
   kind: table
   name: SFX_AUDIT.STG_AUDIT_RECON
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: stg_audit__audit_recon
@@ -1732,11 +2244,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_AUDIT_RECON
 - id: n02ebefc1ceb30986
   system: teradata
   kind: table
   name: SFX_AUDIT.STG_COMPLIANCE_FLAG
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: stg_audit__compliance_flag
@@ -1746,11 +2262,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_COMPLIANCE_FLAG
 - id: nefdf8a754bcdd35b
   system: teradata
   kind: table
   name: SFX_AUDIT.STG_DATA_EXPORT_REQ
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: stg_audit__data_export_req
@@ -1760,11 +2280,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_DATA_EXPORT_REQ
 - id: n9a5b4aca9e9bc99a
   system: teradata
   kind: table
   name: SFX_AUDIT.STG_LEGAL_HOLD
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: stg_audit__legal_hold
@@ -1774,11 +2298,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_LEGAL_HOLD
 - id: n348fb66233ddf2a4
   system: teradata
   kind: table
   name: SFX_AUDIT.STG_RETENTION_POLICY
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: stg_audit__retention_policy
@@ -1788,11 +2316,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_RETENTION_POLICY
 - id: n70ef230509ae14a5
   system: teradata
   kind: table
   name: SFX_AUDIT.STG_SECURITY_ALERT
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/00_tables.sql
   target_type: dbt_model
   target: stg_audit__security_alert
@@ -1802,11 +2334,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_SECURITY_ALERT
 - id: n1c146a53b91c0982
   system: teradata
   kind: table
   name: SFX_BILLING.BILLING_ADJ
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: core_billing__billing_adj
@@ -1816,11 +2352,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.BILLING_ADJ
 - id: n76f9fdd34e98b23b
   system: teradata
   kind: table
   name: SFX_BILLING.CREDIT_NOTE
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: core_billing__credit_note
@@ -1830,11 +2370,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.CREDIT_NOTE
 - id: nf11074d59ce23bcd
   system: teradata
   kind: table
   name: SFX_BILLING.CUSTOMER_ACCOUNT
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: core_billing__customer_account
@@ -1844,11 +2388,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.CUSTOMER_ACCOUNT
 - id: n8cee2123212e499f
   system: teradata
   kind: table
   name: SFX_BILLING.GL_ACCOUNT
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: core_billing__gl_account
@@ -1858,11 +2406,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.GL_ACCOUNT
 - id: ndf01a5c4d9653f6a
   system: teradata
   kind: table
   name: SFX_BILLING.GL_JOURNAL_LINE
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: core_billing__gl_journal_line
@@ -1872,11 +2424,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.GL_JOURNAL_LINE
 - id: n40359b042a48a08e
   system: teradata
   kind: table
   name: SFX_BILLING.INVOICE_HDR
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: core_billing__invoice_hdr
@@ -1886,11 +2442,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.INVOICE_HDR
 - id: na7e525046b868894
   system: teradata
   kind: table
   name: SFX_BILLING.INVOICE_LINE
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: core_billing__invoice_line
@@ -1900,11 +2460,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.INVOICE_LINE
 - id: n4a90a6534be003c7
   system: teradata
   kind: table
   name: SFX_BILLING.PAYMENT
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: core_billing__payment
@@ -1914,11 +2478,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.PAYMENT
 - id: n1a5d6d86a39a3a06
   system: teradata
   kind: table
   name: SFX_BILLING.PLAN_CATALOG
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: core_billing__plan_catalog
@@ -1928,11 +2496,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.PLAN_CATALOG
 - id: n2cf99dd59b17c2f1
   system: teradata
   kind: table
   name: SFX_BILLING.STG_BILLING_ADJ
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: stg_billing__billing_adj
@@ -1942,11 +2514,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_BILLING_ADJ
 - id: n2a7c65ff4f4817b3
   system: teradata
   kind: table
   name: SFX_BILLING.STG_CREDIT_NOTE
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: stg_billing__credit_note
@@ -1956,11 +2532,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_CREDIT_NOTE
 - id: ndf3aa16f167b7137
   system: teradata
   kind: table
   name: SFX_BILLING.STG_CUSTOMER_ACCOUNT
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: stg_billing__customer_account
@@ -1970,11 +2550,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_CUSTOMER_ACCOUNT
 - id: n312e40b4f842325b
   system: teradata
   kind: table
   name: SFX_BILLING.STG_GL_ACCOUNT
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: stg_billing__gl_account
@@ -1984,11 +2568,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_GL_ACCOUNT
 - id: nd24b63cd075ba016
   system: teradata
   kind: table
   name: SFX_BILLING.STG_GL_JOURNAL_LINE
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: stg_billing__gl_journal_line
@@ -1998,11 +2586,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_GL_JOURNAL_LINE
 - id: nf9b0e87117c51046
   system: teradata
   kind: table
   name: SFX_BILLING.STG_INVOICE_HDR
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: stg_billing__invoice_hdr
@@ -2012,11 +2604,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_INVOICE_HDR
 - id: n8a8daebfb73b7912
   system: teradata
   kind: table
   name: SFX_BILLING.STG_INVOICE_LINE
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: stg_billing__invoice_line
@@ -2026,11 +2622,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_INVOICE_LINE
 - id: n0fd15814651adc11
   system: teradata
   kind: table
   name: SFX_BILLING.STG_PAYMENT
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: stg_billing__payment
@@ -2040,11 +2640,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_PAYMENT
 - id: n4132cc12046fbd7c
   system: teradata
   kind: table
   name: SFX_BILLING.STG_PLAN_CATALOG
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: stg_billing__plan_catalog
@@ -2054,11 +2658,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_PLAN_CATALOG
 - id: n70c3af8091036a5e
   system: teradata
   kind: table
   name: SFX_BILLING.STG_SUBSCRIPTION
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: stg_billing__subscription
@@ -2068,11 +2676,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_SUBSCRIPTION
 - id: n464534d3f9280c5a
   system: teradata
   kind: table
   name: SFX_BILLING.STG_TAX_RATE
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: stg_billing__tax_rate
@@ -2082,11 +2694,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_TAX_RATE
 - id: nccfad5a895e6179a
   system: teradata
   kind: table
   name: SFX_BILLING.STG_USAGE_DAILY
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: stg_billing__usage_daily
@@ -2096,11 +2712,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.STG_USAGE_DAILY
 - id: n4d79811371fbb19b
   system: teradata
   kind: table
   name: SFX_BILLING.SUBSCRIPTION
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: core_billing__subscription
@@ -2110,11 +2730,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.SUBSCRIPTION
 - id: nbf59db02f1e3b91d
   system: teradata
   kind: table
   name: SFX_BILLING.TAX_RATE
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: core_billing__tax_rate
@@ -2124,11 +2748,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.TAX_RATE
 - id: nc69fcaffa9f73bf0
   system: teradata
   kind: table
   name: SFX_BILLING.USAGE_DAILY
   complexity: medium
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/00_tables.sql
   target_type: dbt_model
   target: core_billing__usage_daily
@@ -2138,11 +2766,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.USAGE_DAILY
 - id: n8ce4b4c31fb7d641
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.COLLAB_SESSION
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: core_documents__collab_session
@@ -2152,11 +2784,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.COLLAB_SESSION
 - id: n27673208f946113a
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.DOCUMENT
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: core_documents__document
@@ -2166,11 +2802,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOCUMENT
 - id: n4fe6621de3ee3647
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.DOC_COMMENT
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: core_documents__doc_comment
@@ -2180,11 +2820,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOC_COMMENT
 - id: ndf20a077562bd331
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.DOC_SHARE
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: core_documents__doc_share
@@ -2194,11 +2838,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOC_SHARE
 - id: nb6bdea58b700dddc
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.DOC_TAG
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: core_documents__doc_tag
@@ -2208,11 +2856,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOC_TAG
 - id: n69bb2e4d7f29d3bd
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.DOC_VERSION
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: core_documents__doc_version
@@ -2222,11 +2874,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.DOC_VERSION
 - id: n8935b0bad45140b4
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.FILE_OBJECT
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: core_documents__file_object
@@ -2236,11 +2892,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.FILE_OBJECT
 - id: n591b73a5345bb764
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.FOLDER
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: core_documents__folder
@@ -2250,11 +2910,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.FOLDER
 - id: n5bdfd045e6779075
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.SEARCH_INDEX_LOG
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: retire
   target: NONE
@@ -2265,11 +2929,15 @@ objects:
   risk_reasons:
   - no DBQL usage in 90-day window
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.SEARCH_INDEX_LOG
 - id: n1c075fb7d55b7b5d
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.STG_COLLAB_SESSION
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: stg_documents__collab_session
@@ -2279,11 +2947,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_COLLAB_SESSION
 - id: nec3789e47f899a3a
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.STG_DOCUMENT
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: stg_documents__document
@@ -2293,11 +2965,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_DOCUMENT
 - id: n995ef340875ac9f0
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.STG_DOC_COMMENT
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: stg_documents__doc_comment
@@ -2307,11 +2983,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_DOC_COMMENT
 - id: n916a578badf75be5
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.STG_DOC_SHARE
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: stg_documents__doc_share
@@ -2321,11 +3001,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_DOC_SHARE
 - id: n3222a42b0b10373f
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.STG_DOC_TAG
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: stg_documents__doc_tag
@@ -2335,11 +3019,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_DOC_TAG
 - id: ne0d64de0c6f5d0c5
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.STG_DOC_VERSION
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: stg_documents__doc_version
@@ -2349,11 +3037,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_DOC_VERSION
 - id: n2ca368bd87d7d5ae
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.STG_FILE_OBJECT
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: stg_documents__file_object
@@ -2363,11 +3055,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_FILE_OBJECT
 - id: n8cc95a044ef844a6
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.STG_FOLDER
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: stg_documents__folder
@@ -2377,11 +3073,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_FOLDER
 - id: nf0f34f0760b5db1f
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: retire
   target: NONE
@@ -2392,11 +3092,15 @@ objects:
   risk_reasons:
   - feeds only dead objects
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG
 - id: nce35ed86fccc09d6
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: stg_documents__storage_usage_daily
@@ -2406,11 +3110,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY
 - id: n28cb37f5be5b66f5
   system: teradata
   kind: table
   name: SFX_DOCUMENTS.STORAGE_USAGE_DAILY
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
   target_type: dbt_model
   target: core_documents__storage_usage_daily
@@ -2420,11 +3128,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STORAGE_USAGE_DAILY
 - id: n97b11eada9b5eb49
   system: teradata
   kind: table
   name: SFX_USERS.APP_USER
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: core_users__app_user
@@ -2434,11 +3146,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.APP_USER
 - id: n3e2eb63a0ecb2ec8
   system: teradata
   kind: table
   name: SFX_USERS.LOGIN_EVENT
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: core_users__login_event
@@ -2448,11 +3164,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.LOGIN_EVENT
 - id: nfd3d4e92dd494560
   system: teradata
   kind: table
   name: SFX_USERS.ROLE_GRANT
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: core_users__role_grant
@@ -2462,11 +3182,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.ROLE_GRANT
 - id: nd5ebfccac7c4864a
   system: teradata
   kind: table
   name: SFX_USERS.SSO_IDENTITY
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: core_users__sso_identity
@@ -2476,11 +3200,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.SSO_IDENTITY
 - id: n51b482910361c150
   system: teradata
   kind: table
   name: SFX_USERS.STG_APP_USER
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: stg_users__app_user
@@ -2490,11 +3218,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_APP_USER
 - id: n209c8bcb96a81a00
   system: teradata
   kind: table
   name: SFX_USERS.STG_LOGIN_EVENT
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: stg_users__login_event
@@ -2504,11 +3236,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_LOGIN_EVENT
 - id: nc317b0fdeb9af6bf
   system: teradata
   kind: table
   name: SFX_USERS.STG_ROLE_GRANT
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: stg_users__role_grant
@@ -2518,11 +3254,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_ROLE_GRANT
 - id: n751362a449a58100
   system: teradata
   kind: table
   name: SFX_USERS.STG_SSO_IDENTITY
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: stg_users__sso_identity
@@ -2532,11 +3272,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_SSO_IDENTITY
 - id: nbf90b4a7bc90d9af
   system: teradata
   kind: table
   name: SFX_USERS.STG_TEAM
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: stg_users__team
@@ -2546,11 +3290,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_TEAM
 - id: n04d52ed873e0b510
   system: teradata
   kind: table
   name: SFX_USERS.STG_TEAM_MEMBER
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: stg_users__team_member
@@ -2560,11 +3308,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_TEAM_MEMBER
 - id: nfd5485510ca65cd9
   system: teradata
   kind: table
   name: SFX_USERS.STG_USER_ACTIVITY_DAILY
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: stg_users__user_activity_daily
@@ -2574,11 +3326,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_USER_ACTIVITY_DAILY
 - id: n0e52ccf39fb39efb
   system: teradata
   kind: table
   name: SFX_USERS.STG_USER_PREF
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: retire
   target: NONE
@@ -2589,11 +3345,15 @@ objects:
   risk_reasons:
   - feeds only dead objects
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_USER_PREF
 - id: n533cd80b40ebc9c5
   system: teradata
   kind: table
   name: SFX_USERS.STG_USER_PROFILE
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: stg_users__user_profile
@@ -2603,11 +3363,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_USER_PROFILE
 - id: nb91c260f3263b35b
   system: teradata
   kind: table
   name: SFX_USERS.STG_USER_STATUS_HIST
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: stg_users__user_status_hist
@@ -2617,11 +3381,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.STG_USER_STATUS_HIST
 - id: n6d2da1bd427f0dda
   system: teradata
   kind: table
   name: SFX_USERS.TEAM
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: core_users__team
@@ -2631,11 +3399,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.TEAM
 - id: n2cfe39f5df4a12c6
   system: teradata
   kind: table
   name: SFX_USERS.TEAM_MEMBER
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: core_users__team_member
@@ -2645,11 +3417,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.TEAM_MEMBER
 - id: ne229d0f17e598ca1
   system: teradata
   kind: table
   name: SFX_USERS.USER_ACTIVITY_DAILY
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: core_users__user_activity_daily
@@ -2659,11 +3435,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.USER_ACTIVITY_DAILY
 - id: n73ad30d46cfc4990
   system: teradata
   kind: table
   name: SFX_USERS.USER_PREF
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: retire
   target: NONE
@@ -2674,11 +3454,15 @@ objects:
   risk_reasons:
   - no DBQL usage in 90-day window
   status: not_started
+  output_relations:
+  - SFX_USERS.USER_PREF
 - id: n00ae1e0d0a7ece39
   system: teradata
   kind: table
   name: SFX_USERS.USER_PROFILE
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: core_users__user_profile
@@ -2688,11 +3472,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.USER_PROFILE
 - id: n05041abb99cdd42d
   system: teradata
   kind: table
   name: SFX_USERS.USER_STATUS_HIST
   complexity: medium
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/00_tables.sql
   target_type: dbt_model
   target: core_users__user_status_hist
@@ -2702,11 +3490,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.USER_STATUS_HIST
 - id: n420cbbc61ebb5a20
   system: teradata
   kind: tpt
   name: audit_access_review
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/audit_access_review.tpt
   target_type: snowflake_scripting
   target: RAW_AUDIT.LOAD_AUDIT
@@ -2716,11 +3508,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_ACCESS_REVIEW
 - id: n50a4e9247d1d3c2a
   system: teradata
   kind: tpt
   name: audit_audit_daily_summary
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/audit_audit_daily_summary.tpt
   target_type: snowflake_scripting
   target: RAW_AUDIT.LOAD_AUDIT
@@ -2730,11 +3526,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_AUDIT_DAILY_SUMMARY
 - id: nb0cddb4ec8cfce35
   system: teradata
   kind: tpt
   name: audit_audit_event
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/audit_audit_event.tpt
   target_type: snowflake_scripting
   target: RAW_AUDIT.LOAD_AUDIT
@@ -2744,11 +3544,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_AUDIT_EVENT
 - id: nef95aaa7df57a226
   system: teradata
   kind: tpt
   name: audit_audit_event_archive
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/audit_audit_event_archive.tpt
   target_type: retire
   target: NONE
@@ -2759,11 +3563,15 @@ objects:
   risk_reasons:
   - feeds only dead objects
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE
 - id: n753e2b21e59720e0
   system: teradata
   kind: tpt
   name: audit_audit_recon
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/audit_audit_recon.tpt
   target_type: snowflake_scripting
   target: RAW_AUDIT.LOAD_AUDIT
@@ -2773,11 +3581,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_AUDIT_RECON
 - id: n4eae040d99820a15
   system: teradata
   kind: tpt
   name: audit_compliance_flag
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/audit_compliance_flag.tpt
   target_type: snowflake_scripting
   target: RAW_AUDIT.LOAD_AUDIT
@@ -2787,11 +3599,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_COMPLIANCE_FLAG
 - id: n879dea5f6ab069e9
   system: teradata
   kind: tpt
   name: audit_data_export_req
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/audit_data_export_req.tpt
   target_type: snowflake_scripting
   target: RAW_AUDIT.LOAD_AUDIT
@@ -2801,11 +3617,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_DATA_EXPORT_REQ
 - id: n7e7df67764ffcff7
   system: teradata
   kind: tpt
   name: audit_legal_hold
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/audit_legal_hold.tpt
   target_type: snowflake_scripting
   target: RAW_AUDIT.LOAD_AUDIT
@@ -2815,11 +3635,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_LEGAL_HOLD
 - id: nffedc7a70235904a
   system: teradata
   kind: tpt
   name: audit_retention_policy
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/audit_retention_policy.tpt
   target_type: snowflake_scripting
   target: RAW_AUDIT.LOAD_AUDIT
@@ -2829,11 +3653,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_RETENTION_POLICY
 - id: nb11211913a9badb6
   system: teradata
   kind: tpt
   name: audit_security_alert
   complexity: medium
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/audit_security_alert.tpt
   target_type: snowflake_scripting
   target: RAW_AUDIT.LOAD_AUDIT
@@ -2843,11 +3671,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.STG_SECURITY_ALERT
 - id: n316f320495a7d7a7
   system: teradata
   kind: tpt
   name: documents_collab_session
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/documents_collab_session.tpt
   target_type: snowflake_scripting
   target: RAW_DOCUMENTS.LOAD_DOCUMENTS
@@ -2857,11 +3689,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_COLLAB_SESSION
 - id: n00eea7237cb65fe2
   system: teradata
   kind: tpt
   name: documents_doc_comment
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/documents_doc_comment.tpt
   target_type: snowflake_scripting
   target: RAW_DOCUMENTS.LOAD_DOCUMENTS
@@ -2871,11 +3707,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_DOC_COMMENT
 - id: n52fd8cca58044cb0
   system: teradata
   kind: tpt
   name: documents_doc_share
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/documents_doc_share.tpt
   target_type: snowflake_scripting
   target: RAW_DOCUMENTS.LOAD_DOCUMENTS
@@ -2885,11 +3725,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_DOC_SHARE
 - id: nd0c849ec187417ce
   system: teradata
   kind: tpt
   name: documents_doc_tag
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/documents_doc_tag.tpt
   target_type: snowflake_scripting
   target: RAW_DOCUMENTS.LOAD_DOCUMENTS
@@ -2899,11 +3743,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_DOC_TAG
 - id: nb366b6ece0aafaf2
   system: teradata
   kind: tpt
   name: documents_doc_version
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/documents_doc_version.tpt
   target_type: snowflake_scripting
   target: RAW_DOCUMENTS.LOAD_DOCUMENTS
@@ -2913,11 +3761,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_DOC_VERSION
 - id: n960131df6fb3ee7d
   system: teradata
   kind: tpt
   name: documents_document
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/documents_document.tpt
   target_type: snowflake_scripting
   target: RAW_DOCUMENTS.LOAD_DOCUMENTS
@@ -2927,11 +3779,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_DOCUMENT
 - id: n7101731ead5cafa6
   system: teradata
   kind: tpt
   name: documents_file_object
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/documents_file_object.tpt
   target_type: snowflake_scripting
   target: RAW_DOCUMENTS.LOAD_DOCUMENTS
@@ -2941,11 +3797,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_FILE_OBJECT
 - id: nebefa5c1775e897f
   system: teradata
   kind: tpt
   name: documents_folder
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/documents_folder.tpt
   target_type: snowflake_scripting
   target: RAW_DOCUMENTS.LOAD_DOCUMENTS
@@ -2955,11 +3815,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_FOLDER
 - id: n6926e7586c761642
   system: teradata
   kind: tpt
   name: documents_search_index_log
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/documents_search_index_log.tpt
   target_type: retire
   target: NONE
@@ -2970,11 +3834,15 @@ objects:
   risk_reasons:
   - feeds only dead objects
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG
 - id: nd66c4bfb75689e73
   system: teradata
   kind: tpt
   name: documents_storage_usage_daily
   complexity: medium
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/load/tpt/documents_storage_usage_daily.tpt
   target_type: snowflake_scripting
   target: RAW_DOCUMENTS.LOAD_DOCUMENTS
@@ -2984,11 +3852,15 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY
 - id: n21635c3e4ef179d8
   system: teradata
   kind: view
   name: SFX_AUDIT.V_CUSTOMER_RECON
   complexity: low
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/10_views.sql
   target_type: compatibility_view
   target: COMPAT.SFX_AUDIT__V_CUSTOMER_RECON
@@ -2998,11 +3870,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.V_CUSTOMER_RECON
 - id: n6478e46e7b3a13e6
   system: teradata
   kind: view
   name: SFX_AUDIT.V_EVENT_ACTORS
   complexity: low
+  subject_area: audit
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/audit/10_views.sql
   target_type: compatibility_view
   target: COMPAT.SFX_AUDIT__V_EVENT_ACTORS
@@ -3012,11 +3888,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_AUDIT.V_EVENT_ACTORS
 - id: n958c0c1753d86d2b
   system: teradata
   kind: view
   name: SFX_BILLING.V_ACCOUNT_INVOICES
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/10_views.sql
   target_type: compatibility_view
   target: COMPAT.SFX_BILLING__V_ACCOUNT_INVOICES
@@ -3026,11 +3906,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.V_ACCOUNT_INVOICES
 - id: na1476b760815c081
   system: teradata
   kind: view
   name: SFX_BILLING.V_INVOICE_BASE
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/20_views.sql
   target_type: compatibility_view
   target: COMPAT.SFX_BILLING__V_INVOICE_BASE
@@ -3040,11 +3924,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.V_INVOICE_BASE
 - id: n2467edabc13f7edd
   system: teradata
   kind: view
   name: SFX_BILLING.V_INVOICE_REVENUE
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/20_views.sql
   target_type: compatibility_view
   target: COMPAT.SFX_BILLING__V_INVOICE_REVENUE
@@ -3054,11 +3942,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.V_INVOICE_REVENUE
 - id: n21655cefa5f6f219
   system: teradata
   kind: view
   name: SFX_BILLING.V_SUBSCRIPTION_PLANS
   complexity: low
+  subject_area: billing
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/billing/10_views.sql
   target_type: compatibility_view
   target: COMPAT.SFX_BILLING__V_SUBSCRIPTION_PLANS
@@ -3068,11 +3960,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_BILLING.V_SUBSCRIPTION_PLANS
 - id: nfffe08fdf7b38961
   system: teradata
   kind: view
   name: SFX_DOCUMENTS.V_DOCUMENT_VERSIONS
   complexity: low
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/10_views.sql
   target_type: compatibility_view
   target: COMPAT.SFX_DOCUMENTS__V_DOCUMENT_VERSIONS
@@ -3082,11 +3978,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.V_DOCUMENT_VERSIONS
 - id: nc442fa6ff987701d
   system: teradata
   kind: view
   name: SFX_DOCUMENTS.V_SEARCH_HISTORY
   complexity: low
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/10_views.sql
   target_type: retire
   target: NONE
@@ -3097,11 +3997,15 @@ objects:
   risk_reasons:
   - no DBQL usage in 90-day window
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.V_SEARCH_HISTORY
 - id: ne711c6aec2d571c4
   system: teradata
   kind: view
   name: SFX_DOCUMENTS.V_WORKSPACE_STORAGE
   complexity: low
+  subject_area: documents
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/20_views.sql
   target_type: compatibility_view
   target: COMPAT.SFX_DOCUMENTS__V_WORKSPACE_STORAGE
@@ -3111,11 +4015,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_DOCUMENTS.V_WORKSPACE_STORAGE
 - id: na5e973edf6219785
   system: teradata
   kind: view
   name: SFX_USERS.V_TEAM_MEMBERS
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/10_views.sql
   target_type: compatibility_view
   target: COMPAT.SFX_USERS__V_TEAM_MEMBERS
@@ -3125,11 +4033,15 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
+  output_relations:
+  - SFX_USERS.V_TEAM_MEMBERS
 - id: n92b259c0ed5e8918
   system: teradata
   kind: view
   name: SFX_USERS.V_USER_SETTINGS
   complexity: low
+  subject_area: users
+  licence_dependency: teradata
   source: warehouse/teradata/ddl/users/10_views.sql
   target_type: retire
   target: NONE
@@ -3139,6 +4051,548 @@ objects:
   risk: high
   risk_reasons:
   - no DBQL usage in 90-day window
+  status: not_started
+  output_relations:
+  - SFX_USERS.V_USER_SETTINGS
+- id: na305277024d75d53
+  system: spark
+  kind: spark_job
+  name: audit_actor_activity_join
+  complexity: medium
+  subject_area: audit
+  licence_dependency: spark
+  source: etl/spark/jobs/py/audit_actor_activity_join.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__audit_actor_activity_join
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: na7a9d654bab3f884
+  system: spark
+  kind: spark_job
+  name: audit_archive_resort
+  complexity: medium
+  subject_area: audit
+  licence_dependency: spark
+  source: etl/spark/jobs/py/audit_archive_resort.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__audit_archive_resort
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: n8966d99361db3a40
+  system: spark
+  kind: spark_job
+  name: audit_daily_summary
+  complexity: medium
+  subject_area: audit
+  licence_dependency: spark
+  source: etl/spark/scala/src/main/scala/sfx/AuditDailySummary.scala
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__audit_daily_summary
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nab9092239e992697
+  system: spark
+  kind: spark_job
+  name: billing_churn_score
+  complexity: medium
+  subject_area: billing
+  licence_dependency: spark
+  source: etl/spark/jobs/py/billing_churn_score.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__billing_churn_score
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nc69cdf8b5dc1cf48
+  system: spark
+  kind: spark_job
+  name: billing_gl_trial_balance
+  complexity: medium
+  subject_area: billing
+  licence_dependency: spark
+  source: etl/spark/jobs/py/billing_gl_trial_balance.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__billing_gl_trial_balance
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: n30eea7b5e4b0f036
+  system: spark
+  kind: spark_job
+  name: billing_invoice_summary_daily
+  complexity: medium
+  subject_area: billing
+  licence_dependency: spark
+  source: etl/spark/jobs/py/billing_invoice_summary_daily.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__billing_invoice_summary_daily
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: n59a3415908e5a5c3
+  system: spark
+  kind: spark_job
+  name: billing_payment_aging
+  complexity: medium
+  subject_area: billing
+  licence_dependency: spark
+  source: etl/spark/jobs/py/billing_payment_aging.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__billing_payment_aging
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nc272de5514b12dd4
+  system: spark
+  kind: spark_job
+  name: billing_revenue_by_plan
+  complexity: medium
+  subject_area: billing
+  licence_dependency: spark
+  source: etl/spark/jobs/py/billing_revenue_by_plan.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__billing_revenue_by_plan
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: n217068cf70e21f45
+  system: spark
+  kind: spark_job
+  name: billing_usage_append_daily
+  complexity: medium
+  subject_area: billing
+  licence_dependency: spark
+  source: etl/spark/jobs/py/billing_usage_append_daily.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__billing_usage_append_daily
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nda318831425979ea
+  system: spark
+  kind: spark_job
+  name: collab_session_sessionize
+  complexity: medium
+  subject_area: documents
+  licence_dependency: spark
+  source: etl/spark/jobs/py/collab_session_sessionize.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__collab_session_sessionize
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: n6b4402f4aec586b1
+  system: spark
+  kind: spark_job
+  name: compliance_flag_rules
+  complexity: medium
+  subject_area: audit
+  licence_dependency: spark
+  source: etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__compliance_flag_rules
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nb1e649b467d1d68d
+  system: spark
+  kind: spark_job
+  name: doc_share_graph_reach
+  complexity: medium
+  subject_area: documents
+  licence_dependency: spark
+  source: etl/spark/jobs/py/doc_share_graph_reach.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__doc_share_graph_reach
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: n73fc2c67175df7a7
+  system: spark
+  kind: spark_job
+  name: doc_version_diff_stats
+  complexity: medium
+  subject_area: documents
+  licence_dependency: spark
+  source: etl/spark/jobs/py/doc_version_diff_stats.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__doc_version_diff_stats
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: n9e1cde11f1fcdf14
+  system: spark
+  kind: spark_job
+  name: docs_event_export_hourly
+  complexity: medium
+  subject_area: documents
+  licence_dependency: spark
+  source: etl/spark/jobs/py/docs_event_export_hourly.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__docs_event_export_hourly
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: n62c507a6ebeca788
+  system: spark
+  kind: spark_job
+  name: docs_folder_legacy_report
+  complexity: medium
+  subject_area: documents
+  licence_dependency: spark
+  source: etl/spark/jobs/py/docs_folder_legacy_report.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__docs_folder_legacy_report
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nc7caadea569fe6a7
+  system: spark
+  kind: spark_job
+  name: docs_folder_tree_walk
+  complexity: medium
+  subject_area: documents
+  licence_dependency: spark
+  source: etl/spark/jobs/py/docs_folder_tree_walk.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__docs_folder_tree_walk
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nacb901d117c72988
+  system: spark
+  kind: spark_job
+  name: docs_search_log_parse
+  complexity: medium
+  subject_area: documents
+  licence_dependency: spark
+  source: etl/spark/jobs/py/docs_search_log_parse.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__docs_search_log_parse
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: n99294cb574316a26
+  system: spark
+  kind: spark_job
+  name: docs_share_activity
+  complexity: medium
+  subject_area: documents
+  licence_dependency: spark
+  source: etl/spark/scala/src/main/scala/sfx/DocsShareActivity.scala
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__docs_share_activity
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nb17a88119e3df908
+  system: spark
+  kind: spark_job
+  name: docs_storage_by_owner
+  complexity: medium
+  subject_area: documents
+  licence_dependency: spark
+  source: etl/spark/jobs/py/docs_storage_by_owner.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__docs_storage_by_owner
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: n2e6e7921f1c1a457
+  system: spark
+  kind: spark_job
+  name: docs_tag_normalize
+  complexity: medium
+  subject_area: documents
+  licence_dependency: spark
+  source: etl/spark/jobs/py/docs_tag_normalize.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__docs_tag_normalize
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: n42b4ed91f0a96d32
+  system: spark
+  kind: spark_job
+  name: file_object_binary_extract
+  complexity: medium
+  subject_area: documents
+  licence_dependency: spark
+  source: etl/spark/jobs/py/file_object_binary_extract.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__file_object_binary_extract
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nb4c259fa9770ac59
+  system: spark
+  kind: spark_job
+  name: lake_compaction_audit
+  complexity: medium
+  subject_area: audit
+  licence_dependency: spark
+  source: etl/spark/jobs/py/lake_compaction_audit.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__lake_compaction_audit
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: n46441ec8597bcf09
+  system: spark
+  kind: spark_job
+  name: lake_compaction_documents
+  complexity: medium
+  subject_area: documents
+  licence_dependency: spark
+  source: etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__lake_compaction_documents
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nf3b5c3eaa1bc272c
+  system: spark
+  kind: spark_job
+  name: security_alert_anomaly
+  complexity: medium
+  subject_area: documents
+  licence_dependency: spark
+  source: etl/spark/jobs/py/security_alert_anomaly.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__security_alert_anomaly
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nc6160237cc5eb2cf
+  system: spark
+  kind: spark_job
+  name: team_graph_components
+  complexity: medium
+  subject_area: users
+  licence_dependency: spark
+  source: etl/spark/scala/src/main/scala/sfx/TeamGraphComponents.scala
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__team_graph_components
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nadfca1251f9b6a28
+  system: spark
+  kind: spark_job
+  name: user_pref_json_flatten
+  complexity: medium
+  subject_area: users
+  licence_dependency: spark
+  source: etl/spark/jobs/py/user_pref_json_flatten.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__user_pref_json_flatten
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nccade0800035b66b
+  system: spark
+  kind: spark_job
+  name: users_active_daily
+  complexity: medium
+  subject_area: users
+  licence_dependency: spark
+  source: etl/spark/jobs/py/users_active_daily.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__users_active_daily
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: n1d48699afd1ffdb6
+  system: spark
+  kind: spark_job
+  name: users_login_useragent_parse
+  complexity: medium
+  subject_area: users
+  licence_dependency: spark
+  source: etl/spark/jobs/py/users_login_useragent_parse.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__users_login_useragent_parse
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nb8c305d5ee549186
+  system: spark
+  kind: spark_job
+  name: users_risk_score
+  complexity: medium
+  subject_area: users
+  licence_dependency: spark
+  source: etl/spark/scala/src/main/scala/sfx/UsersRiskScore.scala
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__users_risk_score
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
+  status: not_started
+- id: nc71a4f6251d9ca10
+  system: spark
+  kind: spark_job
+  name: users_team_rollup
+  complexity: medium
+  subject_area: users
+  licence_dependency: spark
+  source: etl/spark/jobs/py/users_team_rollup.py
+  source_ref: demo-snowflake-dw-exit
+  output_relations: []
+  target_type: dbt_model
+  target: spark__users_team_rollup
+  wave: 3
+  owner: '@otterworks/data-platform'
+  owner_source: proposed
+  risk: med
+  risk_reasons: []
   status: not_started
 consumers:
 - id: n7d4be2219d74bf8d

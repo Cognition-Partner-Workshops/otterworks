@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import io
 import csv
 import datetime as dt
@@ -189,11 +195,11 @@ def test_invoice_empty_and_invalid_period(estate):
 def test_trial_balance_empty_and_unbalanced(estate, tmp_path):
     script = Path(__file__).resolve().parents[1] / 'scripts/billing/12_invoice_monthly.bteq'
     estate.variables.update(BUSINESS_DATE='20261109', MONTH_START='20261101', MONTH_END='20261201', EXPORT_DIR=str(tmp_path))
-    assert estate.run(script.read_text()) == 0, estate.output.getvalue()
-    assert 'TOTAL|All accounts|0|0' in (tmp_path/'gl_trial_balance.psv').read_text()
+    assert estate.run(_run_render(script.read_text())) == 0, estate.output.getvalue()
+    assert 'TOTAL|All accounts|0|0' in _run_render((tmp_path/'gl_trial_balance.psv').read_text())
     estate.execute("INSERT INTO SFX_BILLING.GL_JOURNAL_LINE (JOURNAL_LINE_ID,GL_ACCOUNT_ID,POSTING_DT,CURRENCY_CD,DEBIT_AMOUNT,CREDIT_AMOUNT) VALUES (1,1200,DATE '2026-10-31','USD',1,0)")
     assert estate.errorcode == 0
-    assert estate.run(script.read_text()) == 8, estate.output.getvalue()
+    assert estate.run(_run_render(script.read_text())) == 8, estate.output.getvalue()
 
 
 def test_setup_extends_existing_table(estate):

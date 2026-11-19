@@ -1,4 +1,10 @@
 """Freeze actual post-chain emulator rows, not a reimplementation of its results."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import io
 import json
@@ -57,7 +63,7 @@ def upload(connection, name, columns, rows):
             kind = f'NUMBER(38,{scale})'
         typed.append((column, kind))
     columns = typed
-    target = 'SFX_D1110_AFTER.TD_BASELINE.' + identifier(name)
+    target = _run_render('__RUN_DATABASE__.TD_BASELINE.') + identifier(name)
     ddl = column_ddl(columns)
     with connection.cursor() as cursor:
         # Snowflake cannot bind column definitions; column_ddl() admits only validated
@@ -78,7 +84,7 @@ def capture(output, business_date):
     evidence = []
     with Runner(output=io.StringIO()) as td, connect('baseline_capture', 'LOAD') as sf:
         with sf.cursor() as cursor:
-            cursor.execute('CREATE SCHEMA IF NOT EXISTS SFX_D1110_AFTER.TD_BASELINE COMMENT = ?', (COMMENT,))
+            cursor.execute(_run_render('CREATE SCHEMA IF NOT EXISTS __RUN_DATABASE__.TD_BASELINE COMMENT = ?'), (COMMENT,))
         names = [t.name for t in TABLES if t.area == 'billing']
         names += ['STG_' + n for n in names]
         names += ['V_ACCOUNT_INVOICES', 'V_SUBSCRIPTION_PLANS', 'V_INVOICE_BASE', 'V_INVOICE_REVENUE']

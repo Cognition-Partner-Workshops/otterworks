@@ -1,6 +1,8 @@
 from contextlib import nullcontext
 import json
+import os
 from pathlib import Path
+import subprocess
 import sys
 from types import SimpleNamespace
 
@@ -49,3 +51,19 @@ def test_invalid_resolved_token_is_rejected(monkeypatch, value):
     monkeypatch.setenv("RUN_TOKEN", value)
     with pytest.raises(ValueError, match="RUN_TOKEN"):
         RunConfig.from_env()
+
+
+@pytest.mark.parametrize('token', ['sfx1119', 'sfx2220', 'sfx-d1110-alice'])
+def test_workload_names_and_spark_attribution_use_the_same_run(token):
+    root = Path(__file__).resolve().parents[3]
+    result = subprocess.run([sys.executable, '-c',
+        'import json; from warehouse.snowflake.sfx_conn import WORKLOADS, query_tag; '
+        'print(json.dumps([WORKLOADS, json.loads(query_tag("snowpark", "spark-job", job="example"))]))'],
+        cwd=root, env={**os.environ, 'RUN_TOKEN': token}, capture_output=True, text=True, check=True)
+    workloads, tag = json.loads(result.stdout)
+    config = RunConfig(token)
+    assert workloads == {name: f'{config.database}_{name.upper()}_WH'
+                         for name in ('load', 'transform', 'parity', 'snowpark', 'ops')}
+    assert tag['run'] == tag['run_token'] == token
+    assert tag['workload'] == 'snowpark' and tag['phase'] == 'spark-job'
+    assert tag['commit'] and tag['run_id']

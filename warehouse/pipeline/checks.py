@@ -1,4 +1,10 @@
 """Shared pipeline checks; retained staged files define the current feed set."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from dataclasses import dataclass
 import json
@@ -7,7 +13,7 @@ from pathlib import PurePosixPath
 
 from sf import connect, record_checks
 
-RUN = "sfx-d1110"
+RUN = _run_render("__RUN_TOKEN__")
 MODEL = "stg_billing__usage_daily"
 
 
@@ -75,7 +81,7 @@ def evaluate(days, history, retained_files, limits):
 def run_checks(limits=None, connector=None):
     limits = limits or Thresholds()
     factory = connector or connect
-    with factory("monitor", "SFX_D1110_OPS_WH") as connection:
+    with factory("monitor", _run_render("__RUN_DATABASE___OPS_WH")) as connection:
         with connection.cursor() as cursor:
             cursor.execute("""SELECT s.USAGE_DATE,COUNT(*),COUNT_IF(s.AMOUNT IS NULL),
                 COUNT_IF(s.CURRENCY_CODE IS NULL)
@@ -84,11 +90,11 @@ def run_checks(limits=None, connector=None):
                 WHERE r._SRC_FILE LIKE 'pipeline/%'
                 GROUP BY 1 ORDER BY 1 DESC LIMIT 2""")
             days = cursor.fetchall()
-            cursor.execute("""SELECT FILE_NAME,STATUS,ERROR_COUNT,LAST_LOAD_TIME
+            cursor.execute(_run_render("""SELECT FILE_NAME,STATUS,ERROR_COUNT,LAST_LOAD_TIME
                 FROM TABLE(INFORMATION_SCHEMA.COPY_HISTORY(
-                    TABLE_NAME=>'SFX_D1110_AFTER.RAW_BILLING.USAGE_DAILY',
+                    TABLE_NAME=>'__RUN_DATABASE__.RAW_BILLING.USAGE_DAILY',
                     START_TIME=>DATEADD('hour',-%s,CURRENT_TIMESTAMP())))
-                WHERE FILE_NAME LIKE '%%pipeline/%%' ORDER BY LAST_LOAD_TIME DESC""",
+                WHERE FILE_NAME LIKE '%%pipeline/%%' ORDER BY LAST_LOAD_TIME DESC"""),
                            (limits.lookback_hours,))
             history = cursor.fetchall()
             cursor.execute("LIST @LANDING.LANDING_STAGE/pipeline/")

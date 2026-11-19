@@ -1,4 +1,10 @@
 """Export files are data: entity declarations must never be expanded."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import importlib
 
 import pytest
@@ -37,7 +43,7 @@ def test_export_entities_are_rejected(exports, entry, document):
     path = workflow if document == "workflow" else mapping
     # A small internal entity proves the boundary without allocating a bomb.
     prefix = '<!DOCTYPE POWERMART [<!ENTITY audit "expanded">]>'
-    path.write_text(prefix + path.read_text().replace(
+    path.write_text(prefix + _run_render(path.read_text()).replace(
         "</POWERMART>", "<DESCRIPTION>&audit;</DESCRIPTION></POWERMART>"))
     with pytest.raises(EntitiesForbidden):
         if entry == "inventory":
@@ -51,7 +57,7 @@ def test_normal_exports_and_external_doctype_still_work(exports):
     # PowerCenter exports commonly name a DTD; it must not be fetched.
     doctype = '<!DOCTYPE POWERMART SYSTEM "file:///nonexistent/pmrep.dtd">'
     for path in (workflow, mapping):
-        path.write_text(doctype + path.read_text())
+        path.write_text(doctype + _run_render(path.read_text()))
     overrides = root / "overrides"
     overrides.mkdir()
     rows = inventory_module.inventory(repository=root / "repository", overrides=overrides)

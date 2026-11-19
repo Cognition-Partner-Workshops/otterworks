@@ -1,7 +1,7 @@
 CREATE OR REPLACE PROCEDURE RAW_BILLING.LOAD_BILLING(LOAD_DATE VARCHAR)
 RETURNS VARIANT
 LANGUAGE SQL
-COMMENT='sfx-d1110 copy loader'
+COMMENT='__RUN_TOKEN__ copy loader'
 EXECUTE AS CALLER
 AS
 $$
@@ -39,16 +39,16 @@ END;
 $$;
 
 CREATE OR REPLACE TASK RAW_BILLING.LOAD_BILLING_TASK
-WAREHOUSE=SFX_D1110_LOAD_WH
+WAREHOUSE=__RUN_DATABASE___LOAD_WH
 SCHEDULE='USING CRON 0 2 * * * UTC'
 QUERY_TAG='{"workload":"load","phase":"task","commit":"{{ commit }}","run_id":"{{ run_id }}","run_token":"{{ run_token }}","executed_by":"{{ executed_by }}","built_with":"{{ built_with }}"}'
-COMMENT='sfx-d1110 suspended load task'
+COMMENT='__RUN_TOKEN__ suspended load task'
 AS CALL RAW_BILLING.LOAD_BILLING(NULL);
 
 CREATE OR REPLACE PROCEDURE RAW_DOCUMENTS.LOAD_DOCUMENTS(LOAD_DATE VARCHAR)
 RETURNS VARIANT
 LANGUAGE SQL
-COMMENT='sfx-d1110 copy loader'
+COMMENT='__RUN_TOKEN__ copy loader'
 EXECUTE AS CALLER
 AS
 $$
@@ -86,16 +86,16 @@ END;
 $$;
 
 CREATE OR REPLACE TASK RAW_DOCUMENTS.LOAD_DOCUMENTS_TASK
-WAREHOUSE=SFX_D1110_LOAD_WH
+WAREHOUSE=__RUN_DATABASE___LOAD_WH
 SCHEDULE='USING CRON 0 2 * * * UTC'
 QUERY_TAG='{"workload":"load","phase":"task","commit":"{{ commit }}","run_id":"{{ run_id }}","run_token":"{{ run_token }}","executed_by":"{{ executed_by }}","built_with":"{{ built_with }}"}'
-COMMENT='sfx-d1110 suspended load task'
+COMMENT='__RUN_TOKEN__ suspended load task'
 AS CALL RAW_DOCUMENTS.LOAD_DOCUMENTS(NULL);
 
 CREATE OR REPLACE PROCEDURE RAW_USERS.LOAD_USERS(LOAD_DATE VARCHAR)
 RETURNS VARIANT
 LANGUAGE SQL
-COMMENT='sfx-d1110 copy loader'
+COMMENT='__RUN_TOKEN__ copy loader'
 EXECUTE AS CALLER
 AS
 $$
@@ -133,16 +133,16 @@ END;
 $$;
 
 CREATE OR REPLACE TASK RAW_USERS.LOAD_USERS_TASK
-WAREHOUSE=SFX_D1110_LOAD_WH
+WAREHOUSE=__RUN_DATABASE___LOAD_WH
 SCHEDULE='USING CRON 0 2 * * * UTC'
 QUERY_TAG='{"workload":"load","phase":"task","commit":"{{ commit }}","run_id":"{{ run_id }}","run_token":"{{ run_token }}","executed_by":"{{ executed_by }}","built_with":"{{ built_with }}"}'
-COMMENT='sfx-d1110 suspended load task'
+COMMENT='__RUN_TOKEN__ suspended load task'
 AS CALL RAW_USERS.LOAD_USERS(NULL);
 
 CREATE OR REPLACE PROCEDURE RAW_AUDIT.LOAD_AUDIT(LOAD_DATE VARCHAR)
 RETURNS VARIANT
 LANGUAGE SQL
-COMMENT='sfx-d1110 copy loader'
+COMMENT='__RUN_TOKEN__ copy loader'
 EXECUTE AS CALLER
 AS
 $$
@@ -180,8 +180,8 @@ END;
 $$;
 
 CREATE OR REPLACE TASK RAW_AUDIT.LOAD_AUDIT_TASK
-WAREHOUSE=SFX_D1110_LOAD_WH
+WAREHOUSE=__RUN_DATABASE___LOAD_WH
 SCHEDULE='USING CRON 0 2 * * * UTC'
 QUERY_TAG='{"workload":"load","phase":"task","commit":"{{ commit }}","run_id":"{{ run_id }}","run_token":"{{ run_token }}","executed_by":"{{ executed_by }}","built_with":"{{ built_with }}"}'
-COMMENT='sfx-d1110 suspended load task'
+COMMENT='__RUN_TOKEN__ suspended load task'
 AS CALL RAW_AUDIT.LOAD_AUDIT(NULL);

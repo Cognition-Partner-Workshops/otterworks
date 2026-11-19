@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import csv
 import importlib.util
 import json
@@ -42,19 +48,30 @@ def test_invalid_workload():
         query_tag("", "x")
 
 
+def test_deployment_assets_render_without_connecting(tmp_path, monkeypatch):
+    monkeypatch.setenv('RUN_TOKEN','sfx2220')
+    deploy = module('deploy.py')
+    config = yaml.safe_load(deploy.render_migrations(tmp_path).read_text())
+    assert config['snowflake-database'] == 'SFX_2220'
+    files = list((tmp_path/'migrations').glob('V*.sql'))
+    assert len(files) == 12
+    assert all('__RUN_' not in path.read_text() for path in files)
+    assert any('sfx2220' in path.read_text() for path in files)
+
+
 def test_mapping():
-    assert WORKLOADS == {w: f"SFX_D1110_{w.upper()}_WH"
+    assert WORKLOADS == {w: _run_render(f"__RUN_DATABASE___{w.upper()}_WH")
                         for w in ["load", "transform", "parity", "snowpark", "ops"]}
 
 
 def test_migration_matches_spec():
     renderer = module("tools/render_raw.py")
-    assert renderer.TARGET.read_text() == renderer.render()
+    assert _run_render(renderer.TARGET.read_text()) == renderer.render()
 
 
 def test_spec_and_fixture():
-    spec = yaml.safe_load((ROOT / "fixture_columns.yml").read_text())
-    landing = yaml.safe_load((ROOT / "landing_columns.yml").read_text())
+    spec = yaml.safe_load(_run_render((ROOT / "fixture_columns.yml").read_text()))
+    landing = yaml.safe_load(_run_render((ROOT / "landing_columns.yml").read_text()))
     assert set(spec) == {"billing", "documents", "users", "audit"}
     for area, tables in spec.items():
         assert len(tables) == (12 if area == 'billing' else 10)
@@ -78,18 +95,18 @@ def test_fixture_determinism_empty_error(tmp_path):
     for path in (ROOT / "fixtures/landing").rglob("*.psv"):
         assert path.read_bytes() == (tmp_path / path.relative_to(ROOT / "fixtures/landing")).read_bytes()
     fixture.generate(0, 1110, tmp_path)
-    assert all(len(p.read_text().splitlines()) == 1 for p in tmp_path.rglob("*.psv"))
+    assert all(len(_run_render(p.read_text()).splitlines()) == 1 for p in tmp_path.rglob("*.psv"))
     with pytest.raises(ValueError):
         fixture.generate(-1, output=tmp_path)
 
 
 def test_create_comments():
     for path in (ROOT / "migrations").glob("V*.sql"):
-        statements = re.split(r"(?im)(?=^CREATE )", path.read_text())
+        statements = re.split(r"(?im)(?=^CREATE )", _run_render(path.read_text()))
         for statement in statements:
             if statement.startswith("CREATE "):
-                assert re.search(r"COMMENT\s*=\s*'sfx-d1110[^']*'", statement)
-    tasks = (ROOT / "migrations/V003__loaders_and_tasks.sql").read_text()
+                assert re.search(_run_render(r"COMMENT\s*=\s*'__RUN_TOKEN__[^']*'"), statement)
+    tasks = _run_render((ROOT / "migrations/V003__loaders_and_tasks.sql").read_text())
     assert "RESUME" not in tasks
     assert tasks.count('phase":"task"') == 4
 

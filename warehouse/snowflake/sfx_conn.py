@@ -1,4 +1,11 @@
 """JWT connections and consistent workload attribution."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+from warehouse.run_config import RunConfig
+
 import json
 import os
 import re
@@ -11,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from warehouse.query_tags import query_tag as session_tag
 
 ROOT = Path(__file__).resolve().parent
-WORKLOADS = yaml.safe_load((ROOT / "workloads.yml").read_text())
+WORKLOADS = yaml.safe_load(_run_render((ROOT / "workloads.yml").read_text()))
 
 
 def query_tag(workload, phase, extra=None, job=None):
@@ -26,7 +33,7 @@ def query_tag(workload, phase, extra=None, job=None):
     if job is not None:
         if not re.fullmatch(r"[a-z_][a-z0-9_]*", job):
             raise ValueError("Invalid Spark job identifier")
-        tag.update(run="sfx-d1110", act="spark", job=job)
+        tag.update(run=_run_render("__RUN_TOKEN__"), act="spark", job=job)
     return session_tag(workload, phase, tag)
 
 
@@ -40,7 +47,8 @@ def connect(workload, phase, extra_tag=None, job=None, **kw):
     )
     params = dict(
         account=os.environ["SNOWFLAKE_ACCOUNT"], user=os.environ["SNOWFLAKE_USER"],
-        role=os.environ["SNOWFLAKE_ROLE"], database=os.environ["SNOWFLAKE_DATABASE"],
+        role=os.environ["SNOWFLAKE_ROLE"], database=os.environ.get("SNOWFLAKE_DATABASE", RunConfig.from_env().database),
+        application="Cognition_Devin",
         warehouse=WORKLOADS[workload], authenticator="SNOWFLAKE_JWT",
         private_key=key.private_bytes(serialization.Encoding.DER,
                                     serialization.PrivateFormat.PKCS8,
@@ -51,8 +59,8 @@ def connect(workload, phase, extra_tag=None, job=None, **kw):
     session["TIMEZONE"] = "UTC"
     params.update(kw)
     if json.loads(tag).get("act") == "spark":
-        if params["database"] != "SFX_D1110_AFTER" or params["warehouse"] not in WORKLOADS.values():
-            raise ValueError("Spark act requires SFX_D1110_AFTER and a run-scoped warehouse")
+        if params["database"] != _run_render("__RUN_DATABASE__") or params["warehouse"] not in WORKLOADS.values():
+            raise ValueError(_run_render("Spark act requires __RUN_DATABASE__ and a run-scoped warehouse"))
     params["session_parameters"] = session
     return snowflake.connector.connect(**params)
 

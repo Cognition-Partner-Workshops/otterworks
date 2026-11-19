@@ -1,12 +1,12 @@
 # Throwaway warehouse database for the PowerCenter runner when the Teradata emulation is not running.
-name: sfx-d1110-informatica-${NS:?NS is required}
+name: ${RUN_TOKEN:-sfx1119}-informatica-${NS:?NS is required}
 services:
   fixture-db:
     image: postgres:16
     pull_policy: never
-    container_name: sfx-d1110-informatica-${NS}-db
+    container_name: ${RUN_TOKEN:-sfx1119}-informatica-${NS}-db
     labels:
-      sfx.run_token: sfx-d1110
+      sfx.run_token: ${RUN_TOKEN:-sfx1119}
       sfx.namespace: ${NS}
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
@@ -23,6 +23,6 @@ services:
       retries: 30
 volumes:
   data:
-    name: sfx-d1110-informatica-${NS}-data
+    name: ${RUN_TOKEN:-sfx1119}-informatica-${NS}-data
     labels:
-      sfx.run_token: sfx-d1110
+      sfx.run_token: ${RUN_TOKEN:-sfx1119}

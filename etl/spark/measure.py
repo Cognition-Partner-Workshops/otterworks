@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 """Comparable run evidence from History Server and tagged Snowflake queries."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from datetime import datetime, timezone
 import io
@@ -26,11 +32,11 @@ def spark_measure(app, history="http://localhost:18080"):
         raise ValueError("Application must be completed")
     # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
     with urlopen(url + "/logs", timeout=120) as response:
-        archive = zipfile.ZipFile(io.BytesIO(response.read()))
+        archive = zipfile.ZipFile(io.BytesIO(_run_render(response.read())))
     names = sorted(name for name in archive.namelist() if name.endswith(".zstd"))
     if not names:
         raise ValueError("No zstd event logs in History Server REST archive")
-    events = (json.loads(line) for name in names for line in decompress(archive.read(name)).splitlines() if line)
+    events = (json.loads(line) for name in names for line in decompress(_run_render(archive.read(name))).splitlines() if line)
     job, metrics = summarize(events)
     return {"engine": "spark", "job": job, "source": url, **metrics}
 
@@ -98,7 +104,7 @@ def snowflake_measure(job, since):
             tag = json.loads(row["QUERY_TAG"] or "{}")
         except (ValueError, TypeError):
             continue
-        if isinstance(tag, dict) and tag.get("run") == "sfx-d1110" and tag.get("act") == "spark" and tag.get("job") == job:
+        if isinstance(tag, dict) and tag.get("run") == _run_render("__RUN_TOKEN__") and tag.get("act") == "spark" and tag.get("job") == job:
             if row["START_TIME"] >= start and row["END_TIME"] is not None:
                 selected.append(row)
     return snowflake_metrics(selected, job)
@@ -132,7 +138,7 @@ def main():
     comparison.add_argument("--after", type=Path, required=True)
     args = parser.parse_args()
     if args.engine == "compare":
-        print(compare(json.loads(args.before.read_text()), json.loads(args.after.read_text())))
+        print(compare(json.loads(_run_render(args.before.read_text())), json.loads(_run_render(args.after.read_text()))))
     else:
         result = spark_measure(args.app, args.history) if args.engine == "spark" else snowflake_measure(args.job, args.since)
         print(json.dumps(result, indent=2))

@@ -1,4 +1,10 @@
 """Render captured red and green ladder runs without inventing measurements."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import json
 from pathlib import Path
@@ -30,7 +36,7 @@ def main():
     parser.add_argument('--supplemental-green', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
-    read = lambda path: json.loads(path.read_text())
+    read = lambda path: json.loads(_run_render(path.read_text()))
     text = '# Live billing parity: red to green\n\n'
     text += table(read(args.red), read(args.green))
     text += '\n\n## Supplemental probes — not billing\n\n'

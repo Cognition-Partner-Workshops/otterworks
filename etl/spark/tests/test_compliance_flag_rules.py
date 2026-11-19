@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import ast
 from pathlib import Path
 import unittest
@@ -9,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[3]
 class ComplianceFlagRulesTest(unittest.TestCase):
     def test_disposition_handler(self):
         namespace = {}
-        module = ast.parse((ROOT / "warehouse/snowpark/compliance_flag_rules.py").read_text())
+        module = ast.parse(_run_render((ROOT / "warehouse/snowpark/compliance_flag_rules.py").read_text()))
         handler = next(node.value for node in module.body if isinstance(node, ast.Assign)
                        and any(isinstance(target, ast.Name) and target.id == "DISPOSITION_HANDLER"
                                for target in node.targets))

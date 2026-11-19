@@ -1,4 +1,10 @@
 """The Spark fixture must load and publish without database CREATE SCHEMA."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import importlib.util
 from pathlib import Path
 import re
@@ -18,13 +24,13 @@ RAW = {'SPARK_RAW_' + area.upper() for area in spark_landing.TABLES}
 
 
 def test_spark_replacements_keep_consumer_grants():
-    project = yaml.safe_load((ROOT.parent / 'dbt/dbt_project.yml').read_text())
+    project = yaml.safe_load(_run_render((ROOT.parent / 'dbt/dbt_project.yml').read_text()))
     assert project['models']['sfx_warehouse']['spark'].get('+copy_grants') is True
     for path in (ROOT.parent / 'snowpark').glob('*.py'):
         if path.stem not in {'team_graph_components', 'users_risk_score', 'security_alert_anomaly',
                              'users_login_useragent_parse', 'doc_version_diff_stats'}:
             continue
-        for node in ast.walk(ast.parse(path.read_text())):
+        for node in ast.walk(ast.parse(_run_render(path.read_text()))):
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == 'save_as_table':
                 options = {kw.arg: kw.value for kw in node.keywords}
                 if isinstance(options.get('mode'), ast.Constant) and options['mode'].value == 'overwrite':
@@ -33,29 +39,29 @@ def test_spark_replacements_keep_consumer_grants():
 
 
 def test_spark_schemas_and_scoped_grants():
-    sql = '\n'.join(path.read_text() for path in (ROOT / 'migrations').glob('V*.sql'))
+    sql = '\n'.join(_run_render(path.read_text()) for path in (ROOT / 'migrations').glob('V*.sql'))
     schemas = set(re.findall(r'CREATE SCHEMA IF NOT EXISTS (\w+)', sql))
     assert RAW | {'MART_SPARK'} <= schemas
     plan = {statement for _, _, statement in roles.validate(roles.statements())}
     for schema in RAW:
-        target = 'SFX_D1110_AFTER.' + schema
-        assert f'GRANT USAGE, CREATE TABLE ON SCHEMA {target} TO ROLE SFX_D1110_LOADER;' in plan
+        target = _run_render('__RUN_DATABASE__.') + schema
+        assert _run_render(f'GRANT USAGE, CREATE TABLE ON SCHEMA {target} TO ROLE __RUN_DATABASE___LOADER;') in plan
         for scope in ('ALL', 'FUTURE'):
-            assert f'GRANT SELECT, INSERT, DELETE ON {scope} TABLES IN SCHEMA {target} TO ROLE SFX_D1110_LOADER;' in plan
+            assert _run_render(f'GRANT SELECT, INSERT, DELETE ON {scope} TABLES IN SCHEMA {target} TO ROLE __RUN_DATABASE___LOADER;') in plan
         for reader in ('TRANSFORMER', 'SNOWPARK'):
-            assert f'GRANT USAGE ON SCHEMA {target} TO ROLE SFX_D1110_{reader};' in plan
+            assert _run_render(f'GRANT USAGE ON SCHEMA {target} TO ROLE __RUN_DATABASE___{reader};') in plan
             for scope in ('ALL', 'FUTURE'):
-                assert f'GRANT SELECT ON {scope} TABLES IN SCHEMA {target} TO ROLE SFX_D1110_{reader};' in plan
-    target = 'SFX_D1110_AFTER.MART_SPARK'
+                assert _run_render(f'GRANT SELECT ON {scope} TABLES IN SCHEMA {target} TO ROLE __RUN_DATABASE___{reader};') in plan
+    target = _run_render('__RUN_DATABASE__.MART_SPARK')
     for writer in ('TRANSFORMER', 'SNOWPARK'):
-        assert f'GRANT USAGE, CREATE TABLE, CREATE VIEW, CREATE FUNCTION ON SCHEMA {target} TO ROLE SFX_D1110_{writer};' in plan
-        assert f'GRANT USAGE ON SCHEMA SFX_D1110_AFTER.GOVERNANCE TO ROLE SFX_D1110_{writer};' in plan
-        assert f'GRANT APPLY ON TAG SFX_D1110_AFTER.GOVERNANCE.SFX_RUN TO ROLE SFX_D1110_{writer};' in plan
+        assert _run_render(f'GRANT USAGE, CREATE TABLE, CREATE VIEW, CREATE FUNCTION ON SCHEMA {target} TO ROLE __RUN_DATABASE___{writer};') in plan
+        assert _run_render(f'GRANT USAGE ON SCHEMA __RUN_DATABASE__.GOVERNANCE TO ROLE __RUN_DATABASE___{writer};') in plan
+        assert _run_render(f'GRANT APPLY ON TAG __RUN_DATABASE__.GOVERNANCE.SFX_RUN TO ROLE __RUN_DATABASE___{writer};') in plan
     for reader in ('PARITY', 'ANALYST'):
-        assert f'GRANT USAGE ON SCHEMA {target} TO ROLE SFX_D1110_{reader};' in plan
+        assert _run_render(f'GRANT USAGE ON SCHEMA {target} TO ROLE __RUN_DATABASE___{reader};') in plan
         for scope in ('ALL', 'FUTURE'):
             for kind in ('TABLES', 'VIEWS'):
-                assert f'GRANT SELECT ON {scope} {kind} IN SCHEMA {target} TO ROLE SFX_D1110_{reader};' in plan
+                assert _run_render(f'GRANT SELECT ON {scope} {kind} IN SCHEMA {target} TO ROLE __RUN_DATABASE___{reader};') in plan
     assert not any('CREATE SCHEMA ON DATABASE' in statement for statement in plan)
 
 
@@ -75,10 +81,10 @@ def test_loader_does_not_create_schema(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize('sql', [
-    'GRANT APPLY ON TAG OTHER_DB.GOVERNANCE.SFX_RUN TO ROLE SFX_D1110_TRANSFORMER;',
-    'GRANT APPLY ON TAG SFX_D1110_AFTER.GOVERNANCE.OTHER TO ROLE SFX_D1110_TRANSFORMER;',
-    'GRANT APPLY ON TAG SFX_D1110_AFTER.GOVERNANCE.SFX_RUN TO ROLE SFX_D1110_ANALYST;',
-    'GRANT INSERT ON ALL TABLES IN SCHEMA SFX_D1110_AFTER.MART_SPARK TO ROLE SFX_D1110_ANALYST;',
+    _run_render('GRANT APPLY ON TAG OTHER_DB.GOVERNANCE.SFX_RUN TO ROLE __RUN_DATABASE___TRANSFORMER;'),
+    _run_render('GRANT APPLY ON TAG __RUN_DATABASE__.GOVERNANCE.OTHER TO ROLE __RUN_DATABASE___TRANSFORMER;'),
+    _run_render('GRANT APPLY ON TAG __RUN_DATABASE__.GOVERNANCE.SFX_RUN TO ROLE __RUN_DATABASE___ANALYST;'),
+    _run_render('GRANT INSERT ON ALL TABLES IN SCHEMA __RUN_DATABASE__.MART_SPARK TO ROLE __RUN_DATABASE___ANALYST;'),
 ])
 def test_spark_grants_remain_scoped(sql):
     with pytest.raises(ValueError):

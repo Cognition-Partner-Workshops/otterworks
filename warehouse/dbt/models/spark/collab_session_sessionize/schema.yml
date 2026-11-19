@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: collab_session_sessionize
-    description: "sfx-d1110 Collaboration sessions split at gaps strictly greater than 1800 seconds. Replaces the Spark lake output documents/collab_session_sessionize."
+    description: "sfx1119 Collaboration sessions split at gaps strictly greater than 1800 seconds. Replaces the Spark lake output documents/collab_session_sessionize."
     tests:
       - unique:
           column_name: "(USER_ID::varchar || '|' || DOCUMENT_ID::varchar || '|' || SESSION_NUMBER::varchar)"

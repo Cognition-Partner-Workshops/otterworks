@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import json
 import importlib.util
 import os
@@ -10,7 +16,7 @@ from parity.report import table
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = Path(os.environ.get('SFX_PARITY_MANIFEST', ROOT / 'parity/billing.json'))
-ENTRIES = json.loads(MANIFEST.read_text())
+ENTRIES = json.loads(_run_render(MANIFEST.read_text()))
 
 
 @pytest.fixture(scope='session')

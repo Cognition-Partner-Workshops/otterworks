@@ -1,4 +1,10 @@
 """Send Grafana-compatible pipeline notifications, or print a dry-run payload."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from datetime import datetime, timezone
 import hashlib
@@ -34,7 +40,7 @@ def payload(result, now=None):
     return {"receiver": "devin-pipeline-webhook", "status": "firing" if firing else "resolved",
             "orgId": 1, "alerts": alerts, "groupLabels": {"pipeline": RUN},
             "commonLabels": common, "commonAnnotations": {}, "externalURL": "http://localhost:3001/",
-            "version": "1", "groupKey": '{}:{pipeline="sfx-d1110"}', "truncatedAlerts": 0,
+            "version": "1", "groupKey": _run_render('{}:{pipeline="__RUN_TOKEN__"}'), "truncatedAlerts": 0,
             "title": message, "state": "alerting" if firing else "ok", "message": message}
 
 

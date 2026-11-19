@@ -1,4 +1,10 @@
 """UNT-3 audit evidence. Only the explicit run subcommand can launch a dbt build."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from collections import Counter
 from contextlib import contextmanager
@@ -25,7 +31,7 @@ MAPPINGS = ('m_SFX_STG_AUDIT_EVENT', 'm_SFX_AUDIT_EVENT')
 
 
 def load(path):
-    return json.loads(path.read_text())
+    return json.loads(_run_render(path.read_text()))
 
 
 def owned(mapping):
@@ -70,8 +76,8 @@ def queries(path, step):
 def target_state(q, table):
     table = relation(table)
     _, schema, name = table.split('.')
-    names, rows = q.run(f"SELECT TABLE_CATALOG,TABLE_SCHEMA,TABLE_NAME,TABLE_TYPE,CREATED,LAST_ALTERED,TABLE_OWNER "
-                        f"FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='{schema}' AND TABLE_NAME='{name}'")
+    names, rows = q.run(_run_render(f"SELECT TABLE_CATALOG,TABLE_SCHEMA,TABLE_NAME,TABLE_TYPE,CREATED,LAST_ALTERED,TABLE_OWNER "
+                        f"FROM __RUN_DATABASE__.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='{schema}' AND TABLE_NAME='{name}'"))
     state = {'exists': bool(rows), 'metadata': [dict(zip(names, [cell(v) for v in r])) for r in rows],
              'metadata_qid': q.records[-1]['qid']}
     if rows:
@@ -84,7 +90,7 @@ def target_state(q, table):
 
 
 def control_snapshot(q, path):
-    if control_table() != 'SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS':
+    if control_table() != _run_render('__RUN_DATABASE__.MIGRATION_CONTROL.MAPPINGS'):
         raise ValueError('UNT-3 control table cannot be overridden')
     value = control(q)
     dump(path / 'control.json', value)
@@ -114,7 +120,7 @@ def frozen_input(q, path):
     row = owned(MAPPINGS[0])
     template = manifest['initial_tables']['SFX_AUDIT.STG_AUDIT_EVENT']
     expected = expected_landing(manifest, row, template)
-    actual = fetched(q, 'SFX_D1110_AFTER.PC_SRC.AUDIT_EVENT', template, source_loading=True)
+    actual = fetched(q, _run_render('__RUN_DATABASE__.PC_SRC.AUDIT_EVENT'), template, source_loading=True)
     dump(path / 'input_expected.json', expected)
     dump(path / 'input_actual.json', actual)
     return require_equal(expected, actual, path / 'input_comparison.json')
@@ -155,7 +161,7 @@ def preflight():
 
 def reject_predicate(mapping):
     model = owned(mapping)['dbt_model']
-    sql = (ROOT / 'warehouse/dbt/models/pc/audit' / (model + '.sql')).read_text()
+    sql = _run_render((ROOT / 'warehouse/dbt/models/pc/audit' / (model + '.sql')).read_text())
     match = re.search(r'{% set reject_predicate = "([^"]+)" %}', sql)
     if not match or 'where not ({{ reject_predicate }})' not in sql:
         raise ValueError('Model must expose and use its exact reject predicate')
@@ -223,7 +229,7 @@ def run(mapping, number):
             raise ValueError('Control changed since preflight; stop before build')
         frozen_input(q, path)
         if mapping == MAPPINGS[1]:
-            stg = fetched(q, 'SFX_D1110_AFTER.PC_AUDIT.STG_AUDIT_EVENT', oracle(MAPPINGS[0]), source_loading=True)
+            stg = fetched(q, _run_render('__RUN_DATABASE__.PC_AUDIT.STG_AUDIT_EVENT'), oracle(MAPPINGS[0]), source_loading=True)
             require_equal(oracle(MAPPINGS[0]), stg, path / 'stg_input_comparison.json')
             if duplicate_keys(stg):
                 raise ValueError('Duplicate merge input EVENT_IDs; runner order cannot be reproduced by MERGE')
@@ -252,10 +258,10 @@ def run(mapping, number):
             if (path / 'run_results.json').exists():
                 execution['adapter_responses'] = [r.get('adapter_response') for r in load(path / 'run_results.json')['results']]
                 execution['adapter_query_ids'] = adapter_query_ids(execution['adapter_responses'])
-            _, history = q.run("SELECT QUERY_ID,QUERY_TEXT,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS "
-                               "FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) "
+            _, history = q.run(_run_render("SELECT QUERY_ID,QUERY_TEXT,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS "
+                               "FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) "
                                f"WHERE TRY_PARSE_JSON(QUERY_TAG):step::string='{step}' "
-                               "AND TRY_PARSE_JSON(QUERY_TAG):workload::string='transform' ORDER BY START_TIME")
+                               "AND TRY_PARSE_JSON(QUERY_TAG):workload::string='transform' ORDER BY START_TIME"))
             execution['history'] = [[cell(v) for v in r] for r in history]
             execution['query_ids'] = [r[0] for r in history]
             (path / 'dbt_transcript.txt').write_text('\n\n'.join(f'SQL: {r[1]}\nQID: {r[0]}' for r in history))

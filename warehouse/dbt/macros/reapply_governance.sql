@@ -8,7 +8,7 @@
 
 {% macro reapply_governance(results=none) %}
   {% if not execute %}{{ return('') }}{% endif %}
-  {% set token = env_var('SNOWFLAKE_RUN_TOKEN', 'sfx-d1110') | replace("'", "''") %}
+  {% set token = env_var('RUN_TOKEN', '__RUN_TOKEN__') | replace("'", "''") %}
   {% set nodes = [] %}
   {% if results is not none %}
     {% for result in results if result.node.resource_type in ['model', 'seed', 'snapshot'] and result.status == 'success' %}
@@ -24,7 +24,7 @@
     {% if relation is not none %}
       {% set kind = 'view' if relation.is_view else 'table' %}
       {% set tag = adapter.quote(node.database) ~ '.GOVERNANCE.SFX_RUN' %}
-      {% do run_query('alter ' ~ kind ~ ' ' ~ relation ~ ' set tag ' ~ tag ~ " = 'sfx-d1110'") %}
+      {% do run_query('alter ' ~ kind ~ ' ' ~ relation ~ ' set tag ' ~ tag ~ " = '__RUN_TOKEN__'") %}
       {% do run_query('comment on ' ~ kind ~ ' ' ~ relation ~ " is '" ~ token ~ ' ' ~ ((node.description or node.name) | replace("'", "''")) ~ "'") %}
       {% set policies = var('governance_policies', {}).get(node.name, {}) %}
       {% for column, tags in policies.get('column_tags', {}).items() %}

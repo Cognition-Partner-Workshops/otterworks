@@ -1,4 +1,10 @@
 """Generate small, deterministic, referentially consistent landing files."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import csv
 from datetime import date, datetime, timedelta
@@ -138,7 +144,7 @@ def generate(rows=20, seed=1110, output=None):
     if rows < 0:
         raise ValueError("rows must be nonnegative")
     data = records(rows, seed)
-    spec = yaml.safe_load((ROOT / "fixture_columns.yml").read_text())
+    spec = yaml.safe_load(_run_render((ROOT / "fixture_columns.yml").read_text()))
     output = Path(output) if output is not None else ROOT / "fixtures/landing"
     for area, tables in spec.items():
         for table, columns in tables.items():

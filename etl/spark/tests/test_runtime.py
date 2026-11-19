@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import json
 import os
 from pathlib import Path
@@ -12,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[3]
 class RuntimeTest(unittest.TestCase):
     def test_landing_override(self):
         result = subprocess.run(
-            ["make", "-n", "sfx-spark-up", "NS=sfx-d1110-check",
+            ["make", "-n", "sfx-spark-up", _run_render("NS=__RUN_TOKEN__-check"),
              "SFX_SPARK_LANDING=/tmp/sfx-landing-check", "ROWS_PER_TABLE=2000"],
             cwd=ROOT, capture_output=True, text=True, check=True,
         )
@@ -26,7 +32,7 @@ class RuntimeTest(unittest.TestCase):
     @unittest.skipUnless(shutil.which("docker"), "Docker Compose CLI is not installed")
     def test_compose_namespaces(self):
         sources = []
-        for namespace in ("sfx-d1110-before", "sfx-d1110-check"):
+        for namespace in (_run_render("__BEFORE_NAMESPACE__"), _run_render("__RUN_TOKEN__-check")):
             environment = {key: value for key, value in os.environ.items() if key != "LANDING_DIR"}
             environment["NS"] = namespace
             result = subprocess.run(
@@ -36,6 +42,10 @@ class RuntimeTest(unittest.TestCase):
             services = json.loads(result.stdout)["services"]
             self.assertEqual(services["spark-init"]["entrypoint"],
                              ["python3", "/opt/sfx/spark/fixture/initialize.py"])
+            config_mount = next(mount for mount in services["spark-init"]["volumes"]
+                                if mount["target"] == "/opt/warehouse/run_config.py")
+            self.assertEqual(config_mount["source"], str(ROOT / "warehouse/run_config.py"))
+            self.assertTrue(config_mount["read_only"])
             self.assertEqual(services["spark-master"]["depends_on"]["spark-load"]["condition"],
                              "service_completed_successfully")
             self.assertEqual(services["spark-load"]["network_mode"], "service:sfx-tdemu")

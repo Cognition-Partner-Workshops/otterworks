@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import importlib.util
 from pathlib import Path
 
@@ -16,9 +22,9 @@ def helper(filename):
 
 def test_sources_match_spec():
     renderer = helper("render_sources.py")
-    assert renderer.TARGET.read_text() == renderer.render()
-    spec = yaml.safe_load(renderer.SPEC.read_text())
-    sources = yaml.safe_load(renderer.TARGET.read_text())["sources"]
+    assert _run_render(renderer.TARGET.read_text()) == renderer.render()
+    spec = yaml.safe_load(_run_render(renderer.SPEC.read_text()))
+    sources = yaml.safe_load(_run_render(renderer.TARGET.read_text()))["sources"]
     assert {s["name"]: {t["name"]: [c["name"] for c in t["columns"]]
                        for t in s["tables"]} for s in sources} == {
         area: {table: list(columns) for table, columns in tables.items()}
@@ -28,11 +34,11 @@ def test_sources_match_spec():
 
 def test_billing_matches_spec():
     for filename, content in helper("render_billing.py").render().items():
-        assert (DBT / "models/staging/billing" / filename).read_text() == content
+        assert _run_render((DBT / "models/staging/billing" / filename).read_text()) == content
 
 
 def test_profile_uses_secret_safe_pem():
-    profile = yaml.safe_load((DBT / "profiles.yml").read_text())
+    profile = yaml.safe_load(_run_render((DBT / "profiles.yml").read_text()))
     output = profile["sfx_warehouse"]["outputs"]["dev"]
     assert output["private_key"] == "{{ env_var('DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY') }}"
     assert "private_key_path" not in output

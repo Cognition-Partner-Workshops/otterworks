@@ -1,5 +1,11 @@
 """Replaces the Spark lake output users/team_graph_components."""
 
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
+
 
 def run(session):
     database = session.get_current_database()
@@ -43,5 +49,5 @@ $$
         [database, "MART_SPARK", "TEAM_GRAPH_COMPONENTS"],
         mode="overwrite",
         copy_grants=True,
-        comment="sfx-d1110 Replaces the Spark lake output users/team_graph_components.",
+        comment=_run_render("__RUN_TOKEN__ Replaces the Spark lake output users/team_graph_components."),
     )

@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import importlib.util
 import os
 from decimal import Decimal
@@ -23,7 +29,7 @@ def test_period_report_uses_requested_date_range_not_stale_flags():
 def test_live_period_report_ignores_previous_closed_month():
     from parity.connection import connect
     sql, parameters = REPORTS.converted_queries('20261109')['PERIOD_CLOSE']
-    sql = sql.replace('SFX_D1110_AFTER.BILLING.INVOICE_HDR', 'invoices')
+    sql = sql.replace(_run_render('__RUN_DATABASE__.BILLING.INVOICE_HDR'), 'invoices')
     fixture = """WITH invoices AS (SELECT column1::DATE AS BILL_DT, column2 AS CURRENCY_CD,
         column3::NUMBER(14,2) AS TOTAL_AMOUNT, 'Y' AS PERIOD_CLOSED_CD FROM VALUES
         ('2026-09-30','USD',10), ('2026-10-01','USD',20),

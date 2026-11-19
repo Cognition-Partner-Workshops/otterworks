@@ -1,4 +1,10 @@
 """Load the Spark fixture into isolated schemas without changing RAW or COMPAT."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import csv
 import hashlib
@@ -27,7 +33,7 @@ def inspect_files(landing, area, table):
     for path in files:
         digest.update(path.name.encode())
         with path.open("rb") as stream:
-            for block in iter(lambda: stream.read(1024 * 1024), b""):
+            for block in iter(lambda: _run_render(stream.read(1024 * 1024)), b""):
                 digest.update(block)
         with path.open(newline="") as stream:
             reader = csv.reader(stream, delimiter="|")
@@ -57,7 +63,7 @@ def load(landing, tables=None):
                 # Schemas are provisioned by V010; the loader has no database CREATE SCHEMA.
                 # DDL identifiers/types come from the repository schema map; stage adds a UUID.
                 # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-                cur.execute(f"CREATE TABLE IF NOT EXISTS {target} ({columns}) COMMENT='sfx-d1110 spark landing'")
+                cur.execute(_run_render(f"CREATE TABLE IF NOT EXISTS {target} ({columns}) COMMENT='__RUN_TOKEN__ spark landing'"))
                 # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 cur.execute(f"DESC TABLE {target}")
                 if [row[0] for row in cur.fetchall()] != [name for name, _ in SCHEMAS[table]]:

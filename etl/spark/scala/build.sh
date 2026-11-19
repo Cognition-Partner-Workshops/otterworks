@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+eval "$(python3 "$(git rev-parse --show-toplevel)/warehouse/run_config.py" env)"
 set -euo pipefail
 cd "$(dirname "$0")/../../.."
-docker compose -f docker-compose.spark.yml -p "sfx-d1110-spark-${NS:-sfx-d1110-before}" exec -T spark-master bash -c '
+docker compose -f docker-compose.spark.yml -p "${RUN_TOKEN}-spark-${NS:-${RUN_BEFORE_NAMESPACE}}" exec -T spark-master bash -c '
 set -euo pipefail
 cd /opt/sfx/spark
 mkdir -p .cache/classes

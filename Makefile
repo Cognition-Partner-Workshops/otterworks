@@ -2,6 +2,9 @@
 .PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
 
 SHELL := /bin/bash
+RUN_TOKEN ?= sfx1119
+export RUN_TOKEN
+RUN_BEFORE_NAMESPACE := $(shell RUN_TOKEN='$(subst ','"'"',$(RUN_TOKEN))' python3 -c 'from warehouse.run_config import RunConfig; print(RunConfig.from_env().before_namespace)')
 .DEFAULT_GOAL := help
 
 .PHONY: sfx-observability-up sfx-observability-down sfx-feed-target-test sfx-target-sql
@@ -19,6 +22,7 @@ sfx-feed-target-test:
 	uv run --python 3.12 --with pytest==8.4.2 --with PyYAML==6.0.3 python -m pytest -q observability/pipeline/test_feed_target.py
 
 .PHONY: sfx-teradata-up sfx-teradata-run sfx-teradata-test sfx-teradata-down sfx-teradata-snowconvert sfx-teradata-validate
+sfx-teradata-up sfx-teradata-run sfx-teradata-test sfx-teradata-down sfx-teradata-snowconvert sfx-teradata-validate sfx-manifest-board: NS ?= $(RUN_BEFORE_NAMESPACE)
 
 .PHONY: sfx-exit-reads sfx-exit-board sfx-exit-decommission
 sfx-exit-reads sfx-exit-board sfx-exit-decommission: warehouse/.venv/.requirements
@@ -33,7 +37,7 @@ SFX_TD_ENV = NS="$(NS)" TD_PG_PORT="$(TD_PG_PORT)" PYTHONPATH="$(abspath warehou
 SFX_TD_PY = warehouse/.venv/bin/python
 
 sfx-teradata-validate:
-	@test -n "$(NS)" || (echo "NS is required, e.g. NS=sfx-d1110-before" >&2; exit 2)
+	@test -n "$(NS)" || (echo "NS is required, e.g. NS=$(RUN_BEFORE_NAMESPACE)" >&2; exit 2)
 	@[[ "$(NS)" =~ ^[a-z0-9][a-z0-9-]*$$ ]] || (echo "NS must contain lowercase letters, digits or hyphens" >&2; exit 2)
 
 warehouse/.venv/.requirements: warehouse/requirements.txt
@@ -92,6 +96,19 @@ sfx-billing-promote: warehouse/.venv/.billing-requirements ## Recheck live parit
 
 sfx-billing-test: warehouse/.venv/.billing-requirements ## Offline parity tool regression tests (no Snowflake credentials)
 	$(SFX_TD_PY) -m pytest -q migration/dw-exit/tests
+
+.PHONY: sfx-manifest-board sfx-manifest-board-test sfx-run-render
+BOARD_ROWS ?= 200
+sfx-manifest-board: ROWS_PER_TABLE=$(BOARD_ROWS)
+sfx-manifest-board: sfx-teradata-up warehouse/.venv/.billing-requirements
+	$(SFX_TD_PY) migration/dw-exit/tools/assess.py
+	$(SFX_TD_ENV) $(SFX_TD_PY) migration/dw-exit/parity/object_board.py
+
+sfx-manifest-board-test: warehouse/.venv/.billing-requirements
+	$(SFX_TD_PY) -m pytest -q migration/dw-exit/tests
+
+sfx-run-render:
+	python3 warehouse/run_config.py render "$(ASSET)"
 
 
 .PHONY: sfx-airflow-test
@@ -192,14 +209,14 @@ sfx-snowflake-ledger: $(SFX_VENV)/.sfx-installed ## Report lag-aware Snowflake c
 	$(SFX_VENV)/bin/python warehouse/snowflake/ledger.py
 
 sfx-snowflake-teardown: $(SFX_VENV)/.sfx-installed ## Drop token-scoped objects (TEARDOWN_ARGS=--dry-run to preview)
-	$(SFX_VENV)/bin/python warehouse/snowflake/teardown.py --token sfx-d1110 $(TEARDOWN_ARGS)
+	$(SFX_VENV)/bin/python warehouse/snowflake/teardown.py --token $(RUN_TOKEN) $(TEARDOWN_ARGS)
 
 sfx-snowflake-roles-dry-run: $(SFX_VENV)/.sfx-installed ## Validate roles and check live CREATE ROLE privilege
 	$(SFX_VENV)/bin/python warehouse/snowflake/roles/dry_run.py --check-live
 
-ifeq ($(NS),sfx-d1110-before)
+ifeq ($(NS),$(RUN_BEFORE_NAMESPACE))
 sfx-snowflake-up sfx-snowflake-run sfx-snowflake-down:
-	@echo "The Snowflake target is not part of namespace sfx-d1110-before"
+	@echo "The Snowflake target is not part of namespace $(RUN_BEFORE_NAMESPACE)"
 else
 sfx-snowflake-up: sfx-snowflake-deploy ## Deploy the Snowflake target
 
@@ -209,18 +226,18 @@ sfx-snowflake-run: ## Load, build billing staging, and report credits
 	$(MAKE) sfx-snowflake-ledger
 
 sfx-snowflake-down: $(SFX_VENV)/.sfx-installed ## Suspend tasks and warehouses without dropping objects
-	$(SFX_VENV)/bin/python warehouse/snowflake/teardown.py --token sfx-d1110 --suspend-only
+	$(SFX_VENV)/bin/python warehouse/snowflake/teardown.py --token $(RUN_TOKEN) --suspend-only
 endif
 
 .PHONY: sfx-spark-up sfx-spark-run sfx-spark-test sfx-spark-down
 ROWS_PER_TABLE ?= 200000
 SPARK_JOBS ?= 30
-SFX_SPARK_NS = $(or $(NS),sfx-d1110-before)
+SFX_SPARK_NS = $(or $(NS),$(RUN_BEFORE_NAMESPACE))
 SFX_SPARK_DATA = etl/spark/.data/$(SFX_SPARK_NS)
 SFX_SPARK_CACHE = etl/spark/.cache/$(SFX_SPARK_NS)
 SFX_SPARK_LANDING ?= $(SFX_SPARK_DATA)/landing
 SFX_SPARK_ENV = NS=$(SFX_SPARK_NS) LANDING_DIR=$(abspath $(SFX_SPARK_LANDING)) ROWS_PER_TABLE=$(ROWS_PER_TABLE)
-SFX_SPARK_COMPOSE = docker compose -f docker-compose.spark.yml -p sfx-d1110-spark-$(SFX_SPARK_NS)
+SFX_SPARK_COMPOSE = docker compose -f docker-compose.spark.yml -p $(RUN_TOKEN)-spark-$(SFX_SPARK_NS)
 SFX_SPARK_UV = uv run --python 3.11 --with pyspark==3.5.3 --with pyyaml==6.0.2
 
 sfx-spark-up: ## Start the local Spark estate and load its fixture
@@ -867,12 +884,11 @@ lp-ec2-down: ## Destroy the run's legacy-portal EC2 stack (RUN=)
 lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
 	@$(LP_EC2) verify-clean
 
-# --- sfx-informatica: emulated PowerCenter estate (etl/informatica, run token sfx-d1110) ---
+# --- sfx-informatica: emulated PowerCenter estate (etl/informatica, run token $(RUN_TOKEN)) ---
 # INFA_DB=fixture (default) starts a throwaway warehouse database loaded with the local fixture schema;
 # INFA_DB=teradata points the runner at the Teradata emulation's compose service instead.
 INFA_DIR = etl/informatica
-RUN_TOKEN ?= sfx1119
-INFA_NS = $(or $(NS),$(shell RUN_TOKEN="$(RUN_TOKEN)" python3 -c 'from warehouse.run_config import RunConfig; print(RunConfig.from_env().before_namespace)'))
+INFA_NS = $(or $(NS),$(RUN_BEFORE_NAMESPACE))
 INFA_DB ?= fixture
 MAPPINGS ?= 20
 INFA_PORT_OFFSET = $(shell python3 -c "import zlib; print(zlib.crc32('$(INFA_NS)'.encode()) % 1000)")
@@ -911,7 +927,7 @@ sfx-informatica-snowconvert: ## Convert the PowerCenter workflow exports with Sn
 	@test -n "$(INFA_SCAI)" || (echo "scai not found: curl -fsSL https://snowconvert.snowflake.com/storage/linux/prod/cli/install.sh | sh" >&2; exit 2)
 	@rm -rf $(INFA_SC_DIR) && mkdir -p $(INFA_SC_DIR)/input
 	@cp $(INFA_DIR)/repository/*/wf_*.XML $(INFA_SC_DIR)/input/
-	@cd $(INFA_SC_DIR) && $(INFA_SCAI) init project -n sfx-d1110-informatica-$(INFA_NS) -l Teradata $(if $(SNOWFLAKE_CONNECTION),-c $(SNOWFLAKE_CONNECTION)) > init.log 2>&1; rc=$$?; cat init.log; exit $$rc
+	@cd $(INFA_SC_DIR) && $(INFA_SCAI) init project -n $(RUN_TOKEN)-informatica-$(INFA_NS) -l Teradata $(if $(SNOWFLAKE_CONNECTION),-c $(SNOWFLAKE_CONNECTION)) > init.log 2>&1; rc=$$?; cat init.log; exit $$rc
 	@cd $(INFA_SC_DIR)/project && $(INFA_SCAI) code add -i $(INFA_SC_DIR)/input > ../add.log 2>&1; rc=$$?; cat ../add.log; exit $$rc
 	@cd $(INFA_SC_DIR)/project && $(INFA_SCAI) code convert --show-ewis > ../convert.log 2>&1; rc=$$?; cat ../convert.log; exit $$rc
 	@cp -a $(INFA_SC_DIR)/project/snowflake $(INFA_SC_DIR)/raw-output

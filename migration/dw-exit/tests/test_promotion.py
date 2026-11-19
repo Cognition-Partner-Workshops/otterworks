@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import importlib.util
 import json
 from pathlib import Path
@@ -11,11 +17,11 @@ SPEC.loader.exec_module(PROMOTION)
 
 
 def test_control_uses_shared_objects_location():
-    assert PROMOTION.CONTROL == 'SFX_D1110_AFTER.MIGRATION_CONTROL.OBJECTS'
+    assert PROMOTION.CONTROL == _run_render('__RUN_DATABASE__.MIGRATION_CONTROL.OBJECTS')
 
 
 def test_every_verified_billing_relation_is_registered():
-    manifest = json.loads((PROMOTION.SQL.parent / 'parity/billing.json').read_text())
+    manifest = json.loads(_run_render((PROMOTION.SQL.parent / 'parity/billing.json').read_text()))
     targets = {target for _, _, _, target in PROMOTION.inventory_objects()}
     assert {entry['after'] for entry in manifest} <= targets
 
@@ -36,7 +42,7 @@ def test_control_evidence_reads_objects_columns_and_billing_only():
     class Cursor:
         def execute(self, sql):
             assert 'OBJECT_NAME,OBJECT_TYPE,MIGRATION_STATUS,PARITY_STATUS' in sql
-            assert 'FROM SFX_D1110_AFTER.MIGRATION_CONTROL.OBJECTS' in sql
+            assert _run_render('FROM __RUN_DATABASE__.MIGRATION_CONTROL.OBJECTS') in sql
             assert "WHERE SUBJECT_AREA='billing'" in sql
 
         def fetchall(self):

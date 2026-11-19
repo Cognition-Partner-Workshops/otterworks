@@ -1,4 +1,10 @@
 """UNT-9 evidence: wf_SFX_AUDIT_DAILY PowerCenter oracle, two dbt workflow replays, one Task DAG run."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import csv
 from datetime import datetime, timezone
@@ -21,7 +27,7 @@ DEST = OUT / 'unt9'
 ACCEPTED = Path(os.environ.get('UNT9_ACCEPTED_ORACLE', Path.home() / 'unt9/ev/unt2p2/out/evidence'))
 MANIFEST = Path(os.environ.get('UNT9_MANIFEST', Path.home() / 'attachments/1c299b4d-6dde-4108-8946-1d68e128b511/manifest.json'))
 SCHEMA = 'PC_FX_UNT9_AUDIT_WF'
-FQ_SCHEMA = 'SFX_D1110_AFTER.' + SCHEMA
+FQ_SCHEMA = _run_render('__RUN_DATABASE__.') + SCHEMA
 LANDING = ('AUDIT_EVENT', 'SECURITY_ALERT')
 # Enabled wf_SFX_AUDIT_DAILY sessions: mapping, PostgreSQL target, Snowflake table, business key.
 TARGETS = {
@@ -56,7 +62,7 @@ def utc():
 
 
 def frozen_inputs():
-    manifest = json.loads(MANIFEST.read_text())
+    manifest = json.loads(_run_render(MANIFEST.read_text()))
     files = {Path(f['path']).parent.name: f for f in manifest['landing'] if Path(f['path']).parts[-3] == 'audit'}
     checks = {'bootstrap': manifest['bootstrap_sha256'] == sha(BOOTSTRAP),
               'parameter_file': manifest['parameter_file']['sha256'] == sha(Path(manifest['parameter_file']['path'])),
@@ -66,7 +72,7 @@ def frozen_inputs():
     for name in LANDING:
         path = ESTATE / 'tests/fixture/landing/audit' / name / '20261109.psv'
         checks[name] = files[name]['sha256'] == sha(path) and \
-            files[name]['row_count'] == len(path.read_text().splitlines())
+            files[name]['row_count'] == len(_run_render(path.read_text()).splitlines())
     if not all(checks.values()):
         raise ValueError('Frozen input manifest mismatch: ' + json.dumps(checks))
     return {'manifest_sha256': sha(MANIFEST), 'business_date': manifest['business_date'], 'checks': checks,
@@ -101,7 +107,7 @@ def oracle():
     with psycopg.connect(dbname='postgres', autocommit=True, **params) as admin:
         admin.execute(pgsql.Composed([pgsql.SQL('CREATE DATABASE '), pgsql.Identifier(db)]))
     with psycopg.connect(dbname=db, autocommit=True, **params) as pg:
-        pg.execute(BOOTSTRAP.read_text())
+        pg.execute(_run_render(BOOTSTRAP.read_text()))
         initial = {s: snapshot(pg, t[1]) for s, t in TARGETS.items()}
         initial['archive'] = snapshot(pg, ARCHIVE_PG)
         dump(path / 'initial_targets.json', initial)
@@ -123,7 +129,7 @@ def oracle():
             targets = {s: snapshot(pg, t[1]) for s, t in TARGETS.items()}
             targets['archive'] = snapshot(pg, ARCHIVE_PG)
             dump(dest / 'targets.json', targets)
-            rejects = {f.name: f.read_text().splitlines() for f in sorted((root / 'BadFiles').glob('*.bad'))}
+            rejects = {f.name: _run_render(f.read_text()).splitlines() for f in sorted((root / 'BadFiles').glob('*.bad'))}
             dump(dest / 'rejects.json', rejects)
             dump(dest / 'execution.json', {'argv': command, 'returncode': result.returncode,
                                            'start_utc': start, 'end_utc': utc()})
@@ -149,7 +155,7 @@ def oracle():
 
 
 WRITE_TYPES = ('SELECT', 'SHOW', 'DESCRIBE', 'USE', 'ALTER_SESSION', 'BEGIN_TRANSACTION', 'COMMIT', 'ROLLBACK')
-TASK_PREFIX = 'SFX_D1110_PC_AUDIT_'
+TASK_PREFIX = _run_render('__RUN_DATABASE___PC_AUDIT_')
 
 
 def controls(q, path):
@@ -161,9 +167,9 @@ def controls(q, path):
 
 
 def protected(q, path):
-    _, relations = q.run("SELECT TABLE_SCHEMA,TABLE_NAME FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.TABLES "
+    _, relations = q.run(_run_render("SELECT TABLE_SCHEMA,TABLE_NAME FROM __RUN_DATABASE__.INFORMATION_SCHEMA.TABLES "
                          "WHERE TABLE_SCHEMA IN ('PC_CONTENT','PC_AUDIT','PC_BILLING') "
-                         "OR (STARTSWITH(TABLE_SCHEMA,'PC_FX_') AND TABLE_SCHEMA<>'" + SCHEMA + "') "
+                         "OR (STARTSWITH(TABLE_SCHEMA,'PC_FX_') AND TABLE_SCHEMA<>'") + SCHEMA + "') "
                          "OR TABLE_SCHEMA LIKE '%FIXTURE%' "
                          "OR (TABLE_SCHEMA IN ('PC_SRC','PC_BEFORE') AND TABLE_NAME IN "
                          "('AUDIT_EVENT','SECURITY_ALERT','STG_AUDIT_EVENT','AUDIT_DAILY_SUMMARY','AUDIT_EVENT_ARCHIVE'))")
@@ -171,14 +177,14 @@ def protected(q, path):
     for schema, name in sorted(relations):
         if not (schema + name).replace('_', '').isalnum():
             raise ValueError('Unsafe protected identifier')
-        relation = 'SFX_D1110_AFTER.' + schema + '.' + name
+        relation = _run_render('__RUN_DATABASE__.') + schema + '.' + name
         columns, rows = q.run('SELECT * FROM ' + relation)
         _, types = q.run('DESCRIBE TABLE ' + relation)
         values[relation] = {'columns': columns, 'types': [[cell(v) for v in r] for r in types],
                             'rows': sorted([[cell(v) for v in r] for r in rows], key=json.dumps)}
-    names, meta = q.run("SELECT TABLE_SCHEMA,TABLE_NAME,TABLE_TYPE,ROW_COUNT,BYTES,LAST_ALTERED "
-                        "FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.TABLES "
-                        "WHERE TABLE_SCHEMA IN ('PC_SRC','PC_BEFORE','MIGRATION_CONTROL') ORDER BY 1,2")
+    names, meta = q.run(_run_render("SELECT TABLE_SCHEMA,TABLE_NAME,TABLE_TYPE,ROW_COUNT,BYTES,LAST_ALTERED "
+                        "FROM __RUN_DATABASE__.INFORMATION_SCHEMA.TABLES "
+                        "WHERE TABLE_SCHEMA IN ('PC_SRC','PC_BEFORE','MIGRATION_CONTROL') ORDER BY 1,2"))
     metadata = [dict(zip(names, [cell(v) for v in r])) for r in meta]
     dump(path / 'protected.json', values)
     dump(path / 'protected_metadata.json', metadata)
@@ -189,8 +195,8 @@ def protected(q, path):
 
 
 def isolation(q):
-    _, schemas = q.run(f"SHOW SCHEMAS LIKE '{SCHEMA}' IN DATABASE SFX_D1110_AFTER")
-    names, tasks = q.run(f"SHOW TASKS LIKE '{TASK_PREFIX}%' IN DATABASE SFX_D1110_AFTER")
+    _, schemas = q.run(_run_render(f"SHOW SCHEMAS LIKE '{SCHEMA}' IN DATABASE __RUN_DATABASE__"))
+    names, tasks = q.run(_run_render(f"SHOW TASKS LIKE '{TASK_PREFIX}%' IN DATABASE __RUN_DATABASE__"))
     return {'schema_exists': bool(schemas), 'tasks': [dict(zip(names, [cell(v) for v in r])) for r in tasks],
             'show_tasks_qid': q.records[-1]['qid']}
 
@@ -199,9 +205,9 @@ def sources(q, path):
     """Identity/read-order preconditions: frozen PC_SRC rows match the landing files key-for-key."""
     result = {}
     for name, key in (('AUDIT_EVENT', 'EVENT_ID'), ('SECURITY_ALERT', 'ALERT_ID')):
-        columns, rows = q.run(f'SELECT * FROM SFX_D1110_AFTER.PC_SRC.{name}')
+        columns, rows = q.run(_run_render(f'SELECT * FROM __RUN_DATABASE__.PC_SRC.{name}'))
         landing = ESTATE / 'tests/fixture/landing/audit' / name / '20261109.psv'
-        expected = sorted(int(line.split('|')[0]) for line in landing.read_text().splitlines())
+        expected = sorted(int(line.split('|')[0]) for line in _run_render(landing.read_text()).splitlines())
         actual = sorted(int(r[columns.index(key)]) for r in rows)
         result[name] = {'rows': len(rows), 'qid': q.records[-1]['qid'], 'keys_match_landing': actual == expected,
                         'distinct_keys': len(set(actual)) == len(actual)}
@@ -232,10 +238,10 @@ def targets(q, template):
 
 def history(q, start, path):
     names, rows = q.run(
-        "SELECT QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS,ROWS_INSERTED,"
-        "ROWS_PRODUCED,SESSION_ID FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
+        _run_render("SELECT QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS,ROWS_INSERTED,"
+        "ROWS_PRODUCED,SESSION_ID FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
         f"USER_NAME=>CURRENT_USER(), END_TIME_RANGE_START=>TO_TIMESTAMP_LTZ('{start}'), RESULT_LIMIT=>10000)) "
-        "ORDER BY START_TIME")
+        "ORDER BY START_TIME"))
     dump(path / 'query_history.json', {'columns': names, 'rows': [[cell(v) for v in r] for r in rows],
                                         'qid': q.records[-1]['qid']})
     return rows
@@ -368,20 +374,20 @@ def compare():
 
 def task_history(q, since):
     names, rows = q.run(
-        "SELECT NAME,STATE,QUERY_ID,GRAPH_RUN_GROUP_ID,RUN_ID,ROOT_TASK_ID,ATTEMPT_NUMBER,SCHEDULED_TIME,"
-        "QUERY_START_TIME,COMPLETED_TIME,ERROR_CODE,ERROR_MESSAGE FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA."
+        _run_render("SELECT NAME,STATE,QUERY_ID,GRAPH_RUN_GROUP_ID,RUN_ID,ROOT_TASK_ID,ATTEMPT_NUMBER,SCHEDULED_TIME,"
+        "QUERY_START_TIME,COMPLETED_TIME,ERROR_CODE,ERROR_MESSAGE FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA."
         f"TASK_HISTORY(SCHEDULED_TIME_RANGE_START=>TO_TIMESTAMP_LTZ('{since}'), RESULT_LIMIT=>10000)) "
-        f"WHERE DATABASE_NAME='SFX_D1110_AFTER' AND SCHEMA_NAME='PC_AUDIT' AND STARTSWITH(NAME,'{TASK_PREFIX}') "
-        "ORDER BY SCHEDULED_TIME")
+        f"WHERE DATABASE_NAME='__RUN_DATABASE__' AND SCHEMA_NAME='PC_AUDIT' AND STARTSWITH(NAME,'{TASK_PREFIX}') "
+        "ORDER BY SCHEDULED_TIME"))
     return [dict(zip(names, [cell(v) for v in r])) for r in rows]
 
 
 def task_state(q, tasks, path, label):
-    names, rows = q.run(f"SHOW TASKS LIKE '{TASK_PREFIX}%' IN SCHEMA SFX_D1110_AFTER.PC_AUDIT")
+    names, rows = q.run(_run_render(f"SHOW TASKS LIKE '{TASK_PREFIX}%' IN SCHEMA __RUN_DATABASE__.PC_AUDIT"))
     shown = [dict(zip(names, [cell(v) for v in r])) for r in rows]
     described = {}
     for step in tasks.values():
-        columns, desc = q.run('DESCRIBE TASK SFX_D1110_AFTER.PC_AUDIT.' + step['task'])
+        columns, desc = q.run(_run_render('DESCRIBE TASK __RUN_DATABASE__.PC_AUDIT.') + step['task'])
         described[step['task']] = [dict(zip(columns, [cell(v) for v in r])) for r in desc]
     dump(path / f'show_tasks_{label}.json', shown)
     dump(path / f'describe_tasks_{label}.json', described)
@@ -399,8 +405,8 @@ def dag():
     path = DEST / 'dag'
     fresh(path)
     cert = DEST / 'dag_generate/audit_unt9.yml'
-    committed = yaml.safe_load((ROOT / 'warehouse/snowflake/pc_dag/audit.yml').read_text())
-    if yaml.safe_load(cert.read_text().replace(SCHEMA, 'PC_AUDIT')) != committed:
+    committed = yaml.safe_load(_run_render((ROOT / 'warehouse/snowflake/pc_dag/audit.yml').read_text()))
+    if yaml.safe_load(_run_render(cert.read_text()).replace(SCHEMA, 'PC_AUDIT')) != committed:
         raise ValueError('Certification DAG differs from the committed audit.yml beyond the target schema')
     shutil.copy2(cert, path / 'audit_unt9.yml')
     folder, root, tasks = pc_dag.load('audit', cert)
@@ -410,14 +416,14 @@ def dag():
     template = load(DEST / 'oracle/run1/targets.json')
     evidence_live.LIVE = path
     result = {'run_once': None}
-    with connect('transform', 'pc_dag', extra_tag=dict(run='sfx-d1110', act='scale', step='unt9-dag',
+    with connect('transform', 'pc_dag', extra_tag=dict(run=_run_render('__RUN_TOKEN__'), act='scale', step='unt9-dag',
                                                         folder=folder)) as conn, conn.cursor() as cur:
         q = evidence_live.Queries(cur)
         _, now = q.run('SELECT CURRENT_TIMESTAMP()::VARCHAR')
         since = now[0][0]
         _, window = q.run('SELECT DATEADD(DAY,-6,CURRENT_TIMESTAMP())::VARCHAR')
         prior = task_history(q, window[0][0])
-        _, existing = q.run(f"SHOW TASKS LIKE '{TASK_PREFIX}%' IN SCHEMA SFX_D1110_AFTER.PC_AUDIT")
+        _, existing = q.run(_run_render(f"SHOW TASKS LIKE '{TASK_PREFIX}%' IN SCHEMA __RUN_DATABASE__.PC_AUDIT"))
         if existing:
             raise ValueError('Audit tasks already exist; refusing to redeploy')
         if prior:

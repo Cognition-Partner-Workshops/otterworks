@@ -1,4 +1,10 @@
 """Replaces the Spark lake output audit/compliance_flag_rules."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 from snowflake.snowpark.functions import call_udf, col, coalesce, lit
 
 DISPOSITION_HANDLER = """
@@ -35,5 +41,5 @@ $$
     result.write.save_as_table(
         [database, "MART_SPARK", "COMPLIANCE_FLAG_RULES"],
         mode="overwrite",
-        comment="sfx-d1110 Replaces the Spark lake output audit/compliance_flag_rules.",
+        comment=_run_render("__RUN_TOKEN__ Replaces the Spark lake output audit/compliance_flag_rules."),
     )

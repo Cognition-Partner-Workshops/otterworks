@@ -1,11 +1,11 @@
 apiVersion: 1
 groups:
   - orgId: 1
-    name: sfx-d1110-pipeline
+    name: __RUN_TOKEN__-pipeline
     folder: OtterWorks
     interval: 30s
     rules:
-      - uid: sfx-d1110-load-failure
+      - uid: __RUN_TOKEN__-load-failure
         title: SfxPipeline_load_failure
         condition: C
         data:
@@ -13,7 +13,7 @@ groups:
             datasourceUid: Prometheus
             relativeTimeRange: {from: 120, to: 0}
             model:
-              expr: 'sfx_pipeline_check_firing{run="sfx-d1110",model="stg_billing__usage_daily",check="load_failure"} and on(run,model) (sfx_pipeline_last_scrape_success == 1)'
+              expr: 'sfx_pipeline_check_firing{run="__RUN_TOKEN__",model="stg_billing__usage_daily",check="load_failure"} and on(run,model) (sfx_pipeline_last_scrape_success == 1)'
               instant: true
               refId: A
           - refId: C
@@ -34,15 +34,15 @@ groups:
         for: 0s
         labels:
           team: otterworks
-          pipeline: sfx-d1110
-          run: sfx-d1110
+          pipeline: __RUN_TOKEN__
+          run: __RUN_TOKEN__
           model: stg_billing__usage_daily
           severity: critical
           check: load_failure
         annotations:
           summary: Pipeline load_failure firing
           description: Shared Snowflake pipeline check load_failure exceeded its configured threshold.
-      - uid: sfx-d1110-row-count-drop
+      - uid: __RUN_TOKEN__-row-count-drop
         title: SfxPipeline_row_count_drop
         condition: C
         data:
@@ -50,7 +50,7 @@ groups:
             datasourceUid: Prometheus
             relativeTimeRange: {from: 120, to: 0}
             model:
-              expr: 'sfx_pipeline_check_firing{run="sfx-d1110",model="stg_billing__usage_daily",check="row_count_drop"} and on(run,model) (sfx_pipeline_last_scrape_success == 1)'
+              expr: 'sfx_pipeline_check_firing{run="__RUN_TOKEN__",model="stg_billing__usage_daily",check="row_count_drop"} and on(run,model) (sfx_pipeline_last_scrape_success == 1)'
               instant: true
               refId: A
           - refId: C
@@ -71,15 +71,15 @@ groups:
         for: 0s
         labels:
           team: otterworks
-          pipeline: sfx-d1110
-          run: sfx-d1110
+          pipeline: __RUN_TOKEN__
+          run: __RUN_TOKEN__
           model: stg_billing__usage_daily
           severity: critical
           check: row_count_drop
         annotations:
           summary: Pipeline row_count_drop firing
           description: Shared Snowflake pipeline check row_count_drop exceeded its configured threshold.
-      - uid: sfx-d1110-null-spike
+      - uid: __RUN_TOKEN__-null-spike
         title: SfxPipeline_null_spike
         condition: C
         data:
@@ -87,7 +87,7 @@ groups:
             datasourceUid: Prometheus
             relativeTimeRange: {from: 120, to: 0}
             model:
-              expr: 'sfx_pipeline_check_firing{run="sfx-d1110",model="stg_billing__usage_daily",check="null_spike"} and on(run,model) (sfx_pipeline_last_scrape_success == 1)'
+              expr: 'sfx_pipeline_check_firing{run="__RUN_TOKEN__",model="stg_billing__usage_daily",check="null_spike"} and on(run,model) (sfx_pipeline_last_scrape_success == 1)'
               instant: true
               refId: A
           - refId: C
@@ -108,8 +108,8 @@ groups:
         for: 0s
         labels:
           team: otterworks
-          pipeline: sfx-d1110
-          run: sfx-d1110
+          pipeline: __RUN_TOKEN__
+          run: __RUN_TOKEN__
           model: stg_billing__usage_daily
           severity: critical
           check: null_spike

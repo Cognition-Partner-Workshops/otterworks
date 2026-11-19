@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from collections import Counter
 from datetime import date
 import importlib.util
@@ -99,7 +105,7 @@ def test_generated_unicode_is_reproducible():
     spec = importlib.util.spec_from_file_location('unt8_unicode', u.FIXTURES / 'generate_unicode.py')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    actual = (u.ROOT / 'warehouse/dbt/macros/unt8_python_unicode.sql').read_text()
+    actual = _run_render((u.ROOT / 'warehouse/dbt/macros/unt8_python_unicode.sql').read_text())
     recorded_version = re.search(r'; Unicode ([0-9.]+)\. #}', actual.splitlines()[0]).group(1)
     if unicodedata.unidata_version != recorded_version:
         interpreter = os.environ.get('UNT8_UNICODE_PYTHON')
@@ -126,7 +132,7 @@ def test_models_are_incremental_single_key_no_refresh():
         path = u.ROOT / 'warehouse/dbt/models/pc/content'
         path /= ('pc_content__team_member.sql' if subject == 'production'
                  else 'unt8_fixture/' + u.model(subject) + '.sql')
-        text = path.read_text()
+        text = _run_render(path.read_text())
         for fragment in ["materialized='incremental'", "incremental_strategy='merge'", "unique_key='TEAM_MEMBER_ID'", 'full_refresh=false']:
             assert fragment in text
         if subject != 'production':
@@ -134,7 +140,7 @@ def test_models_are_incremental_single_key_no_refresh():
 
 
 def test_macro_has_atomic_duplicate_guard_and_no_delete():
-    text = (u.ROOT / 'warehouse/dbt/macros/pc_content_team_member.sql').read_text()
+    text = _run_render((u.ROOT / 'warehouse/dbt/macros/pc_content_team_member.sql').read_text())
     env = Environment()
     env.globals.update(unt8_integer_prefix=lambda value: value,
                        unt8_python_upper=lambda value: value, unt8_decimal_digits=lambda value: value)
@@ -154,8 +160,8 @@ def test_macro_has_atomic_duplicate_guard_and_no_delete():
 def test_write_scope_fails_closed():
     def record(sql, status='SUCCESS'):
         return ['qid', sql, 'MERGE', '{"mapping":"m_SFX_TEAM_MEMBER"}', None, None, status, None, None]
-    good = record('MERGE INTO "SFX_D1110_AFTER"."PC_CONTENT"."TEAM_MEMBER" USING t ON true')
-    bad = record('UPDATE SFX_D1110_AFTER.PC_CONTENT.ROLE_GRANT SET ROLE_CD=1')
+    good = record(_run_render('MERGE INTO "__RUN_DATABASE__"."PC_CONTENT"."TEAM_MEMBER" USING t ON true'))
+    bad = record(_run_render('UPDATE __RUN_DATABASE__.PC_CONTENT.ROLE_GRANT SET ROLE_CD=1'))
     failed = record('UNKNOWN SQL', 'FAILED_WITH_ERROR')
     assert u.write_scope([good, failed])['passed']
     assert not u.write_scope([good, bad])['passed']
@@ -247,9 +253,9 @@ def test_content_inventory_guard():
     'create or replace  temporary view {relation}\n  as (select 1)',
     'merge into {relation} as DBT_INTERNAL_DEST using tmp on true when matched then update set a=1',
     'drop view if exists {relation} cascade',
-    'alter table {relation} set tag "SFX_D1110_AFTER".GOVERNANCE.SFX_RUN = \'sfx-d1110\'',
-    'comment on table {relation}\n is \'run_token=sfx-d1110 expires=2026-11-24\'',
-    'comment on view {relation} is \'run_token=sfx-d1110\'',
+    _run_render('alter table {relation} set tag "__RUN_DATABASE__".GOVERNANCE.SFX_RUN = \'__RUN_TOKEN__\''),
+    _run_render('comment on table {relation}\n is \'run_token=__RUN_TOKEN__ expires=2026-11-24\''),
+    _run_render('comment on view {relation} is \'run_token=__RUN_TOKEN__\''),
 ])
 def test_actual_dbt_statement_shapes_whitespace(sql, relation):
     text = sql.format(relation=relation)
@@ -271,7 +277,7 @@ def test_actual_captured_run2_queries():
         if subject != 'production':
             for row in projected:
                 row[1] = row[1].replace(u.TARGET, u.table(subject)).replace(
-                    '"SFX_D1110_AFTER"."PC_CONTENT"."TEAM_MEMBER"', u.table(subject))
+                    _run_render('"__RUN_DATABASE__"."PC_CONTENT"."TEAM_MEMBER"'), u.table(subject))
         result = u.write_scope(projected)
         assert result['passed']
         assert not result['failed_statements']
@@ -286,9 +292,9 @@ def test_dbt_read_and_session_shapes(kind, sql):
 
 
 @pytest.mark.parametrize('relation', [u.TARGET + '__DBT_OTHER', u.TARGET + '_OTHER',
-                                    'SFX_D1110_AFTER.PC_CONTENT.ROLE_GRANT',
-                                    'SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS',
-                                    'SFX_D1110_AFTER.PC_FX_UNT7_ROLE_GRANT.X'])
+                                    _run_render('__RUN_DATABASE__.PC_CONTENT.ROLE_GRANT'),
+                                    _run_render('__RUN_DATABASE__.MIGRATION_CONTROL.MAPPINGS'),
+                                    _run_render('__RUN_DATABASE__.PC_FX_UNT7_ROLE_GRANT.X')])
 def test_classifier_does_not_expand_allowed_objects(relation):
     row = ['qid', 'create or replace  temporary view ' + relation + ' as (select 1)', 'CREATE_VIEW',
            '{"mapping":"m_SFX_TEAM_MEMBER"}', None, None, 'SUCCESS', None, None]

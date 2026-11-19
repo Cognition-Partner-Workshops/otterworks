@@ -1,4 +1,10 @@
 """Idempotent setup on the isolated after-side database."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import json
 import os
 import re
@@ -9,8 +15,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'snowflake'))
 from sfx_conn import connect, query_tag
 from .inventory import BOOTSTRAP, ESTATE, inventory, landing_sources, table_definitions
 
-DATABASE = "SFX_D1110_AFTER"
-COMMENT = "run_token=sfx-d1110 expires=2026-11-24"
+DATABASE = _run_render("__RUN_DATABASE__")
+COMMENT = _run_render("run_token=__RUN_TOKEN__ expires=2026-11-24")
 def control_table():
     schema = os.environ.get('PC_CONTROL_SCHEMA', 'MIGRATION_CONTROL').upper()
     table = os.environ.get('PC_CONTROL_TABLE', 'MAPPINGS').upper()
@@ -40,13 +46,13 @@ def require_owner(cursor, mapping, owner='act3-workflow', folder=None):
 
 
 def tag(step, mapping=None):
-    return dict(run="sfx-d1110", act="scale", step=step,
+    return dict(run=_run_render("__RUN_TOKEN__"), act="scale", step=step,
                 **({"mapping": mapping} if mapping else {}))
 
 
 def connection(workload, step, mapping=None):
     if os.environ.get("SNOWFLAKE_DATABASE") != DATABASE:
-        raise ValueError("SNOWFLAKE_DATABASE must be SFX_D1110_AFTER")
+        raise ValueError(_run_render("SNOWFLAKE_DATABASE must be __RUN_DATABASE__"))
     return connect(workload, "parity_" + step, extra_tag=tag(step, mapping))
 
 
@@ -92,7 +98,7 @@ def setup(landing=None, skip_control=False):
     plan = source_plan(landing)
     definitions = table_definitions()
     seeds = re.findall(r"INSERT INTO (\w+\.\w+) (.*?)ON CONFLICT DO NOTHING;",
-                       BOOTSTRAP.read_text(), re.S)
+                       _run_render(BOOTSTRAP.read_text()), re.S)
     with connection("load", "setup") as conn, conn.cursor() as cur:
         for schema in ("PC_SRC", "PC_BEFORE", "PC_BILLING", "PC_CONTENT", "PC_AUDIT"):
             cur.execute(f"CREATE SCHEMA IF NOT EXISTS {DATABASE}.{schema} COMMENT = '{COMMENT}'")

@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import io
 import json
@@ -12,8 +18,8 @@ from parity.ladder import identifier
 
 SQL = Path(__file__).resolve().parent
 MACRO_CALLS = {
-    'M_SUBSCRIPTION_PLANS': 'CALL SFX_D1110_AFTER.BILLING.M_SUBSCRIPTION_PLANS(?)',
-    'M_CURRENCY_TOTALS': 'CALL SFX_D1110_AFTER.BILLING.M_CURRENCY_TOTALS(?)',
+    'M_SUBSCRIPTION_PLANS': _run_render('CALL __RUN_DATABASE__.BILLING.M_SUBSCRIPTION_PLANS(?)'),
+    'M_CURRENCY_TOTALS': _run_render('CALL __RUN_DATABASE__.BILLING.M_CURRENCY_TOTALS(?)'),
 }
 
 
@@ -26,33 +32,33 @@ def run(business_date, output, initial=False):
     evidence = []
     with connect('billing_initial_load' if initial else 'billing_fixed_load', 'TRANSFORM') as connection:
         with connection.cursor() as cursor:
-            cursor.execute('CREATE SCHEMA IF NOT EXISTS SFX_D1110_AFTER.BILLING COMMENT = ?', (COMMENT,))
+            cursor.execute(_run_render('CREATE SCHEMA IF NOT EXISTS __RUN_DATABASE__.BILLING COMMENT = ?'), (COMMENT,))
             # An alternate display format exposes unresolved Teradata FORMAT casts.
             cursor.execute("ALTER SESSION SET DATE_OUTPUT_FORMAT = 'DD/MM/YYYY'")
             for path in sorted(SQL.glob('[0-3][0-9]_*.sql')):
                 if initial and path.name == '15_storage.sql':
                     continue
                 candidate = SQL / 'initial' / path.name if initial and path.name != '00_tables.sql' else path
-                for statement in commands(candidate.read_text().replace('${BUSINESS_DATE}', business_date)):
+                for statement in commands(_run_render(candidate.read_text()).replace('${BUSINESS_DATE}', business_date)):
                     cursor.execute(statement)
                     evidence.append({'file': path.name, 'query_id': cursor.sfqid})
                 print(path.name, 'deployed', flush=True)
                 if path.name == '00_tables.sql':
-                    cursor.execute("SHOW TABLES LIKE 'STG_%' IN SCHEMA SFX_D1110_AFTER.BILLING")
+                    cursor.execute(_run_render("SHOW TABLES LIKE 'STG_%' IN SCHEMA __RUN_DATABASE__.BILLING"))
                     tables = [row[1] for row in cursor.fetchall()]
                     for name in tables:
                         cursor.execute('INSERT INTO IDENTIFIER(?) SELECT * FROM IDENTIFIER(?)',
-                                       ('SFX_D1110_AFTER.BILLING.' + identifier(name),
-                                        'SFX_D1110_AFTER.TD_BASELINE.' + identifier(name)))
+                                       (_run_render('__RUN_DATABASE__.BILLING.') + identifier(name),
+                                        _run_render('__RUN_DATABASE__.TD_BASELINE.') + identifier(name)))
                     if not initial:
-                        cursor.execute('CREATE OR REPLACE TABLE SFX_D1110_AFTER.BILLING.STORAGE_USAGE_INPUT '
-                                       'CLONE SFX_D1110_AFTER.TD_BASELINE.STORAGE_USAGE_INPUT COMMENT = ?', (COMMENT,))
+                        cursor.execute(_run_render('CREATE OR REPLACE TABLE __RUN_DATABASE__.BILLING.STORAGE_USAGE_INPUT '
+                                       'CLONE __RUN_DATABASE__.TD_BASELINE.STORAGE_USAGE_INPUT COMMENT = ?'), (COMMENT,))
             cursor.execute('BEGIN')
             try:
-                cursor.execute("CALL SFX_D1110_AFTER.BILLING.P_MONTHLY_INVOICE(?)", (business_date,))
+                cursor.execute(_run_render("CALL __RUN_DATABASE__.BILLING.P_MONTHLY_INVOICE(?)"), (business_date,))
                 evidence.append({'procedure_rows_updated': cursor.fetchone()[0], 'query_id': cursor.sfqid})
                 close = SQL / 'initial/40_close.sql' if initial else SQL / '40_close.sql'
-                for statement in commands(close.read_text().replace('${BUSINESS_DATE}', business_date)):
+                for statement in commands(_run_render(close.read_text()).replace('${BUSINESS_DATE}', business_date)):
                     cursor.execute(statement)
                     evidence.append({'file': '40_close.sql', 'query_id': cursor.sfqid})
                 cursor.execute('COMMIT')
@@ -63,7 +69,7 @@ def run(business_date, output, initial=False):
                 cursor.execute(call, (business_date,))
                 result_query = cursor.sfqid
                 cursor.execute('CREATE OR REPLACE TABLE IDENTIFIER(?) COMMENT = ? AS SELECT * FROM TABLE(RESULT_SCAN(?))',
-                               (f'SFX_D1110_AFTER.BILLING.{macro}_OUTPUT', COMMENT, result_query))
+                               (_run_render(f'__RUN_DATABASE__.BILLING.{macro}_OUTPUT'), COMMENT, result_query))
                 evidence.append({'macro': macro, 'result_query_id': result_query, 'query_id': cursor.sfqid})
     output.write_text(json.dumps(evidence, indent=2) + '\n')
 

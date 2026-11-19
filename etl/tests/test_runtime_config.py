@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import ast
 import json
 import os
@@ -100,7 +106,7 @@ def test_runner_fetches_secret_before_running_job(monkeypatch):
 
 @pytest.mark.parametrize("job", JOBS)
 def test_every_job_uses_shared_config_and_default_aws_chain(job):
-    tree = ast.parse((ETL / "scripts" / job).read_text())
+    tree = ast.parse(_run_render((ETL / "scripts" / job).read_text()))
     assert any(isinstance(node, ast.ImportFrom) and node.module == "runtime_config" for node in ast.walk(tree))
     forbidden = {"aws_access_key_id", "aws_secret_access_key"}
     assert not any(isinstance(node, ast.keyword) and node.arg in forbidden for node in ast.walk(tree))

@@ -1,4 +1,10 @@
 """Validate and preview the scoped role plan before any privileged apply."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from pathlib import Path
 import re
@@ -13,7 +19,7 @@ ROLE_DIR = Path(__file__).resolve().parent
 def statements(folder=ROLE_DIR):
     result = []
     for path in sorted(Path(folder).glob("[0-9]*.sql")):
-        content = path.read_text()
+        content = _run_render(path.read_text())
         for match in re.finditer(r"[^;]+;", content):
             sql = match.group().strip()
             if sql:
@@ -27,8 +33,8 @@ def statements(folder=ROLE_DIR):
 def validate(plan):
     schemas = set()
     for path in (ROOT / 'migrations').glob('V*.sql'):
-        schemas.update(re.findall(r'CREATE SCHEMA IF NOT EXISTS (\w+)', path.read_text()))
-    roles = {"SFX_D1110_" + role for role in
+        schemas.update(re.findall(r'CREATE SCHEMA IF NOT EXISTS (\w+)', _run_render(path.read_text())))
+    roles = {_run_render("__RUN_DATABASE___") + role for role in
              ("ROLE", "LOADER", "TRANSFORMER", "PARITY", "SNOWPARK", "OPS", "ANALYST")}
     for filename, line, sql in plan:
         upper = sql.upper()
@@ -36,14 +42,14 @@ def validate(plan):
             raise ValueError("ON ACCOUNT grants are forbidden")
         if upper.startswith("REVOKE "):
             match = re.fullmatch(
-                r"REVOKE ALL PRIVILEGES ON (DATABASE|(?:ALL|FUTURE) (?:SCHEMAS|TABLES|VIEWS) IN DATABASE|FUTURE (?:TABLES|VIEWS) IN SCHEMA) (SFX_D1110_AFTER(?:\.[A-Z0-9_]+)?) FROM ROLE SFX_D1110_ANALYST;",
+                _run_render(r"REVOKE ALL PRIVILEGES ON (DATABASE|(?:ALL|FUTURE) (?:SCHEMAS|TABLES|VIEWS) IN DATABASE|FUTURE (?:TABLES|VIEWS) IN SCHEMA) (__RUN_DATABASE__(?:\.[A-Z0-9_]+)?) FROM ROLE __RUN_DATABASE___ANALYST;"),
                 upper,
             )
             if not match:
                 raise ValueError(f"Unsupported analyst reset: {filename}:{line}")
             kind, obj = match.groups()
             if ((kind.endswith("IN SCHEMA") and obj.split(".")[-1] not in schemas) or
-                    (not kind.endswith("IN SCHEMA") and obj != "SFX_D1110_AFTER")):
+                    (not kind.endswith("IN SCHEMA") and obj != _run_render("__RUN_DATABASE__"))):
                 raise ValueError(f"Object outside scaffold: {filename}:{line}")
             continue
         if not (upper.startswith("CREATE ROLE ") or upper.startswith("GRANT ")):
@@ -52,23 +58,23 @@ def validate(plan):
         if not referenced_roles or any(role not in roles for role in referenced_roles):
             raise ValueError("Role outside the allowed functional hierarchy")
         if upper.startswith("CREATE ROLE "):
-            if not re.fullmatch(r"CREATE ROLE IF NOT EXISTS SFX_D1110_\w+ COMMENT='sfx-d1110 [a-z]+';", sql):
+            if not re.fullmatch(_run_render(r"CREATE ROLE IF NOT EXISTS __RUN_DATABASE___\w+ COMMENT='__RUN_TOKEN__ [a-z]+';"), sql):
                 raise ValueError("Role creation requires a token comment")
             continue
         if upper.startswith("GRANT ROLE "):
-            if not re.fullmatch(r"GRANT ROLE SFX_D1110_\w+ TO ROLE SFX_D1110_\w+;", upper):
+            if not re.fullmatch(_run_render(r"GRANT ROLE __RUN_DATABASE___\w+ TO ROLE __RUN_DATABASE___\w+;"), upper):
                 raise ValueError("Invalid hierarchy grant")
-            if upper.endswith(" TO ROLE SFX_D1110_ANALYST;"):
+            if upper.endswith(_run_render(" TO ROLE __RUN_DATABASE___ANALYST;")):
                 raise ValueError("Analyst cannot inherit functional roles")
             continue
         match = re.fullmatch(
-            r"GRANT ([A-Z, ]+) ON (WAREHOUSE|DATABASE|SCHEMA|TAG|(?:ALL|FUTURE) (?:STAGES|TABLES|VIEWS|PROCEDURES|FILE FORMATS) IN SCHEMA|FUTURE SCHEMAS IN DATABASE) ([A-Z0-9_.]+) TO ROLE (SFX_D1110_\w+);",
+            _run_render(r"GRANT ([A-Z, ]+) ON (WAREHOUSE|DATABASE|SCHEMA|TAG|(?:ALL|FUTURE) (?:STAGES|TABLES|VIEWS|PROCEDURES|FILE FORMATS) IN SCHEMA|FUTURE SCHEMAS IN DATABASE) ([A-Z0-9_.]+) TO ROLE (__RUN_DATABASE___\w+);"),
             upper,
         )
         if not match:
             raise ValueError(f"Unsupported grant: {filename}:{line}")
         privileges, kind, obj, role = match.groups()
-        if role == "SFX_D1110_ANALYST":
+        if role == _run_render("__RUN_DATABASE___ANALYST"):
             if kind in ("DATABASE", "WAREHOUSE"):
                 allowed = privileges == "USAGE"
             else:
@@ -85,12 +91,12 @@ def validate(plan):
         if kind == "WAREHOUSE":
             valid = obj in WORKLOADS.values()
         elif kind in ("DATABASE", "FUTURE SCHEMAS IN DATABASE"):
-            valid = obj == "SFX_D1110_AFTER"
+            valid = obj == _run_render("__RUN_DATABASE__")
         elif kind == "TAG":
-            valid = (obj == "SFX_D1110_AFTER.GOVERNANCE.SFX_RUN" and privileges == "APPLY"
-                     and role in {"SFX_D1110_TRANSFORMER", "SFX_D1110_SNOWPARK"})
+            valid = (obj == _run_render("__RUN_DATABASE__.GOVERNANCE.SFX_RUN") and privileges == "APPLY"
+                     and role in {_run_render("__RUN_DATABASE___TRANSFORMER"), _run_render("__RUN_DATABASE___SNOWPARK")})
         else:
-            valid = obj.startswith("SFX_D1110_AFTER.") and obj.split(".")[1] in schemas and obj.count(".") == 1
+            valid = obj.startswith(_run_render("__RUN_DATABASE__.")) and obj.split(".")[1] in schemas and obj.count(".") == 1
         if not valid:
             raise ValueError(f"Object outside scaffold: {filename}:{line}")
     return plan

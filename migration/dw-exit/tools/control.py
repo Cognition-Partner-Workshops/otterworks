@@ -1,4 +1,10 @@
 """Run-scoped Snowflake assessment control plane; private key stays in memory."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import csv
 import json
@@ -14,10 +20,10 @@ from assess import OUT, before_state_root, build
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / 'warehouse/snowflake'))
 from sfx_conn import query_tag as session_tag
 
-DATABASE = 'SFX_D1110_AFTER'
-WAREHOUSE = 'SFX_D1110_OPS_WH'
+DATABASE = _run_render('__RUN_DATABASE__')
+WAREHOUSE = _run_render('__RUN_DATABASE___OPS_WH')
 SCHEMA = DATABASE + '.MIGRATION_CONTROL'
-COMMENT = 'run_token=sfx-d1110 expires=2026-11-24'
+COMMENT = _run_render('run_token=__RUN_TOKEN__ expires=2026-11-24')
 MANIFEST_FIELDS = 'id system kind name source target_type target wave owner owner_source risk risk_reasons complexity status'.split()
 CONSUMER_FIELDS = 'id name account owner owner_source risk wave status hidden applications clients scan'.split()
 TABLES = {'MANIFEST', 'CONSUMERS', 'DBQL_QRYLOG', 'DBQL_OBJECTUSAGE', 'DBQL_TABLESV', 'CODE_PRINCIPALS'}
@@ -25,7 +31,7 @@ VIEWS = {'V_WAVE_SUMMARY', 'V_LICENCE_COUNTER', 'V_DEAD_OBJECTS', 'V_HIDDEN_CONS
 
 
 def query_tag(step):
-    return session_tag('ops', 'assess', {'run': 'sfx-d1110', 'act': 'assess', 'step': step})
+    return session_tag('ops', 'assess', {'run': _run_render('__RUN_TOKEN__'), 'act': 'assess', 'step': step})
 
 
 def tag(cursor, step):
@@ -33,7 +39,7 @@ def tag(cursor, step):
 
 
 def connection_options(env):
-    if env.get('SNOWFLAKE_DATABASE') != DATABASE or env.get('SNOWFLAKE_RUN_TOKEN') != 'sfx-d1110':
+    if env.get('SNOWFLAKE_DATABASE') != DATABASE or env.get('RUN_TOKEN', 'sfx1119') != _run_render('__RUN_TOKEN__'):
         raise ValueError('Database/run-token scope mismatch')
     from cryptography.hazmat.primitives import serialization
     key = serialization.load_pem_private_key(env['SNOWFLAKE_PRIVATE_KEY'].encode(), password=None)
@@ -112,7 +118,7 @@ def view_sql():
 
 
 def load(cursor):
-    data = yaml.safe_load((OUT / 'manifest.yaml').read_text())
+    data = yaml.safe_load(_run_render((OUT / 'manifest.yaml').read_text()))
     tag(cursor, 'create_schema')
     cursor.execute(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA} COMMENT = '{COMMENT}'")
     cursor.execute(f"ALTER SCHEMA {SCHEMA} SET COMMENT = '{COMMENT}'")
@@ -156,10 +162,10 @@ def verify(cursor):
     tag(cursor, 'preflight')
     exists = scalar(cursor, f"SELECT COUNT(*) FROM {DATABASE}.INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='MIGRATION_CONTROL'")
     if not exists:
-        print('FAIL | schema | SFX_D1110_AFTER.MIGRATION_CONTROL missing')
+        print(_run_render('FAIL | schema | __RUN_DATABASE__.MIGRATION_CONTROL missing'))
         return False
     tag(cursor, 'verify')
-    data = yaml.safe_load((OUT / 'manifest.yaml').read_text())
+    data = yaml.safe_load(_run_render((OUT / 'manifest.yaml').read_text()))
     checks = []
     for table, key in [('MANIFEST', 'objects'), ('CONSUMERS', 'consumers')]:
         count = scalar(cursor, f'SELECT COUNT(*) FROM {SCHEMA}.{table}')
@@ -197,7 +203,7 @@ def report(cursor):
 
 def history(cursor):
     tag(cursor, 'verify')
-    sql = (OUT / 'query_history_assess.sql').read_text()
+    sql = _run_render((OUT / 'query_history_assess.sql').read_text())
     print(sql)
     cursor.execute(sql)
     print(' | '.join(c[0] for c in cursor.description))

@@ -1,4 +1,10 @@
 """Replaces the Spark lake output documents/doc_version_diff_stats."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 from snowflake.snowpark import Window
 from snowflake.snowpark.functions import call_udf, col, lag
 
@@ -32,5 +38,5 @@ $$
         [database, "MART_SPARK", "DOC_VERSION_DIFF_STATS"],
         mode="overwrite",
         copy_grants=True,
-        comment="sfx-d1110 Replaces the Spark lake output documents/doc_version_diff_stats.",
+        comment=_run_render("__RUN_TOKEN__ Replaces the Spark lake output documents/doc_version_diff_stats."),
     )

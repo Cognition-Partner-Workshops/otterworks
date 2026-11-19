@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: audit_daily_summary
-    description: sfx-d1110 daily audit event counts and distinct nonnull actors.
+    description: sfx1119 daily audit event counts and distinct nonnull actors.
     tests:
       - unique:
           column_name: "to_json(array_construct(EVENT_DATE, EVENT_TYPE))"

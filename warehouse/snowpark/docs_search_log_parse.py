@@ -1,4 +1,10 @@
 """Preserve the legacy docs_search_log_parse Python parsing semantics."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 from snowflake.snowpark.functions import call_udf, col
 
 
@@ -27,5 +33,5 @@ $$
     result.write.save_as_table(
         [database, "MART_SPARK", "DOCS_SEARCH_LOG_PARSE"],
         mode="overwrite",
-        comment="sfx-d1110 Python parsing output for docs_search_log_parse.",
+        comment=_run_render("__RUN_TOKEN__ Python parsing output for docs_search_log_parse."),
     )

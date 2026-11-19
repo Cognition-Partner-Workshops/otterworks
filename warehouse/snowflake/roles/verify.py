@@ -1,4 +1,10 @@
 """Apply the scoped plan and prove functional-role isolation on live scratch objects."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import json
 import os
@@ -11,7 +17,7 @@ import dry_run
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from sfx_conn import query_tag
 
-DATABASE = "SFX_D1110_AFTER"
+DATABASE = _run_render("__RUN_DATABASE__")
 MARTS = ("MART", "MART_SPARK", "COMPAT")
 
 
@@ -23,20 +29,20 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apply", action="store_true")
     args = parser.parse_args()
-    if os.environ["SNOWFLAKE_DATABASE"] != DATABASE or os.environ["SNOWFLAKE_ROLE"] != "SFX_D1110_ROLE":
-        raise SystemExit("Live proof requires SFX_D1110_AFTER and SFX_D1110_ROLE")
+    if os.environ["SNOWFLAKE_DATABASE"] != DATABASE or os.environ["SNOWFLAKE_ROLE"] != _run_render("__RUN_DATABASE___ROLE"):
+        raise SystemExit(_run_render("Live proof requires __RUN_DATABASE__ and __RUN_DATABASE___ROLE"))
     key = serialization.load_pem_private_key(os.environ["SNOWFLAKE_PRIVATE_KEY"].encode(), None)
-    tag = {"run": "sfx-d1110", "act": "fix", "step": "analyst-grants"}
+    tag = {"run": _run_render("__RUN_TOKEN__"), "act": "fix", "step": "analyst-grants"}
     conn = snowflake.connector.connect(
         account=os.environ["SNOWFLAKE_ACCOUNT"], user=os.environ["SNOWFLAKE_USER"],
         private_key=key.private_bytes(serialization.Encoding.DER, serialization.PrivateFormat.PKCS8,
                                      serialization.NoEncryption()),
-        role="SFX_D1110_ROLE", database=DATABASE, warehouse="SFX_D1110_TRANSFORM_WH",
+        role=_run_render("__RUN_DATABASE___ROLE"), database=DATABASE, warehouse=_run_render("__RUN_DATABASE___TRANSFORM_WH"),
         session_parameters={"QUERY_TAG": query_tag('ops', 'permissions', tag), "TIMEZONE": "UTC"},
     )
     evidence = []
     scratch = []
-    name = "SFX_D1110_GRANTS_" + uuid.uuid4().hex[:12].upper()
+    name = _run_render("__RUN_DATABASE___GRANTS_") + uuid.uuid4().hex[:12].upper()
     with conn, conn.cursor() as cur:
         def execute(sql):
             try:
@@ -68,23 +74,23 @@ def main():
         execute("USE SECONDARY ROLES NONE")
         try:
             if args.apply:
-                for sql in (dry_run.ROOT / "migrations/V010__spark_schemas.sql").read_text().split(";"):
+                for sql in _run_render((dry_run.ROOT / "migrations/V010__spark_schemas.sql").read_text()).split(";"):
                     if sql.strip():
                         check(sql.strip())
             for role in ("ANALYST", "TRANSFORMER", "LOADER", "PARITY", "SNOWPARK", "OPS"):
-                execute(f"SHOW GRANTS TO ROLE SFX_D1110_{role}")
+                execute(_run_render(f"SHOW GRANTS TO ROLE __RUN_DATABASE___{role}"))
             if args.apply:
                 for _, _, sql in dry_run.validate(dry_run.statements()):
                     if not sql.startswith("CREATE ROLE "):
                         check(sql)
-            grants = rows("SHOW GRANTS TO ROLE SFX_D1110_ANALYST")
-            future = rows("SHOW FUTURE GRANTS TO ROLE SFX_D1110_ANALYST")
+            grants = rows(_run_render("SHOW GRANTS TO ROLE __RUN_DATABASE___ANALYST"))
+            future = rows(_run_render("SHOW FUTURE GRANTS TO ROLE __RUN_DATABASE___ANALYST"))
             for grant in grants + future:
                 privilege = grant["privilege"]
                 obj = grant["name"]
                 kind = grant.get("granted_on", grant.get("grant_on"))
                 if kind == "WAREHOUSE":
-                    assert privilege == "USAGE" and obj == "SFX_D1110_TRANSFORM_WH", grant
+                    assert privilege == "USAGE" and obj == _run_render("__RUN_DATABASE___TRANSFORM_WH"), grant
                 elif kind == "DATABASE":
                     assert privilege == "USAGE" and obj == DATABASE, grant
                 else:
@@ -105,14 +111,14 @@ def main():
                 tables = rows(f"SHOW TABLES IN SCHEMA {DATABASE}.{schema}")
                 assert tables, f"No existing table to prove read denial in {schema}"
                 protected.append((schema, tables[0]["name"]))
-            execute("USE ROLE SFX_D1110_TRANSFORMER")
-            assert check("SELECT CURRENT_ROLE(), CURRENT_DATABASE()") == [("SFX_D1110_TRANSFORMER", DATABASE)]
+            execute(_run_render("USE ROLE __RUN_DATABASE___TRANSFORMER"))
+            assert check("SELECT CURRENT_ROLE(), CURRENT_DATABASE()") == [(_run_render("__RUN_DATABASE___TRANSFORMER"), DATABASE)]
             for schema in ("MART", "MART_SPARK"):
                 table = f"{DATABASE}.{schema}.{name}"
                 view = table + "_V"
                 scratch.append((table, view))
-                check(f"CREATE TABLE {table} (ID INT) COMMENT='run_token=sfx-d1110 expires=2026-11-24 role proof'")
-                check(f"CREATE VIEW {view} COMMENT='run_token=sfx-d1110 expires=2026-11-24 role proof' AS SELECT ID FROM {table}")
+                check(_run_render(f"CREATE TABLE {table} (ID INT) COMMENT='run_token=__RUN_TOKEN__ expires=2026-11-24 role proof'"))
+                check(_run_render(f"CREATE VIEW {view} COMMENT='run_token=__RUN_TOKEN__ expires=2026-11-24 role proof' AS SELECT ID FROM {table}"))
                 check(f"INSERT INTO {table} VALUES (1)")
                 check(f"UPDATE {table} SET ID=2 WHERE ID=1")
                 check(f"DELETE FROM {table} WHERE ID=2")
@@ -121,8 +127,8 @@ def main():
                     source = rows(f"SHOW TABLES IN SCHEMA {DATABASE}.SPARK_RAW_{area}")
                     if source:
                         check(f"SELECT * FROM {DATABASE}.SPARK_RAW_{area}.{source[0]['name']} LIMIT 0")
-            execute("USE ROLE SFX_D1110_ANALYST")
-            assert check("SELECT CURRENT_ROLE(), CURRENT_DATABASE()") == [("SFX_D1110_ANALYST", DATABASE)]
+            execute(_run_render("USE ROLE __RUN_DATABASE___ANALYST"))
+            assert check("SELECT CURRENT_ROLE(), CURRENT_DATABASE()") == [(_run_render("__RUN_DATABASE___ANALYST"), DATABASE)]
             for schema, relation in published:
                 check(f'SELECT * FROM {DATABASE}."{schema}"."{relation}" LIMIT 1')
             for table, view in scratch:
@@ -144,14 +150,14 @@ def main():
                 check(f'SELECT * FROM {DATABASE}."{schema}"."{relation}" LIMIT 0', denied=True)
             evidence.append({"caveat": "Snowflake permits session-local temporary tables with USAGE; persistent DDL and warehouse writes are denied"})
         finally:
-            execute("USE ROLE SFX_D1110_ROLE")
+            execute(_run_render("USE ROLE __RUN_DATABASE___ROLE"))
             for table, view in scratch:
                 execute(f"DROP VIEW IF EXISTS {view}")
                 execute(f"DROP TABLE IF EXISTS {table}")
             history = rows(
-                "SELECT QUERY_ID, ROLE_NAME, QUERY_TAG, QUERY_TEXT, EXECUTION_STATUS, ERROR_CODE, START_TIME "
-                "FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_SESSION(RESULT_LIMIT => 10000)) "
-                "WHERE QUERY_TAG = '" + json.dumps(tag, separators=(",", ":")) + "' ORDER BY START_TIME"
+                _run_render("SELECT QUERY_ID, ROLE_NAME, QUERY_TAG, QUERY_TEXT, EXECUTION_STATUS, ERROR_CODE, START_TIME "
+                "FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.QUERY_HISTORY_BY_SESSION(RESULT_LIMIT => 10000)) "
+                "WHERE QUERY_TAG = '") + json.dumps(tag, separators=(",", ":")) + "' ORDER BY START_TIME"
             )
             print(json.dumps({"query_tag": tag, "evidence": evidence, "query_history": history},
                              indent=2, default=str))
