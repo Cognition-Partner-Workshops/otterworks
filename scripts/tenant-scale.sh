@@ -11,14 +11,15 @@
 # flag. Re-inject the scenario after scaling a lab tenant back up.
 #
 # Usage:
-#   ./scripts/tenant-scale.sh <ATTENDEE_ID> down   # scale all deployments to 0
-#   ./scripts/tenant-scale.sh <ATTENDEE_ID> up     # scale all deployments to 1
+#   ./scripts/tenant-scale.sh <ATTENDEE_ID> down   # scale tenant workloads to 0
+#   ./scripts/tenant-scale.sh <ATTENDEE_ID> up     # scale tenant workloads to 1
 # ------------------------------------------------------------------------------
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=lib/tenant-common.sh
 source "${SCRIPT_DIR}/lib/tenant-common.sh"
+source "${SCRIPT_DIR}/lib/tenant-workloads.sh"
 
 ATTENDEE_ID="${1:-}"
 DIRECTION="${2:-}"
@@ -33,6 +34,7 @@ case "${DIRECTION}" in
   *)    err "Direction must be 'up' or 'down'"; exit 1 ;;
 esac
 
-log "Scaling all deployments in ${NS} to ${replicas}..."
-kubectl -n "${NS}" scale deployment --all --replicas="${replicas}"
+log "Scaling deployments and opted-in StatefulSets in ${NS} to ${replicas}..."
+tenant_scale_workloads "${NS}" "${replicas}"
 kubectl -n "${NS}" get deploy
+kubectl -n "${NS}" get statefulsets -l "${TENANT_WORKLOAD_SELECTOR}"

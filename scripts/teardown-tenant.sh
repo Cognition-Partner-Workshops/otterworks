@@ -120,7 +120,7 @@ if [ "${KEEP_TRUST}" = false ]; then
 fi
 
 source "${REPO_ROOT}/demo-platform/lib/control-common.sh"
-if [ "$(ctl_get "TENANT#${ATTENDEE_ID}" META | jq -r '.Item.run_token.S // empty')" = odl-1795112287 ]; then
+if [ "${KEEP_DB}" = false ] && [ "$(ctl_get "TENANT#${ATTENDEE_ID}" META | jq -r '.Item.run_token.S // empty')" = odl-1795112287 ]; then
   ctl_delete_tenant "${ATTENDEE_ID}"
 fi
 

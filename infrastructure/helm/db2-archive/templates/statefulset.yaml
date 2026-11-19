@@ -6,6 +6,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "db2-archive.labels" . | nindent 4 }}
+    {{- if eq .Values.storage.mode "emptyDir" }}
+    otterworks.io/scale-with-tenant: "true"
+    {{- end }}
   annotations:
     {{- include "db2-archive.annotations" . | nindent 4 }}
 spec:

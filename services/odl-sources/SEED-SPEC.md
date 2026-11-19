@@ -90,6 +90,30 @@ expiry matching `--ttl never`. It refuses to overwrite another run's record.
 Successful deployment marks the record active; failure marks it error. The
 shared reaper configuration is unchanged.
 
+`teardown-tenant.sh --keep-db` retains the control record so the orphan database
+sweep still recognizes the database. A missing namespace alone does not expire
+a control record: normal expiry/pin rules still apply (ODL records have a
+ten-year expiry). Dashboard check-in may recreate an unowned `free` record;
+registration can adopt that record but never one with another run token, and
+does not overwrite an existing pin.
+
+Db2 in emptyDir mode and Oracle opt into tenant suspension with
+`otterworks.io/scale-with-tenant: "true"`. `tenant-scale.sh`, idle suspension and
+the dashboard wake runner scale these StatefulSets along with Deployments;
+unlabeled StatefulSets are untouched. The scanner also counts opted-in
+StatefulSets. Their refresh CronJobs use the same opt-in and are paused while
+down, then resumed on wake. emptyDir data is lost on suspension; the ordinary
+minute-scheduled refresh Jobs reload both Db2 and Oracle from the same seed
+after they are ready. PostgreSQL remains on RDS and retains its CRM tables.
+Database readiness can precede source loading; wait for refresh completion and
+verify counts before starting a demo.
+
+The shared reaper and dashboard wake use the platform runner image's bundled
+checkout unless a tenant branch is explicitly supplied. Deploying source charts
+or using this branch's scaler does not update those shared components: deploying
+the new runner and the chart's `statefulsets/scale` RBAC permission is required
+for automatic suspension/wake to use this code.
+
 Build from the repository root:
 
 ```sh

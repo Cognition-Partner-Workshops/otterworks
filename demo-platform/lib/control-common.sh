@@ -87,13 +87,13 @@ ctl_register_run_tenant() {
        persistent:{BOOL:false}}')"
   aws dynamodb update-item --table-name "${CONTROL_TABLE}" --region "${AWS_REGION}" \
     --key "$(jq -n --arg id "$id" '{PK:{S:("TENANT#"+$id)},SK:{S:"META"}}')" \
-    --condition-expression 'attribute_not_exists(PK) OR run_token = :run_token' \
+    --condition-expression 'attribute_not_exists(PK) OR run_token = :run_token OR (attribute_not_exists(run_token) AND #status = :free)' \
     --update-expression "$(jq -r 'to_entries | map(
       if (.key == "created_at" or .key == "checked_out_at" or .key == "expires_at" or .key == "persistent")
       then "#"+.key+" = if_not_exists(#"+.key+", :"+.key+")"
       else "#"+.key+" = :"+.key end) | "SET "+join(", ")' <<<"$item")" \
     --expression-attribute-names "$(jq 'with_entries(.value = .key | .key = "#"+.key)' <<<"$item")" \
-    --expression-attribute-values "$(jq 'with_entries(.key = ":"+.key)' <<<"$item")" >/dev/null
+    --expression-attribute-values "$(jq 'with_entries(.key = ":"+.key) + {":free":{S:"free"}}' <<<"$item")" >/dev/null
 }
 
 # Mark a tenant active and record its resolved coordinates.

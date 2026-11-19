@@ -52,7 +52,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: oracle
-  labels: {run_token: {{ .Values.runToken | quote }}}
+  labels: {run_token: {{ .Values.runToken | quote }}, otterworks.io/scale-with-tenant: "true"}
 spec:
   serviceName: oracle
   replicas: 1
@@ -113,7 +113,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: odl-refresh-{{ $source }}
-  labels: {run_token: {{ $.Values.runToken | quote }}}
+  labels: {run_token: {{ $.Values.runToken | quote }}, otterworks.io/scale-with-tenant: "true"}
 spec:
   schedule: "* * * * *"
   suspend: true
