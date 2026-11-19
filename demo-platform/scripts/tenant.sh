@@ -23,7 +23,7 @@
 #   tenant.sh checkin  <id>
 #   tenant.sh extend   <id> <ttl>
 #   tenant.sh status   <id>
-#   tenant.sh sync     <branch> [image-tag]    # CD: redeploy, creating if absent
+#   tenant.sh sync     <branch> [image-tag] [--wait] [--smoke]
 #   tenant.sh persist  <id> true|false
 #   tenant.sh pin      <id> true|false        # never expire, still idle to zero
 #   tenant.sh wake     <id>                   # scale an idle tenant back up
@@ -113,10 +113,10 @@ api() {
 
   if [ -n "${body}" ]; then
     out="$(printf '%s' "${body}" |
-             curl -sS -w '\n%{http_code}' -b "${JAR}" -X "${method}" "${OPS_HOST}${path}" \
+             curl -sS --connect-timeout 10 --max-time 30 -w '\n%{http_code}' -b "${JAR}" -X "${method}" "${OPS_HOST}${path}" \
                   -H 'content-type: application/json' --data-binary @-)"
   else
-    out="$(curl -sS -w '\n%{http_code}' -b "${JAR}" -X "${method}" "${OPS_HOST}${path}")"
+    out="$(curl -sS --connect-timeout 10 --max-time 30 -w '\n%{http_code}' -b "${JAR}" -X "${method}" "${OPS_HOST}${path}")"
   fi
 
   code="$(printf '%s' "${out}" | tail -n1)"
@@ -127,6 +127,53 @@ api() {
     409) fail "conflict: $(printf '%s' "${out}" | jq -r '.error // .' 2>/dev/null || printf '%s' "${out}")" ;;
     *)   fail "${method} ${path} returned HTTP ${code}: ${out}" ;;
   esac
+}
+
+cd_summary() {
+  log "$*"
+  if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then printf '%s\n' "$*" >> "${GITHUB_STEP_SUMMARY}"; fi
+}
+
+wait_for_deploy() {
+  local id="$1" since="$2" detail event
+  local deadline=$((SECONDS + ${CD_WAIT_TIMEOUT:-2400}))
+  while [ "${SECONDS}" -lt "${deadline}" ]; do
+    detail="$(api GET "/api/tenants/${id}")" || return 1
+    event="$(jq -r --argjson since "${since}" '
+      [.audit[]? | select(.ts > $since and (.action == "deploy_ok" or .action == "deploy_fail"))]
+      | sort_by(.ts) | .[0].action // empty' <<< "${detail}")" || return 1
+    case "${event}" in
+      deploy_ok) DEPLOY_DETAIL="${detail}"; cd_summary "Runner deploy for ${id}: PASS"; return 0 ;;
+      deploy_fail) cd_summary "Runner deploy for ${id}: FAIL (deploy_fail audit event)"; return 1 ;;
+    esac
+    sleep "${CD_POLL_INTERVAL:-10}"
+  done
+  cd_summary "Runner deploy for ${id}: TIMEOUT (no completion audit event)"
+  return 1
+}
+
+smoke_tenant() {
+  local detail="$1" base url code attempt failed=0
+  local web api_url
+  web="$(jq -r '.url // empty' <<< "${detail}")"
+  api_url="$(jq -r '.apiUrl // empty' <<< "${detail}")"
+  for base in "${web}" "${api_url}"; do
+    case "${base}" in
+      http://*|https://*) ;;
+      *) cd_summary "Ingress smoke: FAIL (missing/invalid tenant URL)"; return 1 ;;
+    esac
+  done
+  for url in "${web%/}/" "${api_url%/}/health"; do
+    code=000
+    for ((attempt=1; attempt<=${CD_SMOKE_ATTEMPTS:-18}; attempt++)); do
+      code="$(curl -sS --connect-timeout 5 --max-time 15 -o /dev/null -w '%{http_code}' "${url}")" || code=000
+      [ "${code}" = 200 ] && break
+      if [ "${attempt}" -lt "${CD_SMOKE_ATTEMPTS:-18}" ]; then sleep "${CD_POLL_INTERVAL:-10}"; fi
+    done
+    cd_summary "Ingress smoke ${url}: HTTP ${code}"
+    [ "${code}" = 200 ] || failed=1
+  done
+  return "${failed}"
 }
 
 # GET that tolerates a 404, for "does this tenant exist?". Prints the body on
@@ -257,8 +304,25 @@ case "${cmd}" in
   # tenant already exists, so the pipeline needs no state of its own.
   sync)
     branch="${1:-}"
-    [ -n "${branch}" ] || fail "usage: tenant.sh sync <branch> [image-tag]"
-    image_tag="${2:-}"
+    [ -n "${branch}" ] || fail "usage: tenant.sh sync <branch> [image-tag] [--wait] [--smoke]"
+    shift
+    image_tag=""
+    wait=false
+    smoke=false
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        --wait) wait=true ;;
+        --smoke) smoke=true; wait=true ;;
+        -*) fail "unknown sync option: $1" ;;
+        *) [ -z "${image_tag}" ] || fail "unexpected sync argument: $1"; image_tag="$1" ;;
+      esac
+      shift
+    done
+    if [ "${wait}" = true ]; then
+      [[ "${CD_WAIT_TIMEOUT:-2400}" =~ ^[1-9][0-9]*$ ]] || fail "CD_WAIT_TIMEOUT must be positive seconds"
+      [[ "${CD_POLL_INTERVAL:-10}" =~ ^[0-9]+$ ]] || fail "CD_POLL_INTERVAL must be seconds"
+      [[ "${CD_SMOKE_ATTEMPTS:-18}" =~ ^[1-9][0-9]*$ ]] || fail "CD_SMOKE_ATTEMPTS must be positive"
+    fi
 
     # workshop-derek and demo-derek both mean tenant 'derek'. The dashboard
     # refuses a redeploy from a branch other than the one the tenant was
@@ -281,6 +345,14 @@ case "${cmd}" in
 
     login
     existing="$(api_get_optional "/api/tenants/${id}")"
+    # Pod reconciliation can report active while the runner is still working.
+    # Only a new terminal runner audit event proves this sync has finished.
+    since="$(printf '%s' "${existing:-null}" | jq '[.audit[]?.ts] | max // 0')"
+    if [ "${wait}" = true ]; then
+      # DynamoDB queries are eventually consistent; a late old event must not
+      # satisfy this wait. Runner and client timestamps are epoch milliseconds.
+      since="$(jq -n --argjson previous "${since}" '[$previous, (now * 1000 | floor)] | max')"
+    fi
 
     if [ -z "${existing}" ] || [ "$(printf '%s' "${existing}" | jq -r '.status // "free"')" = "free" ]; then
       # CD creates ephemeral environments only. A perpetual tenant never expires
@@ -317,7 +389,16 @@ case "${cmd}" in
       fi
     fi
 
-    log "watch with: tenant.sh status ${id}"
+    if [ "${wait}" = true ]; then
+      DEPLOY_DETAIL=""
+      wait_for_deploy "${id}" "${since}" || fail "deploy did not complete successfully for ${id}"
+      if [ -n "${GITHUB_OUTPUT:-}" ]; then
+        jq -r '"url=\(.url // "")"' <<< "${DEPLOY_DETAIL}" >> "${GITHUB_OUTPUT}"
+      fi
+      if [ "${smoke}" = true ]; then smoke_tenant "${DEPLOY_DETAIL}" || fail "ingress smoke failed for ${id}"; fi
+    else
+      log "watch with: tenant.sh status ${id}"
+    fi
     ;;
 
   # Perpetual tenants are exempt from the reaper and from idle-suspend, so they
