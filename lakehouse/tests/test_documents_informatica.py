@@ -1,10 +1,12 @@
 from datetime import date
+from types import SimpleNamespace
 
 import pytest
 
 from etl.informatica.runner.engine import coerce
 from etl.informatica.runner.expr import compile_expr
 from lakehouse.orchestration.graph import load
+from lakehouse.parity.documents_informatica_legacy import connection_settings
 from lakehouse.parity.readers import postgres_connection
 from lakehouse.runtime.documents_informatica import DOCUMENT, SHARE, checkpoint, convert, ports, read_feed
 
@@ -163,3 +165,10 @@ def test_postgres_reader_database_override(monkeypatch):
                         lambda dsn, **kwargs: observed.update(kwargs))
     postgres_connection('isolated-database')
     assert observed['dbname'] == 'isolated-database'
+
+
+def test_oracle_connection_settings_include_libpq_defaults():
+    info = SimpleNamespace(get_parameters=lambda: {'dbname': 'teradata'},
+                           host='localhost', port=5432, user='postgres')
+    assert connection_settings(SimpleNamespace(info=info)) == {
+        'dbname': 'teradata', 'host': 'localhost', 'port': '5432', 'user': 'postgres'}

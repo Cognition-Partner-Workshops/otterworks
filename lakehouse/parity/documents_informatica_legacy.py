@@ -17,13 +17,18 @@ from lakehouse.runtime.layout import ROOT, data_root
 from .readers import postgres_connection
 
 
+def connection_settings(connection):
+    return {**connection.info.get_parameters(), 'host': connection.info.host,
+            'port': str(connection.info.port), 'user': connection.info.user}
+
+
 def run(landing, day):
     business_date(day)
     root = data_root() / 'legacy_informatica'
     root.mkdir(parents=True, exist_ok=True)
     database = 'lakehouse_documents_infa_' + os.environ['NS']
     with postgres_connection() as source:
-        settings = source.info.get_parameters()
+        settings = connection_settings(source)
         with psycopg.connect(**{**settings, 'dbname': 'postgres'}, autocommit=True) as admin:
             if not admin.execute('SELECT 1 FROM pg_database WHERE datname = %s', (database,)).fetchone():
                 # Identifiers are quoted by psycopg, not interpolated as SQL text.
