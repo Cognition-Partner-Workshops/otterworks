@@ -76,13 +76,28 @@ credentials; it is not needed for local DuckDB checks.
 - Spark monthly date_format('yyyy-MM') / trial balance splits into daily groups if sqlglot drops TO_CHAR's format / ship explicit Snowflake TO_CHAR(date, 'YYYY-MM') and explicitly map it to DuckDB STRFTIME for local proof / `warehouse/dbt/models/spark/billing_gl_trial_balance/billing_gl_trial_balance.sql`, `parity/spark_billing.py`.
 - Spark usage job emits only MAX(USAGE_DATE) even on its first run / target first-build backfill has extra rows / apply the latest-date predicate on initial as well as incremental dbt builds / `warehouse/dbt/models/spark/billing_usage_append_daily/billing_usage_append_daily.sql`.
 - Spark Python churn scoring / a separately rewritten formula would not prove the shipped conversion / extract the shipped Snowpark UDF and projection, register that Python body in DuckDB, and compare actual Spark Parquet against the same landing PSVs / `parity/spark_billing.py`, `warehouse/snowpark/billing_churn_score.py`.
+- Teradata SET table silently drops exact-duplicate rows on INSERT…SELECT / target MULTISET-equivalent table keeps them (STORAGE_USAGE_DAILY 250 vs 300 rows at ROWS_PER_TABLE=200), inflating storage totals and billing storage charges / never add or omit `DISTINCT` on your own: carry the INSERT unchanged, mark the table and every reader red as an owner decision / `documents/10_load.sql` (`05_LOAD_SESSIONS`), `parity/local_documents.py` `OWNER_DECISIONS`.
+- `QUALIFY ROW_NUMBER() … ORDER BY` on a non-unique column / Teradata and Snowflake pick different rows among ties, so counts match while keyed hashes differ / carry the ORDER BY unchanged, do not invent a tie-break, keep the script and its downstream views red until the owner names the secondary key / `documents/10_load.sql` (`02_CURRENT_VERSIONS`).
+- PowerCenter lookup "Use First Value" on a non-unique lookup key / a plain LEFT JOIN fans out and any chosen row is a precedence decision / the fixture has one grant per user so measured parity cannot prove the rule; keep mapping and session red until role precedence is decided / `warehouse/dbt/models/pc/content/pc_content__doc_share.sql`.
+- PowerCenter targets live in the runner's own warehouse database, not the Teradata snapshot / comparing a mapping against the BTEQ-loaded table of the same name measures the wrong producer / snapshot the runner database into a separate `PC_BEFORE` schema and build the dbt models from the same landing PSVs / `parity/local_documents.py` `powercenter`.
+- TPT LOAD operators into staging / stage rows untyped or missing / `COPY INTO RAW_<AREA>` (existing loader procedure) then one typed `INSERT … SELECT` per TPT script with explicit `TO_DATE`/`TO_TIMESTAMP_NTZ` formats / `documents/05_stage.sql`.
+- Teradata `UNIQUE PRIMARY INDEX` / Snowflake `PRIMARY KEY` is informational, duplicates load without error / declare the key for lineage and rely on row-hash parity, not the constraint, to detect duplicates / `documents/00_tables.sql`.
+- `LOCKING ROW FOR ACCESS` view prefix / no Snowflake counterpart / drop it; view-on-view references point at the `COMPAT` view, not the base table / `documents/30_views.sql`.
+- A BTEQ that crosses subject areas (documents `10_storage_monthly` writes billing tables) / double conversion or unmeasured writes / keep the SQL with the area that owns the target tables and ship only the remaining export in the calling area; the row compares both the billing relations and the macro resultset / `documents/20_routines.sql`, `billing/15_storage.sql`.
+- Retire candidates / dropping an object that is still read / confirm against `warehouse/teradata/dbql` (`qrylog.csv` joined to `objectusage.csv`) and record window, read count and readers on the row; any read blocks the retirement (STG_SEARCH_INDEX_LOG has one read by `svc_report_recon`), zero reads still needs owner approval before a drop / `parity/local_documents.py` `retirement`.
+- Spark output partitioned by a column (`EXPORT_BUCKET=n/`) or written under another area's lake path / legacy output reported missing / read `lake/*/<job>/**/*.parquet` with hive partitioning / `parity/spark_billing.py`.
+- Spark jobs whose shipped target is Snowpark Python or retained Spark / no SQL body to run on DuckDB / link the shipped code and leave the row red as unmeasured; do not rewrite the logic in SQL just to turn the row green / `parity/spark_billing.py`.
 
 Paths above are relative to `migration/dw-exit/` unless beginning with `warehouse/`.
 
 ## Parity proof for a subject area
 
-Use the Run scope exports above and `warehouse/.venv/bin/python`. Billing is the current
-subject-area implementation; other areas need their own relation manifest and conversions.
+Use the Run scope exports above and `warehouse/.venv/bin/python`. Billing and documents are implemented
+(`parity/local_billing.py`, `parity/local_documents.py`); other areas need their own conversions and materializer.
+Set `SFX_PROVENANCE_REF` to the branch the board links should open on (default `devin/sfx1119-billing-parity`).
+Documents also needs every Spark job run (`make sfx-spark-run NS="$NS"`) and the PowerCenter content workflow
+(`make sfx-informatica-up NS=sfx1119_docs && make sfx-informatica-run NS=sfx1119_docs MAPPINGS=all INFA_WORKFLOWS=SFX_CONTENT:wf_SFX_CONTENT_DAILY`;
+override with `PC_NS` or `PC_SOURCE_DSN`). Without them those rows are red as unmeasured.
 
 ```sh
 make sfx-spark-up NS="$NS" ROWS_PER_TABLE=200
