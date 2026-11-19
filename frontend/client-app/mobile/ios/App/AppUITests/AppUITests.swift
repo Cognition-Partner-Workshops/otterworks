@@ -91,8 +91,6 @@ class AppUITestCase: XCTestCase {
         app.buttons["Sign in"].tap()
         if password == "HarborPass123!" {
             XCTAssertTrue(app.links["Files"].waitForExistence(timeout: 10))
-            rotate(.landscapeLeft)
-            rotate(.portrait)
         }
     }
 
@@ -102,10 +100,8 @@ class AppUITestCase: XCTestCase {
 
     func openSidebar() {
         if !element(.button, "Sign out").exists {
-            rotate(.landscapeLeft)
             element(.button, "Open menu").tap()
             XCTAssertTrue(element(.button, "Sign out").waitForExistence(timeout: 5))
-            rotate(.portrait)
         }
     }
 
@@ -116,10 +112,8 @@ class AppUITestCase: XCTestCase {
         link.tap()
         XCTAssertTrue(app.webViews.descendants(matching: .other).matching(NSPredicate(format: "label == %@ AND value == '1'", name)).firstMatch.waitForExistence(timeout: 10), app.debugDescription)
         if dismissSidebar {
-            rotate(.landscapeLeft)
             element(.button, "Toggle sidebar").tap()
             XCTAssertTrue(element(.button, "Sign out").waitForNonExistence(timeout: 5), app.debugDescription)
-            rotate(.portrait)
         }
     }
 }
@@ -225,6 +219,7 @@ final class AppUITests: AppUITestCase {
         title.doubleTap()
         XCTAssertTrue(app.buttons["Download"].firstMatch.waitForExistence(timeout: 10))
         app.buttons["Download"].firstMatch.tap()
+        app.activate()
         // Known native bug: blob-anchor downloads are not persisted via Filesystem.
         // Do not claim a saved file; the browser suite verifies the response payload.
         assertText("Harbor report.txt")
@@ -233,10 +228,11 @@ final class AppUITests: AppUITestCase {
     func testDocumentEditing() {
         login()
         navigate("Documents")
-        let title = element(.staticText, "Voyage notes")
+        let title = element(.link, "Voyage notes", contains: true)
         reveal(title)
-        title.doubleTap()
+        title.tap()
         let editor = app.webViews.textViews.firstMatch
+        if !editor.waitForExistence(timeout: 2) { title.tap() }
         XCTAssertTrue(editor.waitForExistence(timeout: 10))
         XCTAssertTrue((editor.value as? String ?? "").contains("Welcome aboard the harbor."))
         editor.tap()
@@ -252,6 +248,19 @@ final class AppUITests: AppUITestCase {
         XCTAssertTrue(keyboard.exists)
         assertStatusBarBackdrop()
         saveScreenshot("editor-keyboard")
+        let done = app.toolbars.buttons["Done"]
+        XCTAssertTrue(done.waitForExistence(timeout: 5))
+        done.tap()
+        XCTAssertTrue(keyboard.waitForNonExistence(timeout: 5))
+        let controls = [element(.button, "Save"), element(.button, "Share"), element(.button, "Horizontal rule")]
+        let layoutRestored = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            let header = self.element(.other, "banner")
+            return header.exists && abs(header.frame.width - self.app.frame.width) <= 1 &&
+                abs(header.frame.minX - self.app.frame.minX) <= 1 &&
+                controls.allSatisfy { $0.exists && $0.isHittable && self.app.frame.contains($0.frame) }
+        }, object: nil)
+        wait(for: [layoutRestored], timeout: 10)
+        saveScreenshot("editor-after-edit")
         app.buttons["Save"].tap()
         let saved = expectation(description: "HTTP document save persisted")
         var request = URLRequest(url: URL(string: "http://127.0.0.1:4010/api/v1/documents/doc-1")!)

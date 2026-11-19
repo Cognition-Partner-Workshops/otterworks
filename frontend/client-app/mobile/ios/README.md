@@ -35,8 +35,8 @@ Chromium tests and CI commands stay separate.
   `navigate()` and `assertText()`. Setup resets the backend and signs out a previous
   WKWebView session through the UI. Keep test parallelisation off.
 * Use `element()` for WKWebView label queries, `reveal()` to scroll a control
-  into view and `fill()` to clear/type after keyboard focus. Card-title flows
-  double-tap the visible text rather than the outer card's composite link label.
+  into view and `fill()` to clear/type after keyboard focus. Document cards may
+  need a second tap after iOS reveals their hover controls.
   Document-save verification polls the backend instead of racing the HTTP save.
 * Add browser flows under `e2e/ios-flows/`. The fixture reset runs before each
   test; this suite is serial because the server state is shared.
@@ -57,12 +57,14 @@ API default (Android-only 10.0.2.2) is worked around only by build-time env vars
 Do not fix application bugs in harness changes. Only add a named skip/expected
 failure for a confirmed application bug, not a query or interaction failure.
 
-Native navigation briefly rotates to landscape to operate the sidebar controls,
-waits for viewport layout, then returns to portrait. Login starts in portrait,
-dismisses the keyboard before submitting and normalises the viewport after input
-auto-zoom. `testPortraitMenuReopens` checks portrait header/drawer clearance and
+Native navigation and login stay in portrait without viewport normalization.
+Login dismisses the keyboard before submitting. Touch form controls and editable
+content use a 16px font to prevent input auto-zoom while preserving pinch zoom.
+`testPortraitMenuReopens` checks portrait header/drawer clearance and
 `testLandscapeSafeArea` checks both landscape orientations. Document editing
-checks the formatting toolbar above the open keyboard and exercises Bold.
+checks the formatting toolbar above the open keyboard, exercises Bold, then
+dismisses the keyboard and checks the header width and Save/Share/toolbar reachability
+without rotating.
 These flows retain screenshot attachments in the result bundle.
 `testDownloadPersistsToFiles` is explicitly skipped until the
 Filesystem download fix lands. Navigation-only assertions can leave the sidebar

@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@media (hover: none) and (pointer: coarse) {
+  input,
+  textarea,
+  select,
+  [contenteditable="true"] {
+    font-size: 16px !important;
+  }
+}
+
 .safe-status-backdrop {
   position: fixed;
   left: 0;
