@@ -37,35 +37,36 @@ jobs:
       REPORT: ${{ matrix.report }}
       EVIDENCE: ${{ github.workspace }}/test-coverage-evidence
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         if: matrix.runtime == 'go'
         with:
           go-version-file: services/api-gateway/go.mod
           cache-dependency-path: services/api-gateway/go.sum
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
         if: matrix.runtime == 'java'
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@da187c8e6ffbd3802e00f2477aa5a822b25f2dda # v4
         if: matrix.runtime == 'java'
         with:
           gradle-version: '8.6'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         if: matrix.runtime == 'node'
         with:
           node-version: '22'
           cache: npm
           cache-dependency-path: ${{ matrix.path }}/package-lock.json
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
         with:
           python-version: '3.12'
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
         if: matrix.runtime == 'rust'
         with:
+          toolchain: stable
           components: llvm-tools-preview
-      - uses: taiki-e/install-action@v2
+      - uses: taiki-e/install-action@75a7c0f87bd666af3cdb75c5b9e9d03ab6044e6f # v2
         if: matrix.runtime == 'rust'
         with:
           tool: cargo-llvm-cov@0.9.1
@@ -154,7 +155,7 @@ jobs:
             --tests "$TEST_OUTCOME" | tee "$EVIDENCE/summary-row.md" >> "$GITHUB_STEP_SUMMARY"
       - name: Upload native test evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: coverage-${{ matrix.service }}
           path: ${{ env.EVIDENCE }}/
@@ -166,7 +167,7 @@ jobs:
     needs: coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           pattern: coverage-*
           path: evidence
