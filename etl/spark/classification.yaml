@@ -96,8 +96,10 @@
   reason: "Walks parent pointers iteratively with RDDs and a broadcast parent lookup."
 - job: team_graph_components
   language: scala
-  target: snowpark_python
+  target: spark_standard_template
   reason: "Propagates component labels iteratively across a team-membership graph."
+  original_target: snowpark_python
+  change_reason: "Retains distributed iterative label propagation on the standard Spark template because the run-scoped Snowflake database and warehouse are unavailable for measurement."
 - job: doc_share_graph_reach
   language: python
   target: snowpark_python
