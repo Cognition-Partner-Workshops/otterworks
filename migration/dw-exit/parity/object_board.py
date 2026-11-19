@@ -23,8 +23,9 @@ from assess import board as wave_board
 from parity.local_billing import execute
 from parity.semantics import columns as source_columns, numeric_type
 from parity.ladder import local_compare as compare
-from parity.provenance import provenance, markdown
-from parity import report_outputs, spark_billing
+from parity.provenance import provenance, markdown, compact_markdown
+from parity import report_outputs, spark_billing, spark_users, pc_users, retirement_users
+from parity.subjects import SUBJECTS
 
 
 def quote(name):
@@ -82,10 +83,11 @@ def source_snapshot(dsn, names):
     return connection, ready, errors
 
 
-def materialize(before, names, conversion_dir, business_date='20261109'):
-    after = duckdb.connect()
+def materialize(before, names, conversion_dir, business_date='20261109', subject='billing', after=None):
+    after = after if after is not None else duckdb.connect()
     ready, errors = set(), {}
-    after.execute('CREATE SCHEMA BILLING')
+    schema = subject.upper()
+    after.execute('CREATE SCHEMA '+schema)
     if (conversion_dir / '15_storage.sql').exists():
         rows = before.execute('SELECT * FROM SFX_DOCUMENTS.STORAGE_USAGE_DAILY').fetchall()
         definitions = before.execute('DESCRIBE SFX_DOCUMENTS.STORAGE_USAGE_DAILY').fetchall()
@@ -93,12 +95,12 @@ def materialize(before, names, conversion_dir, business_date='20261109'):
         if rows:
             after.executemany('INSERT INTO BILLING.STORAGE_USAGE_INPUT VALUES ('+', '.join('?' for _ in definitions)+')', rows)
     for name in sorted(names):
-        if not name.startswith('SFX_BILLING.'):
+        if not name.startswith('SFX_'+schema+'.'):
             continue
         table = name.split('.')[1]
         if table.startswith('V_'):
             continue
-        target = 'BILLING.'+table
+        target = schema+'.'+table
         # DuckDB metadata and identifiers are local; relation()/quote() escape identifiers.
         # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         definitions = before.execute('DESCRIBE '+relation(name)).fetchall()
@@ -112,7 +114,7 @@ def materialize(before, names, conversion_dir, business_date='20261109'):
                 after.executemany(f'INSERT INTO {relation(target)} VALUES ({", ".join("?" for _ in definitions)})', rows)
             ready.add(target)
     if (conversion_dir / '20_routines.sql').exists():
-        errors.update(execute(after, conversion_dir, ready, business_date))
+        errors.update(execute(after, conversion_dir, ready, business_date, subject))
         return after, ready, errors
     for filename in ('10_load.sql', '30_views.sql'):
         text = RunConfig.from_env().render((conversion_dir / filename).read_text())
@@ -154,7 +156,7 @@ def materialize(before, names, conversion_dir, business_date='20261109'):
     return after, ready, errors
 
 
-def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, preflight=None):
+def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, preflight=None, pc_results=None):
     if target not in ('duckdb', 'snowflake'):
         raise ValueError('Unsupported parity target')
     if preflight is not None and (preflight.get('run_token') != RunConfig.from_env().token
@@ -169,12 +171,14 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
         'local_target': 'DuckDB', 'conversions': ['billing/'+s for s in ('10_load.sql','15_storage.sql','20_routines.sql','30_views.sql','40_close.sql')],
         'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
+    result['measurement_contract']['conversions'].extend('users/'+s for s in SUBJECTS['users']['stages'])
     available, errors = set(available or ()), errors or {}
+    retire_evidence = retirement_users.verify() if any(o['subject_area'] == 'users' and o['target_type'] == 'retire' for o in objects) else None
     for obj in objects:
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
         row.update(status='red', migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'),
                    row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
-        if obj['subject_area'] == 'billing':
+        if obj['subject_area'] in SUBJECTS:
             row['provenance'] = provenance(obj)
         if obj['system'] == 'spark' and not any(name.startswith('SFX_SPARK.') for name in obj.get('output_relations', [])):
             if obj.get('source') and (ROOT / obj['source']).is_file():
@@ -206,13 +210,34 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
                 if row['status'] == 'red':
                     row['reason'] = 'measured parity mismatch'
-        if obj['subject_area'] == 'billing':
+        mapping = obj['name'].removeprefix('s_')
+        if target == 'duckdb' and obj['subject_area'] == 'users' and obj['kind'] in ('mapping','session') and pc_results is not None:
+            proof = pc_results[mapping]
+            row['bteq_relation_measurement'] = {k: row.get(k) for k in
+                ('status','reason','row_count','column_profile','keyed_row_hash','sampled_differences','comparison_rules')}
+            row.update(status=proof['status'],reason=proof['reason'],powercenter=proof,
+                       measurement_basis='actual PowerCenter runner targets vs shipped dbt model on captured inputs')
+            measurement = proof['measurement']
+            for field in ('row_count','column_profile','keyed_row_hash','sampled_differences','comparison_rules'):
+                row[field] = None if measurement is None else (measurement[field] if field == 'row_count' else
+                    {'SFX_USERS.'+pc_users.MAPPINGS[mapping]:measurement[field]})
+            if mapping == 'm_SFX_APP_USER':
+                row.update(status='red',reason='Held on APP_USER display-name truncation decision; isolated PC/dbt proof has hash_difference=0 and does not clear the escalation' if measurement and measurement['keyed_row_hash']['difference'] == 0 else 'Held on APP_USER display-name truncation decision; see independent PC/dbt proof for current measurements')
+        if target == 'duckdb' and obj['subject_area'] == 'users' and obj['target_type'] == 'retire':
+            approved = (obj['name'] in retirement_users.DEAD | retirement_users.DEPENDENTS
+                        and obj['name'] in manifest.get('dead' if obj['name'] in retirement_users.DEAD else 'dead_dependents', [])
+                        and retire_evidence['passed'])
+            row.update(status='retire_verified' if approved else 'red', retirement_evidence=retire_evidence,
+                       reason=(retire_evidence['reason'] if approved else 'Retirement evidence failed or manifest declaration disagrees')+'; '+retirement_users.CAVEAT,
+                       row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None)
+        if obj['subject_area'] in SUBJECTS:
             row.update(local_duckdb=row['status'] if target == 'duckdb' else 'red',
                        snowflake='red', snowflake_reason=snowflake_reason,
                        snowflake_preflight=preflight)
         result['rows'].append(row)
     total = sum(r['licence_dependency_count'] for r in result['rows'])
     result['summary'] = dict(rows=len(objects), red=sum(r['status']=='red' for r in result['rows']),
+        retire_verified=sum(r['status']=='retire_verified' for r in result['rows']),
         green=sum(r['status']=='green' for r in result['rows']), measured=sum(r['row_count'] is not None for r in result['rows']),
         migrated=0, licence_remaining=total, licence_total=total,
         licence_by_system=dict(Counter(r['licence_dependency'] for r in result['rows'] if r['licence_dependency']!='none')))
@@ -221,6 +246,13 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     result['summary']['billing'] = dict(local_duckdb='green' if billing and local_green == len(billing) else 'red',
         local_green=local_green, local_red=len(billing)-local_green,
         snowflake='red', snowflake_reason=snowflake_reason)
+    for subject in SUBJECTS.keys() - {'billing'}:
+        rows = [row for row in result['rows'] if row['subject_area'] == subject]
+        green = sum(row['local_duckdb'] == 'green' for row in rows)
+        retired = sum(row['local_duckdb'] == 'retire_verified' for row in rows)
+        result['summary'][subject] = dict(local_duckdb='green' if rows and green == len(rows) else 'red',
+            local_green=green, local_retire_verified=retired, local_red=len(rows)-green-retired,
+            snowflake='red', snowflake_reason=snowflake_reason)
     return result
 
 
@@ -240,7 +272,7 @@ def main():
     try:
         if args.target == 'duckdb' and manifest['objects']:
             names = {r for obj in manifest['objects'] for r in obj.get('output_relations',[])
-                     if not r.startswith('SFX_SPARK.') and r.split('.')[-1] not in report_outputs.OUTPUTS}
+                     if not r.startswith('SFX_SPARK.') and r.split('.')[-1] not in set.union(*report_outputs.SUBJECT_OUTPUTS.values())}
             ns = os.environ.get('NS',RunConfig.from_env().before_namespace)
             port = os.environ.get('TD_PG_PORT',str(54500+zlib.crc32(ns.encode())%1000))
             dsn = os.environ.get('BOARD_SOURCE_DSN',f'host=127.0.0.1 port={port} dbname=teradata user=postgres')
@@ -249,10 +281,35 @@ def main():
             errors.update(source_errors)
             if not errors.get('*'):
                 errors.update(report_outputs.materialize(before,after,dsn,ready,os.environ.get('BUSINESS_DATE','20261109')))
+            for subject in SUBJECTS.keys() - {'billing'}:
+                outputs = {r for obj in manifest['objects'] if obj['subject_area'] == subject
+                           and obj['target_type'] != 'retire' for r in obj.get('output_relations', [])}
+                after, subject_ready, subject_errors = materialize(before, source_ready & outputs,
+                    ROOT/'migration/dw-exit'/subject, os.environ.get('BUSINESS_DATE','20261109'), subject, after)
+                if '*' in subject_errors:
+                    errors.update({r.removeprefix('SFX_'): subject_errors['*'] for r in outputs})
+                else:
+                    errors.update(subject_errors)
+                    errors.update(report_outputs.materialize(before,after,dsn,subject_ready,
+                        os.environ.get('BUSINESS_DATE','20261109'),subject))
+                ready.update(subject_ready)
             spark_ready,spark_errors,spark_evidence = spark_billing.materialize(before,after,manifest['objects'],ns)
             ready.update(spark_ready)
             errors.update(spark_errors)
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight)
+            users_ready,users_errors,users_evidence = spark_users.materialize(before,after,manifest['objects'],ns)
+            ready.update(users_ready)
+            errors.update(users_errors)
+            spark_evidence.update(users_evidence)
+        pc_results = None
+        pc_evidence = None
+        if args.target == 'duckdb' and manifest['objects'] and (pc_users.OUT/'capture.json').exists():
+            try:
+                pc_results, pc_evidence = pc_users.proofs(ns,ROOT/'warehouse/landing',os.environ.get('BUSINESS_DATE','20261109'))
+            except (OSError,ValueError,duckdb.Error) as error:
+                pc_results = {m:dict(status='red',reason='PC evidence unavailable: '+str(error),measurement=None) for m in pc_users.MAPPINGS}
+        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight,pc_results=pc_results)
+        if pc_evidence is not None:
+            payload['powercenter_evidence'] = pc_evidence
         if args.target == 'duckdb' and manifest['objects']:
             payload['spark_evidence'] = spark_evidence
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
@@ -260,6 +317,7 @@ def main():
         if readme.exists():
             text = readme.read_text().split('\n## Billing parity provenance')[0]
             readme.write_text(text.rstrip()+'\n'+markdown(payload['rows']))
+        (args.output.parent/'users-pr.md').write_text(markdown(payload['rows'], 'users')+compact_markdown(payload['rows']))
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
         if before is not None:

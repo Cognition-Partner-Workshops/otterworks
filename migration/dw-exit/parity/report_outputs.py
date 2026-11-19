@@ -13,14 +13,17 @@ from .semantics import numeric_type
 
 ROOT = Path(__file__).resolve().parents[3]
 OUTPUTS = {'M_SUBSCRIPTION_PLANS_OUTPUT', 'M_CURRENCY_TOTALS_OUTPUT', 'GL_TRIAL_BALANCE_OUTPUT'}
+SUBJECT_OUTPUTS = {'billing': OUTPUTS, 'users': {'M_TEAM_COUNTS_OUTPUT'}}
 
 
-def source_queries():
+def source_queries(subject='billing'):
     queries = {}
     for path in sorted((ROOT/'warehouse/teradata/macros').glob('*.sql')):
-        match = re.search(r'REPLACE MACRO SFX_BILLING\.(M_\w+).*?\bAS\s*\((.*)\);', path.read_text(), re.S | re.I)
+        match = re.search(r'REPLACE MACRO SFX_'+subject.upper()+r'\.(M_\w+).*?\bAS\s*\((.*)\);', path.read_text(), re.S | re.I)
         if match:
             queries[match[1]+'_OUTPUT'] = match[2].strip().rstrip(';')
+    if subject != 'billing':
+        return queries
     text = (ROOT/'warehouse/teradata/scripts/billing/12_invoice_monthly.bteq').read_text()
     match = re.search(r'gl_trial_balance\.psv\s*\n(SELECT.*?);', text, re.S | re.I)
     if not match:
@@ -29,8 +32,8 @@ def source_queries():
     return queries
 
 
-def target_queries():
-    text = render((ROOT/'migration/dw-exit/billing/20_routines.sql').read_text())
+def target_queries(subject='billing'):
+    text = render((ROOT/'migration/dw-exit'/subject/'20_routines.sql').read_text())
     queries = {}
     for name, body in re.findall(r'CREATE OR REPLACE PROCEDURE\s+\S+\.(M_\w+).*?\$\$(.*?)\$\$;', text, re.S | re.I):
         match = re.search(r'LET res RESULTSET\s*:=\s*\((.*?)\);\s*RETURN TABLE', body, re.S | re.I)
@@ -51,11 +54,12 @@ def postgres_query(query):
     return parsed.sql(dialect='postgres')
 
 
-def materialize(before, after, dsn, ready, business_date):
+def materialize(before, after, dsn, ready, business_date, subject='billing'):
     errors = {}
+    schema = subject.upper()
     with psycopg.connect(dsn) as source:
-        for name, query in source_queries().items():
-            target = 'BILLING.'+name
+        for name, query in source_queries(subject).items():
+            target = schema+'.'+name
             try:
                 with source.cursor() as cursor:
                     cursor.execute(postgres_query(query))
@@ -68,20 +72,22 @@ def materialize(before, after, dsn, ready, business_date):
                         if not kind:
                             raise ValueError('Unsupported report result type: '+str(column.type_code))
                         columns.append('"'+column.name.upper()+'" '+kind)
-                    before.execute('CREATE TABLE SFX_BILLING.'+name+' ('+', '.join(columns)+')')
+                    before.execute('CREATE TABLE SFX_'+schema+'.'+name+' ('+', '.join(columns)+')')
                     if rows:
-                        before.executemany('INSERT INTO SFX_BILLING.'+name+' VALUES ('+','.join('?' for _ in columns)+')', rows)
+                        before.executemany('INSERT INTO SFX_'+schema+'.'+name+' VALUES ('+','.join('?' for _ in columns)+')', rows)
             except (psycopg.Error, ValueError) as error:
                 source.rollback()
                 errors[target] = 'source report failed: '+str(error)
-    for name, query in target_queries().items():
-        target = 'BILLING.'+name
+    for name, query in target_queries(subject).items():
+        target = schema+'.'+name
         try:
             after.execute('CREATE TABLE '+target+' AS '+query)
             if target not in errors:
                 ready.add(target)
         except (ValueError, duckdb.Error) as error:
             errors[target] = 'converted report failed: '+str(error)
+    if subject != 'billing':
+        return errors
     for statement in statements(ROOT/'migration/dw-exit/billing/35_reports.sql', business_date):
         after.execute(statement.sql(dialect='duckdb'))
     if 'BILLING.GL_TRIAL_BALANCE_OUTPUT' not in errors:

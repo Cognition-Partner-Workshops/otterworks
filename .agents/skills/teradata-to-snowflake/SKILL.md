@@ -76,25 +76,58 @@ credentials; it is not needed for local DuckDB checks.
 - Spark monthly date_format('yyyy-MM') / trial balance splits into daily groups if sqlglot drops TO_CHAR's format / ship explicit Snowflake TO_CHAR(date, 'YYYY-MM') and explicitly map it to DuckDB STRFTIME for local proof / `warehouse/dbt/models/spark/billing_gl_trial_balance/billing_gl_trial_balance.sql`, `parity/spark_billing.py`.
 - Spark usage job emits only MAX(USAGE_DATE) even on its first run / target first-build backfill has extra rows / apply the latest-date predicate on initial as well as incremental dbt builds / `warehouse/dbt/models/spark/billing_usage_append_daily/billing_usage_append_daily.sql`.
 - Spark Python churn scoring / a separately rewritten formula would not prove the shipped conversion / extract the shipped Snowpark UDF and projection, register that Python body in DuckDB, and compare actual Spark Parquet against the same landing PSVs / `parity/spark_billing.py`, `warehouse/snowpark/billing_churn_score.py`.
+- Teradata implicit VARCHAR width coercion on INSERT / APP_USER source core truncates 100 display names to 60 while DuckDB keeps staging's 200; Snowflake may error rather than truncate (live behavior unverified) / stop and escalate, never add truncation or hash normalization to force green; source emulator dispatch injects destination-width casts / `warehouse/teradata/ddl/users/00_tables.sql`, `warehouse/teradata/scripts/users/01_load_users.bteq`, `warehouse/teradata/bteq/runner.py`, `users/README.md`.
+- PowerCenter source/transform port precision / STG display names truncate before trim while shipped dbt retains 200 characters / inspect XML port precision and reachable runner coerce path, leave actual mismatch red; verify email lower/trim and status upper/trim independently / `etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_STG_APP_USER.XML`, `etl/informatica/runner/engine.py`, `warehouse/dbt/models/pc/content/pc_content__stg_app_user.sql`, `parity/pc_users.py`.
+- PowerCenter output shares a table with BTEQ / relation parity alone falsely implies mapping execution / capture initial targets, run actual workflow plus explicitly enabled standalone sessions, compare actual targets with shipped dbt SELECT plus table/merge materialization on identical inputs, restore source state, and retain supplementary BTEQ measurements; bind capture to input/code hashes / `parity/pc_users.py`, `parity/object_board.py`.
+- PowerCenter LOGIN_EVENT router default group has no writer / unknown result codes disappear although BTEQ keeps all rows / prove both ordinary landing and a supplemental actual-runner probe; ordinary users landing has only SUCCESS; FAILED/LOCKED/MFA_FAILED survive and UNROUTED drops in both PC and dbt / `etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_LOGIN_EVENT.XML`, `warehouse/dbt/macros/pc_content_login_event.sql`, `users/README.md`.
+- Session Truncate target table flags and disabled workflow tasks / full replacement differs from append/merge; TEAM_MEMBER is not scheduled / honor STG_APP_USER/ROLE_GRANT truncate, other three nontruncate; invoke disabled TEAM_MEMBER via startsession and disclose that scheduling was not proved / `etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML`, `parity/pc_users.py`.
+- APP_USER Use First Value lookup and update strategy / BTEQ replacement cannot prove insert/update or duplicate lookup choice / execute against captured existing targets, retain unmatched rows, report absence of duplicate lookup keys as an empirical limitation; isolated hash_difference=0 does not clear the separate APP_USER truncation hold / `etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_APP_USER.XML`, `parity/pc_users.py`, `parity/object_board.py`.
+- P_ACTIVITY_DAILY and M_TEAM_COUNTS oddities / date-scoped cleanup or distinct-user counting changes source results / preserve deletion of all activity IDs >=10000000000, DOCUMENT_COUNT=0, macro ignoring p_day and counting TEAM_MEMBER_ID; preserve BTEQ secondary-table delete/insert effects and declare resultset exports / `users/10_load.sql`, `users/20_routines.sql`, `parity/report_outputs.py`.
+- Spark jobs with shipped Snowpark but manifest dbt_model / rewritten stand-in cannot prove the shipped implementation / extract shipped UDF bodies and projections (including UDTF process/end_partition), run on DuckDB, reject unsupported shapes, compare actual lake Parquet on the same landing; do not silently claim a dbt materialization was run / `parity/spark_users.py`, `warehouse/snowpark/team_graph_components.py`.
+- Spark JSON/browser/graph/risk defaults / missing keys, unmatched agents, graph convergence or float rounding can quietly differ / preserve missing key empty string, invalid JSON NULL and Python str, Other fallback, exactly six graph iterations with self-edges excluded, and exact logistic double computation; stop only on measured disagreement / `warehouse/snowpark/user_pref_json_flatten.py`, `warehouse/snowpark/users_login_useragent_parse.py`, `warehouse/snowpark/team_graph_components.py`, `warehouse/snowpark/users_risk_score.py`, `tests/test_spark_users.py`.
+- Spark JDBC overwrite side outputs / lake parity misses SPARK_RISK_SCORE and SPARK_TEAM_ROLLUP / inspect and compare JDBC outputs independently, search manifest/registry/repository readers; these users side tables match lake but lack separate manifest declarations, and external consumers remain unverified / `etl/spark/scala/src/main/scala/sfx/UsersRiskScore.scala`, `etl/spark/jobs/py/users_team_rollup.py`, `users/README.md`.
+- Make namespace validation / existing sfx1119-before is rejected where RunConfig generates sfx-1119-before / use a correctly scoped new namespace or documented direct runner against the existing emulator; do not weaken validation or silently switch estates / `warehouse/run_config.py`, `parity/pc_users.py`, `users/README.md`.
+- Spark startup fixture regeneration and append outputs / stale landing evidence, UID 185 log ownership, mixed-run billing usage Parquet / pull the documented image first, restore only local runtime log ownership if needed, rerun affected jobs after landing changes; archive old append output for an explicitly initial-build proof, never deduplicate the comparison / `etl/spark/run.sh`, `parity/spark_billing.py`, `users/README.md`.
+- DBQL absence and dependent retirement / pinned BEFORE evidence alone can mask new current reads; zero reads is not migrated parity / rerun assess.build(root=current checkout), require nonempty full-window DBQL, verify absence plus dead_dependents propagation and input hashes; report retire_verified separately from green, fail red, preserve licence/migration state and owner approval / `parity/retirement_users.py`, `tools/assess.py`, `parity/object_board.py`.
+- Retired Teradata USER_PREF vs Spark USER_PREF / deleting the landing feed breaks retained user_pref_json_flatten / keep the independent PREF_JSON landing dependency even when Teradata PREF_NAME/PREF_VALUE tables and settings view have verified retirement evidence / `etl/spark/jobs/py/user_pref_json_flatten.py`, `parity/retirement_users.py`, `users/README.md`.
 
-Paths above are relative to `migration/dw-exit/` unless beginning with `warehouse/`.
+Paths above are relative to `migration/dw-exit/` unless beginning with `warehouse/` or `etl/`.
 
 ## Parity proof for a subject area
 
-Use the Run scope exports above and `warehouse/.venv/bin/python`. Billing is the current
-subject-area implementation; other areas need their own relation manifest and conversions.
+Use the Run scope exports above and `warehouse/.venv/bin/python`. Billing and users have
+independent Teradata-chain, PC and Spark proof legs. New areas need a subject registry entry,
+relation manifest, faithful conversions and tests; do not infer PC/Spark execution from BTEQ outputs.
 
 ```sh
+docker pull mirror.gcr.io/library/spark:3.5.3-scala2.12-java17-python3-ubuntu
 make sfx-spark-up NS="$NS" ROWS_PER_TABLE=200
 for job in billing_churn_score billing_gl_trial_balance billing_invoice_summary_daily billing_payment_aging billing_revenue_by_plan billing_usage_append_daily; do
   make sfx-spark-run NS="$NS" JOB="$job"
 done
 make sfx-manifest-board NS="$NS" BOARD_ROWS=200 PARITY_TARGET=duckdb
 make sfx-billing-test
+# Users: same landing inputs; PC capture includes initial state and restores emulator targets.
+export TD_PG_PORT=$(warehouse/.venv/bin/python -c 'import os,zlib; print(54500+zlib.crc32(os.environ["NS"].encode())%1000)')
+PYTHONPATH=migration/dw-exit warehouse/.venv/bin/python -m parity.pc_users --capture --namespace "$NS" --business-date 20261109 --dsn "host=127.0.0.1 port=$TD_PG_PORT dbname=teradata user=postgres"
+for job in team_graph_components user_pref_json_flatten users_active_daily users_login_useragent_parse users_risk_score users_team_rollup; do
+  make sfx-spark-run NS="$NS" JOB="$job" ROWS_PER_TABLE=200
+done
+make -o sfx-teradata-up -o warehouse/.venv/.billing-requirements sfx-manifest-board RUN_TOKEN="$RUN_TOKEN" NS="$NS" BOARD_ROWS=200 PARITY_TARGET=duckdb
+warehouse/.venv/bin/python -m pytest -q migration/dw-exit/tests
 # Only after read-only access preflight succeeds and no frozen baseline exists:
 make sfx-billing-capture NS="$NS" BUSINESS_DATE=20261109
 make sfx-billing-prove CANDIDATE=fixed BUSINESS_DATE=20261109
 ```
+
+For the existing users emulator, explicitly set/export `NS=sfx1119-before` instead of
+RunConfig's `sfx-1119-before`; the PC helper uses the direct runner when Make validation
+rejects that older spelling. Do not reinitialize the source/Spark fixtures between capture
+and comparison. Run the six named users jobs rather than unrelated all-job dispatch:
+`file_object_binary_extract` may fail on a clean estate with `No module named 'warehouse'`;
+that is not users proof. Install missing harness packages from `migration/dw-exit/requirements.txt`
+into the warehouse venv, not system Python. The APP_USER mapping's manifest Snowpark target
+has no implementation; its isolated shipped-dbt proof is explicitly labeled and held red.
 
 Use the same business date as the local BEFORE chain. Capture writes a frozen baseline;
 do not recapture over an existing token baseline. Prove writes target objects. Neither

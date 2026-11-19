@@ -3,6 +3,8 @@ import ast
 from pathlib import Path
 import re
 
+from .subjects import SUBJECTS
+
 ROOT = Path(__file__).resolve().parents[3]
 BRANCH = 'devin/sfx1119-billing-parity'
 BASE = 'https://github.com/Cognition-Partner-Workshops/otterworks/blob/' + BRANCH + '/'
@@ -31,22 +33,23 @@ def source_link(obj):
 
 def converted_links(relation):
     table = relation.split('.')[-1]
+    subject = 'users' if relation.startswith('SFX_USERS.') else 'billing'
     if relation.startswith('SFX_SPARK.'):
         paths = list((ROOT/'warehouse/dbt/models/spark'/table.lower()).glob('*.sql'))
         snowpark = ROOT/'warehouse/snowpark'/f'{table.lower()}.py'
         if snowpark.is_file():
             paths.append(snowpark)
         return [link(path.relative_to(ROOT)) for path in sorted(paths)]
-    if table in ('M_SUBSCRIPTION_PLANS_OUTPUT', 'M_CURRENCY_TOTALS_OUTPUT'):
-        path = Path('migration/dw-exit/billing/20_routines.sql')
+    if table in ('M_SUBSCRIPTION_PLANS_OUTPUT', 'M_CURRENCY_TOTALS_OUTPUT', 'M_TEAM_COUNTS_OUTPUT'):
+        path = Path('migration/dw-exit')/subject/'20_routines.sql'
         text = (ROOT/path).read_text()
         pattern = r'CREATE OR REPLACE PROCEDURE\s+\S+\.'+table.removesuffix('_OUTPUT')+r'\s*\(.*?\$\$.*?\$\$;'
         return [link(path, text.count('\n',0,m.start())+1, text.count('\n',0,m.end())+1)
                 for m in re.finditer(pattern, text, re.S | re.I)]
     links = []
-    for path in sorted((ROOT / 'migration/dw-exit/billing').glob('[0-4][0-9]_*.sql')):
+    for path in sorted((ROOT / 'migration/dw-exit'/subject).glob('[0-4][0-9]_*.sql')):
         text = path.read_text()
-        pattern = r'(?:INSERT\s+INTO|UPDATE|MERGE\s+INTO|CREATE\s+OR\s+REPLACE\s+(?:TABLE|VIEW))\s+__RUN_DATABASE__\.BILLING\.'+re.escape(table)+r'\b'
+        pattern = r'(?:INSERT\s+INTO|UPDATE|MERGE\s+INTO|CREATE\s+OR\s+REPLACE\s+(?:TABLE|VIEW))\s+__RUN_DATABASE__\.'+subject.upper()+r'\.'+re.escape(table)+r'\b'
         for match in re.finditer(pattern,text,re.I):
             end = text.find(';',match.end())
             links.append(link(path.relative_to(ROOT),text.count('\n',0,match.start())+1,text.count('\n',0,end if end >= 0 else len(text))+1))
@@ -60,11 +63,11 @@ def metric_links():
             for metric,function in [('counts','local_compare'),('profiles','local_measure'),('hashes','local_compare')]}
 
 
-def provenance(obj):
+def _provenance(obj):
     outputs = obj.get('output_relations', [])
     converted = {name:converted_links(name) for name in outputs}
     source = ROOT / obj.get('source', '')
-    if source.is_file() and not any(converted.values()):
+    if source.is_file() and not any(converted.values()) and obj.get('target_type') != 'retire':
         text = source.read_text()
         routines = set(re.findall(r'(?:EXEC|CALL)\s+SFX_BILLING\.(\w+)', text, re.I))
         if obj['kind'] in ('macro', 'procedure'):
@@ -86,20 +89,93 @@ def provenance(obj):
             'metrics': metric_links()}
 
 
-def markdown(rows):
-    billing = [row for row in rows if row['subject_area'] == 'billing']
+def provenance(obj):
+    result = _provenance(obj)
+    if obj.get('subject_area') == 'users' and obj['kind'] in ('mapping','session'):
+        mapping = obj['name'].removeprefix('s_')
+        table = mapping.removeprefix('m_SFX_')
+        source = Path('etl/informatica/repository/SFX_CONTENT/mappings')/(mapping+'.XML')
+        if obj['kind'] == 'session':
+            result['source'].append(link(source))
+        if obj['kind'] == 'session':
+            path = Path(obj['source'])
+            text = (ROOT/path).read_text()
+            match = re.search(r'<SESSION\b[^>]*\bNAME="'+re.escape(obj['name'])+r'"[^>]*>.*?</SESSION>',text,re.S)
+            if match:
+                result['source'][0] = link(path,text.count('\n',0,match.start())+1,text.count('\n',0,match.end())+1)
+        paths = [Path('warehouse/dbt/models/pc/content')/('pc_content__'+table.lower()+'.sql')]
+        macro = Path('warehouse/dbt/macros')/('pc_content_'+table.lower()+'.sql')
+        if (ROOT/macro).exists():
+            paths.append(macro)
+        if table == 'TEAM_MEMBER':
+            paths.append(Path('warehouse/dbt/macros/unt8_python_unicode.sql'))
+        result['converted'] = {'SFX_USERS.'+table:[link(p) for p in paths]}
+        result['conversion_note'] = 'PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output'
+        if table == 'APP_USER':
+            result['conversion_note'] += '; no TRANSFORM.M_SFX_APP_USER Snowpark implementation found; APP_USER remains stopped'
+    if obj.get('subject_area') == 'users':
+        if obj['target_type'] == 'retire':
+            path = Path('migration/dw-exit/manifest.yaml')
+            text = (ROOT/path).read_text()
+            start = text.index('\ndead:') + 1
+            end = text.index('\nsetup_only:', start)
+            result['metrics']['retirement_manifest'] = link(path, text.count('\n', 0, start)+1, text.count('\n', 0, end))
+            path = Path('migration/dw-exit/tools/assess.py')
+            text = (ROOT/path).read_text()
+            for key, start_marker, end_marker in [('absence', 'def dbql(', '\ndef hidden_consumers('),
+                                                  ('propagation', '    # Dependency edges', '    dependencies = sorted(')]:
+                start, end = text.index(start_marker), text.index(end_marker)
+                result['metrics']['retirement_'+key] = link(path, text.count('\n', 0, start)+1, text.count('\n', 0, end))
+            for filename in ('qrylog.csv', 'objectusage.csv', 'tablesv.csv'):
+                result['metrics']['retirement_'+filename] = link('warehouse/teradata/dbql/'+filename)
+            result['metrics']['retirement_check'] = link('migration/dw-exit/parity/retirement_users.py')
+            result['conversion_note'] = 'Retirement evidence only, not migrated; keep Spark USER_PREF/PREF_JSON landing for user_pref_json_flatten'
+        for entry in result['source'] + list(result['metrics'].values()) + [e for entries in result['converted'].values() for e in entries]:
+            entry['url'] = entry['url'].replace(BRANCH, 'devin/sfx1119-users-migration')
+    return result
+
+
+def markdown(rows, subject='billing'):
+    billing = [row for row in rows if row['subject_area'] == subject]
     green = sum(row['local_duckdb'] == 'green' for row in billing)
-    lines = ['\n## Billing parity provenance', '',
-             f'Local DuckDB: {green} green / {len(billing)-green} red (including unmeasured outputs).',
-             'Snowflake: **red** — '+(billing[0]['snowflake_reason'] if billing else 'No billing evidence')+'.',
+    retired = sum(row['local_duckdb'] == 'retire_verified' for row in billing)
+    counts = (f'Local DuckDB: {green} green / {retired} retire_verified / {len(billing)-green-retired} red (retirement evidence is not green-migrated).'
+              if subject == 'users' else f'Local DuckDB: {green} green / {len(billing)-green} red (including unmeasured outputs).')
+    lines = ['\n## '+subject.title()+' parity provenance', '',
+             counts,
+             'Snowflake: **red** — '+(billing[0]['snowflake_reason'] if billing else 'No '+subject+' evidence')+'.',
              'These are separate evidence legs; local green does not imply live Snowflake parity.', '',
              '| Object | Local DuckDB | Snowflake | Source | Converted producers | Metrics |', '|---|---|---|---|---|---|']
+    if subject == 'users':
+        lines[6:6] = ['Retirement checks use current checked-out DBQL, 2026-08-12–2026-11-09, and dead-dependent propagation; failure returns red. Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten. No deletion/cutover approval.', '']
     def anchors(entries):
         return '<br>'.join(f"[{e['file']}:{e['start_line']}–{e['end_line']}]({e['url']})" for e in entries)
     for row in rows:
-        if row['subject_area'] != 'billing':
+        if row['subject_area'] != subject:
             continue
         p = row['provenance']
         converted = [entry for entries in p['converted'].values() for entry in entries]
         lines.append(f"| {row['name']} | {row['local_duckdb']} | {row['snowflake']} | {anchors(p['source'])} | {anchors(converted) or p['conversion_note'] or 'Not materialized'} | {anchors(p['metrics'].values())} |")
+    text = '\n'.join(lines)+'\n'
+    if subject == 'billing':
+        text += ''.join(markdown(rows, area) for area in SUBJECTS if area != 'billing')
+    return text
+
+
+def compact_markdown(rows, subject='users'):
+    lines = ['\n## '+subject.title()+' compact parity', '',
+             'Counts sum declared output relations; hash diff sums multiset differences. PC rows use their independent runner proof. A red hold with zero diff is not cleared. Dashes mean no conversion measurement, not zero rows.', '',
+             '| Object | Status | Before | After | Hash diff |', '|---|---|---|---|---|']
+    for row in rows:
+        if row['subject_area'] != subject:
+            continue
+        metrics = row['provenance']['metrics']
+        counts = row['row_count']
+        hashes = row['keyed_row_hash']
+        def number(value, metric):
+            return '—' if value is None else f"[{value}]({metrics[metric]['url']})"
+        before = number(counts['before'] if counts else None, 'counts')
+        after = number(counts['after'] if counts else None, 'counts')
+        difference = number(sum(h['difference'] for h in hashes.values()) if hashes else None, 'hashes')
+        lines.append(f"| {row['name']} | {row['local_duckdb']} | {before} | {after} | {difference} |")
     return '\n'.join(lines)+'\n'
