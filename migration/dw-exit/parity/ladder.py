@@ -6,16 +6,14 @@ from warehouse.run_config import render as _run_render
 
 import argparse
 import json
-import re
 from pathlib import Path
 
 from .connection import connect
+from .sql import identifier as sql_identifier
 
 
 def identifier(value):
-    if not re.fullmatch(r'[A-Za-z_][A-Za-z_0-9]*', value):
-        raise ValueError(f'Invalid identifier: {value!r}')
-    return '"' + value.upper() + '"'
+    return sql_identifier(value, qualified=False).as_string()
 
 
 def relation(value):

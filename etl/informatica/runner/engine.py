@@ -8,9 +8,10 @@ import io
 import json
 import os
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
+from psycopg import sql as pg_sql
 
 from . import expr as X
-from .db import Connection, qi, qualified, rewrite_sql
+from .db import Connection, bind_sql, compose, identifier, qi, rewrite_sql
 from .params import expand
 
 
@@ -402,9 +403,10 @@ class MappingRun:
         conn = self.connection(ext.connection_variable if ext else "", ext.connection_name if ext else "")
         override = (tr.attr("Sql Query") or "").strip()
         if override:
-            sql = rewrite_sql(self.expand(override), conn)
+            sql, parameters = bind_sql(override, self.expand)
+            sql = rewrite_sql(sql, conn)
             with conn.conn.cursor() as cur:
-                cur.execute(sql)
+                cur.execute(sql, parameters or None)
                 cols = [d.name.upper() for d in cur.description]
                 data = _rtrim_char(cur)
             # override columns bind positionally to the linked SQ ports
@@ -417,16 +419,16 @@ class MappingRun:
         selected = [sq_from[p.name.upper()] for p in linked]
         select = ", ".join(qi(cols.get(c.upper(), c)) for c in selected)
         distinct = "DISTINCT " if tr.attr("Select Distinct", "NO") == "YES" else ""
-        sql = f"SELECT {distinct}{select} FROM {qualified(schema, table)}"
-        flt = self.expand(tr.attr("Source Filter") or "").strip()
+        sql = compose('SELECT {}{} FROM {}', pg_sql.SQL(distinct), pg_sql.SQL(select), identifier(schema, table))
+        flt, parameters = bind_sql((tr.attr("Source Filter") or "").strip(), self.expand)
         if flt:
-            sql += " WHERE " + rewrite_sql(flt, conn)
+            sql = compose('{} WHERE {}', pg_sql.SQL(sql), pg_sql.SQL(rewrite_sql(flt, conn)))
         sorted_ports = int(tr.attr("Number Of Sorted Ports", "0") or 0)
         if sorted_ports:
-            sql += " ORDER BY " + ", ".join(qi(cols.get(c.upper(), c)) for c in selected[:sorted_ports])
+            sql = compose('{} ORDER BY {}', pg_sql.SQL(sql), pg_sql.SQL(', ').join(identifier(cols.get(c.upper(), c)) for c in selected[:sorted_ports]))
         self.log.info("RR_4049", f"SQL Query issued to database : ({self.session_start:%a %b %d %H:%M:%S %Y}) [{sql}]")
         with conn.conn.cursor() as cur:
-            cur.execute(sql)
+            cur.execute(sql, parameters or None)
             data = _rtrim_char(cur)
         keys = [c.upper() for c in selected]
         return [dict(zip(keys, rec)) for rec in data]
@@ -524,24 +526,25 @@ class MappingRun:
         sel_ports = [p.name for p in lkp_ports]
         eq_cols = [c[0] for c in conds if c[1] == "="]
         if override:
-            sql = rewrite_sql(self.expand(override), conn)
+            sql, parameters = bind_sql(override, self.expand)
+            sql = rewrite_sql(sql, conn)
         else:
             table_ref = tr.attr("Lookup table name")
             owner = ""
             if "." in table_ref:
                 owner, table_ref = table_ref.split(".", 1)
             schema, table, cols = conn.resolve_table(owner, table_ref)
-            sql = "SELECT " + ", ".join(f"{qi(cols.get(c.upper(), c))} AS {qi(c.upper())}" for c in sel_ports)
-            sql += f" FROM {qualified(schema, table)}"
-            flt = self.expand(tr.attr("Lookup Source Filter") or "").strip()
+            projection = pg_sql.SQL(', ').join(pg_sql.Composed([identifier(cols.get(c.upper(), c)), pg_sql.SQL(' AS '), identifier(c.upper())]) for c in sel_ports)
+            sql = compose('SELECT {} FROM {}', projection, identifier(schema, table))
+            flt, parameters = bind_sql((tr.attr("Lookup Source Filter") or "").strip(), self.expand)
             if flt:
-                sql += " WHERE " + rewrite_sql(flt, conn)
+                sql = compose('{} WHERE {}', pg_sql.SQL(sql), pg_sql.SQL(rewrite_sql(flt, conn)))
             order = [c[0] for c in conds]
             if order:
-                sql += " ORDER BY " + ", ".join(qi(cols.get(c, c)) for c in dict.fromkeys(order))
+                sql = compose('{} ORDER BY {}', pg_sql.SQL(sql), pg_sql.SQL(', ').join(identifier(cols.get(c, c)) for c in dict.fromkeys(order)))
         self.log.info("TT_11021", f"Lookup table row count : building cache for [{name}] with [{sql}]")
         with conn.conn.cursor() as cur:
-            cur.execute(sql)
+            cur.execute(sql, parameters or None)
             names = [d.name.upper() for d in cur.description]
             data = _rtrim_char(cur)
         types = {p.name.upper(): p for p in lkp_ports}
@@ -803,26 +806,28 @@ class MappingRun:
         bad_path = os.path.join(bad_dir, bad_name)
         bad = open(bad_path, "w", encoding="utf-8")
         cur = conn.conn.cursor()
-        pre_sql = self.expand(attrs.get("Pre SQL", "") or "").strip()
+        pre_sql = (attrs.get("Pre SQL", "") or "").strip()
         if pre_sql:
             for stmt in [x for x in pre_sql.split(";") if x.strip()]:
-                cur.execute(rewrite_sql(stmt, conn))
+                query, parameters = bind_sql(stmt, self.expand)
+                cur.execute(rewrite_sql(query, conn), parameters or None)
                 self.log.info("WRT_8251", f"Pre SQL issued for target [{inst_name}]: [{stmt.strip()}] affected [{cur.rowcount}] rows")
                 stats.cleared = True
-        cur.execute(f"SELECT count(*) FROM {qualified(schema, table)}")
+        cur.execute(compose('SELECT count(*) FROM {}', identifier(schema, table)))
         stats.rows_before = cur.fetchone()[0]
         if attrs.get("Truncate target table option", "NO") == "YES":
-            cur.execute(f"DELETE FROM {qualified(schema, table)}")
+            cur.execute(compose('DELETE FROM {}', identifier(schema, table)))
             self.log.info("WRT_8124", f"Target Table {table} :Truncated using DELETE FROM")
             stats.cleared = True
         phys = [cols.get(f.name.upper(), f.name) for f in fields]
-        ins_sql = f"INSERT INTO {qualified(schema, table)} ({', '.join(qi(c) for c in phys)}) VALUES ({', '.join(['%s'] * len(phys))})"
+        ins_sql = compose('INSERT INTO {} ({}) VALUES ({})', identifier(schema, table), pg_sql.SQL(', ').join(map(identifier, phys)), pg_sql.SQL(', '.join(['%s'] * len(phys))))
         nonkey = [f for f in fields if f.name.upper() not in keys]
         keyf = [f for f in fields if f.name.upper() in keys]
-        upd_sql = (f"UPDATE {qualified(schema, table)} SET " + ", ".join(f"{qi(cols.get(f.name.upper(), f.name))} = %s" for f in nonkey)
-                   + " WHERE " + " AND ".join(f"{qi(cols.get(f.name.upper(), f.name))} = %s" for f in keyf)) if keyf and nonkey else None
-        del_sql = (f"DELETE FROM {qualified(schema, table)} WHERE "
-                   + " AND ".join(f"{qi(cols.get(f.name.upper(), f.name))} = %s" for f in keyf)) if keyf else None
+        def conditions(fields, separator):
+            return pg_sql.SQL(separator).join(pg_sql.Composed([identifier(cols.get(f.name.upper(), f.name)), pg_sql.SQL(' = %s')]) for f in fields)
+
+        upd_sql = compose('UPDATE {} SET {} WHERE {}', identifier(schema, table), conditions(nonkey, ', '), conditions(keyf, ' AND ')) if keyf and nonkey else None
+        del_sql = compose('DELETE FROM {} WHERE {}', identifier(schema, table), conditions(keyf, ' AND ')) if keyf else None
 
         def values(ctx):
             vals = []
@@ -852,7 +857,7 @@ class MappingRun:
                     buf = io.StringIO()
                     for vals in inserts:
                         buf.write("\t".join(_copy_text(v) for v in vals) + "\n")
-                    with cur.copy(f"COPY {qualified(schema, table)} ({', '.join(qi(c) for c in phys)}) FROM STDIN") as cp:
+                    with cur.copy(compose('COPY {} ({}) FROM STDIN', identifier(schema, table), pg_sql.SQL(', ').join(map(identifier, phys)))) as cp:
                         cp.write(buf.getvalue())
                 stats.inserted += len(inserts)
             except Exception:
@@ -910,7 +915,7 @@ class MappingRun:
                     stats.del_rej += 1
                     reject(rt, vals, str(e).splitlines()[0])
         flush_inserts()
-        cur.execute(f"SELECT count(*) FROM {qualified(schema, table)}")
+        cur.execute(compose('SELECT count(*) FROM {}', identifier(schema, table)))
         stats.rows_after = cur.fetchone()[0]
         self.log.info("WRT_8167", f"Target table [{schema}.{table}] (instance [{inst_name}]) row count before load [{stats.rows_before}], after load [{stats.rows_after}]")
         bad.close()

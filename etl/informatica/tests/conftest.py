@@ -67,7 +67,7 @@ def warehouse(pg_server, tmp_path, monkeypatch):
     """A fresh database loaded with the fixture schema; TD_* env points at it."""
     name = f"sfx_d1110_t_{uuid.uuid4().hex[:8]}"
     with _connect(db.env("TD_DB") if not os.environ.get("TD_DB") else os.environ["TD_DB"], pg_server) as c:
-        c.execute(f"CREATE DATABASE {name}")
+        c.execute(db.compose('CREATE DATABASE {}', db.identifier(name)))
     with _connect(name, pg_server) as c:
         with open(os.path.join(FIXTURE, "bootstrap.sql"), encoding="utf-8") as fh:
             c.execute(_run_render(fh.read()))
@@ -79,4 +79,4 @@ def warehouse(pg_server, tmp_path, monkeypatch):
     yield conn
     conn.close()
     with _connect("postgres", pg_server) as c:
-        c.execute(f"DROP DATABASE IF EXISTS {name} WITH (FORCE)")
+        c.execute(db.compose('DROP DATABASE IF EXISTS {} WITH (FORCE)', db.identifier(name)))
