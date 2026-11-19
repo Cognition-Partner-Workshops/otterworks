@@ -151,7 +151,7 @@
             },
             "DISPLAY_NAME": {
               "nulls": 0,
-              "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
               "max": "Tomas Wrenwell",
               "distinct": 116
             },
@@ -181,132 +181,16 @@
           "keys": [
             "USER_ID"
           ],
-          "difference": 200,
+          "difference": 0,
           "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
-          "after": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+          "after": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
           "key_policy": "first declared column; full-row digest preserves multiplicity"
         }
       },
       "sampled_differences": {
-        "SFX_USERS.APP_USER": [
-          {
-            "key": [
-              9000000001
-            ],
-            "before": [
-              [
-                9000000001,
-                "Nadia Norford - Senior Workspace Operations and Records Gove",
-                "nadia.norford.9000000001@junipervale.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ],
-            "after": [
-              [
-                9000000001,
-                "Nadia Norford - Senior Workspace Operations and Records Governance Coordinator",
-                "nadia.norford.9000000001@junipervale.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ]
-          },
-          {
-            "key": [
-              9000000002
-            ],
-            "before": [
-              [
-                9000000002,
-                "Amara Norwell - Senior Workspace Operations and Records Gove",
-                "amara.norwell.9000000002@northmere.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ],
-            "after": [
-              [
-                9000000002,
-                "Amara Norwell - Senior Workspace Operations and Records Governance Coordinator",
-                "amara.norwell.9000000002@northmere.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ]
-          },
-          {
-            "key": [
-              9000000003
-            ],
-            "before": [
-              [
-                9000000003,
-                "Elise Wrenlund - Senior Workspace Operations and Records Gov",
-                "elise.wrenlund.9000000003@lindenfield.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ],
-            "after": [
-              [
-                9000000003,
-                "Elise Wrenlund - Senior Workspace Operations and Records Governance Coordinator",
-                "elise.wrenlund.9000000003@lindenfield.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ]
-          },
-          {
-            "key": [
-              9000000004
-            ],
-            "before": [
-              [
-                9000000004,
-                "Linnea Vossen - Senior Workspace Operations and Records Gove",
-                "linnea.vossen.9000000004@meadowgrove.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ],
-            "after": [
-              [
-                9000000004,
-                "Linnea Vossen - Senior Workspace Operations and Records Governance Coordinator",
-                "linnea.vossen.9000000004@meadowgrove.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ]
-          },
-          {
-            "key": [
-              9000000005
-            ],
-            "before": [
-              [
-                9000000005,
-                "Linnea Berglund - Senior Workspace Operations and Records Go",
-                "linnea.berglund.9000000005@briarwick.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ],
-            "after": [
-              [
-                9000000005,
-                "Linnea Berglund - Senior Workspace Operations and Records Governance Coordinator",
-                "linnea.berglund.9000000005@briarwick.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ]
-          }
-        ]
+        "SFX_USERS.APP_USER": []
       },
-      "reason": "measured parity mismatch",
+      "reason": "APP_USER remains stopped; isolated dbt mapping proof does not clear the escalated truncation decision",
       "provenance": {
         "source": [
           {
@@ -319,20 +203,14 @@
         "converted": {
           "SFX_USERS.APP_USER": [
             {
-              "file": "migration/dw-exit/users/00_tables.sql",
+              "file": "warehouse/dbt/models/pc/content/pc_content__app_user.sql",
               "start_line": 1,
-              "end_line": 7,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/00_tables.sql#L1-L7"
-            },
-            {
-              "file": "migration/dw-exit/users/10_load.sql",
-              "start_line": 2,
-              "end_line": 3,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/10_load.sql#L2-L3"
+              "end_line": 8,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/models/pc/content/pc_content__app_user.sql#L1-L8"
             }
           ]
         },
-        "conversion_note": null,
+        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output; no TRANSFORM.M_SFX_APP_USER Snowpark implementation found; APP_USER remains stopped",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -362,6 +240,314 @@
           "other_columns": "exact"
         }
       },
+      "bteq_relation_measurement": {
+        "status": "red",
+        "reason": "measured parity mismatch",
+        "row_count": {
+          "before": 120,
+          "after": 120
+        },
+        "column_profile": {
+          "SFX_USERS.APP_USER": {
+            "before": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          }
+        },
+        "keyed_row_hash": {
+          "SFX_USERS.APP_USER": {
+            "keys": [
+              "USER_ID"
+            ],
+            "difference": 200,
+            "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+            "after": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          }
+        },
+        "sampled_differences": {
+          "SFX_USERS.APP_USER": [
+            {
+              "key": [
+                9000000001
+              ],
+              "before": [
+                [
+                  9000000001,
+                  "Nadia Norford - Senior Workspace Operations and Records Gove",
+                  "nadia.norford.9000000001@junipervale.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000001,
+                  "Nadia Norford - Senior Workspace Operations and Records Governance Coordinator",
+                  "nadia.norford.9000000001@junipervale.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000002
+              ],
+              "before": [
+                [
+                  9000000002,
+                  "Amara Norwell - Senior Workspace Operations and Records Gove",
+                  "amara.norwell.9000000002@northmere.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000002,
+                  "Amara Norwell - Senior Workspace Operations and Records Governance Coordinator",
+                  "amara.norwell.9000000002@northmere.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000003
+              ],
+              "before": [
+                [
+                  9000000003,
+                  "Elise Wrenlund - Senior Workspace Operations and Records Gov",
+                  "elise.wrenlund.9000000003@lindenfield.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000003,
+                  "Elise Wrenlund - Senior Workspace Operations and Records Governance Coordinator",
+                  "elise.wrenlund.9000000003@lindenfield.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000004
+              ],
+              "before": [
+                [
+                  9000000004,
+                  "Linnea Vossen - Senior Workspace Operations and Records Gove",
+                  "linnea.vossen.9000000004@meadowgrove.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000004,
+                  "Linnea Vossen - Senior Workspace Operations and Records Governance Coordinator",
+                  "linnea.vossen.9000000004@meadowgrove.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000005
+              ],
+              "before": [
+                [
+                  9000000005,
+                  "Linnea Berglund - Senior Workspace Operations and Records Go",
+                  "linnea.berglund.9000000005@briarwick.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000005,
+                  "Linnea Berglund - Senior Workspace Operations and Records Governance Coordinator",
+                  "linnea.berglund.9000000005@briarwick.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            }
+          ]
+        },
+        "comparison_rules": {
+          "SFX_USERS.APP_USER": {
+            "trailing_pad_insensitive": [
+              "STATUS_CD"
+            ],
+            "other_columns": "exact"
+          }
+        }
+      },
+      "powercenter": {
+        "status": "green",
+        "reason": null,
+        "measurement": {
+          "row_count": {
+            "before": 120,
+            "after": 120
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [
+              "STATUS_CD"
+            ],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "USER_ID"
+            ],
+            "difference": 0,
+            "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+            "after": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        }
+      },
+      "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
       "local_duckdb": "red",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
@@ -1581,20 +1767,20 @@
         "converted": {
           "SFX_USERS.LOGIN_EVENT": [
             {
-              "file": "migration/dw-exit/users/00_tables.sql",
-              "start_line": 77,
-              "end_line": 83,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/00_tables.sql#L77-L83"
+              "file": "warehouse/dbt/models/pc/content/pc_content__login_event.sql",
+              "start_line": 1,
+              "end_line": 3,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/models/pc/content/pc_content__login_event.sql#L1-L3"
             },
             {
-              "file": "migration/dw-exit/users/10_load.sql",
-              "start_line": 17,
-              "end_line": 17,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/10_load.sql#L17-L17"
+              "file": "warehouse/dbt/macros/pc_content_login_event.sql",
+              "start_line": 1,
+              "end_line": 47,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/macros/pc_content_login_event.sql#L1-L47"
             }
           ]
         },
-        "conversion_note": null,
+        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -1625,6 +1811,200 @@
           "other_columns": "exact"
         }
       },
+      "bteq_relation_measurement": {
+        "status": "green",
+        "reason": null,
+        "row_count": {
+          "before": 200,
+          "after": 200
+        },
+        "column_profile": {
+          "SFX_USERS.LOGIN_EVENT": {
+            "before": {
+              "LOGIN_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "LOGIN_TS": {
+                "nulls": 0,
+                "min": "2026-11-07 12:00:02",
+                "max": "2026-11-09 12:03:18",
+                "distinct": 200
+              },
+              "RESULT_CD": {
+                "nulls": 0,
+                "min": "SUCCESS",
+                "max": "SUCCESS",
+                "distinct": 1
+              },
+              "CLIENT_TYPE": {
+                "nulls": 0,
+                "min": "API",
+                "max": "WEB",
+                "distinct": 4
+              }
+            },
+            "after": {
+              "LOGIN_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "LOGIN_TS": {
+                "nulls": 0,
+                "min": "2026-11-07 12:00:02",
+                "max": "2026-11-09 12:03:18",
+                "distinct": 200
+              },
+              "RESULT_CD": {
+                "nulls": 0,
+                "min": "SUCCESS",
+                "max": "SUCCESS",
+                "distinct": 1
+              },
+              "CLIENT_TYPE": {
+                "nulls": 0,
+                "min": "API",
+                "max": "WEB",
+                "distinct": 4
+              }
+            }
+          }
+        },
+        "keyed_row_hash": {
+          "SFX_USERS.LOGIN_EVENT": {
+            "keys": [
+              "LOGIN_ID"
+            ],
+            "difference": 0,
+            "before": "f25d87d83c22836f6650afd437e6bf475cd502a01c833dc785e6602ec4e665a6",
+            "after": "f25d87d83c22836f6650afd437e6bf475cd502a01c833dc785e6602ec4e665a6",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          }
+        },
+        "sampled_differences": {
+          "SFX_USERS.LOGIN_EVENT": []
+        },
+        "comparison_rules": {
+          "SFX_USERS.LOGIN_EVENT": {
+            "trailing_pad_insensitive": [
+              "CLIENT_TYPE",
+              "RESULT_CD"
+            ],
+            "other_columns": "exact"
+          }
+        }
+      },
+      "powercenter": {
+        "status": "green",
+        "reason": null,
+        "measurement": {
+          "row_count": {
+            "before": 200,
+            "after": 200
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [
+              "CLIENT_TYPE",
+              "RESULT_CD"
+            ],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "LOGIN_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "LOGIN_TS": {
+                "nulls": 0,
+                "min": "2026-11-07 12:00:02",
+                "max": "2026-11-09 12:03:18",
+                "distinct": 200
+              },
+              "RESULT_CD": {
+                "nulls": 0,
+                "min": "SUCCESS",
+                "max": "SUCCESS",
+                "distinct": 1
+              },
+              "CLIENT_TYPE": {
+                "nulls": 0,
+                "min": "API",
+                "max": "WEB",
+                "distinct": 4
+              }
+            },
+            "after": {
+              "LOGIN_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "LOGIN_TS": {
+                "nulls": 0,
+                "min": "2026-11-07 12:00:02",
+                "max": "2026-11-09 12:03:18",
+                "distinct": 200
+              },
+              "RESULT_CD": {
+                "nulls": 0,
+                "min": "SUCCESS",
+                "max": "SUCCESS",
+                "distinct": 1
+              },
+              "CLIENT_TYPE": {
+                "nulls": 0,
+                "min": "API",
+                "max": "WEB",
+                "distinct": 4
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "LOGIN_ID"
+            ],
+            "difference": 0,
+            "before": "f25d87d83c22836f6650afd437e6bf475cd502a01c833dc785e6602ec4e665a6",
+            "after": "f25d87d83c22836f6650afd437e6bf475cd502a01c833dc785e6602ec4e665a6",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        }
+      },
+      "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
       "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
@@ -1932,20 +2312,20 @@
         "converted": {
           "SFX_USERS.ROLE_GRANT": [
             {
-              "file": "migration/dw-exit/users/00_tables.sql",
-              "start_line": 45,
-              "end_line": 47,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/00_tables.sql#L45-L47"
+              "file": "warehouse/dbt/models/pc/content/pc_content__role_grant.sql",
+              "start_line": 1,
+              "end_line": 3,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/models/pc/content/pc_content__role_grant.sql#L1-L3"
             },
             {
-              "file": "migration/dw-exit/users/10_load.sql",
-              "start_line": 11,
-              "end_line": 11,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/10_load.sql#L11-L11"
+              "file": "warehouse/dbt/macros/pc_content_role_grant.sql",
+              "start_line": 1,
+              "end_line": 44,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/macros/pc_content_role_grant.sql#L1-L44"
             }
           ]
         },
-        "conversion_note": null,
+        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -1975,6 +2355,174 @@
           "other_columns": "exact"
         }
       },
+      "bteq_relation_measurement": {
+        "status": "green",
+        "reason": null,
+        "row_count": {
+          "before": 20,
+          "after": 20
+        },
+        "column_profile": {
+          "SFX_USERS.ROLE_GRANT": {
+            "before": {
+              "GRANT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "GRANTED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "GRANT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "GRANTED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          }
+        },
+        "keyed_row_hash": {
+          "SFX_USERS.ROLE_GRANT": {
+            "keys": [
+              "GRANT_ID"
+            ],
+            "difference": 0,
+            "before": "4ac5b36f4bcacb5655a018c16110e78941a659f9e31f80d20645e4de0a99534d",
+            "after": "4ac5b36f4bcacb5655a018c16110e78941a659f9e31f80d20645e4de0a99534d",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          }
+        },
+        "sampled_differences": {
+          "SFX_USERS.ROLE_GRANT": []
+        },
+        "comparison_rules": {
+          "SFX_USERS.ROLE_GRANT": {
+            "trailing_pad_insensitive": [
+              "ROLE_CD"
+            ],
+            "other_columns": "exact"
+          }
+        }
+      },
+      "powercenter": {
+        "status": "green",
+        "reason": null,
+        "measurement": {
+          "row_count": {
+            "before": 20,
+            "after": 20
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [
+              "ROLE_CD"
+            ],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "GRANT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "GRANTED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "GRANT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "GRANTED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "GRANT_ID"
+            ],
+            "difference": 0,
+            "before": "4ac5b36f4bcacb5655a018c16110e78941a659f9e31f80d20645e4de0a99534d",
+            "after": "4ac5b36f4bcacb5655a018c16110e78941a659f9e31f80d20645e4de0a99534d",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        }
+      },
+      "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
       "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
@@ -2016,7 +2564,7 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "powercenter",
-      "status": "green",
+      "status": "red",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
@@ -2034,7 +2582,7 @@
             },
             "DISPLAY_NAME": {
               "nulls": 0,
-              "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
               "max": "Tomas Wrenwell",
               "distinct": 116
             },
@@ -2096,16 +2644,132 @@
           "keys": [
             "USER_ID"
           ],
-          "difference": 0,
-          "before": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+          "difference": 200,
+          "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
           "after": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
           "key_policy": "first declared column; full-row digest preserves multiplicity"
         }
       },
       "sampled_differences": {
-        "SFX_USERS.STG_APP_USER": []
+        "SFX_USERS.STG_APP_USER": [
+          {
+            "key": [
+              9000000001
+            ],
+            "before": [
+              [
+                9000000001,
+                "Nadia Norford - Senior Workspace Operations and Records Gove",
+                "nadia.norford.9000000001@junipervale.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ],
+            "after": [
+              [
+                9000000001,
+                "Nadia Norford - Senior Workspace Operations and Records Governance Coordinator",
+                "nadia.norford.9000000001@junipervale.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ]
+          },
+          {
+            "key": [
+              9000000002
+            ],
+            "before": [
+              [
+                9000000002,
+                "Amara Norwell - Senior Workspace Operations and Records Gove",
+                "amara.norwell.9000000002@northmere.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ],
+            "after": [
+              [
+                9000000002,
+                "Amara Norwell - Senior Workspace Operations and Records Governance Coordinator",
+                "amara.norwell.9000000002@northmere.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ]
+          },
+          {
+            "key": [
+              9000000003
+            ],
+            "before": [
+              [
+                9000000003,
+                "Elise Wrenlund - Senior Workspace Operations and Records Gov",
+                "elise.wrenlund.9000000003@lindenfield.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ],
+            "after": [
+              [
+                9000000003,
+                "Elise Wrenlund - Senior Workspace Operations and Records Governance Coordinator",
+                "elise.wrenlund.9000000003@lindenfield.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ]
+          },
+          {
+            "key": [
+              9000000004
+            ],
+            "before": [
+              [
+                9000000004,
+                "Linnea Vossen - Senior Workspace Operations and Records Gove",
+                "linnea.vossen.9000000004@meadowgrove.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ],
+            "after": [
+              [
+                9000000004,
+                "Linnea Vossen - Senior Workspace Operations and Records Governance Coordinator",
+                "linnea.vossen.9000000004@meadowgrove.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ]
+          },
+          {
+            "key": [
+              9000000005
+            ],
+            "before": [
+              [
+                9000000005,
+                "Linnea Berglund - Senior Workspace Operations and Records Go",
+                "linnea.berglund.9000000005@briarwick.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ],
+            "after": [
+              [
+                9000000005,
+                "Linnea Berglund - Senior Workspace Operations and Records Governance Coordinator",
+                "linnea.berglund.9000000005@briarwick.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ]
+          }
+        ]
       },
-      "reason": null,
+      "reason": "PowerCenter runner / shipped dbt parity mismatch",
       "provenance": {
         "source": [
           {
@@ -2118,14 +2782,14 @@
         "converted": {
           "SFX_USERS.STG_APP_USER": [
             {
-              "file": "migration/dw-exit/users/00_tables.sql",
-              "start_line": 9,
-              "end_line": 11,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/00_tables.sql#L9-L11"
+              "file": "warehouse/dbt/models/pc/content/pc_content__stg_app_user.sql",
+              "start_line": 1,
+              "end_line": 8,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/models/pc/content/pc_content__stg_app_user.sql#L1-L8"
             }
           ]
         },
-        "conversion_note": null,
+        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -2153,7 +2817,311 @@
           "other_columns": "exact"
         }
       },
-      "local_duckdb": "green",
+      "bteq_relation_measurement": {
+        "status": "green",
+        "reason": null,
+        "row_count": {
+          "before": 120,
+          "after": 120
+        },
+        "column_profile": {
+          "SFX_USERS.STG_APP_USER": {
+            "before": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          }
+        },
+        "keyed_row_hash": {
+          "SFX_USERS.STG_APP_USER": {
+            "keys": [
+              "USER_ID"
+            ],
+            "difference": 0,
+            "before": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+            "after": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          }
+        },
+        "sampled_differences": {
+          "SFX_USERS.STG_APP_USER": []
+        },
+        "comparison_rules": {
+          "SFX_USERS.STG_APP_USER": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          }
+        }
+      },
+      "powercenter": {
+        "status": "red",
+        "reason": "PowerCenter runner / shipped dbt parity mismatch",
+        "measurement": {
+          "row_count": {
+            "before": 120,
+            "after": 120
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "USER_ID"
+            ],
+            "difference": 200,
+            "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+            "after": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [
+            {
+              "key": [
+                9000000001
+              ],
+              "before": [
+                [
+                  9000000001,
+                  "Nadia Norford - Senior Workspace Operations and Records Gove",
+                  "nadia.norford.9000000001@junipervale.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000001,
+                  "Nadia Norford - Senior Workspace Operations and Records Governance Coordinator",
+                  "nadia.norford.9000000001@junipervale.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000002
+              ],
+              "before": [
+                [
+                  9000000002,
+                  "Amara Norwell - Senior Workspace Operations and Records Gove",
+                  "amara.norwell.9000000002@northmere.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000002,
+                  "Amara Norwell - Senior Workspace Operations and Records Governance Coordinator",
+                  "amara.norwell.9000000002@northmere.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000003
+              ],
+              "before": [
+                [
+                  9000000003,
+                  "Elise Wrenlund - Senior Workspace Operations and Records Gov",
+                  "elise.wrenlund.9000000003@lindenfield.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000003,
+                  "Elise Wrenlund - Senior Workspace Operations and Records Governance Coordinator",
+                  "elise.wrenlund.9000000003@lindenfield.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000004
+              ],
+              "before": [
+                [
+                  9000000004,
+                  "Linnea Vossen - Senior Workspace Operations and Records Gove",
+                  "linnea.vossen.9000000004@meadowgrove.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000004,
+                  "Linnea Vossen - Senior Workspace Operations and Records Governance Coordinator",
+                  "linnea.vossen.9000000004@meadowgrove.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000005
+              ],
+              "before": [
+                [
+                  9000000005,
+                  "Linnea Berglund - Senior Workspace Operations and Records Go",
+                  "linnea.berglund.9000000005@briarwick.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000005,
+                  "Linnea Berglund - Senior Workspace Operations and Records Governance Coordinator",
+                  "linnea.berglund.9000000005@briarwick.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            }
+          ],
+          "passed": false
+        }
+      },
+      "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
+      "local_duckdb": "red",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -2839,20 +3807,26 @@
         "converted": {
           "SFX_USERS.TEAM_MEMBER": [
             {
-              "file": "migration/dw-exit/users/00_tables.sql",
-              "start_line": 33,
-              "end_line": 39,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/00_tables.sql#L33-L39"
+              "file": "warehouse/dbt/models/pc/content/pc_content__team_member.sql",
+              "start_line": 1,
+              "end_line": 3,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/models/pc/content/pc_content__team_member.sql#L1-L3"
             },
             {
-              "file": "migration/dw-exit/users/10_load.sql",
-              "start_line": 9,
-              "end_line": 9,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/10_load.sql#L9-L9"
+              "file": "warehouse/dbt/macros/pc_content_team_member.sql",
+              "start_line": 1,
+              "end_line": 61,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/macros/pc_content_team_member.sql#L1-L61"
+            },
+            {
+              "file": "warehouse/dbt/macros/unt8_python_unicode.sql",
+              "start_line": 1,
+              "end_line": 10,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/macros/unt8_python_unicode.sql#L1-L10"
             }
           ]
         },
-        "conversion_note": null,
+        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -2882,6 +3856,198 @@
           "other_columns": "exact"
         }
       },
+      "bteq_relation_measurement": {
+        "status": "green",
+        "reason": null,
+        "row_count": {
+          "before": 40,
+          "after": 40
+        },
+        "column_profile": {
+          "SFX_USERS.TEAM_MEMBER": {
+            "before": {
+              "TEAM_MEMBER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 40,
+                "distinct": 40
+              },
+              "TEAM_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 2,
+                "distinct": 2
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "JOINED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "TEAM_MEMBER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 40,
+                "distinct": 40
+              },
+              "TEAM_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 2,
+                "distinct": 2
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "JOINED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          }
+        },
+        "keyed_row_hash": {
+          "SFX_USERS.TEAM_MEMBER": {
+            "keys": [
+              "TEAM_MEMBER_ID"
+            ],
+            "difference": 0,
+            "before": "ce967aaa4e33563df55f1e8e90c3486e81e7b8016726505c82c2b4f042468d14",
+            "after": "ce967aaa4e33563df55f1e8e90c3486e81e7b8016726505c82c2b4f042468d14",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          }
+        },
+        "sampled_differences": {
+          "SFX_USERS.TEAM_MEMBER": []
+        },
+        "comparison_rules": {
+          "SFX_USERS.TEAM_MEMBER": {
+            "trailing_pad_insensitive": [
+              "ROLE_CD"
+            ],
+            "other_columns": "exact"
+          }
+        }
+      },
+      "powercenter": {
+        "status": "green",
+        "reason": null,
+        "measurement": {
+          "row_count": {
+            "before": 40,
+            "after": 40
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [
+              "ROLE_CD"
+            ],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "TEAM_MEMBER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 40,
+                "distinct": 40
+              },
+              "TEAM_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 2,
+                "distinct": 2
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "JOINED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "TEAM_MEMBER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 40,
+                "distinct": 40
+              },
+              "TEAM_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 2,
+                "distinct": 2
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "JOINED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "TEAM_MEMBER_ID"
+            ],
+            "difference": 0,
+            "before": "ce967aaa4e33563df55f1e8e90c3486e81e7b8016726505c82c2b4f042468d14",
+            "after": "ce967aaa4e33563df55f1e8e90c3486e81e7b8016726505c82c2b4f042468d14",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        }
+      },
+      "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
       "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
@@ -2956,7 +4122,7 @@
             },
             "DISPLAY_NAME": {
               "nulls": 0,
-              "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
               "max": "Tomas Wrenwell",
               "distinct": 116
             },
@@ -2986,158 +4152,42 @@
           "keys": [
             "USER_ID"
           ],
-          "difference": 200,
+          "difference": 0,
           "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
-          "after": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+          "after": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
           "key_policy": "first declared column; full-row digest preserves multiplicity"
         }
       },
       "sampled_differences": {
-        "SFX_USERS.APP_USER": [
-          {
-            "key": [
-              9000000001
-            ],
-            "before": [
-              [
-                9000000001,
-                "Nadia Norford - Senior Workspace Operations and Records Gove",
-                "nadia.norford.9000000001@junipervale.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ],
-            "after": [
-              [
-                9000000001,
-                "Nadia Norford - Senior Workspace Operations and Records Governance Coordinator",
-                "nadia.norford.9000000001@junipervale.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ]
-          },
-          {
-            "key": [
-              9000000002
-            ],
-            "before": [
-              [
-                9000000002,
-                "Amara Norwell - Senior Workspace Operations and Records Gove",
-                "amara.norwell.9000000002@northmere.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ],
-            "after": [
-              [
-                9000000002,
-                "Amara Norwell - Senior Workspace Operations and Records Governance Coordinator",
-                "amara.norwell.9000000002@northmere.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ]
-          },
-          {
-            "key": [
-              9000000003
-            ],
-            "before": [
-              [
-                9000000003,
-                "Elise Wrenlund - Senior Workspace Operations and Records Gov",
-                "elise.wrenlund.9000000003@lindenfield.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ],
-            "after": [
-              [
-                9000000003,
-                "Elise Wrenlund - Senior Workspace Operations and Records Governance Coordinator",
-                "elise.wrenlund.9000000003@lindenfield.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ]
-          },
-          {
-            "key": [
-              9000000004
-            ],
-            "before": [
-              [
-                9000000004,
-                "Linnea Vossen - Senior Workspace Operations and Records Gove",
-                "linnea.vossen.9000000004@meadowgrove.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ],
-            "after": [
-              [
-                9000000004,
-                "Linnea Vossen - Senior Workspace Operations and Records Governance Coordinator",
-                "linnea.vossen.9000000004@meadowgrove.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ]
-          },
-          {
-            "key": [
-              9000000005
-            ],
-            "before": [
-              [
-                9000000005,
-                "Linnea Berglund - Senior Workspace Operations and Records Go",
-                "linnea.berglund.9000000005@briarwick.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ],
-            "after": [
-              [
-                9000000005,
-                "Linnea Berglund - Senior Workspace Operations and Records Governance Coordinator",
-                "linnea.berglund.9000000005@briarwick.example",
-                "ACTIVE",
-                "2024-11-09"
-              ]
-            ]
-          }
-        ]
+        "SFX_USERS.APP_USER": []
       },
-      "reason": "measured parity mismatch",
+      "reason": "APP_USER remains stopped; isolated dbt mapping proof does not clear the escalated truncation decision",
       "provenance": {
         "source": [
           {
             "file": "etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML",
+            "start_line": 940,
+            "end_line": 985,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L940-L985"
+          },
+          {
+            "file": "etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_APP_USER.XML",
             "start_line": 1,
-            "end_line": 1359,
-            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L1-L1359"
+            "end_line": 107,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_APP_USER.XML#L1-L107"
           }
         ],
         "converted": {
           "SFX_USERS.APP_USER": [
             {
-              "file": "migration/dw-exit/users/00_tables.sql",
+              "file": "warehouse/dbt/models/pc/content/pc_content__app_user.sql",
               "start_line": 1,
-              "end_line": 7,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/00_tables.sql#L1-L7"
-            },
-            {
-              "file": "migration/dw-exit/users/10_load.sql",
-              "start_line": 2,
-              "end_line": 3,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/10_load.sql#L2-L3"
+              "end_line": 8,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/models/pc/content/pc_content__app_user.sql#L1-L8"
             }
           ]
         },
-        "conversion_note": null,
+        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output; no TRANSFORM.M_SFX_APP_USER Snowpark implementation found; APP_USER remains stopped",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -3167,6 +4217,314 @@
           "other_columns": "exact"
         }
       },
+      "bteq_relation_measurement": {
+        "status": "red",
+        "reason": "measured parity mismatch",
+        "row_count": {
+          "before": 120,
+          "after": 120
+        },
+        "column_profile": {
+          "SFX_USERS.APP_USER": {
+            "before": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          }
+        },
+        "keyed_row_hash": {
+          "SFX_USERS.APP_USER": {
+            "keys": [
+              "USER_ID"
+            ],
+            "difference": 200,
+            "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+            "after": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          }
+        },
+        "sampled_differences": {
+          "SFX_USERS.APP_USER": [
+            {
+              "key": [
+                9000000001
+              ],
+              "before": [
+                [
+                  9000000001,
+                  "Nadia Norford - Senior Workspace Operations and Records Gove",
+                  "nadia.norford.9000000001@junipervale.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000001,
+                  "Nadia Norford - Senior Workspace Operations and Records Governance Coordinator",
+                  "nadia.norford.9000000001@junipervale.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000002
+              ],
+              "before": [
+                [
+                  9000000002,
+                  "Amara Norwell - Senior Workspace Operations and Records Gove",
+                  "amara.norwell.9000000002@northmere.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000002,
+                  "Amara Norwell - Senior Workspace Operations and Records Governance Coordinator",
+                  "amara.norwell.9000000002@northmere.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000003
+              ],
+              "before": [
+                [
+                  9000000003,
+                  "Elise Wrenlund - Senior Workspace Operations and Records Gov",
+                  "elise.wrenlund.9000000003@lindenfield.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000003,
+                  "Elise Wrenlund - Senior Workspace Operations and Records Governance Coordinator",
+                  "elise.wrenlund.9000000003@lindenfield.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000004
+              ],
+              "before": [
+                [
+                  9000000004,
+                  "Linnea Vossen - Senior Workspace Operations and Records Gove",
+                  "linnea.vossen.9000000004@meadowgrove.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000004,
+                  "Linnea Vossen - Senior Workspace Operations and Records Governance Coordinator",
+                  "linnea.vossen.9000000004@meadowgrove.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000005
+              ],
+              "before": [
+                [
+                  9000000005,
+                  "Linnea Berglund - Senior Workspace Operations and Records Go",
+                  "linnea.berglund.9000000005@briarwick.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000005,
+                  "Linnea Berglund - Senior Workspace Operations and Records Governance Coordinator",
+                  "linnea.berglund.9000000005@briarwick.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            }
+          ]
+        },
+        "comparison_rules": {
+          "SFX_USERS.APP_USER": {
+            "trailing_pad_insensitive": [
+              "STATUS_CD"
+            ],
+            "other_columns": "exact"
+          }
+        }
+      },
+      "powercenter": {
+        "status": "green",
+        "reason": null,
+        "measurement": {
+          "row_count": {
+            "before": 120,
+            "after": 120
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [
+              "STATUS_CD"
+            ],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "USER_ID"
+            ],
+            "difference": 0,
+            "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+            "after": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        }
+      },
+      "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
       "local_duckdb": "red",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
@@ -4378,28 +5736,34 @@
         "source": [
           {
             "file": "etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML",
+            "start_line": 1035,
+            "end_line": 1097,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L1035-L1097"
+          },
+          {
+            "file": "etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_LOGIN_EVENT.XML",
             "start_line": 1,
-            "end_line": 1359,
-            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L1-L1359"
+            "end_line": 126,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_LOGIN_EVENT.XML#L1-L126"
           }
         ],
         "converted": {
           "SFX_USERS.LOGIN_EVENT": [
             {
-              "file": "migration/dw-exit/users/00_tables.sql",
-              "start_line": 77,
-              "end_line": 83,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/00_tables.sql#L77-L83"
+              "file": "warehouse/dbt/models/pc/content/pc_content__login_event.sql",
+              "start_line": 1,
+              "end_line": 3,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/models/pc/content/pc_content__login_event.sql#L1-L3"
             },
             {
-              "file": "migration/dw-exit/users/10_load.sql",
-              "start_line": 17,
-              "end_line": 17,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/10_load.sql#L17-L17"
+              "file": "warehouse/dbt/macros/pc_content_login_event.sql",
+              "start_line": 1,
+              "end_line": 47,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/macros/pc_content_login_event.sql#L1-L47"
             }
           ]
         },
-        "conversion_note": null,
+        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -4430,6 +5794,200 @@
           "other_columns": "exact"
         }
       },
+      "bteq_relation_measurement": {
+        "status": "green",
+        "reason": null,
+        "row_count": {
+          "before": 200,
+          "after": 200
+        },
+        "column_profile": {
+          "SFX_USERS.LOGIN_EVENT": {
+            "before": {
+              "LOGIN_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "LOGIN_TS": {
+                "nulls": 0,
+                "min": "2026-11-07 12:00:02",
+                "max": "2026-11-09 12:03:18",
+                "distinct": 200
+              },
+              "RESULT_CD": {
+                "nulls": 0,
+                "min": "SUCCESS",
+                "max": "SUCCESS",
+                "distinct": 1
+              },
+              "CLIENT_TYPE": {
+                "nulls": 0,
+                "min": "API",
+                "max": "WEB",
+                "distinct": 4
+              }
+            },
+            "after": {
+              "LOGIN_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "LOGIN_TS": {
+                "nulls": 0,
+                "min": "2026-11-07 12:00:02",
+                "max": "2026-11-09 12:03:18",
+                "distinct": 200
+              },
+              "RESULT_CD": {
+                "nulls": 0,
+                "min": "SUCCESS",
+                "max": "SUCCESS",
+                "distinct": 1
+              },
+              "CLIENT_TYPE": {
+                "nulls": 0,
+                "min": "API",
+                "max": "WEB",
+                "distinct": 4
+              }
+            }
+          }
+        },
+        "keyed_row_hash": {
+          "SFX_USERS.LOGIN_EVENT": {
+            "keys": [
+              "LOGIN_ID"
+            ],
+            "difference": 0,
+            "before": "f25d87d83c22836f6650afd437e6bf475cd502a01c833dc785e6602ec4e665a6",
+            "after": "f25d87d83c22836f6650afd437e6bf475cd502a01c833dc785e6602ec4e665a6",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          }
+        },
+        "sampled_differences": {
+          "SFX_USERS.LOGIN_EVENT": []
+        },
+        "comparison_rules": {
+          "SFX_USERS.LOGIN_EVENT": {
+            "trailing_pad_insensitive": [
+              "CLIENT_TYPE",
+              "RESULT_CD"
+            ],
+            "other_columns": "exact"
+          }
+        }
+      },
+      "powercenter": {
+        "status": "green",
+        "reason": null,
+        "measurement": {
+          "row_count": {
+            "before": 200,
+            "after": 200
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [
+              "CLIENT_TYPE",
+              "RESULT_CD"
+            ],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "LOGIN_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "LOGIN_TS": {
+                "nulls": 0,
+                "min": "2026-11-07 12:00:02",
+                "max": "2026-11-09 12:03:18",
+                "distinct": 200
+              },
+              "RESULT_CD": {
+                "nulls": 0,
+                "min": "SUCCESS",
+                "max": "SUCCESS",
+                "distinct": 1
+              },
+              "CLIENT_TYPE": {
+                "nulls": 0,
+                "min": "API",
+                "max": "WEB",
+                "distinct": 4
+              }
+            },
+            "after": {
+              "LOGIN_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 200,
+                "distinct": 200
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "LOGIN_TS": {
+                "nulls": 0,
+                "min": "2026-11-07 12:00:02",
+                "max": "2026-11-09 12:03:18",
+                "distinct": 200
+              },
+              "RESULT_CD": {
+                "nulls": 0,
+                "min": "SUCCESS",
+                "max": "SUCCESS",
+                "distinct": 1
+              },
+              "CLIENT_TYPE": {
+                "nulls": 0,
+                "min": "API",
+                "max": "WEB",
+                "distinct": 4
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "LOGIN_ID"
+            ],
+            "difference": 0,
+            "before": "f25d87d83c22836f6650afd437e6bf475cd502a01c833dc785e6602ec4e665a6",
+            "after": "f25d87d83c22836f6650afd437e6bf475cd502a01c833dc785e6602ec4e665a6",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        }
+      },
+      "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
       "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
@@ -4729,28 +6287,34 @@
         "source": [
           {
             "file": "etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML",
+            "start_line": 986,
+            "end_line": 1034,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L986-L1034"
+          },
+          {
+            "file": "etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_ROLE_GRANT.XML",
             "start_line": 1,
-            "end_line": 1359,
-            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L1-L1359"
+            "end_line": 78,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_ROLE_GRANT.XML#L1-L78"
           }
         ],
         "converted": {
           "SFX_USERS.ROLE_GRANT": [
             {
-              "file": "migration/dw-exit/users/00_tables.sql",
-              "start_line": 45,
-              "end_line": 47,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/00_tables.sql#L45-L47"
+              "file": "warehouse/dbt/models/pc/content/pc_content__role_grant.sql",
+              "start_line": 1,
+              "end_line": 3,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/models/pc/content/pc_content__role_grant.sql#L1-L3"
             },
             {
-              "file": "migration/dw-exit/users/10_load.sql",
-              "start_line": 11,
-              "end_line": 11,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/10_load.sql#L11-L11"
+              "file": "warehouse/dbt/macros/pc_content_role_grant.sql",
+              "start_line": 1,
+              "end_line": 44,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/macros/pc_content_role_grant.sql#L1-L44"
             }
           ]
         },
-        "conversion_note": null,
+        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -4780,6 +6344,174 @@
           "other_columns": "exact"
         }
       },
+      "bteq_relation_measurement": {
+        "status": "green",
+        "reason": null,
+        "row_count": {
+          "before": 20,
+          "after": 20
+        },
+        "column_profile": {
+          "SFX_USERS.ROLE_GRANT": {
+            "before": {
+              "GRANT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "GRANTED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "GRANT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "GRANTED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          }
+        },
+        "keyed_row_hash": {
+          "SFX_USERS.ROLE_GRANT": {
+            "keys": [
+              "GRANT_ID"
+            ],
+            "difference": 0,
+            "before": "4ac5b36f4bcacb5655a018c16110e78941a659f9e31f80d20645e4de0a99534d",
+            "after": "4ac5b36f4bcacb5655a018c16110e78941a659f9e31f80d20645e4de0a99534d",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          }
+        },
+        "sampled_differences": {
+          "SFX_USERS.ROLE_GRANT": []
+        },
+        "comparison_rules": {
+          "SFX_USERS.ROLE_GRANT": {
+            "trailing_pad_insensitive": [
+              "ROLE_CD"
+            ],
+            "other_columns": "exact"
+          }
+        }
+      },
+      "powercenter": {
+        "status": "green",
+        "reason": null,
+        "measurement": {
+          "row_count": {
+            "before": 20,
+            "after": 20
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [
+              "ROLE_CD"
+            ],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "GRANT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "GRANTED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "GRANT_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "GRANTED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "GRANT_ID"
+            ],
+            "difference": 0,
+            "before": "4ac5b36f4bcacb5655a018c16110e78941a659f9e31f80d20645e4de0a99534d",
+            "after": "4ac5b36f4bcacb5655a018c16110e78941a659f9e31f80d20645e4de0a99534d",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        }
+      },
+      "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
       "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
@@ -4821,7 +6553,7 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "powercenter",
-      "status": "green",
+      "status": "red",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
@@ -4839,7 +6571,7 @@
             },
             "DISPLAY_NAME": {
               "nulls": 0,
-              "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
               "max": "Tomas Wrenwell",
               "distinct": 116
             },
@@ -4901,36 +6633,158 @@
           "keys": [
             "USER_ID"
           ],
-          "difference": 0,
-          "before": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+          "difference": 200,
+          "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
           "after": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
           "key_policy": "first declared column; full-row digest preserves multiplicity"
         }
       },
       "sampled_differences": {
-        "SFX_USERS.STG_APP_USER": []
+        "SFX_USERS.STG_APP_USER": [
+          {
+            "key": [
+              9000000001
+            ],
+            "before": [
+              [
+                9000000001,
+                "Nadia Norford - Senior Workspace Operations and Records Gove",
+                "nadia.norford.9000000001@junipervale.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ],
+            "after": [
+              [
+                9000000001,
+                "Nadia Norford - Senior Workspace Operations and Records Governance Coordinator",
+                "nadia.norford.9000000001@junipervale.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ]
+          },
+          {
+            "key": [
+              9000000002
+            ],
+            "before": [
+              [
+                9000000002,
+                "Amara Norwell - Senior Workspace Operations and Records Gove",
+                "amara.norwell.9000000002@northmere.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ],
+            "after": [
+              [
+                9000000002,
+                "Amara Norwell - Senior Workspace Operations and Records Governance Coordinator",
+                "amara.norwell.9000000002@northmere.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ]
+          },
+          {
+            "key": [
+              9000000003
+            ],
+            "before": [
+              [
+                9000000003,
+                "Elise Wrenlund - Senior Workspace Operations and Records Gov",
+                "elise.wrenlund.9000000003@lindenfield.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ],
+            "after": [
+              [
+                9000000003,
+                "Elise Wrenlund - Senior Workspace Operations and Records Governance Coordinator",
+                "elise.wrenlund.9000000003@lindenfield.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ]
+          },
+          {
+            "key": [
+              9000000004
+            ],
+            "before": [
+              [
+                9000000004,
+                "Linnea Vossen - Senior Workspace Operations and Records Gove",
+                "linnea.vossen.9000000004@meadowgrove.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ],
+            "after": [
+              [
+                9000000004,
+                "Linnea Vossen - Senior Workspace Operations and Records Governance Coordinator",
+                "linnea.vossen.9000000004@meadowgrove.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ]
+          },
+          {
+            "key": [
+              9000000005
+            ],
+            "before": [
+              [
+                9000000005,
+                "Linnea Berglund - Senior Workspace Operations and Records Go",
+                "linnea.berglund.9000000005@briarwick.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ],
+            "after": [
+              [
+                9000000005,
+                "Linnea Berglund - Senior Workspace Operations and Records Governance Coordinator",
+                "linnea.berglund.9000000005@briarwick.example",
+                "ACTIVE",
+                "2024-11-09"
+              ]
+            ]
+          }
+        ]
       },
-      "reason": null,
+      "reason": "PowerCenter runner / shipped dbt parity mismatch",
       "provenance": {
         "source": [
           {
             "file": "etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML",
+            "start_line": 891,
+            "end_line": 939,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L891-L939"
+          },
+          {
+            "file": "etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_STG_APP_USER.XML",
             "start_line": 1,
-            "end_line": 1359,
-            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L1-L1359"
+            "end_line": 86,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_STG_APP_USER.XML#L1-L86"
           }
         ],
         "converted": {
           "SFX_USERS.STG_APP_USER": [
             {
-              "file": "migration/dw-exit/users/00_tables.sql",
-              "start_line": 9,
-              "end_line": 11,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/00_tables.sql#L9-L11"
+              "file": "warehouse/dbt/models/pc/content/pc_content__stg_app_user.sql",
+              "start_line": 1,
+              "end_line": 8,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/models/pc/content/pc_content__stg_app_user.sql#L1-L8"
             }
           ]
         },
-        "conversion_note": null,
+        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -4958,7 +6812,311 @@
           "other_columns": "exact"
         }
       },
-      "local_duckdb": "green",
+      "bteq_relation_measurement": {
+        "status": "green",
+        "reason": null,
+        "row_count": {
+          "before": 120,
+          "after": 120
+        },
+        "column_profile": {
+          "SFX_USERS.STG_APP_USER": {
+            "before": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          }
+        },
+        "keyed_row_hash": {
+          "SFX_USERS.STG_APP_USER": {
+            "keys": [
+              "USER_ID"
+            ],
+            "difference": 0,
+            "before": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+            "after": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          }
+        },
+        "sampled_differences": {
+          "SFX_USERS.STG_APP_USER": []
+        },
+        "comparison_rules": {
+          "SFX_USERS.STG_APP_USER": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          }
+        }
+      },
+      "powercenter": {
+        "status": "red",
+        "reason": "PowerCenter runner / shipped dbt parity mismatch",
+        "measurement": {
+          "row_count": {
+            "before": 120,
+            "after": 120
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 9000000100,
+                "distinct": 120
+              },
+              "DISPLAY_NAME": {
+                "nulls": 0,
+                "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+                "max": "Tomas Wrenwell",
+                "distinct": 116
+              },
+              "EMAIL": {
+                "nulls": 0,
+                "min": "amara.briarlund.9000000074@northwood.example",
+                "max": "tomas.wrenwell.6@meadowridge.example",
+                "distinct": 120
+              },
+              "STATUS_CD": {
+                "nulls": 0,
+                "min": "ACTIVE",
+                "max": "ACTIVE",
+                "distinct": 1
+              },
+              "CREATED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "USER_ID"
+            ],
+            "difference": 200,
+            "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+            "after": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [
+            {
+              "key": [
+                9000000001
+              ],
+              "before": [
+                [
+                  9000000001,
+                  "Nadia Norford - Senior Workspace Operations and Records Gove",
+                  "nadia.norford.9000000001@junipervale.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000001,
+                  "Nadia Norford - Senior Workspace Operations and Records Governance Coordinator",
+                  "nadia.norford.9000000001@junipervale.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000002
+              ],
+              "before": [
+                [
+                  9000000002,
+                  "Amara Norwell - Senior Workspace Operations and Records Gove",
+                  "amara.norwell.9000000002@northmere.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000002,
+                  "Amara Norwell - Senior Workspace Operations and Records Governance Coordinator",
+                  "amara.norwell.9000000002@northmere.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000003
+              ],
+              "before": [
+                [
+                  9000000003,
+                  "Elise Wrenlund - Senior Workspace Operations and Records Gov",
+                  "elise.wrenlund.9000000003@lindenfield.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000003,
+                  "Elise Wrenlund - Senior Workspace Operations and Records Governance Coordinator",
+                  "elise.wrenlund.9000000003@lindenfield.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000004
+              ],
+              "before": [
+                [
+                  9000000004,
+                  "Linnea Vossen - Senior Workspace Operations and Records Gove",
+                  "linnea.vossen.9000000004@meadowgrove.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000004,
+                  "Linnea Vossen - Senior Workspace Operations and Records Governance Coordinator",
+                  "linnea.vossen.9000000004@meadowgrove.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            },
+            {
+              "key": [
+                9000000005
+              ],
+              "before": [
+                [
+                  9000000005,
+                  "Linnea Berglund - Senior Workspace Operations and Records Go",
+                  "linnea.berglund.9000000005@briarwick.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ],
+              "after": [
+                [
+                  9000000005,
+                  "Linnea Berglund - Senior Workspace Operations and Records Governance Coordinator",
+                  "linnea.berglund.9000000005@briarwick.example",
+                  "ACTIVE",
+                  "2024-11-09"
+                ]
+              ]
+            }
+          ],
+          "passed": false
+        }
+      },
+      "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
+      "local_duckdb": "red",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -5636,28 +7794,40 @@
         "source": [
           {
             "file": "etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML",
+            "start_line": 1098,
+            "end_line": 1146,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L1098-L1146"
+          },
+          {
+            "file": "etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_TEAM_MEMBER.XML",
             "start_line": 1,
-            "end_line": 1359,
-            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L1-L1359"
+            "end_line": 86,
+            "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_TEAM_MEMBER.XML#L1-L86"
           }
         ],
         "converted": {
           "SFX_USERS.TEAM_MEMBER": [
             {
-              "file": "migration/dw-exit/users/00_tables.sql",
-              "start_line": 33,
-              "end_line": 39,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/00_tables.sql#L33-L39"
+              "file": "warehouse/dbt/models/pc/content/pc_content__team_member.sql",
+              "start_line": 1,
+              "end_line": 3,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/models/pc/content/pc_content__team_member.sql#L1-L3"
             },
             {
-              "file": "migration/dw-exit/users/10_load.sql",
-              "start_line": 9,
-              "end_line": 9,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/migration/dw-exit/users/10_load.sql#L9-L9"
+              "file": "warehouse/dbt/macros/pc_content_team_member.sql",
+              "start_line": 1,
+              "end_line": 61,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/macros/pc_content_team_member.sql#L1-L61"
+            },
+            {
+              "file": "warehouse/dbt/macros/unt8_python_unicode.sql",
+              "start_line": 1,
+              "end_line": 10,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-users-migration/warehouse/dbt/macros/unt8_python_unicode.sql#L1-L10"
             }
           ]
         },
-        "conversion_note": null,
+        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -5687,6 +7857,198 @@
           "other_columns": "exact"
         }
       },
+      "bteq_relation_measurement": {
+        "status": "green",
+        "reason": null,
+        "row_count": {
+          "before": 40,
+          "after": 40
+        },
+        "column_profile": {
+          "SFX_USERS.TEAM_MEMBER": {
+            "before": {
+              "TEAM_MEMBER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 40,
+                "distinct": 40
+              },
+              "TEAM_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 2,
+                "distinct": 2
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "JOINED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "TEAM_MEMBER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 40,
+                "distinct": 40
+              },
+              "TEAM_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 2,
+                "distinct": 2
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "JOINED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          }
+        },
+        "keyed_row_hash": {
+          "SFX_USERS.TEAM_MEMBER": {
+            "keys": [
+              "TEAM_MEMBER_ID"
+            ],
+            "difference": 0,
+            "before": "ce967aaa4e33563df55f1e8e90c3486e81e7b8016726505c82c2b4f042468d14",
+            "after": "ce967aaa4e33563df55f1e8e90c3486e81e7b8016726505c82c2b4f042468d14",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          }
+        },
+        "sampled_differences": {
+          "SFX_USERS.TEAM_MEMBER": []
+        },
+        "comparison_rules": {
+          "SFX_USERS.TEAM_MEMBER": {
+            "trailing_pad_insensitive": [
+              "ROLE_CD"
+            ],
+            "other_columns": "exact"
+          }
+        }
+      },
+      "powercenter": {
+        "status": "green",
+        "reason": null,
+        "measurement": {
+          "row_count": {
+            "before": 40,
+            "after": 40
+          },
+          "comparison_rules": {
+            "trailing_pad_insensitive": [
+              "ROLE_CD"
+            ],
+            "other_columns": "exact"
+          },
+          "column_profile": {
+            "before": {
+              "TEAM_MEMBER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 40,
+                "distinct": 40
+              },
+              "TEAM_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 2,
+                "distinct": 2
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "JOINED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            },
+            "after": {
+              "TEAM_MEMBER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 40,
+                "distinct": 40
+              },
+              "TEAM_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 2,
+                "distinct": 2
+              },
+              "USER_ID": {
+                "nulls": 0,
+                "min": 1,
+                "max": 20,
+                "distinct": 20
+              },
+              "ROLE_CD": {
+                "nulls": 0,
+                "min": "ADMIN",
+                "max": "REVIEWER",
+                "distinct": 4
+              },
+              "JOINED_DT": {
+                "nulls": 0,
+                "min": "2024-11-09",
+                "max": "2024-11-09",
+                "distinct": 1
+              }
+            }
+          },
+          "keyed_row_hash": {
+            "keys": [
+              "TEAM_MEMBER_ID"
+            ],
+            "difference": 0,
+            "before": "ce967aaa4e33563df55f1e8e90c3486e81e7b8016726505c82c2b4f042468d14",
+            "after": "ce967aaa4e33563df55f1e8e90c3486e81e7b8016726505c82c2b4f042468d14",
+            "key_policy": "first declared column; full-row digest preserves multiplicity"
+          },
+          "sampled_differences": [],
+          "passed": true
+        }
+      },
+      "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
       "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
@@ -29115,8 +31477,8 @@
   },
   "summary": {
     "rows": 252,
-    "red": 136,
-    "green": 116,
+    "red": 138,
+    "green": 114,
     "measured": 120,
     "migrated": 0,
     "licence_remaining": 252,
@@ -29135,11 +31497,88 @@
     },
     "users": {
       "local_duckdb": "red",
-      "local_green": 41,
-      "local_red": 14,
+      "local_green": 39,
+      "local_red": 16,
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run"
     }
+  },
+  "powercenter_evidence": {
+    "run_token": "sfx1119",
+    "namespace": "sfx1119-before",
+    "business_date": "20261109",
+    "inputs": {
+      "etl/informatica/params/sfx_d1110_daily.par": "d6f0cefdd25fe30d3cb35efbfaa9463fec4fb8427585700887a9296a14d59abe",
+      "etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_APP_USER.XML": "2845f7ce9f9bd51a2c7dd35bf4506afdf3a27d534d3f362fe4bd5e02e057baeb",
+      "etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_DOCUMENT.XML": "5f335e5af91741eaa4d2bf029c3a4fbb6f4d807d2a372a278d88e14d1aa09e6e",
+      "etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_DOC_SHARE.XML": "7b7c822ccc2d570577fa565a70ecbb189bc2a09af0b841d472c7dfb8572c26cb",
+      "etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_LOGIN_EVENT.XML": "e67f1244eca80f5e7c30b81ca51b959f47d01d27ac43983a659a097fa728bbe4",
+      "etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_ROLE_GRANT.XML": "a7828f848a2fe822193cbf8d4a1ca374f01ffc5d40bccec625f4dcf14eed6968",
+      "etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_STG_APP_USER.XML": "137f61936b4474927e0ccc6eed3b37d73d9834de6d8c41921804baf0186bf85f",
+      "etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_STG_DOCUMENT.XML": "7f904ab456b6813a94689a17df91561541c9cc71a296c6d0f8b099e9be1934bb",
+      "etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_TEAM_MEMBER.XML": "083680c3128fa3a59b6201ab187326dc6c65828478d15d28ef5450887ca57ebc",
+      "etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML": "518cb0cae29e56820afd89e5770d58a2731122a30e21cbc9e8f7831f2b61f3d6",
+      "etl/informatica/runner/__init__.py": "1833e0984d2eb699b26e62b8dba85712749419c06ac6b76c511e2659c2f532b5",
+      "etl/informatica/runner/__main__.py": "46da005131559bd70374c231c9e665d800dd473bf283b8da551e4fb3fc29f3ca",
+      "etl/informatica/runner/db.py": "97f3564d10abb6add8e0ee8983b019862b8e36bd9014683ec7ab71bbf0a46321",
+      "etl/informatica/runner/engine.py": "a409ec0c664e7d579903bfc1f9126eda2637dac875c0084319b0cd30fa097c52",
+      "etl/informatica/runner/expr.py": "288910b7f16760890fcc990d00ff972dee08e26c07de43913dc9348ec85021a8",
+      "etl/informatica/runner/params.py": "8b2768faeb86a51016e65533dced8cbec6a939628e3d0dc4c272a6431fd89403",
+      "etl/informatica/runner/repo.py": "c5cfc32fddbc5ac990ab56f185d4334285cba45f145669b9779107dbd2250969",
+      "etl/informatica/runner/run_scope.py": "740c940c60d3a79dc28fd0bf23269b9b2245c4a7ac008f6af9aa9602621336e8",
+      "etl/informatica/runner/sesslog.py": "e00cf1b4e2e0edb5c2254f809ee3dc7fcba8a6d7d392538a0c94ab232aad7fcd",
+      "etl/informatica/runner/workflow.py": "d206485a4e2206414906e5c26300e5abe18267ce8fb5d7c91436724615a517c6",
+      "warehouse/dbt/macros/balanced_journal.sql": "10e61e642d1571a7741226fcb3aaa460e3fc5f665d1ea120c529765519e5d343",
+      "warehouse/dbt/macros/generate_alias_name.sql": "351e2694e9f29fcf83c8ebddefb3b06a20c0f25ada9c70017c8a4d84c76595d0",
+      "warehouse/dbt/macros/generate_schema_name.sql": "47cfc43854bd05afc8ea9baa248580b34d147e220b8e5d6140a526bbb0fb27f3",
+      "warehouse/dbt/macros/pc_audit_event_archive.sql": "cb9bd6725ee1e0fc5ce61ee0f0d1a1ed04f12de43ed267a7b65005b8d06046e1",
+      "warehouse/dbt/macros/pc_audit_security_alert.sql": "bd25070980d790c37e8f7ba642ad4e0337e2e35adce4f45b5d5d18a2453a011b",
+      "warehouse/dbt/macros/pc_content_login_event.sql": "4ba16cd416afc59b370d20f490ea0698b94d519e2ab31b821e81aa041cfbaf4b",
+      "warehouse/dbt/macros/pc_content_role_grant.sql": "1f74f6c4c198aaf3012ecdd9e6f663c00a32efa5630ee152c9e19958622cc5c1",
+      "warehouse/dbt/macros/pc_content_team_member.sql": "81de8ef8663d57419165e89530eb878dc1f8ed9ca40e411bcfd4477bf604ff8d",
+      "warehouse/dbt/macros/pc_relation_comment.sql": "023893f6fc2904f472f77f7c7c6d83bc267c501b01496d4b04eb395adc7cf13c",
+      "warehouse/dbt/macros/query_tag.sql": "e1ae611abe3377c5cd7c256ab15e80733f8cb006ccf500791cc8e50457b25d59",
+      "warehouse/dbt/macros/reapply_governance.sql": "771742f9e312bd8e9ecea0f4b2df042f03186f9f8c0247aa3b79f90735afa595",
+      "warehouse/dbt/macros/set_table_semantics.sql": "ebf52e12bdbf1c29b1f9821215cd3fa5eb56b410fa37750364e048017932d435",
+      "warehouse/dbt/macros/unt8_python_unicode.sql": "9a5ac37c135eef1c9cefc4c4ac662ff1363557a00bd512c30312bf3f0639773e",
+      "warehouse/dbt/models/pc/content/pc_content__app_user.sql": "2064f0451996c88943f62d11113e36a51d5681646174f95a559619f3460277a3",
+      "warehouse/dbt/models/pc/content/pc_content__doc_share.sql": "1c3a1b1941c6c106da1a88319ac363885f79e354e3dad57c2a6f84edaeb30648",
+      "warehouse/dbt/models/pc/content/pc_content__document.sql": "fa48a6b0c4618654e35fc79b13e932fcf7a8d44d455e7b5fe150b0d4973ade8f",
+      "warehouse/dbt/models/pc/content/pc_content__login_event.sql": "08353a4aac0d45fdded3fd524d15622d5ce5ddc0932651bdf4c71987d88fe0a4",
+      "warehouse/dbt/models/pc/content/pc_content__role_grant.sql": "4f158e9b0d4b1a83e63a0faadb4acf3292a5b500c6c217c9bd4209bbcfa84196",
+      "warehouse/dbt/models/pc/content/pc_content__stg_app_user.sql": "d554dca095b2356318ea2539209c11da66a4bfd4c9d2be68058d81bce9410387",
+      "warehouse/dbt/models/pc/content/pc_content__stg_document.sql": "4341c69d4fba3cbfe2e78064b5c50ec3717a73d68cc040471fc0bf95a2c2bc33",
+      "warehouse/dbt/models/pc/content/pc_content__team_member.sql": "a8ea40beaa45b72fd2b017c4fbd078531f6d4a0971c9e554df13cdc48a996324",
+      "warehouse/landing/users/APP_USER/20261109.psv": "c61ea6063ab061b5b2eb4b6125e92c683967c42d83f88d3f42fcb4f135870993",
+      "warehouse/landing/users/LOGIN_EVENT/20261109.psv": "cab90bef000d47b0637634036b7e6bfc1e07757f77a5070c58b44db40d9657fa",
+      "warehouse/landing/users/ROLE_GRANT/20261109.psv": "206b777cb27fa29f7186a2e1d86310ff3836fee4638f5e942b715f8e74ff85d2",
+      "warehouse/landing/users/TEAM_MEMBER/20261109.psv": "eb3e148c3c824729a2c9e981c4a763d978e6cc6780dde2a8717117e73718d79f"
+    },
+    "command": [
+      "/home/ubuntu/repos/otterworks/warehouse/.venv/bin/python",
+      "-m",
+      "runner",
+      "startworkflow",
+      "-f",
+      "SFX_CONTENT",
+      "-mappings",
+      "m_SFX_STG_APP_USER,m_SFX_APP_USER,m_SFX_LOGIN_EVENT,m_SFX_ROLE_GRANT,m_SFX_TEAM_MEMBER",
+      "wf_SFX_CONTENT_DAILY"
+    ],
+    "standalone_command": [
+      "/home/ubuntu/repos/otterworks/warehouse/.venv/bin/python",
+      "-m",
+      "runner",
+      "startsession",
+      "-f",
+      "SFX_CONTENT",
+      "-w",
+      "wf_SFX_CONTENT_DAILY",
+      "s_m_SFX_TEAM_MEMBER"
+    ],
+    "returncode": 0,
+    "capture_sha256": "572fe7f1aa6853d04d391793e2910447439755e9e4266c18fc217c33a380694b",
+    "stdout_sha256": "704446d89247f62070c6dcb987316145d091686f9b822b36fbbc74993eead593"
   },
   "spark_evidence": {
     "billing_churn_score": {
