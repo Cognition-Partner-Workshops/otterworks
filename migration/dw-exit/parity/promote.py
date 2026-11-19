@@ -1,5 +1,6 @@
 """Promote only objects that pass both legs of a fresh subject-area board."""
 import argparse
+from contextlib import contextmanager
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -8,9 +9,30 @@ import yaml
 
 from object_board import MANIFEST, MIGRATION, SnowflakeMeasurements, measure_board, update_migration_summary
 from parity.connection import COMMENT, DATABASE
+from warehouse.run_config import RunConfig
 
 SCHEMA = DATABASE + '.MIGRATION_CONTROL'
 CONTROL = SCHEMA + '.OBJECTS'
+
+
+@contextmanager
+def control_transaction(connection, schema, table, comment, query_tag=None):
+    with connection.cursor() as cursor:
+        if query_tag is not None:
+            cursor.execute('ALTER SESSION SET QUERY_TAG = ?', (query_tag,))
+        cursor.execute('CREATE SCHEMA IF NOT EXISTS IDENTIFIER(?) COMMENT = ?', (schema, comment))
+        cursor.execute("""CREATE TABLE IF NOT EXISTS IDENTIFIER(?) (
+            SUBJECT_AREA VARCHAR, OBJECT_NAME VARCHAR, OBJECT_TYPE VARCHAR,
+            SOURCE VARCHAR, TARGET VARCHAR, MIGRATION_STATUS VARCHAR, PARITY_STATUS VARCHAR,
+            VERIFIED_AT TIMESTAMP_LTZ, EVIDENCE VARIANT
+        ) COMMENT = ?""", (table, comment))
+        cursor.execute('BEGIN')
+        try:
+            yield cursor
+            cursor.execute('COMMIT')
+        except Exception:
+            cursor.execute('ROLLBACK')
+            raise
 
 
 def write_control(connection, objects, proofs, run_token):
@@ -21,16 +43,8 @@ def write_control(connection, objects, proofs, run_token):
                                'snowflake_query_ids': legs['snowflake']['query_ids'],
                                'legs': {side: leg['status'] for side, leg in legs.items()}})
         records.append((CONTROL, obj['subject_area'], obj['kind'], obj['name'], obj['source'], obj['target'], evidence))
-    with connection.cursor() as cursor:
-        cursor.execute('CREATE SCHEMA IF NOT EXISTS IDENTIFIER(?) COMMENT = ?', (SCHEMA, COMMENT))
-        cursor.execute("""CREATE TABLE IF NOT EXISTS IDENTIFIER(?) (
-            SUBJECT_AREA VARCHAR, OBJECT_NAME VARCHAR, OBJECT_TYPE VARCHAR,
-            SOURCE VARCHAR, TARGET VARCHAR, MIGRATION_STATUS VARCHAR, PARITY_STATUS VARCHAR,
-            VERIFIED_AT TIMESTAMP_LTZ, EVIDENCE VARIANT
-        ) COMMENT = ?""", (CONTROL, COMMENT))
-        cursor.execute('BEGIN')
-        try:
-            cursor.executemany("""MERGE INTO IDENTIFIER(?) t
+    with control_transaction(connection, SCHEMA, CONTROL, COMMENT) as cursor:
+        cursor.executemany("""MERGE INTO IDENTIFIER(?) t
                 USING (SELECT ? AS SUBJECT_AREA, ? AS OBJECT_TYPE, ? AS OBJECT_NAME,
                               ? AS SOURCE, ? AS TARGET, PARSE_JSON(?) AS EVIDENCE) s
                 ON t.SUBJECT_AREA=s.SUBJECT_AREA AND t.OBJECT_TYPE=s.OBJECT_TYPE AND t.OBJECT_NAME=s.OBJECT_NAME
@@ -42,10 +56,41 @@ def write_control(connection, objects, proofs, run_token):
                      PARITY_STATUS,VERIFIED_AT,EVIDENCE)
                     VALUES (s.SUBJECT_AREA,s.OBJECT_NAME,s.OBJECT_TYPE,s.SOURCE,s.TARGET,
                             'migrated','verified',CURRENT_TIMESTAMP(),s.EVIDENCE)""", records)
-            cursor.execute('COMMIT')
-        except Exception:
-            cursor.execute('ROLLBACK')
-            raise
+
+
+def write_retirements(connection, objects, run_token):
+    """Upsert manifest retirements via a caller-supplied connection."""
+    config = RunConfig(run_token)
+    schema = config.render('__RUN_DATABASE__.MIGRATION_CONTROL')
+    table = schema + '.OBJECTS'
+    records = []
+    for obj in objects:
+        if obj.get('status') != 'retired':
+            continue
+        reason = obj.get('retirement_reason')
+        if obj['target_type'] != 'retire' or not isinstance(reason, str) or not reason.strip():
+            raise ValueError('Invalid retirement: ' + obj['id'])
+        evidence = json.dumps({'id': obj['id'], 'run_token': run_token, 'retirement_reason': reason})
+        records.append((table, obj['subject_area'], obj['kind'], obj['name'], obj['source'], obj['target'],
+                        'retired', 'retired', evidence))
+    if not records:
+        return
+    tag = json.dumps({'run_id': run_token, 'act': 'retire', 'step': 'migration-control'}, separators=(',', ':'))
+    comment = config.render('run_token=__RUN_TOKEN__ expires=2026-11-24')
+    with control_transaction(connection, schema, table, comment, tag) as cursor:
+        cursor.executemany("""MERGE INTO IDENTIFIER(?) t
+            USING (SELECT ? AS SUBJECT_AREA, ? AS OBJECT_TYPE, ? AS OBJECT_NAME,
+                          ? AS SOURCE, ? AS TARGET, ? AS MIGRATION_STATUS, ? AS PARITY_STATUS,
+                          PARSE_JSON(?) AS EVIDENCE) s
+            ON t.SUBJECT_AREA=s.SUBJECT_AREA AND t.OBJECT_TYPE=s.OBJECT_TYPE AND t.OBJECT_NAME=s.OBJECT_NAME
+            WHEN MATCHED THEN UPDATE SET SOURCE=s.SOURCE, TARGET=s.TARGET,
+                MIGRATION_STATUS=s.MIGRATION_STATUS, PARITY_STATUS=s.PARITY_STATUS,
+                VERIFIED_AT=NULL, EVIDENCE=s.EVIDENCE
+            WHEN NOT MATCHED THEN INSERT
+                (SUBJECT_AREA,OBJECT_NAME,OBJECT_TYPE,SOURCE,TARGET,MIGRATION_STATUS,
+                 PARITY_STATUS,VERIFIED_AT,EVIDENCE)
+                VALUES (s.SUBJECT_AREA,s.OBJECT_NAME,s.OBJECT_TYPE,s.SOURCE,s.TARGET,
+                        s.MIGRATION_STATUS,s.PARITY_STATUS,NULL,s.EVIDENCE)""", records)
 
 
 def promote(area, manifest_path):
@@ -61,6 +106,8 @@ def promote(area, manifest_path):
         proofs = {r['id']: r for r in board['rows']}
         eligible, refused = [], []
         for obj in selected:
+            if obj.get('status') == 'retired':
+                continue
             row = proofs.get(obj['id'], {})
             legs = row.get('legs', {})
             reason = next((legs.get(side, {}).get('reason') or f'{side} parity unmeasured'

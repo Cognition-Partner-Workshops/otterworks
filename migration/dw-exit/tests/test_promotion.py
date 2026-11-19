@@ -152,6 +152,71 @@ def test_entire_area_counts_only_when_complete(estate, snowflake):
     assert report['summary']['licence_remaining'] == 0
 
 
+@pytest.mark.parametrize('run_token', ['sfx1119', 'sfx-test'])
+def test_retirement_control_write_offline(run_token, monkeypatch):
+    calls = []
+
+    class Cursor(FakeCursor):
+        def execute(self, sql, parameters=()):
+            calls.append((sql, parameters))
+
+        def executemany(self, sql, parameters):
+            calls.append((sql, parameters))
+
+    class Connection(FakeSnowflake):
+        def cursor(self):
+            return Cursor(self)
+
+    def forbidden(*args):
+        pytest.fail('retirement writer opened a Snowflake connection')
+
+    monkeypatch.setattr(parity_board.snowflake_connection, 'connect', forbidden)
+    obj = dict(id='catalog', status='retired', target_type='retire', kind='catalog',
+               name='DBC.QRYLOGV', source='dbql.csv', subject_area='dbc',
+               target='SNOWFLAKE.ACCOUNT_USAGE', retirement_reason='replaced by SNOWFLAKE.ACCOUNT_USAGE')
+    promotion.write_retirements(Connection(), [obj, dict(obj, status='not_started')], run_token)
+    schema = ('SFX_1119' if run_token == 'sfx1119' else 'SFX_TEST') + '.MIGRATION_CONTROL'
+    assert calls[0][0] == 'ALTER SESSION SET QUERY_TAG = ?'
+    assert json.loads(calls[0][1][0]) == {'run_id': run_token, 'act': 'retire', 'step': 'migration-control'}
+    assert calls[1][1][0] == schema
+    assert calls[2][1][0] == schema + '.OBJECTS'
+    assert calls[3] == ('BEGIN', ())
+    merge, records = calls[4]
+    assert merge.startswith('MERGE INTO IDENTIFIER(?)')
+    assert 'MIGRATION_STATUS=s.MIGRATION_STATUS, PARITY_STATUS=s.PARITY_STATUS' in merge
+    assert 'PARSE_JSON(?) AS EVIDENCE' in merge
+    [record] = records
+    assert record[:-1] == (schema + '.OBJECTS', 'dbc', 'catalog', 'DBC.QRYLOGV', 'dbql.csv',
+                           'SNOWFLAKE.ACCOUNT_USAGE', 'retired', 'retired')
+    assert json.loads(record[-1]) == {'id': 'catalog', 'run_token': run_token,
+                                      'retirement_reason': obj['retirement_reason']}
+    assert calls[5:] == [('COMMIT', ())]
+
+
+def test_retired_object_stays_out_of_promotion(estate, snowflake):
+    manifest = yaml.safe_load(estate.read_text())
+    obj = next(obj for obj in manifest['objects'] if obj['id'] == 'MATCH')
+    obj.update(status='retired', target_type='retire', retirement_reason='no DBQL usage in 90-day window')
+    estate.write_text(yaml.safe_dump(manifest))
+    before = estate.read_bytes()
+    report = promotion.promote('audit', estate)
+    assert report['promoted'] == []
+    assert 'MATCH' not in {r['id'] for r in report['refused']}
+    assert estate.read_bytes() == before
+    assert not snowflake.records
+    row = next(r for r in report['rows'] if r['id'] == 'MATCH')
+    assert row['status'] == row['migration_status'] == 'retired'
+    assert row['reason'] == obj['retirement_reason']
+    assert {leg['status'] for leg in row['legs'].values()} == {'retired'}
+    assert row['row_count'] is None
+    assert all('"MATCH"' not in sql for sql in snowflake.statements)
+    assert report['summary']['retired'] == 1
+    assert report['summary']['red'] == 3
+    assert report['summary']['licence_remaining'] == 2
+    assert report['summary']['licence_total'] == 3
+    assert report['licence_counters']['licence_dependencies']['remaining'] == 2
+
+
 def test_outage_refuses_every_object_even_with_green_duckdb(estate, monkeypatch):
     def forbidden(*args):
         pytest.fail('Snowflake connection attempted during credential outage')

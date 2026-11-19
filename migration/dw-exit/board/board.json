@@ -65,19 +65,15 @@
   },
   "licence_counters": {
     "teradata_objects": {
-      "remaining": 178,
+      "remaining": 170,
       "target": 0
     },
     "powercenter_mappings": {
-      "remaining": 20,
+      "remaining": 19,
       "target": 0
     },
-    "powercenter_annual_cost": {
-      "value": 412000,
-      "currency": "USD"
-    },
     "powercenter_objects": {
-      "remaining": 44,
+      "remaining": 42,
       "target": 0
     },
     "spark_jobs": {
@@ -85,9 +81,13 @@
       "target": 0
     },
     "licence_dependencies": {
-      "remaining": 252,
-      "total": 252,
-      "target": 0
+      "remaining": 242,
+      "target": 0,
+      "total": 252
+    },
+    "powercenter_annual_cost": {
+      "value": 412000,
+      "currency": "USD"
     }
   },
   "run_token": "sfx1119",
@@ -123,12 +123,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.APP_USER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n72218f3784bfa85d",
@@ -160,12 +160,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.AUDIT_DAILY_SUMMARY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n9912ea8ce8887d9a",
@@ -197,12 +197,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.AUDIT_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "ncf58434800570afc",
@@ -215,31 +215,30 @@
       "source": "etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_EVENT_ARCHIVE.XML",
       "legs": {
         "duckdb": {
-          "status": "red",
-          "reason": "output not materialized: AUDIT.AUDIT_EVENT_ARCHIVE",
+          "status": "retired",
+          "reason": "feeds only dead objects",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null
         },
         "snowflake": {
-          "status": "red",
-          "reason": "Snowflake credentials unavailable",
+          "status": "retired",
+          "reason": "feeds only dead objects",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
-          "sampled_differences": null,
-          "query_ids": []
+          "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "duckdb: output not materialized: AUDIT.AUDIT_EVENT_ARCHIVE",
-      "migration_status": "not_started",
+      "status": "retired",
+      "reason": "feeds only dead objects",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "retired"
     },
     {
       "id": "n6aaec9f5432be4e3",
@@ -557,7 +556,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 120,
@@ -848,7 +846,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n4120240510221fa9",
@@ -880,12 +879,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOCUMENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb64c2c6bce79c145",
@@ -917,12 +916,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOC_SHARE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nc6e232bf5387a7d8",
@@ -954,12 +953,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: BILLING.GL_JOURNAL_LINE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n507935ec69aff51f",
@@ -1475,7 +1474,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 300,
@@ -1964,7 +1962,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n80bc3cbe04337687",
@@ -2188,7 +2187,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 564,
@@ -2385,7 +2383,8 @@
             "after": []
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n42c8c3678ac93f94",
@@ -2417,12 +2416,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.LOGIN_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n0a885de029170919",
@@ -2696,7 +2695,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 200,
@@ -2943,7 +2941,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n82db93afad5cb04b",
@@ -2975,12 +2974,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.ROLE_GRANT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n42d621438ac20a11",
@@ -3012,12 +3011,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.SECURITY_ALERT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n2f5adf79707598c4",
@@ -3049,12 +3048,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_APP_USER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n9f30c3fd3b30fdad",
@@ -3086,12 +3085,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_AUDIT_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n2949244725eedc48",
@@ -3253,7 +3252,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 120,
@@ -3388,7 +3386,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_CUSTOMER_ACCOUNT": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n9be69430933a863f",
@@ -3420,12 +3419,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_DOCUMENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n9da968be9406803e",
@@ -3695,7 +3694,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 300,
@@ -3938,7 +3936,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_INVOICE_HDR": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n836f8884b17bb209",
@@ -3970,12 +3969,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.TEAM_MEMBER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "ne9bc408e114b18b9",
@@ -4007,12 +4006,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.APP_USER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb292817d7dbbf313",
@@ -4044,12 +4043,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.AUDIT_DAILY_SUMMARY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n871f62d3691a3f87",
@@ -4081,12 +4080,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.AUDIT_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nd28651dfba442ad6",
@@ -4099,31 +4098,30 @@
       "source": "etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML",
       "legs": {
         "duckdb": {
-          "status": "red",
-          "reason": "output not materialized: AUDIT.AUDIT_EVENT_ARCHIVE",
+          "status": "retired",
+          "reason": "feeds only dead objects",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null
         },
         "snowflake": {
-          "status": "red",
-          "reason": "Snowflake credentials unavailable",
+          "status": "retired",
+          "reason": "feeds only dead objects",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
-          "sampled_differences": null,
-          "query_ids": []
+          "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "duckdb: output not materialized: AUDIT.AUDIT_EVENT_ARCHIVE",
-      "migration_status": "not_started",
+      "status": "retired",
+      "reason": "feeds only dead objects",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "retired"
     },
     {
       "id": "n4752fbb3cc9908e1",
@@ -4441,7 +4439,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 120,
@@ -4732,7 +4729,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n8c4f1371cd88fbd6",
@@ -4764,12 +4762,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOCUMENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "ndea27aebd8808486",
@@ -4801,12 +4799,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOC_SHARE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n461e2b42ddf1d426",
@@ -4838,12 +4836,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: BILLING.GL_JOURNAL_LINE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n5ab39469d70e6e70",
@@ -5359,7 +5357,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 300,
@@ -5848,7 +5845,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nbfc31857a3fa8bac",
@@ -6072,7 +6070,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 564,
@@ -6269,7 +6266,8 @@
             "after": []
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n6ef643cd421ba7da",
@@ -6301,12 +6299,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.LOGIN_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nc132a28c351d5659",
@@ -6580,7 +6578,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 200,
@@ -6827,7 +6824,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "neecc7039dfeb4698",
@@ -6859,12 +6857,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.ROLE_GRANT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n21ff1c42e3c9b57a",
@@ -6896,12 +6894,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.SECURITY_ALERT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n3d22b7a534acc0bb",
@@ -6933,12 +6931,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_APP_USER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n1f9acfe77103914f",
@@ -6970,12 +6968,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_AUDIT_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n314aedf512c71123",
@@ -7137,7 +7135,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 120,
@@ -7272,7 +7269,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_CUSTOMER_ACCOUNT": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n36558a0ededd2006",
@@ -7304,12 +7302,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_DOCUMENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n228b7a12a3c5e1bb",
@@ -7579,7 +7577,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 300,
@@ -7822,7 +7819,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_INVOICE_HDR": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n4480339208f0dc43",
@@ -7854,12 +7852,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.TEAM_MEMBER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nce8bdc8c53ca38b7",
@@ -7891,12 +7889,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.AUDIT_DAILY_SUMMARY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n04c6b6b63a36b7db",
@@ -7928,12 +7926,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: BILLING.GL_JOURNAL_LINE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n851dc039fa6a47f3",
@@ -7965,12 +7963,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOCUMENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nfb832e1489ab265c",
@@ -8644,7 +8642,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 540,
@@ -9291,7 +9288,8 @@
         ],
         "SFX_BILLING.STG_CUSTOMER_ACCOUNT": [],
         "SFX_BILLING.STG_INVOICE_HDR": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nc6b43eea6c8ff0bf",
@@ -10069,7 +10067,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 370,
@@ -10820,7 +10817,8 @@
           }
         ],
         "SFX_BILLING.TAX_RATE": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n15ab1bde481ca440",
@@ -10852,12 +10850,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.AUDIT_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "ned5c84172e82cd20",
@@ -10889,12 +10887,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOCUMENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nbcf25336ae235f75",
@@ -10926,12 +10924,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.APP_USER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n8e844039a21420a5",
@@ -10963,12 +10961,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOC_VERSION",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nfc77ae74ea868828",
@@ -11000,12 +10998,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.ACCESS_REVIEW",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n4973826e5a2f58c2",
@@ -11257,7 +11255,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 140,
@@ -11482,7 +11479,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nea506c6f70b8cca9",
@@ -11514,12 +11512,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.ROLE_GRANT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb773b05ad273fd3c",
@@ -11551,12 +11549,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOC_SHARE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n9370b20aebb2bf09",
@@ -11588,12 +11586,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.SSO_IDENTITY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n6ef7c748ddb91848",
@@ -12295,7 +12293,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 864,
@@ -12970,7 +12967,8 @@
             "after": []
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n20b2133ac50829f7",
@@ -13002,12 +13000,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.AUDIT_DAILY_SUMMARY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n9c864a5529054222",
@@ -13039,12 +13037,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.LOGIN_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n72c97d50fd30bdf3",
@@ -13076,12 +13074,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOC_COMMENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n4bf64f7e164e6d9a",
@@ -13827,7 +13825,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 220,
@@ -14546,7 +14543,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nce49ec3b894a0e12",
@@ -14578,12 +14576,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.COLLAB_SESSION",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n00694db68750e5f5",
@@ -14790,7 +14788,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 270,
@@ -14970,7 +14967,8 @@
             "after": []
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n1b1458f718efb391",
@@ -15002,12 +15000,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "na532938d4b40bb58",
@@ -15400,7 +15398,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 834,
@@ -15766,7 +15763,8 @@
             "after": []
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n49bdf9d9fa4697b2",
@@ -15798,12 +15796,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n34596a73305b4db2",
@@ -15835,12 +15833,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n978bec82e829a7bd",
@@ -15872,12 +15870,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nacd21346feee23f6",
@@ -15909,12 +15907,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.AUDIT_RECON",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "ncee0b600709603e1",
@@ -15946,12 +15944,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n4bd29833185d98c9",
@@ -16467,7 +16465,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 300,
@@ -16956,7 +16953,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nb0721a93c9ea4800",
@@ -16988,12 +16986,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n3a3914073bbdc5a1",
@@ -17025,12 +17023,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nead75e45ecc6b8c1",
@@ -17062,12 +17060,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb66dbaba0e618e92",
@@ -17099,12 +17097,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n86d47bca6ce013e3",
@@ -17136,12 +17134,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nf8cc8d95c6ba4dcd",
@@ -17173,12 +17171,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nee272b6a4740c39c",
@@ -17304,7 +17302,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 10,
@@ -17403,7 +17400,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_BILLING_ADJ": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n4d4dacece81c8d31",
@@ -17553,7 +17551,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 10,
@@ -17676,7 +17673,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_CREDIT_NOTE": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n625a7a2365905f32",
@@ -17838,7 +17836,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 120,
@@ -17973,7 +17970,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_CUSTOMER_ACCOUNT": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nb63db0271553cd31",
@@ -18087,7 +18085,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 10,
@@ -18174,7 +18171,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_GL_ACCOUNT": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n012c083ea3f176bc",
@@ -18336,7 +18334,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 83,
@@ -18471,7 +18468,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_GL_JOURNAL_LINE": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nc74c3a48716696b0",
@@ -18741,7 +18739,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 300,
@@ -18984,7 +18981,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_INVOICE_HDR": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n1098a9801691255c",
@@ -19122,7 +19120,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 200,
@@ -19233,7 +19230,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_INVOICE_LINE": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n02d06d89a56c1b37",
@@ -19371,7 +19369,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 200,
@@ -19482,7 +19479,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_PAYMENT": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n7a2198bf157fd258",
@@ -19596,7 +19594,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 40,
@@ -19683,7 +19680,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_PLAN_CATALOG": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n8bed42e6e57c8ee6",
@@ -19809,7 +19807,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 140,
@@ -19908,7 +19905,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_SUBSCRIPTION": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nbdeca66135c8557d",
@@ -20022,7 +20020,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 200,
@@ -20109,7 +20106,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_TAX_RATE": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n0223f8cb2e49599c",
@@ -20235,7 +20233,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 200,
@@ -20334,7 +20331,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_USAGE_DAILY": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n5cfa3c4afcb4b359",
@@ -20366,12 +20364,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_APP_USER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n26eb854933fb16a3",
@@ -20403,12 +20401,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_LOGIN_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n9cb752fa5a7e6656",
@@ -20440,12 +20438,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_ROLE_GRANT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n7afd80efc14db228",
@@ -20477,12 +20475,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_SSO_IDENTITY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nacba7b3de7583ddb",
@@ -20514,12 +20512,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_TEAM",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n58dfe8d308715b9f",
@@ -20551,12 +20549,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_TEAM_MEMBER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb36b77faa1a490f0",
@@ -20588,12 +20586,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_USER_ACTIVITY_DAILY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n087e07637015719b",
@@ -20606,31 +20604,30 @@
       "source": "warehouse/teradata/load/fastload/users_user_pref.fl",
       "legs": {
         "duckdb": {
-          "status": "red",
-          "reason": "output not materialized: USERS.STG_USER_PREF",
+          "status": "retired",
+          "reason": "feeds only dead objects",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null
         },
         "snowflake": {
-          "status": "red",
-          "reason": "Snowflake credentials unavailable",
+          "status": "retired",
+          "reason": "feeds only dead objects",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
-          "sampled_differences": null,
-          "query_ids": []
+          "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "duckdb: output not materialized: USERS.STG_USER_PREF",
-      "migration_status": "not_started",
+      "status": "retired",
+      "reason": "feeds only dead objects",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "retired"
     },
     {
       "id": "n877eaed6968f6f98",
@@ -20662,12 +20659,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_USER_PROFILE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n2d7643f3f42bc7df",
@@ -20699,12 +20696,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_USER_STATUS_HIST",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb471d5cb61dc6b40",
@@ -20717,31 +20714,30 @@
       "source": "warehouse/teradata/macros/archive_overview.sql",
       "legs": {
         "duckdb": {
-          "status": "red",
-          "reason": "no dependency declared",
+          "status": "retired",
+          "reason": "no DBQL usage in 90-day window",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null
         },
         "snowflake": {
-          "status": "red",
-          "reason": "Snowflake credentials unavailable",
+          "status": "retired",
+          "reason": "no DBQL usage in 90-day window",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
-          "sampled_differences": null,
-          "query_ids": []
+          "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
+      "status": "retired",
+      "reason": "no DBQL usage in 90-day window",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "retired"
     },
     {
       "id": "ncc8932a645bd1e39",
@@ -20773,12 +20769,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nc70e3f09535ab2b8",
@@ -20810,12 +20806,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb4507f31f948976c",
@@ -20847,12 +20843,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n2d399290c37850ff",
@@ -20884,12 +20880,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb5c179d7a1d96e03",
@@ -20921,12 +20917,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n1e025701f054c8fd",
@@ -20958,12 +20954,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.AUDIT_DAILY_SUMMARY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n3c0bc1392beec25d",
@@ -20995,12 +20991,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.AUDIT_RECON",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nfaafe218caac7323",
@@ -21032,12 +21028,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: BILLING.GL_JOURNAL_LINE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n18d91c4923da39f4",
@@ -21069,12 +21065,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.USER_ACTIVITY_DAILY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n9ee1d4dc548187ae",
@@ -21106,12 +21102,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.ACCESS_REVIEW",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nf13967053236fe77",
@@ -21143,12 +21139,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.AUDIT_DAILY_SUMMARY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n5a1ee10b77084fef",
@@ -21180,12 +21176,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.AUDIT_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n7fe8704cb752389d",
@@ -21198,31 +21194,30 @@
       "source": "warehouse/teradata/ddl/audit/00_tables.sql",
       "legs": {
         "duckdb": {
-          "status": "red",
-          "reason": "output not materialized: AUDIT.AUDIT_EVENT_ARCHIVE",
+          "status": "retired",
+          "reason": "no DBQL usage in 90-day window",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null
         },
         "snowflake": {
-          "status": "red",
-          "reason": "Snowflake credentials unavailable",
+          "status": "retired",
+          "reason": "no DBQL usage in 90-day window",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
-          "sampled_differences": null,
-          "query_ids": []
+          "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "duckdb: output not materialized: AUDIT.AUDIT_EVENT_ARCHIVE",
-      "migration_status": "not_started",
+      "status": "retired",
+      "reason": "no DBQL usage in 90-day window",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "retired"
     },
     {
       "id": "n21217e4029e00d59",
@@ -21254,12 +21249,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.AUDIT_RECON",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb406e0734c3286ee",
@@ -21291,12 +21286,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.COMPLIANCE_FLAG",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n1f11d0480f828545",
@@ -21328,12 +21323,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.DATA_EXPORT_REQ",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nd31706706cbac17e",
@@ -21365,12 +21360,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.LEGAL_HOLD",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n746fd0a9a21b77f1",
@@ -21402,12 +21397,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.RETENTION_POLICY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n0dabe06183584ed0",
@@ -21439,12 +21434,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.SECURITY_ALERT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nf7e5d0b9bba5e7ef",
@@ -21476,12 +21471,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_ACCESS_REVIEW",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n045340b2a200df4e",
@@ -21513,12 +21508,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_AUDIT_DAILY_SUMMARY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n5b74281a9cfd442e",
@@ -21550,12 +21545,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_AUDIT_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n21ffe85c86206094",
@@ -21587,12 +21582,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_AUDIT_EVENT_ARCHIVE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "ne92ffdc17fbda312",
@@ -21624,12 +21619,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_AUDIT_RECON",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n02ebefc1ceb30986",
@@ -21661,12 +21656,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_COMPLIANCE_FLAG",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nefdf8a754bcdd35b",
@@ -21698,12 +21693,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_DATA_EXPORT_REQ",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n9a5b4aca9e9bc99a",
@@ -21735,12 +21730,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_LEGAL_HOLD",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n348fb66233ddf2a4",
@@ -21772,12 +21767,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_RETENTION_POLICY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n70ef230509ae14a5",
@@ -21809,12 +21804,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_SECURITY_ALERT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n1c146a53b91c0982",
@@ -22066,7 +22061,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 10,
@@ -22291,7 +22285,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n76f9fdd34e98b23b",
@@ -22587,7 +22582,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 10,
@@ -22856,7 +22850,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nf11074d59ce23bcd",
@@ -23174,7 +23169,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 120,
@@ -23465,7 +23459,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n8cee2123212e499f",
@@ -23695,7 +23690,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 10,
@@ -23898,7 +23892,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "ndf01a5c4d9653f6a",
@@ -23930,12 +23925,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: BILLING.GL_JOURNAL_LINE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n40359b042a48a08e",
@@ -24451,7 +24446,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 300,
@@ -24940,7 +24934,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "na7e525046b868894",
@@ -25164,7 +25159,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 564,
@@ -25361,7 +25355,8 @@
             "after": []
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n4a90a6534be003c7",
@@ -25635,7 +25630,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 200,
@@ -25882,7 +25876,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n1a5d6d86a39a3a06",
@@ -26112,7 +26107,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 40,
@@ -26315,7 +26309,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n2cf99dd59b17c2f1",
@@ -26441,7 +26436,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 10,
@@ -26540,7 +26534,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_BILLING_ADJ": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n2a7c65ff4f4817b3",
@@ -26690,7 +26685,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 10,
@@ -26813,7 +26807,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_CREDIT_NOTE": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "ndf3aa16f167b7137",
@@ -26975,7 +26970,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 120,
@@ -27110,7 +27104,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_CUSTOMER_ACCOUNT": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n312e40b4f842325b",
@@ -27224,7 +27219,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 10,
@@ -27311,7 +27305,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_GL_ACCOUNT": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nd24b63cd075ba016",
@@ -27473,7 +27468,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 83,
@@ -27608,7 +27602,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_GL_JOURNAL_LINE": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nf9b0e87117c51046",
@@ -27878,7 +27873,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 300,
@@ -28121,7 +28115,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_INVOICE_HDR": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n8a8daebfb73b7912",
@@ -28259,7 +28254,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 200,
@@ -28370,7 +28364,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_INVOICE_LINE": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n0fd15814651adc11",
@@ -28508,7 +28503,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 200,
@@ -28619,7 +28613,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_PAYMENT": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n4132cc12046fbd7c",
@@ -28733,7 +28728,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 40,
@@ -28820,7 +28814,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_PLAN_CATALOG": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n70c3af8091036a5e",
@@ -28946,7 +28941,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 140,
@@ -29045,7 +29039,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_SUBSCRIPTION": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n464534d3f9280c5a",
@@ -29159,7 +29154,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 200,
@@ -29246,7 +29240,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_TAX_RATE": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nccfad5a895e6179a",
@@ -29372,7 +29367,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 200,
@@ -29471,7 +29465,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.STG_USAGE_DAILY": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n4d79811371fbb19b",
@@ -29723,7 +29718,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 140,
@@ -29948,7 +29942,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nbf59db02f1e3b91d",
@@ -30062,7 +30057,6 @@
       },
       "status": "red",
       "reason": "snowflake: Snowflake credentials unavailable",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 200,
@@ -30149,7 +30143,8 @@
       },
       "sampled_differences": {
         "SFX_BILLING.TAX_RATE": []
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nc69fcaffa9f73bf0",
@@ -30356,7 +30351,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 270,
@@ -30536,7 +30530,8 @@
             "after": []
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n8ce4b4c31fb7d641",
@@ -30568,12 +30563,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.COLLAB_SESSION",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n27673208f946113a",
@@ -30605,12 +30600,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOCUMENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n4fe6621de3ee3647",
@@ -30642,12 +30637,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOC_COMMENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "ndf20a077562bd331",
@@ -30679,12 +30674,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOC_SHARE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb6bdea58b700dddc",
@@ -30716,12 +30711,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOC_TAG",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n69bb2e4d7f29d3bd",
@@ -30753,12 +30748,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.DOC_VERSION",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n8935b0bad45140b4",
@@ -30790,12 +30785,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.FILE_OBJECT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n591b73a5345bb764",
@@ -30827,12 +30822,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.FOLDER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n5bdfd045e6779075",
@@ -30845,31 +30840,30 @@
       "source": "warehouse/teradata/ddl/documents/00_tables.sql",
       "legs": {
         "duckdb": {
-          "status": "red",
-          "reason": "output not materialized: DOCUMENTS.SEARCH_INDEX_LOG",
+          "status": "retired",
+          "reason": "no DBQL usage in 90-day window",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null
         },
         "snowflake": {
-          "status": "red",
-          "reason": "Snowflake credentials unavailable",
+          "status": "retired",
+          "reason": "no DBQL usage in 90-day window",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
-          "sampled_differences": null,
-          "query_ids": []
+          "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "duckdb: output not materialized: DOCUMENTS.SEARCH_INDEX_LOG",
-      "migration_status": "not_started",
+      "status": "retired",
+      "reason": "no DBQL usage in 90-day window",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "retired"
     },
     {
       "id": "n1c075fb7d55b7b5d",
@@ -30901,12 +30895,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_COLLAB_SESSION",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nec3789e47f899a3a",
@@ -30938,12 +30932,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_DOCUMENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n995ef340875ac9f0",
@@ -30975,12 +30969,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_DOC_COMMENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n916a578badf75be5",
@@ -31012,12 +31006,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_DOC_SHARE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n3222a42b0b10373f",
@@ -31049,12 +31043,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_DOC_TAG",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "ne0d64de0c6f5d0c5",
@@ -31086,12 +31080,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_DOC_VERSION",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n2ca368bd87d7d5ae",
@@ -31123,12 +31117,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_FILE_OBJECT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n8cc95a044ef844a6",
@@ -31160,12 +31154,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_FOLDER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nf0f34f0760b5db1f",
@@ -31197,12 +31191,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_SEARCH_INDEX_LOG",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nce35ed86fccc09d6",
@@ -31234,12 +31228,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_STORAGE_USAGE_DAILY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n28cb37f5be5b66f5",
@@ -31271,12 +31265,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STORAGE_USAGE_DAILY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n97b11eada9b5eb49",
@@ -31308,12 +31302,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.APP_USER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n3e2eb63a0ecb2ec8",
@@ -31345,12 +31339,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.LOGIN_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nfd3d4e92dd494560",
@@ -31382,12 +31376,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.ROLE_GRANT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nd5ebfccac7c4864a",
@@ -31419,12 +31413,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.SSO_IDENTITY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n51b482910361c150",
@@ -31456,12 +31450,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_APP_USER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n209c8bcb96a81a00",
@@ -31493,12 +31487,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_LOGIN_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nc317b0fdeb9af6bf",
@@ -31530,12 +31524,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_ROLE_GRANT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n751362a449a58100",
@@ -31567,12 +31561,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_SSO_IDENTITY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nbf90b4a7bc90d9af",
@@ -31604,12 +31598,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_TEAM",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n04d52ed873e0b510",
@@ -31641,12 +31635,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_TEAM_MEMBER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nfd5485510ca65cd9",
@@ -31678,12 +31672,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_USER_ACTIVITY_DAILY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n0e52ccf39fb39efb",
@@ -31696,31 +31690,30 @@
       "source": "warehouse/teradata/ddl/users/00_tables.sql",
       "legs": {
         "duckdb": {
-          "status": "red",
-          "reason": "output not materialized: USERS.STG_USER_PREF",
+          "status": "retired",
+          "reason": "feeds only dead objects",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null
         },
         "snowflake": {
-          "status": "red",
-          "reason": "Snowflake credentials unavailable",
+          "status": "retired",
+          "reason": "feeds only dead objects",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
-          "sampled_differences": null,
-          "query_ids": []
+          "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "duckdb: output not materialized: USERS.STG_USER_PREF",
-      "migration_status": "not_started",
+      "status": "retired",
+      "reason": "feeds only dead objects",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "retired"
     },
     {
       "id": "n533cd80b40ebc9c5",
@@ -31752,12 +31745,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_USER_PROFILE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb91c260f3263b35b",
@@ -31789,12 +31782,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.STG_USER_STATUS_HIST",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n6d2da1bd427f0dda",
@@ -31826,12 +31819,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.TEAM",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n2cfe39f5df4a12c6",
@@ -31863,12 +31856,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.TEAM_MEMBER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "ne229d0f17e598ca1",
@@ -31900,12 +31893,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.USER_ACTIVITY_DAILY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n73ad30d46cfc4990",
@@ -31918,31 +31911,30 @@
       "source": "warehouse/teradata/ddl/users/00_tables.sql",
       "legs": {
         "duckdb": {
-          "status": "red",
-          "reason": "output not materialized: USERS.USER_PREF",
+          "status": "retired",
+          "reason": "no DBQL usage in 90-day window",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null
         },
         "snowflake": {
-          "status": "red",
-          "reason": "Snowflake credentials unavailable",
+          "status": "retired",
+          "reason": "no DBQL usage in 90-day window",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
-          "sampled_differences": null,
-          "query_ids": []
+          "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "duckdb: output not materialized: USERS.USER_PREF",
-      "migration_status": "not_started",
+      "status": "retired",
+      "reason": "no DBQL usage in 90-day window",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "retired"
     },
     {
       "id": "n00ae1e0d0a7ece39",
@@ -31974,12 +31966,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.USER_PROFILE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n05041abb99cdd42d",
@@ -32011,12 +32003,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.USER_STATUS_HIST",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n420cbbc61ebb5a20",
@@ -32048,12 +32040,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_ACCESS_REVIEW",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n50a4e9247d1d3c2a",
@@ -32085,12 +32077,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_AUDIT_DAILY_SUMMARY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb0cddb4ec8cfce35",
@@ -32122,12 +32114,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_AUDIT_EVENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nef95aaa7df57a226",
@@ -32159,12 +32151,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_AUDIT_EVENT_ARCHIVE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n753e2b21e59720e0",
@@ -32196,12 +32188,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_AUDIT_RECON",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n4eae040d99820a15",
@@ -32233,12 +32225,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_COMPLIANCE_FLAG",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n879dea5f6ab069e9",
@@ -32270,12 +32262,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_DATA_EXPORT_REQ",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n7e7df67764ffcff7",
@@ -32307,12 +32299,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_LEGAL_HOLD",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nffedc7a70235904a",
@@ -32344,12 +32336,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_RETENTION_POLICY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb11211913a9badb6",
@@ -32381,12 +32373,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.STG_SECURITY_ALERT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n316f320495a7d7a7",
@@ -32418,12 +32410,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_COLLAB_SESSION",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n00eea7237cb65fe2",
@@ -32455,12 +32447,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_DOC_COMMENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n52fd8cca58044cb0",
@@ -32492,12 +32484,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_DOC_SHARE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nd0c849ec187417ce",
@@ -32529,12 +32521,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_DOC_TAG",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb366b6ece0aafaf2",
@@ -32566,12 +32558,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_DOC_VERSION",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n960131df6fb3ee7d",
@@ -32603,12 +32595,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_DOCUMENT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n7101731ead5cafa6",
@@ -32640,12 +32632,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_FILE_OBJECT",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nebefa5c1775e897f",
@@ -32677,12 +32669,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_FOLDER",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n6926e7586c761642",
@@ -32714,12 +32706,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_SEARCH_INDEX_LOG",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nd66c4bfb75689e73",
@@ -32751,12 +32743,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.STG_STORAGE_USAGE_DAILY",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n21635c3e4ef179d8",
@@ -32788,12 +32780,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.V_CUSTOMER_RECON",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n6478e46e7b3a13e6",
@@ -32825,12 +32817,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: AUDIT.V_EVENT_ACTORS",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n958c0c1753d86d2b",
@@ -33402,7 +33394,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 300,
@@ -33947,7 +33938,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "na1476b760815c081",
@@ -34519,7 +34511,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 300,
@@ -35064,7 +35055,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n2467edabc13f7edd",
@@ -35272,7 +35264,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 11,
@@ -35453,7 +35444,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "n21655cefa5f6f219",
@@ -35661,7 +35653,6 @@
       },
       "status": "red",
       "reason": "duckdb: measured parity mismatch",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
         "before": 140,
@@ -35842,7 +35833,8 @@
             ]
           }
         ]
-      }
+      },
+      "migration_status": "not_started"
     },
     {
       "id": "nfffe08fdf7b38961",
@@ -35874,12 +35866,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.V_DOCUMENT_VERSIONS",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nc442fa6ff987701d",
@@ -35892,31 +35884,30 @@
       "source": "warehouse/teradata/ddl/documents/10_views.sql",
       "legs": {
         "duckdb": {
-          "status": "red",
-          "reason": "output not materialized: DOCUMENTS.V_SEARCH_HISTORY",
+          "status": "retired",
+          "reason": "no DBQL usage in 90-day window",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null
         },
         "snowflake": {
-          "status": "red",
-          "reason": "Snowflake credentials unavailable",
+          "status": "retired",
+          "reason": "no DBQL usage in 90-day window",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
-          "sampled_differences": null,
-          "query_ids": []
+          "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "duckdb: output not materialized: DOCUMENTS.V_SEARCH_HISTORY",
-      "migration_status": "not_started",
+      "status": "retired",
+      "reason": "no DBQL usage in 90-day window",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "retired"
     },
     {
       "id": "ne711c6aec2d571c4",
@@ -35948,12 +35939,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: DOCUMENTS.V_WORKSPACE_STORAGE",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "na5e973edf6219785",
@@ -35985,12 +35976,12 @@
       },
       "status": "red",
       "reason": "duckdb: output not materialized: USERS.V_TEAM_MEMBERS",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n92b259c0ed5e8918",
@@ -36003,31 +35994,30 @@
       "source": "warehouse/teradata/ddl/users/10_views.sql",
       "legs": {
         "duckdb": {
-          "status": "red",
-          "reason": "output not materialized: USERS.V_USER_SETTINGS",
+          "status": "retired",
+          "reason": "no DBQL usage in 90-day window",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null
         },
         "snowflake": {
-          "status": "red",
-          "reason": "Snowflake credentials unavailable",
+          "status": "retired",
+          "reason": "no DBQL usage in 90-day window",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
-          "sampled_differences": null,
-          "query_ids": []
+          "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "duckdb: output not materialized: USERS.V_USER_SETTINGS",
-      "migration_status": "not_started",
+      "status": "retired",
+      "reason": "no DBQL usage in 90-day window",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "retired"
     },
     {
       "id": "na305277024d75d53",
@@ -36060,12 +36050,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "na7a9d654bab3f884",
@@ -36098,12 +36088,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n8966d99361db3a40",
@@ -36136,12 +36126,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nab9092239e992697",
@@ -36174,12 +36164,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nc69cdf8b5dc1cf48",
@@ -36212,12 +36202,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n30eea7b5e4b0f036",
@@ -36250,12 +36240,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n59a3415908e5a5c3",
@@ -36288,12 +36278,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nc272de5514b12dd4",
@@ -36326,12 +36316,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n217068cf70e21f45",
@@ -36364,12 +36354,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nda318831425979ea",
@@ -36402,12 +36392,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n6b4402f4aec586b1",
@@ -36440,12 +36430,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb1e649b467d1d68d",
@@ -36478,12 +36468,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n73fc2c67175df7a7",
@@ -36516,12 +36506,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n9e1cde11f1fcdf14",
@@ -36554,12 +36544,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n62c507a6ebeca788",
@@ -36592,12 +36582,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nc7caadea569fe6a7",
@@ -36630,12 +36620,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nacb901d117c72988",
@@ -36668,12 +36658,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n99294cb574316a26",
@@ -36706,12 +36696,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb17a88119e3df908",
@@ -36744,12 +36734,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n2e6e7921f1c1a457",
@@ -36782,12 +36772,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n42b4ed91f0a96d32",
@@ -36820,12 +36810,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb4c259fa9770ac59",
@@ -36858,12 +36848,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n46441ec8597bcf09",
@@ -36896,12 +36886,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nf3b5c3eaa1bc272c",
@@ -36934,12 +36924,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nc6160237cc5eb2cf",
@@ -36972,12 +36962,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nadfca1251f9b6a28",
@@ -37010,12 +37000,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nccade0800035b66b",
@@ -37048,12 +37038,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "n1d48699afd1ffdb6",
@@ -37086,12 +37076,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nb8c305d5ee549186",
@@ -37124,12 +37114,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     },
     {
       "id": "nc71a4f6251d9ca10",
@@ -37162,12 +37152,12 @@
       },
       "status": "red",
       "reason": "duckdb: no dependency declared",
-      "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
-      "sampled_differences": null
+      "sampled_differences": null,
+      "migration_status": "not_started"
     }
   ],
   "measurement_contract": {
@@ -37178,31 +37168,33 @@
       "billing/initial/30_views.sql"
     ],
     "non_relational_objects": "dependency parity and routine existence",
-    "migration_state": "BEFORE"
+    "migration_state": "manifest"
   },
   "summary": {
     "rows": 252,
     "green": 0,
-    "red": 252,
+    "red": 242,
     "measured": 59,
+    "retired": 10,
     "legs": {
       "duckdb": {
         "green": 29,
-        "red": 223,
+        "red": 213,
         "measured": 59
       },
       "snowflake": {
         "green": 0,
-        "red": 252,
+        "red": 242,
         "measured": 0
       }
     },
     "migrated": 0,
-    "licence_remaining": 252,
+    "migrated_areas": 0,
     "licence_total": 252,
+    "licence_remaining": 242,
     "licence_by_system": {
-      "powercenter": 44,
-      "teradata": 178,
+      "powercenter": 42,
+      "teradata": 170,
       "spark": 30
     }
   }

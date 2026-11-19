@@ -290,11 +290,12 @@ def update_migration_summary(result, objects):
     rows = result['rows']
     for row in rows:
         row['migration_status'] = statuses[row['id']]
-    pending = [row for row in rows if row['migration_status'] != 'migrated']
+    migrated = [row for row in rows if row['migration_status'] == 'migrated']
+    pending = [row for row in rows if row['migration_status'] not in ('migrated', 'retired')]
     remaining_by_system = Counter(r['licence_dependency'] for r in pending if r['licence_dependency'] != 'none')
     result['summary'].update(
-        migrated=len(rows) - len(pending),
-        migrated_areas=len({r['subject_area'] for r in rows} - {r['subject_area'] for r in pending}),
+        migrated=len(migrated),
+        migrated_areas=len({r['subject_area'] for r in migrated} - {r['subject_area'] for r in pending}),
         licence_total=sum(r['licence_dependency_count'] for r in rows),
         licence_remaining=sum(remaining_by_system.values()),
         licence_by_system=dict(remaining_by_system),
@@ -333,6 +334,11 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         key = (obj['id'], side)
         if key in cache:
             return cache[key]
+        if obj.get('status') == 'retired':
+            leg = empty_leg(obj['retirement_reason'])
+            leg['status'] = 'retired'
+            cache[key] = leg
+            return leg
         leg = empty_leg()
         if side == 'snowflake':
             leg['query_ids'] = list(snowflake.session_query_ids)
@@ -368,7 +374,8 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 else:
                     for dep in deps:
                         if dep not in by_id or leg_for(by_id[dep], side)['status'] != 'green':
-                            leg['reason'] = 'dependency red: ' + dep
+                            state = 'retired' if dep in by_id and by_id[dep].get('status') == 'retired' else 'red'
+                            leg['reason'] = 'dependency ' + state + ': ' + dep
                             break
                     if leg['reason'] is None:
                         artifact = obj.get('converted_artifact')
@@ -395,8 +402,9 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                     row[key] = obj[key]
             legs = {side: leg_for(obj, side) for side in ('duckdb', 'snowflake')}
             red = next((side for side in legs if legs[side]['status'] == 'red'), None)
-            row.update(legs=legs, status='red' if red else 'green',
-                       reason=red + ': ' + legs[red]['reason'] if red else None,
+            retired = obj.get('status') == 'retired'
+            row.update(legs=legs, status='retired' if retired else 'red' if red else 'green',
+                       reason=obj['retirement_reason'] if retired else red + ': ' + legs[red]['reason'] if red else None,
                        licence_dependency_count=int(obj['licence_dependency'] != 'none'))
             row.update({field: legs['duckdb'][field] for field in FIELDS})
             result['rows'].append(row)
@@ -407,6 +415,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         return dict(green=sum(r['status']=='green' for r in rows), red=sum(r['status']=='red' for r in rows),
                     measured=sum(r['row_count'] is not None for r in rows))
     result['summary'] = dict(rows=len(selected), **counts(result['rows']),
+        retired=sum(r['status'] == 'retired' for r in result['rows']),
         legs={side: counts([r['legs'][side] for r in result['rows']]) for side in ('duckdb', 'snowflake')})
     update_migration_summary(result, selected)
     return result
@@ -417,7 +426,7 @@ def measure_board(manifest, *, target='duckdb', counters=None, subject_area=None
     ready, errors = set(), {}
     try:
         if manifest['objects']:
-            names = {r for obj in manifest['objects'] for r in declared_outputs(obj)}
+            names = {r for obj in manifest['objects'] if obj.get('status') != 'retired' for r in declared_outputs(obj)}
             ns = os.environ.get('NS',RunConfig.from_env().before_namespace)
             port = os.environ.get('TD_PG_PORT',str(54500+zlib.crc32(ns.encode())%1000))
             dsn = os.environ.get('BOARD_SOURCE_DSN',f'host=127.0.0.1 port={port} dbname=teradata user=postgres')
