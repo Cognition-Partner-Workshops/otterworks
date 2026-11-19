@@ -6,6 +6,12 @@
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
 }
 
+@media (max-width: 1023px) {
+  .safe-sidebar {
+    width: calc(16rem + env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px));
+  }
+}
+
 .safe-shell {
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
