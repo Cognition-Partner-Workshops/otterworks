@@ -20,6 +20,31 @@ is still open. Procedures: [chaos and load testing runbook](runbooks/chaos-and-l
 | Gateway metrics | `api_gateway_http_requests_total` labels every route `path="other"`, so no per-route SLIs | **Open** |
 | t-main | admin-service CrashLoopBackOff (planted bug, left by policy); analytics-service restarting on SQS `InvalidAddressException` | **Open** (analytics needs triage) |
 
+## Game-day results (disposable tenant, 2026-11-19)
+
+Tenant `chaostest` (full profile, golden `:main` images). The core 5 services
+(api-gateway, auth, document, file, web-app) ran on the HA profile with HPA min 2 / max 3.
+The probe was an authenticated `GET /api/v1/documents/` through the shared ingress, once per second.
+
+| Experiment | Availability during fault | Worst latency | Error window | Result |
+|---|---|---|---|---|
+| pod-kill api-gateway, **1 replica** (today's default) | 52 % | 0.34 s | 13 s | FAIL |
+| pod-kill api-gateway, HA (2 replicas + PDB) | 100 % | 0.24 s | 0 s | PASS |
+| dependency-outage redis, 60 s | 100 % | 0.28 s | 0 s | PASS (documents path does not need redis) |
+| cpu-stress document-service, 120 s | 100 % | 0.96 s | 0 s | PASS; HPA scaled 2 -> 3 |
+| pod-kill document-service during k6 load | 100 % | 0.30 s | 0 s | PASS |
+
+k6 `PROFILE=load` (30 VUs, 4 min steady state): 22,921 requests at 47 req/s, 0 % failed.
+Read p95 was 101 ms and p99 109 ms, so every threshold passed. At 30 VUs the gateway sat at 35 %
+of its CPU request and document-service at 31 %, with no HPA scale-out. 30 VUs is well
+below the knee; use `PROFILE=stress` to find it.
+
+Found during the run:
+- With 1 replica (the current default for every tenant), losing one pod is a user-visible outage of about 13 s.
+- The ordinary tenant `ResourceQuota` caps `limits.cpu` at 12. The full profile plus HA on 5 services hit it during the game day, blocking HPA scale-out with `exceeded quota`. `scale-for-load.sh ... up` now applies a separate HA quota without raising cheap default tenants' quotas; see the [quota budget](LOAD-TESTING.md#cpu-limit-intervention-and-ha-quota).
+- The new chart values originally broke `helm upgrade --reuse-values`, which `inject-bug.sh` uses, on existing releases. Fixed: the templates are nil-safe.
+- A tenant created with `deploy-tenant.sh` alone is garbage-collected by the demo-platform reaper within 15 minutes. Use `demo-platform/scripts/tenant.sh checkout`.
+
 ## Alert routing
 
 Every `otterworks-reliability` alert carries `team: sre` and goes to the SRE receiver that

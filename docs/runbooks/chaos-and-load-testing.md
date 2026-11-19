@@ -13,17 +13,24 @@ for capacity testing.
 
 ## 1. Stand up a test tenant at busy-season shape
 
-Follow [Busy-season load testing](../LOAD-TESTING.md) to register a fresh tenant
-in the platform control table before deploying it with a 24h TTL. A direct
-unregistered deploy is orphan-reaped despite its TTL. Use the full profile for
+Register and deploy through the dashboard checkout below, or follow
+[Busy-season load testing](../LOAD-TESTING.md) for manual registration and a
+24h deployment. A direct unregistered deploy is orphan-reaped despite its TTL.
+Use the full profile for
 the complete search/notification journey; leave replicas at one initially.
 The guide documents profiles, in-cluster execution, evidence and measured findings.
 
 ```bash
+# Register through the dashboard: a tenant made with deploy-tenant.sh alone is
+# reaped as an orphan within 15 minutes.
+./demo-platform/scripts/tenant.sh checkout loadtest main 6h
 # Optional HA comparison, only after checking scheduling headroom:
 ./scripts/scale-for-load.sh loadtest up          # HPA 2..6, PDB, node + zone spread
 ```
 
+Ordinary tenants have a 12-core CPU-limit quota. `scale-for-load.sh ... up`
+applies the separate 35-core / 43-pod HA quota and service-specific CPU overlays;
+see the [quota budget](../LOAD-TESTING.md#cpu-limit-intervention-and-ha-quota).
 Check headroom first: `cluster:cpu_requests:ratio` in Prometheus must stay under ~0.85
 after scaling, or HPA scale-ups will go Pending (`OtterworksPodsUnschedulable`).
 
@@ -67,9 +74,9 @@ Run a chaos experiment while `PROFILE=load` is running to test failure under loa
 ```bash
 ./scripts/inject-bug.sh loadtest reset
 ./scripts/scale-for-load.sh loadtest down
-./scripts/teardown-tenant.sh loadtest
-source demo-platform/lib/control-common.sh
-ctl_delete_tenant loadtest
+./demo-platform/scripts/tenant.sh checkin loadtest
 ```
 
-Supply `DB_PASSWORD` to teardown so it also drops the tenant database.
+Dashboard check-in schedules full teardown, including the namespace, database,
+DNS and IRSA trust. For manually registered tenants, follow the teardown and
+control-record cleanup instructions in the [load-testing guide](../LOAD-TESTING.md).
