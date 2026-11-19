@@ -127,3 +127,23 @@ def test_repeated_plan_change_returns_conflict(plan_client) -> None:
     assert second.json()["detail"] == "this plan change has already been requested"
     assert len(repository.subscriptions) == len(before) == 2
     assert repository.subscriptions == before
+
+
+def test_replay_earlier_plan_change_returns_conflict_without_state_change(plan_client) -> None:
+    client, repository = plan_client
+    payload = {"plan_id": str(PLAN), "effective_on": "2026-03-01"}
+    march = client.post(f"/api/tenants/{TENANT}/plan-change", json=payload)
+    april = client.post(
+        f"/api/tenants/{TENANT}/plan-change",
+        json={"plan_id": str(PLAN), "effective_on": "2026-04-01"},
+    )
+    assert march.status_code == 200
+    assert april.status_code == 200
+    before = list(repository.subscriptions)
+
+    replay = client.post(f"/api/tenants/{TENANT}/plan-change", json=payload)
+
+    assert replay.status_code == 409
+    assert replay.json()["detail"] == "this plan change has already been requested"
+    assert len(repository.subscriptions) == len(before) == 3
+    assert repository.subscriptions == before

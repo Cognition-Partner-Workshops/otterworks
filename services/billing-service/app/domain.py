@@ -84,6 +84,10 @@ class BackdatedPlanChangeError(ValueError):
     pass
 
 
+class DuplicatePlanChangeError(ValueError):
+    pass
+
+
 def change_plan(
     repository: PlansRepository,
     tenant_id: UUID,
@@ -91,6 +95,11 @@ def change_plan(
     effective_on: date,
 ) -> tuple[list[SubscriptionRow], SubscriptionRow]:
     subscriptions = repository.list_subscriptions(tenant_id)
+    if any(
+        item.plan_id == plan_id and item.starts_on == effective_on
+        for item in subscriptions
+    ):
+        raise DuplicatePlanChangeError("this plan change has already been requested")
     current_start = min(
         (item.starts_on for item in subscriptions if item.ends_on is None),
         default=effective_on,
