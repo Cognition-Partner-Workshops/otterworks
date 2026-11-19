@@ -8,7 +8,7 @@
 #   2. Re-applies the application infra layer (refreshes IRSA trust for the new
 #      OIDC provider). Requires DB_PASSWORD; resets the RDS master password in
 #      place to the value you pass.
-#   3. Configures kubectl and deploys the services via Helm.
+#   3. Configures kubectl, installs Karpenter and deploys the services via Helm.
 #
 # By default it REUSES the Docker images already in ECR (fast) and does NOT
 # rebuild. Pass --build to rebuild + push all images from source.
@@ -80,6 +80,13 @@ fi
 log "Configuring kubectl for ${EKS_CLUSTER}..."
 aws eks update-kubeconfig --name "${EKS_CLUSTER}" --region "${AWS_REGION}" --alias "${EKS_CLUSTER}"
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+
+# Karpenter's AWS side comes from the platform apply above, but the controller
+# and NodePool live in the cluster, so a rebuilt cluster comes back without
+# them and the node group never scales down past its fixed size.
+log "Installing Karpenter (node autoscaling + consolidation)..."
+TF_DIR="${REPO_ROOT}/platform/terraform" EKS_CLUSTER="${EKS_CLUSTER}" AWS_REGION="${AWS_REGION}" \
+  "${REPO_ROOT}/demo-platform/scripts/install-karpenter.sh"
 
 if [ "${SKIP_DEPLOY}" = true ]; then
   log "Infra is up. Skipping app deploy (--skip-deploy). Cluster ready:"

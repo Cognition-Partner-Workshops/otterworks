@@ -34,6 +34,8 @@ force-applied to the live cluster (they recycle nodes and would disturb running 
 - **Spot interruptions:** EventBridge → SQS → Karpenter, so the 2-minute reclaim notice
   drains and replaces the node instead of tenants discovering it as a hard kill. Tenant pods
   are `replicas=1`, so a reclaim is a short restart, not zero downtime.
+- **Rebuilds:** `scripts/spinup-dev.sh` runs the installer after the platform apply, so a
+  recreated cluster gets the controller and NodePool back instead of only the AWS side.
 - **Teardown:** Karpenter instances exist in no Terraform state and are terminated only by
   the in-cluster controller. `scripts/teardown-cluster.sh` deletes NodeClaims before the
   cluster; `reaper/infra-sweep.sh` terminates any that outlive it.
