@@ -1,8 +1,8 @@
 {
   "job": "users_team_rollup",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "7 1 * * *",
   "profile": "small"
 }

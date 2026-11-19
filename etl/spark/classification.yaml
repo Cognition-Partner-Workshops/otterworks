@@ -28,8 +28,10 @@
   reason: "Groups daily activity into active-user, login and action totals."
 - job: users_team_rollup
   language: python
-  target: dbt
-  reason: "Builds team membership totals with left joins and grouped counts."
+  target: spark_standard_template
+  reason: "Keeps team membership totals on the standard Spark template with rerun-safe lake partitions and transactional JDBC refresh."
+  original_target: dbt
+  change_reason: "Snowflake is not measurable with the available run-scoped database and warehouse permissions; retain Spark and measure the standard template against the legacy run."
 - job: audit_daily_summary
   language: scala
   target: dbt
