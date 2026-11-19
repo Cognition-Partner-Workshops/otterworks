@@ -8,11 +8,12 @@ from uuid import UUID
 import psycopg
 from fastapi import FastAPI, HTTPException, Path, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.config import settings
 from app.db import connect, migrate, reset
 from app.domain import catalog, change_plan, entitlement
+from app.plan_changes import PlanChangeError, apply_plan_change, quote_plan_change
 from app.repository import PostgresPlansRepository
 
 
@@ -127,3 +128,41 @@ def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) 
             status_code=409,
             detail="this plan change has already been requested",
         ) from error
+
+
+class CustomerPlanChange(BaseModel):
+    plan_id: UUID
+    requested_on: date = Field(default_factory=date.today)
+
+
+@app.get('/api/tenants/{tenant_id}/plan-change-quote')
+def plan_change_quote(
+    tenant_id: UUID, plan_id: UUID, on: Annotated[date, Query()]
+) -> dict:
+    try:
+        with connect() as connection:
+            return quote_plan_change(PostgresPlansRepository(connection), tenant_id, plan_id, on)
+    except PlanChangeError as error:
+        raise HTTPException(status_code=error.status, detail=error.message) from error
+
+
+@app.post('/api/tenants/{tenant_id}/plan-changes')
+def customer_plan_change(tenant_id: UUID, request: CustomerPlanChange) -> dict:
+    try:
+        with connect() as connection:
+            return apply_plan_change(
+                PostgresPlansRepository(connection), tenant_id, request.plan_id,
+                request.requested_on,
+            )
+    except PlanChangeError as error:
+        raise HTTPException(status_code=error.status, detail=error.message) from error
+    except psycopg.errors.UniqueViolation as error:
+        raise HTTPException(
+            status_code=409, detail='This plan change has already been requested'
+        ) from error
+
+
+@app.get('/api/tenants/{tenant_id}/invoices')
+def tenant_invoices(tenant_id: UUID) -> list[dict]:
+    with connect() as connection:
+        return PostgresPlansRepository(connection).list_invoices(tenant_id)
