@@ -1,6 +1,6 @@
 ---
 name: odl-source-mapping
-description: How the ODL customer and account data in Db2 (ODL.CUSTMAST/ACCTHIST), Oracle (ACCOUNTS/PRODUCTS) and PostgreSQL (crm.*) maps onto one MongoDB customer document on the t-odl tenant. Covers connecting to the four stores, the profiled source facts, the document shape, the per-source field mapping, key normalization, the cross-source match rule and the open conflicts that wait on a source-precedence decision. Invoke before writing ODL sync code, a read API over odl.customers, or any change to the ODL sources.
+description: How the ODL customer and account data in Db2 (ODL.CUSTMAST/ACCTHIST), Oracle (ACCOUNTS/PRODUCTS) and PostgreSQL (crm.*) maps onto one MongoDB customer document on the t-odl tenant. Covers connecting to the four stores, the profiled source facts, the document shape, the per-source field mapping, key normalization, the cross-source match rule and the source owner's decisions on the conflicts (C1–C4). Invoke before writing ODL sync code, a read API over odl.customers, or any change to the ODL sources.
 ---
 
 # ODL source mapping (Db2 + Oracle + PostgreSQL → MongoDB `odl.customers`)
@@ -64,11 +64,14 @@ and bounded (1 account, 8 history rows, 2 cases per person), so they are embedde
   "match_key": "sha256(name_norm|address_norm)",
   "name": "José García 000600",
   "address": "1010 Cedar Road, Suite 0",
-  "customer_since": "2011-08-24",           // date string or null
+  "customer_since": "2011-08-24",           // date string or null (C4)
   "source_keys": {
     "db2_cust_no": "C0000601",              // or null
     "oracle_account_ids": [7010200],        // [] when absent
     "crm_contact_id": "04d0d3da-3138-5a37-9d01-0cc2202ddf6c"  // or null
+  },
+  "source_records": {
+    "db2": {"cust_no": "C0000601", "opened_on": "0001-01-01", "opened_ymd": 10101}  // raw values, kept as stored (C4)
   },
   "accounts": [{
     "account_id": 7010200, "product": {"id": 1, "name": "Everyday"},
@@ -83,10 +86,11 @@ and bounded (1 account, 8 history rows, 2 cases per person), so they are embedde
     "contact_id": "04d0d3da-…", "credit": {"$numberDecimal": "0.30"},
     "subscription_status": "active",
     "service_cases": [{"case_id": "…", "subject": "Account statement request",
-                       "opened_at_local": "2024-11-04T09:30:00"}]
+                       "opened_at": {"$date": "2024-11-04T09:30:00Z"}}]   // read as UTC (C3)
   },
   "match": {"rule": "exact-name-address", "sources": ["db2", "oracle", "postgres"],
-            "status": "matched"},       // matched | single-source | needs-review
+            "status": "matched"},       // matched | single-source
+  "exception_ids": [],                   // references into odl.mapping_exceptions
   "provenance": {"name": ["db2", "oracle", "postgres"], "address": ["db2", "oracle", "postgres"],
                  "customer_since": "db2"}
 }
@@ -95,6 +99,20 @@ and bounded (1 account, 8 history rows, 2 cases per person), so they are embedde
 Indexes: unique `match_key`; unique partial on `source_keys.db2_cust_no` and
 `source_keys.crm_contact_id` (where not null); unique multikey on
 `source_keys.oracle_account_ids`; `match.status`.
+
+Exceptions for human review live in collection `odl.mapping_exceptions`, one document per
+exception, referenced from each affected customer's `exception_ids`:
+
+```json
+{
+  "_id": "exc_<uuid5(NAMESPACE_URL, 'otterworks:odl:exception:' + reason + ':' + sorted source keys)>",
+  "reason": "candidate_match_unconfirmed",   // or ambiguous_local_time
+  "customer_ids": ["cus_…", "cus_…"],
+  "source_keys": ["db2:C0000002", "oracle:7000017"],
+  "detail": {"agreement": "suffix+surname+initial", "db2_address": "…", "oracle_address": "…"},
+  "status": "open"                            // a person changes it after review
+}
+```
 Money is always Decimal128 (never double). Dates without a time are `YYYY-MM-DD` strings.
 
 ## 4. Field mapping per source
@@ -103,17 +121,18 @@ Money is always Decimal128 (never double). Dates without a time are `YYYY-MM-DD`
 | --- | --- | --- | --- |
 | `name` | `FULL_NAME` decoded (K3) | `HOLDER_NAME` | `contacts.full_name` |
 | `address` | `ADDRESS` | `ADDRESS` | `contacts.address` |
-| `customer_since` | `OPENED_ON`; `0001-01-01` → null (K4); `OPENED_YMD` only as a cross-check | — (account open date, not customer open; see C4) | — |
+| `customer_since` | `OPENED_ON`; `0001-01-01` → null (K4, C4); `OPENED_YMD` only as a cross-check | never used as a fallback (C4) | — |
+| `source_records.db2` | `RTRIM(CUST_NO)`, `OPENED_ON`, `OPENED_YMD` exactly as stored, sentinel included (C4) | — | — |
 | `source_keys.*` | `RTRIM(CUST_NO)` | `ACCOUNT_ID` as int64 | `contact_id` lowercase text |
 | `accounts[]` | — | one entry per `ACCOUNTS` row; `product` joined from `PRODUCTS`; `balance` NUMBER → Decimal128 exact; `opened_at` per K5 | — |
 | `account_history[]` | `ACCTHIST` by `RTRIM(CUST_NO)`; `AMOUNT` → Decimal128; `EVENT_ON` → date string | — | — |
 | `crm.credit` | — | — | `credit` rounded half-even to 2 dp → Decimal128 (K7) |
 | `crm.subscription_status` | — | — | `subscription_snapshots.status` (renamed exactly as billing-service maps SQL `status` → REST `subscription_status`) |
-| `crm.service_cases[]` | — | — | `service_cases` by `contact_id`; `opened_at` kept as local wall clock until C3 is decided |
+| `crm.service_cases[]` | — | — | `service_cases` by `contact_id`; `opened_at` TIMESTAMP read as UTC, the CRM server `TimeZone` (C3) |
 
 Precedence for `name`, `address`: for every auto-matched customer the values are
 equal by construction of the match rule, so there is nothing to choose; `provenance`
-lists every agreeing source. Precedence for the `needs-review` cohort is open (C1).
+lists every agreeing source. The 600 C1 pairs are never merged, so no precedence applies.
 
 ## 5. Key normalization rules
 
@@ -126,7 +145,8 @@ lists every agreeing source. Precedence for the `needs-review` cohort is open (C
 - **K4 Db2 dates:** `0001-01-01` / `10101` is "unknown" → null; it is never a real date.
 - **K5 Oracle DATE:** interpret as `America/New_York` wall clock, store UTC `opened_at` plus
   `opened_at_local` and `opened_at_tz`. Spring-gap neighbours are unambiguous
-  (01:55 EST → 06:55Z, 03:05 EDT → 07:05Z). The two autumn 01:xx values are ambiguous (C2).
+  (01:55 EST → 06:55Z, 03:05 EDT → 07:05Z). The two repeated autumn 01:xx values take the
+  first occurrence, EDT/UTC-4 (01:15 → 05:15Z, 01:45 → 05:45Z), and are flagged (C2).
 - **K6 Golden id:** `cus_` + `uuid5(NAMESPACE_URL, "otterworks:odl:customer:" + anchor)`,
   anchor = first present of `db2:<cust_no>`, `oracle:<account_id>`, `postgres:<contact_id>`.
   Deterministic across rebuilds; never a random UUID or an ObjectId.
@@ -152,24 +172,30 @@ Measured result on t-odl:
 | Db2 + Oracle + CRM | 30,000 | matched |
 | Db2 + Oracle | 9,400 | matched |
 | Db2 only (`C0040001`–`C0050000`) | 10,000 | single-source |
-| Db2 `C0000001`–`C0000600` ↔ Oracle `7000000`–`7010183` | 600 + 600 | needs-review (C1) |
+| Db2 `C0000001`–`C0000600` ↔ Oracle `7000000`–`7010183` | 600 + 600 | single-source each, 600 exceptions (C1) |
 | CRM only | 0 | — |
 
 The 600 review pairs share the 6-digit name suffix but have different addresses (Cedar Road
 vs Oak Avenue) and Oracle uses `Last, F.`; 594 agree on surname + first initial, 6 (Db2
-`José García` rows C0000001/101/201/301/401/501) agree on nothing but the suffix. Until C1
-is decided they stay as separate documents with `match.status: needs-review` and a
-`match.candidate` pointing at the other source key.
+`José García` rows C0000001/101/201/301/401/501) agree on nothing but the suffix. Per C1
+they are never linked: each side is its own `single-source` customer, and each pair gets one
+`candidate_match_unconfirmed` exception.
 
-## 7. Open conflicts (decision needed, do not pick a winner in code)
+## 7. Conflict decisions
 
-- **C1** 600 Db2↔Oracle candidate pairs: link or keep separate, and if linked, which source's
-  `name` and `address` win.
-- **C2** Oracle 7000034 (`2024-11-03 01:15`) and 7000051 (`01:45`): EDT (first) or EST (second
-  occurrence) — the data cannot tell. Both are in the C1 cohort (C0000003, C0000004).
-- **C3** `crm.service_cases.opened_at` (60,000 rows) has no zone; which zone it was written in.
-- **C4** 500 Db2 customers with the sentinel open date (394 also in Oracle, 100 Db2-only,
-  6 in C1): leave `customer_since` null or fall back to the Oracle account `opened_at`.
+Decided by source owner, 2026-11-19 (relayed through the PW-Internal service account).
+Do not change these in code without a new source-owner decision.
 
-When a decision lands, record it here, change the status/precedence rules above, and update
-the "Customer source mapping" page in the ENG space of the Confluence mock.
+| # | Conflict | Decision |
+| --- | --- | --- |
+| C1 | 600 Db2↔Oracle candidate pairs (`C0000001`–`C0000600` ↔ `7000000`–`7010183`): same name suffix, different address; 594 also agree on surname + initial, 6 only on the suffix | Never link. Each side is its own customer (1,200 documents). Record each pair once in `odl.mapping_exceptions` with reason `candidate_match_unconfirmed` for later human review. |
+| C2 | Oracle 7000034 (`2024-11-03 01:15`) and 7000051 (`01:45`) fall in the repeated DST hour | Read both as the first occurrence, EDT (UTC-4): `05:15Z` and `05:45Z`. Flag each with reason `ambiguous_local_time`. |
+| C3 | `crm.service_cases.opened_at` (60,000 rows) is TIMESTAMP without zone | Read it as UTC, the CRM database's server `TimeZone` setting. |
+| C4 | 500 Db2 customers with the `0001-01-01` / `10101` sentinel open date | `customer_since` is null in the document; the raw `0001-01-01` and `10101` stay in `source_records.db2`. No fallback to the Oracle account open date. |
+
+Expected exception counts at the default seed: 600 `candidate_match_unconfirmed`,
+2 `ambiguous_local_time` (both accounts are also on the Oracle side of C1 pairs, for
+C0000003 and C0000004).
+
+If a later decision changes any of these, update this table, the rules above, and the
+"Customer source mapping" page in the ENG space of the Confluence mock.
