@@ -133,7 +133,7 @@ PC_FX_UNT7_ROLE_GRANT, with verified typed seeds/raw input readbacks.
 generate_schema_name.sql returns the custom schema unchanged, so no prefix
 is added. Fixture models enable only with SFX_UNT7_ROLE_FIXTURE=1.
 Every build selects exactly one model; every connection/build tags mapping
-m_SFX_ROLE_GRANT and run sfx-d1110 via the existing connector.
+m_SFX_ROLE_GRANT and run __RUN_TOKEN__ via the existing connector.
 All 20 control rows plus SHA and full typed protected snapshots are retained,
 checked before builds and postflight: STG_APP_USER, APP_USER, STG_DOCUMENT,
 DOCUMENT, DOC_SHARE and PC_CONTENT.LOGIN_EVENT. No source, control, before or
@@ -279,7 +279,7 @@ statements, and zero unparsed successful non-read targets. Durable write targets
 - PC_FX_UNT7_ROLE_GRANT.UNT7_FIXTURE_DUP_KEY
 
 No __DBT_TMP object was needed by this table materialization. Comments finalized
-to run_token=sfx-d1110 expires=2026-11-24. No write targets PC_SRC, PC_BEFORE,
+to run_token=__RUN_TOKEN__ expires=2026-11-24. No write targets PC_SRC, PC_BEFORE,
 PC_AUDIT, LOGIN_EVENT, an act-3 table, PC_BILLING or MIGRATION_CONTROL; no grant,
 task execution, setup/global load, truncate, reset, full-refresh or restore ran.
 Between-run history has no successful intervening target writes. The failed

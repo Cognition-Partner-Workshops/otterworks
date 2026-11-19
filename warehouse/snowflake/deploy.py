@@ -1,12 +1,29 @@
 """Deploy versioned plumbing migrations without persisting credentials."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import json
 import logging
+from pathlib import Path
+import tempfile
 
 import structlog
 import yaml
 
 from sfx_conn import ROOT, WORKLOADS, connect, query_tag
 from governance import reapply
+
+
+def render_migrations(destination):
+    paths = [ROOT / 'schemachange-config.yml', *sorted((ROOT / 'migrations').glob('V*.sql'))]
+    for path in paths:
+        output = destination / path.relative_to(ROOT)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(_run_render(path.read_text()))
+    return destination / 'schemachange-config.yml'
 
 
 def redact_connection_fields(logger, method, event):
@@ -36,18 +53,23 @@ def main():
     variables["run_id"] = "scheduled"
     with connect("ops", "bootstrap") as conn:
         with conn.cursor() as cur:
-            cur.execute("CREATE SCHEMA IF NOT EXISTS SFX_D1110_AFTER.SCHEMACHANGE COMMENT='sfx-d1110 migration history'")
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS SFX_D1110_AFTER.SCHEMACHANGE.CHANGE_HISTORY (
+            cur.execute(_run_render("CREATE SCHEMA IF NOT EXISTS __RUN_DATABASE__.SCHEMACHANGE COMMENT='__RUN_TOKEN__ migration history'"))
+            cur.execute(_run_render("""
+                CREATE TABLE IF NOT EXISTS __RUN_DATABASE__.SCHEMACHANGE.CHANGE_HISTORY (
                     VERSION VARCHAR, DESCRIPTION VARCHAR, SCRIPT VARCHAR,
                     SCRIPT_TYPE VARCHAR, CHECKSUM VARCHAR, EXECUTION_TIME NUMBER,
                     STATUS VARCHAR, INSTALLED_BY VARCHAR, INSTALLED_ON TIMESTAMP_LTZ
-                ) COMMENT='sfx-d1110 migration history'
-            """)
-    config_data = yaml.safe_load((ROOT / "schemachange-config.yml").read_text())
+                ) COMMENT='__RUN_TOKEN__ migration history'
+            """))
+    target = ROOT.parent / 'dbt/target'
+    target.mkdir(exist_ok=True)
+    rendered = tempfile.TemporaryDirectory(prefix=_run_render('__RUN_TOKEN__')+'-deploy-',dir=target)
+    rendered_root = Path(rendered.name)
+    config_path = render_migrations(rendered_root)
+    config_data = yaml.safe_load(config_path.read_text())
     config = DeployConfig.factory(
-        config_file_path=ROOT / "schemachange-config.yml",
-        root_folder=ROOT / config_data["root-folder"],
+        config_file_path=config_path,
+        root_folder=rendered_root / config_data["root-folder"],
         change_history_table=config_data["change-history-table"],
         create_change_history_table=config_data["create-change-history-table"],
         config_vars=variables, query_tag=tag,
@@ -63,7 +85,7 @@ def main():
     session.user = session.con.user
     session.role = session.con.role
     session.warehouse = WORKLOADS["ops"]
-    session.database = "SFX_D1110_AFTER"
+    session.database = _run_render("__RUN_DATABASE__")
     session.schema = "SCHEMACHANGE"
     session.con.autocommit(False)
     try:
@@ -72,6 +94,7 @@ def main():
             reapply(cursor)
     finally:
         session.con.close()
+        rendered.cleanup()
 
 
 if __name__ == "__main__":

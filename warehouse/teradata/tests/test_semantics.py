@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import datetime
 
 import pytest
@@ -116,7 +122,7 @@ def test_formats(td, tmp_path):
     assert ok(td, "SELECT CAST(CAST(d AS FORMAT 'YYYY-MM') AS CHAR(7)), CAST(d AS VARCHAR(10) FORMAT 'YYYY-MM-DD'),(d (FORMAT 'YYYYMMDD')) FROM dates") == [('2026-11', '2026-11-09', '20261109')]
     out = tmp_path / 'report'
     td.run(f'.EXPORT REPORT FILE={out}\nSELECT d FROM dates;\n.EXPORT RESET')
-    assert out.read_text() == '20261109\n'
+    assert _run_render(out.read_text()) == '20261109\n'
     assert ok(td, "SELECT CAST(d AS VARCHAR(10) FORMAT 'YYYYBMMBDD') FROM dates") == [('2026 11 09',)]
 
 

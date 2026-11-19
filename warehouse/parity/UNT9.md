@@ -20,9 +20,9 @@ python -m parity.evidence_unt9 {oracle|preflight|run1|run2|collect1|collect2|com
 python snowflake/pc_dag_audit.py --run-dir <evidence>/dbt/run2/sessions --source-schema PC_FX_UNT9_AUDIT_WF \
   --schema PC_AUDIT --output snowflake/pc_dag/audit.yml
 ```
-The `dag` step refuses to run if any `SFX_D1110_PC_AUDIT_*` task, task history or evidence directory already exists.
+The `dag` step refuses to run if any `__RUN_DATABASE___PC_AUDIT_*` task, task history or evidence directory already exists.
 
-## Result (isolated schema SFX_D1110_AFTER.PC_FX_UNT9_AUDIT_WF; frozen manifest business date 20261109)
+## Result (isolated schema __RUN_DATABASE__.PC_FX_UNT9_AUDIT_WF; frozen manifest business date 20261109)
 - Oracle: PowerCenter run of wf_SFX_AUDIT_DAILY. All 4 enabled sessions SUCCEEDED, with 480/480/118/61 rows and 3 security-alert rejects.
   Each target is equal to the accepted UNT-2 oracle. Archive did not run.
 - dbt run1 and run2: no reset or full refresh. First-load multisets equal the oracle for all 4 targets, run1 == run2,

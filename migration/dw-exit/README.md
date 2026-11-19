@@ -19,9 +19,9 @@ and no wall-clock values are used. See `plan.md` for interpretation and limits.
 
 Install `requirements.txt` in a virtual environment outside the repository.
 Bind SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE, SNOWFLAKE_DATABASE,
-SNOWFLAKE_PRIVATE_KEY and SNOWFLAKE_RUN_TOKEN from the credential store per
+SNOWFLAKE_PRIVATE_KEY and RUN_TOKEN from the credential store per
 invocation. The PEM key is parsed only in memory, never written or printed.
-Only SFX_D1110_AFTER is accepted; the warehouse is fixed to SFX_D1110_OPS_WH.
+Only __RUN_DATABASE__ is accepted; the warehouse is fixed to __RUN_DATABASE___OPS_WH.
 Every connection starts with the compact assess/preflight QUERY_TAG, then sets
 the phase tag before executing work. Every command suspends the warehouse in
 its cleanup path, including a failed verification.
@@ -51,7 +51,7 @@ queries, grouped by phase and execution status. No renders are committed.
 
 # Act 2: Billing — prove before promoting
 
-This run migrates the billing estate into `SFX_D1110_AFTER.BILLING`. It does not
+This run migrates the billing estate into `__RUN_DATABASE__.BILLING`. It does not
 depend on the target scaffold or alter another subject area's control rows.
 `TD_BASELINE` is a value-exact capture of the post-daily-chain emulator, not
 expected values recomputed in Snowflake. Capture uses CREATE, never REPLACE,
@@ -62,18 +62,18 @@ The baseline must not be recaptured between red and green.
 
 Use the existing org key-pair credentials in the environment. Never put a key
 in a command, repository file or log. All Snowflake sessions use a JSON query
-tag for run `sfx-d1110`, act `prove`; only `SFX_D1110_*` warehouses are used.
+tag for run `__RUN_TOKEN__`, act `prove`; only `__RUN_DATABASE___*` warehouses are used.
 All explicitly created Snowflake objects carry
-`run_token=sfx-d1110 expires=2026-11-24` as their COMMENT.
+`run_token=__RUN_TOKEN__ expires=2026-11-24` as their COMMENT.
 
 ```sh
-make sfx-teradata-up NS=sfx-d1110-before ROWS_PER_TABLE=20000
-make sfx-teradata-run NS=sfx-d1110-before BUSINESS_DATE=20261109
+make sfx-teradata-up NS=__BEFORE_NAMESPACE__ ROWS_PER_TABLE=20000
+make sfx-teradata-run NS=__BEFORE_NAMESPACE__ BUSINESS_DATE=20261109
 make warehouse/.venv/.billing-requirements
 # Install SnowConvert AI per warehouse/teradata/README.md first.
 warehouse/.venv/bin/python migration/dw-exit/billing/snowconvert.py
 # Fresh TD_BASELINE only. Refuses to overwrite existing capture tables.
-make sfx-billing-capture NS=sfx-d1110-before BUSINESS_DATE=20261109
+make sfx-billing-capture NS=__BEFORE_NAMESPACE__ BUSINESS_DATE=20261109
 
 # Expected failure. Preserve this file before proceeding.
 make sfx-billing-prove CANDIDATE=initial BUSINESS_DATE=20261109
@@ -117,7 +117,7 @@ the captured raw input, not copied from final expected billing tables. The
 monthly procedure calculates invoice lines, taxes, currency control totals and
 balanced journal entries from those inputs. BTEQ export directives become
 queryable result tables. `promote.py` rechecks every billing relation before
-upserting billing-only rows in `SFX_D1110_AFTER.MIGRATION_CONTROL.OBJECTS`.
+upserting billing-only rows in `__RUN_DATABASE__.MIGRATION_CONTROL.OBJECTS`.
 The shared assessment schema is reused; `MANIFEST` and other subjects' rows
 are not modified. Staging inputs get a separate fresh parity check before
 their object rows are verified. FastLoad jobs are outside this act and are
@@ -164,7 +164,7 @@ deterministic without that contract. MULTISET duplicates stay intact.
 Finance decision: preserve legacy SET exact-duplicate suppression and expose
 suppressed rows for review. `BILLING_PROBES.SET_ROWS` still uses full-row
 DISTINCT, never business-key deduplication. The supplemental view
-`SFX_D1110_AFTER.BILLING_PROBES.SET_DUPLICATE_QUARANTINE` groups the preserved
+`__RUN_DATABASE__.BILLING_PROBES.SET_DUPLICATE_QUARANTINE` groups the preserved
 raw FEED by every payload column (ID and VALUE) and includes only repeated
 rows. INPUT_COUNT counts all copies, RETAINED_COUNT is one, and
 SUPPRESSED_COUNT is INPUT_COUNT minus one. Null payloads group together;
@@ -176,7 +176,7 @@ Finance can review the exact payload and counts with:
 
 ```sql
 SELECT ID, VALUE, INPUT_COUNT, RETAINED_COUNT, SUPPRESSED_COUNT
-FROM SFX_D1110_AFTER.BILLING_PROBES.SET_DUPLICATE_QUARANTINE
+FROM __RUN_DATABASE__.BILLING_PROBES.SET_DUPLICATE_QUARANTINE
 ORDER BY ID, VALUE;
 ```
 

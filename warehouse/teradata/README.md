@@ -3,11 +3,11 @@
 Run the root Make targets with Python 3.10+ and Docker Compose v2:
 
 ```sh
-make sfx-teradata-up NS=sfx-d1110-before ROWS_PER_TABLE=2000 BUSINESS_DATE=20261109
-make sfx-teradata-run NS=sfx-d1110-before BUSINESS_DATE=20261109
-make sfx-teradata-test NS=sfx-d1110-before
-make sfx-teradata-snowconvert NS=sfx-d1110-before SCAI=/path/to/scai
-make sfx-teradata-down NS=sfx-d1110-before
+make sfx-teradata-up NS=__BEFORE_NAMESPACE__ ROWS_PER_TABLE=2000 BUSINESS_DATE=20261109
+make sfx-teradata-run NS=__BEFORE_NAMESPACE__ BUSINESS_DATE=20261109
+make sfx-teradata-test NS=__BEFORE_NAMESPACE__
+make sfx-teradata-snowconvert NS=__BEFORE_NAMESPACE__ SCAI=/path/to/scai
+make sfx-teradata-down NS=__BEFORE_NAMESPACE__
 ```
 
 `ROWS_PER_TABLE` defaults to 200000, `BUSINESS_DATE` to 20261109. Up creates the
@@ -30,7 +30,7 @@ down removes the namespaced database volume. Data and exports remain gitignored.
 
 ## Environment and placeholders
 
-`NS` is mandatory. Compose names/volumes contain `sfx-d1110`; its loopback port is
+`NS` is mandatory. Compose names/volumes contain `__RUN_TOKEN__`; its loopback port is
 `54500 + crc32(NS) % 1000` unless `TD_PG_PORT` is supplied. Local PostgreSQL uses
 trust authentication and is not exposed beyond loopback. Do not use this Compose
 configuration for shared or production databases.
@@ -91,7 +91,7 @@ These files are outside the repository; keep them private and manage their
 lifecycle independently of the local PostgreSQL volume. The raw private-key
 environment variable is not forwarded to the converter subprocess.
 
-It then runs `scai init project -n sfx-d1110-teradata-<NS> -l Teradata -c sfx_d1110`,
+It then runs `scai init project -n __RUN_TOKEN__-teradata-<NS> -l Teradata -c sfx_d1110`,
 `scai code add -i <input>`, and `scai code convert --show-ewis`, with
 `SNOWFLAKE_CONNECTION=sfx_d1110`.
 Flags follow the vendor's

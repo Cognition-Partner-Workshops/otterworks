@@ -1,6 +1,6 @@
 # UNT-10: MIGRATION_CONTROL certification (eight migrations-page rows)
 
-Control: `SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS`. 20 rows, 20 distinct FOLDER+MAPPING keys, 8 `migrations-page` / 12 `act3-workflow`.
+Control: `__RUN_DATABASE__.MIGRATION_CONTROL.MAPPINGS`. 20 rows, 20 distinct FOLDER+MAPPING keys, 8 `migrations-page` / 12 `act3-workflow`.
 No dbt build, PC_BEFORE capture, setup/seed or Task execution was run here. The values come only from accepted evidence bundles, each checked against its pinned SHA256.
 
 ## Certification matrix
@@ -37,7 +37,7 @@ Proof boundaries carried forward unchanged:
 | post readback | 01c85441-030d-1e6e-0035-065b001dc20a | d6c325fc216f3e89... | 8 PENDING to VERIFIED; AMBER_REASON null to null; the 12 act3 rows are byte-identical |
 | mark run 2 (8 MERGEs) | 01c85441-030d-1e73-...cd1f6 through 01c85442-030d-1e5d-...d21ea (history/writes.json) | | each `cursor.rowcount == 1` |
 | repeat readback | 01c85442-030d-2128-0035-065b001b4e9a | d6c325fc216f3e89... | no keys changed (VERIFIED_AT kept) |
-| SHOW TASKS (read-only) | 01c85442-030d-1e5d-0035-065b001d21f6 | | all 5 SFX_D1110_PC_AUDIT_* suspended, no schedule |
+| SHOW TASKS (read-only) | 01c85442-030d-1e5d-0035-065b001d21f6 | | all 5 __RUN_DATABASE___PC_AUDIT_* suspended, no schedule |
 
 Query history for the window shows only the 16 MERGEs above as non-read statements. ROWS_PRODUCED=20 is observed only, not a proven scanned-row count. The affected-row proof is ACCOUNT_USAGE ROWS_UPDATED=1 / ROWS_INSERTED=0 / ROWS_DELETED=0 and RESULT_SCAN "number of rows updated"=1 for each of the 16 MERGEs, alongside the per-key row-hash diff and original rowcount==1 guard.
 

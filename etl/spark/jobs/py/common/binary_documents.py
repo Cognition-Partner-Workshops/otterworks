@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[5]))
+from warehouse.run_config import render as _run_render
+
 import hashlib
 from io import BytesIO
 import re
@@ -51,9 +57,9 @@ def extract_document(content):
             return "application/pdf", text[:4096], pages, digest, None
         with ZipFile(BytesIO(raw)) as archive:
             if "word/document.xml" in archive.namelist():
-                text = document_text(archive.read("word/document.xml"))
+                text = document_text(_run_render(archive.read("word/document.xml")))
                 return "application/vnd.openxmlformats-officedocument.wordprocessingml.document", text[:4096], max(1, (len(text) + 2999) // 3000), digest, None
-            text = "\n".join(archive.read(name).decode("utf-8", "replace") for name in archive.namelist() if name.endswith(".txt"))
+            text = "\n".join(_run_render(archive.read(name)).decode("utf-8", "replace") for name in archive.namelist() if name.endswith(".txt"))
             return "application/zip", text[:4096], max(1, text.count("\f") + 1), digest, None
     except (BadZipFile, pyexpat.ExpatError, ValueError, OSError) as error:
         return "application/octet-stream", "", 0, digest, str(error)[:200]

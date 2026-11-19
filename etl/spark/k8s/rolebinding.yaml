@@ -1,15 +1,15 @@
 apiVersion: "rbac.authorization.k8s.io/v1"
 kind: "RoleBinding"
 metadata:
-  name: "sfx-d1110-spark"
-  namespace: "sfx-d1110-before"
+  name: "__RUN_TOKEN__-spark"
+  namespace: "__BEFORE_NAMESPACE__"
   labels:
-    otterworks.run-token: "sfx-d1110"
+    otterworks.run-token: "__RUN_TOKEN__"
 subjects:
   - kind: "ServiceAccount"
-    name: "sfx-d1110-spark"
-    namespace: "sfx-d1110-before"
+    name: "__RUN_TOKEN__-spark"
+    namespace: "__BEFORE_NAMESPACE__"
 roleRef:
   apiGroup: "rbac.authorization.k8s.io"
   kind: "Role"
-  name: "sfx-d1110-spark"
+  name: "__RUN_TOKEN__-spark"

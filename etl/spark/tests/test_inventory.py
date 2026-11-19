@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import os
 import json
 from pathlib import Path
@@ -12,7 +18,7 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
-LABEL = {"otterworks.run-token": "sfx-d1110"}
+LABEL = {"otterworks.run-token": _run_render("__RUN_TOKEN__")}
 TARGETS = ("dbt", "snowpark_python", "spark_standard_template", "retired")
 
 
@@ -27,12 +33,12 @@ class InventoryTest(unittest.TestCase):
             self.assertTrue(entry["change_reason"].strip())
 
     def test_job_inventory(self):
-        entries = [json.loads(path.read_text()) for path in sorted((ROOT / "jobs/registry").glob("*.yaml"))]
+        entries = [json.loads(_run_render(path.read_text())) for path in sorted((ROOT / "jobs/registry").glob("*.yaml"))]
         jobs = [entry["job"] for entry in entries]
         registry = {entry["job"]: entry for entry in entries}
         self.assertEqual(len(jobs), 30)
         self.assertEqual(len(set(jobs)), 30)
-        classifications = yaml.safe_load((ROOT / "classification.yaml").read_text())
+        classifications = yaml.safe_load(_run_render((ROOT / "classification.yaml").read_text()))
         self.assertEqual(len(classifications), 30)
         classified = {entry["job"]: entry for entry in classifications}
         self.assertEqual(set(classified), set(jobs))
@@ -42,12 +48,12 @@ class InventoryTest(unittest.TestCase):
                           (ROOT / "submit" / f"{job}.sh").exists()})
         applications = {}
         for path in (ROOT / "k8s").glob("jobs/*/application.yaml"):
-            obj = yaml.safe_load(path.read_text())
+            obj = yaml.safe_load(_run_render(path.read_text()))
             self.assertEqual(obj["metadata"]["labels"], LABEL, path.name)
             if obj["kind"] == "SparkApplication":
                 applications[path.parent.name] = obj
         self.assertEqual(set(applications), {job for job in jobs if registry[job]["status"] in ("legacy", "template")})
-        crontab = [line for path in (ROOT / "cron.d").glob("*") for line in path.read_text().splitlines()]
+        crontab = [line for path in (ROOT / "cron.d").glob("*") for line in _run_render(path.read_text()).splitlines()]
         for job in jobs:
             with self.subTest(job=job):
                 entry = registry[job]
@@ -74,11 +80,11 @@ class InventoryTest(unittest.TestCase):
                         self.assertFalse((ROOT / "k8s/jobs" / job / "application.yaml").exists())
                         self.assert_snowflake_kustomization(ROOT / "k8s/jobs" / job)
                     elif path.exists():
-                        self.assertIn("template/submit.sh", path.read_text())
-                        self.assertNotIn("--executor", path.read_text())
+                        self.assertIn("template/submit.sh", _run_render(path.read_text()))
+                        self.assertNotIn("--executor", _run_render(path.read_text()))
                     continue
                 self.assertTrue(os.access(path, os.X_OK))
-                script = path.read_text()
+                script = _run_render(path.read_text())
                 tokens = shlex.split(script.replace("\\\n", " "), comments=True)
                 def option(flag):
                     return tokens[tokens.index(flag) + 1]
@@ -88,7 +94,7 @@ class InventoryTest(unittest.TestCase):
                 self.assertEqual(entry["schedule"], " ".join(lines[0].lstrip("# ").split()[:5]))
                 spec = applications[job]["spec"]
                 self.assertEqual(applications[job]["apiVersion"], "sparkoperator.k8s.io/v1beta2")
-                self.assertEqual(applications[job]["metadata"]["namespace"], "sfx-d1110-before")
+                self.assertEqual(applications[job]["metadata"]["namespace"], _run_render("__BEFORE_NAMESPACE__"))
                 self.assertEqual(spec["executor"]["memory"], option("--executor-memory"))
                 cores = int(option("--executor-cores"))
                 self.assertEqual(spec["executor"]["cores"], cores)
@@ -117,7 +123,7 @@ class InventoryTest(unittest.TestCase):
                         self.assertEqual(environment[key]["value"], value)
                     if not inline:
                         self.assertIn("valueFrom", environment["TD_JDBC_PASSWORD"])
-                text = (ROOT / "k8s/jobs" / job / "application.yaml").read_text()
+                text = _run_render((ROOT / "k8s/jobs" / job / "application.yaml").read_text())
                 self.assertEqual(text.count("# gitleaks:allow"), 2 * len(inline))
 
     def test_classification_provenance(self):
@@ -142,17 +148,17 @@ class InventoryTest(unittest.TestCase):
 
     def test_kustomization(self):
         directory = ROOT / "k8s"
-        kustomization = yaml.safe_load((directory / "kustomization.yaml").read_text())
+        kustomization = yaml.safe_load(_run_render((directory / "kustomization.yaml").read_text()))
         expected = {path.name for path in directory.glob("*.yaml")} - {"kustomization.yaml"}
         expected.update("jobs/" + path.name for path in (directory / "jobs").iterdir())
         self.assertEqual(set(kustomization["resources"]), expected)
         self.assertEqual(len(kustomization["resources"]), len(expected))
         for path in (directory / "jobs").iterdir():
-            obj = yaml.safe_load((path / "kustomization.yaml").read_text())
+            obj = yaml.safe_load(_run_render((path / "kustomization.yaml").read_text()))
             self.assertEqual(obj["resources"], [p.name for p in path.glob("application.yaml")])
 
     def assert_snowflake_kustomization(self, directory):
-        obj = yaml.safe_load((directory / "kustomization.yaml").read_text())
+        obj = yaml.safe_load(_run_render((directory / "kustomization.yaml").read_text()))
         self.assertEqual(obj["resources"], [])
         self.assertFalse((directory / "application.yaml").exists())
 
@@ -167,7 +173,7 @@ class InventoryTest(unittest.TestCase):
             shutil.copy(ROOT / "classification.yaml", root / "classification.yaml")
             job = "docs_folder_legacy_report"
             registration = root / "jobs/registry" / f"{job}.yaml"
-            entry = json.loads(registration.read_text())
+            entry = json.loads(_run_render(registration.read_text()))
             entry.update(status="retired", target="retired")
             registration.write_text(json.dumps(entry))
             (root / "submit" / f"{job}.sh").unlink(missing_ok=True)

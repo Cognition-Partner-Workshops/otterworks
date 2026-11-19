@@ -1,4 +1,10 @@
 """Run SnowConvert in an isolated, ignored project; never deploy its output."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 from datetime import datetime, timezone
 import json
 import os
@@ -36,7 +42,7 @@ def configure_connection(home, env):
     config = directory / 'connections.toml'
     if config.is_symlink():
         raise ValueError('Snowflake configuration must not be a symlink')
-    document = tomlkit.parse(config.read_text()) if config.exists() else tomlkit.document()
+    document = tomlkit.parse(_run_render(config.read_text())) if config.exists() else tomlkit.document()
     key_file = directory / 'sfx_d1110.p8'
     values.update(authenticator='SNOWFLAKE_JWT', private_key_file=str(key_file))
     document['sfx_d1110'] = values
@@ -79,7 +85,7 @@ def prepare_inputs(repo, output, found):
             target = destination / path.relative_to(root)
             target.parent.mkdir(parents=True, exist_ok=True)
             if path.suffix.lower() == '.sql':
-                for index, statement in enumerate(split(path.read_text())):
+                for index, statement in enumerate(split(_run_render(path.read_text()))):
                     target.with_name(f'{target.stem}_{index:03d}.sql').write_text(statement + ';\n')
             else:
                 shutil.copyfile(path, target)

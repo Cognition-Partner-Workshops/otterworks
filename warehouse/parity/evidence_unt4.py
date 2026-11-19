@@ -1,4 +1,10 @@
 """UNT-4 daily summary and archive evidence. Only run/fixture-load write; never touches control rows."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from contextlib import contextmanager
 import csv
@@ -25,7 +31,7 @@ DEST = OUT / 'unt4'
 MAPPINGS = ('m_SFX_AUDIT_DAILY_SUMMARY', 'm_SFX_AUDIT_EVENT_ARCHIVE')
 UPSTREAM = ('m_SFX_STG_AUDIT_EVENT', 'm_SFX_AUDIT_EVENT')
 ARCHIVE = MAPPINGS[1]
-FIXTURE_SCHEMA = 'SFX_D1110_AFTER.PC_AUDIT_UNT4_FIXTURE'
+FIXTURE_SCHEMA = _run_render('__RUN_DATABASE__.PC_AUDIT_UNT4_FIXTURE')
 FIXTURES = {'empty': 'pc_audit__unt4_fixture_archive_empty', 'history': 'pc_audit__unt4_fixture_archive_history'}
 SEQ_KEY = 'SFX_AUDIT.m_SFX_AUDIT_EVENT_ARCHIVE.SEQ_AUDIT_ARCHIVE'
 HISTORY_NEXT = 10
@@ -126,7 +132,7 @@ def runner_fixture(scenario):
         admin.execute(pgsql.Composed([pgsql.SQL('CREATE DATABASE '), pgsql.Identifier(db)]))
         try:
             with psycopg.connect(dbname=db, **params) as pg:
-                pg.execute(BOOTSTRAP.read_text())
+                pg.execute(_run_render(BOOTSTRAP.read_text()))
                 tz, today = pg.execute("SELECT current_setting('TimeZone'), CURRENT_DATE").fetchone()
                 cutoff, rows, history = fixture_rows(today)
                 with pg.cursor() as c:
@@ -141,7 +147,7 @@ def runner_fixture(scenario):
                            'cutoff_2555': cutoff.isoformat(), 'archive_days': owned(ARCHIVE)['parameters']['$$ARCHIVE_DAYS'],
                            'source': snapshot(pg, 'SFX_AUDIT.AUDIT_EVENT'),
                            'target': snapshot(pg, 'SFX_AUDIT.AUDIT_EVENT_ARCHIVE'),
-                           'sequence_storage': json.loads((storage / 'sequence_values.json').read_text())
+                           'sequence_storage': json.loads(_run_render((storage / 'sequence_values.json').read_text()))
                            if scenario == 'history' else {}}
                 dump(path / 'initial_state.json', initial)
                 env = {k: v for k, v in os.environ.items() if not k.startswith(('SNOWFLAKE_', 'TD_'))}
@@ -157,11 +163,11 @@ def runner_fixture(scenario):
                     dump(path / f'runner{n}/target.json', snap)
                     bad = list(runroot.rglob('audit_event_archive1.bad'))
                     dump(path / f'runner{n}/rejects.json', [{'name': 'audit_event_archive1.bad', 'present': bool(bad),
-                         'rows': bad[0].read_text().splitlines() if bad else []}])
+                         'rows': _run_render(bad[0].read_text()).splitlines() if bad else []}])
                     with (runroot / 'REP_SESS_LOG.psv').open() as f:
                         sessions = [r for r in csv.DictReader(f, delimiter='|') if r.get('MAPPING_NAME') == ARCHIVE]
                     dump(path / f'runner{n}/session_results.json', sessions[-1:])
-                    dump(path / f'runner{n}/sequence_storage.json', json.loads((storage / 'sequence_values.json').read_text()))
+                    dump(path / f'runner{n}/sequence_storage.json', json.loads(_run_render((storage / 'sequence_values.json').read_text())))
                     runs.append({'command': cmd, 'returncode': rc, 'rows': len(snap['rows'])})
                     if rc:
                         raise RuntimeError('Runner failed; logs retained in ' + str(runroot))
@@ -203,8 +209,8 @@ def fixture_load():
     source, history = runner['history']['source'], runner['history']['target']
     records = []
     with queries(path, 'unt4-fixture-load') as q:
-        _, existing = q.run(f"SELECT TABLE_NAME FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.TABLES "
-                            f"WHERE TABLE_SCHEMA='PC_AUDIT_UNT4_FIXTURE'")
+        _, existing = q.run(_run_render(f"SELECT TABLE_NAME FROM __RUN_DATABASE__.INFORMATION_SCHEMA.TABLES "
+                            f"WHERE TABLE_SCHEMA='PC_AUDIT_UNT4_FIXTURE'"))
         if existing:
             raise ValueError('Fixture schema already has tables; refusing to overwrite')
         cursor = q.cursor
@@ -327,9 +333,9 @@ def run(name, number):
             if (path / 'run_results.json').exists():
                 execution['adapter_responses'] = [r.get('adapter_response') for r in load(path / 'run_results.json')['results']]
                 execution['adapter_query_ids'] = adapter_query_ids(execution['adapter_responses'])
-            _, history = q.run("SELECT QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS "
-                               "FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) "
-                               f"WHERE TRY_PARSE_JSON(QUERY_TAG):step::string='{step}' ORDER BY START_TIME")
+            _, history = q.run(_run_render("SELECT QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS "
+                               "FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) "
+                               f"WHERE TRY_PARSE_JSON(QUERY_TAG):step::string='{step}' ORDER BY START_TIME"))
             execution['history'] = [[cell(v) for v in r] for r in history]
             execution['query_ids'] = [r[0] for r in history]
             execution['snowflake_utc_date_after'] = utc_date(q)
@@ -361,10 +367,10 @@ def replay(name):
     sessions_ok = all(x['RUN_STATUS'] == 'SUCCEEDED' and x['FAILED_ROWS'] == '0' for x in s['sessions'])
     executions = [load(path / f'run{n}/execution.json') for n in (1, 2)]
     with queries(path / 'between_runs', f'unt4-{name}-between-{uuid.uuid4().hex}') as q:
-        _, between = q.run("SELECT QUERY_ID,QUERY_TYPE,QUERY_TEXT,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS "
-                           "FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
+        _, between = q.run(_run_render("SELECT QUERY_ID,QUERY_TYPE,QUERY_TEXT,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS "
+                           "FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
                            f"END_TIME_RANGE_START=>'{executions[0]['end_utc']}'::TIMESTAMP_LTZ,"
-                           f"END_TIME_RANGE_END=>'{executions[1]['start_utc']}'::TIMESTAMP_LTZ,RESULT_LIMIT=>10000)) ORDER BY START_TIME")
+                           f"END_TIME_RANGE_END=>'{executions[1]['start_utc']}'::TIMESTAMP_LTZ,RESULT_LIMIT=>10000)) ORDER BY START_TIME"))
     table = s['table'].split('.')[-1]
     writes = [[cell(v) for v in r] for r in between
               if r[1] not in ('SELECT', 'DESCRIBE', 'SHOW') and table in (r[2] or '').upper()]

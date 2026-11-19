@@ -1,4 +1,10 @@
 """Isolated security-alert oracle and explicitly scoped live evidence commands."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from collections import Counter
 from contextlib import contextmanager
@@ -23,8 +29,8 @@ from .inventory import ROOT
 DEST = OUT / 'unt5'
 FIXTURES = Path(__file__).parent / 'fixtures/unt5'
 MAPPING = 'm_SFX_SECURITY_ALERT'
-SCHEMA = 'SFX_D1110_AFTER.PC_AUDIT_UNT5_FIXTURE'
-TARGET = 'SFX_D1110_AFTER.PC_AUDIT.SECURITY_ALERT'
+SCHEMA = _run_render('__RUN_DATABASE__.PC_AUDIT_UNT5_FIXTURE')
+TARGET = _run_render('__RUN_DATABASE__.PC_AUDIT.SECURITY_ALERT')
 COLUMNS = ['ALERT_ID', 'ACTOR_USER_ID', 'DOCUMENT_ID', 'ALERT_TS', 'SEVERITY_CD', 'STATUS_CD']
 FROZEN_SHA = '508c54217e1b5019ec2c8876d407f268ec0c56aaa5b1ab50790eef74a44727ab'
 SCENARIOS = ('frozen', 'seeded', 'dup_within_route')
@@ -37,8 +43,8 @@ def implementation_hashes(values):
 
 
 def history_capture(q, step):
-    _, rows = q.run(f'SELECT {HISTORY_COLUMNS} FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.'
-                    f"QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) WHERE TRY_PARSE_JSON(QUERY_TAG):step::string='{step}' ORDER BY START_TIME")
+    _, rows = q.run(_run_render(f'SELECT {HISTORY_COLUMNS} FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.'
+                    f"QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) WHERE TRY_PARSE_JSON(QUERY_TAG):step::string='{step}' ORDER BY START_TIME"))
     if len(rows) >= 10000:
         raise ValueError('History truncated')
     return rows
@@ -47,8 +53,8 @@ def history_capture(q, step):
 def collect_target(q, subject, path):
     template = load(DEST / 'oracle' / scenario(subject) / 'initial_target.json')
     dump(path / 'target.json', fetched(q, target(subject), template))
-    _, comments = q.run("SELECT COMMENT FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.TABLES "
-                       f"WHERE TABLE_SCHEMA='{target(subject).split('.')[1]}' AND TABLE_NAME='{target(subject).split('.')[2]}'")
+    _, comments = q.run(_run_render("SELECT COMMENT FROM __RUN_DATABASE__.INFORMATION_SCHEMA.TABLES "
+                       f"WHERE TABLE_SCHEMA='{target(subject).split('.')[1]}' AND TABLE_NAME='{target(subject).split('.')[2]}'"))
     dump(path / 'comment.json', comments)
     if comments != [(COMMENT,)]:
         raise ValueError('Object comment mismatch')
@@ -70,12 +76,12 @@ def recovery():
         history = history_capture(q, step)
         model_qid = '01c8539e-030d-21f3-0035-065b001c424a'
         model_row = next(r for r in history if r[0] == model_qid)
-        _, all_rows = q.run(f'SELECT {HISTORY_COLUMNS} FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.'
-                           'QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) ORDER BY START_TIME')
+        _, all_rows = q.run(_run_render(f'SELECT {HISTORY_COLUMNS} FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.'
+                           'QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) ORDER BY START_TIME'))
         start = next(r[4] for r in all_rows if r[0] == pre['control']['qid'])
-        _, window = q.run(f'SELECT {HISTORY_COLUMNS} FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.'
+        _, window = q.run(_run_render(f'SELECT {HISTORY_COLUMNS} FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.'
                           f"QUERY_HISTORY_BY_USER(END_TIME_RANGE_START=>'{start.isoformat()}'::TIMESTAMP_LTZ,"
-                          'RESULT_LIMIT=>10000)) ORDER BY START_TIME')
+                          'RESULT_LIMIT=>10000)) ORDER BY START_TIME'))
         foreign = [r for r in window if 'SECURITY_ALERT' in (r[1] or '').upper() and
                    r[2] not in ('SELECT', 'DESCRIBE', 'SHOW') and
                    json.loads(r[3] or '{}').get('step') != step]
@@ -217,7 +223,7 @@ def target(subject):
 
 
 def source(subject):
-    return 'SFX_D1110_AFTER.PC_SRC.SECURITY_ALERT' if subject == 'production' else f'{SCHEMA}.{subject.upper()}_SOURCE'
+    return _run_render('__RUN_DATABASE__.PC_SRC.SECURITY_ALERT') if subject == 'production' else f'{SCHEMA}.{subject.upper()}_SOURCE'
 
 
 def scenario(subject):
@@ -256,7 +262,7 @@ def oracle(name):
         admin.execute(pgsql.Composed([pgsql.SQL('CREATE DATABASE '), pgsql.Identifier(db)]))
         try:
             with psycopg.connect(dbname=db, **params) as pg:
-                pg.execute(BOOTSTRAP.read_text())
+                pg.execute(_run_render(BOOTSTRAP.read_text()))
                 if name != 'frozen':
                     with pg.cursor() as cursor:
                         cursor.executemany('INSERT INTO sfx_audit.security_alert VALUES (%s,%s,%s,%s,%s,%s)',
@@ -279,14 +285,14 @@ def oracle(name):
                     rejects = []
                     for bad in sorted((runroot / 'BadFiles').glob('*.bad')):
                         shutil.copy2(bad, dest / bad.name)
-                        rejects.append({'name': bad.name, 'rows': bad.read_text().splitlines()})
+                        rejects.append({'name': bad.name, 'rows': _run_render(bad.read_text()).splitlines()})
                     dump(dest / 'rejects.json', rejects)
                     shutil.copytree(runroot / 'SessLogs', dest / 'SessLogs')
                     shutil.copy2(runroot / 'REP_SESS_LOG.psv', dest / 'REP_SESS_LOG.psv')
                     with (runroot / 'REP_SESS_LOG.psv').open() as stream:
                         sessions = list(csv.DictReader(stream, delimiter='|'))
                     dump(dest / 'session_results.json', sessions[-1:])
-                    stats = parse_stats(next((dest / 'SessLogs').glob('*.log')).read_text())
+                    stats = parse_stats(_run_render(next((dest / 'SessLogs').glob('*.log')).read_text()))
                     dump(dest / 'writer_stats.json', stats)
                     summary = {'scenario': name, 'run': number, 'returncode': rc,
                                'rows': len(load(dest / 'target.json')['rows']),
@@ -367,7 +373,7 @@ def preflight():
             actual = fetched(q, TARGET, template)
             dump(path / 'initial_target.json', actual)
             require_equal(template, actual, path / 'initial_target_comparison.json')
-        before = 'SFX_D1110_AFTER.PC_BEFORE.SECURITY_ALERT'
+        before = _run_render('__RUN_DATABASE__.PC_BEFORE.SECURITY_ALERT')
         result['before'] = target_state(q, before)
         if result['before']['exists']:
             expected = load(DEST / 'oracle/frozen/run1/target.json')
@@ -394,8 +400,8 @@ def fixture_load():
     fresh(path)
     records = []
     with queries(path, 'unt5-fixture-load', workload='load') as q:
-        _, existing = q.run("SELECT SCHEMA_NAME FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.SCHEMATA "
-                            "WHERE SCHEMA_NAME='PC_AUDIT_UNT5_FIXTURE'")
+        _, existing = q.run(_run_render("SELECT SCHEMA_NAME FROM __RUN_DATABASE__.INFORMATION_SCHEMA.SCHEMATA "
+                            "WHERE SCHEMA_NAME='PC_AUDIT_UNT5_FIXTURE'"))
         if existing:
             raise ValueError('Fixture schema exists; refusing to overwrite')
         fixture_write(q.cursor, records, f"CREATE SCHEMA {SCHEMA} COMMENT='{COMMENT}'")
@@ -439,7 +445,7 @@ def compile_rejects(subject, path):
         subprocess.run(command, env=env, stdout=output, stderr=subprocess.STDOUT, check=True)
     compiled = project / 'target/compiled/sfx_warehouse/analyses/unt5_security_alert_rejects.sql'
     shutil.copy2(compiled, path / 'rejects.sql')
-    return compiled.read_text()
+    return _run_render(compiled.read_text())
 
 
 def run(subject, number):
@@ -569,10 +575,10 @@ def compare(subject):
                                            'NULL-key rejects and DEFAULT rejects are excluded from the merge.'}
     a, b = [load(path / f'run{n}/execution.json') for n in (1, 2)]
     with queries(path / 'between_runs', 'unt5-between-runs') as q:
-        _, history = q.run("SELECT QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS "
-                           "FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
+        _, history = q.run(_run_render("SELECT QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS "
+                           "FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
                            f"END_TIME_RANGE_START=>'{a['end_utc']}'::TIMESTAMP_LTZ,"
-                           f"END_TIME_RANGE_END=>'{b['start_utc']}'::TIMESTAMP_LTZ,RESULT_LIMIT=>10000)) ORDER BY START_TIME")
+                           f"END_TIME_RANGE_END=>'{b['start_utc']}'::TIMESTAMP_LTZ,RESULT_LIMIT=>10000)) ORDER BY START_TIME"))
     writes = [r for r in history if r[2] not in ('SELECT', 'DESCRIBE', 'SHOW') and
               target(subject).split('.')[-1] in (r[1] or '').upper()]
     if len(history) >= 10000:

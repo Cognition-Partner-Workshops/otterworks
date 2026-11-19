@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import os
 import shutil
 import subprocess
@@ -32,8 +38,8 @@ def _server():
         pass
     if os.environ.get("TD_PORT") or not shutil.which("docker"):
         return None, None
-    name = f"sfx-d1110-informatica-pytest-{uuid.uuid4().hex[:6]}"
-    subprocess.run(["docker", "run", "-d", "--rm", "--name", name, "--label", "sfx.run_token=sfx-d1110",
+    name = _run_render(f"__RUN_TOKEN__-informatica-pytest-{uuid.uuid4().hex[:6]}")
+    subprocess.run(["docker", "run", "-d", "--rm", "--name", name, "--label", _run_render("sfx.run_token=__RUN_TOKEN__"),
                     "-e", "POSTGRES_HOST_AUTH_METHOD=trust", "-e", "POSTGRES_DB=teradata", "-p", "127.0.0.1::5432", "postgres:16"],
                    check=True, capture_output=True)
     port = subprocess.run(["docker", "port", name, "5432/tcp"], check=True, capture_output=True, text=True).stdout.split(":")[-1].strip()
@@ -64,7 +70,7 @@ def warehouse(pg_server, tmp_path, monkeypatch):
         c.execute(f"CREATE DATABASE {name}")
     with _connect(name, pg_server) as c:
         with open(os.path.join(FIXTURE, "bootstrap.sql"), encoding="utf-8") as fh:
-            c.execute(fh.read())
+            c.execute(_run_render(fh.read()))
     monkeypatch.setenv("TD_PORT", str(pg_server))
     monkeypatch.setenv("TD_DB", name)
     monkeypatch.setenv("LANDING_DIR", os.path.join(FIXTURE, "landing"))

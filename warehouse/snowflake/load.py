@@ -1,4 +1,10 @@
 """Upload pipe-delimited landing files and invoke the COPY loaders."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import csv
 from pathlib import Path
@@ -10,8 +16,8 @@ from sfx_conn import ROOT, connect
 from seed_contract import prepare_seed
 from teradata_before import prepare_before
 
-SPEC = yaml.safe_load((ROOT / "landing_columns.yml").read_text())
-FIXTURE_SPEC = yaml.safe_load((ROOT / 'fixture_columns.yml').read_text())
+SPEC = yaml.safe_load(_run_render((ROOT / "landing_columns.yml").read_text()))
+FIXTURE_SPEC = yaml.safe_load(_run_render((ROOT / 'fixture_columns.yml').read_text()))
 
 
 def main():

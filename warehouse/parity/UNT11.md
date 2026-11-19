@@ -5,8 +5,8 @@ Scope: the five SFX_AUDIT mappings, the daily audit workflow, and SFX_CONTENT `m
 (`act3-workflow`) are not ours; their control rows, targets and the content branch (#2682) are untouched.
 Nothing here retires PowerCenter, changes production scheduling or claims cutover.
 
-Base: `devin/sfx-d1110-unt10-control-certify` @ `6b7bc8476` (accepted UNT-10). Ancestry: contains
-`origin/demo-snowflake-dw-exit` @ `a48ea0e29` and harness `devin/sfx-d1110-act3-harness` @ `3347010b7`.
+Base: `edc2606d2457efcaaf4c8548dfce9f7645478b7b` @ `6b7bc8476` (accepted UNT-10). Ancestry: contains
+`origin/demo-snowflake-dw-exit` @ `a48ea0e29` and harness `a7101419223b785691d063ada0e01992354ce29a` @ `3347010b7`.
 Post-UNT-10 changes are delivery documentation and CI/test dependency/provenance fixes only.
 No model, macro or mark code changed; accepted live evidence was not re-run and no control row was
 re-marked. No Task DAG executed or redeployed. Harness PR #2677 is now merged into
@@ -35,7 +35,7 @@ Full matrix and raw QIDs: `UNT10.md`. Bundles: UNT-10 `8342b607…` and addendum
 |---|---|---|
 | control `SELECT * … MAPPINGS` | 01c85456-030d-1e81-0035-065b001d332e | SHA256 `d6c325fc216f3e89c7c3eec46302c3754334a15b0ed4fd9c2f4a70c393e5d6d5` = accepted UNT-10 post/repeat; 20 rows; diff vs UNT-10 post: 0 keys changed, act3 rows unchanged; no `held: compute budget` reason |
 | `parity licence` (supporting CLI readback, not display proof) | ops session | migrations-page total=8 VERIFIED=8 AMBER=0 PENDING=0; act3-workflow 12/12 VERIFIED (not ours) |
-| SHOW TASKS | 01c85456-030d-1e5d-0035-065b001d2316 | 5 `SFX_D1110_PC_AUDIT_*` tasks, all `suspended`, `SCHEDULE` null, no archive task |
+| SHOW TASKS | 01c85456-030d-1e5d-0035-065b001d2316 | 5 `__RUN_DATABASE___PC_AUDIT_*` tasks, all `suspended`, `SCHEDULE` null, no archive task |
 | TASK_HISTORY (PC_AUDIT) | 01c85456-030d-1e5e-0035-065b001ca3be | exactly 5 rows, all graph b35af49a…, run 1794358031749, SUCCEEDED; no other run |
 
 ## Proof limits carried forward
@@ -93,7 +93,7 @@ CLI licence output is retained only as supporting readback, not proof of the int
 
 `sqlglot==28.0.0` is installed from `warehouse/snowflake/requirements.txt`.
 The `sfx-snowflake` job checks out full history and explicitly fetches
-`devin/sfx-d1110-act3-content` into `refs/remotes/origin/devin/sfx-d1110-act3-content`.
+`6b4e985f30c6ca8d0ae308b2b72e9ed1cadec54b` into `refs/remotes/6b4e985f30c6ca8d0ae308b2b72e9ed1cadec54b`.
 The sibling-ref assertion fails if unavailable; it does not skip.
 
 The committed macro is provenance-bound to **Unicode 13.0.0**, Python 3.10's `unicodedata`.
@@ -202,7 +202,7 @@ The same error lines are present on all four compared heads:
 | before `308443e94` | 42942474517 / 130267318604 | 42942474571 / 130267318927 |
 | after `c83db7f58` | 42944580130 / 130274184354 | 42944580134 / 130274183889 |
 | harness #2677 historical tested head `3347010b7` (now merged as `fea43801e`) | 42902120034 / 130130521564 | 42902120250 / 130130522601 |
-| unrelated `devin/sfx-d1110-spark-file_object_binary_extract` @ `97d5c61ab` | 42930668532 / 130228293370 | 42930668554 / 130228293777 |
+| unrelated `202e10973c13ad8bbc71e5368a2f38daebc855da` @ `97d5c61ab` | 42930668532 / 130228293370 | 42930668554 / 130228293777 |
 
 ## SAST coverage and limits
 

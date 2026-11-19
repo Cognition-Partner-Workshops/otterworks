@@ -1,10 +1,16 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import json
 import os
 import re
 from datetime import datetime
 
-COMMENT = 'run_token=sfx-d1110 expires=2026-11-24'
-DATABASE = 'SFX_D1110_AFTER'
+COMMENT = _run_render('run_token=__RUN_TOKEN__ expires=2026-11-24')
+DATABASE = _run_render('__RUN_DATABASE__')
 
 
 def validate_date(value):
@@ -23,13 +29,13 @@ def connect(step, workload='PARITY'):
     return snowflake.connector.connect(
         account=os.environ['SNOWFLAKE_ACCOUNT'], user=os.environ['SNOWFLAKE_USER'],
         role=os.environ['SNOWFLAKE_ROLE'], database=DATABASE,
-        warehouse=f'SFX_D1110_{workload}_WH',
+        warehouse=_run_render(f'__RUN_DATABASE___{workload}_WH'),
         paramstyle='qmark',
         private_key=key.private_bytes(serialization.Encoding.DER,
                                     serialization.PrivateFormat.PKCS8,
                                     serialization.NoEncryption()),
         session_parameters={'QUERY_TAG': json.dumps(
-            {'run': 'sfx-d1110', 'act': 'prove', 'step': step}),
+            {'run': _run_render('__RUN_TOKEN__'), 'act': 'prove', 'step': step}),
             'CLIENT_STAGE_ARRAY_BINDING_THRESHOLD': 0,
             'TIMEZONE': 'UTC', 'DATE_OUTPUT_FORMAT': 'YYYY-MM-DD',
             'TIMESTAMP_NTZ_OUTPUT_FORMAT': 'YYYY-MM-DD HH24:MI:SS.FF9'},

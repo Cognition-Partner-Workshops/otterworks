@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import json
 from pathlib import Path
 
@@ -14,7 +20,7 @@ def test_control_location(monkeypatch):
     from parity.harness import control_table
     monkeypatch.delenv('PC_CONTROL_SCHEMA', raising=False)
     monkeypatch.delenv('PC_CONTROL_TABLE', raising=False)
-    assert control_table() == 'SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS'
+    assert control_table() == _run_render('__RUN_DATABASE__.MIGRATION_CONTROL.MAPPINGS')
     for setting in ('PC_CONTROL_SCHEMA', 'PC_CONTROL_TABLE'):
         for value in ('', 'bad; DROP TABLE x'):
             with monkeypatch.context() as patch:
@@ -43,11 +49,11 @@ def test_setup_control_ddl(monkeypatch):
     monkeypatch.setenv('PC_CONTROL_TABLE', 'MAPPINGS')
     monkeypatch.setattr(harness, 'connection', lambda *args: Cursor())
     harness.setup()
-    control = [sql for sql in statements if 'SFX_D1110_AFTER.MIGRATION_CONTROL' in sql]
+    control = [sql for sql in statements if _run_render('__RUN_DATABASE__.MIGRATION_CONTROL') in sql]
     assert len(control) == 22
     assert control[0] == harness.control_ddl()
-    assert control[1] == ('ALTER TABLE SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS '
-                          'ADD COLUMN IF NOT EXISTS OWNER_EFFORT VARCHAR')
+    assert control[1] == (_run_render('ALTER TABLE __RUN_DATABASE__.MIGRATION_CONTROL.MAPPINGS '
+                          'ADD COLUMN IF NOT EXISTS OWNER_EFFORT VARCHAR'))
     assert all(sql == harness.merge_sql() for sql in control[2:])
 
 
@@ -90,7 +96,7 @@ def test_sql_and_tags():
     assert "WHEN NOT MATCHED THEN INSERT" in sql
     value = json.loads(query_tag('load', 'parity_setup', tag('setup', 'm_SFX_PAYMENT')))
     assert {k: value[k] for k in ('run', 'act', 'step', 'mapping')} == {
-        'run': 'sfx-d1110', 'act': 'scale', 'step': 'setup', 'mapping': 'm_SFX_PAYMENT'}
+        'run': _run_render('__RUN_TOKEN__'), 'act': 'scale', 'step': 'setup', 'mapping': 'm_SFX_PAYMENT'}
 
 
 def test_source_resolution(tmp_path):
@@ -110,7 +116,7 @@ def test_owners():
     class Cursor:
         def execute(self, sql, params):
             assert sql == 'SELECT FOLDER, OWNER_EFFORT FROM IDENTIFIER(%s) WHERE MAPPING=%s'
-            assert params == ('SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS', 'm_SFX_PAYMENT')
+            assert params == (_run_render('__RUN_DATABASE__.MIGRATION_CONTROL.MAPPINGS'), 'm_SFX_PAYMENT')
         def fetchall(self):
             return [('SFX_BILLING', 'act3-workflow')]
     require_owner(Cursor(), 'm_SFX_PAYMENT')

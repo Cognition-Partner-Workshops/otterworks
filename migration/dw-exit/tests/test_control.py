@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import json
 import sys
 from pathlib import Path
@@ -21,7 +27,7 @@ class Cursor:
 
 
 def test_tags():
-    assert control.query_tag('load_dbql') == '{"run":"sfx-d1110","act":"assess","step":"load_dbql"}'
+    assert control.query_tag('load_dbql') == _run_render('{"run":"__RUN_TOKEN__","act":"assess","step":"load_dbql"}')
     cursor = Cursor()
     control.tag(cursor, 'verify')
     assert json.loads(cursor.calls[0][1][0])['step'] == 'verify'
@@ -107,6 +113,6 @@ def test_history_preserves_assessment_scope():
     cursor = HistoryCursor()
     control.history(cursor)
     sql = cursor.calls[-1][0]
-    assert sql == (control.OUT / 'query_history_assess.sql').read_text()
+    assert sql == _run_render((control.OUT / 'query_history_assess.sql').read_text())
     assert 'assess' in sql
     assert 'prove' not in sql

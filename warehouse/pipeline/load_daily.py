@@ -1,4 +1,10 @@
 """Atomic header-mapped daily billing feed loader."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import csv
 from datetime import date
@@ -12,7 +18,7 @@ from sf import connect, dbt_env
 ROOT = Path(__file__).resolve().parent
 GOOD_DATE = date(2026, 11, 9)
 STAGE = "@LANDING.LANDING_STAGE/pipeline"
-FORMAT = "LANDING.SFX_D1110_PIPELINE_CSV"
+FORMAT = _run_render("LANDING.__RUN_DATABASE___PIPELINE_CSV")
 REQUIRED = ("USAGE_DAILY_ID", "CUSTOMER_ID", "USAGE_DATE", "QUANTITY", "UNIT_PRICE",
             "AMOUNT", "CURRENCY_CODE", "CREATED_AT", "IS_ACTIVE")
 
@@ -30,10 +36,10 @@ def source_file(day):
 
 def validate_target(schema, warehouse):
     if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", schema) or not (
-            schema == "RAW_BILLING" or "SFX_D1110" in schema):
-        raise ValueError("schema must be RAW_BILLING or an identifier containing SFX_D1110")
-    if not re.fullmatch(r"SFX_D1110_[A-Za-z0-9_]+", warehouse):
-        raise ValueError("warehouse must start with SFX_D1110_")
+            schema == "RAW_BILLING" or _run_render("__RUN_DATABASE__") in schema):
+        raise ValueError(_run_render("schema must be RAW_BILLING or an identifier containing __RUN_DATABASE__"))
+    if not re.fullmatch(_run_render(r"__RUN_DATABASE___[A-Za-z0-9_]+"), warehouse):
+        raise ValueError(_run_render("warehouse must start with __RUN_DATABASE___"))
 
 
 def header_columns(path):
@@ -50,7 +56,7 @@ def header_columns(path):
     return {name: f"${header.index(name) + 1}" for name in REQUIRED}
 
 
-def load(day, step="load", schema="RAW_BILLING", warehouse="SFX_D1110_LOAD_WH", no_build=False):
+def load(day, step="load", schema="RAW_BILLING", warehouse=_run_render("__RUN_DATABASE___LOAD_WH"), no_build=False):
     validate_target(schema, warehouse)
     path = ROOT / "landing" / f"{day.isoformat()}.csv"
     if not path.is_file():
@@ -63,10 +69,10 @@ def load(day, step="load", schema="RAW_BILLING", warehouse="SFX_D1110_LOAD_WH", 
     usage_date = f"TRY_TO_DATE({columns['USAGE_DATE']})"
     with connect(step, warehouse) as connection:
         with connection.cursor() as cursor:
-            cursor.execute(f"""CREATE FILE FORMAT IF NOT EXISTS {FORMAT}
+            cursor.execute(_run_render(f"""CREATE FILE FORMAT IF NOT EXISTS {FORMAT}
                 TYPE=CSV SKIP_HEADER=1 FIELD_OPTIONALLY_ENCLOSED_BY='"'
                 EMPTY_FIELD_AS_NULL=TRUE ERROR_ON_COLUMN_COUNT_MISMATCH=FALSE
-                COMMENT='sfx-d1110 pipeline feed'""")
+                COMMENT='__RUN_TOKEN__ pipeline feed'"""))
             cursor.execute(f"PUT 'file://{path}' {STAGE}/ AUTO_COMPRESS=FALSE OVERWRITE=TRUE")
             cursor.execute("BEGIN")
             try:
@@ -98,7 +104,7 @@ def load(day, step="load", schema="RAW_BILLING", warehouse="SFX_D1110_LOAD_WH", 
 
 
 def reset(day):
-    with connect("reset", "SFX_D1110_LOAD_WH") as connection:
+    with connect("reset", _run_render("__RUN_DATABASE___LOAD_WH")) as connection:
         with connection.cursor() as cursor:
             cursor.execute("DELETE FROM RAW_BILLING.USAGE_DAILY WHERE _SRC_FILE=%s", (source_file(day),))
             print("reset rows_deleted:", cursor.rowcount, flush=True)
@@ -112,13 +118,13 @@ def main():
     parser.add_argument("--date", type=date.fromisoformat, required=True)
     parser.add_argument("--step", choices=["load", "load_break", "backfill"], default="load")
     parser.add_argument("--schema", default="RAW_BILLING")
-    parser.add_argument("--warehouse", default="SFX_D1110_LOAD_WH")
+    parser.add_argument("--warehouse", default=_run_render("__RUN_DATABASE___LOAD_WH"))
     parser.add_argument("--no-build", action="store_true")
     parser.add_argument("--reset", action="store_true")
     args = parser.parse_args()
     validate_target(args.schema, args.warehouse)
     if args.reset:
-        if args.schema != "RAW_BILLING" or args.warehouse != "SFX_D1110_LOAD_WH" or args.no_build:
+        if args.schema != "RAW_BILLING" or args.warehouse != _run_render("__RUN_DATABASE___LOAD_WH") or args.no_build:
             parser.error("target overrides and --no-build are only supported for loads")
         if args.date == GOOD_DATE:
             parser.error("reset date must not be the committed good day")

@@ -16,6 +16,12 @@ the laptop -- a real deployment uses the Devin Automation webhook and Slack
 directly and has no sink at all.
 """
 
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
+
 import contextlib
 import json
 import os
@@ -59,7 +65,7 @@ class Handler(BaseHTTPRequestHandler):
             self.close_connection = True
             self._send(413, b'{"error":"payload too large"}')
             return
-        raw = self.rfile.read(length)
+        raw = _run_render(self.rfile.read(length))
         try:
             payload = json.loads(raw or b"null")
         except json.JSONDecodeError:
@@ -89,7 +95,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         try:
             with open(_path(receiver), encoding="utf-8") as fh:
-                lines = [ln for ln in fh.read().splitlines() if ln.strip()]
+                lines = [ln for ln in _run_render(fh.read()).splitlines() if ln.strip()]
         except FileNotFoundError:
             lines = []
         if len(parts) > 1 and parts[1] == "latest":

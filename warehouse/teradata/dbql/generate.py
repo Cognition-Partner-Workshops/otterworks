@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 from collections import Counter
 import csv
@@ -84,7 +90,7 @@ def inventory(root=ROOT):
     paths += sorted((root / 'macros').glob('*.sql')) + sorted((root / 'procedures').glob('*.sql'))
     paths.append(root / 'dbql' / 'schema.sql')
     for path in paths:
-        for statement in commands(path.read_text()):
+        for statement in commands(_run_render(path.read_text())):
             match = re.match(r'(?:CREATE|REPLACE)\s+(?:(?:SET|MULTISET)\s+)?(TABLE|VIEW|MACRO|PROCEDURE)\s+([\w.]+)', statement, re.I)
             if match:
                 result[match[2].upper()] = (dict(TABLE='T', VIEW='V', MACRO='M', PROCEDURE='P')[match[1].upper()], statement)
@@ -127,10 +133,10 @@ def generate(out=Path(__file__).parent, seed=1110):
     loads = []
     for path in sorted((ROOT / 'scripts').glob('*/0*.bteq')):
         user = 'svc_etl_' + ('docs' if path.parent.name == 'documents' else path.parent.name)
-        for statement in commands(path.read_text()):
+        for statement in commands(_run_render(path.read_text())):
             if re.match(r'(INSERT|MERGE)\b', statement, re.I):
                 loads.append((user, statement))
-    fastloads = [next(q for q in commands(p.read_text()) if q.upper().startswith('INSERT INTO'))
+    fastloads = [next(q for q in commands(_run_render(p.read_text())) if q.upper().startswith('INSERT INTO'))
                  for p in sorted((ROOT / 'load' / 'fastload').glob('*.fl'))]
     routines = [(name, kind) for name, (kind, _) in objects.items() if kind in ('M', 'P') and name not in QUIET_OBJECTS]
     for index in range(90):

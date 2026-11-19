@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import csv
 from collections import defaultdict
 from datetime import date
@@ -18,7 +24,7 @@ def fixture():
 
 def test_realistic_values_and_types():
     data = fixture()
-    spec = yaml.safe_load((ROOT / 'fixture_columns.yml').read_text())
+    spec = yaml.safe_load(_run_render((ROOT / 'fixture_columns.yml').read_text()))
     for tables in spec.values():
         for table, columns in tables.items():
             for row in data[table]:
@@ -109,7 +115,7 @@ def test_journal_balances_and_reconciles_to_invoice_run():
 
 
 def test_balanced_journal_generic_normal_empty_and_errors():
-    macro = (ROOT.parent / 'dbt/macros/balanced_journal.sql').read_text()
+    macro = _run_render((ROOT.parent / 'dbt/macros/balanced_journal.sql').read_text())
     query = macro.split('%}', 1)[1].rsplit('{%', 1)[0].replace('{{ model }}', 'journal')
     with sqlite3.connect(':memory:') as db:
         db.execute('create table journal (journal_id integer, debit_amount integer, credit_amount integer)')
@@ -118,7 +124,7 @@ def test_balanced_journal_generic_normal_empty_and_errors():
         assert db.execute(query).fetchall() == []
         db.executemany('insert into journal values (?, ?, ?)', [(2, 50, 0), (3, None, 0)])
         assert set(db.execute(query).fetchall()) == {(2,), (3,)}
-    schema = yaml.safe_load((ROOT.parent / 'dbt/models/staging/billing/schema.yml').read_text())
+    schema = yaml.safe_load(_run_render((ROOT.parent / 'dbt/models/staging/billing/schema.yml').read_text()))
     model = next(m for m in schema['models'] if m['name'] == 'stg_billing__gl_journal_line')
     assert 'balanced_journal' in model['tests']
     account = next(c for c in model['columns'] if c['name'] == 'gl_account_id')
@@ -126,6 +132,6 @@ def test_balanced_journal_generic_normal_empty_and_errors():
 
 
 def test_loader_includes_every_billing_table():
-    spec = yaml.safe_load((ROOT / 'fixture_columns.yml').read_text())
-    procedure = (ROOT / 'migrations/V003__loaders_and_tasks.sql').read_text().split('$$;', 1)[0]
+    spec = yaml.safe_load(_run_render((ROOT / 'fixture_columns.yml').read_text()))
+    procedure = _run_render((ROOT / 'migrations/V003__loaders_and_tasks.sql').read_text()).split('$$;', 1)[0]
     assert all("'" + table + "'" in procedure for table in spec['billing'])

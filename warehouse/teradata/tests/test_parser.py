@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from bteq.parser import commands, split
 
 
@@ -52,7 +58,7 @@ SELECT * FROM items ORDER BY id;
 .EXIT 0''')
     assert result == 0
     assert td.errorcode == 0, td.output.getvalue()
-    assert out.read_text() == '1|abc\n2|xyz\n'
+    assert _run_render(out.read_text()) == '1|abc\n2|xyz\n'
     assert td.rows == [(99,)]
 
 

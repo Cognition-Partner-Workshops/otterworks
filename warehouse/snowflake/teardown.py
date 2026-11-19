@@ -1,4 +1,11 @@
 """Discover token-scoped resources, preview or execute ordered cleanup."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+from warehouse.run_config import RunConfig
+
 import argparse
 from dataclasses import dataclass
 import re
@@ -8,8 +15,8 @@ from snowflake.connector.errors import ProgrammingError
 from sfx_conn import WORKLOADS, connect
 
 PROVISIONED = {
-    ("ROLE", "SFX_D1110_ROLE"), ("USER", "SFX_D1110_SVC"),
-    ("DATABASE", "SFX_D1110_AFTER"), ("RESOURCE MONITOR", "SFX_D1110_RM"),
+    ("ROLE", _run_render("__RUN_DATABASE___ROLE")), ("USER", _run_render("__RUN_DATABASE___SVC")),
+    ("DATABASE", _run_render("__RUN_DATABASE__")), ("RESOURCE MONITOR", _run_render("__RUN_DATABASE___RM")),
     *(("WAREHOUSE", name) for name in WORKLOADS.values()),
 }
 
@@ -24,8 +31,8 @@ def tagged(name, comment, token):
 
 
 def name_scoped(name, token):
-    prefix = re.sub(r'[^a-z0-9]', '_', token.lower()) + '_'
-    return name.lower().startswith(prefix)
+    prefix = RunConfig(token).database.lower()
+    return name.lower() == prefix or name.lower().startswith(prefix + '_')
 
 
 def removable(obj, token):
@@ -76,7 +83,7 @@ def discover(cursor, token, dropped_users=None):
     for row in users:
         if name_scoped(row['name'], token):
             dropped_users.add(row['name'].upper())
-    candidates = show(cursor, "SHOW DATABASES LIKE '%SFX_D1110%'", denied)
+    candidates = show(cursor, _run_render("SHOW DATABASES LIKE '%__RUN_DATABASE__%'"), denied)
     candidates += show(cursor, "SHOW DATABASES", denied)
     for row in candidates:
         if row['name'].upper().startswith('DROPPED_USER$'):
@@ -115,7 +122,7 @@ def discover(cursor, token, dropped_users=None):
     return sorted(objects, key=lambda obj: (obj.kind, obj.name)), denied
 
 
-def plan(objects, include_provisioned=False, suspend_only=False, token='sfx-d1110'):
+def plan(objects, include_provisioned=False, suspend_only=False, token=_run_render('__RUN_TOKEN__')):
     commands = []
     objects = [obj for obj in objects if removable(obj, token)]
     tasks = [obj for obj in objects if obj.kind == "TASK"]
@@ -129,7 +136,7 @@ def plan(objects, include_provisioned=False, suspend_only=False, token='sfx-d111
                 'SCHEMA': 5, 'APPLICATION': 6, 'DATABASE': 7, 'COMPUTE POOL': 8,
                 'WAREHOUSE': 9, 'RESOURCE MONITOR': 10, 'USER': 11, 'ROLE': 12}
     for obj in sorted(objects, key=lambda item: (
-            ordering[item.kind], item.name == "SFX_D1110_ROLE", item.name)):
+            ordering[item.kind], item.name == _run_render("__RUN_DATABASE___ROLE"), item.name)):
         if obj.provisioned and not include_provisioned:
             continue
         cascade = " CASCADE" if obj.kind in ("SCHEMA", "DATABASE") else ""
@@ -195,8 +202,8 @@ def main():
     parser.add_argument("--include-provisioned", action="store_true")
     parser.add_argument("--suspend-only", action="store_true")
     args = parser.parse_args()
-    if not re.fullmatch(r"sfx-d1110(?:-[a-z0-9]+)*", args.token):
-        parser.error("--token must be sfx-d1110 or a scoped sfx-d1110-* token")
+    if not re.fullmatch(_run_render(r"__RUN_TOKEN__(?:-[a-z0-9]+)*"), args.token):
+        parser.error(_run_render("--token must be __RUN_TOKEN__ or a scoped __RUN_TOKEN__-* token"))
     with connect("ops", "teardown") as conn:
         with conn.cursor() as cur:
             code = cleanup(cur, args.token, args.dry_run, args.include_provisioned,

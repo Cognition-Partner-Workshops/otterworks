@@ -1,6 +1,6 @@
 # Inventory
 
-As of 2026-11-10; DBQL window 2026-08-12 through 2026-11-09 inclusive.
+DBQL window 2026-08-12 through 2026-11-09 inclusive.
 
 ```json
 {
@@ -12,17 +12,18 @@ As of 2026-11-10; DBQL window 2026-08-12 through 2026-11-09 inclusive.
     "mapping": 20,
     "procedure": 4,
     "session": 20,
+    "spark_job": 30,
     "table": 84,
     "tpt": 20,
     "view": 11,
     "workflow": 3,
     "worklet": 1
   },
-  "total": 222,
+  "total": 252,
   "loc_total": 5919,
   "complexity": {
     "medium": 160,
-    "low": 49,
+    "low": 79,
     "high": 13
   },
   "dead": [
@@ -102,19 +103,20 @@ As of 2026-11-10; DBQL window 2026-08-12 through 2026-11-09 inclusive.
       }
     },
     "3": {
-      "total": 52,
+      "total": 82,
       "by_kind": {
         "bteq": 13,
         "macro": 5,
         "mapping": 5,
         "procedure": 4,
         "session": 5,
+        "spark_job": 30,
         "table": 18,
         "workflow": 1,
         "worklet": 1
       },
       "by_target": {
-        "dbt_model": 25,
+        "dbt_model": 55,
         "snowflake_scripting": 24,
         "snowpark": 3
       }
@@ -133,21 +135,29 @@ As of 2026-11-10; DBQL window 2026-08-12 through 2026-11-09 inclusive.
   },
   "licence_counters": {
     "teradata_objects": {
-      "remaining": 111,
+      "remaining": 178,
       "target": 0
     },
     "powercenter_mappings": {
       "remaining": 20,
       "target": 0
     },
-    "spark_executor_hours": {
-      "remaining": 0,
-      "target": 0,
-      "status": "no Spark estate on branch yet"
-    },
     "powercenter_annual_cost": {
       "value": 412000,
       "currency": "USD"
+    },
+    "powercenter_objects": {
+      "remaining": 44,
+      "target": 0
+    },
+    "spark_jobs": {
+      "remaining": 30,
+      "target": 0
+    },
+    "licence_dependencies": {
+      "remaining": 252,
+      "total": 252,
+      "target": 0
     }
   },
   "dead_dependents": [
@@ -163,9 +173,9 @@ As of 2026-11-10; DBQL window 2026-08-12 through 2026-11-09 inclusive.
 }
 ```
 
-0 Spark jobs found. `etl/spark` absent. `migration/job/ldm/engines/spark_load.py` is a separate legacy demo, excluded.
+30 Spark jobs referenced from devin/sfx1119-spark-baseline; source code is not copied.
 
-Scan evidence for every DBQL reader (tracked repository text, excluding DBQL, tests and generated assessment):
+Scan evidence for every DBQL reader:
 
 ```json
 {

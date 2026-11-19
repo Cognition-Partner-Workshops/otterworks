@@ -1,10 +1,10 @@
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: "SparkApplication"
 metadata:
-  name: "sfx-d1110-file-object-binary-extract"
-  namespace: "sfx-d1110-before"
+  name: "__RUN_TOKEN__-file-object-binary-extract"
+  namespace: "__BEFORE_NAMESPACE__"
   labels:
-    otterworks.run-token: "sfx-d1110"
+    otterworks.run-token: "__RUN_TOKEN__"
 spec:
   type: "Python"
   pythonVersion: "3"
@@ -45,13 +45,13 @@ spec:
   volumes:
     - name: "workspace"
       persistentVolumeClaim:
-        claimName: "sfx-d1110-workspace"
+        claimName: "__RUN_TOKEN__-workspace"
   driver:
     cores: 1
     memory: "1g"
-    serviceAccount: "sfx-d1110-spark"
+    serviceAccount: "__RUN_TOKEN__-spark"
     labels:
-      otterworks.run-token: "sfx-d1110"
+      otterworks.run-token: "__RUN_TOKEN__"
     volumeMounts:
       - name: "workspace"
         mountPath: "/opt/sfx/spark"
@@ -70,7 +70,7 @@ spec:
     cores: 1
     memory: "1g"
     labels:
-      otterworks.run-token: "sfx-d1110"
+      otterworks.run-token: "__RUN_TOKEN__"
     volumeMounts:
       - name: "workspace"
         mountPath: "/opt/sfx/spark"

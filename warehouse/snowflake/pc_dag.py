@@ -1,4 +1,10 @@
 """Deploy and optionally execute a suspended, folder-scoped PowerCenter DAG."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import json
 import os
@@ -13,7 +19,7 @@ import yaml
 from ledger import records
 from sfx_conn import ROOT, WORKLOADS, connect, query_tag
 
-COMMENT = 'run_token=sfx-d1110 expires=2026-11-24'
+COMMENT = _run_render('run_token=__RUN_TOKEN__ expires=2026-11-24')
 
 
 def folder_name(value):
@@ -25,13 +31,13 @@ def folder_name(value):
 
 def load(folder, path=None):
     folder = folder_name(folder)
-    doc = yaml.safe_load((path or ROOT / 'pc_dag' / (folder.lower() + '.yml')).read_text())
+    doc = yaml.safe_load(_run_render((path or ROOT / 'pc_dag' / (folder.lower() + '.yml')).read_text()))
     if not isinstance(doc, dict) or set(doc) - {'root', 'tasks'}:
         raise ValueError('Expected root and tasks')
     tasks = doc.get('tasks')
     if not isinstance(tasks, dict) or not tasks or doc.get('root') not in tasks:
         raise ValueError('Missing DAG root/tasks')
-    prefix = f'SFX_D1110_PC_{folder}_'
+    prefix = _run_render(f'__RUN_DATABASE___PC_{folder}_')
     ordered = {}
     pending = dict(tasks)
     for name, task in tasks.items():
@@ -39,7 +45,7 @@ def load(folder, path=None):
             raise ValueError('Invalid task name')
         if not isinstance(task, dict) or set(task) - {'after', 'sql', 'warehouse'}:
             raise ValueError('Invalid task fields')
-        if task.get('warehouse', WORKLOADS['transform']) != 'SFX_D1110_TRANSFORM_WH':
+        if task.get('warehouse', WORKLOADS['transform']) != _run_render('__RUN_DATABASE___TRANSFORM_WH'):
             raise ValueError('Invalid task warehouse')
         deps = task.get('after', [])
         if not isinstance(deps, list) or not set(deps) <= tasks.keys():
@@ -58,20 +64,20 @@ def load(folder, path=None):
 
 
 def task_tag(folder):
-    return query_tag('transform', 'pc_dag', dict(run='sfx-d1110', act='scale', step='dag', folder=folder))
+    return query_tag('transform', 'pc_dag', dict(run=_run_render('__RUN_TOKEN__'), act='scale', step='dag', folder=folder))
 
 
 def create_sql(folder, step, tasks):
-    schema = 'SFX_D1110_AFTER.PC_' + folder
+    schema = _run_render('__RUN_DATABASE__.PC_') + folder
     after = step.get('after', [])
     deps = (' AFTER ' + ', '.join(schema + '.' + tasks[n]['task'] for n in after)) if after else ''
     tag = task_tag(folder).replace("'", "''")
-    return (f"CREATE TASK IF NOT EXISTS {schema}.{step['task']} WAREHOUSE=SFX_D1110_TRANSFORM_WH"
-            f" COMMENT='{COMMENT}' QUERY_TAG='{tag}'{deps} AS {step['sql']}")
+    return (_run_render(f"CREATE TASK IF NOT EXISTS {schema}.{step['task']} WAREHOUSE=__RUN_DATABASE___TRANSFORM_WH"
+            f" COMMENT='{COMMENT}' QUERY_TAG='{tag}'{deps} AS {step['sql']}"))
 
 
 def suspend(cursor, folder, tasks):
-    schema = 'SFX_D1110_AFTER.PC_' + folder
+    schema = _run_render('__RUN_DATABASE__.PC_') + folder
     errors = []
     for step in tasks.values():
         try:
@@ -88,7 +94,7 @@ def suspend(cursor, folder, tasks):
 
 
 def deploy(cursor, folder, tasks):
-    schema = 'SFX_D1110_AFTER.PC_' + folder
+    schema = _run_render('__RUN_DATABASE__.PC_') + folder
     cursor.execute(f"CREATE SCHEMA IF NOT EXISTS {schema} COMMENT='{COMMENT}'")
     # Suspend existing graph before altering root or dependency relationships.
     existing = records(cursor, f'SHOW TASKS IN SCHEMA {schema}')
@@ -100,7 +106,7 @@ def deploy(cursor, folder, tasks):
         for step in tasks.values():
             cursor.execute(create_sql(folder, step, tasks))
             cursor.execute(f"ALTER TASK {schema}.{step['task']} MODIFY AS {step['sql']}")
-            cursor.execute(f"ALTER TASK {schema}.{step['task']} SET WAREHOUSE=SFX_D1110_TRANSFORM_WH COMMENT='{COMMENT}' QUERY_TAG=%s", (task_tag(folder),))
+            cursor.execute(_run_render(f"ALTER TASK {schema}.{step['task']} SET WAREHOUSE=__RUN_DATABASE___TRANSFORM_WH COMMENT='{COMMENT}' QUERY_TAG=%s"), (task_tag(folder),))
             current = records(cursor, f"SHOW TASKS LIKE '{step['task']}' IN SCHEMA {schema}")
             predecessors = json.loads(next(r['predecessors'] for r in current if r['name'] == step['task']))
             for predecessor in predecessors:
@@ -112,7 +118,7 @@ def deploy(cursor, folder, tasks):
 
 
 def run_once(cursor, folder, root, tasks, timeout=180, load_date=None, build=None):
-    schema = 'SFX_D1110_AFTER.PC_' + folder
+    schema = _run_render('__RUN_DATABASE__.PC_') + folder
     names = {t['task'] for t in tasks.values()}
     complete = False
     try:
@@ -130,11 +136,11 @@ def run_once(cursor, folder, root, tasks, timeout=180, load_date=None, build=Non
         cursor.execute(f"EXECUTE TASK {schema}.{tasks[root]['task']}")
         deadline = time.monotonic() + timeout
         while True:
-            history = records(cursor, '''SELECT NAME,STATE,ERROR_MESSAGE,GRAPH_RUN_GROUP_ID
-                FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.TASK_HISTORY(
+            history = records(cursor, _run_render('''SELECT NAME,STATE,ERROR_MESSAGE,GRAPH_RUN_GROUP_ID
+                FROM TABLE(__RUN_DATABASE__.INFORMATION_SCHEMA.TASK_HISTORY(
                 SCHEDULED_TIME_RANGE_START=>TO_TIMESTAMP_LTZ(%s), RESULT_LIMIT=>10000))
-                WHERE DATABASE_NAME='SFX_D1110_AFTER' AND SCHEMA_NAME=%s
-                ORDER BY SCHEDULED_TIME DESC''', (since, 'PC_' + folder))
+                WHERE DATABASE_NAME='__RUN_DATABASE__' AND SCHEMA_NAME=%s
+                ORDER BY SCHEDULED_TIME DESC'''), (since, 'PC_' + folder))
             roots = [r for r in history if r['name'] == tasks[root]['task']]
             if roots:
                 graph = roots[0]['graph_run_group_id']
@@ -175,10 +181,10 @@ def main():
         parser.error('--load-date must be YYYYMMDD')
     if not 1 <= args.timeout <= 600:
         parser.error('--timeout must be 1..600')
-    if os.environ.get('SNOWFLAKE_DATABASE') != 'SFX_D1110_AFTER':
-        parser.error('SNOWFLAKE_DATABASE must be SFX_D1110_AFTER')
+    if os.environ.get('SNOWFLAKE_DATABASE') != _run_render('__RUN_DATABASE__'):
+        parser.error(_run_render('SNOWFLAKE_DATABASE must be __RUN_DATABASE__'))
     folder, root, tasks = load(args.folder)
-    with connect('transform', 'pc_dag', extra_tag=dict(run='sfx-d1110', act='scale', step='dag', folder=folder)) as conn, conn.cursor() as cur:
+    with connect('transform', 'pc_dag', extra_tag=dict(run=_run_render('__RUN_TOKEN__'), act='scale', step='dag', folder=folder)) as conn, conn.cursor() as cur:
         deploy(cur, folder, tasks)
         if args.run_once:
             run_once(cur, folder, root, tasks, args.timeout, args.load_date,

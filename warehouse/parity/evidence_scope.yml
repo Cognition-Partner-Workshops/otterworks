@@ -1,5 +1,5 @@
 owner: migrations-page
-control_table: SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS
+control_table: __RUN_DATABASE__.MIGRATION_CONTROL.MAPPINGS
 mappings:
   m_SFX_AUDIT_EVENT: {key_columns: [EVENT_ID]}
   m_SFX_STG_AUDIT_EVENT:

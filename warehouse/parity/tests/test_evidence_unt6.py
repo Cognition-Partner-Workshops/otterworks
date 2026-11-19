@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from collections import Counter
 from datetime import datetime
 import subprocess
@@ -135,7 +141,7 @@ def test_scope_and_write_guards(tmp_path):
     with pytest.raises(ValueError):
         u.landing('other')
     for sql in ['GRANT SELECT TO ROLE X', 'TRUNCATE TABLE ' + u.TARGET,
-                'INSERT INTO SFX_D1110_AFTER.PC_SRC.LOGIN_EVENT VALUES (1)']:
+                _run_render('INSERT INTO __RUN_DATABASE__.PC_SRC.LOGIN_EVENT VALUES (1)')]:
         with pytest.raises(ValueError):
             u.fixture_write(None, [], sql)
     tmp_path.mkdir(exist_ok=True)
@@ -176,7 +182,7 @@ def test_fixture_load_refuses_existing_schema(monkeypatch, tmp_path):
 
 
 def test_macro_and_fixture_enablement():
-    macro = (u.ROOT / 'warehouse/dbt/macros/pc_content_login_event.sql').read_text()
+    macro = _run_render((u.ROOT / 'warehouse/dbt/macros/pc_content_login_event.sql').read_text())
     module = Environment().from_string(macro).module
     sql = module.pc_content_login_event('SRC')
     assert 'count(*) over (partition by ROUTE,LOGIN_ID)' in sql
@@ -187,7 +193,7 @@ def test_macro_and_fixture_enablement():
     assert 'rpad(' not in rejects and 'try_to_timestamp_ntz' in rejects
     for subject in u.SCENARIOS[1:]:
         model = u.ROOT / ('warehouse/dbt/models/pc/content/unt6_fixture/' + u.model(subject) + '.sql')
-        text = model.read_text()
+        text = _run_render(model.read_text())
         assert "enabled=env_var('SFX_UNT6_LOGIN_FIXTURE','0') == '1'" in text
         assert "schema='PC_CONTENT_UNT6_FIXTURE'" in text
 
@@ -197,12 +203,12 @@ def test_inventory_loader_and_act3_bytes():
     mapping = next(r for r in rows if r['mapping'] == u.MAPPING)
     assert mapping['after_table'] == 'PC_CONTENT.LOGIN_EVENT' and mapping['key_columns'] == ['LOGIN_ID']
     config = u.ROOT / 'warehouse/parity/mappings/sfx_content.yml'
-    ref = 'origin/devin/sfx-d1110-act3-content'
+    ref = '6b4e985f30c6ca8d0ae308b2b72e9ed1cadec54b'
     assert subprocess.run(['git', 'rev-parse', '--verify', ref], cwd=u.ROOT,
                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0, (
         f'Required sibling ref {ref} is unavailable; fetch it before running parity tests')
     original = subprocess.check_output(['git', 'show',
-        'origin/devin/sfx-d1110-act3-content:warehouse/parity/mappings/sfx_content.yml'], cwd=u.ROOT)
+        ref + ':warehouse/parity/mappings/sfx_content.yml'], cwd=u.ROOT)
     assert config.read_bytes().startswith(original)
     entry = next(p for p in source_plan(u.ESTATE / 'tests/fixture/landing') if p[0] == 'LOGIN_EVENT')
     assert 'LOGIN_ID BIGINT' in entry[1] and 'RESULT_CD VARCHAR(200)' in entry[1]

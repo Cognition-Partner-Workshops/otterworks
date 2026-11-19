@@ -2,7 +2,7 @@ version: 2
 models:
 - name: billing_gl_trial_balance
   description: >-
-    sfx-d1110 GL trial balance by account, posting month and currency: journal debits,
+    sfx1119 GL trial balance by account, posting month and currency: journal debits,
     credits and net plus credit-note adjustments. Replaces Spark job billing_gl_trial_balance
     (lake billing/billing_gl_trial_balance and JDBC sfx_billing.SPARK_GL_TRIAL_BALANCE).
   tests:

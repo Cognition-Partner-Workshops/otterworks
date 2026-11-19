@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import copy
 import csv
 import importlib.util
@@ -46,7 +52,7 @@ def test_dead_and_setup(estate):
     assert set(estate['dead']).isdisjoint(estate['setup_only'])
     assert 'SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG' in estate['setup_only']
     assert all(r['target_type'] == 'retire' for r in estate['objects'] if r['name'] in estate['dead'])
-    register = json.loads((assess.ROOT / 'demos/app/complexity/sfx-teradata.json').read_text())
+    register = json.loads(_run_render((assess.ROOT / 'demos/app/complexity/sfx-teradata.json').read_text()))
     assert len(register['retire_candidates']) == len(estate['dead'])
 
 
@@ -73,6 +79,10 @@ def test_every_target_matches_source_area(estate):
     import re
     import xml.etree.ElementTree as ET
     for row in estate['objects']:
+        if row['kind'] == 'spark_job':
+            assert row['source_ref'] == 'devin/sfx1119-spark-baseline'
+            assert row['licence_dependency'] == 'spark'
+            continue
         path = assess.ROOT / row['source']
         if row['kind'] in ('mapping', 'session'):
             tree = ET.parse(path)
@@ -126,7 +136,7 @@ def test_validator_rejects(tmp_path, fault):
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(assess.OUT / name, dest)
     path = tmp_path / 'manifest.yaml'
-    manifest = yaml.safe_load(path.read_text())
+    manifest = yaml.safe_load(_run_render(path.read_text()))
     if fault == 'duplicate':
         manifest['objects'].append(copy.deepcopy(manifest['objects'][0]))
     elif fault == 'enum':
@@ -137,7 +147,7 @@ def test_validator_rejects(tmp_path, fault):
         (tmp_path / 'lineage.md').write_text('flowchart LR')
     elif fault == 'board':
         board_path = tmp_path / 'board/board.json'
-        data = json.loads(board_path.read_text())
+        data = json.loads(_run_render(board_path.read_text()))
         data['waves']['1']['total'] += 1
         board_path.write_text(json.dumps(data))
     elif fault == 'wave':

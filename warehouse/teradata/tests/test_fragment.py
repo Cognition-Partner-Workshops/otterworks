@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import csv
 import datetime as dt
 import json
@@ -10,8 +16,8 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 def test_fragment_locations():
-    fragment = json.loads((ROOT / 'demos/app/complexity/sfx-teradata.json').read_text())
-    assert (fragment['schema_version'], fragment['area'], fragment['run_token']) == (1, 'teradata', 'sfx-d1110')
+    fragment = json.loads(_run_render((ROOT / 'demos/app/complexity/sfx-teradata.json').read_text()))
+    assert (fragment['schema_version'], fragment['area'], fragment['run_token']) == (1, 'teradata', _run_render('__RUN_TOKEN__'))
     assert len(fragment['classes']) == 5
     assert len({group['id'] for group in fragment['classes']}) == 5
     objects = inventory()
@@ -21,7 +27,7 @@ def test_fragment_locations():
         for instance in group['instances']:
             path = ROOT / instance['file']
             assert path.is_file(), path
-            lines = path.read_text().splitlines()
+            lines = _run_render(path.read_text()).splitlines()
             assert 1 <= instance['line'] <= len(lines), instance
             assert instance['anchor'] in lines[instance['line']-1], instance
             assert instance['object'] in objects, instance

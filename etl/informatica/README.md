@@ -1,6 +1,6 @@
 # Emulated PowerCenter estate
 
-PowerCenter 10.5 repository exports for the `sfx-d1110` warehouse plus a Python Integration Service
+PowerCenter 10.5 repository exports for the `__RUN_TOKEN__` warehouse plus a Python Integration Service
 (`runner/`) that runs them against the emulated Teradata warehouse (PostgreSQL).
 
 ## Layout
@@ -21,10 +21,10 @@ Folders: `SFX_BILLING` (billing and general ledger), `SFX_CONTENT` (users and do
 ## Run it
 
 ```sh
-make sfx-informatica-up   NS=sfx-d1110-before   # venv + warehouse database (fixture schema)
-make sfx-informatica-run  NS=sfx-d1110-before   # runs the three daily workflows (MAPPINGS=20, i.e. all)
-make sfx-informatica-test NS=sfx-d1110-before   # unit + integration tests
-make sfx-informatica-down NS=sfx-d1110-before
+make sfx-informatica-up   NS=__BEFORE_NAMESPACE__   # venv + warehouse database (fixture schema)
+make sfx-informatica-run  NS=__BEFORE_NAMESPACE__   # runs the three daily workflows (MAPPINGS=20, i.e. all)
+make sfx-informatica-test NS=__BEFORE_NAMESPACE__   # unit + integration tests
+make sfx-informatica-down NS=__BEFORE_NAMESPACE__
 ```
 
 - `INFA_DB=teradata` runs against the Teradata emulation's compose service (`make sfx-teradata-up`) instead of the
@@ -75,7 +75,7 @@ python -m runner listobjects   -f SFX_CONTENT
 ## SnowConvert
 
 ```sh
-make sfx-informatica-snowconvert NS=sfx-d1110-before [SNOWFLAKE_CONNECTION=<name>]
+make sfx-informatica-snowconvert NS=__BEFORE_NAMESPACE__ [SNOWFLAKE_CONNECTION=<name>]
 ```
 
 Runs SnowConvert AI (`scai init -l Teradata`, `scai code add`, `scai code convert`) on the `wf_*.XML` workflow

@@ -1,7 +1,7 @@
 version: 2
 sources:
   - name: unt3_pc_src
-    database: SFX_D1110_AFTER
+    database: SFX_1119
     schema: PC_SRC
     tables:
       - name: AUDIT_EVENT

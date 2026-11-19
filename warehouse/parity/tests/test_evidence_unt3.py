@@ -1,4 +1,10 @@
 """Offline UNT-3 checks; snapshot negative controls are not live mapping parity."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from copy import deepcopy
 from datetime import datetime
 
@@ -87,7 +93,7 @@ def test_model_contract_and_shared_reject_predicates():
         def config(**kwargs):
             configs[model] = kwargs
             return ''
-        sql = Environment().from_string((models / (model + '.sql')).read_text()).render(
+        sql = Environment().from_string(_run_render((models / (model + '.sql')).read_text())).render(
             config=config, source=lambda *args: 'PC_SRC.AUDIT_EVENT',
             ref=lambda name: 'PC_AUDIT.STG_AUDIT_EVENT')
         assert 'where not (' + unt3.reject_predicate(mapping) + ')' in sql
@@ -183,7 +189,7 @@ def test_export_rejects_uses_exact_predicate_and_typed_rows(tmp_path, monkeypatc
                         dict(columns=snap['columns'], types=snap['types'], rows=[]))
     class Query:
         def run(self, sql):
-            assert sql == 'SELECT * FROM SFX_D1110_AFTER.PC_AUDIT.STG_AUDIT_EVENT WHERE EVENT_ID IS NULL'
+            assert sql == _run_render('SELECT * FROM __RUN_DATABASE__.PC_AUDIT.STG_AUDIT_EVENT WHERE EVENT_ID IS NULL')
             return snap['columns'], [(None, 'DOC_VIEW    ', 0, datetime(2026, 11, 9), None)]
     assert not unt3.export_rejects(Query(), unt3.MAPPINGS[1], tmp_path)['equal']
     assert unt3.load(tmp_path / 'rejects.json')['rows'][0][2] == cell(0)

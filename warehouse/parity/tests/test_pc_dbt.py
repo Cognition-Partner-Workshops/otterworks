@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import json
 import os
 from pathlib import Path
@@ -24,7 +30,7 @@ def test_pc_resolved_relations_and_comments(tmp_path):
     subprocess.run([str(Path(sys.executable).with_name('dbt')), 'parse', '--no-partial-parse',
                     '--project-dir', str(project), '--profiles-dir', str(project)],
                    env=env, check=True, capture_output=True, text=True)
-    manifest = json.loads((project / 'target/manifest.json').read_text())
+    manifest = json.loads(_run_render((project / 'target/manifest.json').read_text()))
     for area in ['billing', 'content', 'audit']:
         node = manifest['nodes'][f'model.sfx_warehouse.pc_{area}__probe']
         assert node['schema'] == 'PC_' + area.upper()
@@ -32,11 +38,11 @@ def test_pc_resolved_relations_and_comments(tmp_path):
         assert node['config']['post-hook'][0]['sql'] == '{{ pc_relation_comment() }}'
         materialized = node['config']['materialized']
         module = Environment(extensions=['jinja2.ext.do']).from_string(
-            (project / 'macros/pc_relation_comment.sql').read_text()).make_module({
+            _run_render((project / 'macros/pc_relation_comment.sql').read_text())).make_module({
                 'model': SimpleNamespace(config=SimpleNamespace(materialized=materialized)),
-                'this': f'SFX_D1110_AFTER.PC_{area.upper()}.PROBE'})
+                'this': _run_render(f'__RUN_DATABASE__.PC_{area.upper()}.PROBE')})
         sql = module.pc_relation_comment().strip()
-        assert "is 'run_token=sfx-d1110 expires=2026-11-24'" in sql
+        assert _run_render("is 'run_token=__RUN_TOKEN__ expires=2026-11-24'") in sql
         assert f"comment on {'view' if materialized == 'view' else 'table'}" in sql
         print(f"Resolved: {node['schema']}.{node['alias']} ({materialized}); {sql}")
     unchanged = manifest['nodes']['model.sfx_warehouse.stg_billing_payment'] if 'model.sfx_warehouse.stg_billing_payment' in manifest['nodes'] else next(

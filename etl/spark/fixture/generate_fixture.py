@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 """Generate pipe-delimited landing files for the local batch estate."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import csv
 from contextlib import ExitStack
@@ -215,6 +221,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rows", type=int, default=200000)
     parser.add_argument("--seed", type=int, default=1110)
-    parser.add_argument("--output", type=Path, default=Path(os.environ.get("LANDING_DIR", Path(__file__).resolve().parents[1] / ".data" / os.environ.get("NS", "sfx-d1110-before") / "landing")))
+    parser.add_argument("--output", type=Path, default=Path(os.environ.get("LANDING_DIR", Path(__file__).resolve().parents[1] / ".data" / os.environ.get("NS", _run_render("__BEFORE_NAMESPACE__")) / "landing")))
     args = parser.parse_args()
     generate(args.output, args.rows, args.seed)

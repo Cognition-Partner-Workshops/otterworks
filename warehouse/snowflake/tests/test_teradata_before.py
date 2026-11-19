@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from contextlib import nullcontext
 import csv
 import gzip
@@ -84,9 +90,9 @@ def test_v008_dates_and_revenue_normal_empty_and_sources():
     import yaml
     from sfx_conn import ROOT
 
-    sql = (ROOT / 'migrations/V008__processed_billing_compat.sql').read_text()
+    sql = _run_render((ROOT / 'migrations/V008__processed_billing_compat.sql').read_text())
     views = dict(re.findall(r'CREATE OR REPLACE VIEW COMPAT\.(\w+).*?\nAS (SELECT.*?);', sql, re.S))
-    contract = yaml.safe_load((ROOT / 'landing_columns.yml').read_text())['billing']
+    contract = yaml.safe_load(_run_render((ROOT / 'landing_columns.yml').read_text()))['billing']
     with sqlite3.connect(':memory:') as db:
         db.create_function('DATEADD', 3, lambda unit, days, value: (date.fromisoformat(value) + timedelta(days=days)).isoformat() if value else None)
         db.create_function('TO_CHAR', 2, lambda value, pattern: value[:7] if value else None)
@@ -104,7 +110,7 @@ def test_v008_dates_and_revenue_normal_empty_and_sources():
         assert db.execute('select DUE_DATE from COMPAT.INVOICE order by INVOICE_ID').fetchall() == [('2026-12-31',), ('2026-11-24',), ('2026-12-09',)]
         revenue_rows = [('USD', '2026-11', 2, 50), ('usd', '2026-11', 1, 10)]
         assert sorted(db.execute(views['V_INVOICE_REVENUE']).fetchall()) == revenue_rows
-        correction = (ROOT / 'migrations/V009__revenue_currency_labels.sql').read_text()
+        correction = _run_render((ROOT / 'migrations/V009__revenue_currency_labels.sql').read_text())
         revenue_query = re.search(r'\nAS (SELECT.*?);', correction, re.S).group(1)
         assert sorted(db.execute(revenue_query).fetchall()) == revenue_rows
         db.execute("insert into RAW_BILLING.CREDIT_NOTE (CREDIT_DT,ISSUE_DATE) values ('2026-11-09',NULL),('2026-11-09','2026-11-08')")

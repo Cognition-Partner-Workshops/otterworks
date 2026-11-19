@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
+
 import os
 import re
 import zlib
@@ -18,7 +24,7 @@ DEFAULTS = {
 
 def default_port(ns=None):
     """Host port of the warehouse compose service for a namespace."""
-    ns = ns or os.environ.get("NS") or "sfx-d1110-before"
+    ns = ns or os.environ.get("NS") or _run_render("__BEFORE_NAMESPACE__")
     return str(54500 + zlib.crc32(ns.encode()) % 1000)
 
 

@@ -22,6 +22,7 @@ n1a5d6d86a39a3a06,teradata,table,SFX_BILLING.PLAN_CATALOG,warehouse/teradata/ddl
 n1b1458f718efb391,teradata,bteq,10_activity_daily,warehouse/teradata/scripts/users/10_activity_daily.bteq,13,medium,.EXPORT; .GOTO; .IF,0,
 n1c075fb7d55b7b5d,teradata,table,SFX_DOCUMENTS.STG_COLLAB_SESSION,warehouse/teradata/ddl/documents/00_tables.sql,7,medium,SET TABLE,90,2026-11-09 01:27:16
 n1c146a53b91c0982,teradata,table,SFX_BILLING.BILLING_ADJ,warehouse/teradata/ddl/billing/00_tables.sql,8,medium,SET TABLE,90,2026-11-09 03:15:49
+n1d48699afd1ffdb6,spark,spark_job,users_login_useragent_parse,etl/spark/jobs/py/users_login_useragent_parse.py,0,low,,0,
 n1e025701f054c8fd,teradata,procedure,SFX_AUDIT.P_DAILY_SUMMARY,warehouse/teradata/procedures/summary_daily.sql,10,low,,0,
 n1f11d0480f828545,teradata,table,SFX_AUDIT.DATA_EXPORT_REQ,warehouse/teradata/ddl/audit/00_tables.sql,8,medium,SET TABLE,0,
 n1f9acfe77103914f,powercenter,session,s_m_SFX_STG_AUDIT_EVENT,etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML,49,medium,,0,
@@ -30,6 +31,7 @@ n20b2133ac50829f7,teradata,bteq,03_load_reviews,warehouse/teradata/scripts/audit
 n21217e4029e00d59,teradata,table,SFX_AUDIT.AUDIT_RECON,warehouse/teradata/ddl/audit/00_tables.sql,8,medium,SET TABLE,239,2026-11-09 15:11:42
 n21635c3e4ef179d8,teradata,view,SFX_AUDIT.V_CUSTOMER_RECON,warehouse/teradata/ddl/audit/10_views.sql,2,low,,1,2026-08-12 06:07:11
 n21655cefa5f6f219,teradata,view,SFX_BILLING.V_SUBSCRIPTION_PLANS,warehouse/teradata/ddl/billing/10_views.sql,2,low,,1,2026-08-12 06:08:36
+n217068cf70e21f45,spark,spark_job,billing_usage_append_daily,etl/spark/jobs/py/billing_usage_append_daily.py,0,low,,0,
 n21ff1c42e3c9b57a,powercenter,session,s_m_SFX_SECURITY_ALERT,etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML,80,medium,,0,
 n21ffe85c86206094,teradata,table,SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE,warehouse/teradata/ddl/audit/00_tables.sql,8,medium,SET TABLE,1,2026-08-12 06:06:11
 n228b7a12a3c5e1bb,powercenter,session,s_m_SFX_STG_INVOICE_HDR,etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML,49,medium,,0,
@@ -44,7 +46,9 @@ n2cf99dd59b17c2f1,teradata,table,SFX_BILLING.STG_BILLING_ADJ,warehouse/teradata/
 n2cfe39f5df4a12c6,teradata,table,SFX_USERS.TEAM_MEMBER,warehouse/teradata/ddl/users/00_tables.sql,7,medium,SET TABLE,794,2026-11-09 22:18:24
 n2d399290c37850ff,teradata,macro,SFX_DOCUMENTS.M_STORAGE_TOTALS,warehouse/teradata/macros/storage_totals.sql,6,low,,0,
 n2d7643f3f42bc7df,teradata,fastload,users_user_status_hist,warehouse/teradata/load/fastload/users_user_status_hist.fl,15,low,,0,
+n2e6e7921f1c1a457,spark,spark_job,docs_tag_normalize,etl/spark/jobs/py/docs_tag_normalize.py,0,low,,0,
 n2f5adf79707598c4,powercenter,mapping,m_SFX_STG_APP_USER,etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_STG_APP_USER.XML,56,medium,Expression; Source Qualifier; transformations=2,0,
+n30eea7b5e4b0f036,spark,spark_job,billing_invoice_summary_daily,etl/spark/jobs/py/billing_invoice_summary_daily.py,0,low,,0,
 n312e40b4f842325b,teradata,table,SFX_BILLING.STG_GL_ACCOUNT,warehouse/teradata/ddl/billing/00_tables.sql,7,medium,SET TABLE,90,2026-11-09 01:12:40
 n314aedf512c71123,powercenter,session,s_m_SFX_STG_CUSTOMER_ACCOUNT,etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML,49,medium,,0,
 n316f320495a7d7a7,teradata,tpt,documents_collab_session,warehouse/teradata/load/tpt/documents_collab_session.tpt,37,medium,,0,
@@ -60,10 +64,12 @@ n40359b042a48a08e,teradata,table,SFX_BILLING.INVOICE_HDR,warehouse/teradata/ddl/
 n4120240510221fa9,powercenter,mapping,m_SFX_DOCUMENT,etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_DOCUMENT.XML,165,high,Expression; Filter; Lookup Procedure; Source Qualifier; Unconnected; Update Strategy; Use First Value; transformations=6,0,
 n4132cc12046fbd7c,teradata,table,SFX_BILLING.STG_PLAN_CATALOG,warehouse/teradata/ddl/billing/00_tables.sql,7,medium,SET TABLE,90,2026-11-09 01:10:37
 n420cbbc61ebb5a20,teradata,tpt,audit_access_review,warehouse/teradata/load/tpt/audit_access_review.tpt,37,medium,,0,
+n42b4ed91f0a96d32,spark,spark_job,file_object_binary_extract,etl/spark/jobs/py/file_object_binary_extract.py,0,low,,0,
 n42c8c3678ac93f94,powercenter,mapping,m_SFX_LOGIN_EVENT,etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_LOGIN_EVENT.XML,96,high,Expression; Router; Source Qualifier; transformations=3,0,
 n42d621438ac20a11,powercenter,mapping,m_SFX_SECURITY_ALERT,etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_SECURITY_ALERT.XML,187,high,Expression; Router; Source Qualifier; Update Strategy; transformations=7,0,
 n4480339208f0dc43,powercenter,session,s_m_SFX_TEAM_MEMBER,etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML,49,medium,,0,
 n461e2b42ddf1d426,powercenter,session,s_m_SFX_GL_JOURNAL_LINE,etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML,79,medium,,0,
+n46441ec8597bcf09,spark,spark_job,lake_compaction_documents,etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala,0,low,,0,
 n464534d3f9280c5a,teradata,table,SFX_BILLING.STG_TAX_RATE,warehouse/teradata/ddl/billing/00_tables.sql,7,medium,SET TABLE,90,2026-11-09 01:11:19
 n4752fbb3cc9908e1,powercenter,session,s_m_SFX_CUSTOMER_ACCOUNT,etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML,46,medium,,0,
 n4973826e5a2f58c2,teradata,bteq,02_load_subscriptions,warehouse/teradata/scripts/billing/02_load_subscriptions.bteq,11,medium,.GOTO; .IF,0,
@@ -82,16 +88,19 @@ n52fd8cca58044cb0,teradata,tpt,documents_doc_share,warehouse/teradata/load/tpt/d
 n533cd80b40ebc9c5,teradata,table,SFX_USERS.STG_USER_PROFILE,warehouse/teradata/ddl/users/00_tables.sql,7,medium,SET TABLE,90,2026-11-09 01:30:47
 n58dfe8d308715b9f,teradata,fastload,users_team_member,warehouse/teradata/load/fastload/users_team_member.fl,15,low,,0,
 n591b73a5345bb764,teradata,table,SFX_DOCUMENTS.FOLDER,warehouse/teradata/ddl/documents/00_tables.sql,7,medium,SET TABLE,0,
+n59a3415908e5a5c3,spark,spark_job,billing_payment_aging,etl/spark/jobs/py/billing_payment_aging.py,0,low,,0,
 n5a1ee10b77084fef,teradata,table,SFX_AUDIT.AUDIT_EVENT,warehouse/teradata/ddl/audit/00_tables.sql,9,medium,SET TABLE,196,2026-11-09 04:05:57
 n5ab39469d70e6e70,powercenter,session,s_m_SFX_INVOICE_HDR,etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML,62,medium,,0,
 n5b74281a9cfd442e,teradata,table,SFX_AUDIT.STG_AUDIT_EVENT,warehouse/teradata/ddl/audit/00_tables.sql,9,medium,SET TABLE,90,2026-11-09 01:00:41
 n5bdfd045e6779075,teradata,table,SFX_DOCUMENTS.SEARCH_INDEX_LOG,warehouse/teradata/ddl/documents/00_tables.sql,7,medium,SET TABLE,0,
 n5cfa3c4afcb4b359,teradata,fastload,users_app_user,warehouse/teradata/load/fastload/users_app_user.fl,15,low,,0,
 n625a7a2365905f32,teradata,fastload,billing_customer_account,warehouse/teradata/load/fastload/billing_customer_account.fl,19,low,,0,
+n62c507a6ebeca788,spark,spark_job,docs_folder_legacy_report,etl/spark/jobs/py/docs_folder_legacy_report.py,0,low,,0,
 n6478e46e7b3a13e6,teradata,view,SFX_AUDIT.V_EVENT_ACTORS,warehouse/teradata/ddl/audit/10_views.sql,2,low,,16,2026-11-05 14:17:58
 n6926e7586c761642,teradata,tpt,documents_search_index_log,warehouse/teradata/load/tpt/documents_search_index_log.tpt,37,medium,,0,
 n69bb2e4d7f29d3bd,teradata,table,SFX_DOCUMENTS.DOC_VERSION,warehouse/teradata/ddl/documents/00_tables.sql,8,medium,SET TABLE,570,2026-11-09 22:25:01
 n6aaec9f5432be4e3,powercenter,mapping,m_SFX_CUSTOMER_ACCOUNT,etl/informatica/repository/SFX_BILLING/mappings/m_SFX_CUSTOMER_ACCOUNT.XML,95,high,Lookup Procedure; Source Qualifier; Update Strategy; Use First Value; transformations=3,0,
+n6b4402f4aec586b1,spark,spark_job,compliance_flag_rules,etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala,0,low,,0,
 n6d2da1bd427f0dda,teradata,table,SFX_USERS.TEAM,warehouse/teradata/ddl/users/00_tables.sql,6,medium,SET TABLE,794,2026-11-09 22:18:24
 n6ef643cd421ba7da,powercenter,session,s_m_SFX_LOGIN_EVENT,etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML,63,medium,,0,
 n6ef7c748ddb91848,teradata,bteq,03_load_invoices,warehouse/teradata/scripts/billing/03_load_invoices.bteq,15,medium,.GOTO; .IF,0,
@@ -101,6 +110,7 @@ n7101731ead5cafa6,teradata,tpt,documents_file_object,warehouse/teradata/load/tpt
 n72218f3784bfa85d,powercenter,mapping,m_SFX_AUDIT_DAILY_SUMMARY,etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_DAILY_SUMMARY.XML,83,high,Aggregator; Expression; Sequence; Source Qualifier; transformations=4,0,
 n72c97d50fd30bdf3,teradata,bteq,04_load_objects,warehouse/teradata/scripts/documents/04_load_objects.bteq,15,medium,.GOTO; .IF,0,
 n73ad30d46cfc4990,teradata,table,SFX_USERS.USER_PREF,warehouse/teradata/ddl/users/00_tables.sql,7,medium,SET TABLE,0,
+n73fc2c67175df7a7,spark,spark_job,doc_version_diff_stats,etl/spark/jobs/py/doc_version_diff_stats.py,0,low,,0,
 n746fd0a9a21b77f1,teradata,table,SFX_AUDIT.RETENTION_POLICY,warehouse/teradata/ddl/audit/00_tables.sql,7,medium,SET TABLE,0,
 n751362a449a58100,teradata,table,SFX_USERS.STG_SSO_IDENTITY,warehouse/teradata/ddl/users/00_tables.sql,7,medium,SET TABLE,90,2026-11-09 01:34:33
 n753e2b21e59720e0,teradata,tpt,audit_audit_recon,warehouse/teradata/load/tpt/audit_audit_recon.tpt,38,medium,,0,
@@ -118,6 +128,7 @@ n871f62d3691a3f87,powercenter,session,s_m_SFX_AUDIT_EVENT,etl/informatica/reposi
 n877eaed6968f6f98,teradata,fastload,users_user_profile,warehouse/teradata/load/fastload/users_user_profile.fl,15,low,,0,
 n879dea5f6ab069e9,teradata,tpt,audit_data_export_req,warehouse/teradata/load/tpt/audit_data_export_req.tpt,38,medium,,0,
 n8935b0bad45140b4,teradata,table,SFX_DOCUMENTS.FILE_OBJECT,warehouse/teradata/ddl/documents/00_tables.sql,8,medium,SET TABLE,0,
+n8966d99361db3a40,spark,spark_job,audit_daily_summary,etl/spark/scala/src/main/scala/sfx/AuditDailySummary.scala,0,low,,0,
 n8a8daebfb73b7912,teradata,table,SFX_BILLING.STG_INVOICE_LINE,warehouse/teradata/ddl/billing/00_tables.sql,9,medium,SET TABLE,90,2026-11-09 01:15:53
 n8bed42e6e57c8ee6,teradata,fastload,billing_subscription,warehouse/teradata/load/fastload/billing_subscription.fl,16,low,,0,
 n8c4f1371cd88fbd6,powercenter,session,s_m_SFX_DOCUMENT,etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML,49,medium,,0,
@@ -133,36 +144,47 @@ n960131df6fb3ee7d,teradata,tpt,documents_document,warehouse/teradata/load/tpt/do
 n978bec82e829a7bd,teradata,bteq,11_currency_daily,warehouse/teradata/scripts/billing/11_currency_daily.bteq,11,medium,.EXPORT; .GOTO; .IF,0,
 n97b11eada9b5eb49,teradata,table,SFX_USERS.APP_USER,warehouse/teradata/ddl/users/00_tables.sql,7,medium,SET TABLE,810,2026-11-09 22:18:24
 n9912ea8ce8887d9a,powercenter,mapping,m_SFX_AUDIT_EVENT,etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_EVENT.XML,68,medium,Expression; Source Qualifier; transformations=2,0,
+n99294cb574316a26,spark,spark_job,docs_share_activity,etl/spark/scala/src/main/scala/sfx/DocsShareActivity.scala,0,low,,0,
 n995ef340875ac9f0,teradata,table,SFX_DOCUMENTS.STG_DOC_COMMENT,warehouse/teradata/ddl/documents/00_tables.sql,7,medium,SET TABLE,90,2026-11-09 01:26:58
 n9a5b4aca9e9bc99a,teradata,table,SFX_AUDIT.STG_LEGAL_HOLD,warehouse/teradata/ddl/audit/00_tables.sql,8,medium,SET TABLE,90,2026-11-09 01:06:36
 n9be69430933a863f,powercenter,mapping,m_SFX_STG_DOCUMENT,etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_STG_DOCUMENT.XML,68,medium,Expression; Source Qualifier; transformations=2,0,
 n9c864a5529054222,teradata,bteq,04_load_events,warehouse/teradata/scripts/users/04_load_events.bteq,15,medium,.GOTO; .IF,0,
 n9cb752fa5a7e6656,teradata,fastload,users_role_grant,warehouse/teradata/load/fastload/users_role_grant.fl,14,low,,0,
 n9da968be9406803e,powercenter,mapping,m_SFX_STG_INVOICE_HDR,etl/informatica/repository/SFX_BILLING/mappings/m_SFX_STG_INVOICE_HDR.XML,81,medium,Expression; Source Qualifier; transformations=2,0,
+n9e1cde11f1fcdf14,spark,spark_job,docs_event_export_hourly,etl/spark/jobs/py/docs_event_export_hourly.py,0,low,,0,
 n9ee1d4dc548187ae,teradata,table,SFX_AUDIT.ACCESS_REVIEW,warehouse/teradata/ddl/audit/00_tables.sql,7,medium,SET TABLE,0,
 n9f30c3fd3b30fdad,powercenter,mapping,m_SFX_STG_AUDIT_EVENT,etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_STG_AUDIT_EVENT.XML,68,medium,Expression; Source Qualifier; transformations=2,0,
 n9f9ea7e045525b86,powercenter,mapping,m_SFX_APP_USER,etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_APP_USER.XML,85,high,Lookup Procedure; Source Qualifier; Update Strategy; Use First Value; transformations=3,0,
 na1476b760815c081,teradata,view,SFX_BILLING.V_INVOICE_BASE,warehouse/teradata/ddl/billing/20_views.sql,3,low,,794,2026-11-09 22:11:04
+na305277024d75d53,spark,spark_job,audit_actor_activity_join,etl/spark/jobs/py/audit_actor_activity_join.py,0,low,,0,
 na532938d4b40bb58,teradata,bteq,10_storage_monthly,warehouse/teradata/scripts/documents/10_storage_monthly.bteq,34,medium,.EXPORT; .GOTO; .IF,0,
 na5e973edf6219785,teradata,view,SFX_USERS.V_TEAM_MEMBERS,warehouse/teradata/ddl/users/10_views.sql,2,low,,704,2026-11-09 22:18:24
+na7a9d654bab3f884,spark,spark_job,audit_archive_resort,etl/spark/jobs/py/audit_archive_resort.py,0,low,,0,
 na7e525046b868894,teradata,table,SFX_BILLING.INVOICE_LINE,warehouse/teradata/ddl/billing/00_tables.sql,9,medium,SET TABLE,90,2026-11-09 03:15:49
+nab9092239e992697,spark,spark_job,billing_churn_score,etl/spark/jobs/py/billing_churn_score.py,0,low,,0,
+nacb901d117c72988,spark,spark_job,docs_search_log_parse,etl/spark/jobs/py/docs_search_log_parse.py,0,low,,0,
 nacba7b3de7583ddb,teradata,fastload,users_team,warehouse/teradata/load/fastload/users_team.fl,14,low,,0,
 nacd21346feee23f6,teradata,bteq,11_reconciliation,warehouse/teradata/scripts/audit/11_reconciliation.bteq,272,high,.EXPORT; .GOTO; .IF,0,
+nadfca1251f9b6a28,spark,spark_job,user_pref_json_flatten,etl/spark/jobs/py/user_pref_json_flatten.py,0,low,,0,
 nb0721a93c9ea4800,teradata,catalog,DBC.DBC_QRYLOG,warehouse/teradata/dbql/tablesv.csv,0,low,,2,2026-08-12 06:04:02
 nb0cddb4ec8cfce35,teradata,tpt,audit_audit_event,warehouse/teradata/load/tpt/audit_audit_event.tpt,39,medium,,0,
 nb11211913a9badb6,teradata,tpt,audit_security_alert,warehouse/teradata/load/tpt/audit_security_alert.tpt,38,medium,,0,
+nb17a88119e3df908,spark,spark_job,docs_storage_by_owner,etl/spark/jobs/py/docs_storage_by_owner.py,0,low,,0,
+nb1e649b467d1d68d,spark,spark_job,doc_share_graph_reach,etl/spark/jobs/py/doc_share_graph_reach.py,0,low,,0,
 nb292817d7dbbf313,powercenter,session,s_m_SFX_AUDIT_DAILY_SUMMARY,etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML,47,medium,,0,
 nb366b6ece0aafaf2,teradata,tpt,documents_doc_version,warehouse/teradata/load/tpt/documents_doc_version.tpt,38,medium,,0,
 nb36b77faa1a490f0,teradata,fastload,users_user_activity_daily,warehouse/teradata/load/fastload/users_user_activity_daily.fl,15,low,,0,
 nb406e0734c3286ee,teradata,table,SFX_AUDIT.COMPLIANCE_FLAG,warehouse/teradata/ddl/audit/00_tables.sql,8,medium,SET TABLE,0,
 nb4507f31f948976c,teradata,macro,SFX_BILLING.M_SUBSCRIPTION_PLANS,warehouse/teradata/macros/subscription_plans.sql,5,low,,0,
 nb471d5cb61dc6b40,teradata,macro,SFX_AUDIT.M_ARCHIVE_OVERVIEW,warehouse/teradata/macros/archive_overview.sql,4,low,,0,
+nb4c259fa9770ac59,spark,spark_job,lake_compaction_audit,etl/spark/jobs/py/lake_compaction_audit.py,0,low,,0,
 nb5c179d7a1d96e03,teradata,macro,SFX_USERS.M_TEAM_COUNTS,warehouse/teradata/macros/team_counts.sql,5,low,,0,
 nb63db0271553cd31,teradata,fastload,billing_gl_account,warehouse/teradata/load/fastload/billing_gl_account.fl,15,low,,0,
 nb64c2c6bce79c145,powercenter,mapping,m_SFX_DOC_SHARE,etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_DOC_SHARE.XML,104,high,Expression; Lookup Procedure; Source Qualifier; Use First Value; transformations=4,0,
 nb66dbaba0e618e92,teradata,catalog,DBC.QRYLOGOBJECTSV,warehouse/teradata/dbql/tablesv.csv,0,low,,1,2026-08-12 06:03:31
 nb6bdea58b700dddc,teradata,table,SFX_DOCUMENTS.DOC_TAG,warehouse/teradata/ddl/documents/00_tables.sql,6,medium,SET TABLE,0,
 nb773b05ad273fd3c,teradata,bteq,03_load_access,warehouse/teradata/scripts/documents/03_load_access.bteq,15,medium,.GOTO; .IF,0,
+nb8c305d5ee549186,spark,spark_job,users_risk_score,etl/spark/scala/src/main/scala/sfx/UsersRiskScore.scala,0,low,,0,
 nb91c260f3263b35b,teradata,table,SFX_USERS.STG_USER_STATUS_HIST,warehouse/teradata/ddl/users/00_tables.sql,7,medium,SET TABLE,90,2026-11-09 01:35:05
 nbcf25336ae235f75,teradata,bteq,01_load_users,warehouse/teradata/scripts/users/01_load_users.bteq,17,medium,.GOTO; .IF,0,
 nbdeca66135c8557d,teradata,fastload,billing_tax_rate,warehouse/teradata/load/fastload/billing_tax_rate.fl,15,low,,0,
@@ -170,14 +192,20 @@ nbf59db02f1e3b91d,teradata,table,SFX_BILLING.TAX_RATE,warehouse/teradata/ddl/bil
 nbf90b4a7bc90d9af,teradata,table,SFX_USERS.STG_TEAM,warehouse/teradata/ddl/users/00_tables.sql,6,medium,SET TABLE,90,2026-11-09 01:31:07
 nbfc31857a3fa8bac,powercenter,session,s_m_SFX_INVOICE_LINE,etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML,50,medium,,0,
 nc132a28c351d5659,powercenter,session,s_m_SFX_PAYMENT,etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML,50,medium,,0,
+nc272de5514b12dd4,spark,spark_job,billing_revenue_by_plan,etl/spark/jobs/py/billing_revenue_by_plan.py,0,low,,0,
 nc317b0fdeb9af6bf,teradata,table,SFX_USERS.STG_ROLE_GRANT,warehouse/teradata/ddl/users/00_tables.sql,6,medium,SET TABLE,90,2026-11-09 01:33:34
 nc442fa6ff987701d,teradata,view,SFX_DOCUMENTS.V_SEARCH_HISTORY,warehouse/teradata/ddl/documents/10_views.sql,2,low,,0,
+nc6160237cc5eb2cf,spark,spark_job,team_graph_components,etl/spark/scala/src/main/scala/sfx/TeamGraphComponents.scala,0,low,,0,
+nc69cdf8b5dc1cf48,spark,spark_job,billing_gl_trial_balance,etl/spark/jobs/py/billing_gl_trial_balance.py,0,low,,0,
 nc69fcaffa9f73bf0,teradata,table,SFX_BILLING.USAGE_DAILY,warehouse/teradata/ddl/billing/00_tables.sql,8,medium,SET TABLE,0,
 nc6b43eea6c8ff0bf,teradata,bteq,01_load_accounts,warehouse/teradata/scripts/billing/01_load_accounts.bteq,23,medium,.GOTO; .IF,0,
 nc6e232bf5387a7d8,powercenter,mapping,m_SFX_GL_JOURNAL_LINE,etl/informatica/repository/SFX_BILLING/mappings/m_SFX_GL_JOURNAL_LINE.XML,288,high,Expression; Filter; Lookup Procedure; Router; Sequence; Source Qualifier; Unconnected; Use First Value; transformations=9,0,
 nc70e3f09535ab2b8,teradata,macro,SFX_BILLING.M_CURRENCY_TOTALS,warehouse/teradata/macros/currency_totals.sql,5,low,,0,
+nc71a4f6251d9ca10,spark,spark_job,users_team_rollup,etl/spark/jobs/py/users_team_rollup.py,0,low,,0,
 nc74c3a48716696b0,teradata,fastload,billing_invoice_hdr,warehouse/teradata/load/fastload/billing_invoice_hdr.fl,28,low,,0,
+nc7caadea569fe6a7,spark,spark_job,docs_folder_tree_walk,etl/spark/jobs/py/docs_folder_tree_walk.py,0,low,,0,
 ncc8932a645bd1e39,teradata,macro,SFX_AUDIT.M_RECON_TOTALS,warehouse/teradata/macros/recon_totals.sql,6,low,,0,
+nccade0800035b66b,spark,spark_job,users_active_daily,etl/spark/jobs/py/users_active_daily.py,0,low,,0,
 nccfad5a895e6179a,teradata,table,SFX_BILLING.STG_USAGE_DAILY,warehouse/teradata/ddl/billing/00_tables.sql,8,medium,SET TABLE,90,2026-11-09 01:19:53
 nce35ed86fccc09d6,teradata,table,SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY,warehouse/teradata/ddl/documents/00_tables.sql,8,medium,SET TABLE,90,2026-11-09 01:28:26
 nce49ec3b894a0e12,teradata,bteq,05_load_sessions,warehouse/teradata/scripts/documents/05_load_sessions.bteq,15,medium,.GOTO; .IF,0,
@@ -190,6 +218,7 @@ nd28651dfba442ad6,powercenter,session,s_m_SFX_AUDIT_EVENT_ARCHIVE,etl/informatic
 nd31706706cbac17e,teradata,table,SFX_AUDIT.LEGAL_HOLD,warehouse/teradata/ddl/audit/00_tables.sql,8,medium,SET TABLE,0,
 nd5ebfccac7c4864a,teradata,table,SFX_USERS.SSO_IDENTITY,warehouse/teradata/ddl/users/00_tables.sql,7,medium,SET TABLE,0,
 nd66c4bfb75689e73,teradata,tpt,documents_storage_usage_daily,warehouse/teradata/load/tpt/documents_storage_usage_daily.tpt,38,medium,,0,
+nda318831425979ea,spark,spark_job,collab_session_sessionize,etl/spark/jobs/py/collab_session_sessionize.py,0,low,,0,
 ndea27aebd8808486,powercenter,session,s_m_SFX_DOC_SHARE,etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML,51,medium,,0,
 ndf01a5c4d9653f6a,teradata,table,SFX_BILLING.GL_JOURNAL_LINE,warehouse/teradata/ddl/billing/00_tables.sql,11,medium,SET TABLE,264,2026-11-09 16:21:00
 ndf20a077562bd331,teradata,table,SFX_DOCUMENTS.DOC_SHARE,warehouse/teradata/ddl/documents/00_tables.sql,7,medium,SET TABLE,0,
@@ -211,6 +240,7 @@ nefdf8a754bcdd35b,teradata,table,SFX_AUDIT.STG_DATA_EXPORT_REQ,warehouse/teradat
 nf0f34f0760b5db1f,teradata,table,SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG,warehouse/teradata/ddl/documents/00_tables.sql,7,medium,SET TABLE,1,2026-08-12 06:09:53
 nf11074d59ce23bcd,teradata,table,SFX_BILLING.CUSTOMER_ACCOUNT,warehouse/teradata/ddl/billing/00_tables.sql,11,medium,SET TABLE,884,2026-11-09 22:11:04
 nf13967053236fe77,teradata,table,SFX_AUDIT.AUDIT_DAILY_SUMMARY,warehouse/teradata/ddl/audit/00_tables.sql,7,medium,SET TABLE,90,2026-11-09 03:03:41
+nf3b5c3eaa1bc272c,spark,spark_job,security_alert_anomaly,etl/spark/jobs/py/security_alert_anomaly.py,0,low,,0,
 nf7e5d0b9bba5e7ef,teradata,table,SFX_AUDIT.STG_ACCESS_REVIEW,warehouse/teradata/ddl/audit/00_tables.sql,7,medium,SET TABLE,90,2026-11-09 01:01:52
 nf8cc8d95c6ba4dcd,teradata,catalog,DBC.TABLESV,warehouse/teradata/dbql/tablesv.csv,0,low,,1,2026-08-12 06:05:30
 nf9b0e87117c51046,teradata,table,SFX_BILLING.STG_INVOICE_HDR,warehouse/teradata/ddl/billing/00_tables.sql,20,medium,SET TABLE,90,2026-11-09 01:14:17

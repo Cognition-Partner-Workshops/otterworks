@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 import argparse
 import csv
 import os
@@ -23,7 +29,7 @@ class Control:
 
 def parse_control(path, variables=None):
     values = {**os.environ, **(variables or {})}
-    text = re.sub(r'\$\{(\w+)\}', lambda m: values.get(m[1], m[0]), Path(path).read_text())
+    text = re.sub(r'\$\{(\w+)\}', lambda m: values.get(m[1], m[0]), _run_render(Path(path).read_text()))
     insert = re.search(r'INSERT\s+INTO\s+([\w.]+)\s*\(([^)]+)\)\s*VALUES\s*\(([^)]+)\)', text, re.I)
     if not insert:
         raise ValueError('Control file must contain an INSERT with named columns and values')

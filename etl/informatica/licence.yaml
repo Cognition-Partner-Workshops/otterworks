@@ -1,4 +1,4 @@
-# PowerCenter licence and option entitlements for the Integration Service IS_SFX_D1110 (run token sfx-d1110).
+# PowerCenter licence and option entitlements for the Integration Service IS___RUN_DATABASE__ (run token __RUN_TOKEN__).
 # Commercial values are variables so they can be set per environment; defaults are the current contract.
 variables:
   LICENSED_CORES: 16
@@ -26,7 +26,7 @@ licence:
   support: ${SUPPORT_TIER}
   domain: Domain_sfx_d1110
   repository: REP_SFX_PROD
-  integration_service: IS_SFX_D1110
+  integration_service: IS___RUN_DATABASE__
 
 features:
   base_engine:

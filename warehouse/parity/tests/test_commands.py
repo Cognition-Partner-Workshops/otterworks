@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from datetime import date, datetime, timezone
 from decimal import Decimal
 import pytest
@@ -78,7 +84,7 @@ def test_parity_uses_captured_source_column_types(tmp_path, monkeypatch):
     monkeypatch.setattr(commands, 'fetch', lambda cur, table:
                         (['ID'], [dict(ID='key  ' if 'BEFORE' in table else 'key')]))
     commands.parity(row, 10)
-    assert json.loads((tmp_path / 'probe.json').read_text())['keyed_hash_match']
+    assert json.loads(_run_render((tmp_path / 'probe.json').read_text()))['keyed_hash_match']
 
 
 def test_historical_capture_uses_committed_char_types(tmp_path, monkeypatch):
@@ -97,7 +103,7 @@ def test_historical_capture_uses_committed_char_types(tmp_path, monkeypatch):
                         (['EVENT_ID', 'EVENT_TYPE'], [dict(EVENT_ID=1, EVENT_TYPE=
                          'DOC_VIEW    ' if 'BEFORE' in table else 'DOC_VIEW')]))
     commands.parity(row, 10)
-    assert json.loads((tmp_path / 'probe.json').read_text())['keyed_hash_match']
+    assert json.loads(_run_render((tmp_path / 'probe.json').read_text()))['keyed_hash_match']
 
 
 def test_sql_scope_and_owner(monkeypatch):
@@ -105,13 +111,13 @@ def test_sql_scope_and_owner(monkeypatch):
     assert target_relation('DOCUMENT') == 'SFX_DOCUMENTS.DOCUMENT'
     monkeypatch.setenv('PC_CONTROL_SCHEMA', 'PC_CONTROL')
     monkeypatch.setenv('PC_CONTROL_TABLE', 'CUSTOM_MAPPINGS')
-    assert control_table() == 'SFX_D1110_AFTER.PC_CONTROL.CUSTOM_MAPPINGS'
+    assert control_table() == _run_render('__RUN_DATABASE__.PC_CONTROL.CUSTOM_MAPPINGS')
     assert 't.OWNER_EFFORT=s.OWNER_EFFORT' in mark_sql()
     assert 'WHEN NOT MATCHED' not in mark_sql()
     assert 'ON t.FOLDER=s.FOLDER AND t.MAPPING=s.MAPPING' in mark_sql()
     assert mark_sql().count('%s') == 16
     assert "IFF(t.STATUS='VERIFIED',COALESCE(t.VERIFIED_AT" in mark_sql()
-    assert relation('PC_BILLING.PAYMENT') == 'SFX_D1110_AFTER.PC_BILLING.PAYMENT'
+    assert relation('PC_BILLING.PAYMENT') == _run_render('__RUN_DATABASE__.PC_BILLING.PAYMENT')
     with pytest.raises(ValueError):
         relation('OTHER.PC_BILLING.PAYMENT')
     with pytest.raises(ValueError):

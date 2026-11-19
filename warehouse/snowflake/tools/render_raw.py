@@ -1,4 +1,10 @@
 """Render the RAW schema migration from the landing column contract."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from pathlib import Path
 
 import yaml
@@ -8,7 +14,7 @@ TARGET = ROOT / "migrations/V002__raw_tables.sql"
 
 
 def render():
-    spec = yaml.safe_load((ROOT / "fixture_columns.yml").read_text())
+    spec = yaml.safe_load(_run_render((ROOT / "fixture_columns.yml").read_text()))
     statements = []
     for area, tables in spec.items():
         for table, columns in tables.items():
@@ -17,7 +23,7 @@ def render():
             statements.append(
                 f"CREATE TABLE RAW_{area.upper()}.{table} (\n"
                 + ",\n".join(definitions)
-                + "\n) COMMENT='sfx-d1110 raw landing';"
+                + _run_render("\n) COMMENT='__RUN_TOKEN__ raw landing';")
             )
     return "\n\n".join(statements) + "\n"
 

@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from types import SimpleNamespace
 
 import pytest
@@ -21,8 +27,8 @@ def test_conversion_staging(tmp_path):
     assert len(list((tmp_path/'procedures').glob('*.sql'))) == 4
     for path in tmp_path.rglob('*.sql'):
         assert path.read_bytes() == (snowconvert.ROOT/path.relative_to(tmp_path)).read_bytes()
-        assert '<sc-' in path.read_text()
-    assert '${BUSINESS_DATE}' in (tmp_path/'scripts/billing/13_period_close.bteq').read_text()
+        assert '<sc-' in _run_render(path.read_text())
+    assert '${BUSINESS_DATE}' in _run_render((tmp_path/'scripts/billing/13_period_close.bteq').read_text())
 
 
 def test_conversion_command_log(tmp_path, monkeypatch):
@@ -50,12 +56,12 @@ def test_conversion_command_log(tmp_path, monkeypatch):
     monkeypatch.setattr(snowconvert.subprocess, 'run', run)
     assert snowconvert.convert('/opt/scai', 'test') == 0
     assert calls[-1] == ['/opt/scai', 'code', 'convert', '--show-ewis']
-    assert calls[1][1:] == ['init', 'project', '-n', 'sfx-d1110-teradata-test', '-l', 'Teradata', '-c', 'sfx_d1110']
+    assert calls[1][1:] == ['init', 'project', '-n', _run_render('__RUN_TOKEN__-teradata-test'), '-l', 'Teradata', '-c', 'sfx_d1110']
     assert calls[0][1].endswith('/bin/snowflake_connection.py')
     assert calls[1][-2:] == ['-c', 'sfx_d1110']
     assert calls[2][1:4] == ['code', 'add', '-i']
     logs = list((tmp_path/'.snowconvert').glob('*/command.log'))
-    assert len(logs) == 1 and logs[0].read_text().count('EXIT 0') == 3
+    assert len(logs) == 1 and _run_render(logs[0].read_text()).count('EXIT 0') == 3
     assert (logs[0].parent/'raw-output/Reports/SnowConvert/Issues.csv').is_file()
     assert (logs[0].parent/'raw-output/output.sql').is_file()
 
@@ -66,7 +72,7 @@ def test_conversion_failure(tmp_path, monkeypatch):
     monkeypatch.setattr(snowconvert, 'prepare_input', lambda _: 1)
     monkeypatch.setattr(snowconvert.subprocess, 'run', lambda command, **kwargs: SimpleNamespace(returncode=7 if command[0]=='/opt/scai' else 0))
     assert snowconvert.convert('/opt/scai', 'test') == 7
-    assert next((tmp_path/'.snowconvert').glob('*/command.log')).read_text().endswith('EXIT 7\n')
+    assert _run_render(next((tmp_path/'.snowconvert').glob('*/command.log')).read_text()).endswith('EXIT 7\n')
 
 
 def test_configuration_failure_stops_conversion(tmp_path, monkeypatch):

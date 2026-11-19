@@ -1,4 +1,10 @@
 """Restore governance metadata on replaceable scaffold tasks and procedures."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import json
 
 import yaml
@@ -12,7 +18,7 @@ def objects():
         prefix = f'RAW_{area.upper()}.LOAD_{area.upper()}'
         result.extend([('PROCEDURE', prefix + '(VARCHAR)'), ('TASK', prefix + '_TASK')])
     result.append(('PROCEDURE', 'ORCH.RUN_STEP(VARCHAR)'))
-    steps = yaml.safe_load((ROOT / 'task_dag.yml').read_text())['steps']
+    steps = yaml.safe_load(_run_render((ROOT / 'task_dag.yml').read_text()))['steps']
     result.extend(('TASK', 'ORCH.' + step['task']) for step in steps.values())
     result.extend(('VIEW', 'COMPAT.' + name) for name in (
         'CUSTOMER', 'ACCOUNT', 'INVOICE', 'INVOICE_LINE', 'PAYMENT', 'GL_JOURNAL_LINE',
@@ -26,7 +32,7 @@ def reapply(cursor):
     for kind, name in objects():
         # Kinds and object names are from the repository-owned scaffold manifest.
         # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        cursor.execute(f'ALTER {kind} {name} SET TAG GOVERNANCE.SFX_RUN = %s', ('sfx-d1110',))
+        cursor.execute(f'ALTER {kind} {name} SET TAG GOVERNANCE.SFX_RUN = %s', (_run_render('__RUN_TOKEN__'),))
         # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         cursor.execute(f'COMMENT ON {kind} {name} IS %s', (token + ' governed scaffold object',))
         print(f'governance reapplied: {kind} {name}')

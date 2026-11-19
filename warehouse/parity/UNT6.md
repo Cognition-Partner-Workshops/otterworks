@@ -125,9 +125,9 @@ never full-refresh. Only PC_CONTENT.LOGIN_EVENT and fixture objects may be
 written; PC_SRC, PC_BEFORE, MIGRATION_CONTROL and other production tables are
 read-only. No grants are issued.
 
-All warehouse connections/builds carry JSON QUERY_TAG run=sfx-d1110 and
+All warehouse connections/builds carry JSON QUERY_TAG run=__RUN_TOKEN__ and
 mapping=m_SFX_LOGIN_EVENT. Object comments are finalized to
-`run_token=sfx-d1110 expires=2026-11-24` by existing PC hooks. Governance hooks
+`run_token=__RUN_TOKEN__ expires=2026-11-24` by existing PC hooks. Governance hooks
 tag only selected successful built relations; incremental adapter temporary
 views and metadata/session statements follow the existing UNT-5 adapter behavior.
 Snowflake sessions use QUERY_TAG, not an unsupported session COMMENT parameter.

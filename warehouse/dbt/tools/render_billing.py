@@ -1,4 +1,10 @@
 """Render typed billing views and their column-level contracts."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from pathlib import Path
 import sys
 
@@ -10,7 +16,7 @@ from seed_contract import seed_spec
 
 
 def render():
-    spec = yaml.safe_load((ROOT.parent / "snowflake/landing_columns.yml").read_text())
+    spec = yaml.safe_load(_run_render((ROOT.parent / "snowflake/landing_columns.yml").read_text()))
     output = {}
     models = []
     seed = seed_spec()['billing']
@@ -64,7 +70,7 @@ def render():
             if checks:
                 tests.append({"name": column.lower(), "tests": checks})
         models.append({
-            "name": name, "description": "sfx-d1110 typed billing landing view",
+            "name": name, "description": _run_render("__RUN_TOKEN__ typed billing landing view"),
             "columns": tests,
         })
         if table == 'GL_JOURNAL_LINE':

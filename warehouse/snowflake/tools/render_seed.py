@@ -1,4 +1,10 @@
 """Render additive seed reconciliation without rewriting applied migrations."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from pathlib import Path
 import re
 import sys
@@ -19,8 +25,8 @@ ALIASES = {'CUSTOMER_ACCOUNT_ID': 'CUSTOMER_ID', 'LEGAL_NAME': 'ACCOUNT_NAME',
 
 
 def render():
-    fixture = yaml.safe_load((ROOT / 'fixture_columns.yml').read_text())
-    merged = yaml.safe_load((ROOT / 'fixture_columns.yml').read_text())
+    fixture = yaml.safe_load(_run_render((ROOT / 'fixture_columns.yml').read_text()))
+    merged = yaml.safe_load(_run_render((ROOT / 'fixture_columns.yml').read_text()))
     seed = seed_spec()
     statements = []
     for area, tables in seed.items():
@@ -31,7 +37,7 @@ def render():
                     kind = 'VARCHAR(256)'
                 old = merged[area][table].get(name)
                 if old is None:
-                    statements.append(f"ALTER TABLE {relation} ADD COLUMN IF NOT EXISTS {name} {kind} COMMENT 'sfx-d1110 shared seed';")
+                    statements.append(_run_render(f"ALTER TABLE {relation} ADD COLUMN IF NOT EXISTS {name} {kind} COMMENT '__RUN_TOKEN__ shared seed';"))
                     merged[area][table][name] = kind
                 elif old != kind:
                     before, after = re.fullmatch(r'VARCHAR\((\d+)\)', old), re.fullmatch(r'VARCHAR\((\d+)\)', kind)
@@ -54,21 +60,21 @@ def render():
             selections += ['    u.FIRST_NAME AS OWNER_FIRST_NAME', '    u.LAST_NAME AS OWNER_LAST_NAME',
                            '    u.EMAIL AS OWNER_EMAIL', '    u.DISPLAY_NAME AS OWNER_DISPLAY_NAME']
             join = '\nLEFT JOIN RAW_USERS.APP_USER u ON r.OWNER_USER_ID = u.USER_ID'
-        statements.append(f"CREATE OR REPLACE VIEW COMPAT.{view} COMMENT='sfx-d1110 seed compatibility projection'\nAS SELECT\n"
+        statements.append(_run_render(f"CREATE OR REPLACE VIEW COMPAT.{view} COMMENT='__RUN_TOKEN__ seed compatibility projection'\nAS SELECT\n")
                           + ',\n'.join(selections) + f'\nFROM RAW_BILLING.{table} r' + join + ';')
-    statements.append("""CREATE OR REPLACE VIEW COMPAT.DAILY_USAGE COMMENT='sfx-d1110 seeded daily usage rollup'
+    statements.append(_run_render("""CREATE OR REPLACE VIEW COMPAT.DAILY_USAGE COMMENT='__RUN_TOKEN__ seeded daily usage rollup'
 AS SELECT r.CUSTOMER_ID, COALESCE(r.USAGE_DATE, r.USAGE_DT) AS USAGE_DATE,
     COALESCE(r.CURRENCY_CODE, c.CURRENCY_CD) AS CURRENCY_CODE,
     SUM(COALESCE(r.QUANTITY, r.UNITS)) AS QUANTITY, SUM(r.AMOUNT) AS AMOUNT,
     COALESCE(r.USAGE_DATE, r.USAGE_DT) AS USAGE_DT, SUM(COALESCE(r.UNITS, r.QUANTITY)) AS UNITS
 FROM RAW_BILLING.USAGE_DAILY r
 LEFT JOIN RAW_BILLING.CUSTOMER_ACCOUNT c ON r.CUSTOMER_ID = c.CUSTOMER_ID
-GROUP BY r.CUSTOMER_ID, COALESCE(r.USAGE_DATE, r.USAGE_DT), COALESCE(r.CURRENCY_CODE, c.CURRENCY_CD);""")
+GROUP BY r.CUSTOMER_ID, COALESCE(r.USAGE_DATE, r.USAGE_DT), COALESCE(r.CURRENCY_CODE, c.CURRENCY_CD);"""))
     for view, source in (('CUSTOMER_ACCOUNT', 'ACCOUNT'), ('INVOICE_HDR', 'INVOICE')):
-        statements.append(f"CREATE OR REPLACE VIEW COMPAT.{view} COMMENT='sfx-d1110 shared seed object name' AS SELECT * FROM COMPAT.{source};")
+        statements.append(_run_render(f"CREATE OR REPLACE VIEW COMPAT.{view} COMMENT='__RUN_TOKEN__ shared seed object name' AS SELECT * FROM COMPAT.{source};"))
     for view in [*views, 'DAILY_USAGE', 'CUSTOMER_ACCOUNT', 'INVOICE_HDR']:
-        statements.append(f"ALTER VIEW COMPAT.{view} SET TAG GOVERNANCE.SFX_RUN = 'sfx-d1110';")
-    statements.append('GRANT SELECT ON ALL VIEWS IN SCHEMA COMPAT TO ROLE SFX_D1110_ROLE;')
+        statements.append(_run_render(f"ALTER VIEW COMPAT.{view} SET TAG GOVERNANCE.SFX_RUN = '__RUN_TOKEN__';"))
+    statements.append(_run_render('GRANT SELECT ON ALL VIEWS IN SCHEMA COMPAT TO ROLE __RUN_DATABASE___ROLE;'))
     return merged, '\n\n'.join(statements) + '\n'
 
 

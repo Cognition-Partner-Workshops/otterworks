@@ -1,7 +1,7 @@
 # UNT-8 — TEAM_MEMBER (depends on PR #2682)
 
-Scope: only `SFX_D1110_AFTER.PC_CONTENT.TEAM_MEMBER` and the new
-`SFX_D1110_AFTER.PC_FX_UNT8_TEAM_MEMBER` schema. This change appends one entry
+Scope: only `__RUN_DATABASE__.PC_CONTENT.TEAM_MEMBER` and the new
+`__RUN_DATABASE__.PC_FX_UNT8_TEAM_MEMBER` schema. This change appends one entry
 to `parity/mappings/sfx_content.yml`; it does not change existing mappings,
 PowerCenter exports, runner, parameters, prior fixtures, or control rows.
 
@@ -113,8 +113,8 @@ Offline parse twice, with inert profile values and telemetry disabled:
 
 ```bash
 SNOWFLAKE_ACCOUNT=offline.invalid SNOWFLAKE_USER=offline SNOWFLAKE_ROLE=offline \
-SNOWFLAKE_DATABASE=SFX_D1110_AFTER DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY=offline-placeholder \
-DBT_SEND_ANONYMOUS_USAGE_STATS=false SFX_QUERY_TAG='{"run":"sfx-d1110","mapping":"m_SFX_TEAM_MEMBER"}' \
+SNOWFLAKE_DATABASE=__RUN_DATABASE__ DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY=offline-placeholder \
+DBT_SEND_ANONYMOUS_USAGE_STATS=false SFX_QUERY_TAG='{"run":"__RUN_TOKEN__","mapping":"m_SFX_TEAM_MEMBER"}' \
 .venv/bin/dbt parse --project-dir dbt --profiles-dir dbt --no-partial-parse
 # Repeat with SFX_UNT8_TEAM_FIXTURE=1; unset it for the first parse.
 ```

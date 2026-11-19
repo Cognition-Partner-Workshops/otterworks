@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from collections import Counter
 from datetime import datetime
 
@@ -99,7 +105,7 @@ def test_scope_and_write_guard():
     with pytest.raises(ValueError):
         u.landing('other')
     with pytest.raises(ValueError):
-        u.fixture_write(None, [], 'INSERT INTO SFX_D1110_AFTER.PC_SRC.SECURITY_ALERT VALUES (1)')
+        u.fixture_write(None, [], _run_render('INSERT INTO __RUN_DATABASE__.PC_SRC.SECURITY_ALERT VALUES (1)'))
     with pytest.raises(ValueError):
         u.fixture_write(None, [], 'GRANT SELECT ON ALL TABLES TO ROLE ANYONE')
 
@@ -119,7 +125,7 @@ WRT_8350 Rejected rows (DD_REJECT/not permitted) written to reject file: 5''')
 
 def test_macro_guard_and_reject_projection():
     from jinja2 import Environment
-    macro = (u.ROOT / 'warehouse/dbt/macros/pc_audit_security_alert.sql').read_text()
+    macro = _run_render((u.ROOT / 'warehouse/dbt/macros/pc_audit_security_alert.sql').read_text())
     module = Environment().from_string(macro).module
     sql = module.pc_audit_security_alert('MY_SOURCE')
     assert 'count(*) over (partition by ROUTE,ALERT_ID)' in sql

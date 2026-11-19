@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
+from warehouse.run_config import render as _run_render
+
 from datetime import datetime, timedelta, timezone
 import importlib.util
 import json
@@ -44,13 +50,13 @@ class Cursor:
 
 def query(qid="q1", execution=100, **kw):
     return dict(query_id=qid, start_time=HOUR, hour=HOUR,
-                warehouse_name="SFX_D1110_LOAD_WH", workload="load", phase="copy",
+                warehouse_name=_run_render("__RUN_DATABASE___LOAD_WH"), workload="load", phase="copy",
                 executed_by="devin", built_with="other", execution_time=execution,
                 credits_used_cloud_services=0.1, hour_execution=400, **kw)
 
 
 def meter(credits=2):
-    return dict(warehouse_name="SFX_D1110_LOAD_WH", hour=HOUR,
+    return dict(warehouse_name=_run_render("__RUN_DATABASE___LOAD_WH"), hour=HOUR,
                 end_time=HOUR + timedelta(hours=1), credits_used_compute=credits)
 
 
@@ -89,13 +95,13 @@ def test_ledger_cursor_and_token_filter():
         (["QUERY_MAX_START"], [(HOUR,)]),
         (columns, []),
     ])
-    report = ledger.summarize(*ledger.read_usage(cur, "sfx-d1110", 14))
+    report = ledger.summarize(*ledger.read_usage(cur, _run_render("__RUN_TOKEN__"), 14))
     assert report["groups"]["total"][0]["credits"] == 0.6
     for index in (0, 3):
         sql, params = cur.calls[index]
         assert "ILIKE %s" in sql and ":run_token::VARCHAR = %s" in sql
         assert ":run::VARCHAR = %s" in sql
-        assert params[-3:] == ("%sfx-d1110%", "sfx-d1110", "sfx-d1110")
+        assert params[-3:] == (_run_render("%__RUN_TOKEN__%"), _run_render("__RUN_TOKEN__"), _run_render("__RUN_TOKEN__"))
     assert "SUM(EXECUTION_TIME)" in cur.calls[0][0]
 
 
@@ -103,25 +109,25 @@ def test_roles_plan_and_guards():
     plan = roles.validate(roles.statements())
     assert len(plan) > 50
     for path, line, sql in plan:
-        assert (ROOT / "roles" / path).read_text().splitlines()[line - 1] == sql
+        assert _run_render((ROOT / "roles" / path).read_text()).splitlines()[line - 1] == sql
     for statement in (
-        "GRANT CREATE ROLE ON ACCOUNT TO ROLE SFX_D1110_OPS;",
-        "GRANT USAGE ON WAREHOUSE OTHER_WH TO ROLE SFX_D1110_LOADER;",
-        "GRANT USAGE ON SCHEMA SFX_D1110_AFTER.MISSING TO ROLE SFX_D1110_OPS;",
-        "GRANT USAGE ON DATABASE SFX_D1110_AFTER TO ROLE OTHER;",
-        "DROP ROLE SFX_D1110_OPS;",
-        "CREATE ROLE IF NOT EXISTS SFX_D1110_OPS;",
+        _run_render("GRANT CREATE ROLE ON ACCOUNT TO ROLE __RUN_DATABASE___OPS;"),
+        _run_render("GRANT USAGE ON WAREHOUSE OTHER_WH TO ROLE __RUN_DATABASE___LOADER;"),
+        _run_render("GRANT USAGE ON SCHEMA __RUN_DATABASE__.MISSING TO ROLE __RUN_DATABASE___OPS;"),
+        _run_render("GRANT USAGE ON DATABASE __RUN_DATABASE__ TO ROLE OTHER;"),
+        _run_render("DROP ROLE __RUN_DATABASE___OPS;"),
+        _run_render("CREATE ROLE IF NOT EXISTS __RUN_DATABASE___OPS;"),
     ):
         with pytest.raises(ValueError):
             roles.validate([("bad.sql", 1, statement)])
     cur = Cursor([
-        (["CURRENT_ROLE()"], [("SFX_D1110_ROLE",)]),
+        (["CURRENT_ROLE()"], [(_run_render("__RUN_DATABASE___ROLE"),)]),
         (["privilege", "granted_on", "name"], [("CREATE DATABASE", "ACCOUNT", "account")]),
     ])
     assert not roles.has_create_role(cur)
     assert all(not sql.startswith(("CREATE ", "GRANT ")) for sql, _ in cur.calls)
     cur = Cursor([
-        (["CURRENT_ROLE()"], [("SFX_D1110_ROLE",)]),
+        (["CURRENT_ROLE()"], [(_run_render("__RUN_DATABASE___ROLE"),)]),
         (["privilege", "granted_on", "name"], [("USAGE", "ROLE", "PARENT")]),
         (["privilege", "granted_on", "name"], [("CREATE ROLE", "ACCOUNT", "account")]),
     ])
@@ -131,39 +137,39 @@ def test_roles_plan_and_guards():
 def test_analyst_dry_run_is_read_only_and_curated():
     plan = roles.validate(roles.statements())
     grants = [sql for _, _, sql in plan
-              if sql.startswith("GRANT ") and sql.endswith(" TO ROLE SFX_D1110_ANALYST;")]
+              if sql.startswith("GRANT ") and sql.endswith(_run_render(" TO ROLE __RUN_DATABASE___ANALYST;"))]
     assert grants
     for sql in grants:
         privileges = re.match(r"GRANT (.+?) ON ", sql).group(1)
         assert not re.search(r"\b(ALL|INSERT|UPDATE|DELETE|TRUNCATE|OWNERSHIP|CREATE|MANAGE)\b", privileges)
         assert not re.search(r"RAW_|LANDING|SCHEMACHANGE", sql)
     expected = {
-        "GRANT USAGE ON DATABASE SFX_D1110_AFTER TO ROLE SFX_D1110_ANALYST;",
-        "GRANT USAGE ON WAREHOUSE SFX_D1110_TRANSFORM_WH TO ROLE SFX_D1110_ANALYST;",
+        _run_render("GRANT USAGE ON DATABASE __RUN_DATABASE__ TO ROLE __RUN_DATABASE___ANALYST;"),
+        _run_render("GRANT USAGE ON WAREHOUSE __RUN_DATABASE___TRANSFORM_WH TO ROLE __RUN_DATABASE___ANALYST;"),
     }
     for schema in ("MART", "MART_SPARK", "COMPAT"):
-        expected.add(f"GRANT USAGE ON SCHEMA SFX_D1110_AFTER.{schema} TO ROLE SFX_D1110_ANALYST;")
+        expected.add(_run_render(f"GRANT USAGE ON SCHEMA __RUN_DATABASE__.{schema} TO ROLE __RUN_DATABASE___ANALYST;"))
         for scope in ("ALL", "FUTURE"):
             for kind in ("TABLES", "VIEWS"):
-                expected.add(f"GRANT SELECT ON {scope} {kind} IN SCHEMA SFX_D1110_AFTER.{schema} TO ROLE SFX_D1110_ANALYST;")
+                expected.add(_run_render(f"GRANT SELECT ON {scope} {kind} IN SCHEMA __RUN_DATABASE__.{schema} TO ROLE __RUN_DATABASE___ANALYST;"))
     assert set(grants) == expected
     assert len(grants) == len(expected)
     assert roles.validate([]) == []
 
 
 @pytest.mark.parametrize("privilege,scope", [
-    ("ALL", "DATABASE SFX_D1110_AFTER"),
-    ("ALL PRIVILEGES", "DATABASE SFX_D1110_AFTER"),
-    ("INSERT", "FUTURE TABLES IN SCHEMA SFX_D1110_AFTER.CORE_BILLING"),
-    ("UPDATE", "FUTURE TABLES IN SCHEMA SFX_D1110_AFTER.CORE_BILLING"),
-    ("DELETE", "FUTURE TABLES IN SCHEMA SFX_D1110_AFTER.CORE_BILLING"),
-    ("TRUNCATE", "FUTURE TABLES IN SCHEMA SFX_D1110_AFTER.CORE_BILLING"),
-    ("OWNERSHIP", "FUTURE TABLES IN SCHEMA SFX_D1110_AFTER.CORE_BILLING"),
-    ("CREATE TABLE", "SCHEMA SFX_D1110_AFTER.CORE_BILLING"),
+    ("ALL", _run_render("DATABASE __RUN_DATABASE__")),
+    ("ALL PRIVILEGES", _run_render("DATABASE __RUN_DATABASE__")),
+    ("INSERT", _run_render("FUTURE TABLES IN SCHEMA __RUN_DATABASE__.CORE_BILLING")),
+    ("UPDATE", _run_render("FUTURE TABLES IN SCHEMA __RUN_DATABASE__.CORE_BILLING")),
+    ("DELETE", _run_render("FUTURE TABLES IN SCHEMA __RUN_DATABASE__.CORE_BILLING")),
+    ("TRUNCATE", _run_render("FUTURE TABLES IN SCHEMA __RUN_DATABASE__.CORE_BILLING")),
+    ("OWNERSHIP", _run_render("FUTURE TABLES IN SCHEMA __RUN_DATABASE__.CORE_BILLING")),
+    ("CREATE TABLE", _run_render("SCHEMA __RUN_DATABASE__.CORE_BILLING")),
     ("MANAGE GRANTS", "ACCOUNT"),
 ])
 def test_analyst_dry_run_rejects_write_privileges(privilege, scope):
-    sql = f"GRANT {privilege} ON {scope} TO ROLE SFX_D1110_ANALYST;"
+    sql = _run_render(f"GRANT {privilege} ON {scope} TO ROLE __RUN_DATABASE___ANALYST;")
     with pytest.raises(ValueError):
         roles.validate([("bad.sql", 1, sql)])
 
@@ -174,15 +180,15 @@ def test_analyst_dry_run_rejects_write_privileges(privilege, scope):
 ])
 @pytest.mark.parametrize("privilege,kind", [("USAGE", "SCHEMA"), ("SELECT", "FUTURE TABLES IN SCHEMA")])
 def test_analyst_dry_run_rejects_non_curated_schemas(schema, privilege, kind):
-    sql = f"GRANT {privilege} ON {kind} SFX_D1110_AFTER.{schema} TO ROLE SFX_D1110_ANALYST;"
+    sql = _run_render(f"GRANT {privilege} ON {kind} __RUN_DATABASE__.{schema} TO ROLE __RUN_DATABASE___ANALYST;")
     with pytest.raises(ValueError, match="Analyst grants must be read-only and curated"):
         roles.validate([("bad.sql", 1, sql)])
 
 
 @pytest.mark.parametrize("sql", [
-    "GRANT USAGE ON FUTURE SCHEMAS IN DATABASE SFX_D1110_AFTER TO ROLE SFX_D1110_ANALYST;",
-    "GRANT USAGE ON ALL PROCEDURES IN SCHEMA SFX_D1110_AFTER.CORE_BILLING TO ROLE SFX_D1110_ANALYST;",
-    "GRANT ROLE SFX_D1110_LOADER TO ROLE SFX_D1110_ANALYST;",
+    _run_render("GRANT USAGE ON FUTURE SCHEMAS IN DATABASE __RUN_DATABASE__ TO ROLE __RUN_DATABASE___ANALYST;"),
+    _run_render("GRANT USAGE ON ALL PROCEDURES IN SCHEMA __RUN_DATABASE__.CORE_BILLING TO ROLE __RUN_DATABASE___ANALYST;"),
+    _run_render("GRANT ROLE __RUN_DATABASE___LOADER TO ROLE __RUN_DATABASE___ANALYST;"),
 ])
 def test_analyst_dry_run_rejects_broad_scopes_and_inheritance(sql):
     with pytest.raises(ValueError):
@@ -193,29 +199,29 @@ def test_role_plan_removes_existing_and_future_analyst_privileges():
     plan = roles.statements()
     reset = [sql for _, _, sql in plan if sql.startswith("REVOKE ")]
     assert reset
-    for scope in ("DATABASE SFX_D1110_AFTER", "ALL SCHEMAS IN DATABASE SFX_D1110_AFTER",
-                  "FUTURE SCHEMAS IN DATABASE SFX_D1110_AFTER",
-                  "ALL TABLES IN DATABASE SFX_D1110_AFTER", "ALL VIEWS IN DATABASE SFX_D1110_AFTER",
-                  "FUTURE TABLES IN DATABASE SFX_D1110_AFTER", "FUTURE VIEWS IN DATABASE SFX_D1110_AFTER"):
-        assert f"REVOKE ALL PRIVILEGES ON {scope} FROM ROLE SFX_D1110_ANALYST;" in reset
+    for scope in (_run_render("DATABASE __RUN_DATABASE__"), _run_render("ALL SCHEMAS IN DATABASE __RUN_DATABASE__"),
+                  _run_render("FUTURE SCHEMAS IN DATABASE __RUN_DATABASE__"),
+                  _run_render("ALL TABLES IN DATABASE __RUN_DATABASE__"), _run_render("ALL VIEWS IN DATABASE __RUN_DATABASE__"),
+                  _run_render("FUTURE TABLES IN DATABASE __RUN_DATABASE__"), _run_render("FUTURE VIEWS IN DATABASE __RUN_DATABASE__")):
+        assert _run_render(f"REVOKE ALL PRIVILEGES ON {scope} FROM ROLE __RUN_DATABASE___ANALYST;") in reset
     schemas = set()
     for path in (ROOT / "migrations").glob("V*.sql"):
-        schemas.update(re.findall(r"CREATE SCHEMA IF NOT EXISTS (\w+)", path.read_text()))
+        schemas.update(re.findall(r"CREATE SCHEMA IF NOT EXISTS (\w+)", _run_render(path.read_text())))
     for schema in schemas:
         for kind in ("TABLES", "VIEWS"):
-            assert (f"REVOKE ALL PRIVILEGES ON FUTURE {kind} IN SCHEMA "
-                    f"SFX_D1110_AFTER.{schema} FROM ROLE SFX_D1110_ANALYST;") in reset
-    assert all(sql.endswith(" FROM ROLE SFX_D1110_ANALYST;") for sql in reset)
+            assert (_run_render(f"REVOKE ALL PRIVILEGES ON FUTURE {kind} IN SCHEMA "
+                    f"__RUN_DATABASE__.{schema} FROM ROLE __RUN_DATABASE___ANALYST;")) in reset
+    assert all(sql.endswith(_run_render(" FROM ROLE __RUN_DATABASE___ANALYST;")) for sql in reset)
     schema_plan = [sql for path, _, sql in plan if path == "03_schema_grants.sql"]
     assert all(sql.startswith("REVOKE ") for sql in schema_plan[:len(reset)])
 
 
 @pytest.mark.parametrize("sql", [
-    "REVOKE ALL PRIVILEGES ON DATABASE OTHER FROM ROLE SFX_D1110_ANALYST;",
-    "REVOKE ALL PRIVILEGES ON DATABASE SFX_D1110_AFTER FROM ROLE SFX_D1110_TRANSFORMER;",
-    "REVOKE ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA SFX_D1110_AFTER.MISSING FROM ROLE SFX_D1110_ANALYST;",
-    "REVOKE ALL PRIVILEGES ON FUTURE TABLES IN DATABASE SFX_D1110_AFTER.MART FROM ROLE SFX_D1110_ANALYST;",
-    "REVOKE OWNERSHIP ON DATABASE SFX_D1110_AFTER FROM ROLE SFX_D1110_ANALYST;",
+    _run_render("REVOKE ALL PRIVILEGES ON DATABASE OTHER FROM ROLE __RUN_DATABASE___ANALYST;"),
+    _run_render("REVOKE ALL PRIVILEGES ON DATABASE __RUN_DATABASE__ FROM ROLE __RUN_DATABASE___TRANSFORMER;"),
+    _run_render("REVOKE ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA __RUN_DATABASE__.MISSING FROM ROLE __RUN_DATABASE___ANALYST;"),
+    _run_render("REVOKE ALL PRIVILEGES ON FUTURE TABLES IN DATABASE __RUN_DATABASE__.MART FROM ROLE __RUN_DATABASE___ANALYST;"),
+    _run_render("REVOKE OWNERSHIP ON DATABASE __RUN_DATABASE__ FROM ROLE __RUN_DATABASE___ANALYST;"),
 ])
 def test_role_plan_rejects_unscoped_resets(sql):
     with pytest.raises(ValueError):
@@ -223,8 +229,8 @@ def test_role_plan_rejects_unscoped_resets(sql):
 
 
 def test_complexity_security_review_resolved():
-    fragment = json.loads((ROOT.parents[1] / "demos/app/complexity/sfx-snowflake.json").read_text())
-    assert (fragment["schema_version"], fragment["area"], fragment["run_token"]) == (1, "snowflake", "sfx-d1110")
+    fragment = json.loads(_run_render((ROOT.parents[1] / "demos/app/complexity/sfx-snowflake.json").read_text()))
+    assert (fragment["schema_version"], fragment["area"], fragment["run_token"]) == (1, "snowflake", _run_render("__RUN_TOKEN__"))
     assert fragment["security_review"] == []
 
 
@@ -236,7 +242,7 @@ def test_make_uses_separate_snowflake_and_teradata_environments():
         ('sfx-snowflake-test', 'warehouse/snowflake/.venv', 'warehouse/.venv'),
         ('sfx-teradata-test', 'warehouse/.venv', 'warehouse/snowflake/.venv'),
     ):
-        result = subprocess.run(['make', '-Bn', target, 'NS=sfx-d1110-before'],
+        result = subprocess.run(['make', '-Bn', target, _run_render('NS=__BEFORE_NAMESPACE__')],
                                 cwd=ROOT.parents[1], env=env, capture_output=True, text=True, check=True)
         assert f'-m venv {own}' in result.stdout
         assert f'{own}/bin/python -m pytest' in result.stdout
@@ -245,7 +251,7 @@ def test_make_uses_separate_snowflake_and_teradata_environments():
 
 def test_role_apply_refuses_without_privilege(monkeypatch, capsys):
     cur = Cursor([
-        (["CURRENT_ROLE()"], [("SFX_D1110_ROLE",)]),
+        (["CURRENT_ROLE()"], [(_run_render("__RUN_DATABASE___ROLE"),)]),
         (["privilege", "granted_on", "name"], []),
     ])
 
@@ -289,23 +295,23 @@ class InventoryCursor:
             raise ProgrammingError(msg="insufficient privileges", errno=3001)
         data = []
         if sql.startswith("SHOW DATABASES"):
-            data = [("SFX_D1110_AFTER", ""), ("SFX_D1110_TEMP", "sfx-d1110"),
+            data = [(_run_render("__RUN_DATABASE__"), ""), (_run_render("__RUN_DATABASE___TEMP"), _run_render("__RUN_TOKEN__")),
                     ("OTHER", "unrelated")]
         elif sql.startswith("SHOW SCHEMAS"):
-            data = [("INFORMATION_SCHEMA", ""), ("RAW_BILLING", "sfx-d1110 raw"),
+            data = [("INFORMATION_SCHEMA", ""), ("RAW_BILLING", _run_render("__RUN_TOKEN__ raw")),
                     ("KEEP", "unrelated")]
         elif sql.startswith("SHOW TASKS"):
-            data = [("LOAD_TASK", "sfx-d1110 task")]
+            data = [("LOAD_TASK", _run_render("__RUN_TOKEN__ task"))]
         elif sql.startswith("SHOW STAGES"):
-            data = [("LANDING_STAGE", "sfx-d1110 stage")]
+            data = [("LANDING_STAGE", _run_render("__RUN_TOKEN__ stage"))]
         elif sql == "SHOW WAREHOUSES":
-            data = [("SFX_D1110_LOAD_WH", ""), ("OTHER_WH", "")]
+            data = [(_run_render("__RUN_DATABASE___LOAD_WH"), ""), ("OTHER_WH", "")]
         elif sql == "SHOW ROLES":
-            data = [("SFX_D1110_ROLE", ""), ("SFX_D1110_ANALYST", "sfx-d1110 role")]
+            data = [(_run_render("__RUN_DATABASE___ROLE"), ""), (_run_render("__RUN_DATABASE___ANALYST"), _run_render("__RUN_TOKEN__ role"))]
         elif sql == "SHOW USERS":
-            data = [("SFX_D1110_SVC", "")]
+            data = [(_run_render("__RUN_DATABASE___SVC"), "")]
         elif sql == "SHOW RESOURCE MONITORS":
-            data = [("SFX_D1110_RM", "")]
+            data = [(_run_render("__RUN_DATABASE___RM"), "")]
         self.description = [("name",), ("comment",)]
         scope = tuple(re.findall(r'"([^"]+)"', sql))
         if any(scope[:len(key)] == key for key in self.deleted):
@@ -318,48 +324,48 @@ class InventoryCursor:
 
 def test_teardown_dry_run_and_scope(capsys):
     cur = InventoryCursor()
-    assert teardown.cleanup(cur, "sfx-d1110", dry_run=True) == 1
+    assert teardown.cleanup(cur, _run_render("__RUN_TOKEN__"), dry_run=True) == 1
     assert all(sql.startswith("SHOW ") for sql in cur.calls)
     assert "Dry-run summary:" in capsys.readouterr().out
-    objects, _ = teardown.discover(cur, "sfx-d1110")
+    objects, _ = teardown.discover(cur, _run_render("__RUN_TOKEN__"))
     commands = teardown.plan(objects)
-    assert not any('DROP DATABASE IF EXISTS "SFX_D1110_AFTER"' in sql for sql in commands)
+    assert not any(_run_render('DROP DATABASE IF EXISTS "__RUN_DATABASE__"') in sql for sql in commands)
     assert not any('"OTHER' in sql for sql in commands)
     assert not any(sql.startswith("DROP SCHEMA") and '"KEEP"' in sql for sql in commands)
     first_drop = next(i for i, sql in enumerate(commands) if sql.startswith("DROP"))
     assert all(sql.startswith("ALTER") for sql in commands[:first_drop])
-    assert any('DROP DATABASE IF EXISTS "SFX_D1110_TEMP"' in sql for sql in commands)
-    assert any('DROP ROLE IF EXISTS "SFX_D1110_ANALYST"' in sql for sql in commands)
+    assert any(_run_render('DROP DATABASE IF EXISTS "__RUN_DATABASE___TEMP"') in sql for sql in commands)
+    assert any(_run_render('DROP ROLE IF EXISTS "__RUN_DATABASE___ANALYST"') in sql for sql in commands)
 
 
 def test_teardown_real_and_include_provisioned():
     cur = InventoryCursor()
-    assert teardown.cleanup(cur, "sfx-d1110") == 0
-    assert not any(sql.startswith('DROP ROLE IF EXISTS "SFX_D1110_ROLE"') for sql in cur.calls)
+    assert teardown.cleanup(cur, _run_render("__RUN_TOKEN__")) == 0
+    assert not any(sql.startswith(_run_render('DROP ROLE IF EXISTS "__RUN_DATABASE___ROLE"')) for sql in cur.calls)
     cur = InventoryCursor()
-    assert teardown.cleanup(cur, "sfx-d1110", include_provisioned=True) == 0
+    assert teardown.cleanup(cur, _run_render("__RUN_TOKEN__"), include_provisioned=True) == 0
     for kind, name in teardown.PROVISIONED:
-        if name in ("SFX_D1110_ROLE", "SFX_D1110_SVC", "SFX_D1110_AFTER",
-                    "SFX_D1110_LOAD_WH", "SFX_D1110_RM"):
+        if name in (_run_render("__RUN_DATABASE___ROLE"), _run_render("__RUN_DATABASE___SVC"), _run_render("__RUN_DATABASE__"),
+                    _run_render("__RUN_DATABASE___LOAD_WH"), _run_render("__RUN_DATABASE___RM")):
             assert any(sql.startswith(f'DROP {kind} IF EXISTS "{name}"') for sql in cur.calls)
 
 
 def test_teardown_privilege_and_suspend_only(capsys):
     cur = InventoryCursor(denied=True)
-    assert teardown.cleanup(cur, "sfx-d1110", dry_run=True) == 1
+    assert teardown.cleanup(cur, _run_render("__RUN_TOKEN__"), dry_run=True) == 1
     assert "insufficient privilege" in capsys.readouterr().out
     cur = InventoryCursor()
-    assert teardown.cleanup(cur, "sfx-d1110", suspend_only=True) == 0
+    assert teardown.cleanup(cur, _run_render("__RUN_TOKEN__"), suspend_only=True) == 0
     assert not any(sql.startswith("DROP") for sql in cur.calls)
-    assert teardown.tagged("SFX_D1110_EXTRA", "", "sfx-d1110")
-    assert not teardown.tagged("OTHER", "", "sfx-d1110")
+    assert teardown.tagged(_run_render("__RUN_DATABASE___EXTRA"), "", _run_render("__RUN_TOKEN__"))
+    assert not teardown.tagged("OTHER", "", _run_render("__RUN_TOKEN__"))
 
 
 def test_before_namespace_lifecycle():
     repo = ROOT.parents[1]
     for target in ("up", "run", "down"):
         result = subprocess.run(
-            ["make", "sfx-snowflake-" + target, "NS=sfx-d1110-before"],
+            ["make", "sfx-snowflake-" + target, _run_render("NS=__BEFORE_NAMESPACE__")],
             cwd=repo, capture_output=True, text=True, check=True,
         )
         assert "not part of namespace" in result.stdout

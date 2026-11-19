@@ -1,12 +1,12 @@
 version: 2
 sources:
   - name: unt5_pc_src
-    database: SFX_D1110_AFTER
+    database: SFX_1119
     schema: PC_SRC
     tables:
       - name: SECURITY_ALERT
   - name: unt5_fixture
-    database: SFX_D1110_AFTER
+    database: SFX_1119
     schema: PC_AUDIT_UNT5_FIXTURE
     tables:
       - name: SEEDED_SOURCE

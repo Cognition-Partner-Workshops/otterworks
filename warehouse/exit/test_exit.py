@@ -1,3 +1,9 @@
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 import json
 from pathlib import Path
 import sys
@@ -43,9 +49,9 @@ def test_counts_aliases_bounds_errors_and_empty():
 
 
 def test_snowflake_dedup_tags_and_failures():
-    row = dict(query_id='1', start_time='2026-11-09', query_tag=json.dumps(dict(run='sfx-d1110', act='consumers', consumer='reader')),
+    row = dict(query_id='1', start_time='2026-11-09', query_tag=json.dumps(dict(run=_run_render('__RUN_TOKEN__'), act='consumers', consumer='reader')),
                query_type='SELECT', execution_status='SUCCESS')
-    bad = [{**row, 'query_id': str(i+2), 'query_tag': tag} for i, tag in enumerate(['invalid', '[]', '{}', '{"run":"sfx-d1110","act":"exit"}'])]
+    bad = [{**row, 'query_id': str(i+2), 'query_tag': tag} for i, tag in enumerate(['invalid', '[]', '{}', _run_render('{"run":"__RUN_TOKEN__","act":"exit"}')])]
     assert summary([], [row, row] + bad)['reader']['snowflake'] == 1
     assert summary([], [{**row, 'execution_status': 'FAIL'}])['reader']['snowflake'] == 0
 
@@ -76,7 +82,7 @@ def test_unknown_and_other_unmanaged_accounts_block():
 
 def pr(**kw):
     return dict(number=1, state='open', merged_at=None, base={'ref': 'demo-snowflake-dw-exit'},
-                head={'ref': 'devin/sfx-d1110-consumer-reader', 'sha': 'abc'}, html_url='https://example.invalid/pr', **kw)
+                head={'ref': _run_render('devin/__RUN_TOKEN__-consumer-reader'), 'sha': 'abc'}, html_url='https://example.invalid/pr', **kw)
 
 
 def test_board_workflow_sha_and_status():
@@ -120,7 +126,7 @@ def test_offline_cli(tmp_path):
     result = run('board.py', ['--prs-json', str(prs), '--html', str(tmp_path / 'board.html')])
     assert result.returncode == 0, result.stderr
     assert result.stdout.count('| Teradata |') == 8
-    assert '<table>' in (tmp_path / 'board.html').read_text()
+    assert '<table>' in _run_render((tmp_path / 'board.html').read_text())
     sf.write_text('not json')
     assert run('reads.py').returncode != 0
     assert run('board.py', ['--prs-json', str(prs), '--html', str(tmp_path / 'error.html')]).returncode != 0

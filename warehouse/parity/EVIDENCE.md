@@ -82,11 +82,11 @@ issues session/query-tag and relation-cache metadata statements. No downstream
 AUDIT_EVENT model is selected. Test failure SELECTs do not store rows by default.
 Persist-docs and the PC post-hook comment on the built table. On-run-end
 `reapply_governance(results)` writes ONLY successful built relations:
-`ALTER TABLE SFX_D1110_AFTER.PC_AUDIT.STG_AUDIT_EVENT SET TAG
-SFX_D1110_AFTER.GOVERNANCE.SFX_RUN = 'sfx-d1110'`, then COMMENT with the model
+`ALTER TABLE __RUN_DATABASE__.PC_AUDIT.STG_AUDIT_EVENT SET TAG
+__RUN_DATABASE__.GOVERNANCE.SFX_RUN = '__RUN_TOKEN__'`, then COMMENT with the model
 description. No policy attachments apply (`governance_policies: {}`).
 `pc_finalize_comments(results)` rewrites ONLY that table's comment to
-`run_token=sfx-d1110 expires=2026-11-24`. Tag-setting is a write on our relation,
+`run_token=__RUN_TOKEN__ expires=2026-11-24`. Tag-setting is a write on our relation,
 not on other tables. No control, PC_BEFORE, RAW/CORE/MART, or other PC relations
 are written. Exact adapter SQL should be retained from the tagged query history
 when builds are authorized. STG has no temporary/backup relation on this adapter;
@@ -206,7 +206,7 @@ From repository root:
 
 ```sh
 make warehouse/.venv/.sfx-installed
-make sfx-informatica-up NS=sfx-d1110-before
+make sfx-informatica-up NS=__BEFORE_NAMESPACE__
 cd warehouse
 .venv/bin/python -m pytest parity/tests -q
 .venv/bin/python -m parity.evidence manifest

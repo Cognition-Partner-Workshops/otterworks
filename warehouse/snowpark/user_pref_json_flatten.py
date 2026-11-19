@@ -1,4 +1,10 @@
 """Preserve the legacy user_pref_json_flatten Python parsing semantics."""
+
+import sys as _run_sys
+from pathlib import Path as _RunPath
+_run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[2]))
+from warehouse.run_config import render as _run_render
+
 from snowflake.snowpark.functions import call_udf, col, lit
 
 
@@ -30,5 +36,5 @@ $$
     result.write.save_as_table(
         [database, "MART_SPARK", "USER_PREF_JSON_FLATTEN"],
         mode="overwrite",
-        comment="sfx-d1110 Python parsing output for user_pref_json_flatten.",
+        comment=_run_render("__RUN_TOKEN__ Python parsing output for user_pref_json_flatten."),
     )
