@@ -236,3 +236,38 @@ final class AppUITests: AppUITestCase {
         assertText("HARBOR-01")
     }
 }
+
+final class ShareLinkUITests: AppUITestCase {
+    func testFileShareCopiesPublicWebLink() {
+        login()
+        navigate("Files")
+        let title = element(.staticText, "Harbor report.txt")
+        reveal(title)
+        title.doubleTap()
+
+        reveal(element(.button, "Share"))
+        element(.button, "Share").tap()
+        element(.button, "Get link").tap()
+        assertText("https://share.example.test/files/file-1")
+        let copy = element(.button, "Copy link")
+        reveal(copy)
+        copy.tap()
+        assertText("Link copied to clipboard")
+    }
+
+    func testDocumentShareCopiesPublicWebLink() {
+        login()
+        navigate("Documents")
+        let title = element(.staticText, "Voyage notes")
+        reveal(title)
+        title.doubleTap()
+
+        reveal(element(.button, "Share"))
+        element(.button, "Share").tap()
+        assertText("https://share.example.test/documents/doc-1")
+        let copy = element(.button, "Copy link")
+        reveal(copy)
+        copy.tap()
+        XCTAssertTrue(element(.button, "Copied!").waitForExistence(timeout: 5))
+    }
+}

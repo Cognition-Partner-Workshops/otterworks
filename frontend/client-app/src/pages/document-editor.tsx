@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef, useCallback, useEffect } from "react";
+import toast from "react-hot-toast";
 import {
   ArrowLeft,
   Share2,
@@ -19,6 +20,7 @@ import { UserPresenceAvatars } from "@/components/editor/user-presence-avatars";
 import { PageLoader } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { documentsApi } from "@/lib/api";
+import { copyShareLink, getShareLink } from "@/lib/share-link";
 import { formatRelativeTime } from "@/lib/utils";
 
 export default function DocumentEditorPage() {
@@ -114,6 +116,19 @@ function DocumentEditorContent() {
   }
 
   const displayTitle = isTitleEditing ? title : document.title;
+  const shareUrl = shareOpen ? getShareLink("documents", documentId) : null;
+
+  const handleCopyLink = async () => {
+    if (!shareUrl) return;
+    try {
+      await copyShareLink(shareUrl);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      setShareCopied(false);
+      toast.error("Failed to copy link");
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto space-y-4">
@@ -268,13 +283,13 @@ function DocumentEditorContent() {
             <p className="text-sm text-red-600">Failed to send invite. Please try again.</p>
           )}
           <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+            <p className="min-w-0 flex-1 truncate text-sm text-gray-700">
+              {shareUrl ?? "Share link unavailable for this build."}
+            </p>
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                setShareCopied(true);
-                setTimeout(() => setShareCopied(false), 2000);
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+              onClick={handleCopyLink}
+              disabled={!shareUrl}
+              className="flex shrink-0 items-center gap-1.5 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition disabled:opacity-50"
             >
               {shareCopied ? <Check size={14} /> : <Copy size={14} />}
               {shareCopied ? "Copied!" : "Copy link"}

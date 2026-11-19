@@ -9,7 +9,8 @@ IOS_DESTINATION='platform=iOS Simulator,name=iPhone 17' bash mobile/ios/scripts/
 ```
 
 The runner installs npm dependencies, owns a mock on loopback port 4010, builds
-web assets with native API/collaboration URL overrides, syncs Capacitor and runs
+web assets with native API/collaboration URL overrides and the test share origin
+`https://share.example.test`, syncs Capacitor and runs
 the shared App scheme. It stops the mock even if tests fail. Do not run the
 browser and native suites simultaneously: both reset the same in-memory state.
 Generated public assets and Capacitor config are intentionally not committed.
