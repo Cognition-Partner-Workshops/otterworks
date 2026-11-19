@@ -313,6 +313,96 @@ CPU peaks. These short, small-corpus runs are not a production capacity guarante
    recommending production capacity. Their short-run throughput knee is an
    observation, not a guaranteed RPS ceiling or a tested HA improvement.
 
+### Prepared CPU-limit intervention and HA quota
+
+The measured CPU saturation motivates two sequential interventions: document-service
+**500m → 1 core**, then auth-service **1 → 1.5 cores**. The service-specific
+`infrastructure/helm/profiles/high-availability-{document-service,auth-service}.yaml`
+overlays change only CPU limits. CPU requests and memory remain unchanged.
+`scripts/scale-for-load.sh <id> up` applies these after the shared HA overlay;
+direct Helm upgrades must include the matching service overlay explicitly.
+Default chart values and single-replica tenant deployment are unchanged.
+The document limit has been applied to chaostest, but authentication blocked
+the benchmark during setup; the auth limit has not yet been applied.
+
+The default HA profile has HPA min 2 / **max 6**, not chaostest's experimental
+max 3. The original tenant quota (12 CPU limits, 4 CPU requests, 8Gi requested
+memory, 40 pods) cannot accommodate a full tenant with all five core HPAs at
+max. Before HA upgrades, the scaling script applies
+`infrastructure/k8s/tenant-ha-quota.yaml` to that tenant only:
+
+| Resource | Full tenant, five core HPAs at max 6 + auth rollout surge + k6 Job | HA quota |
+|---|---:|---:|
+| CPU limits | `6.25 + 6 × 4 + 2 × 1.5 + 1 = 34.25` cores | 35 cores |
+| CPU requests | `0.95 + 6 × 0.5 + 2 × 0.1 + 0.1 = 4.25` cores | 5 cores |
+| Memory limits | `5120 + 6 × 2048 + 2 × 1024 + 512 = 19968` Mi | 20Gi |
+| Memory requests | `2496 + 6 × 1024 + 2 × 512 + 128 = 9792` Mi | 10Gi |
+| Pods | `10 + 6 × 5 + 2 + 1 = 43` | 43 |
+
+The fixed contribution includes all non-core services at one replica plus Redis
+and MeiliSearch; it does not assume optional services have been scaled down.
+The surge allowance is for **one service rollout at a time** (the script waits
+sequentially). The existing 25% maxSurge rounds up to **two pods at max 6**,
+so the quota covers two extra auth pods, rather than only one.
+Terminating pods can temporarily consume additional quota: wait for them to
+exit before proceeding if admission is blocked. Custom workloads, simultaneous
+rollouts, additional HPAs and changed Job resources require recalculation.
+
+Quota is an admission ceiling, **not reserved cluster capacity**: these settings
+do not make the shared cluster capable of scheduling the maximum. Check node
+request headroom and DB connections before using HA. Non-HA tenants retain
+their existing quota. `down` does not shrink quota or reset CPU limits; it only
+disables the HPA and sets one replica. A fresh tenant deployment restores the
+ordinary deployment defaults.
+
+For the chaostest experiment, retain max 3 and upgrade only the selected release
+with `--reuse-values -f <matching-service-overlay>`; do not run the scaling
+script or reapply the shared max-6 overlay. With the four auxiliary deployments
+at zero, all-core-max totals are 13.75 CPU after document and 15.25 after auth;
+one auth surge plus the k6 Job brings the final total to 17.75, within an
+18-core quota. The owning chaos session approved this experiment and its
+18-core quota patch; no lifecycle changes or node additions were authorized.
+
+#### Chaostest document-first attempt: blocked before journey traffic
+
+At 21:50Z on 2026-11-19, the tenant's CPU-limit quota was patched to 18 and
+document-service was upgraded to 1 core; rollout succeeded with three replicas.
+Auth remained at 1 core. The four auxiliary deployments (admin-service,
+admin-dashboard, report-service, analytics-service) remained at zero.
+
+The in-cluster run `loadtest-1795125098` requested `PROFILE=peak RATE=1 VUS=2
+DURATION=5m USERS=10`: the normal **3× baseline peak**, 30 journeys/s, with
+60 preallocated VUs to avoid repeating the earlier allocation shortfall.
+It exited **107** during document seeding, before any journey iteration:
+
+```text
+Error: Setup failed: status 401, missing id
+checks: 10 pass / 1 fail (90.91%)
+http_req_failed: 1 / 11 (9.09%)
+K6_EXIT_CODE=107
+```
+
+All endpoint-coverage thresholds failed because journey request counts were
+zero. Journey RPS was zero; journey p95/p99 are **not measurable**, not passing
+zero-latency observations. Prometheus evidence was collected, but its brief
+setup/rollout window does not establish a CPU or database capacity bottleneck.
+
+The reachable compatibility blocker was verified independently: a real login
+for the dedicated test user returned an **HS512** access token; document create
+with that token and valid payload returned HTTP 401, requiring `owner_id` or
+JWT authentication. The running document image's validator accepts only
+`HS256` and `HS384`. Both services' JWT secrets have identical hashes and
+64-byte lengths, ruling out differing stored keys as the explanation. No
+secret or token values are recorded here. No auth upgrade or second peak was
+attempted pending authorization for a tenant-scoped compatibility correction;
+changing the shared JWT key would invalidate the chaos session's existing
+tokens and requires coordination. The tenant was not torn down or reconfigured
+beyond the approved CPU changes.
+
+Ignored evidence: `tests/load/k6/results/chaostest-doc{.log,-monitor.json,
+-before.txt,-after.txt,-start.txt,-end.txt}`, the run's JSON/Markdown summary,
+raw k6 metrics and `loadtest-1795125098.tar.gz`.
+
 ### Cleanup
 
 After collecting the last Job's artifacts, `scripts/teardown-tenant.sh loadbench`
