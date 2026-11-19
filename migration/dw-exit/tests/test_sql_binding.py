@@ -83,7 +83,7 @@ def test_upload_binds_table_name_and_comment():
     connection = Connection([(1, 'USD')])
     CAPTURE.upload(connection, 'INVOICE_HDR', [('ID', 'NUMBER'), ('CURRENCY_CD', 'VARCHAR(3)')], [(1, 'USD')])
     calls = connection.cursor_.calls
-    target = _run_render('__RUN_DATABASE__.TD_BASELINE."INVOICE_HDR"')
+    target = CAPTURE.compose('{}', CAPTURE.sql_identifier(_run_render('__RUN_DATABASE__.TD_BASELINE.INVOICE_HDR')))
     executed = [(sql, params) for sql, params in calls if params is not None]
     assert executed[0] == ('CREATE TABLE IDENTIFIER(?) ("ID" NUMBER(38,0), "CURRENCY_CD" VARCHAR(3)) COMMENT = ?',
                            (target, CAPTURE.COMMENT))
@@ -96,3 +96,40 @@ def test_export_queries_bind_the_business_date():
         assert '20261109' not in sql and parameters == ('20261109',) * sql.count('?')
     with pytest.raises(ValueError):
         REPORTS.converted_queries("20261109') OR 1=1 --")
+
+
+def test_macro_values_are_bound_through_the_emulator():
+    from unittest.mock import MagicMock
+
+    runner = CAPTURE.Runner.__new__(CAPTURE.Runner)
+    runner.conn = MagicMock()
+    runner.conn.execute.return_value.fetchone.return_value = ('MACRO', 'p_day VARCHAR(8)', 'SELECT :p_day;')
+    runner.execute = MagicMock()
+    runner.errorcode = 0
+    value = "20261109'); DROP TABLE sensitive; --"
+    assert runner.routine('EXEC SFX_BILLING.M_CURRENCY_TOTALS(?)', (value,))
+    runner.execute.assert_called_once_with('SELECT ?', (value,))
+    with pytest.raises(ValueError, match='count mismatch'):
+        runner.routine('EXEC SFX_BILLING.M_CURRENCY_TOTALS(?)', ())
+
+
+def test_emulator_preserves_literal_percents_with_bind_parameters():
+    from bteq.runner import parameterized
+
+    assert parameterized("SELECT %s, '%s', 'a%', x % s") == "SELECT %s, '%%s', 'a%%', x %% s"
+
+
+@pytest.mark.parametrize('name', ['', 'a;DROP TABLE x', 'a..b', 'a"b', 'a--x', 'a b', '1table'])
+def test_shared_migration_identifier_rejects_injection(name):
+    with pytest.raises(ValueError):
+        CAPTURE.sql_identifier(name)
+
+
+def test_source_rows_preserves_case_and_validates_names():
+    from unittest.mock import MagicMock
+
+    connection = MagicMock()
+    CAPTURE.source_rows(connection, 'sfx_billing', 'Mixed_Case')
+    connection.execute.assert_called_once_with('SELECT * FROM "sfx_billing"."Mixed_Case"')
+    with pytest.raises(ValueError):
+        CAPTURE.source_rows(connection, 'sfx_billing', 'T;DROP TABLE x')

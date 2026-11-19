@@ -13,6 +13,7 @@ import re
 import zlib
 
 import yaml
+from psycopg import sql as pg_sql
 
 from .run_scope import before_namespace
 
@@ -113,7 +114,43 @@ class Connection:
 
 
 def qi(name):
-    return '"' + name.replace('"', '""') + '"'
+    return identifier(name).as_string()
+
+
+def identifier(*parts):
+    if not parts or any(not isinstance(p, str) or not re.fullmatch(r'[A-Za-z_][A-Za-z_0-9$]*', p) for p in parts):
+        raise ValueError(f'Invalid identifier: {parts!r}')
+    return pg_sql.Identifier(*parts)
+
+
+def compose(template, *parts):
+    if any(not isinstance(p, pg_sql.Composable) for p in parts):
+        raise TypeError('Expected validated SQL components')
+    return pg_sql.SQL(template).format(*parts).as_string()
+
+
+def bind_sql(template, expand):
+    """Bind PowerCenter parameter values without letting expansion alter SQL syntax."""
+    if '\x00' in template:
+        raise ValueError('Invalid SQL template')
+    token = re.compile(r"'(?:[^']|'')*'|\$\$?[A-Za-z_][A-Za-z_0-9]*")
+    values = []
+
+    def replace(match):
+        text = match.group()
+        if text.startswith("'"):
+            if not re.search(r'\$\$?[A-Za-z_]', text):
+                return text
+            value = expand(text[1:-1].replace("''", "'"))
+        else:
+            value = expand(text)
+            if re.fullmatch(r'[+-]?\d+', value):
+                value = int(value)
+        values.append(value)
+        return '\x00'
+
+    query = token.sub(replace, template)
+    return (query.replace('%', '%%').replace('\x00', '%s'), tuple(values)) if values else (template, ())
 
 
 def qualified(schema, table):

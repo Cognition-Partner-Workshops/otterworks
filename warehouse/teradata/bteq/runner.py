@@ -39,6 +39,18 @@ def literal(value):
     return "'" + str(value).replace("'", "''") + "'"
 
 
+def parameterized(statement):
+    tokens = sqlglot.tokenize(statement, read='postgres')
+    slots = [a.start for a, b in zip(tokens, tokens[1:])
+             if a.token_type == sqlglot.tokens.TokenType.MOD and b.text == 's' and b.start == a.end + 1]
+    parts, offset = [], 0
+    for start in slots:
+        parts.extend((statement[offset:start].replace('%', '%%'), '%s'))
+        offset = start + 2
+    parts.append(statement[offset:].replace('%', '%%'))
+    return ''.join(parts)
+
+
 class Runner:
     def __init__(self, connection=None, variables=None, output=None):
         dsn = os.environ.get('TD_PG_DSN', '')
@@ -156,18 +168,18 @@ class Runner:
         elif name not in {'IF', 'LOGON', 'LOGOFF', 'LABEL', 'REMARK'}:
             self.say('*** Warning: unsupported command ' + name)
 
-    def execute(self, source):
+    def execute(self, source, parameters=None):
         started = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
         self.errorcode = self.errorlevel = self.activitycount = 0
         self.sqlstate = '00000'
         self.rows, self.headers = [], []
         try:
-            if self.routine(source):
+            if self.routine(source, parameters):
                 return
             statement, after = self.translate(source)
             if not statement:
                 return
-            cur = self.conn.execute(statement)
+            cur = self.conn.execute(statement) if parameters is None else self.conn.execute(parameterized(statement), parameters)
             self.activitycount = max(cur.rowcount, 0)
             if cur.description:
                 self.headers = [c.name for c in cur.description]
@@ -429,7 +441,7 @@ class Runner:
             self.conn.execute('INSERT INTO sfx_td.tables VALUES (%s,%s,%s) ON CONFLICT(name) DO UPDATE SET is_set=excluded.is_set,formats=excluded.formats', (self.canonical_name(name), is_set, json.dumps(formats)))
         return result, after
 
-    def routine(self, s):
+    def routine(self, s, parameters=None):
         m = re.match(r'(?:CREATE|REPLACE)\s+(MACRO|PROCEDURE)\s+([\w.]+)\s*\(', s, re.I)
         if m:
             start, depth = m.end(), 1
@@ -454,17 +466,30 @@ class Runner:
         kind, params, body = row
         params = [p.split() for p in split(params, ',')]
         args = split(m[3], ',')
+        if parameters is not None and sum(arg.strip() == '?' for arg in args) != len(parameters):
+            raise ValueError('Routine parameter count mismatch')
+        bound = iter(parameters or ())
         values = {}
         for p, arg in zip(params, args):
             name = p[1] if p[0].upper() in ('IN', 'OUT', 'INOUT') else p[0]
             if arg == '?':
-                values[name.lower()] = None
+                values[name.lower()] = next(bound) if parameters is not None else None
             else:
                 statement, _ = self.translate('SELECT ' + arg)
                 values[name.lower()] = self.conn.execute(statement).fetchone()[0]
         if kind == 'MACRO':
             for statement in split(body):
-                self.execute(re.sub(r':(\w+)', lambda n: literal(values[n[1].lower()]), statement))
+                if parameters is None:
+                    self.execute(re.sub(r':(\w+)', lambda n: literal(values[n[1].lower()]), statement))
+                else:
+                    bindings = []
+
+                    def bind(match):
+                        bindings.append(values[match[1].lower()])
+                        return '?'
+
+                    query = re.sub(r':(\w+)', bind, statement)
+                    self.execute(query, tuple(bindings) if bindings else None)
                 if self.errorcode:
                     break
         else:

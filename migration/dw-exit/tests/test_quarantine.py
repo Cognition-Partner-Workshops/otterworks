@@ -12,6 +12,7 @@ import sqlite3
 import pytest
 
 from parity.connection import COMMENT
+from parity.sql import compose, identifier
 
 SOURCE = _run_render((Path(__file__).resolve().parents[1] / 'billing/supplemental.sql').read_text())
 FEED = _run_render('__RUN_DATABASE__.BILLING_PROBES.FEED')
@@ -47,12 +48,12 @@ def test_quarantine_does_not_change_set_or_multiset_conversion():
 def test_live_quarantine_reconciles_exact_suppressed_rows():
     from parity.connection import connect
     with connect('set_quarantine_regression') as sf, sf.cursor() as cursor:
-        cursor.execute(f'SELECT ID,VALUE FROM {FEED}')
+        cursor.execute(compose('SELECT ID,VALUE FROM {}', identifier(FEED)))
         feed = Counter(cursor.fetchall())
         cursor.execute(_run_render('SELECT ID,VALUE FROM __RUN_DATABASE__.BILLING_PROBES.SET_ROWS'))
         retained = Counter(cursor.fetchall())
         assert retained == feed
-        cursor.execute(f'SELECT ID,VALUE,INPUT_COUNT,RETAINED_COUNT,SUPPRESSED_COUNT FROM {VIEW}')
+        cursor.execute(compose('SELECT ID,VALUE,INPUT_COUNT,RETAINED_COUNT,SUPPRESSED_COUNT FROM {}', identifier(VIEW)))
         actual = cursor.fetchall()
         assert Counter(actual) == Counter([(*row, count, 1, count - 1)
                                           for row, count in feed.items() if count > 1])

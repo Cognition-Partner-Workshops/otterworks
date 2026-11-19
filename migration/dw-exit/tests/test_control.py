@@ -63,7 +63,8 @@ def test_schema_and_view_contracts():
     assert "STATUS\" VARCHAR DEFAULT 'not_started'" in ddl
     assert 'UPDATED_AT TIMESTAMP_LTZ' in ddl
     assert 'UPDATED_BY_ACT' in ddl
-    assert control.COMMENT in ddl
+    assert control.COMMENT not in ddl
+    assert cursor.calls[0][1] == (control.COMMENT,)
     views = control.view_sql()
     assert set(views) == control.VIEWS
     assert 'NOT EXISTS' in views['V_DEAD_OBJECTS']

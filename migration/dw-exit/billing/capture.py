@@ -21,6 +21,7 @@ from bteq import Runner
 from seed.columns import TABLES
 from parity.connection import COMMENT, connect, validate_date
 from parity.ladder import identifier
+from parity.sql import compose, identifier as sql_identifier
 from psycopg import sql
 
 SNOWFLAKE_TYPE = re.compile(r'NUMBER\(38,(?:[0-9]|[12][0-9]|3[0-7])\)|NUMBER\(\d{1,2},\d{1,2}\)|DATE|TIMESTAMP_NTZ|VARCHAR(?:\(\d{1,8}\))?')
@@ -51,7 +52,7 @@ def column_ddl(columns):
 
 
 def source_rows(conn, schema, table):
-    return conn.execute(sql.Composed([sql.SQL('SELECT * FROM '), sql.Identifier(schema, table)])).fetchall()
+    return conn.execute(compose('SELECT * FROM {}', sql_identifier(schema + '.' + table, 'postgres', preserve_case=True))).fetchall()
 
 
 def upload(connection, name, columns, rows):
@@ -63,14 +64,12 @@ def upload(connection, name, columns, rows):
             kind = f'NUMBER(38,{scale})'
         typed.append((column, kind))
     columns = typed
-    target = _run_render('__RUN_DATABASE__.TD_BASELINE.') + identifier(name)
+    target = compose('{}', sql_identifier(_run_render('__RUN_DATABASE__.TD_BASELINE.') + name))
     ddl = column_ddl(columns)
     with connection.cursor() as cursor:
-        # Snowflake cannot bind column definitions; column_ddl() admits only validated
-        # identifiers and allow-listed types, and the table name and comment are bound.
-        cursor.execute('CREATE TABLE IDENTIFIER(?) (' + ddl + ') COMMENT = ?', (target, COMMENT))  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        cursor.execute(compose('CREATE TABLE IDENTIFIER(?) ({}) COMMENT = ?', sql.SQL(ddl)), (target, COMMENT))
         for offset in range(0, len(rows), 2000):
-            cursor.executemany(f"INSERT INTO {target} VALUES ({','.join('?' for _ in columns)})", rows[offset:offset+2000])
+            cursor.executemany(compose('INSERT INTO {} VALUES ({})', sql.SQL(target), sql.SQL(','.join('?' for _ in columns))), rows[offset:offset+2000])
         cursor.execute('SELECT COUNT(*) FROM IDENTIFIER(?)', (target,))
         assert cursor.fetchone()[0] == len(rows)
         cursor.execute('SELECT * FROM IDENTIFIER(?)', (target,))
@@ -98,10 +97,9 @@ def capture(output, business_date):
         rows = source_rows(td.conn, 'sfx_documents', 'storage_usage_daily')
         evidence.append(upload(sf, 'STORAGE_USAGE_INPUT',
                                [(n, snow_type(t)) for n, t in td.columns(source)], rows))
-        for name, routine in [('M_SUBSCRIPTION_PLANS', 'M_SUBSCRIPTION_PLANS'), ('M_CURRENCY_TOTALS', 'M_CURRENCY_TOTALS')]:
-            # BTEQ EXEC has no bind variables: routine is one of the two literals above and
-            # business_date has passed validate_date() (eight digits and a real calendar date).
-            td.execute(f"EXEC SFX_BILLING.{routine}('{business_date}')")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        for name, query in [('M_SUBSCRIPTION_PLANS', 'EXEC SFX_BILLING.M_SUBSCRIPTION_PLANS(?)'),
+                            ('M_CURRENCY_TOTALS', 'EXEC SFX_BILLING.M_CURRENCY_TOTALS(?)')]:
+            td.execute(query, (business_date,))
             assert td.errorcode == 0, td.output.getvalue()
             types = ['NUMBER(38,0)', 'NUMBER(38,0)', 'VARCHAR(10)', 'NUMBER(14,2)'] if 'SUBSCRIPTION' in name else ['VARCHAR(3)', 'NUMBER(38,0)', 'NUMBER(38,2)']
             evidence.append(upload(sf, name, list(zip(td.headers, types)), td.rows))

@@ -4,6 +4,19 @@ from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
 from warehouse.run_config import render as _run_render
 
+import pytest
+
+
+@pytest.mark.parametrize('value', [None, '', 'ordinary', "x'); DROP TABLE sensitive; --"])
+def test_macro_bound_arguments(td, value):
+    td.execute("REPLACE MACRO p_bound(p_value VARCHAR(200)) AS (SELECT :p_value AS value, 'a%' AS pattern;)")
+    assert td.errorcode == 0, td.output.getvalue()
+    td.execute('EXEC p_bound(?)', (value,))
+    assert td.errorcode == 0, td.output.getvalue()
+    assert td.rows == [(value, 'a%')]
+    td.execute('EXEC p_bound(?)', ())
+    assert td.errorcode != 0
+
 from bteq.parser import commands, split
 
 

@@ -4,6 +4,7 @@ from collections import Counter
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import sys
 import zlib
@@ -20,10 +21,11 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'migration/dw-exit/tools'))
 from warehouse.run_config import RunConfig
 from assess import board as wave_board
+from parity.sql import compose, identifier
 
 
 def quote(name):
-    return '"' + name.replace('"', '""') + '"'
+    return identifier(name, 'duckdb', qualified=False, preserve_case=True).as_string()
 
 
 def relation(name):
@@ -33,21 +35,29 @@ def relation(name):
     return '.'.join(map(quote, parts))
 
 
+def ident(name):
+    relation(name)
+    return identifier(name, 'duckdb', preserve_case=True)
+
+
+def column_definition(name, kind):
+    if not re.fullmatch(r'SMALLINT|INTEGER|BIGINT|DATE|TIMESTAMP|TIMESTAMPTZ|TIMESTAMP WITH TIME ZONE|BOOLEAN|FLOAT|DOUBLE|BLOB|VARCHAR|DECIMAL\(\d+,\d+\)', kind):
+        raise ValueError(f'Unsupported column type: {kind}')
+    return sql.Composed([identifier(name, 'duckdb', qualified=False, preserve_case=True), sql.SQL(' ' + kind)])
+
+
 def canonical(value):
     return json.dumps(value, default=str, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
 
 
 def measure(connection, name):
-    # Relation and column identifiers are double-quoted, not SQL value parameters.
-    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-    cursor = connection.execute('SELECT * FROM ' + relation(name))
+    cursor = connection.execute(compose('SELECT * FROM {}', ident(name)))
     columns = [col[0] for col in cursor.description]
     rows = cursor.fetchall()
     profiles = {}
     for column in columns:
-        c = quote(column)
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        values = connection.execute(f'SELECT COUNT(*)-COUNT({c}), MIN({c}), MAX({c}), COUNT(DISTINCT {c}) FROM {relation(name)}').fetchone()
+        c = identifier(column, 'duckdb', qualified=False, preserve_case=True)
+        values = connection.execute(compose('SELECT COUNT(*)-COUNT({c}), MIN({c}), MAX({c}), COUNT(DISTINCT {c}) FROM {table}', c=c, table=ident(name))).fetchone()
         profiles[column] = dict(zip(('nulls', 'min', 'max', 'distinct'), values))
     return columns, rows, profiles
 
@@ -102,19 +112,14 @@ def source_snapshot(dsn, names):
                                 'real': 'FLOAT', 'double precision': 'DOUBLE', 'bytea': 'BLOB'}.get(dtype, 'VARCHAR')
                         if dtype == 'numeric':
                             kind = f'DECIMAL({precision or 38},{scale or 0})'
-                        definitions.append(quote(column.upper())+' '+kind)
+                        definitions.append(column_definition(column.upper(), kind))
                     source_schema, source_table = name.split('.')
-                    # Identifiers are quoted; column types come from the fixed mapping above.
-                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-                    connection.execute('CREATE SCHEMA IF NOT EXISTS '+quote(source_schema))
-                    # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-                    connection.execute(f'CREATE TABLE {relation(name)} ({", ".join(definitions)})')
-                    # psycopg Identifier quotes both catalog-derived identifiers.
-                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-                    cursor.execute(sql.SQL('SELECT * FROM {}.{}').format(sql.Identifier(schema),sql.Identifier(table)))
+                    connection.execute(compose('CREATE SCHEMA IF NOT EXISTS {}', identifier(source_schema, 'duckdb', preserve_case=True)))
+                    connection.execute(compose('CREATE TABLE {} ({})', ident(name), sql.SQL(', ').join(definitions)))
+                    cursor.execute(compose('SELECT * FROM {}', identifier(schema + '.' + table, 'postgres', preserve_case=True)))
                     rows = cursor.fetchall()
                     if rows:
-                        connection.executemany(f'INSERT INTO {relation(name)} VALUES ({", ".join("?" for _ in cols)})', rows)
+                        connection.executemany(compose('INSERT INTO {} VALUES ({})', ident(name), sql.SQL(', '.join('?' for _ in cols))), rows)
                     ready.add(name)
                 except (duckdb.Error, psycopg.Error, ValueError) as error:
                     errors[name] = 'source snapshot: '+type(error).__name__
@@ -133,16 +138,12 @@ def materialize(before, names, conversion_dir):
         if table.startswith('V_'):
             continue
         target = 'BILLING.'+table
-        # DuckDB metadata and identifiers are local; relation()/quote() escape identifiers.
-        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        definitions = before.execute('DESCRIBE '+relation(name)).fetchall()
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        after.execute(f'CREATE TABLE {relation(target)} ({", ".join(quote(c[0])+" "+c[1] for c in definitions)})')
+        definitions = before.execute(compose('DESCRIBE {}', ident(name))).fetchall()
+        after.execute(compose('CREATE TABLE {} ({})', ident(target), sql.SQL(', ').join(column_definition(c[0], c[1]) for c in definitions)))
         if table.startswith('STG_'):
-            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-            rows = before.execute('SELECT * FROM '+relation(name)).fetchall()
+            rows = before.execute(compose('SELECT * FROM {}', ident(name))).fetchall()
             if rows:
-                after.executemany(f'INSERT INTO {relation(target)} VALUES ({", ".join("?" for _ in definitions)})', rows)
+                after.executemany(compose('INSERT INTO {} VALUES ({})', ident(target), sql.SQL(', '.join('?' for _ in definitions))), rows)
             ready.add(target)
     for filename in ('10_load.sql', '30_views.sql'):
         text = RunConfig.from_env().render((conversion_dir / filename).read_text())

@@ -35,5 +35,7 @@ def test_live_period_report_ignores_previous_closed_month():
         ('2026-09-30','USD',10), ('2026-10-01','USD',20),
         ('2026-10-31','USD',30), ('2026-11-01','USD',40)) """
     with connect('period_report_regression') as sf, sf.cursor() as cursor:
+        # Both fragments are fixed fixture/report SQL; the date remains bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         cursor.execute(fixture + sql, parameters)
         assert cursor.fetchall() == [('USD', 2, Decimal('50.00'))]

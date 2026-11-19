@@ -71,7 +71,23 @@ def save_partition(frame, area, name, run_date):
 
 
 def quote_identifier(name):
-    return '"' + name.replace('"', '""') + '"'
+    if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z_][A-Za-z_0-9$]*', name):
+        raise ValueError(f'Invalid identifier: {name!r}')
+    return SQL('"' + name + '"')
+
+
+class SQL(str):
+    pass
+
+
+def relation(name):
+    return SQL('.'.join(quote_identifier(p.lower()) for p in name.split('.')))
+
+
+def compose(template, *parts):
+    if any(not isinstance(p, SQL) for p in parts):
+        raise TypeError('Expected validated SQL components')
+    return template.format(*parts)
 
 
 def target_columns(connection, table):
@@ -111,22 +127,20 @@ def save_jdbc_refresh(frame, table):
         raise ValueError("Expected schema.table identifier")
     options = jdbc_options()
     stage = table.split(".")[0] + "._sfx_stage_" + uuid.uuid4().hex
+    target_sql, stage_sql = relation(table), relation(stage)
     jvm = frame.sparkSession.sparkContext._jvm
     connection = jvm.java.sql.DriverManager.getConnection(options["url"], options["user"], options["password"])
     statement = connection.createStatement()
     try:
         frame.write.format("jdbc").options(**options).option("dbtable", stage).mode("error").save()
         connection.setAutoCommit(False)
-        # JDBC identifiers cannot be bound; table is regex-validated and stage adds only a UUID.
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        statement.execute(f"CREATE TABLE IF NOT EXISTS {table} (LIKE {stage} INCLUDING ALL)")
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        statement.execute(f"LOCK TABLE {table} IN ACCESS EXCLUSIVE MODE")
-        statement.executeUpdate(f"DELETE FROM {table}")
+        statement.execute(compose('CREATE TABLE IF NOT EXISTS {} (LIKE {} INCLUDING ALL)', target_sql, stage_sql))
+        statement.execute(compose('LOCK TABLE {} IN ACCESS EXCLUSIVE MODE', target_sql))
+        statement.executeUpdate(compose('DELETE FROM {}', target_sql))
         pairs = refresh_columns(frame.columns, target_columns(connection, table))
-        targets = ", ".join(quote_identifier(target) for target, _ in pairs)
-        sources = ", ".join(quote_identifier(source) for _, source in pairs)
-        statement.executeUpdate(f"INSERT INTO {table} ({targets}) SELECT {sources} FROM {stage}")
+        targets = SQL(', '.join(quote_identifier(target) for target, _ in pairs))
+        sources = SQL(', '.join(quote_identifier(source) for _, source in pairs))
+        statement.executeUpdate(compose('INSERT INTO {} ({}) SELECT {} FROM {}', target_sql, targets, sources, stage_sql))
         connection.commit()
     except Exception:
         connection.rollback()
@@ -134,8 +148,7 @@ def save_jdbc_refresh(frame, table):
     finally:
         try:
             connection.setAutoCommit(True)
-            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-            statement.execute(f"DROP TABLE IF EXISTS {stage}")
+            statement.execute(compose('DROP TABLE IF EXISTS {}', stage_sql))
         finally:
             statement.close()
             connection.close()
