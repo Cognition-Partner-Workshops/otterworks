@@ -132,3 +132,5 @@ legacy_objects:
   - teradata_view:SFX_BILLING.V_INVOICE_BASE
   - teradata_view:SFX_BILLING.V_INVOICE_REVENUE
   - teradata_view:SFX_BILLING.V_SUBSCRIPTION_PLANS
+  - bteq_script:warehouse/teradata/scripts/documents/10_storage_monthly.bteq
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/10_storage_monthly

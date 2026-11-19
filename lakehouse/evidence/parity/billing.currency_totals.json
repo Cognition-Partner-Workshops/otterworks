@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
   "id": "billing.currency_totals",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -44,9 +44,9 @@
         },
         "total_amount": {
           "count": 6,
-          "hash": "713394eeb69b76eb5e3ccadc8b9f07c3aac32676c65864bd00f802c18c480358",
+          "hash": "abdd4a0636f16a3f89adfc92b1c82d4d0786a840f395bfe176b4e8d209ba1c4d",
           "null_count": 0,
-          "sum": "745096.23"
+          "sum": "745200.37"
         }
       },
       "legacy": {
@@ -64,9 +64,9 @@
         },
         "total_amount": {
           "count": 6,
-          "hash": "713394eeb69b76eb5e3ccadc8b9f07c3aac32676c65864bd00f802c18c480358",
+          "hash": "abdd4a0636f16a3f89adfc92b1c82d4d0786a840f395bfe176b4e8d209ba1c4d",
           "null_count": 0,
-          "sum": "745096.23"
+          "sum": "745200.37"
         }
       }
     },
@@ -107,5 +107,5 @@
     "legacy": 6
   },
   "spec_hash": "3d3356ab325f011e907904379a2bb315ee708a158664e047d791ae119eb98914",
-  "timestamp": "2026-11-19T14:14:44.125393+00:00"
+  "timestamp": "2026-11-19T15:47:07.402615+00:00"
 }

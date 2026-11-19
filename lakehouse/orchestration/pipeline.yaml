@@ -523,6 +523,7 @@ dags:
     kind: dbt
     domain: billing
     selector: path:models/silver/billing
+    exclude: tag:storage_monthly
     depends_on:
     - bronze_billing
     retries: 1
@@ -811,6 +812,11 @@ dags:
     - bronze_users
     - bronze_documents
     - dbt_billing
+    - dbt_users
+    - dbt_documents
+    - dbt_storage_monthly
+    - dbt_billing_reporting
+    - dbt_shared_reconcile
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []
@@ -1004,7 +1010,7 @@ dags:
     kind: dbt
     domain: billing
     selector: path:models/gold/billing
-    depends_on: [dbt_billing]
+    depends_on: [dbt_billing, dbt_storage_monthly]
     retries: 1
     retry_delay_seconds: 10
     legacy_objects:
@@ -1028,6 +1034,47 @@ dags:
     - teradata_table:SFX_BILLING.INVOICE_LINE
     - teradata_table:SFX_BILLING.GL_JOURNAL_LINE
     - teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE
+  - id: dbt_storage_monthly
+    kind: dbt
+    domain: billing
+    selector: tag:storage_monthly
+    depends_on: [dbt_documents, dbt_billing]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/documents/10_storage_monthly.bteq
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/10_storage_monthly
+  - id: export_storage_monthly
+    kind: export
+    depends_on: [dbt_storage_monthly]
+    command: ['{python}', '-m', lakehouse.billing.storage, --business-date, '{business_date}']
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_storage_monthly
+    kind: parity
+    specs: [billing.usage_daily_effective, billing.invoice_line_effective, billing.storage_monthly_export]
+    depends_on: [dbt_storage_monthly, export_storage_monthly]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: dbt_shared_reconcile
+    kind: dbt
+    domain: audit
+    selector: shared_reconciliation
+    depends_on: [dbt_documents]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - batch_runner:warehouse/teradata/jobs/reconcile
+    - cron_entry:warehouse/teradata/jobs/daily_chain#stage=jobs/reconcile
+  - id: parity_audit_shared_reconciliation
+    kind: parity
+    spec: audit.shared_reconciliation
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
   - id: export_billing_10_subscription_report
     kind: export
     command: ["{python}", "-m", "lakehouse.billing.reports", "--business-date", "{business_date}", "--reports", "subscription_plans"]

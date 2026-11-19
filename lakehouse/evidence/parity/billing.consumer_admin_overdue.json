@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
   "id": "billing.consumer_admin_overdue",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -32,13 +32,13 @@
       "lakehouse": {
         "account_no": {
           "count": 10,
-          "hash": "9a9068972f29a71f65e893ba6e94b865b1ad495c8d83df4016f6f522bceec053",
+          "hash": "56bc0f43218492b3741cff6d0f8cb6939ef3b2056c34de891486b8a9e23d9ed5",
           "null_count": 0,
           "sum": null
         },
         "customer_name": {
           "count": 10,
-          "hash": "b2751362763d3d71040fd17f3c2f99a0ca0f8d01bfd121422a152bedbd5fac02",
+          "hash": "f6bafce6fdec2da4205b511edfdf022bac29f7a83cab84faeeb326d63f0db64f",
           "null_count": 0,
           "sum": null
         },
@@ -50,9 +50,9 @@
         },
         "overdue_balance": {
           "count": 10,
-          "hash": "ef2f1c78b00d713b1d19a187e550718cd967fd8686f215aa73070abfbba1d6a4",
+          "hash": "f2a836ddd69ab9be00e7b43c7a8eeb1d35758e360d5ee16d2b65cc996d997428",
           "null_count": 0,
-          "sum": "983.55"
+          "sum": "983.58"
         },
         "parity_row": {
           "count": 10,
@@ -64,13 +64,13 @@
       "legacy": {
         "account_no": {
           "count": 10,
-          "hash": "9a9068972f29a71f65e893ba6e94b865b1ad495c8d83df4016f6f522bceec053",
+          "hash": "56bc0f43218492b3741cff6d0f8cb6939ef3b2056c34de891486b8a9e23d9ed5",
           "null_count": 0,
           "sum": null
         },
         "customer_name": {
           "count": 10,
-          "hash": "b2751362763d3d71040fd17f3c2f99a0ca0f8d01bfd121422a152bedbd5fac02",
+          "hash": "f6bafce6fdec2da4205b511edfdf022bac29f7a83cab84faeeb326d63f0db64f",
           "null_count": 0,
           "sum": null
         },
@@ -82,9 +82,9 @@
         },
         "overdue_balance": {
           "count": 10,
-          "hash": "ef2f1c78b00d713b1d19a187e550718cd967fd8686f215aa73070abfbba1d6a4",
+          "hash": "f2a836ddd69ab9be00e7b43c7a8eeb1d35758e360d5ee16d2b65cc996d997428",
           "null_count": 0,
-          "sum": "983.55"
+          "sum": "983.58"
         },
         "parity_row": {
           "count": 10,
@@ -139,5 +139,5 @@
     "legacy": 10
   },
   "spec_hash": "77211edceb93575cfcb566d8880de38294412a508c64f061bfb0c62dbc8da8d9",
-  "timestamp": "2026-11-19T14:14:43.504195+00:00"
+  "timestamp": "2026-11-19T15:53:26.691151+00:00"
 }

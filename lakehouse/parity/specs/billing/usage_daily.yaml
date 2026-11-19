@@ -6,7 +6,7 @@
   ],
   "legacy": {
     "kind": "postgres_sql",
-    "sql": "SELECT usage_id, customer_id, subscription_id, usage_dt, units, usage_type FROM sfx_billing.usage_daily"
+    "sql": "SELECT usage_id, customer_id, subscription_id, usage_dt, units, usage_type FROM sfx_billing_parity.load_usage_daily"
   },
   "lakehouse": {
     "kind": "delta_table",

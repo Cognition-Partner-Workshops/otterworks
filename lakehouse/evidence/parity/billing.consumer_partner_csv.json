@@ -2,9 +2,9 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
   "id": "billing.consumer_partner_csv",
-  "legacy_NS": null,
+  "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
     "consumer:partner-extract",
     "bteq_script:consumers/partner-extract/sql/partner_invoice_extract.bteq",
@@ -32,16 +32,16 @@
     "fingerprints": {
       "lakehouse": {
         "line": {
-          "count": 669,
-          "hash": "30fdc2bb0e14c13c80402582686ac905a225a819ba25ccbc6c4c824a005d8aee",
+          "count": 2,
+          "hash": "da09690aa46840571f8dafb666a2d2e139b9f3fc57439e7c18c65523d84adbda",
           "null_count": 0,
           "sum": null
         }
       },
       "legacy": {
         "line": {
-          "count": 669,
-          "hash": "30fdc2bb0e14c13c80402582686ac905a225a819ba25ccbc6c4c824a005d8aee",
+          "count": 2,
+          "hash": "da09690aa46840571f8dafb666a2d2e139b9f3fc57439e7c18c65523d84adbda",
           "null_count": 0,
           "sum": null
         }
@@ -67,14 +67,14 @@
     },
     "passed": true,
     "row_counts": {
-      "lakehouse": 669,
-      "legacy": 669
+      "lakehouse": 2,
+      "legacy": 2
     }
   },
   "row_counts": {
-    "lakehouse": 669,
-    "legacy": 669
+    "lakehouse": 2,
+    "legacy": 2
   },
   "spec_hash": "53b5f5941236b35653fd5d6eb6d1e2f91575e2f1a1358a63980873e8388284c7",
-  "timestamp": "2026-11-19T14:20:46.795635+00:00"
+  "timestamp": "2026-11-19T15:53:26.842361+00:00"
 }

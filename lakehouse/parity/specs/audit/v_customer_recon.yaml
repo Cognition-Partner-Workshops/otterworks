@@ -1,19 +1,18 @@
 id: audit.v_customer_recon
 legacy_objects:
 - teradata_view:SFX_AUDIT.V_CUSTOMER_RECON
-description: 'A-402: view projection has no row identity; number the full ordered multiset, excluding
-  the shared integration row before projection on both sides.'
+description: 'A-402: complete reconciliation population including shared jobs/reconcile
+  row 21000000001; no ownership exclusions.'
 legacy:
   kind: postgres_sql
-  sql: select row_number() over (order by customer_id nulls first, business_dt nulls first, source_count
-    nulls first, target_count nulls first, difference_count nulls first) as row_id, v.* from (select *
-    from sfx_audit.v_customer_recon except all select customer_id, business_dt, source_count, target_count,
-    difference_count from sfx_audit.audit_recon where recon_id = 21000000001) v
+  sql: select row_number() over (order by customer_id nulls first, business_dt nulls
+    first, source_count nulls first, target_count nulls first, difference_count nulls
+    first) as row_id, v.* from sfx_audit.v_customer_recon v
 lakehouse:
   kind: spark_sql
-  sql: select row_number() over (order by customer_id nulls first, business_dt nulls first, source_count
-    nulls first, target_count nulls first, difference_count nulls first) as row_id, v.* from gold_audit.v_customer_recon
-    v
+  sql: select row_number() over (order by customer_id nulls first, business_dt nulls
+    first, source_count nulls first, target_count nulls first, difference_count nulls
+    first) as row_id, v.* from gold_audit.v_customer_recon v
 keys:
 - row_id
 columns:

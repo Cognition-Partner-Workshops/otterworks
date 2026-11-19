@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
   "id": "audit.audit_recon",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -37,78 +37,78 @@
     "fingerprints": {
       "lakehouse": {
         "business_dt": {
-          "count": 57,
-          "hash": "98f97575818e278143b920835ab819309ad59c461dfd6b1a90fa25dfa13f527e",
+          "count": 58,
+          "hash": "a7b15d27131fb9f4f2cf55d01ed6d188512bd44906dd18b8c09559b8a2bb4f11",
           "null_count": 0,
           "sum": null
         },
         "customer_id": {
-          "count": 57,
-          "hash": "b10554e5827b828f7e6ed6ba25372ecccf3ed2505132a0b3abbf07b84d072f56",
+          "count": 58,
+          "hash": "b1dd5e12efbc15bca71e67030492a9d8ab692ba67f909b2866f055a7671d8b6c",
           "null_count": 0,
           "sum": "210"
         },
         "difference_count": {
-          "count": 57,
-          "hash": "a56bf15d71ac42dcb96933c932613da2384dffb47a24048d0ef3d97710b49c4a",
+          "count": 58,
+          "hash": "1a745babd6383bc8ea8365b7d4e1d28a3036532246d6c01f80edf6d5f93accf0",
           "null_count": 0,
-          "sum": "-1384"
+          "sum": "-1334"
         },
         "recon_id": {
-          "count": 57,
-          "hash": "59a1a690f24396adc5d90d0c6f27579758091f6da611605c9ebf9687a3e278be",
+          "count": 58,
+          "hash": "d06edfaf4875138152a63b0fda1eb4b77675dcc98fccad8e19906836d0cf9588",
           "null_count": 0,
-          "sum": "740000000913"
+          "sum": "761000000914"
         },
         "source_count": {
-          "count": 57,
-          "hash": "8d1107a7d909144e233404629d190a00c442bfca114a4bce3b64ac0c2164267c",
+          "count": 58,
+          "hash": "7f1c6092668e5b13a81373bcef8779ca3b1c3da7a99b28cd8bf46f639045350f",
           "null_count": 0,
-          "sum": "30590"
+          "sum": "32690"
         },
         "target_count": {
-          "count": 57,
-          "hash": "05cfb74b9eadb2546b4997cfd6ac320bbfd6474b1bc314b624c59fab7747bd9c",
+          "count": 58,
+          "hash": "cbe68c0a905f33477bd045995f448bad5917015f88dcc1bedfd28e30a3765869",
           "null_count": 0,
-          "sum": "31974"
+          "sum": "34024"
         }
       },
       "legacy": {
         "business_dt": {
-          "count": 57,
-          "hash": "98f97575818e278143b920835ab819309ad59c461dfd6b1a90fa25dfa13f527e",
+          "count": 58,
+          "hash": "a7b15d27131fb9f4f2cf55d01ed6d188512bd44906dd18b8c09559b8a2bb4f11",
           "null_count": 0,
           "sum": null
         },
         "customer_id": {
-          "count": 57,
-          "hash": "b10554e5827b828f7e6ed6ba25372ecccf3ed2505132a0b3abbf07b84d072f56",
+          "count": 58,
+          "hash": "b1dd5e12efbc15bca71e67030492a9d8ab692ba67f909b2866f055a7671d8b6c",
           "null_count": 0,
           "sum": "210"
         },
         "difference_count": {
-          "count": 57,
-          "hash": "a56bf15d71ac42dcb96933c932613da2384dffb47a24048d0ef3d97710b49c4a",
+          "count": 58,
+          "hash": "1a745babd6383bc8ea8365b7d4e1d28a3036532246d6c01f80edf6d5f93accf0",
           "null_count": 0,
-          "sum": "-1384"
+          "sum": "-1334"
         },
         "recon_id": {
-          "count": 57,
-          "hash": "59a1a690f24396adc5d90d0c6f27579758091f6da611605c9ebf9687a3e278be",
+          "count": 58,
+          "hash": "d06edfaf4875138152a63b0fda1eb4b77675dcc98fccad8e19906836d0cf9588",
           "null_count": 0,
-          "sum": "740000000913"
+          "sum": "761000000914"
         },
         "source_count": {
-          "count": 57,
-          "hash": "8d1107a7d909144e233404629d190a00c442bfca114a4bce3b64ac0c2164267c",
+          "count": 58,
+          "hash": "7f1c6092668e5b13a81373bcef8779ca3b1c3da7a99b28cd8bf46f639045350f",
           "null_count": 0,
-          "sum": "30590"
+          "sum": "32690"
         },
         "target_count": {
-          "count": 57,
-          "hash": "05cfb74b9eadb2546b4997cfd6ac320bbfd6474b1bc314b624c59fab7747bd9c",
+          "count": 58,
+          "hash": "cbe68c0a905f33477bd045995f448bad5917015f88dcc1bedfd28e30a3765869",
           "null_count": 0,
-          "sum": "31974"
+          "sum": "34024"
         }
       }
     },
@@ -152,14 +152,14 @@
     },
     "passed": true,
     "row_counts": {
-      "lakehouse": 57,
-      "legacy": 57
+      "lakehouse": 58,
+      "legacy": 58
     }
   },
   "row_counts": {
-    "lakehouse": 57,
-    "legacy": 57
+    "lakehouse": 58,
+    "legacy": 58
   },
-  "spec_hash": "5449f8caa10cdd117b957d5fa243270404dff25ce3c4256a78a2dc7f33b4b95b",
-  "timestamp": "2026-11-19T14:14:28.293774+00:00"
+  "spec_hash": "62a64f7abee6edad6aa2319a2eec44e68492381d674afdf01968ca2e636d6a1e",
+  "timestamp": "2026-11-19T15:46:52.678808+00:00"
 }

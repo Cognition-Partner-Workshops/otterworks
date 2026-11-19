@@ -1,6 +1,6 @@
 # Migration assumptions
 
-Entries: 144. Validation errors: 0.
+Entries: 146. Validation errors: 0.
 
 ## A-001 — PSV empty fields and nulls
 
@@ -2396,7 +2396,7 @@ Entries: 144. Validation errors: 0.
 
 **sources:** warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/audit/01_load_events.bteq, warehouse/teradata/scripts/audit/03_load_reviews.bteq, etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_STG_AUDIT_EVENT.XML, etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_EVENT.XML, etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_SECURITY_ALERT.XML, etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML
 
-## A-401 — Audit-local count projections until other domain models merge
+## A-401 — Audit counts follow real upstream domain models
 
 **status:** accepted
 
@@ -2404,29 +2404,29 @@ Entries: 144. Validation errors: 0.
 
 **legacy_objects:** bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq, teradata_table:SFX_AUDIT.AUDIT_RECON, teradata_view:SFX_AUDIT.V_EVENT_ACTORS
 
-**ambiguity:** Fetched remote branches and open lakehouse PRs expose only the foundation customer_account silver model; most external base models are absent.
+**ambiguity:** Audit-local typed projections previously duplicated external domain logic and could drift from published silver state.
 
-**decision:** Use ref(customer_account) now. For absent models use audit-local ephemeral typed bronze projections with the legacy row-selection rules, including latest document version, SET storage deduplication, user activity generation, monthly billing usage and invoice-line additions. Explicit DAG edges require all three bronze domains and dbt_billing. Swap these projections to domain ref() dependencies once their models merge.
+**decision:** Count domain ref() models, including user activity, current document versions and SET storage. Count usage_daily_effective after storage and monthly_invoice_line / closed_invoice_hdr after billing reports. Explicit graph dependencies gate audit on users, documents, storage and billing reporting.
 
-**rationale:** Counts must describe final base state rather than assume every base count equals staging. This does not claim ownership or full conversion of external domains.
+**rationale:** Counts must follow the actual post-report state counted by the legacy daily chain, not locally reimplemented approximations.
 
 **verification:** audit.audit_recon
 
 **sources:** warehouse/teradata/scripts/audit/11_reconciliation.bteq, warehouse/teradata/jobs/daily_chain, warehouse/teradata/procedures/activity_daily.sql, warehouse/teradata/scripts/documents/02_current_versions.bteq, warehouse/teradata/scripts/documents/05_load_sessions.bteq, warehouse/teradata/scripts/documents/10_storage_monthly.bteq, warehouse/teradata/procedures/monthly_invoice.sql
 
-## A-402 — Exclude the one shared reconciliation runner row
+## A-402 — Shared storage reconciliation is included in final audit publication
 
 **status:** accepted
 
 **risk:** low
 
-**legacy_objects:** bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq, teradata_table:SFX_AUDIT.AUDIT_RECON, teradata_view:SFX_AUDIT.V_CUSTOMER_RECON, teradata_macro:SFX_AUDIT.M_RECON_TOTALS
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq, teradata_table:SFX_AUDIT.AUDIT_RECON, teradata_view:SFX_AUDIT.V_CUSTOMER_RECON, teradata_macro:SFX_AUDIT.M_RECON_TOTALS, batch_runner:warehouse/teradata/jobs/reconcile, cron_entry:warehouse/teradata/jobs/daily_chain#stage=jobs/reconcile
 
-**ambiguity:** The full chain writes recon_id 21000000001 through shared jobs/reconcile; that responsibility is handed to integration.
+**ambiguity:** The daily chain invokes the generic reconciliation runner specifically for documents.STORAGE_USAGE_DAILY after report mutations.
 
-**decision:** Exclude exactly recon_id=21000000001 from both comparison populations and audit publication. Preserve every audit-generated 20000000001..20000000037 row and every other load row. Number the ordered multiset for the customer-recon view because it exposes no unique key.
+**decision:** Model the scheduled invocation as row 21000000001 with business day and customer_id=0, comparing the complete dated staging snapshot count with the SET target count. Replace any stale loaded instance, union the current row into final audit state and publish it without exclusions. General arbitrary --area/--table invocations are not newly implemented.
 
-**rationale:** User explicitly assigned shared runner output to integration; this is an ownership filter, not numerical tolerance or hidden mismatch.
+**rationale:** Both counts span all usage dates within the BUSINESS_DATE landing snapshot, matching the runner, whose SQL has no USAGE_DT predicate. Shared ownership is no longer a reason to omit an observable row.
 
 **verification:** audit.audit_recon
 
@@ -2476,11 +2476,11 @@ Entries: 144. Validation errors: 0.
 
 **legacy_objects:** bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq, teradata_macro:SFX_AUDIT.M_RECON_TOTALS
 
-**ambiguity:** Legacy exports a mutable reconciliation.psv with no header and rows ordered by recon ID; the file contains a shared runner row outside audit ownership.
+**ambiguity:** Legacy exports the complete reconciliation macro ordered by recon ID, including the shared runner row.
 
-**decision:** Publish the audit-owned macro projection as exports/<business_date>/reconciliation.psv, same four integer columns and ordering, excluding only A-402 shared ID. Write and fsync a same-directory temporary file then os.replace; failures preserve the previous publication and retries replace it. File parity compares the scoped legacy macro SQL to the published file.
+**decision:** Publish the complete macro projection as exports/<business_date>/reconciliation.psv, with four integer columns and recon ID ordering. Write and fsync a same-directory temporary file then os.replace; failures preserve the previous publication and retries replace it.
 
-**rationale:** Date scoping supports replay/backfill and atomic replacement avoids partial output; no claim is made to integration-owned file rows.
+**rationale:** Date scoping supports replay/backfill; atomic replacement avoids partial output. No shared reconciliation rows are omitted.
 
 **verification:** test:lakehouse/tests/test_audit.py::test_export_empty_retry_and_failure
 
@@ -2593,3 +2593,39 @@ Entries: 144. Validation errors: 0.
 **verification:** test:lakehouse/tests/test_platform.py::test_consumer_window_case_grouping_and_order
 
 **sources:** warehouse/teradata/dbql/consumer_reads.bteq, warehouse/teradata/dbql/schema.sql, warehouse/teradata/bteq/runner.py
+
+## A-412 — Pre-storage usage parity is captured before monthly storage mutation
+
+**status:** accepted
+
+**risk:** low
+
+**legacy_objects:** teradata_table:SFX_BILLING.USAGE_DAILY, bteq_script:warehouse/teradata/scripts/billing/05_load_usage.bteq
+
+**ambiguity:** The existing usage_daily model represents load-stage state but its parity reader used the mutable final legacy table.
+
+**decision:** Capture sfx_billing_parity.load_usage_daily alongside load_invoice_line before storage_monthly. Change only billing.usage_daily legacy SQL to read this stage-correct snapshot. Keep the base silver model unchanged. Compare usage_daily_effective against live final legacy usage.
+
+**rationale:** User approved stage-specific capture to avoid comparing 2000 pre-storage rows with 2250 post-storage rows. No source rows are filtered or numerical tolerances added.
+
+**verification:** billing.usage_daily
+
+**sources:** lakehouse/billing/fixture.py, warehouse/teradata/jobs/daily_chain, warehouse/teradata/scripts/documents/10_storage_monthly.bteq
+
+## A-413 — Monthly storage is a billing stage between base loads and invoice reports
+
+**status:** accepted
+
+**risk:** med
+
+**legacy_objects:** bteq_script:warehouse/teradata/scripts/documents/10_storage_monthly.bteq, cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/10_storage_monthly
+
+**ambiguity:** Storage deletes all prior STORAGE usage and Monthly storage lines, then later monthly billing mutates invoice lines again.
+
+**decision:** Keep base silver immutable. Rebuild usage_daily_effective and invoice_line_effective as deterministic full stage snapshots. Preserve null nonmatching delete predicates, SQL inner joins and MIN IDs, current calendar month [start,next_month), business-day usage date and DECIMAL(14,2) assignment rounding. Monthly billing consumes effective lines. Capture storage_invoice_line immediately after the storage script for parity; later generated subscription and adjustment rows belong to monthly_invoice_line. Atomically publish storage_monthly.psv from m_storage_totals.
+
+**rationale:** Pure stage projections replace destructive delete/insert without accumulating rows on replay. Separate snapshots preserve the actual daily_chain REPORTS order and null/rounding behavior.
+
+**verification:** test:lakehouse/tests/test_billing_storage.py::test_storage_month_boundaries_null_joins_and_replay
+
+**sources:** warehouse/teradata/scripts/documents/10_storage_monthly.bteq, warehouse/teradata/jobs/daily_chain, warehouse/teradata/macros/storage_totals.sql, warehouse/teradata/ddl/billing/00_tables.sql

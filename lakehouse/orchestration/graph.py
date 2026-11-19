@@ -114,6 +114,9 @@ def load(path=PIPELINE, inventory=None, specs=None):
                         raise ValueError(field + ' must be a positive integer')
             if kind == 'dbt' and (not isinstance(node.get('selector'), str) or not node['selector'].strip()):
                 raise ValueError('dbt requires selector')
+            if kind == 'dbt' and 'exclude' in node and (
+                    not isinstance(node['exclude'], str) or not node['exclude'].strip()):
+                raise ValueError('dbt requires nonempty exclude')
             if kind == 'parity':
                 selected = node.get('specs', [node.get('spec')])
                 if 'spec' in node and 'specs' in node:

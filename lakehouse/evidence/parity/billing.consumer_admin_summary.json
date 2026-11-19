@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
   "id": "billing.consumer_admin_summary",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -31,9 +31,9 @@
       "lakehouse": {
         "ar_open_balance": {
           "count": 1,
-          "hash": "ff65dccf820640ba2403f23d106f1dea93ecfae28b307fdc040229e9a0971173",
+          "hash": "8e482cf9ddf9fa16d5857708d642eeb0c44153ead4bae289eb74c09bdfc87139",
           "null_count": 0,
-          "sum": "822245.01"
+          "sum": "822349.15"
         },
         "collections_30_days": {
           "count": 1,
@@ -43,9 +43,9 @@
         },
         "dso": {
           "count": 1,
-          "hash": "c04885f43a3b7e23129a979f5115ae2214a8499cb0363703e6e0c8313afecc8b",
+          "hash": "7aa64a6344886252bf300604426ec62f296198d0862cddf77b9f5a27ed5b4567",
           "null_count": 0,
-          "sum": "33.608054"
+          "sum": "33.607552"
         },
         "parity_row": {
           "count": 1,
@@ -57,9 +57,9 @@
       "legacy": {
         "ar_open_balance": {
           "count": 1,
-          "hash": "ff65dccf820640ba2403f23d106f1dea93ecfae28b307fdc040229e9a0971173",
+          "hash": "8e482cf9ddf9fa16d5857708d642eeb0c44153ead4bae289eb74c09bdfc87139",
           "null_count": 0,
-          "sum": "822245.01"
+          "sum": "822349.15"
         },
         "collections_30_days": {
           "count": 1,
@@ -69,9 +69,9 @@
         },
         "dso": {
           "count": 1,
-          "hash": "c04885f43a3b7e23129a979f5115ae2214a8499cb0363703e6e0c8313afecc8b",
+          "hash": "7aa64a6344886252bf300604426ec62f296198d0862cddf77b9f5a27ed5b4567",
           "null_count": 0,
-          "sum": "33.608054"
+          "sum": "33.607552"
         },
         "parity_row": {
           "count": 1,
@@ -122,5 +122,5 @@
     "legacy": 1
   },
   "spec_hash": "c666583eb384c01e5ecf18b29e7ee537fc336999634cf9fb17cce3804a303fa3",
-  "timestamp": "2026-11-19T14:14:43.505233+00:00"
+  "timestamp": "2026-11-19T15:53:26.692317+00:00"
 }

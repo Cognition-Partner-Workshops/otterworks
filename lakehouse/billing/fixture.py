@@ -29,7 +29,8 @@ def prepare(day):
         def script(name):
             output.seek(0)
             output.truncate()
-            code = runner.run((ROOT.parent / 'warehouse/teradata/scripts/billing' / (name + '.bteq')).read_text())
+            path = ROOT.parent / 'warehouse/teradata/scripts'
+            code = runner.run((path / (name if '/' in name else 'billing/' + name)).with_suffix('.bteq').read_text())
             print(f'{name}: exit {code}', flush=True)
             if code:
                 raise RuntimeError(output.getvalue())
@@ -45,10 +46,13 @@ def prepare(day):
         for name in ('load_account_history', '01_load_accounts', '02_load_subscriptions',
                      '03_load_invoices', '04_load_payments', '05_load_usage'):
             script(name)
-        for name in ('invoice_hdr', 'invoice_line', 'gl_journal_line'):
+        for name in ('invoice_hdr', 'invoice_line', 'gl_journal_line', 'usage_daily'):
             snapshot('load_' + name, name)
         for name in ('10_subscription_report', '11_currency_daily', '12_invoice_monthly',
                      '13_period_close', '14_account_history_extract'):
+            if name == '12_invoice_monthly':
+                script('documents/10_storage_monthly')
+                snapshot('storage_invoice_line', 'invoice_line')
             script(name)
             if name == '12_invoice_monthly':
                 for table in ('invoice_hdr', 'invoice_line', 'gl_journal_line'):

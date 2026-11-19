@@ -6,3 +6,5 @@ legacy_objects:
   - teradata_view:DBC.QRYLOGOBJECTSV
   - teradata_view:DBC.TABLESV
   - bteq_script:warehouse/teradata/dbql/consumer_reads.bteq
+  - batch_runner:warehouse/teradata/jobs/reconcile
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=jobs/reconcile

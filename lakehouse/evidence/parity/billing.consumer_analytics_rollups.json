@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
   "id": "billing.consumer_analytics_rollups",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -40,9 +40,9 @@
         },
         "billed_revenue": {
           "count": 60,
-          "hash": "84b4180c2a6073a14e7036deb4cb2e6c03ea0639da7d533bf66ae6d776e1849f",
+          "hash": "f500e206e9f038a2b3c758c47f75f96f62d24572247b282440fa34b04649306d",
           "null_count": 0,
-          "sum": "12941.14"
+          "sum": "12941.96"
         },
         "collected_cash": {
           "count": 60,
@@ -84,9 +84,9 @@
         },
         "billed_revenue": {
           "count": 60,
-          "hash": "84b4180c2a6073a14e7036deb4cb2e6c03ea0639da7d533bf66ae6d776e1849f",
+          "hash": "f500e206e9f038a2b3c758c47f75f96f62d24572247b282440fa34b04649306d",
           "null_count": 0,
-          "sum": "12941.14"
+          "sum": "12941.96"
         },
         "collected_cash": {
           "count": 60,
@@ -173,5 +173,5 @@
     "legacy": 60
   },
   "spec_hash": "e9593fba6cefd8fdc75f51c1631969d3514ba3222d5c6586dc3914e32869aa19",
-  "timestamp": "2026-11-19T14:14:43.505784+00:00"
+  "timestamp": "2026-11-19T15:53:26.692994+00:00"
 }

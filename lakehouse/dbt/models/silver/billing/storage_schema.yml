@@ -1,0 +1,10 @@
+version: 2
+models:
+  - name: usage_daily_effective
+    columns:
+      - name: usage_id
+        data_tests: [unique, not_null]
+  - name: invoice_line_effective
+    columns:
+      - name: invoice_line_id
+        data_tests: [unique, not_null]

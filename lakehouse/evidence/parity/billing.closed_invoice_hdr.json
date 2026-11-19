@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
   "id": "billing.closed_invoice_hdr",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -58,9 +58,9 @@
         },
         "currency_control_total": {
           "count": 2100,
-          "hash": "a92eb56256cebdf1fc5aa67ea6f8618c2fe03bab068aedeb127d444075d079e0",
+          "hash": "60b911df5d43333561d66d65f0fe5db5078dd66f4fe759db70694d52d734acaa",
           "null_count": 0,
-          "sum": "292074314.00"
+          "sum": "292116468.50"
         },
         "customer_id": {
           "count": 2100,
@@ -130,15 +130,15 @@
         },
         "subtotal_amount": {
           "count": 2100,
-          "hash": "2b9b3ae2b6063aed19cb97a3a49d2acf97a7962d68c1780b524a4488d82e6e0e",
+          "hash": "a9016a71d1b66b5da0c06c1b4111e8f9edea629105afe4d53ee448d16ee5deac",
           "null_count": 0,
-          "sum": "651583.13"
+          "sum": "651674.77"
         },
         "tax_amount": {
           "count": 2100,
-          "hash": "cc0b4a477ee2fcc6ded97337c268d22bb8fd185397b1b4d544c4d74fb94f3689",
+          "hash": "7dab7597c56de8b2d8190eb36497d4e84196eb523d4c7acdca514b3c62865785",
           "null_count": 0,
-          "sum": "93513.10"
+          "sum": "93525.60"
         },
         "tax_rate_id": {
           "count": 2100,
@@ -148,9 +148,9 @@
         },
         "total_amount": {
           "count": 2100,
-          "hash": "ac7fd4879e28e9245982184093b2560f9bb66993eb7a4368eccf7142d4365a38",
+          "hash": "1cf29c0d105e7300c9ee5da52ef1d26fdaa6ad545baaf369c599776d0bd8b2b7",
           "null_count": 0,
-          "sum": "745096.23"
+          "sum": "745200.37"
         }
       },
       "legacy": {
@@ -168,9 +168,9 @@
         },
         "currency_control_total": {
           "count": 2100,
-          "hash": "a92eb56256cebdf1fc5aa67ea6f8618c2fe03bab068aedeb127d444075d079e0",
+          "hash": "60b911df5d43333561d66d65f0fe5db5078dd66f4fe759db70694d52d734acaa",
           "null_count": 0,
-          "sum": "292074314.00"
+          "sum": "292116468.50"
         },
         "customer_id": {
           "count": 2100,
@@ -240,15 +240,15 @@
         },
         "subtotal_amount": {
           "count": 2100,
-          "hash": "2b9b3ae2b6063aed19cb97a3a49d2acf97a7962d68c1780b524a4488d82e6e0e",
+          "hash": "a9016a71d1b66b5da0c06c1b4111e8f9edea629105afe4d53ee448d16ee5deac",
           "null_count": 0,
-          "sum": "651583.13"
+          "sum": "651674.77"
         },
         "tax_amount": {
           "count": 2100,
-          "hash": "cc0b4a477ee2fcc6ded97337c268d22bb8fd185397b1b4d544c4d74fb94f3689",
+          "hash": "7dab7597c56de8b2d8190eb36497d4e84196eb523d4c7acdca514b3c62865785",
           "null_count": 0,
-          "sum": "93513.10"
+          "sum": "93525.60"
         },
         "tax_rate_id": {
           "count": 2100,
@@ -258,9 +258,9 @@
         },
         "total_amount": {
           "count": 2100,
-          "hash": "ac7fd4879e28e9245982184093b2560f9bb66993eb7a4368eccf7142d4365a38",
+          "hash": "1cf29c0d105e7300c9ee5da52ef1d26fdaa6ad545baaf369c599776d0bd8b2b7",
           "null_count": 0,
-          "sum": "745096.23"
+          "sum": "745200.37"
         }
       }
     },
@@ -361,5 +361,5 @@
     "legacy": 2100
   },
   "spec_hash": "e16072d1bae8a6665404008311bc2fc5d391f6652ceee11e472de6f3d6035a92",
-  "timestamp": "2026-11-19T14:14:42.681760+00:00"
+  "timestamp": "2026-11-19T15:47:05.977355+00:00"
 }

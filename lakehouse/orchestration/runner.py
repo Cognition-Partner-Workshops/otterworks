@@ -45,7 +45,8 @@ def command(node, landing, day):
         tables = [t.name for t in TABLES if t.area == node['domain']]
         return base + ['lakehouse.runtime.ingest', '--landing', str(landing), '--business-date', day, '--tables', *tables]
     if node['kind'] == 'dbt':
-        return base + ['lakehouse.runtime.dbt', '--select', node['selector']]
+        return (base + ['lakehouse.runtime.dbt', '--select', node['selector']]
+                + (['--exclude', node['exclude']] if node.get('exclude') else []))
     if node['kind'] == 'parity':
         selected = node['specs'] if 'specs' in node else [node['spec']]
         return base + ['lakehouse.parity', 'run', '--spec', *selected, '--business-date', day]

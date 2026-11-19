@@ -32,11 +32,18 @@ objects:
   - A-047
   notes: Not migrated; no completeness claim.
 - id: batch_runner:warehouse/teradata/jobs/reconcile
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_audit.shared_reconciliation
+  - gold_audit.audit_recon_final
+  - lakehouse/orchestration/pipeline.yaml#dbt_shared_reconcile
+  parity:
+  - audit.shared_reconciliation
+  assumptions:
+  - A-402
+  notes: Stage-specific shared landing conversion; no base silver mutation or output
+    exclusions.
+  verification: test:lakehouse/tests/test_billing_storage.py::test_storage_graph_and_base_exclusion
 - id: bi_artifact:consumers/bi/account_status.pq
   status: converted
   targets: ["lakehouse/billing/consumer_queries.py", "lakehouse/billing/consumer_exports.py", "lakehouse/orchestration/pipeline.yaml"]
@@ -192,7 +199,9 @@ objects:
   - A-103
   - A-105
   - A-106
-  notes: All load-layer data outputs have table-level PASS parity. Control/failure boundary differences remain explicitly open in A-105.
+  - A-412
+  notes: All load-layer data outputs have table-level PASS parity. Control/failure
+    boundary differences remain explicitly open in A-105.
 - id: bteq_script:warehouse/teradata/scripts/billing/10_subscription_report.bteq
   status: converted
   targets:
@@ -343,11 +352,20 @@ objects:
   - A-203
   notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: bteq_script:warehouse/teradata/scripts/documents/10_storage_monthly.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_billing.usage_daily_effective
+  - silver_billing.invoice_line_effective
+  - lakehouse/orchestration/pipeline.yaml#dbt_storage_monthly
+  - lakehouse/billing/storage.py
+  parity:
+  - billing.usage_daily_effective
+  - billing.invoice_line_effective
+  - billing.storage_monthly_export
+  assumptions:
+  - A-413
+  notes: Stage-specific shared landing conversion; no base silver mutation or output
+    exclusions.
 - id: bteq_script:warehouse/teradata/scripts/users/01_load_users.bteq
   status: converted
   targets:
@@ -1168,12 +1186,21 @@ objects:
   - A-037
   notes: Documents Teradata output parity on shared date-scoped landing; shared schedules and monthly billing remain pending.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/10_storage_monthly
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_billing.usage_daily_effective
+  - silver_billing.invoice_line_effective
+  - lakehouse/orchestration/pipeline.yaml#dbt_storage_monthly
+  - lakehouse/billing/storage.py
+  parity:
+  - billing.usage_daily_effective
+  - billing.invoice_line_effective
+  - billing.storage_monthly_export
   assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  - A-413
+  notes: Stage-specific shared landing conversion; no base silver mutation or output
+    exclusions.
+  verification: test:lakehouse/tests/test_billing_storage.py::test_storage_graph_and_base_exclusion
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=generate
   status: pending
   targets: []
@@ -1182,12 +1209,18 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=jobs/reconcile
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_audit.shared_reconciliation
+  - gold_audit.audit_recon_final
+  - lakehouse/orchestration/pipeline.yaml#dbt_shared_reconcile
+  parity:
+  - audit.shared_reconciliation
   assumptions:
-  - A-037
-  notes: Not migrated; no completeness claim.
+  - A-402
+  notes: Stage-specific shared landing conversion; no base silver mutation or output
+    exclusions.
+  verification: test:lakehouse/tests/test_billing_storage.py::test_storage_graph_and_base_exclusion
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=setup
   status: pending
   targets: []
@@ -4586,7 +4619,9 @@ objects:
   - A-103
   - A-105
   - A-106
-  notes: Typed load-layer output, not later monthly/period-close state. See A-105 for cross-model failure/constraint limits.
+  - A-412
+  notes: Typed load-layer output, not later monthly/period-close state. See A-105
+    for cross-model failure/constraint limits.
 - id: teradata_table:SFX_DOCUMENTS.COLLAB_SESSION
   status: converted
   targets:

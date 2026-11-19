@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "92a974cbdf4aef278a1d6e7e866e3881e2dade88",
+  "git_sha": "e3e2f6e0adc17ee4ae8acf66f75abbbeb6bffb45",
   "id": "documents.spark_docs_folder_legacy_report",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -124,5 +124,5 @@
     "legacy": 10
   },
   "spec_hash": "3b2e7bcb6dec19f6136e51db2036b00fcb37a0fbfe212bcfc85883d28e9fed39",
-  "timestamp": "2026-11-19T14:15:28.016494+00:00"
+  "timestamp": "2026-11-19T15:53:42.949559+00:00"
 }
