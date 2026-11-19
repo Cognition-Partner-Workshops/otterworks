@@ -1512,11 +1512,23 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_config:SFX_BILLING.default_session_config
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_config:SFX_CONTENT.default_session_config
   status: pending
   targets: []
@@ -1560,47 +1572,152 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_customer_account
+  - billing.infa_customer_account_errors
+  - billing.infa_customer_account_rejects
+  - billing.infa_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_gl_journal_line
+  - billing.infa_gl_journal_line_errors
+  - billing.infa_gl_journal_line_rejects
+  - billing.infa_gl_journal_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_BILLING.m_SFX_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_hdr
+  - billing.infa_invoice_hdr_errors
+  - billing.infa_invoice_hdr_rejects
+  - billing.infa_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_line
+  - billing.infa_invoice_line_errors
+  - billing.infa_invoice_line_rejects
+  - billing.infa_invoice_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_BILLING.m_SFX_PAYMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_payment
+  - billing.infa_payment_errors
+  - billing.infa_payment_rejects
+  - billing.infa_payment_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_customer_account
+  - billing.infa_stg_customer_account_errors
+  - billing.infa_stg_customer_account_rejects
+  - billing.infa_stg_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_invoice_hdr
+  - billing.infa_stg_invoice_hdr_errors
+  - billing.infa_stg_invoice_hdr_rejects
+  - billing.infa_stg_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_mapping:SFX_CONTENT.m_SFX_APP_USER
   status: pending
   targets: []
@@ -1662,11 +1779,23 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_scheduler:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Scheduler
   status: pending
   targets: []
@@ -1704,47 +1833,152 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_customer_account
+  - billing.infa_customer_account_errors
+  - billing.infa_customer_account_rejects
+  - billing.infa_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_gl_journal_line
+  - billing.infa_gl_journal_line_errors
+  - billing.infa_gl_journal_line_rejects
+  - billing.infa_gl_journal_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_BILLING.s_m_SFX_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_hdr
+  - billing.infa_invoice_hdr_errors
+  - billing.infa_invoice_hdr_rejects
+  - billing.infa_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_line
+  - billing.infa_invoice_line_errors
+  - billing.infa_invoice_line_rejects
+  - billing.infa_invoice_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_BILLING.s_m_SFX_PAYMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_payment
+  - billing.infa_payment_errors
+  - billing.infa_payment_rejects
+  - billing.infa_payment_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_customer_account
+  - billing.infa_stg_customer_account_errors
+  - billing.infa_stg_customer_account_rejects
+  - billing.infa_stg_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_invoice_hdr
+  - billing.infa_stg_invoice_hdr_errors
+  - billing.infa_stg_invoice_hdr_rejects
+  - billing.infa_stg_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_session:SFX_CONTENT.s_m_SFX_APP_USER
   status: pending
   targets: []
@@ -1818,41 +2052,135 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_customer_account
+  - billing.infa_stg_customer_account_errors
+  - billing.infa_stg_customer_account_rejects
+  - billing.infa_stg_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_source:SFX_BILLING.FF_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_invoice_hdr
+  - billing.infa_stg_invoice_hdr_errors
+  - billing.infa_stg_invoice_hdr_rejects
+  - billing.infa_stg_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_source:SFX_BILLING.FF_INVOICE_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_line
+  - billing.infa_invoice_line_errors
+  - billing.infa_invoice_line_rejects
+  - billing.infa_invoice_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_source:SFX_BILLING.FF_PAYMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_payment
+  - billing.infa_payment_errors
+  - billing.infa_payment_rejects
+  - billing.infa_payment_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_customer_account
+  - billing.infa_customer_account_errors
+  - billing.infa_customer_account_rejects
+  - billing.infa_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_source:SFX_BILLING.STG_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_gl_journal_line
+  - billing.infa_gl_journal_line_errors
+  - billing.infa_gl_journal_line_rejects
+  - billing.infa_gl_journal_line_transformation_rejects
+  - billing.infa_invoice_hdr
+  - billing.infa_invoice_hdr_errors
+  - billing.infa_invoice_hdr_rejects
+  - billing.infa_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_source:SFX_CONTENT.FF_APP_USER
   status: pending
   targets: []
@@ -1932,47 +2260,152 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_customer_account
+  - billing.infa_customer_account_errors
+  - billing.infa_customer_account_rejects
+  - billing.infa_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_BILLING.GL_JOURNAL_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_gl_journal_line
+  - billing.infa_gl_journal_line_errors
+  - billing.infa_gl_journal_line_rejects
+  - billing.infa_gl_journal_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_BILLING.INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_hdr
+  - billing.infa_invoice_hdr_errors
+  - billing.infa_invoice_hdr_rejects
+  - billing.infa_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_BILLING.INVOICE_LINE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_invoice_line
+  - billing.infa_invoice_line_errors
+  - billing.infa_invoice_line_rejects
+  - billing.infa_invoice_line_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_BILLING.PAYMENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_payment
+  - billing.infa_payment_errors
+  - billing.infa_payment_rejects
+  - billing.infa_payment_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_customer_account
+  - billing.infa_stg_customer_account_errors
+  - billing.infa_stg_customer_account_rejects
+  - billing.infa_stg_customer_account_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_BILLING.STG_INVOICE_HDR
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/billing/informatica.py
+  - lakehouse/orchestration/pipeline.yaml
+  parity:
+  - billing.infa_stg_invoice_hdr
+  - billing.infa_stg_invoice_hdr_errors
+  - billing.infa_stg_invoice_hdr_rejects
+  - billing.infa_stg_invoice_hdr_transformation_rejects
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
 - id: informatica_target:SFX_CONTENT.APP_USER
   status: pending
   targets: []
@@ -2028,29 +2461,77 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start
-  status: pending
-  targets: []
+  status: converted
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.dec_GL_POSTED
-  status: pending
-  targets: []
+  status: converted
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.em_GL_POSTING_ALERT
-  status: pending
-  targets: []
+  status: converted
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_task:SFX_BILLING.wklt_SFX_BILLING_STAGE.Start
-  status: pending
-  targets: []
+  status: converted
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_task:SFX_CONTENT.wf_SFX_CONTENT_DAILY.Start
   status: pending
   targets: []
@@ -2064,11 +2545,23 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY
-  status: pending
-  targets: []
+  status: converted
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: informatica_workflow:SFX_CONTENT.wf_SFX_CONTENT_DAILY
   status: pending
   targets: []
@@ -2076,11 +2569,23 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE
-  status: pending
-  targets: []
+  status: converted
+  targets:
+  - lakehouse/billing/informatica_control.py
+  - lakehouse/orchestration/pipeline.yaml
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-116
+  - A-117
+  - A-118
+  - A-119
+  - A-120
+  - A-121
+  - A-122
+  - A-123
+  - A-124
+  notes: 'Step 4: isolated Informatica outputs on frozen shared landing/prior/sequence inputs; actual emulator reference. A-119/A-120/A-122/A-123/A-124 remain open; not native PowerCenter or production scale/failure certification.'
+  verification: test:lakehouse/tests/test_billing_informatica.py::test_informatica_decision_alert_and_scheduler
 - id: spark_config:etl/spark/conf/spark-defaults.conf
   status: pending
   targets: []

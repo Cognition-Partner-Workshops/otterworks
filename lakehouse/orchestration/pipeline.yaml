@@ -993,6 +993,342 @@ dags:
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []
+  - id: infa_billing_start
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","start"]
+    depends_on: ["dbt_billing_reporting"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start","informatica_task:SFX_BILLING.wklt_SFX_BILLING_STAGE.Start","informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler","informatica_config:SFX_BILLING.default_session_config"]
+  - id: infa_billing_worklet
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","worklet"]
+    depends_on: ["infa_billing_customer_account","infa_billing_stg_invoice_hdr"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_worklet:SFX_BILLING.wklt_SFX_BILLING_STAGE"]
+  - id: infa_billing_decision
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","decision"]
+    depends_on: ["infa_billing_gl_journal_line"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.dec_GL_POSTED"]
+  - id: infa_billing_alert
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","alert"]
+    depends_on: ["infa_billing_decision"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.em_GL_POSTING_ALERT"]
+  - id: infa_billing_payment_gate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","payment"]
+    depends_on: ["infa_billing_payment"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_finish
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","finish"]
+    depends_on: ["infa_billing_payment_gate","infa_billing_alert"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY"]
+  - id: infa_billing_stg_customer_account
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","STG_CUSTOMER_ACCOUNT"]
+    depends_on: ["infa_billing_start"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_STG_CUSTOMER_ACCOUNT","informatica_session:SFX_BILLING.s_m_SFX_STG_CUSTOMER_ACCOUNT","informatica_target:SFX_BILLING.STG_CUSTOMER_ACCOUNT","informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT"]
+  - id: infa_billing_stg_customer_account_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:STG_CUSTOMER_ACCOUNT"]
+    depends_on: ["infa_billing_stg_customer_account"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_customer_account
+    kind: parity
+    spec: billing.infa_stg_customer_account
+    depends_on: [infa_billing_stg_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_customer_account_rejects
+    kind: parity
+    spec: billing.infa_stg_customer_account_rejects
+    depends_on: [infa_billing_stg_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_customer_account_transformation_rejects
+    kind: parity
+    spec: billing.infa_stg_customer_account_transformation_rejects
+    depends_on: [infa_billing_stg_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_customer_account_errors
+    kind: parity
+    spec: billing.infa_stg_customer_account_errors
+    depends_on: [infa_billing_stg_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_customer_account
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","CUSTOMER_ACCOUNT"]
+    depends_on: ["infa_billing_stg_customer_account"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT","informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT","informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT","informatica_source:SFX_BILLING.STG_CUSTOMER_ACCOUNT"]
+  - id: infa_billing_customer_account_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:CUSTOMER_ACCOUNT"]
+    depends_on: ["infa_billing_customer_account"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_customer_account
+    kind: parity
+    spec: billing.infa_customer_account
+    depends_on: [infa_billing_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_customer_account_rejects
+    kind: parity
+    spec: billing.infa_customer_account_rejects
+    depends_on: [infa_billing_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_customer_account_transformation_rejects
+    kind: parity
+    spec: billing.infa_customer_account_transformation_rejects
+    depends_on: [infa_billing_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_customer_account_errors
+    kind: parity
+    spec: billing.infa_customer_account_errors
+    depends_on: [infa_billing_customer_account_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_stg_invoice_hdr
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","STG_INVOICE_HDR"]
+    depends_on: ["infa_billing_start"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_STG_INVOICE_HDR","informatica_session:SFX_BILLING.s_m_SFX_STG_INVOICE_HDR","informatica_target:SFX_BILLING.STG_INVOICE_HDR","informatica_source:SFX_BILLING.FF_INVOICE_HDR"]
+  - id: infa_billing_stg_invoice_hdr_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:STG_INVOICE_HDR"]
+    depends_on: ["infa_billing_stg_invoice_hdr"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_invoice_hdr
+    kind: parity
+    spec: billing.infa_stg_invoice_hdr
+    depends_on: [infa_billing_stg_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_invoice_hdr_rejects
+    kind: parity
+    spec: billing.infa_stg_invoice_hdr_rejects
+    depends_on: [infa_billing_stg_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_invoice_hdr_transformation_rejects
+    kind: parity
+    spec: billing.infa_stg_invoice_hdr_transformation_rejects
+    depends_on: [infa_billing_stg_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_stg_invoice_hdr_errors
+    kind: parity
+    spec: billing.infa_stg_invoice_hdr_errors
+    depends_on: [infa_billing_stg_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_invoice_hdr
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","INVOICE_HDR"]
+    depends_on: ["infa_billing_worklet"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_INVOICE_HDR","informatica_session:SFX_BILLING.s_m_SFX_INVOICE_HDR","informatica_target:SFX_BILLING.INVOICE_HDR","informatica_source:SFX_BILLING.STG_INVOICE_HDR"]
+  - id: infa_billing_invoice_hdr_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:INVOICE_HDR"]
+    depends_on: ["infa_billing_invoice_hdr"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_hdr
+    kind: parity
+    spec: billing.infa_invoice_hdr
+    depends_on: [infa_billing_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_hdr_rejects
+    kind: parity
+    spec: billing.infa_invoice_hdr_rejects
+    depends_on: [infa_billing_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_hdr_transformation_rejects
+    kind: parity
+    spec: billing.infa_invoice_hdr_transformation_rejects
+    depends_on: [infa_billing_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_hdr_errors
+    kind: parity
+    spec: billing.infa_invoice_hdr_errors
+    depends_on: [infa_billing_invoice_hdr_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_invoice_line
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","INVOICE_LINE"]
+    depends_on: ["infa_billing_worklet"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_INVOICE_LINE","informatica_session:SFX_BILLING.s_m_SFX_INVOICE_LINE","informatica_target:SFX_BILLING.INVOICE_LINE","informatica_source:SFX_BILLING.FF_INVOICE_LINE"]
+  - id: infa_billing_invoice_line_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:INVOICE_LINE"]
+    depends_on: ["infa_billing_invoice_line"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_line
+    kind: parity
+    spec: billing.infa_invoice_line
+    depends_on: [infa_billing_invoice_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_line_rejects
+    kind: parity
+    spec: billing.infa_invoice_line_rejects
+    depends_on: [infa_billing_invoice_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_line_transformation_rejects
+    kind: parity
+    spec: billing.infa_invoice_line_transformation_rejects
+    depends_on: [infa_billing_invoice_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_invoice_line_errors
+    kind: parity
+    spec: billing.infa_invoice_line_errors
+    depends_on: [infa_billing_invoice_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_gl_journal_line
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","GL_JOURNAL_LINE"]
+    depends_on: ["infa_billing_invoice_hdr","infa_billing_invoice_line"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE","informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE","informatica_target:SFX_BILLING.GL_JOURNAL_LINE","informatica_source:SFX_BILLING.STG_INVOICE_HDR"]
+  - id: infa_billing_gl_journal_line_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:GL_JOURNAL_LINE"]
+    depends_on: ["infa_billing_gl_journal_line"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_gl_journal_line
+    kind: parity
+    spec: billing.infa_gl_journal_line
+    depends_on: [infa_billing_gl_journal_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_gl_journal_line_rejects
+    kind: parity
+    spec: billing.infa_gl_journal_line_rejects
+    depends_on: [infa_billing_gl_journal_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_gl_journal_line_transformation_rejects
+    kind: parity
+    spec: billing.infa_gl_journal_line_transformation_rejects
+    depends_on: [infa_billing_gl_journal_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_gl_journal_line_errors
+    kind: parity
+    spec: billing.infa_gl_journal_line_errors
+    depends_on: [infa_billing_gl_journal_line_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: infa_billing_payment
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica","--business-date","{business_date}","--landing","{landing}","--table","PAYMENT"]
+    depends_on: ["infa_billing_decision"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: ["informatica_mapping:SFX_BILLING.m_SFX_PAYMENT","informatica_session:SFX_BILLING.s_m_SFX_PAYMENT","informatica_target:SFX_BILLING.PAYMENT","informatica_source:SFX_BILLING.FF_PAYMENT"]
+  - id: infa_billing_payment_validate
+    kind: export
+    command: ["{python}","-m","lakehouse.billing.informatica_control","--business-date","{business_date}","--action","session:PAYMENT"]
+    depends_on: ["infa_billing_payment"]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_payment
+    kind: parity
+    spec: billing.infa_payment
+    depends_on: [infa_billing_payment_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_payment_rejects
+    kind: parity
+    spec: billing.infa_payment_rejects
+    depends_on: [infa_billing_payment_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_payment_transformation_rejects
+    kind: parity
+    spec: billing.infa_payment_transformation_rejects
+    depends_on: [infa_billing_payment_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_billing_infa_payment_errors
+    kind: parity
+    spec: billing.infa_payment_errors
+    depends_on: [infa_billing_payment_validate]
+    retries: 0
+    retry_delay_seconds: 10
+    legacy_objects: []
 - id: lakehouse_hourly
   schedule: '@hourly'
   timezone: UTC

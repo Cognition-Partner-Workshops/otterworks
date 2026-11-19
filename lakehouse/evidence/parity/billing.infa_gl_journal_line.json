@@ -1,0 +1,231 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "655e8ba5f44d8b26f10a17b9fd95d5d398146a2b",
+  "id": "billing.infa_gl_journal_line",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "informatica_mapping:SFX_BILLING.m_SFX_GL_JOURNAL_LINE",
+    "informatica_session:SFX_BILLING.s_m_SFX_GL_JOURNAL_LINE",
+    "informatica_target:SFX_BILLING.GL_JOURNAL_LINE",
+    "informatica_source:SFX_BILLING.STG_INVOICE_HDR"
+  ],
+  "results": {
+    "columns": [
+      "ordinal",
+      "journal_line_id",
+      "invoice_id",
+      "credit_note_id",
+      "gl_account_id",
+      "posting_dt",
+      "currency_cd",
+      "debit_amount",
+      "credit_amount",
+      "description"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "credit_amount": {
+          "count": 6451,
+          "hash": "c13bf4ab2f5e4369821da58ab2554d2b2984585a5b62d651e129323838fa3a7b",
+          "null_count": 0,
+          "sum": "356338.20"
+        },
+        "credit_note_id": {
+          "count": 6451,
+          "hash": "d515977530d5781cbf42b41d5dacad71410d484f8de25752ec915c937848fda3",
+          "null_count": 6121,
+          "sum": "15315"
+        },
+        "currency_cd": {
+          "count": 6451,
+          "hash": "adcd1f02039e4871416608daea1d37f3122affaf8c1cf1b40934dcba12cea162",
+          "null_count": 0,
+          "sum": null
+        },
+        "debit_amount": {
+          "count": 6451,
+          "hash": "f34cad5f906cac44eba482f85698676df231cd00a29a69d82cf1441567f3b699",
+          "null_count": 0,
+          "sum": "356338.20"
+        },
+        "description": {
+          "count": 6451,
+          "hash": "8ff9972a32d19065a0f918be1b9a00269f0c283b9f02594af1c11b9cd591e271",
+          "null_count": 0,
+          "sum": null
+        },
+        "gl_account_id": {
+          "count": 6451,
+          "hash": "f9e59d11a3dc519bb2c507cd5a84e303b2faf3d763e09fe8704870c2b99da237",
+          "null_count": 0,
+          "sum": "12616300"
+        },
+        "invoice_id": {
+          "count": 6451,
+          "hash": "d5c27e2ebe371fce90120efb5b6176ac30b990fe5d75d979171a565f8ca4aabf",
+          "null_count": 0,
+          "sum": "2610006086114"
+        },
+        "journal_line_id": {
+          "count": 6451,
+          "hash": "7dfe95114de7b78b7644cce53bc61a432ae3c503eafa982c678397d51e963530",
+          "null_count": 0,
+          "sum": "116345845720090227536"
+        },
+        "ordinal": {
+          "count": 6451,
+          "hash": "9619a9b2281af785374faec7f7837150ba3701c8eee1616cdd6b2eb9acb82f98",
+          "null_count": 0,
+          "sum": "20810926"
+        },
+        "posting_dt": {
+          "count": 6451,
+          "hash": "e21b1cde66343618d8dfbe4396cfc084334247d5eb5da4c4774b6036abaf671b",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "credit_amount": {
+          "count": 6451,
+          "hash": "c13bf4ab2f5e4369821da58ab2554d2b2984585a5b62d651e129323838fa3a7b",
+          "null_count": 0,
+          "sum": "356338.20"
+        },
+        "credit_note_id": {
+          "count": 6451,
+          "hash": "d515977530d5781cbf42b41d5dacad71410d484f8de25752ec915c937848fda3",
+          "null_count": 6121,
+          "sum": "15315"
+        },
+        "currency_cd": {
+          "count": 6451,
+          "hash": "adcd1f02039e4871416608daea1d37f3122affaf8c1cf1b40934dcba12cea162",
+          "null_count": 0,
+          "sum": null
+        },
+        "debit_amount": {
+          "count": 6451,
+          "hash": "f34cad5f906cac44eba482f85698676df231cd00a29a69d82cf1441567f3b699",
+          "null_count": 0,
+          "sum": "356338.20"
+        },
+        "description": {
+          "count": 6451,
+          "hash": "8ff9972a32d19065a0f918be1b9a00269f0c283b9f02594af1c11b9cd591e271",
+          "null_count": 0,
+          "sum": null
+        },
+        "gl_account_id": {
+          "count": 6451,
+          "hash": "f9e59d11a3dc519bb2c507cd5a84e303b2faf3d763e09fe8704870c2b99da237",
+          "null_count": 0,
+          "sum": "12616300"
+        },
+        "invoice_id": {
+          "count": 6451,
+          "hash": "d5c27e2ebe371fce90120efb5b6176ac30b990fe5d75d979171a565f8ca4aabf",
+          "null_count": 0,
+          "sum": "2610006086114"
+        },
+        "journal_line_id": {
+          "count": 6451,
+          "hash": "7dfe95114de7b78b7644cce53bc61a432ae3c503eafa982c678397d51e963530",
+          "null_count": 0,
+          "sum": "116345845720090227536"
+        },
+        "ordinal": {
+          "count": 6451,
+          "hash": "9619a9b2281af785374faec7f7837150ba3701c8eee1616cdd6b2eb9acb82f98",
+          "null_count": 0,
+          "sum": "20810926"
+        },
+        "posting_dt": {
+          "count": 6451,
+          "hash": "e21b1cde66343618d8dfbe4396cfc084334247d5eb5da4c4774b6036abaf671b",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "credit_amount": {
+        "count": 0,
+        "samples": []
+      },
+      "credit_note_id": {
+        "count": 0,
+        "samples": []
+      },
+      "currency_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "debit_amount": {
+        "count": 0,
+        "samples": []
+      },
+      "description": {
+        "count": 0,
+        "samples": []
+      },
+      "gl_account_id": {
+        "count": 0,
+        "samples": []
+      },
+      "invoice_id": {
+        "count": 0,
+        "samples": []
+      },
+      "journal_line_id": {
+        "count": 0,
+        "samples": []
+      },
+      "ordinal": {
+        "count": 0,
+        "samples": []
+      },
+      "posting_dt": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 6451,
+      "legacy": 6451
+    }
+  },
+  "row_counts": {
+    "lakehouse": 6451,
+    "legacy": 6451
+  },
+  "spec_hash": "fef30b6d68e9dcc78c3db5eb18d2cdd24ee4c4bbd2c07d839b27622226bf0c2b",
+  "timestamp": "2026-11-19T08:59:19.889835+00:00"
+}
