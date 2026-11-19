@@ -1,0 +1,15 @@
+[
+  { "name": "api-gateway", "context": "services/api-gateway", "port": 8080, "core": true },
+  { "name": "auth-service", "context": "services/auth-service", "port": 8081, "core": true, "jvm": true },
+  { "name": "file-service", "context": "services/file-service", "port": 8082, "core": true },
+  { "name": "document-service", "context": "services/document-service", "port": 8083, "core": true },
+  { "name": "collab-service", "context": "services/collab-service", "port": 8084 },
+  { "name": "notification-service", "context": "services/notification-service", "port": 8086, "jvm": true },
+  { "name": "search-service", "context": "services/search-service", "port": 8087 },
+  { "name": "analytics-service", "context": "services/analytics-service", "port": 8088, "jvm": true },
+  { "name": "admin-service", "context": "services/admin-service", "port": 8089 },
+  { "name": "audit-service", "context": "services/audit-service", "port": 8090 },
+  { "name": "report-service", "context": "services/report-service", "port": 8091, "jvm": true },
+  { "name": "web-app", "context": "frontend/client-app", "core": true },
+  { "name": "admin-dashboard", "context": "frontend/admin-dashboard" }
+]

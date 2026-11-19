@@ -56,28 +56,6 @@ log()  { echo -e "${GREEN}[deploy]${NC} $*"; }
 warn() { echo -e "${YELLOW}[deploy]${NC} $*"; }
 err()  { echo -e "${RED}[deploy]${NC} $*" >&2; }
 
-# Service list
-BACKEND_SERVICES=(
-  api-gateway
-  auth-service
-  file-service
-  document-service
-  collab-service
-  notification-service
-  search-service
-  analytics-service
-  admin-service
-  audit-service
-  report-service
-)
-
-FRONTEND_SERVICES=(
-  web-app
-  admin-dashboard
-)
-
-ALL_SERVICES=("${BACKEND_SERVICES[@]}" "${FRONTEND_SERVICES[@]}")
-
 # ---------- Pre-flight checks ----------
 
 log "Checking prerequisites..."
@@ -87,7 +65,10 @@ command -v docker >/dev/null 2>&1    || { err "docker not found"; exit 1; }
 command -v helm >/dev/null 2>&1      || { err "helm not found"; exit 1; }
 command -v kubectl >/dev/null 2>&1   || { err "kubectl not found"; exit 1; }
 command -v terraform >/dev/null 2>&1 || { err "terraform not found"; exit 1; }
-command -v jq >/dev/null 2>&1        || { err "jq not found (required to read IRSA role ARNs from Terraform outputs)"; exit 1; }
+command -v jq >/dev/null 2>&1        || { err "jq not found"; exit 1; }
+
+source "${REPO_ROOT}/platform/delivery/catalog.sh"
+delivery_catalog_load
 
 # ---------- Step 1: Provision Platform (VPC, EKS, ECR) ----------
 
@@ -148,19 +129,7 @@ aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AW
 
 build_and_push() {
   local service=$1
-  local service_dir
-
-  if [[ " ${FRONTEND_SERVICES[*]} " == *" ${service} "* ]]; then
-    # The web-app service's source lives in frontend/client-app; other frontend
-    # service names match their directory names.
-    if [ "${service}" = "web-app" ]; then
-      service_dir="${REPO_ROOT}/frontend/client-app"
-    else
-      service_dir="${REPO_ROOT}/frontend/${service}"
-    fi
-  else
-    service_dir="${REPO_ROOT}/services/${service}"
-  fi
+  local service_dir="${REPO_ROOT}/${BUILD_CONTEXT[$service]}"
 
   if [ ! -f "${service_dir}/Dockerfile" ]; then
     warn "No Dockerfile for ${service}, skipping..."
@@ -184,16 +153,6 @@ else
 fi
 
 # ---------- Step 7: Deploy via Helm ----------
-
-# The gateway proxies each route to http://<service>:<containerPort>, so every
-# backend Service must be exposed on its container port (not the chart default 80).
-declare -A CONTAINER_PORT=(
-  [api-gateway]=8080 [auth-service]=8081 [file-service]=8082 [document-service]=8083
-  [collab-service]=8084 [notification-service]=8086 [search-service]=8087
-  [analytics-service]=8088 [admin-service]=8089 [audit-service]=8090 [report-service]=8091
-)
-# JVM services need more memory than the namespace default (256Mi) to start.
-JVM_SERVICES=" auth-service report-service notification-service analytics-service "
 
 # Populate the config/secret wiring from the application-infra Terraform outputs
 # (RDS, Redis, S3, DynamoDB, SNS/SQS, IRSA roles). This closes the documented gap
@@ -295,7 +254,7 @@ build_helm_args() {
   SECRET_KV=()
   local role; role="$(irsa_arn "$service")"
   if [ -n "$role" ]; then EXTRA_ARGS+=(--set "serviceAccount.roleArn=${role}"); fi
-  if [[ " ${JVM_SERVICES} " == *" ${service} "* ]]; then
+  if [[ -n "${JVM_SERVICE[$service]:-}" ]]; then
     EXTRA_ARGS+=(--set resources.requests.memory=512Mi --set resources.limits.memory=1024Mi --set resources.limits.cpu=1000m)
   fi
 

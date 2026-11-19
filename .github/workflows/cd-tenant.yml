@@ -12,8 +12,8 @@ name: Deploy tenant environment
 # `main` either -- the golden app and the perpetual environment belong to this
 # repo -- so a fork's main pushes publish no golden image and deploy nothing.
 #
-# Only the services a push actually changed are rebuilt; the tenant picks up the
-# golden image for everything else (see resolve_tag in scripts/deploy-tenant.sh).
+# Only the services a push changed are rebuilt unless the delivery catalog
+# changed; the tenant picks up the golden image for everything else.
 # Deployment goes through the ops dashboard API, never straight at the cluster:
 # the dashboard runs the work as a runner Job under its own IRSA role, so this
 # workflow needs no EKS access.
@@ -49,7 +49,7 @@ jobs:
   plan:
     runs-on: ubuntu-latest
     outputs:
-      services: ${{ steps.select.outputs.services }}
+      matrix: ${{ steps.select.outputs.matrix }}
       image_tag: ${{ steps.select.outputs.image_tag }}
       tenant_tag: ${{ steps.select.outputs.tenant_tag }}
       golden: ${{ steps.select.outputs.golden }}
@@ -61,24 +61,17 @@ jobs:
           # that commit present, and a shallow clone does not have it.
           fetch-depth: 0
 
+      - name: Generate path filters from the delivery catalog
+        id: catalog
+        run: |
+          source platform/delivery/catalog.sh
+          filters="$(delivery_filters)"
+          echo "filters=${filters}" >> "$GITHUB_OUTPUT"
+
       - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
         id: changes
         with:
-          filters: |
-            api-gateway: ['services/api-gateway/**']
-            auth-service: ['services/auth-service/**']
-            file-service: ['services/file-service/**']
-            document-service: ['services/document-service/**']
-            collab-service: ['services/collab-service/**']
-            notification-service: ['services/notification-service/**']
-            search-service: ['services/search-service/**']
-            analytics-service: ['services/analytics-service/**']
-            admin-service: ['services/admin-service/**']
-            audit-service: ['services/audit-service/**']
-            report-service: ['services/report-service/**']
-            web-app: ['frontend/client-app/**']
-            admin-dashboard: ['frontend/admin-dashboard/**']
-            deployable: ['services/**', 'frontend/**', 'infrastructure/helm/**', 'scripts/**']
+          filters: ${{ steps.catalog.outputs.filters }}
 
       # The document-service chart ships copies of the incident alert rules
       # and dashboard; refuse to deploy a tenant whose copies have drifted.
@@ -95,6 +88,7 @@ jobs:
         run: |
           set -euo pipefail
           source scripts/lib/tenant-common.sh
+          source platform/delivery/catalog.sh
 
           slug="$(branch_tag_slug "${GITHUB_REF_NAME}")"
           echo "tenant_tag=$(tenant_image_tag "$(branch_tenant_id "${GITHUB_REF_NAME}")")" >> "$GITHUB_OUTPUT"
@@ -107,13 +101,11 @@ jobs:
           echo "golden=${golden}" >> "$GITHUB_OUTPUT"
 
           if [ "${REBUILD_ALL}" = "true" ]; then
-            services="$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -sc .)"
+            matrix="$(delivery_matrix)"
           else
-            # paths-filter emits every matching filter, including the
-            # 'deployable' catch-all, which is not a service.
-            services="$(printf '%s' "${CHANGED}" | jq -c '[.[] | select(. != "deployable")]')"
+            matrix="$(delivery_matrix "${CHANGED}")"
           fi
-          echo "services=${services}" >> "$GITHUB_OUTPUT"
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
 
           # A push that touches nothing deployable -- docs, CI config, the
           # control plane itself -- does not redeploy. The tenant would come
@@ -131,27 +123,14 @@ jobs:
 
   build:
     needs: plan
-    if: needs.plan.outputs.services != '[]'
+    if: needs.plan.outputs.matrix != '[]'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        service: ${{ fromJson(needs.plan.outputs.services) }}
+        service: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-
-      - name: Resolve build context
-        id: ctx
-        env:
-          SERVICE: ${{ matrix.service }}
-        run: |
-          set -euo pipefail
-          case "${SERVICE}" in
-            web-app)         path=frontend/client-app ;;
-            admin-dashboard) path=frontend/admin-dashboard ;;
-            *)               path=services/${SERVICE} ;;
-          esac
-          echo "path=${path}" >> "$GITHUB_OUTPUT"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
@@ -176,7 +155,7 @@ jobs:
       - name: Check for existing image
         id: existing
         env:
-          REPOSITORY: otterworks/${{ matrix.service }}
+          REPOSITORY: otterworks/${{ matrix.service.name }}
           IMAGE_TAG: ${{ needs.plan.outputs.image_tag }}
         run: |
           set -euo pipefail
@@ -192,12 +171,12 @@ jobs:
         if: steps.existing.outputs.found != 'true'
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
-          context: ${{ steps.ctx.outputs.path }}
+          context: ${{ matrix.service.context }}
           push: true
           platforms: linux/amd64
-          cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
-          tags: ${{ steps.ecr.outputs.registry }}/otterworks/${{ matrix.service }}:${{ needs.plan.outputs.image_tag }}
+          cache-from: type=gha,scope=${{ matrix.service.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}
+          tags: ${{ steps.ecr.outputs.registry }}/otterworks/${{ matrix.service.name }}:${{ needs.plan.outputs.image_tag }}
 
       # Re-point each moving tag at the image just pushed. Untag, then re-tag
       # from the pushed manifest; the previous build stays reachable by its own
@@ -205,7 +184,7 @@ jobs:
       # known to exist, so a failed build leaves the environment deployable.
       - name: Move tags
         env:
-          REPOSITORY: otterworks/${{ matrix.service }}
+          REPOSITORY: otterworks/${{ matrix.service.name }}
           IMAGE_TAG: ${{ needs.plan.outputs.image_tag }}
           TENANT_TAG: ${{ needs.plan.outputs.tenant_tag }}
           GOLDEN: ${{ needs.plan.outputs.golden }}

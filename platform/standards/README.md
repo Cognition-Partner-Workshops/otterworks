@@ -1,6 +1,6 @@
 # Platform standards
 
-The platform team owns this folder and its rules: an application is ready for the shared cluster when its pull request passes the pipeline template in `.github/workflows/platform-app-pipeline.yml` against a commit of this folder, and nothing reaches the cluster any other way.
+Platform Engineering owns this folder and its rules. Applications adopting this standard verify against a commit of it with the [reusable pipeline](../../.github/workflows/platform-app-pipeline.yml). Existing golden-app services still ship through the separate tenant delivery workflow; see the [ownership and onboarding guide](../README.md).
 
 ## Application requirements
 
