@@ -3,6 +3,7 @@
 import asyncio
 import json
 import os
+import re
 import tempfile
 import threading
 import time
@@ -27,6 +28,8 @@ from .config import Settings
 from .parity import write_csv
 
 PREFIX = '/api/v1/odl'
+RFC3339 = re.compile(r'[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?'
+                     r'(?:[Zz]|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])')
 
 
 def json_value(value):
@@ -200,12 +203,23 @@ def create_app(db=None, settings=None, sync_enabled=True):
                   oracle_account_id: int | None = Query(None, gt=0, lt=2**63),
                   crm_contact_id: str | None = Query(None, max_length=36),
                   match_status: Literal['matched', 'single-source'] | None = None,
-                  limit: int = Query(50, ge=1, le=100), cursor: str | None = Query(None, max_length=256)):
+                  limit: int = Query(50, ge=1, le=100), cursor: str | None = Query(None, max_length=256),
+                  source: str | None = None, updated_since: str | None = None):
         query = {}
         for field, value in (('source_keys.db2_cust_no', db2_cust_no), ('source_keys.oracle_account_ids', oracle_account_id),
-                             ('source_keys.crm_contact_id', crm_contact_id), ('match.status', match_status)):
+                             ('source_keys.crm_contact_id', crm_contact_id), ('match.status', match_status),
+                             ('match.sources', source)):
             if value is not None:
                 query[field] = value
+        if updated_since is not None:
+            try:
+                if not RFC3339.fullmatch(updated_since):
+                    raise ValueError
+                cutoff = datetime.fromisoformat(updated_since.upper()).astimezone(timezone.utc)
+            except (ValueError, OverflowError):
+                message = 'updated_since must be an RFC 3339 timestamp with a UTC offset, e.g. 2026-11-19T12:00:00Z.'
+                return JSONResponse({'error': {'code': 'invalid_request', 'message': message}}, status_code=400)
+            query['updated_at'] = {'$gt': cutoff}
         return response(page(request.app.state.db.customers, query, limit, cursor))
 
     @router.get('/customers/{id}')
