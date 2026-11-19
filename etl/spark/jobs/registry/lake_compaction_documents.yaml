@@ -1,9 +1,0 @@
-{
-  "job": "lake_compaction_documents",
-  "language": "scala",
-  "target": "retired",
-  "status": "retired",
-  "schedule": null,
-  "profile": "small",
-  "class": "sfx.LakeCompactionDocuments"
-}

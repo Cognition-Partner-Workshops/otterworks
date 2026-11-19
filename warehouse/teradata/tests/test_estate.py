@@ -111,6 +111,11 @@ def test_daily_chain(estate, tmp_path):
         currency = list(csv.reader(handle, delimiter='|'))
     assert len(currency) == 6 and sum(int(row[1]) for row in currency) == 2100
     assert len([row for row in currency if row[0].strip().upper() == 'USD']) == 1
+    with (exports / 'account_status_20261109.psv').open() as handle:
+        account_status = list(csv.reader(handle, delimiter='|'))
+    assert account_status and {r[0] for r in account_status} == {'2026-11-09'}
+    assert sum(int(r[3]) for r in account_status) == estate.conn.execute(
+        'SELECT count(*) FROM sfx_billing.customer_account').fetchone()[0]
     with (exports / 'invoice_periods.psv').open() as handle:
         periods = {int(r[0]): r for r in csv.reader(handle, delimiter='|')}
     dates = ('2026-10-31', '2024-02-29', '2025-12-31', '2026-01-01', '1999-12-31', '2026-11-30')
@@ -141,6 +146,61 @@ def test_daily_chain(estate, tmp_path):
     again = subprocess.run(command + ['--reuse-landing'], env=environment, text=True, capture_output=True, timeout=120)
     assert again.returncode == 0, again.stdout + again.stderr
     assert estate.conn.execute('SELECT count(*),sum(debit_amount),sum(credit_amount) FROM sfx_billing.gl_journal_line').fetchone() == snapshot
+
+
+def test_account_history_replay_and_extract(estate, tmp_path):
+    scripts = Path(__file__).resolve().parents[1] / 'scripts/billing'
+    load = (scripts / 'load_account_history.bteq').read_text()
+    extract = (scripts / '14_account_history_extract.bteq').read_text()
+    estate.variables.update(EXPORT_DIR=str(tmp_path))
+    conn = estate.conn
+
+    def stage(rows):
+        conn.execute('DELETE FROM sfx_billing.stg_customer_account')
+        with conn.cursor() as cursor:
+            cursor.executemany('INSERT INTO sfx_billing.stg_customer_account '
+                               '(customer_id,status_cd,currency_cd) VALUES (%s,%s,%s)', rows)
+
+    def history():
+        return conn.execute('SELECT customer_id, valid_from_dt::text, valid_to_dt::text, '
+                            'trim(status_cd), trim(currency_cd) FROM sfx_billing.customer_account_hist '
+                            'ORDER BY customer_id, valid_from_dt').fetchall()
+
+    stage([(1, 'ACTIVE', 'USD'), (2, 'ACTIVE', 'EUR')])
+    estate.variables['BUSINESS_DATE'] = '20261109'
+    assert estate.run(load) == 0, estate.output.getvalue()
+    day_one = history()
+    assert day_one == [(1, '2026-11-09', '9999-12-31', 'ACTIVE', 'USD'),
+                       (2, '2026-11-09', '9999-12-31', 'ACTIVE', 'EUR')]
+
+    estate.variables['BUSINESS_DATE'] = '20261110'
+    stage([(1, 'CLOSED', None), (3, 'PENDING', 'USD')])
+    assert estate.run(load) == 0, estate.output.getvalue()
+    day_two = history()
+    assert day_two == [(1, '2026-11-09', '2026-11-10', 'ACTIVE', 'USD'),
+                       (1, '2026-11-10', '9999-12-31', 'CLOSED', None),
+                       day_one[1], (3, '2026-11-10', '9999-12-31', 'PENDING', 'USD')]
+    assert estate.run(load) == 0, estate.output.getvalue()
+    assert history() == day_two
+
+    stage([(1, 'CLOSED', None), (1, 'CLOSED', None)])
+    assert estate.run(load) == 8
+    assert history() == day_two
+
+    stage([(1, 'CLOSED', 'USD'), (2, 'ACTIVE', 'EUR'), (3, 'PENDING', 'USD')])
+    assert estate.run(load) == 0, estate.output.getvalue()
+    corrected = history()
+    assert corrected == [day_two[0], (1, '2026-11-10', '9999-12-31', 'CLOSED', 'USD'), *day_two[2:]]
+    assert estate.run(extract) == 0, estate.output.getvalue()
+    assert (tmp_path / 'account_status_20261110.psv').read_text().splitlines() == [
+        '2026-11-10|ACTIVE|EUR|1', '2026-11-10|CLOSED|USD|1', '2026-11-10|PENDING|USD|1']
+
+    estate.variables['BUSINESS_DATE'] = '20261109'
+    assert estate.run(load) == 8
+    assert history() == corrected
+    assert estate.run(extract) == 0, estate.output.getvalue()
+    assert (tmp_path / 'account_status_20261109.psv').read_text().splitlines() == [
+        '2026-11-09|ACTIVE|EUR|1', '2026-11-09|ACTIVE|USD|1']
 
 
 def test_next_month_keeps_closed_journals(estate, tmp_path):

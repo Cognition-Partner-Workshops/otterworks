@@ -6,7 +6,6 @@ Run the root Make targets with Python 3.10+ and Docker Compose v2:
 make sfx-teradata-up NS=sfx-d1110-before ROWS_PER_TABLE=2000 BUSINESS_DATE=20261109
 make sfx-teradata-run NS=sfx-d1110-before BUSINESS_DATE=20261109
 make sfx-teradata-test NS=sfx-d1110-before
-make sfx-teradata-snowconvert NS=sfx-d1110-before SCAI=/path/to/scai
 make sfx-teradata-down NS=sfx-d1110-before
 ```
 
@@ -47,9 +46,8 @@ environment values or `--var NAME=VALUE`; the chain supplies `BUSINESS_DATE`,
 `MONTH_START`, `MONTH_END`, `PERIOD_START_INT`, `PERIOD_END_INT`, and `EXPORT_DIR`.
 Dates are `YYYYMMDD`; period integer bounds use the Teradata integer date encoding.
 LOGON uses `${TD_HOST}`, `${TD_USER}`, `${TD_PASSWORD}`. Load controls use
-`${LANDING_DIR}` and `${BUSINESS_DATE}`. These tokens remain unchanged in conversion
-input and must be bound by the execution wrapper after conversion. Output paths
-must have an existing parent directory.
+`${LANDING_DIR}` and `${BUSINESS_DATE}`. Output paths must have an existing parent
+directory.
 
 ## Query history
 
@@ -67,42 +65,3 @@ Use the port derived for your NS rather than the example above. The ranking coun
 successful SELECT requests per calendar day over the final thirty days; it is not
 part of the daily chain. Regenerate CSVs with
 `warehouse/.venv/bin/python warehouse/teradata/dbql/generate.py --seed 1110`.
-
-## SnowConvert
-
-Install SnowConvert AI CLI using the vendor's
-[installation instructions](https://docs.snowflake.com/en/en/migrations/snowconvert-docs/general/user-guide/snowconvert/command-line-interface/README).
-It is not available on PyPI. The target fails clearly if `scai` cannot be found;
-`SCAI=/absolute/path/to/scai` overrides discovery through PATH or `~/.local/bin/scai`.
-
-The target creates `warehouse/teradata/.snowconvert/<UTC timestamp>-<NS>/`.
-It copies DDL/macros/procedures/DBC schema `.sql` files and BTEQ `.bteq` files
-unchanged into an input directory. SQL objects carry paired SC tags in Teradata
-comments for the CLI arrange step; BTEQ files are recognized by their extension.
-After checking that `scai` exists, `bin/snowflake_connection.py` requires
-`SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`, `SNOWFLAKE_WAREHOUSE`,
-`SNOWFLAKE_DATABASE`, and `SNOWFLAKE_PRIVATE_KEY` from the environment. It creates
-`~/.snowflake` with mode 700, writes the private key to
-`~/.snowflake/sfx_d1110.p8` with mode 600, and updates only `[sfx_d1110]` in
-`~/.snowflake/connections.toml` (mode 600), preserving other connections.
-The profile uses `SNOWFLAKE_JWT` and an absolute key-file path. Values are never
-printed, including in errors. Missing-variable errors contain variable names only.
-These files are outside the repository; keep them private and manage their
-lifecycle independently of the local PostgreSQL volume. The raw private-key
-environment variable is not forwarded to the converter subprocess.
-
-It then runs `scai init project -n sfx-d1110-teradata-<NS> -l Teradata -c sfx_d1110`,
-`scai code add -i <input>`, and `scai code convert --show-ewis`, with
-`SNOWFLAKE_CONNECTION=sfx_d1110`.
-Flags follow the vendor's
-[command reference](https://docs.snowflake.com/en/migrations/aim-for-datawarehouses/manual-migration/SCAI_Command_Reference).
-
-`init.log`, `add.log`, and `convert.log` retain each stage's raw stdout/stderr;
-`command.log` also records commands and exit codes. `raw-output` contains the
-unmodified converted files and `Reports` copies the CLI's assessment CSVs. The entire
-project, raw tool output and reports remain under the ignored timestamp directory;
-never commit them. No source database connection is opened and no deployment is
-performed, and no credentials are passed as CLI flags. Credentials are written
-only to the private files described above, never to the repository or command log.
-Actual conversion requires the installed CLI;
-the emulator and Make up/run/test targets do not depend on it.

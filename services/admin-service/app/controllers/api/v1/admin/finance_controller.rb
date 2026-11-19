@@ -8,7 +8,7 @@ module Api
           render json: FinanceWarehouse::DashboardQueries.new.dashboard
         rescue FinanceWarehouse::DashboardQueries::Disabled
           render json: { error: 'finance warehouse is disabled' }, status: :not_found
-        rescue FinanceWarehouse::SnowflakeClient::Unavailable
+        rescue FinanceWarehouse::TeradataClient::Unavailable
           render json: { error: 'finance warehouse unavailable' }, status: :service_unavailable
         end
 

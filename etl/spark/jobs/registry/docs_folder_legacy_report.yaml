@@ -1,8 +1,0 @@
-{
-  "job": "docs_folder_legacy_report",
-  "language": "python",
-  "target": "retired",
-  "status": "retired",
-  "schedule": null,
-  "profile": "small"
-}

@@ -32,9 +32,7 @@
 #   ACTOR         audit actor label                       (default runner)
 #
 # Secrets (from Kubernetes Secret refs in the Job spec — env only, NEVER argv):
-#   DB_PASSWORD, JWT_SECRET, SECRET_KEY_BASE, GITHUB_TOKEN,
-#   SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE, SNOWFLAKE_WAREHOUSE,
-#   SNOWFLAKE_PRIVATE_KEY
+#   DB_PASSWORD, JWT_SECRET, SECRET_KEY_BASE
 #
 # This script never echoes secret values and never passes them on a command line;
 # the underlying scripts read them straight from the environment.
