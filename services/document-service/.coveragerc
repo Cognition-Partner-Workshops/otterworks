@@ -1,6 +1,9 @@
 [run]
 source = app
 omit = app/tests/*
+# SQLAlchemy's async engine runs ORM calls on greenlets; without this, lines
+# after an awaited DB call are reported as missed.
+concurrency = greenlet,thread
 
 [report]
 show_missing = true
