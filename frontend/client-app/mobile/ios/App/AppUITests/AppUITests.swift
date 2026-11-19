@@ -77,16 +77,21 @@ class AppUITestCase: XCTestCase {
         XCTAssertTrue(app.textFields["you@example.com"].waitForExistence(timeout: 10))
     }
 
-    func login(password: String = "HarborPass123!") {
-        let email = app.textFields["you@example.com"]
-        fill(email, "tester@example.com")
-        let field = app.secureTextFields.firstMatch
-        fill(field, password)
+    private func dismissKeyboard() {
         let done = app.toolbars.buttons["Done"]
         if done.exists {
             done.tap()
             XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5))
         }
+    }
+
+    func login(password: String = "HarborPass123!") {
+        let email = app.textFields["you@example.com"]
+        fill(email, "tester@example.com")
+        dismissKeyboard()
+        let field = app.secureTextFields.firstMatch
+        fill(field, password)
+        dismissKeyboard()
         app.buttons["Sign in"].tap()
         if password == "HarborPass123!" {
             XCTAssertTrue(app.links["Files"].waitForExistence(timeout: 10))
@@ -234,5 +239,40 @@ final class AppUITests: AppUITestCase {
         app.buttons["Export CSV"].tap()
         reveal(element(.staticText, "HARBOR-01"))
         assertText("HARBOR-01")
+    }
+}
+
+final class ShareLinkUITests: AppUITestCase {
+    func testFileShareCopiesPublicWebLink() {
+        login()
+        navigate("Files")
+        let title = element(.staticText, "Harbor report.txt")
+        reveal(title)
+        title.doubleTap()
+
+        reveal(element(.button, "Share"))
+        element(.button, "Share").tap()
+        element(.button, "Get link").tap()
+        assertText("https://share.example.test/files/file-1")
+        let copy = element(.button, "Copy link")
+        reveal(copy)
+        copy.tap()
+        assertText("Link copied to clipboard")
+    }
+
+    func testDocumentShareCopiesPublicWebLink() {
+        login()
+        navigate("Documents")
+        let title = element(.staticText, "Voyage notes")
+        reveal(title)
+        title.doubleTap()
+
+        reveal(element(.button, "Share"))
+        element(.button, "Share").tap()
+        assertText("https://share.example.test/documents/doc-1")
+        let copy = element(.button, "Copy link")
+        reveal(copy)
+        copy.tap()
+        XCTAssertTrue(element(.button, "Copied!").waitForExistence(timeout: 5))
     }
 }

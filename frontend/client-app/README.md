@@ -87,6 +87,14 @@ directly. Defaults target local development:
 The API gateway's default CORS config allows the Capacitor WebView origins
 (`https://localhost` on Android, `capacitor://localhost` on iOS).
 
+Set `VITE_PUBLIC_WEB_ORIGIN` at build time to the browser-facing web origin for
+the same environment as the API, for example
+`VITE_PUBLIC_WEB_ORIGIN=https://app.example.com npm run build`. Use an absolute
+HTTP(S) origin with no path, credentials, query or fragment. Native file and
+document share links use this origin rather than the WebView's localhost address;
+if it is missing or invalid, link copying is disabled but email invitations
+still work. Browser builds continue to share links from their current origin.
+
 The collab editor websocket also connects directly, with local-dev defaults of
 `ws://10.0.2.2:8085` on Android and `ws://localhost:8085` on iOS (valid on the
 simulator), so collaborative editing works on both simulators out of the box.

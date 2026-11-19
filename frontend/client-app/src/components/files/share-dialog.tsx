@@ -3,6 +3,7 @@ import { X, Link2, Copy, Check, UserPlus, Globe, Lock, ChevronDown } from "lucid
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { filesApi } from "@/lib/api";
+import { copyShareLink, getShareLink } from "@/lib/share-link";
 import type { SharedUser } from "@/types";
 
 interface ShareDialogProps {
@@ -42,6 +43,7 @@ export function ShareDialog({
   const [linkAccess, setLinkAccess] = useState<LinkAccess>("restricted");
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
   const [removingUserId, setRemovingUserId] = useState<string | null>(null);
+  const shareUrl = getShareLink("files", fileId);
 
   const handleShare = async () => {
     if (!email.trim()) return;
@@ -90,13 +92,14 @@ export function ShareDialog({
   };
 
   const handleCopyLink = async () => {
-    const shareUrl = `${window.location.origin}/files/${fileId}`;
+    if (!shareUrl) return;
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await copyShareLink(shareUrl);
       setCopied(true);
       toast.success("Link copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
     } catch {
+      setCopied(false);
       toast.error("Failed to copy link");
     }
   };
@@ -376,9 +379,7 @@ export function ShareDialog({
                   <Link2 size={20} className="text-gray-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-700 truncate">
-                      {typeof window !== "undefined"
-                        ? `${window.location.origin}/files/${fileId}`
-                        : `/files/${fileId}`}
+                      {shareUrl ?? "Share link unavailable for this build."}
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
                       {linkAccess === "anyone"
@@ -388,7 +389,8 @@ export function ShareDialog({
                   </div>
                   <button
                     onClick={handleCopyLink}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition flex-shrink-0"
+                    disabled={!shareUrl}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition flex-shrink-0 disabled:opacity-50"
                   >
                     {copied ? (
                       <>

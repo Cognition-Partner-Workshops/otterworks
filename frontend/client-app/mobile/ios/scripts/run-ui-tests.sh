@@ -14,7 +14,9 @@ for _ in {1..50}; do
 done
 curl -fsS http://127.0.0.1:4010/health >/dev/null
 npm ci
-VITE_API_BASE_URL=http://127.0.0.1:4010/api/v1 VITE_COLLAB_WS_URL=ws://127.0.0.1:4010 npm run build
+VITE_API_BASE_URL=http://127.0.0.1:4010/api/v1 \
+  VITE_COLLAB_WS_URL=ws://127.0.0.1:4010 \
+  VITE_PUBLIC_WEB_ORIGIN=https://share.example.test npm run build
 npx cap sync ios
 xcodebuild test -project mobile/ios/App/App.xcodeproj -scheme App \
   -destination "${IOS_DESTINATION:-platform=iOS Simulator,id=EDD9B083-63F1-44E6-9A7B-0A6964CC2561}" \
