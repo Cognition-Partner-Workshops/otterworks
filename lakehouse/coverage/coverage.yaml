@@ -56,35 +56,67 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: bteq_script:warehouse/teradata/scripts/audit/01_load_events.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_audit.audit_event
+  parity:
+  - audit.audit_event
+  assumptions:
+  - A-400
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: bteq_script:warehouse/teradata/scripts/audit/02_load_controls.bteq
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_audit.retention_policy
+  - silver_audit.data_export_req
+  - silver_audit.access_review
+  - silver_audit.compliance_flag
+  parity:
+  - audit.access_review
+  - audit.compliance_flag
+  - audit.data_export_req
+  - audit.retention_policy
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: bteq_script:warehouse/teradata/scripts/audit/03_load_reviews.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_audit.security_alert
+  - gold_audit.audit_recon_final
+  - silver_audit.legal_hold
+  - gold_audit.audit_summary_final
+  parity:
+  - audit.audit_daily_summary
+  - audit.audit_recon
+  - audit.legal_hold
+  - audit.security_alert
+  assumptions:
+  - A-400
+  - A-404
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: bteq_script:warehouse/teradata/scripts/audit/10_summary_daily.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.audit_summary_final
+  parity:
+  - audit.audit_daily_summary
+  assumptions:
+  - A-404
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.audit_recon_final
+  - lakehouse/.data/{NS}/exports/{business_date}/reconciliation.psv
+  parity:
+  - audit.audit_recon
+  - audit.reconciliation_export
+  assumptions:
+  - A-401
+  - A-402
+  - A-405
+  - A-404
+  notes: 'Audit-local external base-count/actor projections. TODO: swap to ref() of domain silver models once billing/documents/users merge; keep explicit cross-domain DAG edges.'
 - id: bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq
   status: pending
   targets: []
@@ -587,40 +619,72 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/01_load_events
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_audit.audit_event
+  parity:
+  - audit.audit_event
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-400
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
+  verification: test:lakehouse/tests/test_audit.py::test_audit_graph_dependencies_and_exports
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/02_load_controls
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_audit.retention_policy
+  - silver_audit.data_export_req
+  - silver_audit.access_review
+  - silver_audit.compliance_flag
+  parity:
+  - audit.access_review
+  - audit.compliance_flag
+  - audit.data_export_req
+  - audit.retention_policy
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
+  verification: test:lakehouse/tests/test_audit.py::test_audit_graph_dependencies_and_exports
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/03_load_reviews
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_audit.security_alert
+  - gold_audit.audit_recon_final
+  - silver_audit.legal_hold
+  - gold_audit.audit_summary_final
+  parity:
+  - audit.audit_daily_summary
+  - audit.audit_recon
+  - audit.legal_hold
+  - audit.security_alert
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-400
+  - A-404
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
+  verification: test:lakehouse/tests/test_audit.py::test_audit_graph_dependencies_and_exports
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/10_summary_daily
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - gold_audit.audit_summary_final
+  parity:
+  - audit.audit_daily_summary
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-404
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
+  verification: test:lakehouse/tests/test_audit.py::test_audit_graph_dependencies_and_exports
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/11_reconciliation
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - gold_audit.audit_recon_final
+  parity:
+  - audit.audit_recon
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-404
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
+  verification: test:lakehouse/tests/test_audit.py::test_audit_graph_dependencies_and_exports
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts
   status: pending
   targets: []
@@ -1378,32 +1442,43 @@ objects:
   status: pending
   targets: []
   parity: []
-  assumptions: []
+  assumptions:
+  - A-404
   notes: Not migrated; no completeness claim.
 - id: informatica_mapping:SFX_AUDIT.m_SFX_AUDIT_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - silver_audit.audit_event
+  parity:
+  - audit.audit_event
+  assumptions:
+  - A-400
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_mapping:SFX_AUDIT.m_SFX_AUDIT_EVENT_ARCHIVE
   status: pending
   targets: []
   parity: []
-  assumptions: []
+  assumptions:
+  - A-403
   notes: Not migrated; no completeness claim.
 - id: informatica_mapping:SFX_AUDIT.m_SFX_SECURITY_ALERT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - silver_audit.security_alert
+  parity:
+  - audit.security_alert
+  assumptions:
+  - A-400
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_mapping:SFX_AUDIT.m_SFX_STG_AUDIT_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - silver_audit.stg_audit_event
+  parity:
+  - audit.stg_audit_event
+  assumptions:
+  - A-400
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT
   status: pending
   targets: []
@@ -1542,32 +1617,43 @@ objects:
   status: pending
   targets: []
   parity: []
-  assumptions: []
+  assumptions:
+  - A-404
   notes: Not migrated; no completeness claim.
 - id: informatica_session:SFX_AUDIT.s_m_SFX_AUDIT_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - silver_audit.audit_event
+  parity:
+  - audit.audit_event
+  assumptions:
+  - A-400
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_session:SFX_AUDIT.s_m_SFX_AUDIT_EVENT_ARCHIVE
   status: pending
   targets: []
   parity: []
-  assumptions: []
+  assumptions:
+  - A-403
   notes: Not migrated; no completeness claim.
 - id: informatica_session:SFX_AUDIT.s_m_SFX_SECURITY_ALERT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - silver_audit.security_alert
+  parity:
+  - audit.security_alert
+  assumptions:
+  - A-400
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_session:SFX_AUDIT.s_m_SFX_STG_AUDIT_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - silver_audit.stg_audit_event
+  parity:
+  - audit.stg_audit_event
+  assumptions:
+  - A-400
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT
   status: pending
   targets: []
@@ -1679,29 +1765,41 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_source:SFX_AUDIT.AUDIT_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - silver_audit.stg_audit_event
+  parity:
+  - audit.stg_audit_event
+  assumptions:
+  - A-400
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_source:SFX_AUDIT.FF_AUDIT_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - silver_audit.stg_audit_event
+  parity:
+  - audit.stg_audit_event
+  assumptions:
+  - A-400
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_source:SFX_AUDIT.FF_SECURITY_ALERT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - silver_audit.security_alert
+  parity:
+  - audit.security_alert
+  assumptions:
+  - A-400
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_source:SFX_AUDIT.STG_AUDIT_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - silver_audit.audit_event
+  parity:
+  - audit.audit_event
+  assumptions:
+  - A-400
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT
   status: pending
   targets: []
@@ -1813,11 +1911,14 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_target:SFX_AUDIT.AUDIT_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - silver_audit.audit_event
+  parity:
+  - audit.audit_event
+  assumptions:
+  - A-400
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_target:SFX_AUDIT.AUDIT_EVENT_ARCHIVE
   status: pending
   targets: []
@@ -1825,17 +1926,23 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_target:SFX_AUDIT.SECURITY_ALERT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - silver_audit.security_alert
+  parity:
+  - audit.security_alert
+  assumptions:
+  - A-400
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_target:SFX_AUDIT.STG_AUDIT_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - silver_audit.stg_audit_event
+  parity:
+  - audit.stg_audit_event
+  assumptions:
+  - A-400
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT
   status: pending
   targets: []
@@ -2446,17 +2553,26 @@ objects:
   notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
   verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: teradata_macro:SFX_AUDIT.M_ARCHIVE_OVERVIEW
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.m_archive_overview
+  parity:
+  - audit.m_archive_overview
+  assumptions:
+  - A-403
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_macro:SFX_AUDIT.M_RECON_TOTALS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - lakehouse/.data/{NS}/exports/{business_date}/reconciliation.psv
+  - gold_audit.m_recon_totals
+  parity:
+  - audit.m_recon_totals
+  - audit.reconciliation_export
+  assumptions:
+  - A-402
+  - A-405
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_macro:SFX_BILLING.M_CURRENCY_TOTALS
   status: pending
   targets: []
@@ -2485,17 +2601,23 @@ objects:
   - A-305
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: teradata_procedure:SFX_AUDIT.P_DAILY_SUMMARY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.audit_summary_final
+  parity:
+  - audit.audit_daily_summary
+  assumptions:
+  - A-404
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_procedure:SFX_AUDIT.P_RECON_COUNTS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.audit_recon_final
+  parity:
+  - audit.audit_recon
+  assumptions:
+  - A-404
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_procedure:SFX_BILLING.P_MONTHLY_INVOICE
   status: pending
   targets: []
@@ -2530,65 +2652,92 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_table:SFX_AUDIT.ACCESS_REVIEW
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_audit.access_review
+  parity:
+  - audit.access_review
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_table:SFX_AUDIT.AUDIT_DAILY_SUMMARY
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.audit_summary_final
+  parity:
+  - audit.audit_daily_summary
+  assumptions:
+  - A-404
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_table:SFX_AUDIT.AUDIT_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_audit.audit_event
+  parity:
+  - audit.audit_event
+  assumptions:
+  - A-400
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_table:SFX_AUDIT.AUDIT_EVENT_ARCHIVE
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_audit.audit_event_archive
+  parity:
+  - audit.audit_event_archive
+  assumptions:
+  - A-403
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_table:SFX_AUDIT.AUDIT_RECON
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.audit_recon_final
+  parity:
+  - audit.audit_recon
+  assumptions:
+  - A-401
+  - A-402
+  - A-404
+  notes: 'Audit-local external base-count/actor projections. TODO: swap to ref() of domain silver models once billing/documents/users merge; keep explicit cross-domain DAG edges.'
 - id: teradata_table:SFX_AUDIT.COMPLIANCE_FLAG
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_audit.compliance_flag
+  parity:
+  - audit.compliance_flag
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_table:SFX_AUDIT.DATA_EXPORT_REQ
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_audit.data_export_req
+  parity:
+  - audit.data_export_req
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_table:SFX_AUDIT.LEGAL_HOLD
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_audit.legal_hold
+  parity:
+  - audit.legal_hold
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_table:SFX_AUDIT.RETENTION_POLICY
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - silver_audit.retention_policy
+  parity:
+  - audit.retention_policy
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_table:SFX_AUDIT.SECURITY_ALERT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_audit.security_alert
+  parity:
+  - audit.security_alert
+  assumptions:
+  - A-400
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_table:SFX_AUDIT.STG_ACCESS_REVIEW
   status: pending
   targets: []
@@ -2602,11 +2751,14 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_table:SFX_AUDIT.STG_AUDIT_EVENT
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - silver_audit.stg_audit_event
+  parity:
+  - audit.stg_audit_event
+  assumptions:
+  - A-400
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_table:SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE
   status: pending
   targets: []
@@ -3153,17 +3305,23 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: teradata_view:SFX_AUDIT.V_CUSTOMER_RECON
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.v_customer_recon
+  parity:
+  - audit.v_customer_recon
+  assumptions:
+  - A-402
+  notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_view:SFX_AUDIT.V_EVENT_ACTORS
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.v_event_actors
+  parity:
+  - audit.v_event_actors
+  assumptions:
+  - A-401
+  notes: 'Audit-local external base-count/actor projections. TODO: swap to ref() of domain silver models once billing/documents/users merge; keep explicit cross-domain DAG edges.'
 - id: teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES
   status: pending
   targets: []

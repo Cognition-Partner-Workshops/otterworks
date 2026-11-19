@@ -1,0 +1,22 @@
+id: audit.access_review
+legacy_objects:
+- teradata_table:SFX_AUDIT.ACCESS_REVIEW
+- bteq_script:warehouse/teradata/scripts/audit/02_load_controls.bteq
+- cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/02_load_controls
+legacy:
+  kind: postgres_sql
+  sql: select * from sfx_audit.access_review
+lakehouse:
+  kind: spark_sql
+  sql: select * from silver_audit.access_review
+keys:
+- review_id
+columns:
+- review_id
+- user_id
+- document_id
+- review_dt
+- decision_cd
+normalize:
+  decision_cd:
+    rstrip: true

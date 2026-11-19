@@ -1,0 +1,18 @@
+id: audit.m_archive_overview
+legacy_objects:
+- teradata_macro:SFX_AUDIT.M_ARCHIVE_OVERVIEW
+legacy:
+  kind: postgres_sql
+  sql: select rtrim(event_type::text) as event_type, count(*) as event_count from sfx_audit.audit_event_archive
+    group by rtrim(event_type::text)
+lakehouse:
+  kind: delta_table
+  table: gold_audit.m_archive_overview
+keys:
+- event_type
+columns:
+- event_type
+- event_count
+normalize:
+  event_type:
+    rstrip: true

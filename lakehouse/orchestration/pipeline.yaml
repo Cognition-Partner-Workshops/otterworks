@@ -652,6 +652,9 @@ dags:
     selector: tag:audit
     depends_on:
     - bronze_audit
+    - bronze_users
+    - bronze_documents
+    - dbt_billing
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []
@@ -663,6 +666,133 @@ dags:
     - dbt_documents
     - dbt_users
     - dbt_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: export_audit_reconciliation
+    kind: export
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq
+    command:
+    - '{python}'
+    - -m
+    - lakehouse.audit.export
+    - --business-date
+    - '{business_date}'
+    - --output
+    - '{data_root}/exports/{business_date}/reconciliation.psv'
+  - id: parity_audit_audit_event
+    kind: parity
+    spec: audit.audit_event
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_audit_event_archive
+    kind: parity
+    spec: audit.audit_event_archive
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_access_review
+    kind: parity
+    spec: audit.access_review
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_retention_policy
+    kind: parity
+    spec: audit.retention_policy
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_data_export_req
+    kind: parity
+    spec: audit.data_export_req
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_compliance_flag
+    kind: parity
+    spec: audit.compliance_flag
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_security_alert
+    kind: parity
+    spec: audit.security_alert
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_legal_hold
+    kind: parity
+    spec: audit.legal_hold
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_audit_daily_summary
+    kind: parity
+    spec: audit.audit_daily_summary
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_audit_recon
+    kind: parity
+    spec: audit.audit_recon
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_audit_event
+    kind: parity
+    spec: audit.stg_audit_event
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_v_event_actors
+    kind: parity
+    spec: audit.v_event_actors
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_v_customer_recon
+    kind: parity
+    spec: audit.v_customer_recon
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_m_archive_overview
+    kind: parity
+    spec: audit.m_archive_overview
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_m_recon_totals
+    kind: parity
+    spec: audit.m_recon_totals
+    depends_on: [dbt_audit]
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_reconciliation_export
+    kind: parity
+    spec: audit.reconciliation_export
+    depends_on: [export_audit_reconciliation]
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []

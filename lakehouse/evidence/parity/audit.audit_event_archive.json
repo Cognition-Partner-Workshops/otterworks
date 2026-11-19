@@ -1,0 +1,160 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "0d06f97eabcb82fa52fb2f1fe0507cdd69760a9c",
+  "id": "audit.audit_event_archive",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_AUDIT.AUDIT_EVENT_ARCHIVE"
+  ],
+  "results": {
+    "columns": [
+      "archive_id",
+      "actor_user_id",
+      "document_id",
+      "event_ts",
+      "event_type",
+      "details"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "actor_user_id": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "archive_id": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "details": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "document_id": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "event_ts": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "event_type": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "actor_user_id": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "archive_id": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "details": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "document_id": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "event_ts": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "event_type": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "actor_user_id": {
+        "count": 0,
+        "samples": []
+      },
+      "archive_id": {
+        "count": 0,
+        "samples": []
+      },
+      "details": {
+        "count": 0,
+        "samples": []
+      },
+      "document_id": {
+        "count": 0,
+        "samples": []
+      },
+      "event_ts": {
+        "count": 0,
+        "samples": []
+      },
+      "event_type": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 0,
+      "legacy": 0
+    }
+  },
+  "row_counts": {
+    "lakehouse": 0,
+    "legacy": 0
+  },
+  "spec_hash": "cc3aebc0dec00591dc4a6b2e6692ec03d447ab8aec98cf58f72e5622a7d67fb5",
+  "timestamp": "2026-11-19T08:18:44.549854+00:00"
+}

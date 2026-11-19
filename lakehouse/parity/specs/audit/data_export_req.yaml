@@ -1,0 +1,23 @@
+id: audit.data_export_req
+legacy_objects:
+- teradata_table:SFX_AUDIT.DATA_EXPORT_REQ
+- bteq_script:warehouse/teradata/scripts/audit/02_load_controls.bteq
+- cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/02_load_controls
+legacy:
+  kind: postgres_sql
+  sql: select * from sfx_audit.data_export_req
+lakehouse:
+  kind: spark_sql
+  sql: select * from silver_audit.data_export_req
+keys:
+- export_id
+columns:
+- export_id
+- user_id
+- customer_id
+- request_dt
+- status_cd
+- row_count
+normalize:
+  status_cd:
+    rstrip: true

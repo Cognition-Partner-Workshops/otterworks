@@ -1,0 +1,127 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "0d06f97eabcb82fa52fb2f1fe0507cdd69760a9c",
+  "id": "audit.reconciliation_export",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "bteq_script:warehouse/teradata/scripts/audit/11_reconciliation.bteq",
+    "teradata_macro:SFX_AUDIT.M_RECON_TOTALS"
+  ],
+  "results": {
+    "columns": [
+      "recon_id",
+      "source_count",
+      "target_count",
+      "difference_count"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "difference_count": {
+          "count": 44,
+          "hash": "4f4b89b5044407ecadeb231ebed96e8986adf59b5a89e667e242afba13049db2",
+          "null_count": 0,
+          "sum": "-1384"
+        },
+        "recon_id": {
+          "count": 44,
+          "hash": "b49130f4cc520c151bca8d3d9af9c9ec079801e068e95d9ab69ff5d9826a646b",
+          "null_count": 0,
+          "sum": "740000000773"
+        },
+        "source_count": {
+          "count": 44,
+          "hash": "fd9c8cb4d001532992d2f26e1e4a6b604112fa8fa50ac8b24247333bba861cfc",
+          "null_count": 0,
+          "sum": "29290"
+        },
+        "target_count": {
+          "count": 44,
+          "hash": "0ebf46d559d3ce937e47b892453b9c51825e952a1d2246a57576e35d6629c0c5",
+          "null_count": 0,
+          "sum": "30674"
+        }
+      },
+      "legacy": {
+        "difference_count": {
+          "count": 44,
+          "hash": "4f4b89b5044407ecadeb231ebed96e8986adf59b5a89e667e242afba13049db2",
+          "null_count": 0,
+          "sum": "-1384"
+        },
+        "recon_id": {
+          "count": 44,
+          "hash": "b49130f4cc520c151bca8d3d9af9c9ec079801e068e95d9ab69ff5d9826a646b",
+          "null_count": 0,
+          "sum": "740000000773"
+        },
+        "source_count": {
+          "count": 44,
+          "hash": "fd9c8cb4d001532992d2f26e1e4a6b604112fa8fa50ac8b24247333bba861cfc",
+          "null_count": 0,
+          "sum": "29290"
+        },
+        "target_count": {
+          "count": 44,
+          "hash": "0ebf46d559d3ce937e47b892453b9c51825e952a1d2246a57576e35d6629c0c5",
+          "null_count": 0,
+          "sum": "30674"
+        }
+      }
+    },
+    "mismatches": {
+      "difference_count": {
+        "count": 0,
+        "samples": []
+      },
+      "recon_id": {
+        "count": 0,
+        "samples": []
+      },
+      "source_count": {
+        "count": 0,
+        "samples": []
+      },
+      "target_count": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 44,
+      "legacy": 44
+    }
+  },
+  "row_counts": {
+    "lakehouse": 44,
+    "legacy": 44
+  },
+  "spec_hash": "c01a23f3e6f29660c0b3c5d0f649edc658e7687f7769539ab1495c92ce23cb38",
+  "timestamp": "2026-11-19T08:19:40.135652+00:00"
+}

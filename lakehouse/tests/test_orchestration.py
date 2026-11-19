@@ -33,7 +33,9 @@ def test_pipeline_contract_and_staging_replacement():
     for domain in ('billing', 'documents', 'users', 'audit'):
         bronze = nodes['bronze_' + domain]
         assert set(bronze['depends_on']) == {n['id'] for n in sensors if n['domain'] == domain}
-        assert nodes['dbt_' + domain]['depends_on'] == [bronze['id']]
+        expected = ([bronze['id'], 'bronze_users', 'bronze_documents', 'dbt_billing']
+                    if domain == 'audit' else [bronze['id']])
+        assert nodes['dbt_' + domain]['depends_on'] == expected
         assert nodes['dbt_' + domain]['selector'] == 'tag:' + domain
     replacing = [n for n in nodes.values() if STAGING in n['legacy_objects']]
     assert {n['domain'] for n in replacing} == {t.area for t in TABLES}

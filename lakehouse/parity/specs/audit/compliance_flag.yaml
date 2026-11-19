@@ -1,0 +1,25 @@
+id: audit.compliance_flag
+legacy_objects:
+- teradata_table:SFX_AUDIT.COMPLIANCE_FLAG
+- bteq_script:warehouse/teradata/scripts/audit/02_load_controls.bteq
+- cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/02_load_controls
+legacy:
+  kind: postgres_sql
+  sql: select * from sfx_audit.compliance_flag
+lakehouse:
+  kind: spark_sql
+  sql: select * from silver_audit.compliance_flag
+keys:
+- flag_id
+columns:
+- flag_id
+- customer_id
+- document_id
+- flag_type
+- flag_dt
+- status_cd
+normalize:
+  flag_type:
+    rstrip: true
+  status_cd:
+    rstrip: true
