@@ -1,0 +1,22 @@
+id: audit.spark_security_alert_anomaly
+legacy_objects:
+- spark_job:security_alert_anomaly
+- spark_submit:etl/spark/submit/security_alert_anomaly.sh
+description: 'A-406: same Spark landing snapshot; Parquet/JDBC logical output replaced by Delta. Physical
+  ordering and file layout are not relational outputs. Z-score permits 1e-10 absolute floating-point reduction-order
+  error only (A-406).'
+legacy:
+  kind: parquet
+  path: etl/spark/.data/{LEGACY_NS}/lake/audit/security_alert_anomaly
+lakehouse:
+  kind: delta_table
+  table: gold_audit.spark_security_alert_anomaly
+keys:
+- alert_id
+columns:
+- alert_id
+- user_id
+- score
+- z_score
+tolerance:
+  z_score: '0.0000000001'

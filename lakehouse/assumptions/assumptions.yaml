@@ -1789,8 +1789,8 @@ assumptions:
     event-ID-ordered row numbers from 1. Enabled snapshots are not a migration of prior archive history
     or persistent Informatica sequence state.
   rationale: Requested gated implementation is replayable and testable; no wall-clock dependency is introduced.
-    Persistent enabled append/sequence equivalence remains explicitly unverified and archive mapping/session
-    coverage stays pending.
+    Persistent enabled append/sequence equivalence remains explicitly unverified. Archive mapping/session
+    coverage replaces only the disabled scheduling responsibility under A-408, not enabled history migration.
   risk: high
   verification: test:lakehouse/tests/test_audit.py::test_summary_final_and_archive_gate
   status: open
@@ -1851,3 +1851,109 @@ assumptions:
   - warehouse/teradata/scripts/audit/11_reconciliation.bteq
   - warehouse/teradata/macros/recon_totals.sql
   - warehouse/teradata/jobs/reconcile
+- id: A-406
+  title: Spark snapshot feeds and Delta replace Parquet plus JDBC sinks
+  legacy_objects:
+  - spark_job:audit_actor_activity_join
+  - spark_job:audit_archive_resort
+  - spark_job:audit_daily_summary
+  - spark_job:compliance_flag_rules
+  - spark_job:lake_compaction_audit
+  - spark_job:security_alert_anomaly
+  - spark_submit:etl/spark/submit/audit_actor_activity_join.sh
+  - spark_submit:etl/spark/submit/audit_archive_resort.sh
+  - spark_submit:etl/spark/submit/audit_daily_summary.sh
+  - spark_submit:etl/spark/submit/compliance_flag_rules.sh
+  - spark_submit:etl/spark/submit/lake_compaction_audit.sh
+  - spark_submit:etl/spark/submit/security_alert_anomaly.sh
+  ambiguity: The Spark estate uses headered feeds with different schemas from warehouse landing; legacy
+    jobs read all files in each table directory and publish both Parquet and optional JDBC copies.
+  decision: Use the separate Spark fixture/production landing snapshot selected by AUDIT_SPARK_LANDING
+    (default etl/spark/.data/<LEGACY_NS>/landing), identical for both Spark engines. Preserve every landed
+    row, stamp the explicit BUSINESS_DATE batch into bronze_audit.spark_* and publish gold_audit.spark_*
+    Delta snapshots instead of duplicate Parquet/JDBC sinks. Cross-domain user feeds are declared dependencies.
+    Sorting/file layout are physical, not relational outputs; Delta OPTIMIZE replaces coalescing. Allow
+    only 1e-10 absolute Z-score error for parallel floating reduction ordering. Backfills require a frozen
+    matching Spark source directory.
+  rationale: Schema guessing or reusing the incompatible warehouse feeds would compare different data.
+    Local legacy submit scripts and converted outputs run against the exact same Spark fixture.
+  risk: med
+  verification: audit.spark_audit_daily_summary
+  status: accepted
+  sources:
+  - etl/spark/jobs/py/common/schemas.py
+  - etl/spark/jobs/py/common/runtime.py
+  - etl/spark/fixture/generate_fixture.py
+  - etl/spark/scala/src/main/scala/sfx/BatchSupport.scala
+  - etl/spark/jobs/py/lake_compaction_audit.py
+  - etl/spark/jobs/py/security_alert_anomaly.py
+- id: A-407
+  title: Business-date weekly archive with resumable publication and deletion
+  legacy_objects:
+  - etl_script:etl/scripts/audit_archive_weekly.py
+  - cron_entry:etl/crontab#33854636d6ba
+  ambiguity: Legacy uses UTC wall-clock midnight minus 90 days, nondeterministic gzip headers/report time,
+    overwrites the weekly key, and swallows deletion failures.
+  decision: Use BUSINESS_DATE midnight UTC minus 90 days with the same strict timestamp-string cutoff.
+    Canonically sort JSONL and use deterministic gzip; report generated_at is business-date midnight.
+    Compare decompressed event multisets and all report fields except generated_at/compressed_size_bytes
+    against the frozen-clock legacy script. Publish Glacier first, then a conditional Standard manifest
+    of immutable event keys and SHA256, then delete, then conditionally publish the report. Retry resumes
+    the manifest without reading Glacier; an existing completed report is immutable. Require immutable
+    DynamoDB event keys/content during archival and explicit bucket/owner configuration. New late arrivals
+    for an already published business date wait for the next weekly run; a conflicting incomplete snapshot
+    fails closed.
+  rationale: Avoids partial-file exposure, silent deletion loss and needing Glacier restoration on retry;
+    the safety improvement is deliberate, not hidden parity normalization. Extra manifests contain keys,
+    not event payloads.
+  risk: med
+  verification: test:lakehouse/tests/test_audit_archive.py::test_archive_legacy_file_parity
+  status: accepted
+  sources:
+  - etl/scripts/audit_archive_weekly.py
+  - etl/crontab
+- id: A-408
+  title: Audit schedules and inactive Informatica alternatives converge on Airflow
+  legacy_objects:
+  - cron_entry:etl/crontab#21215b59c160
+  - cron_entry:etl/crontab#33854636d6ba
+  - cron_entry:etl/crontab#77635c543e02
+  - cron_entry:etl/crontab#949f96b6edeb
+  - cron_entry:etl/crontab#ae80e15b906a
+  - cron_entry:etl/crontab#d0caaba38c97
+  - cron_entry:etl/crontab#d793014c2fb2
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/01_load_events
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/02_load_controls
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/03_load_reviews
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/10_summary_daily
+  - cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/11_reconciliation
+  - informatica_config:SFX_AUDIT.default_session_config
+  - informatica_mapping:SFX_AUDIT.m_SFX_AUDIT_DAILY_SUMMARY
+  - informatica_mapping:SFX_AUDIT.m_SFX_AUDIT_EVENT_ARCHIVE
+  - informatica_scheduler:SFX_AUDIT.wf_SFX_AUDIT_DAILY.Scheduler
+  - informatica_session:SFX_AUDIT.s_m_SFX_AUDIT_DAILY_SUMMARY
+  - informatica_session:SFX_AUDIT.s_m_SFX_AUDIT_EVENT_ARCHIVE
+  - informatica_target:SFX_AUDIT.AUDIT_DAILY_SUMMARY
+  - informatica_target:SFX_AUDIT.AUDIT_EVENT_ARCHIVE
+  - informatica_task:SFX_AUDIT.wf_SFX_AUDIT_DAILY.Start
+  - informatica_workflow:SFX_AUDIT.wf_SFX_AUDIT_DAILY
+  ambiguity: Legacy audit tasks have independent cron times, Informatica daily 03:00 scheduling/session
+    settings, an inactive archive session, and alternative summary semantics.
+  decision: Converge active SQL and Spark snapshots into the UTC @daily dependency graph. Use a separate
+    UTC @weekly (Sunday 00:00 timetable) audit archive DAG, with BUSINESS_DATE equal to logical date minus
+    one day per the guide (Sunday logical date archives as of Saturday). Dependency success, one active
+    run/task, retries and namespace locking replace workflow Start/config controls; no independent Informatica
+    task is dispatched. Summary alternatives use the A-404 authoritative final SQL output. Archive mapping/session/target
+    metadata replaces only its disabled scheduling responsibility and default-false model gate; enabled
+    persistent append/sequence equivalence remains unverified under open A-403.
+  rationale: A named Airflow DagBag/template test verifies cadence, success gating, source edges and date
+    semantics. Replaced disabled responsibility is not a claim that an enabled persistent archive migration
+    is complete.
+  risk: med
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
+  status: accepted
+  sources:
+  - etl/crontab
+  - warehouse/teradata/jobs/daily_chain
+  - etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML
+  - etl/informatica/params/sfx_d1110_daily.par

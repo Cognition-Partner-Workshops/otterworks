@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "0d06f97eabcb82fa52fb2f1fe0507cdd69760a9c",
+  "git_sha": "ab6faab17f6e1aabcc80faf1586fb585801c8f0f",
   "id": "audit.reconciliation_export",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -123,5 +123,5 @@
     "legacy": 44
   },
   "spec_hash": "c01a23f3e6f29660c0b3c5d0f649edc658e7687f7769539ab1495c92ce23cb38",
-  "timestamp": "2026-11-19T08:19:40.135652+00:00"
+  "timestamp": "2026-11-19T08:42:18.806087+00:00"
 }

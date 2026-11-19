@@ -1,0 +1,160 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "ab6faab17f6e1aabcc80faf1586fb585801c8f0f",
+  "id": "audit.stg_legal_hold",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_AUDIT.STG_LEGAL_HOLD"
+  ],
+  "results": {
+    "columns": [
+      "hold_id",
+      "document_id",
+      "customer_id",
+      "start_dt",
+      "reason_text",
+      "status_cd"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "customer_id": {
+          "count": 20,
+          "hash": "9d813c070674ec79dd621d250056b9af91389e01c68c446c1e569282938ffc9c",
+          "null_count": 0,
+          "sum": "210"
+        },
+        "document_id": {
+          "count": 20,
+          "hash": "9d813c070674ec79dd621d250056b9af91389e01c68c446c1e569282938ffc9c",
+          "null_count": 0,
+          "sum": "210"
+        },
+        "hold_id": {
+          "count": 20,
+          "hash": "9d813c070674ec79dd621d250056b9af91389e01c68c446c1e569282938ffc9c",
+          "null_count": 0,
+          "sum": "210"
+        },
+        "reason_text": {
+          "count": 20,
+          "hash": "5b39db1629bcf5d9a2c486c93338a842065eba2b3134748c9fdf08bf2ee0273e",
+          "null_count": 0,
+          "sum": null
+        },
+        "start_dt": {
+          "count": 20,
+          "hash": "7144121fba079c7a5ac5ac36cd9affad636642bee420449c72d3cb8e74dfc1f6",
+          "null_count": 0,
+          "sum": null
+        },
+        "status_cd": {
+          "count": 20,
+          "hash": "5fdf62e0873b95be93fe4a6208d51faa01a03158a903a722102ba3a080cddf12",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "customer_id": {
+          "count": 20,
+          "hash": "9d813c070674ec79dd621d250056b9af91389e01c68c446c1e569282938ffc9c",
+          "null_count": 0,
+          "sum": "210"
+        },
+        "document_id": {
+          "count": 20,
+          "hash": "9d813c070674ec79dd621d250056b9af91389e01c68c446c1e569282938ffc9c",
+          "null_count": 0,
+          "sum": "210"
+        },
+        "hold_id": {
+          "count": 20,
+          "hash": "9d813c070674ec79dd621d250056b9af91389e01c68c446c1e569282938ffc9c",
+          "null_count": 0,
+          "sum": "210"
+        },
+        "reason_text": {
+          "count": 20,
+          "hash": "5b39db1629bcf5d9a2c486c93338a842065eba2b3134748c9fdf08bf2ee0273e",
+          "null_count": 0,
+          "sum": null
+        },
+        "start_dt": {
+          "count": 20,
+          "hash": "7144121fba079c7a5ac5ac36cd9affad636642bee420449c72d3cb8e74dfc1f6",
+          "null_count": 0,
+          "sum": null
+        },
+        "status_cd": {
+          "count": 20,
+          "hash": "5fdf62e0873b95be93fe4a6208d51faa01a03158a903a722102ba3a080cddf12",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "customer_id": {
+        "count": 0,
+        "samples": []
+      },
+      "document_id": {
+        "count": 0,
+        "samples": []
+      },
+      "hold_id": {
+        "count": 0,
+        "samples": []
+      },
+      "reason_text": {
+        "count": 0,
+        "samples": []
+      },
+      "start_dt": {
+        "count": 0,
+        "samples": []
+      },
+      "status_cd": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 20,
+      "legacy": 20
+    }
+  },
+  "row_counts": {
+    "lakehouse": 20,
+    "legacy": 20
+  },
+  "spec_hash": "ae15057003ddbcc9492eb26222fb05e920e7ddd15fbc2ff213cda52cfb16797d",
+  "timestamp": "2026-11-19T08:36:01.519698+00:00"
+}

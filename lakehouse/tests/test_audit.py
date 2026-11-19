@@ -195,7 +195,13 @@ def test_audit_graph_dependencies_and_exports():
     assert nodes['parity_audit_reconciliation_export']['depends_on'] == ['export_audit_reconciliation']
     for node in nodes.values():
         if node['kind'] == 'parity' and node['spec'].startswith('audit.') and node['spec'] != 'audit.reconciliation_export':
-            assert node['depends_on'] == ['dbt_audit']
+            if node['spec'].startswith('audit.spark_'):
+                assert node['depends_on'] == (['audit_delta_optimize'] if node['spec'].endswith(
+                    'lake_compaction_audit') else ['audit_spark'])
+            elif node['spec'].startswith('audit.stg_') and node['spec'] != 'audit.stg_audit_event':
+                assert node['depends_on'] == ['bronze_audit']
+            else:
+                assert node['depends_on'] == ['dbt_audit']
 
 
 def test_export_empty_retry_and_failure(tmp_path):

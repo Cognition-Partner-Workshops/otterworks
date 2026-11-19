@@ -796,6 +796,154 @@ dags:
     retries: 1
     retry_delay_seconds: 10
     legacy_objects: []
+  - id: parity_audit_spark_audit_actor_activity_join
+    kind: parity
+    spec: audit.spark_audit_actor_activity_join
+    depends_on:
+    - audit_spark
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_spark_audit_archive_resort
+    kind: parity
+    spec: audit.spark_audit_archive_resort
+    depends_on:
+    - audit_spark
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_spark_audit_daily_summary
+    kind: parity
+    spec: audit.spark_audit_daily_summary
+    depends_on:
+    - audit_spark
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_spark_compliance_flag_rules
+    kind: parity
+    spec: audit.spark_compliance_flag_rules
+    depends_on:
+    - audit_spark
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_spark_lake_compaction_audit
+    kind: parity
+    spec: audit.spark_lake_compaction_audit
+    depends_on:
+    - audit_delta_optimize
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_spark_security_alert_anomaly
+    kind: parity
+    spec: audit.spark_security_alert_anomaly
+    depends_on:
+    - audit_spark
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_access_review
+    kind: parity
+    spec: audit.stg_access_review
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_audit_daily_summary
+    kind: parity
+    spec: audit.stg_audit_daily_summary
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_audit_event_archive
+    kind: parity
+    spec: audit.stg_audit_event_archive
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_audit_recon
+    kind: parity
+    spec: audit.stg_audit_recon
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_compliance_flag
+    kind: parity
+    spec: audit.stg_compliance_flag
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_data_export_req
+    kind: parity
+    spec: audit.stg_data_export_req
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_legal_hold
+    kind: parity
+    spec: audit.stg_legal_hold
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_retention_policy
+    kind: parity
+    spec: audit.stg_retention_policy
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: parity_audit_stg_security_alert
+    kind: parity
+    spec: audit.stg_security_alert
+    depends_on:
+    - bronze_audit
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+  - id: audit_spark
+    kind: export
+    depends_on:
+    - dbt_audit
+    - bronze_users
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+    command:
+    - '{python}'
+    - -m
+    - lakehouse.audit.spark
+    - --business-date
+    - '{business_date}'
+  - id: audit_delta_optimize
+    kind: export
+    depends_on:
+    - audit_spark
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects: []
+    command:
+    - '{python}'
+    - -m
+    - lakehouse.audit.spark
+    - --business-date
+    - '{business_date}'
+    - --compact
 - id: lakehouse_users_spark
   schedule: '@daily'
   timezone: UTC
@@ -885,3 +1033,25 @@ dags:
     retries: 0
     retry_delay_seconds: 0
     legacy_objects: []
+- id: lakehouse_audit_weekly
+  schedule: '@weekly'
+  timezone: UTC
+  start_date: '20261110'
+  catchup: true
+  max_active_runs: 1
+  max_active_tasks: 1
+  paused: false
+  nodes:
+  - id: audit_weekly_archive
+    kind: export
+    depends_on: []
+    retries: 1
+    retry_delay_seconds: 10
+    legacy_objects:
+    - etl_script:etl/scripts/audit_archive_weekly.py
+    command:
+    - '{python}'
+    - -m
+    - lakehouse.audit.archive
+    - --business-date
+    - '{business_date}'

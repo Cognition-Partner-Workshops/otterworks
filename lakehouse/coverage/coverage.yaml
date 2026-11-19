@@ -114,9 +114,10 @@ objects:
   assumptions:
   - A-401
   - A-402
-  - A-405
   - A-404
-  notes: 'Audit-local external base-count/actor projections. TODO: swap to ref() of domain silver models once billing/documents/users merge; keep explicit cross-domain DAG edges.'
+  - A-405
+  notes: 'Audit-local external base-count/actor projections. TODO: swap to ref() of domain silver models
+    once billing/documents/users merge; keep explicit cross-domain DAG edges.'
 - id: bteq_script:warehouse/teradata/scripts/billing/01_load_accounts.bteq
   status: pending
   targets: []
@@ -370,12 +371,16 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#21215b59c160
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_daily.audit_spark
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-408
+  notes: A-408 converges legacy times into the tested UTC daily dependency graph or Sunday weekly archive
+    DAG. Includes explicit users input edge and success gating; no independent legacy runner.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#2ec3f6dad69f
   status: pending
   targets: []
@@ -384,12 +389,17 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#33854636d6ba
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_audit_weekly.audit_weekly_archive
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-407
+  - A-408
+  notes: A-408 converges legacy times into the tested UTC daily dependency graph or Sunday weekly archive
+    DAG. Includes explicit users input edge and success gating; no independent legacy runner.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#5c3511fa77a1
   status: pending
   targets: []
@@ -419,12 +429,16 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#77635c543e02
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_daily.audit_spark
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-408
+  notes: A-408 converges legacy times into the tested UTC daily dependency graph or Sunday weekly archive
+    DAG. Includes explicit users input edge and success gating; no independent legacy runner.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#7ce72803f1b1
   status: pending
   targets: []
@@ -457,12 +471,16 @@ objects:
   notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
   verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#949f96b6edeb
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_daily.audit_spark
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-408
+  notes: A-408 converges legacy times into the tested UTC daily dependency graph or Sunday weekly archive
+    DAG. Includes explicit users input edge and success gating; no independent legacy runner.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#9d492d3cabc6
   status: replaced_by_platform
   targets:
@@ -491,12 +509,16 @@ objects:
   notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
   verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#ae80e15b906a
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_daily.audit_spark
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-408
+  notes: A-408 converges legacy times into the tested UTC daily dependency graph or Sunday weekly archive
+    DAG. Includes explicit users input edge and success gating; no independent legacy runner.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#afa009bc6185
   status: pending
   targets: []
@@ -532,12 +554,16 @@ objects:
   notes: Users-owned schedule or submit responsibility moved to the validated Airflow graph.
   verification: test:lakehouse/tests/test_users.py::test_users_graph_and_ownership
 - id: cron_entry:etl/crontab#d0caaba38c97
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_daily.audit_spark
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-408
+  notes: A-408 converges legacy times into the tested UTC daily dependency graph or Sunday weekly archive
+    DAG. Includes explicit users input edge and success gating; no independent legacy runner.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#d223b2edaac1
   status: pending
   targets: []
@@ -570,12 +596,16 @@ objects:
   - A-037
   notes: Not migrated; no completeness claim.
 - id: cron_entry:etl/crontab#d793014c2fb2
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_daily.audit_delta_optimize
   parity: []
   assumptions:
   - A-037
-  notes: Not migrated; no completeness claim.
+  - A-408
+  notes: A-408 converges legacy times into the tested UTC daily dependency graph or Sunday weekly archive
+    DAG. Includes explicit users input edge and success gating; no independent legacy runner.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:etl/crontab#e913aaa5c3d7
   status: pending
   targets: []
@@ -627,8 +657,9 @@ objects:
   assumptions:
   - A-037
   - A-400
+  - A-408
   notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
-  verification: test:lakehouse/tests/test_audit.py::test_audit_graph_dependencies_and_exports
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/02_load_controls
   status: converted
   targets:
@@ -643,8 +674,9 @@ objects:
   - audit.retention_policy
   assumptions:
   - A-037
+  - A-408
   notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
-  verification: test:lakehouse/tests/test_audit.py::test_audit_graph_dependencies_and_exports
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/03_load_reviews
   status: converted
   targets:
@@ -661,8 +693,9 @@ objects:
   - A-037
   - A-400
   - A-404
+  - A-408
   notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
-  verification: test:lakehouse/tests/test_audit.py::test_audit_graph_dependencies_and_exports
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/10_summary_daily
   status: converted
   targets:
@@ -672,8 +705,9 @@ objects:
   assumptions:
   - A-037
   - A-404
+  - A-408
   notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
-  verification: test:lakehouse/tests/test_audit.py::test_audit_graph_dependencies_and_exports
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=audit/11_reconciliation
   status: converted
   targets:
@@ -683,8 +717,9 @@ objects:
   assumptions:
   - A-037
   - A-404
+  - A-408
   notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
-  verification: test:lakehouse/tests/test_audit.py::test_audit_graph_dependencies_and_exports
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: cron_entry:warehouse/teradata/jobs/daily_chain#stage=billing/01_load_accounts
   status: pending
   targets: []
@@ -891,11 +926,16 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: etl_script:etl/scripts/audit_archive_weekly.py
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/audit/archive.py
+  - lakehouse_audit_weekly.audit_weekly_archive
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-407
+  notes: Business-date archive with Glacier publication and resumable deletion. Legacy file/report fixture
+    parity and empty/error/idempotency tests; A-407 documents intentional safety and metadata changes.
+  verification: test:lakehouse/tests/test_audit_archive.py::test_archive_legacy_file_parity
 - id: etl_script:etl/scripts/bucket_owner.py
   status: pending
   targets: []
@@ -1415,11 +1455,16 @@ objects:
   - A-036
   notes: Date-partitioned bronze replaces this users FastLoad; staging parity verifies typed values.
 - id: informatica_config:SFX_AUDIT.default_session_config
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_daily.dbt_audit
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-408
+  notes: A-408 dependency/cadence/success/retry controls replace inactive Informatica scheduling/session
+    alternatives. Daily SQL remains authoritative (A-400/A-404); this is not enabled alternative-producer
+    sequence parity.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_config:SFX_BILLING.default_session_config
   status: pending
   targets: []
@@ -1439,12 +1484,17 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_mapping:SFX_AUDIT.m_SFX_AUDIT_DAILY_SUMMARY
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_daily.dbt_audit
   parity: []
   assumptions:
   - A-404
-  notes: Not migrated; no completeness claim.
+  - A-408
+  notes: A-408 dependency/cadence/success/retry controls replace inactive Informatica scheduling/session
+    alternatives. Daily SQL remains authoritative (A-400/A-404); this is not enabled alternative-producer
+    sequence parity.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_mapping:SFX_AUDIT.m_SFX_AUDIT_EVENT
   status: replaced_by_platform
   targets:
@@ -1453,14 +1503,19 @@ objects:
   - audit.audit_event
   assumptions:
   - A-400
-  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
+    (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_mapping:SFX_AUDIT.m_SFX_AUDIT_EVENT_ARCHIVE
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/dbt/models/silver/audit/audit_event_archive.sql
   parity: []
   assumptions:
   - A-403
-  notes: Not migrated; no completeness claim.
+  - A-408
+  notes: 'Disabled scheduling responsibility only: default-false archive gate is preserved. Enabled persistent
+    append/sequence/history parity is NOT verified; open A-403 still applies.'
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_mapping:SFX_AUDIT.m_SFX_SECURITY_ALERT
   status: replaced_by_platform
   targets:
@@ -1469,7 +1524,8 @@ objects:
   - audit.security_alert
   assumptions:
   - A-400
-  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
+    (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_mapping:SFX_AUDIT.m_SFX_STG_AUDIT_EVENT
   status: replaced_by_platform
   targets:
@@ -1478,7 +1534,8 @@ objects:
   - audit.stg_audit_event
   assumptions:
   - A-400
-  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
+    (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_mapping:SFX_BILLING.m_SFX_CUSTOMER_ACCOUNT
   status: pending
   targets: []
@@ -1596,11 +1653,16 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_scheduler:SFX_AUDIT.wf_SFX_AUDIT_DAILY.Scheduler
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_daily.dbt_audit
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-408
+  notes: A-408 dependency/cadence/success/retry controls replace inactive Informatica scheduling/session
+    alternatives. Daily SQL remains authoritative (A-400/A-404); this is not enabled alternative-producer
+    sequence parity.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_scheduler:SFX_BILLING.wf_SFX_BILLING_DAILY.Scheduler
   status: pending
   targets: []
@@ -1614,12 +1676,17 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_session:SFX_AUDIT.s_m_SFX_AUDIT_DAILY_SUMMARY
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_daily.dbt_audit
   parity: []
   assumptions:
   - A-404
-  notes: Not migrated; no completeness claim.
+  - A-408
+  notes: A-408 dependency/cadence/success/retry controls replace inactive Informatica scheduling/session
+    alternatives. Daily SQL remains authoritative (A-400/A-404); this is not enabled alternative-producer
+    sequence parity.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_session:SFX_AUDIT.s_m_SFX_AUDIT_EVENT
   status: replaced_by_platform
   targets:
@@ -1628,14 +1695,19 @@ objects:
   - audit.audit_event
   assumptions:
   - A-400
-  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
+    (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_session:SFX_AUDIT.s_m_SFX_AUDIT_EVENT_ARCHIVE
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/dbt/models/silver/audit/audit_event_archive.sql
   parity: []
   assumptions:
   - A-403
-  notes: Not migrated; no completeness claim.
+  - A-408
+  notes: 'Disabled scheduling responsibility only: default-false archive gate is preserved. Enabled persistent
+    append/sequence/history parity is NOT verified; open A-403 still applies.'
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_session:SFX_AUDIT.s_m_SFX_SECURITY_ALERT
   status: replaced_by_platform
   targets:
@@ -1644,7 +1716,8 @@ objects:
   - audit.security_alert
   assumptions:
   - A-400
-  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
+    (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_session:SFX_AUDIT.s_m_SFX_STG_AUDIT_EVENT
   status: replaced_by_platform
   targets:
@@ -1653,7 +1726,8 @@ objects:
   - audit.stg_audit_event
   assumptions:
   - A-400
-  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
+    (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_session:SFX_BILLING.s_m_SFX_CUSTOMER_ACCOUNT
   status: pending
   targets: []
@@ -1772,7 +1846,8 @@ objects:
   - audit.stg_audit_event
   assumptions:
   - A-400
-  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
+    (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_source:SFX_AUDIT.FF_AUDIT_EVENT
   status: replaced_by_platform
   targets:
@@ -1781,7 +1856,8 @@ objects:
   - audit.stg_audit_event
   assumptions:
   - A-400
-  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
+    (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_source:SFX_AUDIT.FF_SECURITY_ALERT
   status: replaced_by_platform
   targets:
@@ -1790,7 +1866,8 @@ objects:
   - audit.security_alert
   assumptions:
   - A-400
-  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
+    (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_source:SFX_AUDIT.STG_AUDIT_EVENT
   status: replaced_by_platform
   targets:
@@ -1799,7 +1876,8 @@ objects:
   - audit.audit_event
   assumptions:
   - A-400
-  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
+    (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_source:SFX_BILLING.FF_CUSTOMER_ACCOUNT
   status: pending
   targets: []
@@ -1905,11 +1983,16 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_target:SFX_AUDIT.AUDIT_DAILY_SUMMARY
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_daily.dbt_audit
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-408
+  notes: A-408 dependency/cadence/success/retry controls replace inactive Informatica scheduling/session
+    alternatives. Daily SQL remains authoritative (A-400/A-404); this is not enabled alternative-producer
+    sequence parity.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_target:SFX_AUDIT.AUDIT_EVENT
   status: replaced_by_platform
   targets:
@@ -1918,13 +2001,18 @@ objects:
   - audit.audit_event
   assumptions:
   - A-400
-  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
+    (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_target:SFX_AUDIT.AUDIT_EVENT_ARCHIVE
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse/dbt/models/silver/audit/audit_event_archive.sql
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-408
+  notes: 'Disabled scheduling responsibility only: default-false archive gate is preserved. Enabled persistent
+    append/sequence/history parity is NOT verified; open A-403 still applies.'
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_target:SFX_AUDIT.SECURITY_ALERT
   status: replaced_by_platform
   targets:
@@ -1933,7 +2021,8 @@ objects:
   - audit.security_alert
   assumptions:
   - A-400
-  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
+    (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_target:SFX_AUDIT.STG_AUDIT_EVENT
   status: replaced_by_platform
   targets:
@@ -1942,7 +2031,8 @@ objects:
   - audit.stg_audit_event
   assumptions:
   - A-400
-  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
+  notes: Inactive Informatica alternative superseded by authoritative daily-chain BTEQ snapshot semantics
+    (A-400), not a claim that trimming/defaults/alert updates execute concurrently.
 - id: informatica_target:SFX_BILLING.CUSTOMER_ACCOUNT
   status: pending
   targets: []
@@ -2054,11 +2144,16 @@ objects:
   - A-307
   notes: Compare all linked outputs to matched-input legacy results for the fixture business date.
 - id: informatica_task:SFX_AUDIT.wf_SFX_AUDIT_DAILY.Start
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_daily.dbt_audit
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-408
+  notes: A-408 dependency/cadence/success/retry controls replace inactive Informatica scheduling/session
+    alternatives. Daily SQL remains authoritative (A-400/A-404); this is not enabled alternative-producer
+    sequence parity.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_task:SFX_BILLING.wf_SFX_BILLING_DAILY.Start
   status: pending
   targets: []
@@ -2090,11 +2185,16 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: informatica_workflow:SFX_AUDIT.wf_SFX_AUDIT_DAILY
-  status: pending
-  targets: []
+  status: replaced_by_platform
+  targets:
+  - lakehouse_daily.dbt_audit
   parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  assumptions:
+  - A-408
+  notes: A-408 dependency/cadence/success/retry controls replace inactive Informatica scheduling/session
+    alternatives. Daily SQL remains authoritative (A-400/A-404); this is not enabled alternative-producer
+    sequence parity.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: informatica_workflow:SFX_BILLING.wf_SFX_BILLING_DAILY
   status: pending
   targets: []
@@ -2120,23 +2220,38 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_job:audit_actor_activity_join
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.spark_audit_actor_activity_join
+  - lakehouse/audit/spark.py
+  parity:
+  - audit.spark_audit_actor_activity_join
+  assumptions:
+  - A-406
+  notes: Fresh same-landing fixture parity. A-406 limits the Z-score floating-reduction tolerance and
+    retires duplicate Parquet/JDBC sinks in favor of Delta.
 - id: spark_job:audit_archive_resort
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.spark_audit_archive_resort
+  - lakehouse/audit/spark.py
+  parity:
+  - audit.spark_audit_archive_resort
+  assumptions:
+  - A-406
+  notes: Fresh same-landing fixture parity. A-406 limits the Z-score floating-reduction tolerance and
+    retires duplicate Parquet/JDBC sinks in favor of Delta.
 - id: spark_job:audit_daily_summary
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.spark_audit_daily_summary
+  - lakehouse/audit/spark.py
+  parity:
+  - audit.spark_audit_daily_summary
+  assumptions:
+  - A-406
+  notes: Fresh same-landing fixture parity. A-406 limits the Z-score floating-reduction tolerance and
+    retires duplicate Parquet/JDBC sinks in favor of Delta.
 - id: spark_job:billing_churn_score
   status: pending
   targets: []
@@ -2180,11 +2295,16 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_job:compliance_flag_rules
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.spark_compliance_flag_rules
+  - lakehouse/audit/spark.py
+  parity:
+  - audit.spark_compliance_flag_rules
+  assumptions:
+  - A-406
+  notes: Fresh same-landing fixture parity. A-406 limits the Z-score floating-reduction tolerance and
+    retires duplicate Parquet/JDBC sinks in favor of Delta.
 - id: spark_job:doc_share_graph_reach
   status: pending
   targets: []
@@ -2247,11 +2367,17 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_job:lake_compaction_audit
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - gold_audit.spark_audit_daily_summary
+  - lakehouse_daily.audit_delta_optimize
+  parity:
+  - audit.spark_lake_compaction_audit
+  assumptions:
+  - A-406
+  notes: Delta OPTIMIZE replaces two-file Parquet coalescing. Named test verifies actual compaction and
+    unchanged rows; fresh output parity covers the legacy compacted relation.
+  verification: test:lakehouse/tests/test_audit_spark.py::test_delta_optimize_preserves_audit_summary
 - id: spark_job:lake_compaction_documents
   status: pending
   targets: []
@@ -2259,11 +2385,16 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_job:security_alert_anomaly
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.spark_security_alert_anomaly
+  - lakehouse/audit/spark.py
+  parity:
+  - audit.spark_security_alert_anomaly
+  assumptions:
+  - A-406
+  notes: Fresh same-landing fixture parity. A-406 limits the Z-score floating-reduction tolerance and
+    retires duplicate Parquet/JDBC sinks in favor of Delta.
 - id: spark_job:team_graph_components
   status: converted
   targets:
@@ -2355,23 +2486,41 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_submit:etl/spark/submit/audit_actor_activity_join.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.spark_audit_actor_activity_join
+  - lakehouse/audit/spark.py
+  parity:
+  - audit.spark_audit_actor_activity_join
+  assumptions:
+  - A-406
+  notes: Fresh same-landing fixture parity. A-406 limits the Z-score floating-reduction tolerance and
+    retires duplicate Parquet/JDBC sinks in favor of Delta.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: spark_submit:etl/spark/submit/audit_archive_resort.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.spark_audit_archive_resort
+  - lakehouse/audit/spark.py
+  parity:
+  - audit.spark_audit_archive_resort
+  assumptions:
+  - A-406
+  notes: Fresh same-landing fixture parity. A-406 limits the Z-score floating-reduction tolerance and
+    retires duplicate Parquet/JDBC sinks in favor of Delta.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: spark_submit:etl/spark/submit/audit_daily_summary.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.spark_audit_daily_summary
+  - lakehouse/audit/spark.py
+  parity:
+  - audit.spark_audit_daily_summary
+  assumptions:
+  - A-406
+  notes: Fresh same-landing fixture parity. A-406 limits the Z-score floating-reduction tolerance and
+    retires duplicate Parquet/JDBC sinks in favor of Delta.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: spark_submit:etl/spark/submit/billing_churn_score.sh
   status: pending
   targets: []
@@ -2415,11 +2564,17 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_submit:etl/spark/submit/compliance_flag_rules.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.spark_compliance_flag_rules
+  - lakehouse/audit/spark.py
+  parity:
+  - audit.spark_compliance_flag_rules
+  assumptions:
+  - A-406
+  notes: Fresh same-landing fixture parity. A-406 limits the Z-score floating-reduction tolerance and
+    retires duplicate Parquet/JDBC sinks in favor of Delta.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: spark_submit:etl/spark/submit/doc_share_graph_reach.sh
   status: pending
   targets: []
@@ -2481,11 +2636,17 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_submit:etl/spark/submit/lake_compaction_audit.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: replaced_by_platform
+  targets:
+  - gold_audit.spark_audit_daily_summary
+  - lakehouse_daily.audit_delta_optimize
+  parity:
+  - audit.spark_lake_compaction_audit
+  assumptions:
+  - A-406
+  notes: Delta OPTIMIZE replaces two-file Parquet coalescing. Named test verifies actual compaction and
+    unchanged rows; fresh output parity covers the legacy compacted relation.
+  verification: test:lakehouse/tests/test_audit_spark.py::test_delta_optimize_preserves_audit_summary
 - id: spark_submit:etl/spark/submit/lake_compaction_documents.sh
   status: pending
   targets: []
@@ -2493,11 +2654,17 @@ objects:
   assumptions: []
   notes: Not migrated; no completeness claim.
 - id: spark_submit:etl/spark/submit/security_alert_anomaly.sh
-  status: pending
-  targets: []
-  parity: []
-  assumptions: []
-  notes: Not migrated; no completeness claim.
+  status: converted
+  targets:
+  - gold_audit.spark_security_alert_anomaly
+  - lakehouse/audit/spark.py
+  parity:
+  - audit.spark_security_alert_anomaly
+  assumptions:
+  - A-406
+  notes: Fresh same-landing fixture parity. A-406 limits the Z-score floating-reduction tolerance and
+    retires duplicate Parquet/JDBC sinks in favor of Delta.
+  verification: test:lakehouse/airflow/tests/test_dags.py::test_audit_owned_schedule_and_dependencies
 - id: spark_submit:etl/spark/submit/team_graph_components.sh
   status: replaced_by_platform
   targets:
@@ -2696,7 +2863,8 @@ objects:
   - A-401
   - A-402
   - A-404
-  notes: 'Audit-local external base-count/actor projections. TODO: swap to ref() of domain silver models once billing/documents/users merge; keep explicit cross-domain DAG edges.'
+  notes: 'Audit-local external base-count/actor projections. TODO: swap to ref() of domain silver models
+    once billing/documents/users merge; keep explicit cross-domain DAG edges.'
 - id: teradata_table:SFX_AUDIT.COMPLIANCE_FLAG
   status: converted
   targets:
@@ -2739,17 +2907,21 @@ objects:
   - A-400
   notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_table:SFX_AUDIT.STG_ACCESS_REVIEW
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - bronze_audit.access_review
+  parity:
+  - audit.stg_access_review
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Fresh exact fixture parity against the same legacy source population.
 - id: teradata_table:SFX_AUDIT.STG_AUDIT_DAILY_SUMMARY
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - bronze_audit.audit_daily_summary
+  parity:
+  - audit.stg_audit_daily_summary
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Fresh exact fixture parity against the same legacy source population.
 - id: teradata_table:SFX_AUDIT.STG_AUDIT_EVENT
   status: converted
   targets:
@@ -2760,47 +2932,61 @@ objects:
   - A-400
   notes: Final full-chain audit snapshot parity on shared 20261109 inputs.
 - id: teradata_table:SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - bronze_audit.audit_event_archive
+  parity:
+  - audit.stg_audit_event_archive
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Fresh exact fixture parity against the same legacy source population.
 - id: teradata_table:SFX_AUDIT.STG_AUDIT_RECON
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - bronze_audit.audit_recon
+  parity:
+  - audit.stg_audit_recon
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Fresh exact fixture parity against the same legacy source population.
 - id: teradata_table:SFX_AUDIT.STG_COMPLIANCE_FLAG
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - bronze_audit.compliance_flag
+  parity:
+  - audit.stg_compliance_flag
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Fresh exact fixture parity against the same legacy source population.
 - id: teradata_table:SFX_AUDIT.STG_DATA_EXPORT_REQ
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - bronze_audit.data_export_req
+  parity:
+  - audit.stg_data_export_req
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Fresh exact fixture parity against the same legacy source population.
 - id: teradata_table:SFX_AUDIT.STG_LEGAL_HOLD
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - bronze_audit.legal_hold
+  parity:
+  - audit.stg_legal_hold
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Fresh exact fixture parity against the same legacy source population.
 - id: teradata_table:SFX_AUDIT.STG_RETENTION_POLICY
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - bronze_audit.retention_policy
+  parity:
+  - audit.stg_retention_policy
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Fresh exact fixture parity against the same legacy source population.
 - id: teradata_table:SFX_AUDIT.STG_SECURITY_ALERT
-  status: pending
-  targets: []
-  parity: []
+  status: converted
+  targets:
+  - bronze_audit.security_alert
+  parity:
+  - audit.stg_security_alert
   assumptions: []
-  notes: Not migrated; no completeness claim.
+  notes: Fresh exact fixture parity against the same legacy source population.
 - id: teradata_table:SFX_BILLING.ACCOUNT_HIST_BATCH
   status: pending
   targets: []
@@ -3321,7 +3507,8 @@ objects:
   - audit.v_event_actors
   assumptions:
   - A-401
-  notes: 'Audit-local external base-count/actor projections. TODO: swap to ref() of domain silver models once billing/documents/users merge; keep explicit cross-domain DAG edges.'
+  notes: 'Audit-local external base-count/actor projections. TODO: swap to ref() of domain silver models
+    once billing/documents/users merge; keep explicit cross-domain DAG edges.'
 - id: teradata_view:SFX_BILLING.V_ACCOUNT_INVOICES
   status: pending
   targets: []
