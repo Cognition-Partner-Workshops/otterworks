@@ -20,6 +20,7 @@ import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -53,6 +54,27 @@ public class ReportControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Test
+    public void openApiDocumentsReportEndpointsAndRequestSchema() throws Exception {
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.info.title").value("OtterWorks Report Service API"))
+                .andExpect(jsonPath("$.paths['/api/v1/reports'].post.responses['202'].description")
+                        .value("Report request accepted"))
+                .andExpect(jsonPath("$.paths['/api/v1/reports/{id}'].get.parameters[0].name").value("id"))
+                .andExpect(jsonPath("$.components.schemas.ReportRequest.required").value(hasItem("reportName")));
+    }
+
+    @Test
+    public void swaggerUiAndItsConfigurationAreAvailable() throws Exception {
+        mockMvc.perform(get("/swagger-ui/index.html"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
+        mockMvc.perform(get("/v3/api-docs/swagger-config"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.url").value("/v3/api-docs"));
+    }
 
     // ---- POST /api/v1/reports ----
 
