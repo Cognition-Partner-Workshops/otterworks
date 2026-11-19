@@ -222,10 +222,8 @@ def test_role_plan_rejects_unscoped_resets(sql):
         roles.validate([("bad.sql", 1, sql)])
 
 
-def test_complexity_security_review_resolved():
-    fragment = json.loads((ROOT.parents[1] / "demos/app/complexity/sfx-snowflake.json").read_text())
-    assert (fragment["schema_version"], fragment["area"], fragment["run_token"]) == (1, "snowflake", "sfx-d1110")
-    assert fragment["security_review"] == []
+def test_complexity_fragments_absent():
+    assert not list((ROOT.parents[1] / "demos/app/complexity").glob("sfx-*.json"))
 
 
 def test_make_uses_separate_snowflake_and_teradata_environments():
