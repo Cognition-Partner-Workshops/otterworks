@@ -55,6 +55,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/migration/migration.component').then(m => m.MigrationComponent),
       },
       {
+        path: 'odl-parity',
+        loadComponent: () => import('./pages/odl-parity/odl-parity.component').then(m => m.OdlParityComponent),
+      },
+      {
         path: 'migration/reconciliation/:runId',
         loadComponent: () => import('./pages/migration/migration.component').then(m => m.MigrationComponent),
       },
