@@ -169,6 +169,52 @@ def test_binary_partition_history_and_explicit_date(tmp_path):
     assert "'2026-11-19'" in documents.render_model(model,'2026-11-19')
 
 
+def test_incremental_partition_replacement_normal_empty_and_invalid_date():
+    job = spec('file_object_binary_extract')
+    model = (ROOT/job['model']).read_text()
+    assert "materialized='incremental'" in model and "incremental_strategy='append'" in model
+    assert 'full_refresh=false' in model and 'documents_spark_replace_partition()' in model
+    with duckdb.connect() as c:
+        c.execute('CREATE SCHEMA SPARK_INPUT')
+        c.execute('CREATE SCHEMA SPARK')
+        c.execute('CREATE TABLE SPARK_INPUT.FILE_OBJECT_BLOBS (STORAGE_KEY VARCHAR,CONTENT BLOB)')
+        c.execute('CREATE TABLE SPARK_INPUT.FILE_OBJECT (STORAGE_KEY VARCHAR,FILE_OBJECT_ID BIGINT,DOCUMENT_ID BIGINT,SIZE_BYTES BIGINT,CHECKSUM VARCHAR)')
+        c.execute("INSERT INTO SPARK_INPUT.FILE_OBJECT VALUES ('one',1,1,3,'checksum')")
+        c.execute("INSERT INTO SPARK_INPUT.FILE_OBJECT_BLOBS VALUES ('one','abc'::BLOB)")
+        documents.register_udfs(c)
+        documents.execute_model(c,job,'2026-11-18')
+        documents.execute_model(c,job,'2026-11-19',incremental=True)
+        documents.execute_model(c,job,'2026-11-19',incremental=True)
+        assert c.execute('SELECT COUNT(*) FROM SPARK.SPARK__FILE_OBJECT_BINARY_EXTRACT').fetchone()==(2,)
+        c.execute('DELETE FROM SPARK_INPUT.FILE_OBJECT')
+        documents.execute_model(c,job,'2026-11-19',incremental=True)
+        assert c.execute('SELECT RUN_DATE FROM SPARK.SPARK__FILE_OBJECT_BINARY_EXTRACT').fetchall()==[('2026-11-18',)]
+        with pytest.raises(ValueError,match='date'):
+            documents.execute_model(c,job,"bad' date",incremental=True)
+        assert c.execute('SELECT COUNT(*) FROM SPARK.SPARK__FILE_OBJECT_BINARY_EXTRACT').fetchone()==(1,)
+
+
+@pytest.mark.parametrize('rows',[[],[{'ALERT_ID':1,'USER_ID':2,'SCORE':3.0,'Z_SCORE':0.0}]])
+def test_jdbc_side_output_runs_shipped_model(monkeypatch,rows):
+    monkeypatch.setattr(documents.subprocess,'check_output',lambda *a,**k:'\n'.join(json.dumps(r) for r in rows))
+    with duckdb.connect() as before,duckdb.connect() as after:
+        after.execute('CREATE SCHEMA SPARK')
+        after.execute('CREATE TABLE SPARK.SPARK__SECURITY_ALERT_ANOMALY (ALERT_ID BIGINT,USER_ID BIGINT,SCORE DOUBLE,Z_SCORE DOUBLE)')
+        if rows:
+            after.executemany('INSERT INTO SPARK.SPARK__SECURITY_ALERT_ANOMALY VALUES (?,?,?,?)',[list(r.values()) for r in rows])
+        proof = documents.jdbc_output(before,after,'sfx-1119-before')
+        assert proof['measurement']['passed']
+        assert proof['measurement']['row_count']=={'before':len(rows),'after':len(rows)}
+        assert 'SPARK__SECURITY_ALERT_ANOMALY' in proof['query']
+
+
+def test_jdbc_side_output_rejects_unknown_columns(monkeypatch):
+    monkeypatch.setattr(documents.subprocess,'check_output',lambda *a,**k:'{"wrong":1}')
+    with duckdb.connect() as before,duckdb.connect() as after:
+        with pytest.raises(ValueError,match='column contract'):
+            documents.jdbc_output(before,after,'sfx-1119-before')
+
+
 def test_capped_folder_walk_preserves_zero_parent_truthiness():
     with duckdb.connect() as c:
         c.execute('CREATE SCHEMA SPARK_INPUT')

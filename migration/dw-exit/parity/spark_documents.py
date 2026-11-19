@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import re
 import sys
+import subprocess
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT),str(ROOT/'migration/dw-exit')]
@@ -63,7 +64,7 @@ def register_udfs(connection):
 
 
 def render_model(path, run_date=None):
-    text = re.sub(r'\{\{\s*config\(.*?\)\s*\}\}', '', path.read_text(), flags=re.S)
+    text = re.sub(r'^\{\{\s*config\(.*\)\s*\}\}\s*$', '', path.read_text(), flags=re.M)
     text = re.sub(r"\{\{\s*source\('spark_(?:documents|users|audit|documents_binary)',\s*'(\w+)'\)\s*\}\}", r'SPARK_INPUT.\1',text)
     text = re.sub(r"\{\{\s*ref\('(\w+)'\)\s*\}\}", lambda m:'SPARK.'+identifier('spark__'+m[1]),text)
     if run_date is not None:
@@ -73,6 +74,52 @@ def render_model(path, run_date=None):
     if '{{' in text or '{%' in text:
         raise ValueError('Unsupported documents Spark dbt template')
     return sqlglot.parse_one(text,read='snowflake').sql(dialect='duckdb')
+
+
+def execute_model(connection, job, day=None, incremental=False):
+    target = 'SPARK.'+identifier(job['target'])
+    query = render_model(ROOT/job['model'],day)
+    if incremental:
+        body = UDFS.read_text().split('{% macro documents_spark_replace_partition() %}',1)[1].split('{% endmacro %}',1)[0]
+        hook = body.split('{% if is_incremental() %}',1)[1].split('{% else %}',1)[0]
+        hook = hook.replace('{{ this }}',target).replace('{{ documents_spark_run_date() }}',day)
+        connection.execute('BEGIN')
+        try:
+            connection.execute(sqlglot.parse_one(hook,read='snowflake').sql(dialect='duckdb'))
+            connection.execute('INSERT INTO '+target+' '+query)
+            connection.execute('COMMIT')
+        except Exception:
+            connection.execute('ROLLBACK')
+            raise
+    else:
+        connection.execute('CREATE TABLE '+target+' AS '+query)
+    return query
+
+
+def jdbc_output(before, after, namespace):
+    if namespace != RunConfig.from_env().before_namespace:
+        raise ValueError('Unexpected JDBC namespace')
+    command = ['docker','compose','-f','docker-compose.spark.yml','-p',RunConfig.from_env().token+'-spark-'+namespace,
+               'exec','-T','sfx-tdemu','psql','-U','etl_batch','-d','sfx_teradata','-Atc',
+               'SELECT row_to_json(t) FROM sfx_audit.spark_alert_anomaly t']
+    raw = subprocess.check_output(command,cwd=ROOT,text=True)
+    rows = [json.loads(line) for line in raw.splitlines()]
+    columns = ['ALERT_ID','USER_ID','SCORE','Z_SCORE']
+    if any(list(row)!=columns for row in rows):
+        raise ValueError('Unexpected audit JDBC column contract')
+    before.execute('CREATE SCHEMA IF NOT EXISTS SFX_AUDIT')
+    before.execute('CREATE TABLE SFX_AUDIT.SPARK_ALERT_ANOMALY (ALERT_ID BIGINT,USER_ID BIGINT,SCORE DOUBLE,Z_SCORE DOUBLE)')
+    if rows:
+        before.executemany('INSERT INTO SFX_AUDIT.SPARK_ALERT_ANOMALY VALUES (?,?,?,?)',[list(row.values()) for row in rows])
+    after.execute('CREATE SCHEMA IF NOT EXISTS COMPAT')
+    model = ROOT/'warehouse/dbt/models/spark/security_alert_anomaly/security_alert_anomaly_jdbc.sql'
+    query = render_model(model)
+    after.execute('CREATE TABLE COMPAT.SPARK_ALERT_ANOMALY AS '+query)
+    result = local_compare(before,after,'SFX_AUDIT.SPARK_ALERT_ANOMALY','COMPAT.SPARK_ALERT_ANOMALY',sample_size=10000,keys=['ALERT_ID'])
+    return {'measurement':result,'query':query,'source_command':command,
+            'source_rows_sha256':hashlib.sha256(json.dumps(rows,sort_keys=True).encode()).hexdigest(),
+            'conversion_sha256':checksums([model]),'shared_with':'audit',
+            'manifest_assignment':{'SFX_AUDIT.SECURITY_ALERT':'audit','SFX_AUDIT.SPARK_ALERT_ANOMALY':'not declared'}}
 
 
 def files_for_job(runtime, job):
@@ -171,7 +218,7 @@ def materialize(before, after, objects, namespace, runtime=None):
             uppercase_columns(before,source)
             if day:
                 before.execute('ALTER TABLE '+source+' ALTER COLUMN RUN_DATE TYPE VARCHAR')
-            after.execute('CREATE TABLE '+target+' AS '+query)
+            execute_model(after,job,day)
             uppercase_columns(after,target)
             result = local_compare(before,after,source,target,sample_size=10000,keys=job['keys'])
             blockers = [d['object'] for d in decisions if 'spark.'+name in d['blocks']]
@@ -184,9 +231,14 @@ def materialize(before, after, objects, namespace, runtime=None):
                 'legacy_code_sha256':checksums([ROOT/job['source'],ROOT/'etl/spark/jobs/py/common/runtime.py',ROOT/'etl/spark/jobs/py/common/binary_documents.py']),
                 'query':query, 'build':'initial snapshot; selected binary run partition only; no incremental replay',
                 'inputs':job['inputs'], 'shared_input':name in ('security_alert_anomaly','docs_storage_by_owner')}
-            if result['passed'] and not blockers:
+            if name=='security_alert_anomaly':
+                side = jdbc_output(before,after,namespace)
+                evidence[name]['side_outputs'] = {'SFX_AUDIT.SPARK_ALERT_ANOMALY':side}
+                if not side['measurement']['passed']:
+                    evidence[name]['status'] = 'red'
+            if evidence[name]['status']=='green':
                 ready.add(target)
-        except (duckdb.Error,ValueError,OSError,sqlglot.errors.SqlglotError) as error:
+        except (duckdb.Error,ValueError,OSError,subprocess.CalledProcessError,sqlglot.errors.SqlglotError) as error:
             errors[target] = str(error)
             evidence[name] = {'status':'red','error':str(error),'target':job['target']}
     return ready,errors,evidence

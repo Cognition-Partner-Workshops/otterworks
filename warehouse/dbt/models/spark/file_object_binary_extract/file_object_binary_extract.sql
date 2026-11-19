@@ -1,4 +1,4 @@
-{{ config(materialized='table', alias='spark__file_object_binary_extract', pre_hook=documents_spark_extract_document()) }}
+{{ config(materialized='incremental', incremental_strategy='append', full_refresh=false, alias='spark__file_object_binary_extract', pre_hook=[documents_spark_extract_document(), "{{ documents_spark_replace_partition() }}"]) }}
 with extracted as (
  select STORAGE_KEY, DOCS_EXTRACT_DOCUMENT(CONTENT) as X
  from {{ source('spark_documents_binary', 'FILE_OBJECT_BLOBS') }}

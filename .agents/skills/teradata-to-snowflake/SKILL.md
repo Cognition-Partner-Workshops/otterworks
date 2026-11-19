@@ -76,13 +76,35 @@ credentials; it is not needed for local DuckDB checks.
 - Spark monthly date_format('yyyy-MM') / trial balance splits into daily groups if sqlglot drops TO_CHAR's format / ship explicit Snowflake TO_CHAR(date, 'YYYY-MM') and explicitly map it to DuckDB STRFTIME for local proof / `warehouse/dbt/models/spark/billing_gl_trial_balance/billing_gl_trial_balance.sql`, `parity/spark_billing.py`.
 - Spark usage job emits only MAX(USAGE_DATE) even on its first run / target first-build backfill has extra rows / apply the latest-date predicate on initial as well as incremental dbt builds / `warehouse/dbt/models/spark/billing_usage_append_daily/billing_usage_append_daily.sql`.
 - Spark Python churn scoring / a separately rewritten formula would not prove the shipped conversion / extract the shipped Snowpark UDF and projection, register that Python body in DuckDB, and compare actual Spark Parquet against the same landing PSVs / `parity/spark_billing.py`, `warehouse/snowpark/billing_churn_score.py`.
+- Explicit legacy write modes and side publications / falsely escalating implemented behavior as an owner question / convert coded append, partition replacement, filters, defaults and JDBC writes faithfully; reserve owner decisions for undocumented policy or unspecified winners, not implementation work / `documents/replay_spark.py`, `parity/spark_documents.py`, `warehouse/dbt/models/spark/file_object_binary_extract/file_object_binary_extract.sql`, `warehouse/dbt/models/spark/security_alert_anomaly/security_alert_anomaly_jdbc.sql`.
+- Teradata SET storage semantics / 300 staging rows become 250 exact-distinct core rows and change downstream charges / require an explicit SET-table migration policy rather than treating a plain insert as parity; keep the reviewed dedupe owner decision red and show every exact duplicate / `documents/decisions.json`, `documents/00_tables.sql`, `warehouse/dbt/macros/set_table_semantics.sql`, `warehouse/teradata/tests/test_estate.py`.
+- ROW_NUMBER ordered only by latest timestamp / different current versions with identical VERSION_TS / retain the incomplete ordering diagnostically, expose all competing winners and propagated view differences, and obtain a tie policy rather than inventing an ID/version tiebreaker / `documents/10_load.sql`, `documents/decisions.json`, `warehouse/teradata/scripts/documents/02_current_versions.bteq`.
+- Connected PowerCenter lookup uses Use First Value / a relational join fans out on multiple matching grants although the seeded fixture is unique / follow XML connector and runner dispatch to establish the first cached match; reject ambiguous merge candidates and keep the reviewed precedence decision red until ordering is approved / `warehouse/dbt/models/pc/content/pc_content__doc_share.sql`, `parity/local_documents.py`, `documents/decisions.json`, `etl/informatica/runner/engine.py`.
+- Explicit PowerCenter known-owner filter and update strategy / missing owners can wrongly delete existing target rows / preserve APP_USER lookup, NOT ISNULL owner-status filtering and insert/update behavior; test seeded output, missing-owner retention and ambiguous-key rollback against the actual runner / `documents/prove_local.py`, `parity/local_documents.py`, `warehouse/dbt/models/pc/content/pc_content__document.sql`.
+- Shared documents storage step writes billing tables before later chain mutations / final invoice snapshot is the wrong oracle for storage-only SQL / reuse billing/15_storage.sql unchanged, replay the original BTEQ boundary in a PostgreSQL transaction, capture both outputs and always roll back; separate identical-input boundary proof from propagation of the unresolved SET policy / `documents/prove_local.py`, `billing/15_storage.sql`, `warehouse/teradata/scripts/documents/10_storage_monthly.bteq`.
+- PowerCenter mutates source core tables after the daily chain / post-PC data invalidates the SQL baseline / freeze post-BTEQ/pre-PC source state before mappings and compare mapping results with actual post-PC output separately; never recapture over that checkpoint / `documents/prove_local.py`, `parity/documents_board.py`, `documents/README.md`.
+- Documents TPT strings, numbers and date encodings differ / empty strings, NULL numerics, padding or session-formatted dates alter profiles / execute shipped COPY projections independently on the same PSV, preserve empty VARCHAR versus NULL numeric/date, trim only declared CHAR outputs, use explicit scale/date casts and abort bad input / `documents/05_tpt.sql`, `parity/local_documents.py`, `parity/semantics.py`.
+- Documents macro returns a half-open date-range resultset / table parity omits a serving output or includes the next boundary / declare and execute both original macro SELECT and shipped RESULTSET body using start-inclusive/end-exclusive dates, including empty/error cases / `documents/35_reports.sql`, `parity/local_documents.py`, `parity/documents.json`.
+- Spark Python regex, difflib and binary extraction are not equivalent to convenient SQL functions / Unicode, NULL, similarity, malformed-content or checksum differences / ship extracted legacy Python bodies, execute those same bodies in DuckDB, compare their ASTs to source and preserve Python exception strings without normalization / `warehouse/dbt/macros/documents_spark_udfs.sql`, `parity/spark_documents.py`, `tests/test_spark_documents.py`.
+- Spark session gaps are strictly greater than 1800 seconds / integer-second truncation merges events 1800.000001 seconds apart / compare microseconds against 1800000000 and preserve exactly-1800-second adjacency / `warehouse/dbt/models/spark/collab_session_sessionize/collab_session_sessionize.sql`, `tests/test_spark_documents.py`.
+- RDD graph joins can match NULL keys and subtract visited nodes / ordinary SQL equality loses reachable users or repeated cycles change distance / use null-safe joins, seed user 1, bound expansion to four hops and retain minimum distance; test cycles, NULL edges and the hop cap / `warehouse/dbt/models/spark/doc_share_graph_reach/doc_share_graph_reach.sql`, `tests/test_spark_documents.py`.
+- Folder walk uses parent-or-current Python truthiness and a 20-step cap / treating parent 0 as an ordinary edge silently repairs source behavior / preserve zero-parent truthiness and the exact iteration/depth rules; do not claim duplicate broadcast-key ordering from a unique-key fixture / `warehouse/dbt/models/spark/docs_folder_tree_walk/docs_folder_tree_walk.sql`, `tests/test_spark_documents.py`.
+- Spark pmod and partition columns / negative document IDs bucket differently or hive inference changes a string run_date to DATE / retain nonnegative modulo and reconstitute hive partition columns with source types before hashing; logical row parity does not prove physical directory/file counts or coalesce behavior / `warehouse/dbt/models/spark/docs_event_export_hourly/docs_event_export_hourly.sql`, `parity/spark_documents.py`.
+- Binary save_partition explicitly overwrites one date and retains other partitions / table rebuild loses history or append duplicates reruns / use incremental append with a shipped current-date DELETE pre-hook, disable full refresh, require an explicit run_date, clear an empty current partition too, and prove two actual legacy dates plus rerun replacement against the same landing / `warehouse/dbt/models/spark/file_object_binary_extract/file_object_binary_extract.sql`, `warehouse/dbt/macros/documents_spark_udfs.sql`, `documents/replay_spark.py`, `documents/spark-replay.json`.
+- Binary helper imports warehouse.run_config on executors / No module named warehouse despite successful host imports / include warehouse/__init__.py and the existing run_config.py in BOTH initializer and repacker ZIPs; test each archive with isolated python -I and do not change extraction behavior / `etl/spark/fixture/initialize.py`, `etl/spark/jobs/py/common/package.py`, `tests/test_spark_documents.py`.
+- Anomaly job explicitly writes both audit lake and JDBC output / matching the lake falsely marks an unproduced relation green / ship COMPAT.SPARK_ALERT_ANOMALY from the converted model and compare its counts, profiles, keys, hashes and samples to actual PostgreSQL JDBC rows; record SECURITY_ALERT as audit-assigned and SPARK_ALERT_ANOMALY as not separately manifest-assigned / `warehouse/dbt/models/spark/security_alert_anomaly/security_alert_anomaly_jdbc.sql`, `parity/spark_documents.py`, `parity/documents.json`.
+- Spark anomaly computes population score moments and an explicit zero-standard-deviation fallback / sample STDDEV or new rounding changes z-scores / preserve count/sum/squared-sum arithmetic and fallback 1.0 exactly, without tolerance, on the identical audit landing / `warehouse/dbt/models/spark/security_alert_anomaly/security_alert_anomaly.sql`, `etl/spark/jobs/py/security_alert_anomaly.py`.
+- Spark output is absent, stale, failed or older than an upstream lake dependency / cached artifacts masquerade as fresh parity / require input/output/log availability and freshness, record landing/output/upstream/code SHA-256s, block downstream candidates unless upstream parity passed, and reject replay evidence if any fingerprint or partition set changes / `parity/spark_documents.py`, `parity/documents_board.py`, `tests/test_documents_board.py`.
+- Spark manifest output_relations are absent or classification.yaml conflicts with approved targets / candidates are unmeasured or an approved manifest is casually rewritten / keep the manifest unchanged, declare keyed lake and JDBC outputs in the subject relation contract and convert to manifest targets; inventory callers, proposed owners and shared inputs separately / `parity/documents.json`, `documents/spark_jobs.json`, `parity/documents_board.py`.
+- Multiple subjects have different evidence branches and metric-code versions / documents links point to billing or billing metric ranges drift / select branch per subject and version billing's metric-source ranges with its source SHA; generate current documents ranges from AST, attach source/converted/metric/evidence links, and compare all billing rows byte-for-byte after regeneration / `parity/provenance_subjects.json`, `parity/provenance.py`, `parity/object_board.py`.
+- Denied Snowflake grants and manifest retire candidates / local green is mistaken for live execution or deletion approval / attach the recorded denied preflight independently to every documents row, keep capture/prove false, and distinguish four retire candidates from ten unresolved executable objects / `parity/snowflake-preflight.json`, `parity/object_board.py`, `parity/documents_board.py`.
 
-Paths above are relative to `migration/dw-exit/` unless beginning with `warehouse/`.
+Paths above are relative to `migration/dw-exit/` unless beginning with repository-root `warehouse/` or `etl/`.
 
 ## Parity proof for a subject area
 
 Use the Run scope exports above and `warehouse/.venv/bin/python`. Billing is the current
-subject-area implementation; other areas need their own relation manifest and conversions.
+subject-area implementation; documents also has SQL, PowerCenter, Spark and side-output proof legs.
 
 ```sh
 make sfx-spark-up NS="$NS" ROWS_PER_TABLE=200
@@ -95,6 +117,38 @@ make sfx-billing-test
 make sfx-billing-capture NS="$NS" BUSINESS_DATE=20261109
 make sfx-billing-prove CANDIDATE=fixed BUSINESS_DATE=20261109
 ```
+
+Documents proof (sfx1119, BEFORE only; Snowflake grants pending): preserve the frozen
+post-BTEQ/pre-PC `migration/dw-exit/.runs/documents-pre-pc` checkpoint described in
+`documents/README.md`. Do not restart/reseed source or landing before reusing outputs.
+
+```sh
+RUN_TOKEN=sfx1119 warehouse/.venv/bin/python migration/dw-exit/documents/prove_local.py \
+  --pre-pc migration/dw-exit/.runs/documents-pre-pc \
+  --output migration/dw-exit/.runs/documents-local.json
+# On a fresh Spark fixture only, initialize once, then run all manifest documents jobs:
+make sfx-spark-up NS=sfx-1119-before ROWS_PER_TABLE=200
+for job in collab_session_sessionize doc_share_graph_reach doc_version_diff_stats docs_event_export_hourly docs_folder_legacy_report docs_folder_tree_walk docs_search_log_parse docs_share_activity docs_storage_by_owner docs_tag_normalize file_object_binary_extract lake_compaction_documents security_alert_anomaly; do
+  make sfx-spark-run NS=sfx-1119-before ROWS_PER_TABLE=200 JOB="$job"
+done
+RUN_TOKEN=sfx1119 warehouse/.venv/bin/python migration/dw-exit/documents/replay_spark.py \
+  --dates 2026-11-18 2026-11-19 --output migration/dw-exit/documents/spark-replay.json
+RUN_TOKEN=sfx1119 warehouse/.venv/bin/python migration/dw-exit/parity/spark_documents.py \
+  --output migration/dw-exit/.runs/documents-spark.json
+make -o sfx-teradata-up sfx-manifest-board RUN_TOKEN=sfx1119 NS=sfx-1119-before BOARD_ROWS=200 PARITY_TARGET=duckdb
+warehouse/.venv/bin/python -m pytest -q migration/dw-exit/tests
+make sfx-manifest-board-test
+make sfx-spark-test
+```
+
+The replay executes the actual legacy job with explicit SFX_RUN_DATE on two dates,
+checks unchanged landing SHA-256s, and executes the shipped incremental DELETE/INSERT
+against cumulative lake output. Board generation reruns SQL/PC/current Spark/JDBC
+comparisons and validates every saved replay fingerprint before using its history metrics.
+Outputs: `documents/evidence.json`, `documents/spark-replay.json`, generated
+`documents/parity-table.md`, `board/board.json` and `board/README.md`. Exit zero means
+a report completed, not that all objects are green. Ten documents objects remain red
+on the three reviewed owner decisions; no Snowflake objects may be created while denied.
 
 Use the same business date as the local BEFORE chain. Capture writes a frozen baseline;
 do not recapture over an existing token baseline. Prove writes target objects. Neither

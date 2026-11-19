@@ -1,3 +1,11 @@
+{% macro documents_spark_replace_partition() %}
+{% if is_incremental() %}
+delete from {{ this }} where RUN_DATE = '{{ documents_spark_run_date() }}'
+{% else %}
+select 1
+{% endif %}
+{% endmacro %}
+
 {% macro documents_spark_run_date() %}
 {% set value = var('documents_spark_run_date', none) %}
 {% if execute and value is none %}
