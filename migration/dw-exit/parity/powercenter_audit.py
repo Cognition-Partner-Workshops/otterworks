@@ -69,6 +69,11 @@ def materialize(before, after, dsn, ready, business_date, landing_dir=None):
                 if rows:
                     before.executemany('INSERT INTO SFX_AUDIT.' + name + ' VALUES (' +
                                        ','.join('?' for _ in rows[0]) + ')', rows)
+            evidence['raw_summary_measurement'] = local_compare(before,after,'SFX_AUDIT.AUDIT_DAILY_SUMMARY','AUDIT.AUDIT_DAILY_SUMMARY')
+            before.execute('CREATE OR REPLACE TABLE SFX_AUDIT.AUDIT_DAILY_SUMMARY AS '
+                           'SELECT 50000 + ROW_NUMBER() OVER (ORDER BY SUMMARY_DT, CUSTOMER_ID NULLS FIRST) SUMMARY_ID, '
+                           'SUMMARY_DT,CUSTOMER_ID,EVENT_COUNT,EXPORT_COUNT FROM SFX_AUDIT.AUDIT_DAILY_SUMMARY')
+            evidence['summary_id_contract'] = 'Owner-approved numbering by SUMMARY_DT, CUSTOMER_ID NULLS FIRST, starting 50001; raw legacy comparison retained'
             evidence['measurements'] = {('SFX_AUDIT.'+name):local_compare(before,after,'SFX_AUDIT.'+name,'AUDIT.'+name)
                                         for name in audit.PC_TABLES}
             old = before.execute('SELECT SUMMARY_DT,CUSTOMER_ID,EVENT_COUNT,EXPORT_COUNT FROM SFX_AUDIT.AUDIT_DAILY_SUMMARY').fetchall()

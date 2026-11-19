@@ -19,7 +19,7 @@ import sqlglot
     [(1, '2026-11-10', None, 'DOC_EXPORT')],
     [],
 ])
-def test_incremental_summary_reconciles_moved_and_removed_groups(events):
+def test_rebuilt_summary_reconciles_groups_with_stable_numbering(events):
     db = sqlite3.connect(':memory:')
     db.create_function('EQUAL_NULL', 2, lambda a, b: a == b)
     db.execute('create table events(EVENT_ID int, EVENT_TS text, CUSTOMER_ID int, EVENT_TYPE text)')
@@ -40,6 +40,8 @@ def test_incremental_summary_reconciles_moved_and_removed_groups(events):
     def execute(sql):
         return db.execute(sqlglot.transpile(sql, read='snowflake', write='sqlite')[0])
     rows = execute(sql).fetchall()
+    assert config['materialized'] == 'table'
+    db.execute('delete from summary')
     db.executemany('insert or replace into summary values (?, ?, ?, ?, ?)', rows)
     for hook in config.get('post_hook', []):
         execute(env.from_string(hook).render(**context))
@@ -48,6 +50,5 @@ def test_incremental_summary_reconciles_moved_and_removed_groups(events):
     actual = db.execute('select SUMMARY_DT, CUSTOMER_ID, EVENT_COUNT, EXPORT_COUNT from summary').fetchall()
     assert sorted(actual, key=str) == sorted(expected, key=str)
     ids = {(dt, customer): id_ for id_, dt, customer, *_ in db.execute('select * from summary')}
-    if ('2026-11-09', 1) in ids:
-        assert ids['2026-11-09', 1] == 50001
-    assert all(id_ == 50003 for key, id_ in ids.items() if key != ('2026-11-09', 1))
+    ordered = sorted(ids, key=lambda key:(key[0], key[1] is not None, key[1] or 0))
+    assert [ids[key] for key in ordered] == list(range(50001,50001+len(ids)))

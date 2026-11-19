@@ -346,9 +346,9 @@ def markdown(rows, evidence=None):
     documents = [r for r in rows if r['subject_area']=='documents']
     if not documents:
         return text
-    counts = {state:sum(r['status']==state for r in documents) for state in ('green','red','retired')}
+    counts = {state:sum(r['status']==state for r in documents) for state in ('green','amber','red','retired')}
     lines = ['\n## Documents parity provenance','',
-             f"Local DuckDB: **{counts['green']} green / {counts['red']} red / {counts['retired']} retire candidates**, {len(documents)} total.",
+             f"Local DuckDB: **{counts['green']} green / {counts['amber']} amber / {counts['red']} red / {counts['retired']} retire candidates**, {len(documents)} total.",
              'Snowflake: **red/denied** — '+documents[0]['snowflake_reason']+'.',
              'Retire candidates are excluded from executable parity, not approved for deletion. Relation counts below sum within each proof leg; relations can repeat across legs.','']
     if evidence:
@@ -394,6 +394,7 @@ def content_markdown(rows):
     lines = ['\n## Content parity provenance', '',
              'BEFORE: actual PowerCenter workflow on the Teradata emulator; AFTER: shipped procedure body on DuckDB,',
              'using identical landing inputs and typed pre-workflow tables. TEAM_MEMBER remains untouched.',
+             'Approved widening: DISPLAY_NAME keeps 200 characters, validated against full input; raw legacy truncation differences are retained.',
              'Snowflake: **red** — '+content[0]['snowflake_reason']+'.', '',
              '| Object | Local DuckDB | Snowflake | Source | Converted procedure | Metrics |',
              '|---|---|---|---|---|---|']

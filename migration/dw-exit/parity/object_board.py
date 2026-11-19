@@ -31,6 +31,7 @@ from parity.subjects import SUBJECTS
 from audit_outputs import outputs as audit_outputs
 from audit_outputs import artifacts as audit_artifacts
 from parity import local_content
+from parity.owner_decisions import apply_confirmation, pending_confirmations
 
 
 def quote(name):
@@ -189,6 +190,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         raise ValueError('Expected a denied, unexecuted preflight for the current run scope')
     snowflake_reason = preflight['reason'] if preflight else 'No live Snowflake evidence; capture/prove not run'
     objects = relation_contract(manifest['objects'])
+    confirmations = pending_confirmations()
     result = wave_board(objects, counters or {})
     result.update(run_token=RunConfig.from_env().token, target=target, rows=[])
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
@@ -224,6 +226,8 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 row['reason'] = 'Documents proof unavailable' if target=='duckdb' else 'Snowflake target selected; execution disabled'
             row.update(local_duckdb=row['status'] if target=='duckdb' else 'red',snowflake='red',
                        snowflake_reason=snowflake_reason,snowflake_preflight=preflight)
+            if target == 'duckdb':
+                apply_confirmation(row, confirmations)
             result['rows'].append(row)
             continue
         if obj['subject_area'] == 'dbc' and dbc is not None:
@@ -266,7 +270,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                     row['reason'] = 'measured parity mismatch'
                     if obj['subject_area'] == 'content':
                         differing = [name for name, values in measured.items() if not values['passed']]
-                        row['reason'] = (local_content.PENDING if differing == ['SFX_USERS.STG_APP_USER']
+                        row['reason'] = (local_content.DISPLAY_NAME_DECISION if differing == ['SFX_USERS.STG_APP_USER']
                                          else 'measured parity mismatch: '+', '.join(differing))
         mapping = obj['name'].removeprefix('s_')
         if obj['subject_area'] == 'content' and (subject_evidence or {}).get('content'):
@@ -274,7 +278,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
             row['relation_results'] = measured
             row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
             differing = [name for name,r in measured.items() if not r['passed']]
-            row['reason'] = None if not differing else (local_content.PENDING if differing == ['SFX_USERS.STG_APP_USER'] else 'measured parity mismatch: '+', '.join(differing))
+            row['reason'] = None if not differing else (local_content.DISPLAY_NAME_DECISION if differing == ['SFX_USERS.STG_APP_USER'] else 'measured parity mismatch: '+', '.join(differing))
             row['row_count'] = {side:sum(r['row_count'][side] for r in measured.values()) for side in ('before','after')}
             for field in ('column_profile','keyed_row_hash','sampled_differences','comparison_rules'):
                 row[field] = {name:r[field] for name,r in measured.items()}
@@ -299,8 +303,6 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
             for field in ('row_count','column_profile','keyed_row_hash','sampled_differences','comparison_rules'):
                 row[field] = None if measurement is None else (measurement[field] if field == 'row_count' else
                     {'SFX_USERS.'+pc_users.MAPPINGS[mapping]:measurement[field]})
-            if mapping == 'm_SFX_APP_USER':
-                row.update(status='red',reason='Held on APP_USER display-name truncation decision; isolated PC/dbt proof has hash_difference=0 and does not clear the escalation' if measurement and measurement['keyed_row_hash']['difference'] == 0 else 'Held on APP_USER display-name truncation decision; see independent PC/dbt proof for current measurements')
         if target == 'duckdb' and obj['subject_area'] == 'users' and obj['target_type'] == 'retire':
             approved = (obj['name'] in retirement_users.DEAD | retirement_users.DEPENDENTS
                         and obj['name'] in manifest.get('dead' if obj['name'] in retirement_users.DEAD else 'dead_dependents', [])
@@ -312,13 +314,15 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
             row.update(local_duckdb=row['status'] if target == 'duckdb' else 'red',
                        snowflake='red', snowflake_reason=snowflake_reason,
                        snowflake_preflight=preflight)
+        if target == 'duckdb':
+            apply_confirmation(row, confirmations)
         result['rows'].append(row)
     if dbc is not None:
         dbc.close()
     total = sum(r['licence_dependency_count'] for r in result['rows'])
     result['summary'] = dict(rows=len(objects), red=sum(r['status']=='red' for r in result['rows']),
         retire_verified=sum(r['status']=='retire_verified' for r in result['rows']),
-        green=sum(r['status']=='green' for r in result['rows']), measured=sum(r['row_count'] is not None for r in result['rows']),
+        green=sum(r['status']=='green' for r in result['rows']), amber=sum(r['status']=='amber' for r in result['rows']), measured=sum(r['row_count'] is not None for r in result['rows']),
         migrated=0, licence_remaining=total, licence_total=total,
         licence_by_system=dict(Counter(r['licence_dependency'] for r in result['rows'] if r['licence_dependency']!='none')))
     billing = [row for row in result['rows'] if row['subject_area'] == 'billing']
@@ -330,7 +334,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     if documents:
         counts = Counter(row['status'] for row in documents)
         result['summary']['documents'] = dict(total=len(documents),local_green=counts['green'],local_red=counts['red'],
-            retired=counts['retired'],local_duckdb='red' if counts['red'] else 'green',snowflake='red',snowflake_reason=snowflake_reason)
+            local_amber=counts['amber'], retired=counts['retired'],local_duckdb='red' if counts['red'] else 'amber' if counts['amber'] else 'green',snowflake='red',snowflake_reason=snowflake_reason)
         result['summary']['retired'] = sum(row['status']=='retired' for row in result['rows'])
     audit = [row for row in result['rows'] if row['subject_area'] == 'audit']
     audit_green = sum(row['local_duckdb'] == 'green' for row in audit)
@@ -355,7 +359,18 @@ def main():
     parser.add_argument('--output',type=Path,default=ROOT/'migration/dw-exit/board/board.json')
     parser.add_argument('--target',choices=['duckdb','snowflake'],default=os.environ.get('PARITY_TARGET','duckdb'))
     parser.add_argument('--snowflake-preflight',type=Path,default=ROOT/'migration/dw-exit/parity/snowflake-preflight.json')
+    parser.add_argument('--refresh-confirmations',action='store_true')
     args = parser.parse_args()
+    if args.refresh_confirmations:
+        payload = json.loads(args.output.read_text())
+        for row in payload['rows']:
+            apply_confirmation(row, pending_confirmations())
+        payload['summary']['amber'] = sum(row['status']=='amber' for row in payload['rows'])
+        for state in ('green','red'):
+            payload['summary'][state] = sum(row['status']==state for row in payload['rows'])
+        args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
+        print(json.dumps(payload['summary'],sort_keys=True))
+        return
     manifest = yaml.safe_load(args.manifest.read_text())
     manifest['objects'] = relation_contract(manifest['objects'])
     preflight = json.loads(args.snowflake_preflight.read_text()) if args.snowflake_preflight.is_file() else None

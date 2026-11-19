@@ -200,6 +200,8 @@ def proofs(namespace,landing,day,out=OUT):
         for mapping,table in MAPPINGS.items():
             try:
                 execute_model(converted,table)
+                if table == 'STG_APP_USER':
+                    converted.execute('CREATE OR REPLACE TABLE INPUT.STG_APP_USER AS SELECT * FROM USERS.STG_APP_USER')
                 measurement = local_compare(captured,converted,'SFX_USERS.'+table,'USERS.'+table)
                 results[mapping] = dict(status='green' if measurement['passed'] else 'red',
                     reason=None if measurement['passed'] else 'PowerCenter runner / shipped dbt parity mismatch',

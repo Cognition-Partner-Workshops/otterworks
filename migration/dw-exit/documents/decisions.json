@@ -2,8 +2,10 @@
   {
     "object": "SFX_DOCUMENTS.STORAGE_USAGE_DAILY / 05_load_sessions",
     "old_behaviour": "SET table silently removes exact duplicate rows. Seeded staging has 300 rows, 250 distinct; source has 250. runner.py enforces UNIQUE NULLS NOT DISTINCT plus ON CONFLICT DO NOTHING.",
-    "new_behaviour": "Plain Snowflake table keeps all 300 rows. No DISTINCT or owner-approved SET decision has been added.",
-    "question": "Should exact duplicate storage usage be discarded or retained for charging? Choose distinct or keep_all explicitly; warehouse/dbt/macros/set_table_semantics.sql already requires that decision.",
+    "new_behaviour": "SELECT DISTINCT drops exact duplicates to match Teradata SET semantics (300 to 250). Billing and audit consume the deduped core table.",
+    "status": "approved-pending-confirmation",
+    "confirmation": "Finance still has to confirm the invoice impact.",
+    "board_objects": ["SFX_DOCUMENTS.STORAGE_USAGE_DAILY"],
     "blocks": ["SFX_DOCUMENTS.STORAGE_USAGE_DAILY", "SFX_DOCUMENTS.M_STORAGE_TOTALS_OUTPUT", "SFX_BILLING.USAGE_DAILY", "SFX_BILLING.INVOICE_LINE"]
   },
   {

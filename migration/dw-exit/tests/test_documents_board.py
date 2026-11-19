@@ -20,7 +20,7 @@ def test_documents_board_has_real_metrics_and_independent_denied_leg():
     preflight = json.loads((ROOT/'migration/dw-exit/parity/snowflake-preflight.json').read_text())
     board = object_board.build_board(manifest,subject_evidence={'documents':measured},preflight=preflight)
     summary = board['summary']['documents']
-    assert (summary['total'],summary['local_green'],summary['local_red'],summary['retired'])==(59,45,10,4)
+    assert (summary['total'],summary['local_green'],summary['local_amber'],summary['local_red'],summary['retired'])==(59,45,1,9,4)
     assert all(r['snowflake']=='red' and r['snowflake_reason']==preflight['reason'] for r in board['rows'])
     binary = next(r for r in board['rows'] if r['name']=='file_object_binary_extract')
     assert binary['row_count']=={'before':400,'after':400}
@@ -35,13 +35,14 @@ def test_documents_board_has_real_metrics_and_independent_denied_leg():
         if row['status']!='retired':
             assert p['converted'] and row['row_count'] is not None
     text = provenance.markdown(board['rows'],evidence)
-    assert '45 green / 10 red / 4 retire candidates' in text
+    assert '45 green / 1 amber / 9 red / 4 retire candidates' in text
     assert 'spark_binary_two_date_history' in text
 
 
 def test_missing_documents_proof_never_reuses_cached_green():
     board = object_board.build_board({'objects':objects()})
-    assert all(r['status']=='red' and r['row_count'] is None for r in board['rows'])
+    assert all(r.get('measurement_status',r['status'])=='red' and r['row_count'] is None for r in board['rows'])
+    assert sum(r['status']=='amber' for r in board['rows']) == 1
     denied = object_board.build_board({'objects':objects()},target='snowflake')
     assert all(r['status']=='red' and r['snowflake']=='red' for r in denied['rows'])
 

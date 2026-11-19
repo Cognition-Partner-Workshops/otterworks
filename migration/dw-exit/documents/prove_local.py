@@ -70,6 +70,7 @@ def shared_storage(pre, day, snapshot_storage=False):
             copy_table(pre, after, 'SFX_BILLING.'+name, 'BILLING.'+name)
         old = 'SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY' if snapshot_storage else 'SFX_DOCUMENTS.STORAGE_USAGE_DAILY'
         copy_table(pre, after, old, 'BILLING.STORAGE_USAGE_INPUT')
+        after.execute('CREATE OR REPLACE TABLE BILLING.STORAGE_USAGE_INPUT AS SELECT DISTINCT * FROM BILLING.STORAGE_USAGE_INPUT')
         for statement in statements(ROOT/'migration/dw-exit/billing/15_storage.sql',day):
             after.execute(statement.sql(dialect='duckdb'))
         connection = psycopg.connect('host=127.0.0.1 port=54722 dbname=teradata user=postgres')
@@ -134,7 +135,7 @@ def prove(pre_path, landing, namespace, day):
         downstream = shared_storage(pre,day,snapshot_storage=True)
         decisions = json.loads((CONVERSIONS/'decisions.json').read_text())
         pending = [d for d in decisions if d.get('status') != 'approved']
-        blocked = {r for d in pending for r in d['blocks']}
+        blocked = {r for d in pending if d.get('status') != 'approved-pending-confirmation' for r in d['blocks']}
         manifest = yaml.safe_load((CONVERSIONS.parent/'manifest.yaml').read_text())
         object_rows = []
         for obj in manifest['objects']:
@@ -154,7 +155,6 @@ def prove(pre_path, landing, namespace, day):
                 blockers = sorted(set(outputs)&blocked)
                 if obj['name'] == '10_storage_monthly':
                     measured = downstream
-                    blockers += ['Shared billing/15_storage.sql; upstream SET decision pending; see boundary proof']
             object_rows.append({k:obj[k] for k in ('name','target','target_type')} | {
                 'status':'green' if measured and not blockers and all(v['passed'] for v in measured.values()) else 'red',
                 'relations':{k:{'row_count':v['row_count'],'hash_delta':v['keyed_row_hash']['difference']} for k,v in measured.items()},

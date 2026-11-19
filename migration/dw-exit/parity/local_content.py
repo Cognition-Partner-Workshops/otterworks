@@ -18,8 +18,8 @@ PROCEDURE = ROOT / 'migration/dw-exit/content/workflow.sql'
 OUTPUTS = ('SFX_USERS.STG_APP_USER', 'SFX_USERS.APP_USER', 'SFX_USERS.ROLE_GRANT',
            'SFX_USERS.LOGIN_EVENT', 'SFX_USERS.TEAM_MEMBER', 'SFX_DOCUMENTS.STG_DOCUMENT',
            'SFX_DOCUMENTS.DOCUMENT', 'SFX_DOCUMENTS.DOC_SHARE')
-PENDING = ('pending owner decision: PowerCenter source-port precision 60 truncates DISPLAY_NAME '
-           'before TRIM; converted model keeps up to 200')
+DISPLAY_NAME_DECISION = ('approved widening: DISPLAY_NAME retains up to 200 characters; '
+           'proof validates full input and retains raw legacy truncation measurements')
 LANDING = {'APP_USER': ('users', 'SFX_USERS.STG_APP_USER'),
            'ROLE_GRANT': ('users', 'SFX_USERS.ROLE_GRANT'),
            'LOGIN_EVENT': ('users', 'SFX_USERS.LOGIN_EVENT'),
@@ -109,7 +109,7 @@ def materialize(before, after, dsn, ns, snapshot, business_date='20261109'):
     ready, errors = set(), {}
     evidence = {'source_execution': 'PowerCenter runner startworkflow', 'procedure': str(PROCEDURE.relative_to(ROOT)),
                 'target_execution': 'shipped procedure body on DuckDB', 'team_member': 'pre-workflow state preserved',
-                'pending_owner_decision': PENDING}
+                'approved_owner_decision': DISPLAY_NAME_DECISION}
     actual = None
     try:
         evidence['pre_workflow'] = {}

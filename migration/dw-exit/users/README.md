@@ -1,5 +1,11 @@
 # Users Teradata-chain conversion
 
+**Owner decision applied:** staging and core DISPLAY_NAME are VARCHAR(200),
+including content-owned dbt models and users-owned sessions. The historical
+truncation hold below is resolved by deliberate widening. Proofs validate full
+input values and legacy 60-character prefixes, retaining raw legacy differences
+(100 of 120 names truncated), not truncating the converted result to force parity.
+
 Stages execute `10_load.sql` → `20_routines.sql` → `30_views.sql`.
 `00_tables.sql` declares the kept core and staging tables. The macro's returned
 resultset is measured as `SFX_USERS.M_TEAM_COUNTS_OUTPUT`; `10_activity_daily`

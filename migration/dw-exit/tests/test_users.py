@@ -112,6 +112,8 @@ def test_users_ddl_matches_source_columns_widths_and_collations():
         for column, kind, width, rest in definitions:
             rendered = columns[column].sql(dialect='snowflake')
             if width:
+                if column == 'DISPLAY_NAME':
+                    width = '200'
                 assert 'VARCHAR('+width+')' in rendered
                 assert ("COLLATE 'en-ci-rtrim'" in rendered) == ('NOT CASESPECIFIC' in rest)
             assert ('NOT NULL' in rendered) == ('NOT NULL' in rest)
@@ -173,7 +175,7 @@ def test_users_materialize_uses_only_staging_and_runs_shipped_chain():
             after.close()
 
 
-def test_users_implicit_source_truncation_remains_a_measured_mismatch():
+def test_users_approved_widening_keeps_full_input():
     objects = [o for o in assess.build()['objects'] if o['name'] in
                ('SFX_USERS.APP_USER','01_load_users','m_SFX_APP_USER','s_m_SFX_APP_USER')]
     display_name = 'Name - Senior Workspace Operations and Records Governance Coordinator'
@@ -189,8 +191,8 @@ def test_users_implicit_source_truncation_remains_a_measured_mismatch():
             rows = object_board.build_board({'objects':objects},before,after,ready)['rows']
             assert len(rows) == 4
             for row in rows:
-                assert row['local_duckdb'] == 'red'
-                assert row['reason'] == 'measured parity mismatch'
-                assert row['sampled_differences']['SFX_USERS.APP_USER']
+                assert row['local_duckdb'] == 'green'
+                assert row['reason'] is None
+                assert row['comparison_rules']['SFX_USERS.APP_USER']['legacy_truncated_rows'] == 1
         finally:
             after.close()

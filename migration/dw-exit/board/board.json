@@ -24074,14 +24074,17 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "documents",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "amber",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "output not materialized: DOCUMENTS.STORAGE_USAGE_DAILY"
+      "reason": "Finance still has to confirm the invoice impact.",
+      "measurement_status": "red",
+      "local_duckdb": "amber",
+      "decision_state": "approved-pending-confirmation"
     },
     {
       "id": "n97b11eada9b5eb49",
@@ -27021,7 +27024,7 @@
   },
   "summary": {
     "rows": 252,
-    "red": 177,
+    "red": 176,
     "green": 75,
     "measured": 81,
     "migrated": 0,
@@ -27038,7 +27041,8 @@
       "local_red": 0,
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run"
-    }
+    },
+    "amber": 1
   },
   "spark_evidence": {
     "billing_churn_score": {

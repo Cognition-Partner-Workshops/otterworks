@@ -1,5 +1,20 @@
 # Migration board
 
+## Owner decisions applied
+
+- Storage uses explicit SELECT DISTINCT, matching Teradata SET dedupe (300 → 250).
+  Billing invoice lines and audit reconciliation consume deduped core data.
+  STORAGE_USAGE_DAILY is **amber / approved-pending-confirmation**: finance still
+  has to confirm the invoice impact. Amber retains the underlying measurement
+  status and is not green parity or a live Snowflake claim.
+- Users/content staging and core DISPLAY_NAME are VARCHAR(200). Proofs check full
+  values against independent input and validate legacy 60-character prefixes,
+  retaining raw differences (legacy truncated 100 of 120 names).
+- Audit PowerCenter summary IDs start at 50001 in SUMMARY_DT, CUSTOMER_ID order
+  (NULLS FIRST). dbt rebuilds the same deterministic numbering; proofs retain raw
+  legacy IDs alongside comparisons under the approved numbering contract.
+
+
 ## Integration owner decisions — documents
 
 - Document shares select the highest-privilege role per user: ADMIN, then EDITOR,

@@ -37,7 +37,7 @@ def seed(before):
     before.execute('INSERT INTO SFX_DOCUMENTS.STORAGE_USAGE_DAILY SELECT DISTINCT * FROM SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY')
 
 
-def test_executor_normal_and_unapproved_set_difference(connections):
+def test_executor_normal_and_approved_set_dedupe(connections):
     before,after = connections
     seed(before)
     ready,errors = documents.execute(after,before)
@@ -45,9 +45,9 @@ def test_executor_normal_and_unapproved_set_difference(connections):
     assert after.execute('SELECT STATUS_CD,FILE_TYPE FROM DOCUMENTS.DOCUMENT').fetchall() == [('Active','txt')]
     assert after.execute('SELECT TOTAL_BYTES FROM DOCUMENTS.V_WORKSPACE_STORAGE').fetchone()[0] == 4096
     measured = local_compare(before,after,'SFX_DOCUMENTS.STORAGE_USAGE_DAILY','DOCUMENTS.STORAGE_USAGE_DAILY')
-    assert measured['row_count'] == {'before':1,'after':2}
-    assert measured['keyed_row_hash']['difference'] == 1
-    assert not measured['passed']
+    assert measured['row_count'] == {'before':1,'after':1}
+    assert measured['keyed_row_hash']['difference'] == 0
+    assert measured['passed']
 
 
 def test_executor_empty(connections):
@@ -56,6 +56,14 @@ def test_executor_empty(connections):
     assert len(ready) == 20 and not errors
     assert after.execute('SELECT * FROM DOCUMENTS.DOC_VERSION').fetchall() == []
     assert after.execute('SELECT * FROM DOCUMENTS.V_WORKSPACE_STORAGE').fetchall() == []
+
+
+def test_storage_300_rows_become_250_without_dropping_distinct_payloads(connections):
+    before,after = connections
+    rows = [(i,1,1,'2026-11-09',100,2) for i in range(250)]
+    before.executemany('INSERT INTO SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY VALUES (?,?,?,?,?,?)',rows+rows[:50])
+    assert not documents.execute(after,before)[1]
+    assert after.execute('SELECT COUNT(*),SUM(BYTES_USED) FROM DOCUMENTS.STORAGE_USAGE_DAILY').fetchone() == (250,25000)
 
 
 @pytest.mark.parametrize('failure',['missing_source','invalid_date','bad_sql'])
@@ -82,9 +90,9 @@ def test_storage_resultset_normal_and_empty(connections,populated):
     assert not documents.execute(after,before)[1]
     documents.resultset(before,after)
     rows = after.execute('SELECT * FROM DOCUMENTS.M_STORAGE_TOTALS_OUTPUT').fetchall()
-    assert rows == ([(1,200,4)] if populated else [])
+    assert rows == ([(1,100,2)] if populated else [])
     measured = local_compare(before,after,'SFX_DOCUMENTS.M_STORAGE_TOTALS_OUTPUT','DOCUMENTS.M_STORAGE_TOTALS_OUTPUT')
-    assert measured['passed'] == (not populated)
+    assert measured['passed']
 
 
 def test_resultset_half_open_month(connections):

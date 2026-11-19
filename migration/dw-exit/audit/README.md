@@ -1,5 +1,17 @@
 # Audit conversion
 
+**Owner decision applied:** PowerCenter daily summary IDs are assigned starting
+at 50001 by ROW_NUMBER ordered by SUMMARY_DT, CUSTOMER_ID NULLS FIRST. dbt rebuilds
+the same stable numbering. Proofs compare against legacy groups renumbered by
+that explicit contract, retaining the raw legacy ID comparison. This intentionally
+replaces first-seen/sequence assignment. Storage reconciliation continues to read
+deduped documents core data, not raw staging duplicates.
+
+The dbt summary is rebuilt rather than preserving previously assigned IDs, so
+late-arriving groups cannot make IDs depend on load order. The committed DAG's
+summary task is recompiled from the model with `pc_dag_audit.py --refresh-summary`;
+this is offline SQL generation, not evidence of a live dbt/Snowflake run.
+
 No retire object is converted. The archive landing feed remains untouched for Spark.
 Spark models live under `warehouse/dbt/models/spark/<job>/`. Nothing here authorizes retirement, migration-state
 promotion, or live Snowflake execution.

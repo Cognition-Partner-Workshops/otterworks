@@ -1,5 +1,10 @@
 # Content workflow conversion
 
+**Owner decision applied:** DISPLAY_NAME retains up to 200 characters in both
+staging and core, with no 60-character truncation. Proofs validate full independent
+input and legacy truncated prefixes, preserving raw legacy measurements. This
+supersedes the historical pending decision below.
+
 `workflow.sql` ships `__RUN_DATABASE__.OPS.WF_SFX_CONTENT_DAILY()` as Snowflake
 Scripting. Generate it with `warehouse/.venv/bin/python migration/dw-exit/content/convert.py`.
 The workflow calls the area-owned session targets in `users/52_sessions.sql` and

@@ -78,7 +78,7 @@ def test_typed_session_writes_routes_truncation_and_rerun(db):
     db.execute("INSERT INTO USERS.LOGIN_EVENT VALUES (1,1,NULL,'OLD','OLD')")
     local_content.execute(db)
     assert db.execute('SELECT USER_ID,LENGTH(DISPLAY_NAME) FROM USERS.STG_APP_USER').fetchall() == [(1,78)]
-    assert db.execute('SELECT LENGTH(DISPLAY_NAME) FROM USERS.APP_USER WHERE USER_ID=1').fetchone() == (60,)
+    assert db.execute('SELECT LENGTH(DISPLAY_NAME) FROM USERS.APP_USER WHERE USER_ID=1').fetchone() == (78,)
     assert db.execute('SELECT USER_ID FROM USERS.APP_USER ORDER BY 1').fetchall() == [(1,),(99,)]
     assert db.execute('SELECT GRANT_ID FROM USERS.ROLE_GRANT').fetchall() == [(1,)]
     login = db.execute('SELECT LOGIN_ID,USER_ID,RTRIM(RESULT_CD) FROM USERS.LOGIN_EVENT').fetchall()
@@ -127,11 +127,11 @@ def test_content_board_measures_all_outputs_and_links_pending_decision(db):
     result = object_board.build_board({'objects':[obj]}, db, db,
         {s.removeprefix('SFX_') for s in local_content.OUTPUTS})
     row = result['rows'][0]
-    assert row['reason'] == local_content.PENDING
-    assert row['local_duckdb'] == row['snowflake'] == 'red'
+    assert row['reason'] is None
+    assert row['local_duckdb'] == 'green' and row['snowflake'] == 'red'
     assert len(row['relation_results']) == 8
-    assert row['keyed_row_hash']['SFX_USERS.STG_APP_USER']['difference'] == 2
-    assert row['sampled_differences']['SFX_USERS.STG_APP_USER'][0]['key'] == [1]
+    assert row['keyed_row_hash']['SFX_USERS.STG_APP_USER']['difference'] == 0
+    assert row['relation_results']['SFX_USERS.STG_APP_USER']['raw_legacy']['keyed_row_hash']['difference'] == 2
     assert all(v['passed'] for k,v in row['relation_results'].items() if k != 'SFX_USERS.STG_APP_USER')
     mapping = dict(obj, id='other-worker', name='m_SFX_STG_APP_USER', kind='mapping', subject_area='users',
                    output_relations=['SFX_USERS.STG_APP_USER'])
@@ -143,7 +143,7 @@ def test_content_board_measures_all_outputs_and_links_pending_decision(db):
     for entry in p['decision'] + p['source'] + p['converted']['procedure'] + list(p['metrics'].values()):
         assert '/devin/sfx1119-content-migration/' in entry['url'] and '#L' in entry['url']
     markdown = provenance.content_markdown([row])
-    assert local_content.PENDING in markdown
+    assert 'Approved widening: DISPLAY_NAME keeps 200 characters' in markdown
     assert 'SFX_USERS.TEAM_MEMBER | 1 | 1 | match | match' in markdown
 
 

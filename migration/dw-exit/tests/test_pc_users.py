@@ -85,22 +85,18 @@ def test_pc_evidence_scope_and_checksum_fail_closed(tmp_path,monkeypatch):
 
 
 @pytest.mark.parametrize('status',['green','red'])
-def test_ten_pc_rows_use_own_proof_and_app_user_stays_stopped(status):
+def test_ten_pc_rows_use_own_proof_after_widening_approval(status):
     objects = [o for o in assess.build()['objects'] if o['subject_area']=='users' and o['kind'] in ('mapping','session')]
     measurement = dict(row_count={'before':0,'after':0},column_profile={},keyed_row_hash={'difference':0},sampled_differences=[],comparison_rules={}) if status == 'green' else None
     proofs = {mapping:dict(status=status,reason=None if status == 'green' else 'PC execution failed',measurement=measurement) for mapping in pc_users.MAPPINGS}
     board = object_board.build_board({'objects':objects},pc_results=proofs)
     assert len(board['rows']) == 10
     for row in board['rows']:
-        assert row['local_duckdb'] == ('red' if row['name'].endswith('m_SFX_APP_USER') else status)
+        assert row['local_duckdb'] == status
         assert row['snowflake'] == 'red'
         assert row['bteq_relation_measurement']['row_count'] is None
         assert row['row_count'] == (None if status == 'red' else measurement['row_count'])
         assert row['powercenter']['status'] == status
-        if status == 'green' and row['name'].endswith('m_SFX_APP_USER'):
-            assert 'APP_USER display-name truncation decision' in row['reason']
-            assert 'hash_difference=0' in row['reason']
-            assert 'mismatch' not in row['reason']
         p = row['provenance']
         links = [entry for entries in p['converted'].values() for entry in entries]
         assert any('warehouse/dbt/models/pc/content/' in link['file'] for link in links)

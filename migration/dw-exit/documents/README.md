@@ -52,6 +52,12 @@ s......                                                                  [100%]
 
 ## Differences, attempted disproofs, and decisions
 
+**Storage integration decision:** SELECT DISTINCT now drops exact duplicates
+(300 → 250), matching Teradata SET semantics. The storage board row is amber,
+approved-pending-confirmation: finance still has to confirm the invoice impact.
+Billing and audit use deduped core data. This supersedes historical unresolved
+storage notes below.
+
 **Integration update:** the owner approved highest-privilege share roles
 (ADMIN > EDITOR > other) and highest VERSION_NO on equal latest VERSION_TS.
 Converted SQL/dbt and local regression proofs implement both. These deliberately

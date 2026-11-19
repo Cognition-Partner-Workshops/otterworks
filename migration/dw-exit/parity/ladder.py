@@ -13,6 +13,7 @@ from pathlib import Path
 
 from .connection import connect
 from .semantics import char_columns
+from . import owner_decisions
 
 
 def canonical(value):
@@ -35,7 +36,7 @@ def local_measure(connection, name, padded):
     return names, rows, profiles
 
 
-def local_compare(before, after, source, target, sample_size=5, keys=None):
+def local_compare(before, after, source, target, sample_size=5, keys=None, approved_decisions=True):
     padded = char_columns(source)
     bcols, brows, bp = local_measure(before, source, padded)
     acols, arows, ap = local_measure(after, target, padded)
@@ -59,7 +60,7 @@ def local_compare(before, after, source, target, sample_size=5, keys=None):
         samples.append({'key': json.loads(key),
                         'before': sorted((r for r in brows if row_key(r) == key), key=canonical)[:sample_size],
                         'after': sorted((r for r in arows if row_key(r) == key), key=canonical)[:sample_size]})
-    return {'row_count': {'before': len(brows), 'after': len(arows)},
+    result = {'row_count': {'before': len(brows), 'after': len(arows)},
             'comparison_rules': {'trailing_pad_insensitive': padded, 'other_columns': 'exact'},
             'column_profile': {'before': bp, 'after': ap},
             'keyed_row_hash': {'keys': keys, 'difference': sum(delta.values()),
@@ -67,6 +68,9 @@ def local_compare(before, after, source, target, sample_size=5, keys=None):
                                'key_policy': 'contract keys; full-row digest preserves multiplicity' if declared_keys else 'first declared column; full-row digest preserves multiplicity'},
             'sampled_differences': samples,
             'passed': len(brows) == len(arows) and canonical(bp) == canonical(ap) and not delta}
+    if approved_decisions:
+        return owner_decisions.display_names(before, after, source, target, result, sample_size, keys)
+    return result
 
 
 def identifier(value):
