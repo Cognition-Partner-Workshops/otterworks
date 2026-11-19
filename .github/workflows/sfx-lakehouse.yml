@@ -67,10 +67,11 @@ jobs:
         run: |
           make lakehouse/.venv/.requirements
           lakehouse/.venv/bin/python -m lakehouse.tests.users_infa_oracle --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE"
-      - name: Prepare billing stage and Informatica reference inputs
+      - name: Prepare billing stage, consumer and Informatica reference inputs
         run: |
           warehouse/.venv/bin/python -m lakehouse.billing.fixture --business-date "$BUSINESS_DATE"
           python=lakehouse/.venv/bin/python
+          "$python" -m lakehouse.billing.consumer_reference --business-date "$BUSINESS_DATE"
           tables="$("$python" -c 'from warehouse.seed.columns import TABLES; print(" ".join(t.name for t in TABLES if t.area == "billing"))')"
           "$python" -m lakehouse.runtime.ingest --landing "$SFX_LH_LANDING" --business-date "$BUSINESS_DATE" --tables $tables
           "$python" -m lakehouse.runtime.dbt --select tag:billing
@@ -117,7 +118,7 @@ jobs:
       - name: Validate coverage and assumptions
         run: make sfx-lakehouse-coverage
       - name: Test the lakehouse
-        run: make sfx-lakehouse-test
+        run: SFX_LH_BILLING_CONSUMER_NATIVE_TEST=1 make sfx-lakehouse-test
       - name: Upload parity and migration evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

@@ -112,7 +112,7 @@ Recorded full parity: **209 PASS, 0 FAIL**. New counts: 6 BI, 10 admin overdue,
 1 admin summary, 60 rollups, 667 invoice-query/CSV, 100 aging, 669 partner CSV
 lines (667 records plus header/trailer), 667 partner raw, 1 transfer receipt,
 1 reconciliation summary, 0 current unreconciled and 6 workbook rows.
-Full native-enabled suite: **309 passed, 9 warnings in 273.96s (0:04:33)**.
+Full native-enabled suite: **309 passed, 9 warnings in 254.38s (0:04:14)**.
 Warnings are the existing dbt `datetime.utcnow()` deprecations. Orchestration:
 `Pipeline: 26 DAGs, 311 tasks, valid`. Exact ownership check:
 `billing: 133 owned objects, zero pending`.
@@ -122,7 +122,7 @@ and injected rename failures. Actual awk golden tests verify empty, fractional
 and signed-zero CSV bytes.
 
 Semgrep with p/default, p/owasp-top-ten and p/security-audit:
-`Ran 323 rules on 4 files: 0 findings.` One narrow exec-audit annotation explains
+`Ran 361 rules on 5 files: 0 findings.` One narrow exec-audit annotation explains
 execution of fixed repository DTO/exporter ASTs. No scanner config changed.
 
 Assumptions **A-131..A-138** document clocks, source/input precedence, numeric/
@@ -130,3 +130,8 @@ collation rules, service interfaces, partner behavior, BI emulation, publication
 and cron. A-136..A-138 and earlier A-105/A-114/A-130 remain open cutover risks.
 Native Teradata, Excel rendering, live SFTP, live scheduler dispatch, production
 scale and automatic service cutover are not verified.
+
+CI prepares `consumer_reference` immediately after the billing legacy fixture,
+before the shared graph needs its JSONL/file oracles. CI also enables the native
+consumer clock test. This necessary preparation change does not alter production
+DAGs or workflow resources; a named test verifies the preparation order and flag.

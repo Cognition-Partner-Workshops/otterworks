@@ -217,3 +217,6 @@ def test_consumer_parameters_and_cron_replacement():
         cq.bound_query('analytics_rollups', '20261109', status='')
     assert "x'' OR 1=1" in cq.bound_query('analytics_rollups', '20261109', plan="x' OR 1=1")
     assert "'A?'" in cq.bound_query('analytics_rollups', '20261109', status='A?', plan='Team')
+    workflow = (ROOT.parent / '.github/workflows/sfx-lakehouse.yml').read_text()
+    assert workflow.index('-m lakehouse.billing.consumer_reference') < workflow.index('make sfx-lakehouse-run')
+    assert 'SFX_LH_BILLING_CONSUMER_NATIVE_TEST=1 make sfx-lakehouse-test' in workflow
