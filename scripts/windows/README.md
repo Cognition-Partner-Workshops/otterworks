@@ -44,7 +44,7 @@ and refuses to do so while it has active readers.
 
 ## What DuckDB measures
 
-The adapter extends the mechanics of
+The BTEQ adapter extends the mechanics of
 `migration/dw-exit/parity/object_board.py`, reusing its source snapshot, load/view
 materialization, and strict profile/duplicate-aware hash comparison unchanged.
 An optional Arrow bulk-copy callback avoids slow per-value Python insertion on
@@ -56,15 +56,25 @@ dbt models. There is no checked-in dbt-duckdb profile.
   checked-in billing load/storage/view SQL, the straight-conversion monthly
   procedure's SQL statements, close updates, macro SELECTs, and converted export
   SELECTs through SQLGlot's Snowflake-to-DuckDB dialect translation.
-* **PC models:** uses the same generated landing files as legacy PC and compares
-  against the real post-PC tables in the emulator. It renders the seven checked-in
-  billing dbt SELECTs in full-refresh mode, substitutes local raw PSV staging for
-  Snowflake stage access, and transpiles the SELECTs to DuckDB. No incremental,
-  governance, comment, or Snowflake file-format hooks are executed. This is a
-  local full-refresh comparison, **not** proof of Snowflake incremental idempotence.
+* **PC models:** uses the same generated landing files as legacy PC. Like
+  `warehouse/parity/commands.py::before`, it creates a fresh local PostgreSQL
+  database from the PC bootstrap, runs the billing workflow, captures its outputs,
+  and drops that database afterwards. It does not reuse the BTEQ-populated targets.
+  The JSON records zero initial target counts and landing-file hashes. It renders
+  the seven checked-in billing dbt SELECTs as a clean first build, substitutes raw
+  local PSV staging for Snowflake stage access, and transpiles SELECTs to DuckDB.
+  The GL lookup source uses the bootstrap's actual schema and reference seed.
+  No incremental, governance, comment, or Snowflake file-format hooks are executed.
+  This is **not** proof of Snowflake incremental idempotence on existing targets.
+* **PC comparison:** uses `warehouse/parity/compare.py` unchanged. Column names
+  are uppercased, matched by name rather than position, and selected from BEFORE
+  using the YAML exclusions and business keys. Extra AFTER columns are allowed;
+  missing required BEFORE columns are errors. Source PostgreSQL types control
+  fixed-CHAR trailing-space and numeric normalization, just as in the PC harness.
 * No candidate SQL, dbt model, comparison normalization, or expected result is
-  changed. Column-layout mismatches remain RED; the adapter does not project away
-  legacy columns or rename business columns to manufacture a match.
+  changed. The adapter does not project away required legacy columns or rename
+  business columns to manufacture a match. Unconstrained PostgreSQL numeric view
+  outputs retain their actual fractional scale during snapshot loading.
 
 All objects print before/after counts, hash match, and GREEN/RED. Hash is N/A if
 the column layouts differ or an output could not execute. A missing output's
@@ -85,7 +95,11 @@ Gitignored `migration/dw-exit/.runs/windows-close-duckdb/` contains:
 * `billing-duckdb.json`: 20 billing relations/reports, profiles, hashes, sample
   differences, SQL execution errors, and close summaries;
 * `pc-duckdb.json`: seven mappings, rendered/transpiled model SQL, counts, and
-  errors.
+  errors, plus bootstrap target counts and input-file hashes;
+* `pc-legacy-workflow.log`: the fresh PC baseline's workflow/session statuses.
 
 Outputs describe the latest run. Treat RED and unsupported execution as migration
 work remaining, not as a portability failure to suppress.
+
+See [PARITY-NOTES.md](PARITY-NOTES.md) for the audited causes of the current REDs,
+adapter corrections, and the saved Snowflake-to-DuckDB comparison.

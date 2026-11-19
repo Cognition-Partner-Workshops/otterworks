@@ -62,6 +62,108 @@ def test_local_comparison_reports_schema_error_without_inventing_hash():
         assert 'column names/order differ' in result['error']
 
 
+def pc_mapping(**changes):
+    return dict(dict(mapping='test', target_table='TEST', after_table='PC_BILLING.TEST',
+                     key_columns=['ID'], exclude_columns={}), **changes)
+
+
+@pytest.mark.parametrize('rows', [[], [(1, 'x   ', LOCAL.Decimal('12.00'))],
+                                  [(1, 'x   ', LOCAL.Decimal('12.00'))] * 2])
+def test_pc_uses_harness_named_columns_types_and_keys(rows):
+    with LOCAL.duckdb.connect() as before, LOCAL.duckdb.connect() as after:
+        before.execute('CREATE SCHEMA SFX_BILLING')
+        after.execute('CREATE SCHEMA PC_BILLING')
+        before.execute('CREATE TABLE SFX_BILLING.TEST (ID BIGINT, VALUE VARCHAR, AMOUNT DECIMAL(14,2))')
+        after.execute('CREATE TABLE PC_BILLING.TEST (amount DECIMAL(18,4), value VARCHAR, id BIGINT, SRC_ROW_NO BIGINT)')
+        if rows:
+            LOCAL.copy_rows(before, 'SFX_BILLING.TEST', rows)
+            LOCAL.copy_rows(after, 'PC_BILLING.TEST', [(v, s.rstrip(), i, n) for n, (i, s, v) in enumerate(rows)])
+        result = LOCAL.pc_result(before, after, pc_mapping(), {'VALUE': 'character'})
+        assert result['passed'] and result['hash_match']
+        assert result['extra_columns'] == ['SRC_ROW_NO']
+        assert result['before_count'] == result['after_count'] == len(rows)
+        if rows:
+            after.execute('UPDATE PC_BILLING.TEST SET value=\'X\'')
+            assert not LOCAL.pc_result(before, after, pc_mapping(), {'VALUE': 'character'})['passed']
+
+
+def test_pc_missing_columns_are_not_aliased_or_projected_away():
+    with LOCAL.duckdb.connect() as before, LOCAL.duckdb.connect() as after:
+        before.execute('CREATE SCHEMA SFX_BILLING')
+        after.execute('CREATE SCHEMA PC_BILLING')
+        before.execute('CREATE TABLE SFX_BILLING.TEST (ID BIGINT, ACCOUNT_NUMBER VARCHAR)')
+        after.execute('CREATE TABLE PC_BILLING.TEST (ID BIGINT, ACCOUNT_NO VARCHAR)')
+        result = LOCAL.pc_result(before, after, pc_mapping(), {})
+        assert not result['passed'] and result['hash_match'] is None
+        assert result['missing_columns'] == ['ACCOUNT_NUMBER']
+        assert result['extra_columns'] == ['ACCOUNT_NO']
+        excluded = pc_mapping(exclude_columns={'ACCOUNT_NUMBER': 'Explicit test exclusion'})
+        assert LOCAL.pc_result(before, after, excluded, {})['passed']
+
+
+def test_pc_rejects_invalid_exclusions_and_duplicate_multiplicity():
+    with LOCAL.duckdb.connect() as before, LOCAL.duckdb.connect() as after:
+        before.execute('CREATE SCHEMA SFX_BILLING')
+        after.execute('CREATE SCHEMA PC_BILLING')
+        for con, name in ((before, 'SFX_BILLING.TEST'), (after, 'PC_BILLING.TEST')):
+            LOCAL.rows_table(con, name, ['ID'], [(1,), (1,)])
+        excluded = pc_mapping(exclude_columns={'NOT_HERE': 'Invalid test exclusion'})
+        assert LOCAL.pc_result(before, after, excluded, {})['error'] == 'Excluded columns absent from BEFORE'
+        after.execute('DELETE FROM PC_BILLING.TEST')
+        LOCAL.copy_rows(after, 'PC_BILLING.TEST', [(1,)])
+        result = LOCAL.pc_result(before, after, pc_mapping(), {})
+        assert not result['passed'] and not result['hash_match']
+        assert result['measured']['changed_keys'] == 1
+
+
+@pytest.mark.parametrize('workflow_fails', [False, True])
+def test_pc_fixture_is_fresh_uses_same_landing_and_cleans_up(monkeypatch, tmp_path, workflow_fails):
+    queries, calls = [], []
+
+    class PG:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def execute(self, query):
+            queries.append(query if isinstance(query, str) else query.as_string())
+            return self
+
+        def fetchone(self):
+            return (0,)
+
+    def run(*args, **kwargs):
+        calls.append((args, kwargs))
+        if workflow_fails:
+            raise LOCAL.subprocess.CalledProcessError(1, args[0])
+
+    monkeypatch.setattr(LOCAL.psycopg, 'connect', lambda *a, **kw: PG())
+    monkeypatch.setattr(LOCAL.subprocess, 'run', run)
+    monkeypatch.setattr(LOCAL, 'inventory', lambda: [dict(pc_mapping(), folder='SFX_BILLING')])
+    monkeypatch.setenv('SNOWFLAKE_ACCOUNT', 'must-not-reach-child')
+    landing = tmp_path / 'landing'
+
+    def exercise():
+        with LOCAL.pc_fixture('host=127.0.0.1 port=5432 user=postgres dbname=teradata',
+                              LOCAL.dt.date(2026, 11, 9), landing, tmp_path) as (dsn, evidence):
+            assert 'sfx_windows_pc_' in dsn
+            assert evidence['initial_target_counts'] == {'TEST': 0}
+
+    if workflow_fails:
+        with pytest.raises(LOCAL.subprocess.CalledProcessError):
+            exercise()
+    else:
+        exercise()
+    assert queries[0].startswith('CREATE DATABASE "sfx_windows_pc_')
+    assert queries[-1].startswith('DROP DATABASE "sfx_windows_pc_')
+    env = calls[0][1]['env']
+    assert env['LANDING_DIR'] == str(landing)
+    assert env['TD_DB'].startswith('sfx_windows_pc_')
+    assert not any(k.startswith('SNOWFLAKE_') for k in env)
+
+
 def test_failed_statement_does_not_prevent_later_statements():
     with LOCAL.duckdb.connect() as con:
         errors = []

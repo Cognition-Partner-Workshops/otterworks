@@ -1,19 +1,24 @@
 """Local execution adapter for the unchanged billing conversions and dbt SELECTs."""
 import argparse
 import csv
+from contextlib import contextmanager
 import datetime as dt
 from decimal import Decimal
+import hashlib
 import importlib.util
 import io
 import json
 import os
 from pathlib import Path
 import re
+import subprocess
 import sys
+import uuid
 
 import duckdb
 from jinja2 import Environment, StrictUndefined
 import psycopg
+from psycopg import sql
 import pyarrow as pa
 import sqlglot
 from sqlglot import exp
@@ -25,7 +30,9 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'warehouse/teradata'))
 from bteq import Runner
 from bteq.parser import commands
-from warehouse.parity.inventory import inventory
+from warehouse.parity.compare import compare as pc_compare
+from warehouse.parity.inventory import BOOTSTRAP, ESTATE, inventory
+from warehouse.run_config import RunConfig
 
 SPEC = importlib.util.spec_from_file_location('local_object_board',
     ROOT / 'migration/dw-exit/parity/object_board.py')
@@ -224,11 +231,85 @@ def render_model(text, day, config):
         is_incremental=lambda: False)
 
 
-def pc(dsn, day, landing):
+@contextmanager
+def pc_fixture(dsn, day, landing, output):
+    params = psycopg.conninfo.conninfo_to_dict(dsn)
+    if params.get('host') not in ('127.0.0.1', 'localhost'):
+        raise ValueError('PC fixture databases must be local')
+    params.pop('dbname', None)
+    database = 'sfx_windows_pc_' + uuid.uuid4().hex[:12]
+    source = psycopg.conninfo.make_conninfo(dsn, dbname=database)
+    hashes = {str(p.relative_to(landing)): hashlib.sha256(p.read_bytes()).hexdigest()
+              for p in sorted((landing / 'billing').glob('*/' + day.strftime('%Y%m%d') + '.psv'))}
+    with psycopg.connect(dbname='postgres', autocommit=True, **params) as admin:
+        admin.execute(sql.SQL('CREATE DATABASE {}').format(sql.Identifier(database)))
+        try:
+            with psycopg.connect(source, autocommit=True) as pg:
+                pg.execute(RunConfig.from_env().render(BOOTSTRAP.read_text()))
+                initial = {r['target_table']: pg.execute(sql.SQL('SELECT COUNT(*) FROM {}').format(
+                    sql.Identifier('sfx_billing', r['target_table'].lower()))).fetchone()[0]
+                    for r in inventory() if r['folder'] == 'SFX_BILLING'}
+            env = {k: v for k, v in os.environ.items()
+                   if not k.startswith('SNOWFLAKE_') and k != 'TD_PG_DSN'}
+            env.update(TD_DB=database, TD_PG_DB=database, TD_HOST=params['host'],
+                       TD_PG_HOST=params['host'], TD_PORT=params['port'], TD_PG_PORT=params['port'],
+                       TD_USER=params['user'], TD_PG_USER=params['user'], LANDING_DIR=str(landing),
+                       PMROOTDIR=str(output / database), MAPPINGS='all')
+            paramfile = output / 'pc-load-date.par'
+            paramfile.write_text('[Global]\n$$LOAD_DATE=' + day.strftime('%Y%m%d') + '\n')
+            log = output / 'pc-legacy-workflow.log'
+            python = ESTATE / '.venv' / ('Scripts/python.exe' if sys.platform == 'win32' else 'bin/python')
+            with log.open('w', encoding='utf-8') as handle:
+                subprocess.run([str(python), '-m', 'runner', 'startworkflow', '-f', 'SFX_BILLING',
+                                '-paramfile', str(paramfile), 'wf_SFX_BILLING_DAILY'],
+                               cwd=ESTATE, env=env, stdout=handle, stderr=subprocess.STDOUT, check=True)
+            print('PC baseline: fresh bootstrap + billing workflow; log: ' + str(log), flush=True)
+            yield source, {'mode': 'fresh PostgreSQL bootstrap and billing workflow',
+                           'initial_target_counts': initial, 'landing_sha256': hashes,
+                           'workflow_log': str(log)}
+        finally:
+            admin.execute(sql.SQL('DROP DATABASE {}').format(sql.Identifier(database)))
+
+
+def pc_result(before, after, row, types):
+    source, target = 'SFX_BILLING.' + row['target_table'], row['after_table']
+    output = dict(name=row['mapping'], before_count=count(before, source),
+                  after_count=count(after, target), hash_match=None, passed=False)
+    try:
+        def fetch(con, table):
+            cursor = con.execute('SELECT * FROM ' + BOARD.relation(table))
+            columns = [c[0].upper() for c in cursor.description]
+            return columns, [dict(zip(columns, r)) for r in cursor.fetchall()]
+        bc, b = fetch(before, source)
+        ac, a = fetch(after, target)
+        excluded = {c.upper() for c in row['exclude_columns']}
+        columns = [c for c in bc if c not in excluded]
+        keys = [k.upper() for k in row['key_columns']]
+        missing = sorted(set(columns) - set(ac))
+        output.update(before_columns=bc, after_columns=ac, compared_columns=columns,
+                      key_columns=keys, source_types=types, missing_columns=missing,
+                      extra_columns=sorted(set(ac) - set(bc)))
+        if excluded - set(bc):
+            raise ValueError('Excluded columns absent from BEFORE')
+        if missing or not set(keys) <= set(columns):
+            raise ValueError('Missing comparison/key columns: ' + ', '.join(missing))
+        measured = pc_compare(b, a, columns, keys, sample=5, types=types)
+        output.update(measured=measured, hash_match=measured['keyed_hash_match'],
+                      passed=measured['rowcount_match'] and measured['keyed_hash_match'])
+    except ERRORS as error:
+        output['error'] = str(error)
+    return output
+
+
+def pc_models(dsn, day, landing):
     mappings = [r for r in inventory() if r['folder'] == 'SFX_BILLING']
     names = {'SFX_BILLING.' + r['target_table'] for r in mappings}
     names.add('SFX_BILLING.GL_ACCOUNT')
     before, ready, source_errors = BOARD.source_snapshot(dsn, names, copy_rows=copy_rows)
+    with psycopg.connect(dsn) as pg:
+        source_types = {}
+        for table, column, kind in pg.execute("SELECT table_name,column_name,data_type FROM information_schema.columns WHERE table_schema='sfx_billing'"):
+            source_types.setdefault(table.upper(), {})[column.upper()] = kind
     after = duckdb.connect()
     for schema in ('PC_STAGE', 'PC_BILLING', 'PC_SRC'):
         after.execute('CREATE SCHEMA ' + schema)
@@ -260,12 +341,19 @@ def pc(dsn, day, landing):
             after.execute('CREATE TABLE PC_BILLING.' + BOARD.quote(table.upper()) + ' AS ' + statement)
         except (*ERRORS, OSError) as error:
             errors.append({'step': model, 'error': str(error)})
-    results = [result(before, after, r['mapping'], 'SFX_BILLING.' + r['target_table'],
-                      r['after_table']) for r in mappings]
+    results = [pc_result(before, after, r, source_types[r['target_table']]) for r in mappings]
     before.close()
     after.close()
     return {'results': results, 'execution_errors': errors, 'models': executed,
-            'mode': 'checked-in dbt SELECTs transpiled to DuckDB; full refresh, no Snowflake hooks'}
+            'mode': 'checked-in dbt SELECTs transpiled to DuckDB; clean first build, no Snowflake hooks',
+            'comparison': 'warehouse.parity.compare; uppercased named columns, YAML keys/exclusions, source types'}
+
+
+def pc(dsn, day, landing, output):
+    with pc_fixture(dsn, day, landing, output) as (source, baseline):
+        evidence = pc_models(source, day, landing)
+        evidence['baseline'] = baseline
+        return evidence
 
 
 def main():
@@ -291,7 +379,7 @@ def main():
         else:
             for row in rows:
                 print(' | '.join(map(str, row)), flush=True)
-    powercenter = pc(current, day, ROOT / 'warehouse/landing')
+    powercenter = pc(current, day, ROOT / 'warehouse/landing', args.output)
     (args.output / 'pc-duckdb.json').write_text(json.dumps(powercenter, indent=2, default=str) + '\n')
     print_results('PC', powercenter['results'])
     for group in (billing, powercenter):
