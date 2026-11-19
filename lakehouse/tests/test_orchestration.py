@@ -57,7 +57,7 @@ def test_pipeline_contract_and_staging_replacement():
     (lambda d: d['dags'][0]['nodes'][0].update(kind='missing'), 'Unknown node kind'),
     (lambda d: d['dags'][0]['nodes'][0].update(table='MISSING'), 'Unknown feed'),
     (lambda d: d['dags'][0]['nodes'][0].update(timeout_seconds=0), 'timeout_seconds'),
-    (lambda d: next(n for n in d['dags'][0]['nodes'] if n['kind'] == 'parity').update(
+    (lambda d: next(n for n in d['dags'][0]['nodes'] if n['kind'] == 'parity' and 'spec' in n).update(
         spec='missing'), 'Unknown parity'),
     (lambda d: d['dags'][0]['nodes'].append(copy.deepcopy(d['dags'][0]['nodes'][0])), 'Duplicate node'),
     (lambda d: d['dags'][0].update(schedule='@monthly'), 'schedule'),

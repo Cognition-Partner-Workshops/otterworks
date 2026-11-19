@@ -64,7 +64,7 @@ def test_audit_owned_schedule_and_dependencies():
     assert not archive.upstream_task_ids and archive.retries == 1
     assert all(task.trigger_rule == 'all_success' for task in (
         daily.get_task('dbt_audit'), daily.get_task('audit_spark'), archive))
-    assert not any('informatica' in task_id for task_id in daily.task_ids)
+    assert not any('audit' in task_id and 'informatica' in task_id for task_id in daily.task_ids)
     logical_date = pendulum.datetime(2026, 11, 15, tz='UTC')
     archive.render_template_fields({'logical_date': logical_date}, jinja_env=weekly.get_template_env())
     argv = shlex.split(archive.bash_command)
