@@ -33,11 +33,11 @@ modules:
     path: services/legacy-portal
     build: maven
     java_home:
-      - $JAVA_HOME_11_X64
-      - /usr/lib/jvm/java-11-openjdk-amd64
-    # Spring Boot 2.x, and it pins its own Maven (3.9.9) via the wrapper — the same
-    # tool ci.yml builds it with. `mvn` is the fallback for a machine that cannot
-    # reach the wrapper's distribution.
+      - $JAVA_HOME_25_X64
+      - /usr/lib/jvm/temurin-25-jdk-amd64
+    # Spring Boot 3.5 on Temurin 25, with Maven 3.9.9 via the CI wrapper.
+    # Commons Configuration records script: as unresolved, independent of Nashorn.
+    # `mvn` is the fallback if the wrapper distribution cannot be reached.
     tool:
       - ./mvnw
       - mvn
