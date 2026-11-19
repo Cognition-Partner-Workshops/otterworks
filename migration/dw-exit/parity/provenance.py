@@ -31,6 +31,18 @@ def source_link(obj):
 
 def converted_links(relation):
     table = relation.split('.')[-1]
+    if relation.startswith('SFX_SPARK.'):
+        paths = list((ROOT/'warehouse/dbt/models/spark'/table.lower()).glob('*.sql'))
+        snowpark = ROOT/'warehouse/snowpark'/f'{table.lower()}.py'
+        if snowpark.is_file():
+            paths.append(snowpark)
+        return [link(path.relative_to(ROOT)) for path in sorted(paths)]
+    if table in ('M_SUBSCRIPTION_PLANS_OUTPUT', 'M_CURRENCY_TOTALS_OUTPUT'):
+        path = Path('migration/dw-exit/billing/20_routines.sql')
+        text = (ROOT/path).read_text()
+        pattern = r'CREATE OR REPLACE PROCEDURE\s+\S+\.'+table.removesuffix('_OUTPUT')+r'\s*\(.*?\$\$.*?\$\$;'
+        return [link(path, text.count('\n',0,m.start())+1, text.count('\n',0,m.end())+1)
+                for m in re.finditer(pattern, text, re.S | re.I)]
     links = []
     for path in sorted((ROOT / 'migration/dw-exit/billing').glob('[0-4][0-9]_*.sql')):
         text = path.read_text()

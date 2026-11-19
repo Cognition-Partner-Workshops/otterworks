@@ -125,6 +125,16 @@ def test_missing_outputs(tmp_path):
     assert 'missing: inventory.csv' in errors
 
 
+def test_generated_billing_report_and_spark_outputs(estate):
+    objects = {row['name']: row for row in estate['objects']}
+    assert objects['10_subscription_report']['output_relations'] == ['SFX_BILLING.M_SUBSCRIPTION_PLANS_OUTPUT']
+    assert objects['11_currency_daily']['output_relations'] == ['SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT']
+    assert objects['12_invoice_monthly']['output_relations'] == ['SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT', 'SFX_BILLING.GL_TRIAL_BALANCE_OUTPUT']
+    for row in objects.values():
+        if row['system'] == 'spark' and row['subject_area'] == 'billing':
+            assert row['output_relations'] == ['SFX_SPARK.'+row['name'].upper()]
+
+
 def test_generated_check():
     assert check.validate() == []
 

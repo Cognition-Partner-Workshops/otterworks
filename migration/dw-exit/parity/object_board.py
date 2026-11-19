@@ -24,6 +24,7 @@ from parity.local_billing import execute
 from parity.semantics import columns as source_columns, numeric_type
 from parity.ladder import local_compare as compare
 from parity.provenance import provenance, markdown
+from parity import report_outputs, spark_billing
 
 
 def quote(name):
@@ -175,7 +176,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                    row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
         if obj['subject_area'] == 'billing':
             row['provenance'] = provenance(obj)
-        if obj['system'] == 'spark':
+        if obj['system'] == 'spark' and not any(name.startswith('SFX_SPARK.') for name in obj.get('output_relations', [])):
             if obj.get('source') and (ROOT / obj['source']).is_file():
                 row.update(source=obj['source'], source_ref=obj.get('source_ref'))
                 row['reason'] = 'Spark source available; output not materialized locally'
@@ -238,14 +239,22 @@ def main():
     ready, errors = set(), {}
     try:
         if args.target == 'duckdb' and manifest['objects']:
-            names = {r for obj in manifest['objects'] for r in obj.get('output_relations',[])}
+            names = {r for obj in manifest['objects'] for r in obj.get('output_relations',[])
+                     if not r.startswith('SFX_SPARK.') and r.split('.')[-1] not in report_outputs.OUTPUTS}
             ns = os.environ.get('NS',RunConfig.from_env().before_namespace)
             port = os.environ.get('TD_PG_PORT',str(54500+zlib.crc32(ns.encode())%1000))
             dsn = os.environ.get('BOARD_SOURCE_DSN',f'host=127.0.0.1 port={port} dbname=teradata user=postgres')
             before, source_ready, source_errors = source_snapshot(dsn,names)
             after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing',os.environ.get('BUSINESS_DATE','20261109'))
             errors.update(source_errors)
+            if not errors.get('*'):
+                errors.update(report_outputs.materialize(before,after,dsn,ready,os.environ.get('BUSINESS_DATE','20261109')))
+            spark_ready,spark_errors,spark_evidence = spark_billing.materialize(before,after,manifest['objects'],ns)
+            ready.update(spark_ready)
+            errors.update(spark_errors)
         payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,preflight=preflight)
+        if args.target == 'duckdb' and manifest['objects']:
+            payload['spark_evidence'] = spark_evidence
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         readme = args.output.parent / 'README.md'
         if readme.exists():

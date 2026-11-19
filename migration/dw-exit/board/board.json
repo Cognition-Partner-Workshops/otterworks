@@ -8161,14 +8161,84 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "billing",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "no declared output relation",
+      "row_count": {
+        "before": 140,
+        "after": 140
+      },
+      "column_profile": {
+        "SFX_BILLING.M_SUBSCRIPTION_PLANS_OUTPUT": {
+          "before": {
+            "SUBSCRIPTION_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 140
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "PLAN_CODE": {
+              "nulls": 0,
+              "min": "PLAN005",
+              "max": "team",
+              "distinct": 32
+            },
+            "MONTHLY_FEE": {
+              "nulls": 0,
+              "min": "19.50",
+              "max": "599.00",
+              "distinct": 8
+            }
+          },
+          "after": {
+            "SUBSCRIPTION_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 140
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "PLAN_CODE": {
+              "nulls": 0,
+              "min": "PLAN005",
+              "max": "team",
+              "distinct": 32
+            },
+            "MONTHLY_FEE": {
+              "nulls": 0,
+              "min": "19.50",
+              "max": "599.00",
+              "distinct": 8
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_BILLING.M_SUBSCRIPTION_PLANS_OUTPUT": {
+          "keys": [
+            "SUBSCRIPTION_ID"
+          ],
+          "difference": 0,
+          "before": "387e412ca47e9d64253746d3bb49ac72d762bf56b7fe698fb5683d75d8c86b60",
+          "after": "387e412ca47e9d64253746d3bb49ac72d762bf56b7fe698fb5683d75d8c86b60",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_BILLING.M_SUBSCRIPTION_PLANS_OUTPUT": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -8179,7 +8249,7 @@
           }
         ],
         "converted": {
-          "routine:M_SUBSCRIPTION_PLANS": [
+          "SFX_BILLING.M_SUBSCRIPTION_PLANS_OUTPUT": [
             {
               "file": "migration/dw-exit/billing/20_routines.sql",
               "start_line": 1,
@@ -8188,7 +8258,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -8210,7 +8280,13 @@
           }
         }
       },
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_BILLING.M_SUBSCRIPTION_PLANS_OUTPUT": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -8251,14 +8327,72 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "billing",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "no declared output relation",
+      "row_count": {
+        "before": 6,
+        "after": 6
+      },
+      "column_profile": {
+        "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": {
+          "before": {
+            "CURRENCY_CD": {
+              "nulls": 0,
+              "min": "AUD",
+              "max": "USD",
+              "distinct": 6
+            },
+            "INVOICE_COUNT": {
+              "nulls": 0,
+              "min": 20,
+              "max": 150,
+              "distinct": 4
+            },
+            "TOTAL_AMOUNT": {
+              "nulls": 0,
+              "min": "7809.79",
+              "max": "28668.94",
+              "distinct": 6
+            }
+          },
+          "after": {
+            "CURRENCY_CD": {
+              "nulls": 0,
+              "min": "AUD",
+              "max": "USD",
+              "distinct": 6
+            },
+            "INVOICE_COUNT": {
+              "nulls": 0,
+              "min": 20,
+              "max": 150,
+              "distinct": 4
+            },
+            "TOTAL_AMOUNT": {
+              "nulls": 0,
+              "min": "7809.79",
+              "max": "28668.94",
+              "distinct": 6
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": {
+          "keys": [
+            "CURRENCY_CD"
+          ],
+          "difference": 0,
+          "before": "218a72b69d7f405d02265cda771f544385fc161f4f54043444eba664294b7336",
+          "after": "218a72b69d7f405d02265cda771f544385fc161f4f54043444eba664294b7336",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -8269,7 +8403,7 @@
           }
         ],
         "converted": {
-          "routine:M_CURRENCY_TOTALS": [
+          "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": [
             {
               "file": "migration/dw-exit/billing/20_routines.sql",
               "start_line": 26,
@@ -8278,7 +8412,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -8300,7 +8434,13 @@
           }
         }
       },
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -8341,14 +8481,136 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "billing",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "no declared output relation",
+      "row_count": {
+        "before": 17,
+        "after": 17
+      },
+      "column_profile": {
+        "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": {
+          "before": {
+            "CURRENCY_CD": {
+              "nulls": 0,
+              "min": "AUD",
+              "max": "USD",
+              "distinct": 6
+            },
+            "INVOICE_COUNT": {
+              "nulls": 0,
+              "min": 20,
+              "max": 150,
+              "distinct": 4
+            },
+            "TOTAL_AMOUNT": {
+              "nulls": 0,
+              "min": "7809.79",
+              "max": "28668.94",
+              "distinct": 6
+            }
+          },
+          "after": {
+            "CURRENCY_CD": {
+              "nulls": 0,
+              "min": "AUD",
+              "max": "USD",
+              "distinct": 6
+            },
+            "INVOICE_COUNT": {
+              "nulls": 0,
+              "min": 20,
+              "max": 150,
+              "distinct": 4
+            },
+            "TOTAL_AMOUNT": {
+              "nulls": 0,
+              "min": "7809.79",
+              "max": "28668.94",
+              "distinct": 6
+            }
+          }
+        },
+        "SFX_BILLING.GL_TRIAL_BALANCE_OUTPUT": {
+          "before": {
+            "ACCOUNT_NUMBER": {
+              "nulls": 0,
+              "min": "1000",
+              "max": "TOTAL",
+              "distinct": 11
+            },
+            "ACCOUNT_NAME": {
+              "nulls": 0,
+              "min": "Accounts payable",
+              "max": "Usage revenue",
+              "distinct": 11
+            },
+            "DEBIT_AMOUNT": {
+              "nulls": 0,
+              "min": "0.00",
+              "max": "108554.05",
+              "distinct": 5
+            },
+            "CREDIT_AMOUNT": {
+              "nulls": 0,
+              "min": "0.00",
+              "max": "108554.05",
+              "distinct": 6
+            }
+          },
+          "after": {
+            "ACCOUNT_NUMBER": {
+              "nulls": 0,
+              "min": "1000",
+              "max": "TOTAL",
+              "distinct": 11
+            },
+            "ACCOUNT_NAME": {
+              "nulls": 0,
+              "min": "Accounts payable",
+              "max": "Usage revenue",
+              "distinct": 11
+            },
+            "DEBIT_AMOUNT": {
+              "nulls": 0,
+              "min": "0.00",
+              "max": "108554.05",
+              "distinct": 5
+            },
+            "CREDIT_AMOUNT": {
+              "nulls": 0,
+              "min": "0.00",
+              "max": "108554.05",
+              "distinct": 6
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": {
+          "keys": [
+            "CURRENCY_CD"
+          ],
+          "difference": 0,
+          "before": "218a72b69d7f405d02265cda771f544385fc161f4f54043444eba664294b7336",
+          "after": "218a72b69d7f405d02265cda771f544385fc161f4f54043444eba664294b7336",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        },
+        "SFX_BILLING.GL_TRIAL_BALANCE_OUTPUT": {
+          "keys": [
+            "ACCOUNT_NUMBER"
+          ],
+          "difference": 0,
+          "before": "2c3e17c45a74a466c820e36676c24266fdc5c8e17cde28a7235077ddb0c2dab2",
+          "after": "2c3e17c45a74a466c820e36676c24266fdc5c8e17cde28a7235077ddb0c2dab2",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": [],
+        "SFX_BILLING.GL_TRIAL_BALANCE_OUTPUT": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -8359,7 +8621,7 @@
           }
         ],
         "converted": {
-          "routine:M_CURRENCY_TOTALS": [
+          "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": [
             {
               "file": "migration/dw-exit/billing/20_routines.sql",
               "start_line": 26,
@@ -8367,16 +8629,16 @@
               "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-billing-parity/migration/dw-exit/billing/20_routines.sql#L26-L47"
             }
           ],
-          "routine:P_MONTHLY_INVOICE": [
+          "SFX_BILLING.GL_TRIAL_BALANCE_OUTPUT": [
             {
-              "file": "migration/dw-exit/billing/20_routines.sql",
-              "start_line": 49,
-              "end_line": 253,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-billing-parity/migration/dw-exit/billing/20_routines.sql#L49-L253"
+              "file": "migration/dw-exit/billing/35_reports.sql",
+              "start_line": 1,
+              "end_line": 10,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-billing-parity/migration/dw-exit/billing/35_reports.sql#L1-L10"
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -8398,7 +8660,17 @@
           }
         }
       },
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        },
+        "SFX_BILLING.GL_TRIAL_BALANCE_OUTPUT": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -11383,14 +11655,72 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "billing",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "no declared output relation",
+      "row_count": {
+        "before": 6,
+        "after": 6
+      },
+      "column_profile": {
+        "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": {
+          "before": {
+            "CURRENCY_CD": {
+              "nulls": 0,
+              "min": "AUD",
+              "max": "USD",
+              "distinct": 6
+            },
+            "INVOICE_COUNT": {
+              "nulls": 0,
+              "min": 20,
+              "max": 150,
+              "distinct": 4
+            },
+            "TOTAL_AMOUNT": {
+              "nulls": 0,
+              "min": "7809.79",
+              "max": "28668.94",
+              "distinct": 6
+            }
+          },
+          "after": {
+            "CURRENCY_CD": {
+              "nulls": 0,
+              "min": "AUD",
+              "max": "USD",
+              "distinct": 6
+            },
+            "INVOICE_COUNT": {
+              "nulls": 0,
+              "min": 20,
+              "max": 150,
+              "distinct": 4
+            },
+            "TOTAL_AMOUNT": {
+              "nulls": 0,
+              "min": "7809.79",
+              "max": "28668.94",
+              "distinct": 6
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": {
+          "keys": [
+            "CURRENCY_CD"
+          ],
+          "difference": 0,
+          "before": "218a72b69d7f405d02265cda771f544385fc161f4f54043444eba664294b7336",
+          "after": "218a72b69d7f405d02265cda771f544385fc161f4f54043444eba664294b7336",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -11401,7 +11731,7 @@
           }
         ],
         "converted": {
-          "routine:M_CURRENCY_TOTALS": [
+          "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": [
             {
               "file": "migration/dw-exit/billing/20_routines.sql",
               "start_line": 26,
@@ -11410,7 +11740,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -11432,7 +11762,13 @@
           }
         }
       },
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -11456,14 +11792,84 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "billing",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "no declared output relation",
+      "row_count": {
+        "before": 140,
+        "after": 140
+      },
+      "column_profile": {
+        "SFX_BILLING.M_SUBSCRIPTION_PLANS_OUTPUT": {
+          "before": {
+            "SUBSCRIPTION_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 140
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "PLAN_CODE": {
+              "nulls": 0,
+              "min": "PLAN005",
+              "max": "team",
+              "distinct": 32
+            },
+            "MONTHLY_FEE": {
+              "nulls": 0,
+              "min": "19.50",
+              "max": "599.00",
+              "distinct": 8
+            }
+          },
+          "after": {
+            "SUBSCRIPTION_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 140
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "PLAN_CODE": {
+              "nulls": 0,
+              "min": "PLAN005",
+              "max": "team",
+              "distinct": 32
+            },
+            "MONTHLY_FEE": {
+              "nulls": 0,
+              "min": "19.50",
+              "max": "599.00",
+              "distinct": 8
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_BILLING.M_SUBSCRIPTION_PLANS_OUTPUT": {
+          "keys": [
+            "SUBSCRIPTION_ID"
+          ],
+          "difference": 0,
+          "before": "387e412ca47e9d64253746d3bb49ac72d762bf56b7fe698fb5683d75d8c86b60",
+          "after": "387e412ca47e9d64253746d3bb49ac72d762bf56b7fe698fb5683d75d8c86b60",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_BILLING.M_SUBSCRIPTION_PLANS_OUTPUT": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -11474,7 +11880,7 @@
           }
         ],
         "converted": {
-          "routine:M_SUBSCRIPTION_PLANS": [
+          "SFX_BILLING.M_SUBSCRIPTION_PLANS_OUTPUT": [
             {
               "file": "migration/dw-exit/billing/20_routines.sql",
               "start_line": 1,
@@ -11483,7 +11889,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -11505,7 +11911,13 @@
           }
         }
       },
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_BILLING.M_SUBSCRIPTION_PLANS_OUTPUT": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -19215,14 +19627,120 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "billing",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Spark source available; output not materialized locally",
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_SPARK.BILLING_CHURN_SCORE": {
+          "before": {
+            "SUBSCRIPTION_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "PLAN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 12,
+              "distinct": 12
+            },
+            "START_DATE": {
+              "nulls": 0,
+              "min": "2026-01-06",
+              "max": "2026-11-09",
+              "distinct": 200
+            },
+            "END_DATE": {
+              "nulls": 0,
+              "min": "2026-01-06",
+              "max": "2026-11-09",
+              "distinct": 200
+            },
+            "STATUS": {
+              "nulls": 0,
+              "min": "active",
+              "max": "trialing",
+              "distinct": 3
+            },
+            "CHURN_SCORE": {
+              "nulls": 0,
+              "min": 0.14185106490048777,
+              "max": 0.7957596977159083,
+              "distinct": 67
+            }
+          },
+          "after": {
+            "SUBSCRIPTION_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "PLAN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 12,
+              "distinct": 12
+            },
+            "START_DATE": {
+              "nulls": 0,
+              "min": "2026-01-06",
+              "max": "2026-11-09",
+              "distinct": 200
+            },
+            "END_DATE": {
+              "nulls": 0,
+              "min": "2026-01-06",
+              "max": "2026-11-09",
+              "distinct": 200
+            },
+            "STATUS": {
+              "nulls": 0,
+              "min": "active",
+              "max": "trialing",
+              "distinct": 3
+            },
+            "CHURN_SCORE": {
+              "nulls": 0,
+              "min": 0.14185106490048777,
+              "max": 0.7957596977159083,
+              "distinct": 67
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_SPARK.BILLING_CHURN_SCORE": {
+          "keys": [
+            "SUBSCRIPTION_ID"
+          ],
+          "difference": 0,
+          "before": "40b00f18c35b62de11c7722eb48fd159698a9c6f14111c5d7bbccdfc202e541d",
+          "after": "40b00f18c35b62de11c7722eb48fd159698a9c6f14111c5d7bbccdfc202e541d",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_SPARK.BILLING_CHURN_SCORE": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -19233,7 +19751,7 @@
           }
         ],
         "converted": {
-          "candidate:billing_churn_score": [
+          "SFX_SPARK.BILLING_CHURN_SCORE": [
             {
               "file": "warehouse/snowpark/billing_churn_score.py",
               "start_line": 1,
@@ -19242,7 +19760,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -19264,9 +19782,13 @@
           }
         }
       },
-      "source": "etl/spark/jobs/py/billing_churn_score.py",
-      "source_ref": "demo-snowflake-dw-exit",
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_SPARK.BILLING_CHURN_SCORE": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -19290,14 +19812,156 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "billing",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Spark source available; output not materialized locally",
+      "row_count": {
+        "before": 91,
+        "after": 91
+      },
+      "column_profile": {
+        "SFX_SPARK.BILLING_GL_TRIAL_BALANCE": {
+          "before": {
+            "GL_ACCOUNT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 15,
+              "distinct": 4
+            },
+            "ACCOUNT_CODE": {
+              "nulls": 0,
+              "min": "1000",
+              "max": "4300",
+              "distinct": 4
+            },
+            "ACCOUNT_NAME": {
+              "nulls": 0,
+              "min": "Operating cash",
+              "max": "Trade receivables",
+              "distinct": 4
+            },
+            "ACCOUNT_TYPE": {
+              "nulls": 0,
+              "min": "ASSET",
+              "max": "REVENUE",
+              "distinct": 2
+            },
+            "PERIOD": {
+              "nulls": 0,
+              "min": "2026-01",
+              "max": "2026-11",
+              "distinct": 11
+            },
+            "CURRENCY_CODE": {
+              "nulls": 0,
+              "min": "AUD",
+              "max": "USD",
+              "distinct": 5
+            },
+            "DEBITS": {
+              "nulls": 0,
+              "min": "0.00",
+              "max": "7765.41",
+              "distinct": 55
+            },
+            "CREDITS": {
+              "nulls": 0,
+              "min": "0.00",
+              "max": "7780.22",
+              "distinct": 38
+            },
+            "NET": {
+              "nulls": 0,
+              "min": "-7765.41",
+              "max": "6115.77",
+              "distinct": 75
+            },
+            "CREDIT_NOTE_ADJUSTMENTS": {
+              "nulls": 0,
+              "min": "0.00",
+              "max": "13598.66",
+              "distinct": 25
+            }
+          },
+          "after": {
+            "GL_ACCOUNT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 15,
+              "distinct": 4
+            },
+            "ACCOUNT_CODE": {
+              "nulls": 0,
+              "min": "1000",
+              "max": "4300",
+              "distinct": 4
+            },
+            "ACCOUNT_NAME": {
+              "nulls": 0,
+              "min": "Operating cash",
+              "max": "Trade receivables",
+              "distinct": 4
+            },
+            "ACCOUNT_TYPE": {
+              "nulls": 0,
+              "min": "ASSET",
+              "max": "REVENUE",
+              "distinct": 2
+            },
+            "PERIOD": {
+              "nulls": 0,
+              "min": "2026-01",
+              "max": "2026-11",
+              "distinct": 11
+            },
+            "CURRENCY_CODE": {
+              "nulls": 0,
+              "min": "AUD",
+              "max": "USD",
+              "distinct": 5
+            },
+            "DEBITS": {
+              "nulls": 0,
+              "min": "0.00",
+              "max": "7765.41",
+              "distinct": 55
+            },
+            "CREDITS": {
+              "nulls": 0,
+              "min": "0.00",
+              "max": "7780.22",
+              "distinct": 38
+            },
+            "NET": {
+              "nulls": 0,
+              "min": "-7765.41",
+              "max": "6115.77",
+              "distinct": 75
+            },
+            "CREDIT_NOTE_ADJUSTMENTS": {
+              "nulls": 0,
+              "min": "0.00",
+              "max": "13598.66",
+              "distinct": 25
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_SPARK.BILLING_GL_TRIAL_BALANCE": {
+          "keys": [
+            "GL_ACCOUNT_ID"
+          ],
+          "difference": 0,
+          "before": "9ea2a4ad3744b81ea938a7d6aa82b4fc91c398482737a72dca6f5df6e3590bc8",
+          "after": "9ea2a4ad3744b81ea938a7d6aa82b4fc91c398482737a72dca6f5df6e3590bc8",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_SPARK.BILLING_GL_TRIAL_BALANCE": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -19308,7 +19972,7 @@
           }
         ],
         "converted": {
-          "candidate:billing_gl_trial_balance": [
+          "SFX_SPARK.BILLING_GL_TRIAL_BALANCE": [
             {
               "file": "warehouse/dbt/models/spark/billing_gl_trial_balance/billing_gl_trial_balance.sql",
               "start_line": 1,
@@ -19317,7 +19981,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -19339,9 +20003,13 @@
           }
         }
       },
-      "source": "etl/spark/jobs/py/billing_gl_trial_balance.py",
-      "source_ref": "demo-snowflake-dw-exit",
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_SPARK.BILLING_GL_TRIAL_BALANCE": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -19365,14 +20033,84 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "billing",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Spark source available; output not materialized locally",
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_SPARK.BILLING_INVOICE_SUMMARY_DAILY": {
+          "before": {
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "INVOICE_DATE": {
+              "nulls": 0,
+              "min": "2026-01-06",
+              "max": "2026-11-09",
+              "distinct": 200
+            },
+            "LINE_COUNT": {
+              "nulls": 0,
+              "min": 1,
+              "max": 1,
+              "distinct": 1
+            },
+            "AMOUNT": {
+              "nulls": 0,
+              "min": "4.06",
+              "max": "14460.73",
+              "distinct": 200
+            }
+          },
+          "after": {
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "INVOICE_DATE": {
+              "nulls": 0,
+              "min": "2026-01-06",
+              "max": "2026-11-09",
+              "distinct": 200
+            },
+            "LINE_COUNT": {
+              "nulls": 0,
+              "min": 1,
+              "max": 1,
+              "distinct": 1
+            },
+            "AMOUNT": {
+              "nulls": 0,
+              "min": "4.06",
+              "max": "14460.73",
+              "distinct": 200
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_SPARK.BILLING_INVOICE_SUMMARY_DAILY": {
+          "keys": [
+            "CUSTOMER_ID"
+          ],
+          "difference": 0,
+          "before": "38acee36f5a5155cde07561b294e4ffa452eec379e2861ad0d33e9fef65f49a2",
+          "after": "38acee36f5a5155cde07561b294e4ffa452eec379e2861ad0d33e9fef65f49a2",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_SPARK.BILLING_INVOICE_SUMMARY_DAILY": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -19383,7 +20121,7 @@
           }
         ],
         "converted": {
-          "candidate:billing_invoice_summary_daily": [
+          "SFX_SPARK.BILLING_INVOICE_SUMMARY_DAILY": [
             {
               "file": "warehouse/dbt/models/spark/billing_invoice_summary_daily/billing_invoice_summary_daily.sql",
               "start_line": 1,
@@ -19392,7 +20130,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -19414,9 +20152,13 @@
           }
         }
       },
-      "source": "etl/spark/jobs/py/billing_invoice_summary_daily.py",
-      "source_ref": "demo-snowflake-dw-exit",
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_SPARK.BILLING_INVOICE_SUMMARY_DAILY": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -19440,14 +20182,96 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "billing",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Spark source available; output not materialized locally",
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_SPARK.BILLING_PAYMENT_AGING": {
+          "before": {
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "INVOICE_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "DAYS_LATE": {
+              "nulls": 0,
+              "min": -30,
+              "max": -30,
+              "distinct": 1
+            },
+            "TOTAL_AMOUNT": {
+              "nulls": 0,
+              "min": "7.49",
+              "max": "7632.85",
+              "distinct": 199
+            },
+            "PAID_AMOUNT": {
+              "nulls": 0,
+              "min": "10.87",
+              "max": "11624.53",
+              "distinct": 200
+            }
+          },
+          "after": {
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "INVOICE_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "DAYS_LATE": {
+              "nulls": 0,
+              "min": -30,
+              "max": -30,
+              "distinct": 1
+            },
+            "TOTAL_AMOUNT": {
+              "nulls": 0,
+              "min": "7.49",
+              "max": "7632.85",
+              "distinct": 199
+            },
+            "PAID_AMOUNT": {
+              "nulls": 0,
+              "min": "10.87",
+              "max": "11624.53",
+              "distinct": 200
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_SPARK.BILLING_PAYMENT_AGING": {
+          "keys": [
+            "CUSTOMER_ID"
+          ],
+          "difference": 0,
+          "before": "b65574042f9b7c770d5ed8f0474d94bb96ca656cbc2c35576dfa3674ca17043a",
+          "after": "b65574042f9b7c770d5ed8f0474d94bb96ca656cbc2c35576dfa3674ca17043a",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_SPARK.BILLING_PAYMENT_AGING": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -19458,7 +20282,7 @@
           }
         ],
         "converted": {
-          "candidate:billing_payment_aging": [
+          "SFX_SPARK.BILLING_PAYMENT_AGING": [
             {
               "file": "warehouse/dbt/models/spark/billing_payment_aging/billing_payment_aging.sql",
               "start_line": 1,
@@ -19467,7 +20291,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -19489,9 +20313,13 @@
           }
         }
       },
-      "source": "etl/spark/jobs/py/billing_payment_aging.py",
-      "source_ref": "demo-snowflake-dw-exit",
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_SPARK.BILLING_PAYMENT_AGING": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -19515,14 +20343,72 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "billing",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Spark source available; output not materialized locally",
+      "row_count": {
+        "before": 12,
+        "after": 12
+      },
+      "column_profile": {
+        "SFX_SPARK.BILLING_REVENUE_BY_PLAN": {
+          "before": {
+            "PLAN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 12,
+              "distinct": 12
+            },
+            "PLAN_NAME": {
+              "nulls": 0,
+              "min": "Business Annual",
+              "max": "Team Monthly",
+              "distinct": 12
+            },
+            "REVENUE": {
+              "nulls": 0,
+              "min": "4372.66",
+              "max": "18994.86",
+              "distinct": 12
+            }
+          },
+          "after": {
+            "PLAN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 12,
+              "distinct": 12
+            },
+            "PLAN_NAME": {
+              "nulls": 0,
+              "min": "Business Annual",
+              "max": "Team Monthly",
+              "distinct": 12
+            },
+            "REVENUE": {
+              "nulls": 0,
+              "min": "4372.66",
+              "max": "18994.86",
+              "distinct": 12
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_SPARK.BILLING_REVENUE_BY_PLAN": {
+          "keys": [
+            "PLAN_ID"
+          ],
+          "difference": 0,
+          "before": "be559786c2a9ab261bacd2716d323c0862751dd682e92c0645670a115a65a0a3",
+          "after": "be559786c2a9ab261bacd2716d323c0862751dd682e92c0645670a115a65a0a3",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_SPARK.BILLING_REVENUE_BY_PLAN": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -19533,7 +20419,7 @@
           }
         ],
         "converted": {
-          "candidate:billing_revenue_by_plan": [
+          "SFX_SPARK.BILLING_REVENUE_BY_PLAN": [
             {
               "file": "warehouse/dbt/models/spark/billing_revenue_by_plan/billing_revenue_by_plan.sql",
               "start_line": 1,
@@ -19542,7 +20428,7 @@
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -19564,9 +20450,13 @@
           }
         }
       },
-      "source": "etl/spark/jobs/py/billing_revenue_by_plan.py",
-      "source_ref": "demo-snowflake-dw-exit",
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_SPARK.BILLING_REVENUE_BY_PLAN": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -19590,14 +20480,96 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "billing",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Spark source available; output not materialized locally",
+      "row_count": {
+        "before": 28,
+        "after": 28
+      },
+      "column_profile": {
+        "SFX_SPARK.BILLING_USAGE_APPEND_DAILY": {
+          "before": {
+            "USAGE_ID": {
+              "nulls": 0,
+              "min": 7,
+              "max": 196,
+              "distinct": 28
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 7,
+              "max": 196,
+              "distinct": 28
+            },
+            "USAGE_DATE": {
+              "nulls": 0,
+              "min": "2026-11-09",
+              "max": "2026-11-09",
+              "distinct": 1
+            },
+            "UNITS": {
+              "nulls": 0,
+              "min": 104,
+              "max": 9894,
+              "distinct": 28
+            },
+            "AMOUNT": {
+              "nulls": 0,
+              "min": "7.82",
+              "max": "2270.57",
+              "distinct": 28
+            }
+          },
+          "after": {
+            "USAGE_ID": {
+              "nulls": 0,
+              "min": 7,
+              "max": 196,
+              "distinct": 28
+            },
+            "CUSTOMER_ID": {
+              "nulls": 0,
+              "min": 7,
+              "max": 196,
+              "distinct": 28
+            },
+            "USAGE_DATE": {
+              "nulls": 0,
+              "min": "2026-11-09",
+              "max": "2026-11-09",
+              "distinct": 1
+            },
+            "UNITS": {
+              "nulls": 0,
+              "min": 104,
+              "max": 9894,
+              "distinct": 28
+            },
+            "AMOUNT": {
+              "nulls": 0,
+              "min": "7.82",
+              "max": "2270.57",
+              "distinct": 28
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_SPARK.BILLING_USAGE_APPEND_DAILY": {
+          "keys": [
+            "USAGE_ID"
+          ],
+          "difference": 0,
+          "before": "7b6cb9f94888b7bc2a19348a4c9182b2f2aceb161ab54b63b12380fb7e6a85fd",
+          "after": "7b6cb9f94888b7bc2a19348a4c9182b2f2aceb161ab54b63b12380fb7e6a85fd",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_SPARK.BILLING_USAGE_APPEND_DAILY": []
+      },
+      "reason": null,
       "provenance": {
         "source": [
           {
@@ -19608,16 +20580,16 @@
           }
         ],
         "converted": {
-          "candidate:billing_usage_append_daily": [
+          "SFX_SPARK.BILLING_USAGE_APPEND_DAILY": [
             {
               "file": "warehouse/dbt/models/spark/billing_usage_append_daily/billing_usage_append_daily.sql",
               "start_line": 1,
-              "end_line": 11,
-              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-billing-parity/warehouse/dbt/models/spark/billing_usage_append_daily/billing_usage_append_daily.sql#L1-L11"
+              "end_line": 9,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfx1119-billing-parity/warehouse/dbt/models/spark/billing_usage_append_daily/billing_usage_append_daily.sql#L1-L9"
             }
           ]
         },
-        "conversion_note": "No declared local output relation; linked candidates are not measured",
+        "conversion_note": null,
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -19639,9 +20611,13 @@
           }
         }
       },
-      "source": "etl/spark/jobs/py/billing_usage_append_daily.py",
-      "source_ref": "demo-snowflake-dw-exit",
-      "local_duckdb": "red",
+      "comparison_rules": {
+        "SFX_SPARK.BILLING_USAGE_APPEND_DAILY": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        }
+      },
+      "local_duckdb": "green",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -20072,9 +21048,9 @@
   },
   "summary": {
     "rows": 252,
-    "red": 188,
-    "green": 64,
-    "measured": 64,
+    "red": 177,
+    "green": 75,
+    "measured": 75,
     "migrated": 0,
     "licence_remaining": 252,
     "licence_total": 252,
@@ -20084,11 +21060,157 @@
       "spark": 30
     },
     "billing": {
-      "local_duckdb": "red",
-      "local_green": 63,
-      "local_red": 11,
+      "local_duckdb": "green",
+      "local_green": 74,
+      "local_red": 0,
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run"
+    }
+  },
+  "spark_evidence": {
+    "billing_churn_score": {
+      "legacy_output": "etl/spark/.data/sfx-1119-before/lake/billing/billing_churn_score",
+      "landing_sha256": {
+        "etl/spark/.data/sfx-1119-before/landing/billing/BILLING_ADJ/20261109.psv": "4d82ba44f9c5a1a41c17aa343aa41a8a5e094f378fab5e6056a65bd17bcfbb7d",
+        "etl/spark/.data/sfx-1119-before/landing/billing/CREDIT_NOTE/20261109.psv": "153ca7a3821c3358cc81e5697363ff9ecb572961745aca24fae63018fc78f7d4",
+        "etl/spark/.data/sfx-1119-before/landing/billing/CUSTOMER_ACCOUNT/20261109.psv": "3cddfa34e77c75793861cc8077f85db10849f4d737de28be598f8c87bf8b93f9",
+        "etl/spark/.data/sfx-1119-before/landing/billing/GL_ACCOUNT/20261109.psv": "de8305f53f82aca672bcf37973731807630cf7defbfb35ce64dff8000b9cf12d",
+        "etl/spark/.data/sfx-1119-before/landing/billing/GL_JOURNAL_LINE/20261109.psv": "c95445cc7fa489f9c49555d66d7cb0d03d8da4a5037ea854bdcdd017f8577597",
+        "etl/spark/.data/sfx-1119-before/landing/billing/INVOICE_HDR/20261109.psv": "53a1d1887258f2c84d4a71cb30477c5af291755acb968eb0d219ca6ecd5f236f",
+        "etl/spark/.data/sfx-1119-before/landing/billing/INVOICE_LINE/20261109.psv": "92d5dc19ef9815a729ed116926429733ed0b2a475769cc8e45e4ef9266ec34b6",
+        "etl/spark/.data/sfx-1119-before/landing/billing/PAYMENT/20261109.psv": "9e118235db8cd4b4634ebcb1a96f8b4251705663378aee0682d999003d9617c0",
+        "etl/spark/.data/sfx-1119-before/landing/billing/PLAN_CATALOG/20261109.psv": "423d334f3b5e23a249a60ae00cc219d4c2d48ff68331827adb439809ceac32e6",
+        "etl/spark/.data/sfx-1119-before/landing/billing/SUBSCRIPTION/20261109.psv": "0146b623d7cb1b19797d67f3c9300ac1ddf688e13aeeb990179e5d815ae64531",
+        "etl/spark/.data/sfx-1119-before/landing/billing/TAX_RATE/20261109.psv": "43109ef2c9e944f9822e5ab8d64d128d48043b089f16b067c40bef161e2e0ebe",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261103.psv": "c443ae95663419000076605177152ff776a219fef99e4900ab8d3ad939a078c5",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261104.psv": "596e72492db67031ae883941ce8e201ebeb092fecb4a6093c134bc170d31f628",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261105.psv": "1fbce33a360d4ec2d1add453ee45255c9ff03c5e8735998d1c5833fedda79884",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261106.psv": "d6487fd59ceacf20dff739a73f379540b4d00778168301ca726edac3ecefcc7c",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261107.psv": "84d4cb6b0a59289575fb75154a8ce7ab3a2d40700cdcdd3145e93c3ef734b9c9",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261108.psv": "260dc04dc860b479fcf500c7f622179b99a3b212361bbb09910e993ea27c43d1",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261109.psv": "e53de68b4f56e7d47bdd79ece3e151877dc717b55f5e0d1053fb07bf8b6c45c4"
+      },
+      "build": "initial; is_incremental()=false"
+    },
+    "billing_gl_trial_balance": {
+      "legacy_output": "etl/spark/.data/sfx-1119-before/lake/billing/billing_gl_trial_balance",
+      "landing_sha256": {
+        "etl/spark/.data/sfx-1119-before/landing/billing/BILLING_ADJ/20261109.psv": "4d82ba44f9c5a1a41c17aa343aa41a8a5e094f378fab5e6056a65bd17bcfbb7d",
+        "etl/spark/.data/sfx-1119-before/landing/billing/CREDIT_NOTE/20261109.psv": "153ca7a3821c3358cc81e5697363ff9ecb572961745aca24fae63018fc78f7d4",
+        "etl/spark/.data/sfx-1119-before/landing/billing/CUSTOMER_ACCOUNT/20261109.psv": "3cddfa34e77c75793861cc8077f85db10849f4d737de28be598f8c87bf8b93f9",
+        "etl/spark/.data/sfx-1119-before/landing/billing/GL_ACCOUNT/20261109.psv": "de8305f53f82aca672bcf37973731807630cf7defbfb35ce64dff8000b9cf12d",
+        "etl/spark/.data/sfx-1119-before/landing/billing/GL_JOURNAL_LINE/20261109.psv": "c95445cc7fa489f9c49555d66d7cb0d03d8da4a5037ea854bdcdd017f8577597",
+        "etl/spark/.data/sfx-1119-before/landing/billing/INVOICE_HDR/20261109.psv": "53a1d1887258f2c84d4a71cb30477c5af291755acb968eb0d219ca6ecd5f236f",
+        "etl/spark/.data/sfx-1119-before/landing/billing/INVOICE_LINE/20261109.psv": "92d5dc19ef9815a729ed116926429733ed0b2a475769cc8e45e4ef9266ec34b6",
+        "etl/spark/.data/sfx-1119-before/landing/billing/PAYMENT/20261109.psv": "9e118235db8cd4b4634ebcb1a96f8b4251705663378aee0682d999003d9617c0",
+        "etl/spark/.data/sfx-1119-before/landing/billing/PLAN_CATALOG/20261109.psv": "423d334f3b5e23a249a60ae00cc219d4c2d48ff68331827adb439809ceac32e6",
+        "etl/spark/.data/sfx-1119-before/landing/billing/SUBSCRIPTION/20261109.psv": "0146b623d7cb1b19797d67f3c9300ac1ddf688e13aeeb990179e5d815ae64531",
+        "etl/spark/.data/sfx-1119-before/landing/billing/TAX_RATE/20261109.psv": "43109ef2c9e944f9822e5ab8d64d128d48043b089f16b067c40bef161e2e0ebe",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261103.psv": "c443ae95663419000076605177152ff776a219fef99e4900ab8d3ad939a078c5",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261104.psv": "596e72492db67031ae883941ce8e201ebeb092fecb4a6093c134bc170d31f628",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261105.psv": "1fbce33a360d4ec2d1add453ee45255c9ff03c5e8735998d1c5833fedda79884",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261106.psv": "d6487fd59ceacf20dff739a73f379540b4d00778168301ca726edac3ecefcc7c",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261107.psv": "84d4cb6b0a59289575fb75154a8ce7ab3a2d40700cdcdd3145e93c3ef734b9c9",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261108.psv": "260dc04dc860b479fcf500c7f622179b99a3b212361bbb09910e993ea27c43d1",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261109.psv": "e53de68b4f56e7d47bdd79ece3e151877dc717b55f5e0d1053fb07bf8b6c45c4"
+      },
+      "build": "initial; is_incremental()=false"
+    },
+    "billing_invoice_summary_daily": {
+      "legacy_output": "etl/spark/.data/sfx-1119-before/lake/billing/billing_invoice_summary_daily",
+      "landing_sha256": {
+        "etl/spark/.data/sfx-1119-before/landing/billing/BILLING_ADJ/20261109.psv": "4d82ba44f9c5a1a41c17aa343aa41a8a5e094f378fab5e6056a65bd17bcfbb7d",
+        "etl/spark/.data/sfx-1119-before/landing/billing/CREDIT_NOTE/20261109.psv": "153ca7a3821c3358cc81e5697363ff9ecb572961745aca24fae63018fc78f7d4",
+        "etl/spark/.data/sfx-1119-before/landing/billing/CUSTOMER_ACCOUNT/20261109.psv": "3cddfa34e77c75793861cc8077f85db10849f4d737de28be598f8c87bf8b93f9",
+        "etl/spark/.data/sfx-1119-before/landing/billing/GL_ACCOUNT/20261109.psv": "de8305f53f82aca672bcf37973731807630cf7defbfb35ce64dff8000b9cf12d",
+        "etl/spark/.data/sfx-1119-before/landing/billing/GL_JOURNAL_LINE/20261109.psv": "c95445cc7fa489f9c49555d66d7cb0d03d8da4a5037ea854bdcdd017f8577597",
+        "etl/spark/.data/sfx-1119-before/landing/billing/INVOICE_HDR/20261109.psv": "53a1d1887258f2c84d4a71cb30477c5af291755acb968eb0d219ca6ecd5f236f",
+        "etl/spark/.data/sfx-1119-before/landing/billing/INVOICE_LINE/20261109.psv": "92d5dc19ef9815a729ed116926429733ed0b2a475769cc8e45e4ef9266ec34b6",
+        "etl/spark/.data/sfx-1119-before/landing/billing/PAYMENT/20261109.psv": "9e118235db8cd4b4634ebcb1a96f8b4251705663378aee0682d999003d9617c0",
+        "etl/spark/.data/sfx-1119-before/landing/billing/PLAN_CATALOG/20261109.psv": "423d334f3b5e23a249a60ae00cc219d4c2d48ff68331827adb439809ceac32e6",
+        "etl/spark/.data/sfx-1119-before/landing/billing/SUBSCRIPTION/20261109.psv": "0146b623d7cb1b19797d67f3c9300ac1ddf688e13aeeb990179e5d815ae64531",
+        "etl/spark/.data/sfx-1119-before/landing/billing/TAX_RATE/20261109.psv": "43109ef2c9e944f9822e5ab8d64d128d48043b089f16b067c40bef161e2e0ebe",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261103.psv": "c443ae95663419000076605177152ff776a219fef99e4900ab8d3ad939a078c5",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261104.psv": "596e72492db67031ae883941ce8e201ebeb092fecb4a6093c134bc170d31f628",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261105.psv": "1fbce33a360d4ec2d1add453ee45255c9ff03c5e8735998d1c5833fedda79884",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261106.psv": "d6487fd59ceacf20dff739a73f379540b4d00778168301ca726edac3ecefcc7c",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261107.psv": "84d4cb6b0a59289575fb75154a8ce7ab3a2d40700cdcdd3145e93c3ef734b9c9",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261108.psv": "260dc04dc860b479fcf500c7f622179b99a3b212361bbb09910e993ea27c43d1",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261109.psv": "e53de68b4f56e7d47bdd79ece3e151877dc717b55f5e0d1053fb07bf8b6c45c4"
+      },
+      "build": "initial; is_incremental()=false"
+    },
+    "billing_payment_aging": {
+      "legacy_output": "etl/spark/.data/sfx-1119-before/lake/billing/billing_payment_aging",
+      "landing_sha256": {
+        "etl/spark/.data/sfx-1119-before/landing/billing/BILLING_ADJ/20261109.psv": "4d82ba44f9c5a1a41c17aa343aa41a8a5e094f378fab5e6056a65bd17bcfbb7d",
+        "etl/spark/.data/sfx-1119-before/landing/billing/CREDIT_NOTE/20261109.psv": "153ca7a3821c3358cc81e5697363ff9ecb572961745aca24fae63018fc78f7d4",
+        "etl/spark/.data/sfx-1119-before/landing/billing/CUSTOMER_ACCOUNT/20261109.psv": "3cddfa34e77c75793861cc8077f85db10849f4d737de28be598f8c87bf8b93f9",
+        "etl/spark/.data/sfx-1119-before/landing/billing/GL_ACCOUNT/20261109.psv": "de8305f53f82aca672bcf37973731807630cf7defbfb35ce64dff8000b9cf12d",
+        "etl/spark/.data/sfx-1119-before/landing/billing/GL_JOURNAL_LINE/20261109.psv": "c95445cc7fa489f9c49555d66d7cb0d03d8da4a5037ea854bdcdd017f8577597",
+        "etl/spark/.data/sfx-1119-before/landing/billing/INVOICE_HDR/20261109.psv": "53a1d1887258f2c84d4a71cb30477c5af291755acb968eb0d219ca6ecd5f236f",
+        "etl/spark/.data/sfx-1119-before/landing/billing/INVOICE_LINE/20261109.psv": "92d5dc19ef9815a729ed116926429733ed0b2a475769cc8e45e4ef9266ec34b6",
+        "etl/spark/.data/sfx-1119-before/landing/billing/PAYMENT/20261109.psv": "9e118235db8cd4b4634ebcb1a96f8b4251705663378aee0682d999003d9617c0",
+        "etl/spark/.data/sfx-1119-before/landing/billing/PLAN_CATALOG/20261109.psv": "423d334f3b5e23a249a60ae00cc219d4c2d48ff68331827adb439809ceac32e6",
+        "etl/spark/.data/sfx-1119-before/landing/billing/SUBSCRIPTION/20261109.psv": "0146b623d7cb1b19797d67f3c9300ac1ddf688e13aeeb990179e5d815ae64531",
+        "etl/spark/.data/sfx-1119-before/landing/billing/TAX_RATE/20261109.psv": "43109ef2c9e944f9822e5ab8d64d128d48043b089f16b067c40bef161e2e0ebe",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261103.psv": "c443ae95663419000076605177152ff776a219fef99e4900ab8d3ad939a078c5",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261104.psv": "596e72492db67031ae883941ce8e201ebeb092fecb4a6093c134bc170d31f628",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261105.psv": "1fbce33a360d4ec2d1add453ee45255c9ff03c5e8735998d1c5833fedda79884",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261106.psv": "d6487fd59ceacf20dff739a73f379540b4d00778168301ca726edac3ecefcc7c",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261107.psv": "84d4cb6b0a59289575fb75154a8ce7ab3a2d40700cdcdd3145e93c3ef734b9c9",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261108.psv": "260dc04dc860b479fcf500c7f622179b99a3b212361bbb09910e993ea27c43d1",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261109.psv": "e53de68b4f56e7d47bdd79ece3e151877dc717b55f5e0d1053fb07bf8b6c45c4"
+      },
+      "build": "initial; is_incremental()=false"
+    },
+    "billing_revenue_by_plan": {
+      "legacy_output": "etl/spark/.data/sfx-1119-before/lake/billing/billing_revenue_by_plan",
+      "landing_sha256": {
+        "etl/spark/.data/sfx-1119-before/landing/billing/BILLING_ADJ/20261109.psv": "4d82ba44f9c5a1a41c17aa343aa41a8a5e094f378fab5e6056a65bd17bcfbb7d",
+        "etl/spark/.data/sfx-1119-before/landing/billing/CREDIT_NOTE/20261109.psv": "153ca7a3821c3358cc81e5697363ff9ecb572961745aca24fae63018fc78f7d4",
+        "etl/spark/.data/sfx-1119-before/landing/billing/CUSTOMER_ACCOUNT/20261109.psv": "3cddfa34e77c75793861cc8077f85db10849f4d737de28be598f8c87bf8b93f9",
+        "etl/spark/.data/sfx-1119-before/landing/billing/GL_ACCOUNT/20261109.psv": "de8305f53f82aca672bcf37973731807630cf7defbfb35ce64dff8000b9cf12d",
+        "etl/spark/.data/sfx-1119-before/landing/billing/GL_JOURNAL_LINE/20261109.psv": "c95445cc7fa489f9c49555d66d7cb0d03d8da4a5037ea854bdcdd017f8577597",
+        "etl/spark/.data/sfx-1119-before/landing/billing/INVOICE_HDR/20261109.psv": "53a1d1887258f2c84d4a71cb30477c5af291755acb968eb0d219ca6ecd5f236f",
+        "etl/spark/.data/sfx-1119-before/landing/billing/INVOICE_LINE/20261109.psv": "92d5dc19ef9815a729ed116926429733ed0b2a475769cc8e45e4ef9266ec34b6",
+        "etl/spark/.data/sfx-1119-before/landing/billing/PAYMENT/20261109.psv": "9e118235db8cd4b4634ebcb1a96f8b4251705663378aee0682d999003d9617c0",
+        "etl/spark/.data/sfx-1119-before/landing/billing/PLAN_CATALOG/20261109.psv": "423d334f3b5e23a249a60ae00cc219d4c2d48ff68331827adb439809ceac32e6",
+        "etl/spark/.data/sfx-1119-before/landing/billing/SUBSCRIPTION/20261109.psv": "0146b623d7cb1b19797d67f3c9300ac1ddf688e13aeeb990179e5d815ae64531",
+        "etl/spark/.data/sfx-1119-before/landing/billing/TAX_RATE/20261109.psv": "43109ef2c9e944f9822e5ab8d64d128d48043b089f16b067c40bef161e2e0ebe",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261103.psv": "c443ae95663419000076605177152ff776a219fef99e4900ab8d3ad939a078c5",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261104.psv": "596e72492db67031ae883941ce8e201ebeb092fecb4a6093c134bc170d31f628",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261105.psv": "1fbce33a360d4ec2d1add453ee45255c9ff03c5e8735998d1c5833fedda79884",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261106.psv": "d6487fd59ceacf20dff739a73f379540b4d00778168301ca726edac3ecefcc7c",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261107.psv": "84d4cb6b0a59289575fb75154a8ce7ab3a2d40700cdcdd3145e93c3ef734b9c9",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261108.psv": "260dc04dc860b479fcf500c7f622179b99a3b212361bbb09910e993ea27c43d1",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261109.psv": "e53de68b4f56e7d47bdd79ece3e151877dc717b55f5e0d1053fb07bf8b6c45c4"
+      },
+      "build": "initial; is_incremental()=false"
+    },
+    "billing_usage_append_daily": {
+      "legacy_output": "etl/spark/.data/sfx-1119-before/lake/billing/billing_usage_append_daily",
+      "landing_sha256": {
+        "etl/spark/.data/sfx-1119-before/landing/billing/BILLING_ADJ/20261109.psv": "4d82ba44f9c5a1a41c17aa343aa41a8a5e094f378fab5e6056a65bd17bcfbb7d",
+        "etl/spark/.data/sfx-1119-before/landing/billing/CREDIT_NOTE/20261109.psv": "153ca7a3821c3358cc81e5697363ff9ecb572961745aca24fae63018fc78f7d4",
+        "etl/spark/.data/sfx-1119-before/landing/billing/CUSTOMER_ACCOUNT/20261109.psv": "3cddfa34e77c75793861cc8077f85db10849f4d737de28be598f8c87bf8b93f9",
+        "etl/spark/.data/sfx-1119-before/landing/billing/GL_ACCOUNT/20261109.psv": "de8305f53f82aca672bcf37973731807630cf7defbfb35ce64dff8000b9cf12d",
+        "etl/spark/.data/sfx-1119-before/landing/billing/GL_JOURNAL_LINE/20261109.psv": "c95445cc7fa489f9c49555d66d7cb0d03d8da4a5037ea854bdcdd017f8577597",
+        "etl/spark/.data/sfx-1119-before/landing/billing/INVOICE_HDR/20261109.psv": "53a1d1887258f2c84d4a71cb30477c5af291755acb968eb0d219ca6ecd5f236f",
+        "etl/spark/.data/sfx-1119-before/landing/billing/INVOICE_LINE/20261109.psv": "92d5dc19ef9815a729ed116926429733ed0b2a475769cc8e45e4ef9266ec34b6",
+        "etl/spark/.data/sfx-1119-before/landing/billing/PAYMENT/20261109.psv": "9e118235db8cd4b4634ebcb1a96f8b4251705663378aee0682d999003d9617c0",
+        "etl/spark/.data/sfx-1119-before/landing/billing/PLAN_CATALOG/20261109.psv": "423d334f3b5e23a249a60ae00cc219d4c2d48ff68331827adb439809ceac32e6",
+        "etl/spark/.data/sfx-1119-before/landing/billing/SUBSCRIPTION/20261109.psv": "0146b623d7cb1b19797d67f3c9300ac1ddf688e13aeeb990179e5d815ae64531",
+        "etl/spark/.data/sfx-1119-before/landing/billing/TAX_RATE/20261109.psv": "43109ef2c9e944f9822e5ab8d64d128d48043b089f16b067c40bef161e2e0ebe",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261103.psv": "c443ae95663419000076605177152ff776a219fef99e4900ab8d3ad939a078c5",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261104.psv": "596e72492db67031ae883941ce8e201ebeb092fecb4a6093c134bc170d31f628",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261105.psv": "1fbce33a360d4ec2d1add453ee45255c9ff03c5e8735998d1c5833fedda79884",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261106.psv": "d6487fd59ceacf20dff739a73f379540b4d00778168301ca726edac3ecefcc7c",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261107.psv": "84d4cb6b0a59289575fb75154a8ce7ab3a2d40700cdcdd3145e93c3ef734b9c9",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261108.psv": "260dc04dc860b479fcf500c7f622179b99a3b212361bbb09910e993ea27c43d1",
+        "etl/spark/.data/sfx-1119-before/landing/billing/USAGE_DAILY/20261109.psv": "e53de68b4f56e7d47bdd79ece3e151877dc717b55f5e0d1053fb07bf8b6c45c4"
+      },
+      "build": "initial; is_incremental()=false"
     }
   }
 }

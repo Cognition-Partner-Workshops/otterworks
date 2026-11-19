@@ -36,7 +36,7 @@ def run(business_date, output, initial=False):
             # An alternate display format exposes unresolved Teradata FORMAT casts.
             cursor.execute("ALTER SESSION SET DATE_OUTPUT_FORMAT = 'DD/MM/YYYY'")
             for path in sorted(SQL.glob('[0-3][0-9]_*.sql')):
-                if initial and path.name == '15_storage.sql':
+                if initial and path.name in ('15_storage.sql', '35_reports.sql'):
                     continue
                 candidate = SQL / 'initial' / path.name if initial and path.name != '00_tables.sql' else path
                 for statement in commands(_run_render(candidate.read_text()).replace('${BUSINESS_DATE}', business_date)):

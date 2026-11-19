@@ -71,6 +71,11 @@ credentials; it is not needed for local DuckDB checks.
 - Source journal IDs include run month and a credit-note offset / journal key/hash gaps / preserve `YYYYMM*1000000000000` and the separate credit reversal offset / `billing/20_routines.sql`.
 - Source account load also inserts staging journals / unavailable or missing GL outputs / preserve the staging insert with its posting-date NOT EXISTS guard / `billing/10_load.sql`, from `warehouse/teradata/scripts/billing/01_load_accounts.bteq:20–21`.
 - Source daily_chain runs storage, monthly billing and close after loads / incomplete invoice lines, totals, usage and close fields / execute fixed `10→15→20→30→40`, extracting the shipped procedure body rather than copying logic / `parity/local_billing.py`, `parity/object_board.py`.
+- Teradata macro/export resultsets are outputs too / five unmeasured report rows / declare resultset relations, execute original macro/export SELECTs after the source chain and shipped procedure RESULTSET bodies on the target; retain the trial-balance TOTAL row and NULL-to-zero sums / `parity/report_outputs.py`, `billing/35_reports.sql`, `tools/assess.py`.
+- Teradata ZEROIFNULL sums / PostgreSQL emulator rejects a raw exported SELECT / lower ZEROIFNULL to COALESCE(value, 0) for emulator execution, matching the shipped Snowflake report / `parity/report_outputs.py`, `billing/35_reports.sql`.
+- Spark monthly date_format('yyyy-MM') / trial balance splits into daily groups if sqlglot drops TO_CHAR's format / ship explicit Snowflake TO_CHAR(date, 'YYYY-MM') and explicitly map it to DuckDB STRFTIME for local proof / `warehouse/dbt/models/spark/billing_gl_trial_balance/billing_gl_trial_balance.sql`, `parity/spark_billing.py`.
+- Spark usage job emits only MAX(USAGE_DATE) even on its first run / target first-build backfill has extra rows / apply the latest-date predicate on initial as well as incremental dbt builds / `warehouse/dbt/models/spark/billing_usage_append_daily/billing_usage_append_daily.sql`.
+- Spark Python churn scoring / a separately rewritten formula would not prove the shipped conversion / extract the shipped Snowpark UDF and projection, register that Python body in DuckDB, and compare actual Spark Parquet against the same landing PSVs / `parity/spark_billing.py`, `warehouse/snowpark/billing_churn_score.py`.
 
 Paths above are relative to `migration/dw-exit/` unless beginning with `warehouse/`.
 
@@ -80,6 +85,10 @@ Use the Run scope exports above and `warehouse/.venv/bin/python`. Billing is the
 subject-area implementation; other areas need their own relation manifest and conversions.
 
 ```sh
+make sfx-spark-up NS="$NS" ROWS_PER_TABLE=200
+for job in billing_churn_score billing_gl_trial_balance billing_invoice_summary_daily billing_payment_aging billing_revenue_by_plan billing_usage_append_daily; do
+  make sfx-spark-run NS="$NS" JOB="$job"
+done
 make sfx-manifest-board NS="$NS" BOARD_ROWS=200 PARITY_TARGET=duckdb
 make sfx-billing-test
 # Only after read-only access preflight succeeds and no frozen baseline exists:
@@ -98,6 +107,11 @@ Snowflake states. Local green is not live parity, mapping execution or cutover a
 Billing row provenance links open the source artifact, converted producer statements and
 ladder count/profile/hash implementation on the work branch, with derived `#Lx-Ly` ranges.
 Unavailable outputs stay red; candidate links do not mean those candidates were executed.
+Spark local proof compares actual lake Parquet with an initial dbt SELECT (not dbt's
+incremental materialization); landing SHA-256 hashes and build mode are in `spark_evidence`.
+Outputs older than the landing inputs are rejected. Repeated append runs can legitimately
+produce duplicate legacy rows; the ladder preserves duplicates rather than hiding them.
+The local proof does not establish incremental rerun semantics or live Snowflake parity.
 
 **Grant gotcha:** the provisioned role is token-scoped. Bind `SNOWFLAKE_ACCOUNT`,
 `SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`, `SNOWFLAKE_PRIVATE_KEY`, `SNOWFLAKE_DATABASE` securely,
