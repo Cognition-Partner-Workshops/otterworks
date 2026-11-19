@@ -21,7 +21,9 @@ class Cursor:
 
 
 def test_tags():
-    assert control.query_tag('load_dbql') == '{"run":"sfx-d1110","act":"assess","step":"load_dbql"}'
+    value = json.loads(control.query_tag('load_dbql'))
+    assert value.items() >= dict(run='sfx-d1110', act='assess', step='load_dbql', workload='ops', phase='assess').items()
+    assert value['commit'] and value['run_id']
     cursor = Cursor()
     control.tag(cursor, 'verify')
     assert json.loads(cursor.calls[0][1][0])['step'] == 'verify'

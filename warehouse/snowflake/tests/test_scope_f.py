@@ -26,7 +26,7 @@ def test_post_deploy_governance():
     assert len(governance.objects()) == 28
     assert len(calls) == 56
     assert all('SET TAG GOVERNANCE.SFX_RUN' in sql for sql, _ in calls[::2])
-    assert all('COMMENT ON' in sql and 'sfx-d1110' in params[0] for sql, params in calls[1::2])
+    assert all('COMMENT ON' in sql and 'sfx1119' in params[0] for sql, params in calls[1::2])
     assert len(set(governance.objects())) == 28
     assert 'reapply(cursor)' in (ROOT / 'deploy.py').read_text()
     assert "ALLOWED_VALUES 'sfx-d1110'" in (ROOT / 'migrations/V006__governance.sql').read_text()
@@ -64,13 +64,13 @@ def render_governance(policies=None, results=None, existing=(), missing=False, s
 
 
 def test_scoped_token_uses_fixed_run_tag(monkeypatch):
-    token = "sfx-d1110-test'quoted"
-    monkeypatch.setenv('SNOWFLAKE_RUN_TOKEN', token)
+    token = "sfx2220"
+    monkeypatch.setenv('RUN_TOKEN', token)
     calls = []
     governance.reapply(SimpleNamespace(execute=lambda sql, params: calls.append((sql, params))))
     assert all(params == ('sfx-d1110',) for sql, params in calls if 'SET TAG' in sql)
     assert all(params[0].startswith(token + ' ') for sql, params in calls if 'COMMENT ON' in sql)
-    rendered = render_governance(token=token)
+    rendered = render_governance(token="sfx-d1110-test'quoted")
     assert rendered[0].endswith(".GOVERNANCE.SFX_RUN = 'sfx-d1110'")
     assert "sfx-d1110-test''quoted customer" in rendered[1]
 

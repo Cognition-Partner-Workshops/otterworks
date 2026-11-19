@@ -1,8 +1,12 @@
+import json
 import os
 from pathlib import Path
 import re
 import sys
 import tempfile
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'snowflake'))
+from sfx_conn import query_tag
 
 
 FIELDS = ('ACCOUNT', 'USER', 'ROLE', 'WAREHOUSE', 'DATABASE')
@@ -82,8 +86,8 @@ def configure():
     key = directory / 'sfx_d1110.p8'
     section = '[sfx_d1110]\n'+''.join(name.lower()+' = '+quote(os.environ['SNOWFLAKE_'+name])+'\n' for name in FIELDS)
     section += 'authenticator = "SNOWFLAKE_JWT"\nprivate_key_file = '+quote(str(key))+'\n\n'
-    if os.environ.get('SNOWFLAKE_QUERY_TAG'):
-        section += 'session_parameters = { QUERY_TAG = '+quote(os.environ['SNOWFLAKE_QUERY_TAG'])+' }\n\n'
+    extra = json.loads(os.environ.get('SNOWFLAKE_QUERY_TAG') or '{}')
+    section += 'session_parameters = { QUERY_TAG = '+quote(query_tag('ops', 'named-profile', extra))+' }\n\n'
     previous_mask = os.umask(0o077)
     temporary = []
     try:

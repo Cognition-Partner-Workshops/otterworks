@@ -7,7 +7,7 @@ import re
 import subprocess
 import sys
 
-from sf import connect, dbt_env
+from sf import connect, dbt_env, operation
 
 ROOT = Path(__file__).resolve().parent
 GOOD_DATE = date(2026, 11, 9)
@@ -50,6 +50,7 @@ def header_columns(path):
     return {name: f"${header.index(name) + 1}" for name in REQUIRED}
 
 
+@operation
 def load(day, step="load", schema="RAW_BILLING", warehouse="SFX_D1110_LOAD_WH", no_build=False):
     validate_target(schema, warehouse)
     path = ROOT / "landing" / f"{day.isoformat()}.csv"

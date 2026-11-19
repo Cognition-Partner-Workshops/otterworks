@@ -9,11 +9,13 @@ import yaml
 from sfx_conn import ROOT, connect
 from seed_contract import prepare_seed
 from teradata_before import prepare_before
+from telemetry import operation
 
 SPEC = yaml.safe_load((ROOT / "landing_columns.yml").read_text())
 FIXTURE_SPEC = yaml.safe_load((ROOT / 'fixture_columns.yml').read_text())
 
 
+@operation
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--area", choices=["all", *SPEC], default="all")

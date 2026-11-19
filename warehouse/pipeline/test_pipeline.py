@@ -25,8 +25,10 @@ def test_connection_is_injectable():
     assert args["connection_name"] == "sfx_d1110"
     assert args["database"] == "SFX_D1110_AFTER"
     assert args["session_parameters"]["TIMEZONE"] == "UTC"
-    assert json.loads(args["session_parameters"]["QUERY_TAG"]) == {
-        "run": "sfx-d1110", "act": "operate", "step": "load_break"}
+    tag = json.loads(args["session_parameters"]["QUERY_TAG"])
+    assert tag.items() >= {"run": "sfx-d1110", "act": "operate", "step": "load_break",
+                           "workload": "load", "phase": "operate"}.items()
+    assert tag["commit"] and tag["run_id"]
     with pytest.raises(ValueError):
         sf.connect("load", "OTHER_WH", connector)
 

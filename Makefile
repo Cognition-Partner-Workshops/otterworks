@@ -4,6 +4,20 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
+.PHONY: sfx-observability-up sfx-observability-down sfx-feed-target-test sfx-target-sql
+sfx-observability-up:
+	mkdir -p migration/dw-exit/.runs/logs migration/dw-exit/.runs/alerts etl/informatica/infa_shared
+	docker compose -f docker-compose.observability.yml up -d
+
+sfx-observability-down:
+	docker compose -f docker-compose.observability.yml down
+
+sfx-target-sql:
+	python3 warehouse/snowflake/capacity.py
+
+sfx-feed-target-test:
+	uv run --python 3.12 --with pytest==8.4.2 --with PyYAML==6.0.3 python -m pytest -q observability/pipeline/test_feed_target.py
+
 .PHONY: sfx-teradata-up sfx-teradata-run sfx-teradata-test sfx-teradata-down sfx-teradata-snowconvert sfx-teradata-validate
 
 .PHONY: sfx-exit-reads sfx-exit-board sfx-exit-decommission

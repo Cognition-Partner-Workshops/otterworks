@@ -2,12 +2,18 @@
 import json
 import os
 from pathlib import Path
+import sys
 
 import tomlkit
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'snowflake'))
+from telemetry import operation, record_checks
+from sfx_conn import query_tag as session_tag
+
 
 def query_tag(step):
-    return json.dumps({"run": "sfx-d1110", "act": "operate", "step": step}, separators=(",", ":"))
+    workload = 'transform' if step == 'dbt_build' else 'ops' if step == 'monitor' else 'load'
+    return session_tag(workload, 'operate', {"run": "sfx-d1110", "act": "operate", "step": step})
 
 
 def connect(step, warehouse, connector=None):

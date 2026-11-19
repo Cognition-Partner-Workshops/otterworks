@@ -26,9 +26,10 @@ def test_tag(monkeypatch):
     monkeypatch.delenv("SFX_EXECUTED_BY", raising=False)
     monkeypatch.delenv("SFX_BUILT_WITH", raising=False)
     monkeypatch.delenv("SNOWFLAKE_RUN_TOKEN", raising=False)
+    monkeypatch.setenv("RUN_TOKEN", "sfx1119")
     value = query_tag("load", "copy")
     assert json.loads(value) == dict(workload="load", phase="copy", commit="abc123",
-        run_id="test-run", run_token="sfx-d1110", executed_by="manual", built_with="devin")
+        run_id="test-run", run_token="sfx1119", executed_by="manual", built_with="devin")
     assert " " not in value
     monkeypatch.setenv("SFX_EXECUTED_BY", "devin")
     assert json.loads(query_tag("ops", "deploy"))["executed_by"] == "devin"

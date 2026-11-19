@@ -1,0 +1,59 @@
+name: ${RUN_TOKEN:-sfx1119}-observability
+services:
+  config-init:
+    image: python:3.12-alpine
+    command: python /repo/observability/pipeline/configure.py --output /generated/alerts.yml
+    environment:
+      RUN_TOKEN: ${RUN_TOKEN:-sfx1119}
+    volumes:
+      - .:/repo:ro
+      - alert_config:/generated
+  loki:
+    image: grafana/loki:3.4.2
+    command: -config.file=/etc/loki/local.yml
+    ports: ["127.0.0.1:${SFX_LOKI_PORT:-13100}:3100"]
+    volumes:
+      - ./observability/pipeline/loki.yml:/etc/loki/local.yml:ro
+      - loki_data:/loki
+  promtail:
+    image: grafana/promtail:3.4.2
+    command: -config.file=/etc/promtail/config.yml -config.expand-env=true
+    environment:
+      RUN_TOKEN: ${RUN_TOKEN:-sfx1119}
+    volumes:
+      - ./observability/pipeline/promtail.yml:/etc/promtail/config.yml:ro
+      - ./migration/dw-exit/.runs/logs:/logs/warehouse:ro
+      - ./etl/informatica/infa_shared:/logs/runner:ro
+      - promtail_positions:/positions
+    depends_on: [loki]
+  grafana:
+    image: grafana/grafana:11.6.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${SFX_GRAFANA_PASSWORD:?Set SFX_GRAFANA_PASSWORD}
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      SFX_ALERT_WEBHOOK_URL: ${SFX_ALERT_WEBHOOK_URL:?Set SFX_ALERT_WEBHOOK_URL}
+      RUN_TOKEN: ${RUN_TOKEN:-sfx1119}
+    ports: ["127.0.0.1:${SFX_GRAFANA_PORT:-13000}:3000"]
+    volumes:
+      - ./observability/pipeline/datasources.yml:/etc/grafana/provisioning/datasources/sfx.yml:ro
+      - alert_config:/etc/grafana/provisioning/alerting:ro
+    depends_on:
+      loki:
+        condition: service_started
+      config-init:
+        condition: service_completed_successfully
+  alert-sink:
+    image: python:3.12-alpine
+    profiles: [test]
+    command: python /repo/observability/alertmanager/alert_sink.py
+    environment:
+      SINK_DATA_DIR: /data
+    ports: ["127.0.0.1:${SFX_SINK_PORT:-19095}:9095"]
+    volumes:
+      - .:/repo:ro
+      - ./migration/dw-exit/.runs/alerts:/data
+volumes:
+  alert_config:
+  loki_data:
+  promtail_positions:

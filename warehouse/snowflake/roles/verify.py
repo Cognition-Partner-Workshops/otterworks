@@ -8,6 +8,8 @@ import uuid
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import dry_run
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from sfx_conn import query_tag
 
 DATABASE = "SFX_D1110_AFTER"
 MARTS = ("MART", "MART_SPARK", "COMPAT")
@@ -30,7 +32,7 @@ def main():
         private_key=key.private_bytes(serialization.Encoding.DER, serialization.PrivateFormat.PKCS8,
                                      serialization.NoEncryption()),
         role="SFX_D1110_ROLE", database=DATABASE, warehouse="SFX_D1110_TRANSFORM_WH",
-        session_parameters={"QUERY_TAG": json.dumps(tag, separators=(",", ":")), "TIMEZONE": "UTC"},
+        session_parameters={"QUERY_TAG": query_tag('ops', 'permissions', tag), "TIMEZONE": "UTC"},
     )
     evidence = []
     scratch = []

@@ -1,0 +1,22 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+positions:
+  filename: /positions/positions.yml
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+scrape_configs:
+  - job_name: warehouse
+    static_configs:
+      - targets: [localhost]
+        labels:
+          component: warehouse
+          run: ${RUN_TOKEN}
+          __path__: /logs/warehouse/*.jsonl
+  - job_name: runner
+    static_configs:
+      - targets: [localhost]
+        labels:
+          component: runner
+          run: ${RUN_TOKEN}
+          __path__: /logs/runner/**/*.log
