@@ -311,6 +311,29 @@ jobs:
       - run: npm test
       - run: npm run build
 
+  admin-parity:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.web-app == 'true' || needs.detect-changes.outputs.admin-dashboard == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend/client-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm ci --prefix ../admin-dashboard
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e:admin
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: admin-parity-results
+          path: frontend/client-app/test-results/admin
+
   # React - Workbench
   workbench:
     needs: detect-changes
