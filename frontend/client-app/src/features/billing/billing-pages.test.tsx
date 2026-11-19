@@ -102,6 +102,9 @@ describe("Customer billing flow", () => {
     expect(confirmation).toHaveTextContent("Upgrade confirmed");
     expect(confirmation).toHaveTextContent("Credit for unused time on Starter");
     expect(confirmation).toHaveTextContent("Total: $54.84");
+    expect(screen.queryByRole("button", { name: /Upgrade now and pay/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Plan change preview" })).not.toBeInTheDocument();
+    expect(screen.getByText("Growth", { selector: "strong" })).toBeInTheDocument();
     expect(posted).toEqual({ plan_id: GROWTH, requested_on: "2026-03-15" });
     await waitFor(() => expect(screen.getByRole("region", { name: "Invoices" })).toHaveTextContent("Total: $54.84"));
     expect(invoiceLoads).toBe(2);
@@ -121,6 +124,13 @@ describe("Customer billing flow", () => {
     const confirmation = await screen.findByRole("region", { name: "Plan change confirmation" });
     expect(confirmation).toHaveTextContent("Scheduled: Growth starts on Apr 1, 2026");
     expect(confirmation).toHaveTextContent("$0.00 due today");
+    expect(screen.queryByRole("button", { name: "Schedule downgrade" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Plan change preview" })).not.toBeInTheDocument();
+    expect(screen.getByText("Scale", { selector: "strong" })).toBeInTheDocument();
+    expect(screen.getByText("Scheduled change: Growth starts on Apr 1, 2026.")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Plan"), { target: { value: STARTER } });
+    expect(screen.queryByRole("region", { name: "Plan change confirmation" })).not.toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Schedule downgrade" })).toBeEnabled();
   });
 
   it("shows the server's 409 quote detail in BillingAlert", async () => {
@@ -139,6 +149,7 @@ describe("Customer billing flow", () => {
     renderChangePlan();
     await confirmUpgrade();
     await screen.findByRole("region", { name: "Plan change confirmation" });
+    fireEvent.change(screen.getByLabelText("Change date"), { target: { value: "2026-03-16" } });
     await confirmUpgrade();
     expect(await screen.findByRole("alert")).toHaveTextContent("This exact change was already requested");
     expect(screen.queryByRole("region", { name: "Plan change confirmation" })).not.toBeInTheDocument();
@@ -158,6 +169,43 @@ describe("Customer billing flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Switch tenant" }));
     expect(screen.queryByText("STARTER")).not.toBeInTheDocument();
     expect(await screen.findByText("GROWTH")).toBeInTheDocument();
+  });
+
+  it("uses the entitlement query date, refetches on edits and ignores an older date response", async () => {
+    const requested: string[] = [];
+    billingServer.use(http.get(`${base}/api/tenants/:tenantId/entitlement`, async ({ request }) => {
+      const on = new URL(request.url).searchParams.get("on") ?? "";
+      requested.push(on);
+      if (on === "2026-03-15") await delay(100);
+      return HttpResponse.json({ tenant_id: TENANT_A, plan_code: on === "2026-03-15" ? "STARTER" : "GROWTH", monthly_fee: "149.00" });
+    }));
+    render(<MemoryRouter initialEntries={[`/billing/entitlement/${TENANT_A}?on=2026-03-15`]}>
+      <Routes><Route path="/billing/entitlement/:tenantId" element={<BillingEntitlementPage />} /></Routes>
+    </MemoryRouter>);
+    expect(screen.getByLabelText("As of")).toHaveValue("2026-03-15");
+    await waitFor(() => expect(requested).toEqual(["2026-03-15"]));
+    fireEvent.change(screen.getByLabelText("As of"), { target: { value: "2026-04-01" } });
+    expect(await screen.findByText("GROWTH")).toBeInTheDocument();
+    await act(() => new Promise((resolve) => setTimeout(resolve, 150)));
+    expect(requested).toEqual(["2026-03-15", "2026-04-01"]);
+    expect(screen.queryByText("STARTER")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("As of"), { target: { value: "" } });
+    expect(await screen.findByRole("alert")).toHaveTextContent("Choose an as-of date.");
+    expect(screen.queryByText("GROWTH")).not.toBeInTheDocument();
+  });
+
+  it("defaults the entitlement date to local today", async () => {
+    let requested = "";
+    billingServer.use(http.get(`${base}/api/tenants/:tenantId/entitlement`, ({ request }) => {
+      requested = new URL(request.url).searchParams.get("on") ?? "";
+      return HttpResponse.json({ tenant_id: TENANT_A, plan_code: "STARTER" });
+    }));
+    render(<MemoryRouter initialEntries={[`/billing/entitlement/${TENANT_A}`]}>
+      <Routes><Route path="/billing/entitlement/:tenantId" element={<BillingEntitlementPage />} /></Routes>
+    </MemoryRouter>);
+    expect(screen.getByLabelText("As of")).toHaveValue(localToday());
+    await screen.findByText("STARTER");
+    expect(requested).toBe(localToday());
   });
 
   it("ignores a plan response after switching tenants", async () => {

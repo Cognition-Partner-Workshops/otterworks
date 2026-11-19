@@ -125,7 +125,7 @@ function ChangePlan({ tenantId, preselect }: { tenantId: string; preselect: stri
   };
 
   const submit = async () => {
-    if (!quote || isSaving) return;
+    if (!quote || isSaving || result) return;
     const version = ++requestVersion.current;
     const isCurrent = () => mounted.current && version === requestVersion.current;
     setResult(null);
@@ -135,9 +135,10 @@ function ChangePlan({ tenantId, preselect }: { tenantId: string; preselect: stri
       const value = await billingApi.applyPlanChange(tenantId, planId, changeDate);
       if (!isCurrent()) return;
       setResult(value);
+      setQuote(null);
+      setCurrentPlan(value.kind === "upgrade" ? value.new_plan : value.current_plan);
       if (value.kind === "upgrade") {
         const invoiceRequest = ++invoiceVersion.current;
-        setCurrentPlan(value.new_plan);
         try {
           const items = await billingApi.listInvoices(tenantId);
           if (isCurrent() && invoiceRequest === invoiceVersion.current) { setInvoices(items); setInvoiceError(""); }
@@ -159,6 +160,7 @@ function ChangePlan({ tenantId, preselect }: { tenantId: string; preselect: stri
       {error && <BillingAlert message={error} onDismiss={() => setError("")} />}
       {error && <button type="button" onClick={() => { invalidate(); setRetry((value) => value + 1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm">Retry</button>}
       {currentPlan && <p>Current plan: <strong>{currentPlan.name}</strong> · {money(currentPlan.monthly_fee)} / month</p>}
+      {result?.kind === "downgrade" && <p>Scheduled change: {result.new_plan.name} starts on {readableDate(result.effective_on)}.</p>}
       {isLoading && <p role="status">Loading plans…</p>}
       {!isLoading && !error && plans.length === 0 && <p>No plans are available.</p>}
       {!isLoading && plans.length > 0 && (
@@ -188,9 +190,9 @@ function ChangePlan({ tenantId, preselect }: { tenantId: string; preselect: stri
               <p className="font-semibold">$0.00 due today</p>
             </>}
           </section>}
-          <button type="submit" disabled={!quote || isSaving || isQuoting} className="rounded-lg bg-otter-600 px-4 py-2 font-semibold text-white disabled:opacity-50">
+          {!result && <button type="submit" disabled={!quote || isSaving || isQuoting} className="rounded-lg bg-otter-600 px-4 py-2 font-semibold text-white disabled:opacity-50">
             {isSaving ? "Saving…" : !quote ? "Choose a plan to continue" : quote.kind === "upgrade" ? `Upgrade now and pay ${money(quote.amount_due)}` : "Schedule downgrade"}
-          </button>
+          </button>}
         </form>
       )}
       {result && <section aria-label="Plan change confirmation" className={`${card} bg-green-50`}>

@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { billingApi, type Entitlement } from "./api";
 import { BillingAlert } from "./alert";
+import { localToday } from "./format";
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
 export default function BillingEntitlementPage() {
   const { tenantId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const asOf = searchParams.get("on") ?? localToday();
   const [entitlement, setEntitlement] = useState<Entitlement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -26,8 +29,13 @@ export default function BillingEntitlementPage() {
         setError("");
       };
     }
+    if (!asOf) {
+      setError("Choose an as-of date.");
+      setIsLoading(false);
+      return;
+    }
     billingApi
-      .entitlement(tenantId, "2026-02-28")
+      .entitlement(tenantId, asOf)
       .then((value) => {
         if (mounted) setEntitlement(value);
       })
@@ -41,7 +49,7 @@ export default function BillingEntitlementPage() {
       mounted = false;
       setError("");
     };
-  }, [tenantId, retry]);
+  }, [tenantId, asOf, retry]);
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-6">
@@ -53,6 +61,20 @@ export default function BillingEntitlementPage() {
         Back
       </button>
       <h1 className="text-3xl font-bold">Tenant entitlement</h1>
+      <div>
+        <label htmlFor="entitlement-as-of" className="mb-1 block text-sm font-medium">As of</label>
+        <input
+          id="entitlement-as-of"
+          type="date"
+          value={asOf}
+          onChange={(event) => {
+            const next = new URLSearchParams(searchParams);
+            next.set("on", event.target.value);
+            setSearchParams(next, { replace: true });
+          }}
+          className="rounded-lg border border-gray-300 px-3 py-2"
+        />
+      </div>
       {error && <BillingAlert message={error} onDismiss={() => setError("")} />}
       {error && (
         <button
