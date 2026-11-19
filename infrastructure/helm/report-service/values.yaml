@@ -43,7 +43,7 @@ healthCheck:
 
 monitoring:
   enabled: true
-  path: /actuator/prometheus
+  path: /metrics
   port: 8091
 
 networkPolicy:

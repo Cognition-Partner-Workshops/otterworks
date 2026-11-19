@@ -1,11 +1,5 @@
 runbookUrl: https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/docs/runbooks/sre-triage.md
 
-ingressMetrics:
-  enabled: true
-  namespace: ingress-nginx
-  release: ingress-nginx
-  interval: 30s
-
 rules:
   enabled: true
   tenantNamespaceRegex: otterworks-.*
@@ -15,17 +9,8 @@ rules:
   restartWindow: 15m
   restartThreshold: 3
   restartFor: 5m
-  oomWindow: 10m
-  oomFor: 1m
   notReadyFor: 10m
   deploymentFor: 10m
-  ingressWindow: 5m
-  ingressMinRequestsPerSecond: 0.1
-  ingress5xxRatio: 0.05
-  ingress5xxFor: 5m
-  ingressP95Seconds: 2
-  ingressLatencyFor: 10m
-  nodeNotReadyFor: 5m
   nodePressureFor: 5m
   filesystemUsedRatio: 0.85
   filesystemFor: 15m

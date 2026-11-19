@@ -17,7 +17,7 @@ def render(*args):
 
 
 docs = [d for d in render() if d]
-assert not any(d["kind"] in ("Secret", "AlertmanagerConfig", "Service") for d in docs)
+assert not any(d["kind"] in ("Secret", "AlertmanagerConfig", "Service", "ServiceMonitor") for d in docs)
 blocked = subprocess.run(
     ["helm", "template", "sre-observability", str(CHART), "-n", "monitoring", "--set", "alerting.webhook.enabled=true"],
     capture_output=True, text=True,
@@ -38,6 +38,9 @@ for doc in docs:
             assert doc["kind"] == "Role" and len(rule["resourceNames"]) == 4
 rules = next(d["spec"] for d in docs if d["kind"] == "PrometheusRule")
 by_name = {r["alert"]: r for g in rules["groups"] for r in g["rules"]}
+assert len(by_name) == 12
+# PR #3297 owns otterworks-reliability SLO/capacity/ingress, node readiness and OOM alerts.
+assert not {"SREPodOOMKilled", "SRENodeNotReady", "SREIngress5xxHigh", "SREIngressLatencyHigh"} & by_name.keys()
 for rule in by_name.values():
     assert rule["labels"]["namespace"] == "monitoring"
     assert rule["labels"]["team"] == "sre" and "page" not in rule["labels"]
@@ -60,13 +63,11 @@ series = [
     {"series": 'kube_deployment_status_replicas_available{namespace="otterworks-idle",deployment="web-app"}', "values": "0x20"},
     {"series": 'kube_pod_status_ready{namespace="otterworks-main",pod="done",condition="true"}', "values": "0x20"},
     {"series": 'kube_pod_status_phase{namespace="otterworks-main",pod="done",phase="Succeeded"}', "values": "1x20"},
-    {"series": 'kube_pod_container_status_last_terminated_reason{namespace="otterworks-main",pod="old",container="app",reason="OOMKilled"}', "values": "1x20"},
-    {"series": 'kube_pod_container_status_restarts_total{namespace="otterworks-main",pod="old",container="app"}', "values": "1x20"},
 ]
 checks = [
     {"eval_time": "15m", "alertname": "SREAppTargetDown", "exp_alerts": [expected("SREAppTargetDown", {"affected_namespace": "otterworks-main", "job": "document-service", "instance": "doc"})]},
     {"eval_time": "15m", "alertname": "SRELogShippingUnavailable", "exp_alerts": [expected("SRELogShippingUnavailable", {"affected_namespace": "otterworks-system", "daemonset": "aws-for-fluent-bit"})]},
-    *[{"eval_time": "15m", "alertname": name, "exp_alerts": []} for name in ["SREDeploymentUnavailable", "SREPodNotReady", "SREPodOOMKilled", "SREIngress5xxHigh", "SREIngressLatencyHigh"]],
+    *[{"eval_time": "15m", "alertname": name, "exp_alerts": []} for name in ["SREDeploymentUnavailable", "SREPodNotReady"]],
 ]
 with tempfile.TemporaryDirectory() as directory:
     path = pathlib.Path(directory)
@@ -82,7 +83,31 @@ with tempfile.TemporaryDirectory() as directory:
             for name in by_name
         ]},
     ]}
+    for namespace, deployment, available, fires in [
+        ("otterworks-main", "api-gateway", 0, False),
+        ("otterworks-main", "auth-service", 0, False),
+        ("otterworks-main", "document-service", 0, False),
+        ("otterworks-main", "file-service", 0, False),
+        ("otterworks-main", "web-app", 0, False),
+        ("otterworks-main", "api-gateway", 1, True),
+        ("otterworks-main", "admin-service", 0, True),
+        ("otterworks-demo", "api-gateway", 0, True),
+    ]:
+        labels = f'namespace="{namespace}",deployment="{deployment}"'
+        suite["tests"].append({
+            "interval": "1m",
+            "input_series": [
+                {"series": f"kube_deployment_spec_replicas{{{labels}}}", "values": "2x20"},
+                {"series": f"kube_deployment_status_replicas_available{{{labels}}}", "values": f"{available}x20"},
+            ],
+            "alert_rule_test": [{
+                "eval_time": "15m", "alertname": "SREDeploymentUnavailable",
+                "exp_alerts": [expected("SREDeploymentUnavailable", {
+                    "affected_namespace": namespace, "deployment": deployment,
+                })] if fires else [],
+            }],
+        })
     (path / "tests.yml").write_text(yaml.safe_dump(suite))
     subprocess.run(["promtool", "check", "rules", str(path / "rules.yml")], check=True)
     subprocess.run(["promtool", "test", "rules", str(path / "tests.yml")], check=True)
-print(f"PASS: {len(by_name)} rule label boundaries, webhook opt-in, read-only RBAC, target-down/missing shipping, idle/healthy/empty traffic and stale OOM cases")
+print(f"PASS: {len(by_name)} rule label boundaries, webhook opt-in, read-only RBAC, target-down/missing shipping, idle/healthy/empty telemetry and deployment ownership cases")

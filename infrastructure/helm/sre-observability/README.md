@@ -2,9 +2,15 @@
 
 Install once in `monitoring`, after the shared prometheus-operator CRDs. This
 chart does not own the shared Prometheus release or Alertmanager config Secret.
-Prometheus must select this chart's rules/ServiceMonitor; Alertmanager must select
-its AlertmanagerConfig. The existing ingress-nginx metrics ClusterIP Service must
-expose port `metrics`; ingressMetrics creates only a ServiceMonitor, not a Service.
+Prometheus must select this chart's rules; Alertmanager must select its
+AlertmanagerConfig. PR #3297 owns the ingress ServiceMonitor
+`ingress-nginx/ingress-nginx-controller` and the `otterworks-reliability`
+PrometheusRule (groups `otterworks-slo` and `otterworks-capacity`) for
+SLO/capacity/ingress alerts, NodeNotReady and OOMKilled. This chart's
+`otterworks.sre` group has 12 complementary alerts and no ServiceMonitor.
+Deployment-unavailable warnings exclude t-main core deployments with zero
+available replicas, covered by `OtterworksMainCoreServiceUnavailable`.
+PR #3297 also owns the report-service and frontend scrape fixes.
 
 ```sh
 helm upgrade --install sre-observability infrastructure/helm/sre-observability -n monitoring

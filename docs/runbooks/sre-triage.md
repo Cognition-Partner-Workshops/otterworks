@@ -146,12 +146,12 @@ in Prometheus, not the CloudWatch `ContainerInsights` namespace.
 |---|---|
 | SREAppTargetDown | Inspect `/api/v1/targets` lastError, ServiceMonitor path, Service endpoints, pod health. Report-service uses `/actuator/prometheus`; frontends intentionally have no metrics monitor. |
 | SREPodCrashLooping / SREPodRestarting | Read pod events and `logs --previous`; preserve planted golden admin-service behavior, classify it rather than fixing it. |
-| SREPodOOMKilled | Read last termination state and memory history; distinguish fresh restart from old OOM reason. |
+| OtterworksContainerOOMKilled (#3297) | Read last termination state and memory history; distinguish fresh restart from old OOM reason. |
 | SREPodNotReady | Inspect pod conditions, events and dependency logs. Completed jobs and absent idle pods should not alert. |
-| SREDeploymentUnavailable | Compare desired/available replicas, ReplicaSet events; idle-at-zero is normal. |
-| SREIngress5xxHigh | Query `nginx_ingress_controller_requests` by namespace/ingress/status; compare gateway and ingress access logs. |
-| SREIngressLatencyHigh | Query `nginx_ingress_controller_request_duration_seconds_bucket`; correlate a slow Jaeger trace with downstream errors/DB events. |
-| SRENodeNotReady / SRENodePressure | Describe node and events; inspect kube_node_status_condition. No drains, deletes or scaling during triage. |
+| SREDeploymentUnavailable | Compare desired/available replicas, ReplicaSet events; idle-at-zero is normal. Zero-available t-main core deployments are excluded here and covered by #3297's OtterworksMainCoreServiceUnavailable. |
+| OtterworksMainIngressErrorRate (#3297) | Query `nginx_ingress_controller_requests` by namespace/ingress/status; compare gateway and ingress access logs. |
+| otterworks-reliability latency/SLO alerts (#3297) | Query `nginx_ingress_controller_request_duration_seconds_bucket`; correlate a slow Jaeger trace with downstream errors/DB events. |
+| OtterworksNodeNotReady (#3297) / SRENodePressure | Describe node and events; inspect kube_node_status_condition. No drains, deletes or scaling during triage. |
 | SRENodeFilesystemFull | Query node_filesystem_avail_bytes/size_bytes by instance/mountpoint; inspect node events. Do not remove files. |
 | SRERuleEvaluationFailures | Read Prometheus rule API and bounded Prometheus pod logs for evaluation errors. |
 | SREPrometheusNotificationFailures | Inspect notification errors, dropped count and discovered Alertmanagers; read Prometheus logs. |
@@ -161,10 +161,11 @@ in Prometheus, not the CloudWatch `ContainerInsights` namespace.
 
 ## Known prerequisites / checks before rollout
 
-- Audit found ingress metrics enabled on controller and both required metric names
-  exposed by its metrics Service, but **absent from live Prometheus** (no ingress
-  ServiceMonitor). This chart adds that monitor; ingress rules return empty until
-  scraping is active. `honorLabels` preserves the ingress metric's tenant namespace.
+- PR #3297 owns the `ingress-nginx/ingress-nginx-controller` ServiceMonitor,
+  report-service/frontend scrape fixes, and the `otterworks-reliability`
+  PrometheusRule with `otterworks-slo` and `otterworks-capacity` groups for
+  SLO/capacity/ingress alerts, NodeNotReady and OOMKilled. This chart supplies
+  12 complementary alerts in `otterworks.sre`, not an ingress monitor.
 - Fluent Bit IRSA role `otterworks-fluent-bit-dev` exists. Installation/shipping
   and AWS permissions still need verification after an approved rollout.
 - The missing log-shipping alert intentionally fires even with no tenant pods:
