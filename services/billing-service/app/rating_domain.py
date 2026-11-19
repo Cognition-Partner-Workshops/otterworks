@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import hashlib
 from calendar import monthrange
 from dataclasses import dataclass
 from datetime import date, datetime, time, tzinfo
 from decimal import ROUND_HALF_UP, Decimal
-from hashlib import md5
 from typing import Protocol
 from uuid import UUID
 
@@ -239,7 +239,12 @@ def finalize_rating(
         period_start,
         period_end,
     )
-    period_id = UUID(md5(f"{tenant_id}{period_start.isoformat()}".encode()).hexdigest())
+    period_id = UUID(
+        hashlib.md5(
+            f"{tenant_id}{period_start.isoformat()}".encode(),
+            usedforsecurity=False,
+        ).hexdigest()
+    )
     repository.upsert_rating_period(
         RatingPeriodRow(period_id, tenant_id, period_start, period_end),
         conflict_fields=("tenant_id", "period_start"),
@@ -250,7 +255,7 @@ def finalize_rating(
     )
     repository.upsert_rating_result(
         RatingResultRow(
-            UUID(md5(str(period_id).encode()).hexdigest()),
+            UUID(hashlib.md5(str(period_id).encode(), usedforsecurity=False).hexdigest()),
             period_id,
             subscription.subscription_id,
             rating.used_units,

@@ -1,6 +1,6 @@
+import hashlib
 from datetime import UTC, date, datetime
 from decimal import Decimal
-from hashlib import md5
 from importlib import import_module
 from uuid import UUID
 from zoneinfo import ZoneInfo
@@ -230,8 +230,8 @@ def test_finalize_proposes_stable_ids_unused_quota_and_narrow_conflict_updates(r
     repository = RecordingRepository(rating_api)
     for end in [END, date(2026, 2, 27)]:
         rating_api.finalize_rating(repository, TENANT, START, end, session_timezone=UTC)
-    period_id = UUID(md5(f"{TENANT}{START}".encode()).hexdigest())
-    result_id = UUID(md5(str(period_id).encode()).hexdigest())
+    period_id = UUID(hashlib.md5(f"{TENANT}{START}".encode(), usedforsecurity=False).hexdigest())
+    result_id = UUID(hashlib.md5(str(period_id).encode(), usedforsecurity=False).hexdigest())
     for (period, period_conflict, period_update), (result, conflict, update) in zip(
         repository.period_writes,
         repository.result_writes,
