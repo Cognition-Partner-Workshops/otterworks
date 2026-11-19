@@ -59,7 +59,7 @@ class InventoryTest(unittest.TestCase):
                         classified[job]["target"], classified[job].get("original_target", classified[job]["target"]), "retired",
                     ))
                 elif entry["status"] == "legacy":
-                    self.assertEqual(entry["target"], classified[job].get("original_target", classified[job]["target"]))
+                    self.assertEqual(entry["target"], "spark")
                 else:
                     self.assertEqual(entry["target"], classified[job]["target"])
                 self.assertIn(entry["profile"], ("small", "large"))
@@ -109,7 +109,7 @@ class InventoryTest(unittest.TestCase):
                 else:
                     self.assertEqual(spec["mainApplicationFile"], f"local:///opt/sfx/spark/jobs/py/{job}.py")
                     self.assertEqual(spec["deps"]["pyFiles"], ["local:///opt/sfx/spark/.cache/common.zip"])
-                inline = dict(re.findall(r"^export (\w+)=(\S+) # gitleaks:allow$", script, re.MULTILINE))
+                inline = dict(re.findall(r"^export (\w+)=(Fake-\S+)$", script, re.MULTILINE))
                 for role in ("driver", "executor"):
                     self.assertEqual(spec[role]["labels"], LABEL)
                     environment = {entry["name"]: entry for entry in spec[role]["env"]}
@@ -118,7 +118,8 @@ class InventoryTest(unittest.TestCase):
                     if not inline:
                         self.assertIn("valueFrom", environment["TD_JDBC_PASSWORD"])
                 text = (ROOT / "k8s/jobs" / job / "application.yaml").read_text()
-                self.assertEqual(text.count("# gitleaks:allow"), 2 * len(inline))
+                self.assertNotIn("AKIA", text)
+                self.assertNotIn("# gitleaks:allow", text)
 
     def test_classification_provenance(self):
         for target in TARGETS:

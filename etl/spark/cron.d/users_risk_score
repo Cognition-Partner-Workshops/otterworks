@@ -1,0 +1,1 @@
+16 2 * * * /opt/etl/spark/submit/users_risk_score.sh >> /var/log/etl/spark-users_risk_score.log 2>&1

@@ -1,10 +1,8 @@
 {
   "job": "billing_payment_aging",
   "language": "python",
-  "target": "dbt",
-  "status": "snowflake",
+  "target": "spark",
+  "status": "legacy",
   "schedule": "2 1 * * *",
-  "profile": "small",
-  "ingest": ["billing.INVOICE_HDR", "billing.PAYMENT"],
-  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job billing_payment_aging --select path:models/spark/billing_payment_aging"
+  "profile": "small"
 }
