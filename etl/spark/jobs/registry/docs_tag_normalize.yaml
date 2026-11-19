@@ -1,8 +1,8 @@
 {
   "job": "docs_tag_normalize",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "14 2 * * *",
   "profile": "small"
 }

@@ -58,8 +58,10 @@
   reason: "Parses browser families and versions from raw user-agent strings in a Python UDF."
 - job: docs_tag_normalize
   language: python
-  target: snowpark_python
-  reason: "Uses Python regular expressions to normalize document tags."
+  target: spark_standard_template
+  reason: "Normalizes document tags with a native Spark regexp_replace/lower expression on the standard template; the Python UDF it replaced was the only Python-specific logic."
+  original_target: snowpark_python
+  change_reason: "The tag normalization is a fixed whitespace class plus lowercase, reproducible exactly without Python, and the Snowflake target could not be provisioned or measured for this run."
 - job: billing_churn_score
   language: python
   target: snowpark_python
