@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from datetime import date
 import subprocess
 
-from jinja2 import Environment
+from warehouse.templating import dbt_environment
 import pytest
 import sqlglot
 
@@ -182,7 +182,7 @@ def test_control_requires_twenty_rows(monkeypatch, tmp_path):
 
 def test_compiled_sql_and_model_enablement():
     macro = _run_render((u.ROOT / 'warehouse/dbt/macros/pc_content_role_grant.sql').read_text())
-    module = Environment().from_string(macro).module
+    module = dbt_environment().from_string(macro).module
     for raw in (False, True):
         for rejects in (False, True):
             sql = module.pc_content_role_grant('SRC', rejects=rejects, raw_input=raw)

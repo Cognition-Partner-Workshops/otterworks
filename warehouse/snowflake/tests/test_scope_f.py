@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 from types import SimpleNamespace
 
-from jinja2 import Environment
+from warehouse.templating import dbt_environment
 import pytest
 from snowflake.connector.errors import ProgrammingError
 import tomlkit
@@ -55,7 +55,7 @@ def render_governance(policies=None, results=None, existing=(), missing=False, s
         return SimpleNamespace(rows=existing)
     def fail(message):
         raise ValueError(message)
-    env = Environment(extensions=['jinja2.ext.do'])
+    env = dbt_environment(extensions=['jinja2.ext.do'])
     env.globals.update(execute=True, adapter=adapter, run_query=run_query,
                        env_var=lambda *args: token, var=lambda *args: policies or {},
                        exceptions=SimpleNamespace(raise_compiler_error=fail),

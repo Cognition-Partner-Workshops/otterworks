@@ -8,7 +8,7 @@ from warehouse.run_config import render as _run_render
 from pathlib import Path
 import sqlite3
 
-from jinja2 import Environment
+from warehouse.templating import dbt_environment
 import pytest
 import sqlglot
 
@@ -34,7 +34,7 @@ def test_incremental_summary_reconciles_moved_and_removed_groups(events):
         return ''
     context = dict(config=capture, var=lambda name, default: default,
                    ref=lambda name: 'events', this='summary', is_incremental=lambda: True)
-    env = Environment()
+    env = dbt_environment()
     model = Path(__file__).resolve().parents[2] / 'dbt/models/pc/audit/pc_audit__audit_daily_summary.sql'
     sql = env.from_string(_run_render(model.read_text())).render(**context)
     def execute(sql):

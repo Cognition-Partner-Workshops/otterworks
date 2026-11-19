@@ -8,7 +8,7 @@ from collections import Counter
 from datetime import datetime
 import subprocess
 
-from jinja2 import Environment
+from warehouse.templating import dbt_environment
 import pytest
 
 from parity import evidence_unt6 as u
@@ -183,7 +183,7 @@ def test_fixture_load_refuses_existing_schema(monkeypatch, tmp_path):
 
 def test_macro_and_fixture_enablement():
     macro = _run_render((u.ROOT / 'warehouse/dbt/macros/pc_content_login_event.sql').read_text())
-    module = Environment().from_string(macro).module
+    module = dbt_environment().from_string(macro).module
     sql = module.pc_content_login_event('SRC')
     assert 'count(*) over (partition by ROUTE,LOGIN_ID)' in sql
     assert 'max(ROUTE_COUNT) over ()' in sql and '1 / iff(MAX_ROUTE_COUNT>1,0,1) = 1' in sql

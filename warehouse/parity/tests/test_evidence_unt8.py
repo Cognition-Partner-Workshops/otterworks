@@ -13,7 +13,7 @@ import re
 import subprocess
 import unicodedata
 
-from jinja2 import Environment
+from warehouse.templating import dbt_environment
 import pytest
 
 from parity import evidence_unt8 as u
@@ -141,7 +141,7 @@ def test_models_are_incremental_single_key_no_refresh():
 
 def test_macro_has_atomic_duplicate_guard_and_no_delete():
     text = _run_render((u.ROOT / 'warehouse/dbt/macros/pc_content_team_member.sql').read_text())
-    env = Environment()
+    env = dbt_environment()
     env.globals.update(unt8_integer_prefix=lambda value: value,
                        unt8_python_upper=lambda value: value, unt8_decimal_digits=lambda value: value)
     macro = env.from_string(text).module.pc_content_team_member

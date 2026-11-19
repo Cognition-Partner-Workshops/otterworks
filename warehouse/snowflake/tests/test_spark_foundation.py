@@ -10,7 +10,7 @@ from pathlib import Path
 import sys
 from unittest.mock import MagicMock
 
-from jinja2 import Environment
+from warehouse.templating import dbt_environment
 import pytest
 import yaml
 
@@ -38,7 +38,7 @@ def test_dbt_macro_preserves_extra_keys():
     def return_value(value):
         raise Returned(value)
     tag = {"workload": "ops", "phase": "old", "run_token": _run_render("__RUN_TOKEN__"), "run": _run_render("__RUN_TOKEN__"), "act": "spark", "job": "_smoke", "extra": "retained"}
-    env = Environment(extensions=["jinja2.ext.do"])
+    env = dbt_environment(extensions=["jinja2.ext.do"])
     module = env.from_string(_run_render((ROOT.parent / "dbt/macros/query_tag.sql").read_text())).make_module({
         "fromjson": json.loads, "tojson": json.dumps, "env_var": lambda key: json.dumps(tag),
         "var": lambda key, default=None: {"phase": "dbt", "run_token": _run_render("__RUN_TOKEN__")}.get(key, default),
