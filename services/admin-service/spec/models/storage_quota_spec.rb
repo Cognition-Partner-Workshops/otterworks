@@ -15,6 +15,16 @@ RSpec.describe StorageQuota do
   end
 
   describe '#usage_percentage' do
+    it 'handles a legacy zero limit without dividing by zero' do
+      quota = build(:storage_quota, quota_bytes: 0, used_bytes: 10)
+      expect(quota.usage_percentage).to eq(0)
+      expect(quota.remaining_bytes).to eq(0)
+    end
+
+    it 'rounds fractional percentages to two decimal places' do
+      expect(build(:storage_quota, quota_bytes: 3, used_bytes: 1).usage_percentage).to eq(33.33)
+    end
+
     it 'calculates correct percentage' do
       quota = build(:storage_quota, quota_bytes: 100, used_bytes: 25)
       expect(quota.usage_percentage).to eq(25.0)
@@ -28,6 +38,14 @@ RSpec.describe StorageQuota do
   end
 
   describe '#over_quota?' do
+    it 'treats exactly full storage as over quota with nothing remaining' do
+      quota = create(:storage_quota, quota_bytes: 100, used_bytes: 100)
+      expect(quota).to be_over_quota
+      expect(quota.usage_percentage).to eq(100)
+      expect(quota.remaining_bytes).to eq(0)
+      expect(described_class.over_quota).to include(quota)
+    end
+
     it 'returns true when over quota' do
       quota = build(:storage_quota, :over_quota)
       expect(quota).to be_over_quota
