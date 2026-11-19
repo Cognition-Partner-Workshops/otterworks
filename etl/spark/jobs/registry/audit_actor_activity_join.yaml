@@ -1,8 +1,8 @@
 {
   "job": "audit_actor_activity_join",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "9 1 * * *",
   "profile": "small"
 }

@@ -36,8 +36,10 @@
   reason: "Summarizes event dates and types with counts and distinct actor counts."
 - job: audit_actor_activity_join
   language: python
-  target: dbt
-  reason: "Combines audit actors, daily activity and login aggregates through SQL joins and string aggregation."
+  target: spark_standard_template
+  original_target: dbt
+  change_reason: "Snowflake cannot be measured in the provisioned run scope; retain Spark and measure the standard template against a fresh legacy run."
+  reason: "Combines audit actors, daily activity and login aggregates with AQE and broadcast joins on the standard small profile."
 - job: billing_gl_trial_balance
   language: python
   target: dbt
