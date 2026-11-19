@@ -46,6 +46,12 @@ class FakeCursor:
         self.sfqid = f'query-{len(fake.statements)}'
         self.description = [('ID',)] if sql.startswith('SELECT') else []
         self.rows = fake.rows[sql.split('"')[-2]] if self.description else []
+        if sql.startswith('CREATE SCHEMA'):
+            assert sql == 'CREATE SCHEMA IF NOT EXISTS IDENTIFIER(?) COMMENT = ?'
+            assert parameters[0] == render('__RUN_DATABASE__.MIGRATION_CONTROL')
+        if sql.startswith('CREATE TABLE'):
+            assert sql.startswith('CREATE TABLE IF NOT EXISTS IDENTIFIER(?)')
+            assert parameters[0] == render('__RUN_DATABASE__.MIGRATION_CONTROL.OBJECTS')
         if sql == 'COMMIT':
             if fake.fail_commit:
                 raise RuntimeError('fake commit failed')
@@ -55,7 +61,7 @@ class FakeCursor:
             fake.pending.clear()
 
     def executemany(self, sql, parameters):
-        assert sql.startswith('MERGE INTO ' + render('__RUN_DATABASE__.MIGRATION_CONTROL.OBJECTS'))
+        assert sql.startswith('MERGE INTO IDENTIFIER(?)')
         assert 't.SUBJECT_AREA=s.SUBJECT_AREA' in sql and 't.OBJECT_TYPE=s.OBJECT_TYPE' in sql
         assert 't.OBJECT_NAME=s.OBJECT_NAME' in sql
         assert "MIGRATION_STATUS='migrated', PARITY_STATUS='verified'" in sql
@@ -119,7 +125,8 @@ def test_promote_only_fresh_green_objects_in_selected_area(estate, snowflake, mo
         'UNMEASURED': 'no dependency declared',
     }
     assert len(snowflake.records) == 1
-    area, kind, name, source, target, evidence = snowflake.records[0]
+    control, area, kind, name, source, target, evidence = snowflake.records[0]
+    assert control == render('__RUN_DATABASE__.MIGRATION_CONTROL.OBJECTS')
     assert (area, kind, name, source, target) == ('audit', 'table', 'SFX_AUDIT.MATCH', 'source.sql', 'AUDIT.MATCH')
     assert json.loads(evidence) == {'id': 'MATCH', 'run_token': 'sfx1119',
                                    'snowflake_query_ids': ['query-1', 'query-2', 'query-3'],

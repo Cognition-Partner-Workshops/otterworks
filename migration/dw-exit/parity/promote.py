@@ -20,17 +20,17 @@ def write_control(connection, objects, proofs, run_token):
         evidence = json.dumps({'id': obj['id'], 'run_token': run_token,
                                'snowflake_query_ids': legs['snowflake']['query_ids'],
                                'legs': {side: leg['status'] for side, leg in legs.items()}})
-        records.append((obj['subject_area'], obj['kind'], obj['name'], obj['source'], obj['target'], evidence))
+        records.append((CONTROL, obj['subject_area'], obj['kind'], obj['name'], obj['source'], obj['target'], evidence))
     with connection.cursor() as cursor:
-        cursor.execute(f'CREATE SCHEMA IF NOT EXISTS {SCHEMA} COMMENT = ?', (COMMENT,))
-        cursor.execute(f"""CREATE TABLE IF NOT EXISTS {CONTROL} (
+        cursor.execute('CREATE SCHEMA IF NOT EXISTS IDENTIFIER(?) COMMENT = ?', (SCHEMA, COMMENT))
+        cursor.execute("""CREATE TABLE IF NOT EXISTS IDENTIFIER(?) (
             SUBJECT_AREA VARCHAR, OBJECT_NAME VARCHAR, OBJECT_TYPE VARCHAR,
             SOURCE VARCHAR, TARGET VARCHAR, MIGRATION_STATUS VARCHAR, PARITY_STATUS VARCHAR,
             VERIFIED_AT TIMESTAMP_LTZ, EVIDENCE VARIANT
-        ) COMMENT = ?""", (COMMENT,))
+        ) COMMENT = ?""", (CONTROL, COMMENT))
         cursor.execute('BEGIN')
         try:
-            cursor.executemany(f"""MERGE INTO {CONTROL} t
+            cursor.executemany("""MERGE INTO IDENTIFIER(?) t
                 USING (SELECT ? AS SUBJECT_AREA, ? AS OBJECT_TYPE, ? AS OBJECT_NAME,
                               ? AS SOURCE, ? AS TARGET, PARSE_JSON(?) AS EVIDENCE) s
                 ON t.SUBJECT_AREA=s.SUBJECT_AREA AND t.OBJECT_TYPE=s.OBJECT_TYPE AND t.OBJECT_NAME=s.OBJECT_NAME
