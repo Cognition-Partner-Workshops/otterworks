@@ -1,0 +1,120 @@
+{
+  "business_date": "20261109",
+  "NS": "sfx-d1110-after",
+  "LEGACY_NS": "sfx-d1110-before",
+  "fixture_manifest": "warehouse/landing/spark/20261109/manifest.json",
+  "fixture_manifest_file_sha256": "42d0ed34ea0b04d498a2af5b0a993caccf6b5016fdf85acda67f8ef78c605ec2",
+  "legacy": {
+    "inputs": {
+      "version": 1,
+      "business_date": "20261109",
+      "generator": "__main__",
+      "generator_hash": "6e57222fb88b1ddd50f9ca189678acc02c866d90e016223c8e363346e9f214ab",
+      "files": {
+        "documents/DOCUMENT/20261109.psv": "4b301d9e7fc009b93491111be21d01cfb00e5cc7879475311e3c688ef0342c06",
+        "documents/FILE_OBJECT/20261109.psv": "7ecb927af308c1bc8b5a92dd91fc5cb7d6fc3e633f753212524b9deaa32933fc",
+        "users/APP_USER/20261109.psv": "edb3dc6c24c0dbb4659ee8edb56c93bb211dda7aefb05e4c83fcfff83af1cc00",
+        "documents/FOLDER/20261109.psv": "2443e34dda778d6a318e044d00274c05da898e1c4e168c73db658420ce6f4e8c",
+        "documents/DOC_SHARE/20261109.psv": "d1c1c89f1f0b05d7b16f68754e2b1df9a1ea86628c6f038e2abfbc1038f78cac",
+        "documents/DOC_TAG/20261109.psv": "b00158a2253d1f27f21dc6ec102aa1143bc4167514ade5a148f9d5c4a6013524",
+        "documents/SEARCH_INDEX_LOG/20261109.psv": "d373d5b4c8e9cd359b47c6517ac3f58544d98c3f2249d0a24242cb9a68162302"
+      },
+      "rows": {
+        "DOCUMENT": 68,
+        "FILE_OBJECT": 69,
+        "APP_USER": 20,
+        "FOLDER": 10,
+        "DOC_SHARE": 69,
+        "DOC_TAG": 68,
+        "SEARCH_INDEX_LOG": 68
+      }
+    },
+    "sources": {
+      "etl/spark/jobs/py/common/runtime.py": "7a68ac84ae8f534f7241ea2086256bf63d22e6f5e993105b2f1829f422a652b8",
+      "etl/spark/jobs/py/common/schemas.py": "14f7457f3245cc28fed857809dbeecb99fe463bab59eba1724de22e5256df77d",
+      "etl/spark/scala/src/main/scala/sfx/BatchSupport.scala": "69477a7846542e26e1be8b090a0bf760ea9aff1233bfb09554b5ccb2bebde597",
+      "etl/spark/scala/build.sbt": "ed451ed08cc03fe9c5c27ea9d20f8dabf54114d71f614c7364dc6c33654f6b19",
+      "etl/spark/jobs/py/docs_storage_by_owner.py": "b061b52c8b158e78c63bc8760b9462fc673ecd424dfe8827e38714b4f5103e6d",
+      "etl/spark/scala/src/main/scala/sfx/DocsShareActivity.scala": "210d557cccfb4cd8ba075850f66b430258e33cfdec328f7c8693719dce1c2243",
+      "etl/spark/jobs/py/docs_folder_legacy_report.py": "8cd6799e7bba1e9a3b09f05af52d3fe2896ed62a8033efc8a4751a0a8153f830",
+      "etl/spark/jobs/py/docs_search_log_parse.py": "72fb70928f06da716b7e8130bfc21a55fd3154cc4dfa9853b456a3adf666abf0",
+      "etl/spark/jobs/py/docs_tag_normalize.py": "8caec4774575fd774055eb2ad068e5acf4f18fb1b4d406cfc61e33247bf06219",
+      "etl/spark/jobs/py/docs_event_export_hourly.py": "aab97d7b0e9679613e1e05140c9dc619f0f3c20d523b3bc9f36f275e7001a8b0",
+      "etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala": "19f053d3629cc81468c58e928c65e6a6295a54ee68376001f7f4ed341d76f32f"
+    },
+    "scala_jar_hash": "ad0426c68b5fe33a8983758d188592effc17a8992e6bb9e9bb987dc773d4ddde",
+    "runtime_image": "postgres:16",
+    "network": "none",
+    "python": "3.12.16 (main, Oct 30 2026, 04:40:57) [GCC 11.4.0]",
+    "spark": "3.5.3",
+    "image_id": "sha256:3950ad7c3148ca2175ef1b6c36c9efbf78957ae8fbe8b3a5d7c35af50500382f",
+    "java": "NOTE: Picked up JDK_JAVA_OPTIONS: -XX:+IgnoreUnrecognizedVMOptions -XX:+UnlockDiagnosticVMOptions -XX:-UseBASE64Intrinsics\nopenjdk version \"17.0.20.1\" 2026-08-18\nOpenJDK Runtime Environment (build 17.0.20.1+1-1-22.04-Ubuntu)\nOpenJDK 64-Bit Server VM (build 17.0.20.1+1-1-22.04-Ubuntu, mixed mode, sharing)\n",
+    "note": "Existing local image is only an isolated filesystem/runtime; host Java, Python and Spark are read-only bind mounts."
+  },
+  "lakehouse": {
+    "docs_storage_by_owner": {
+      "job": "docs_storage_by_owner",
+      "business_date": "20261109",
+      "output_version": "/home/ubuntu/repos/otterworks/lakehouse/.data/sfx-d1110-after/exports/documents/spark/20261109/.versions/docs_storage_by_owner/948018e6122c4e4ebcb41ef0577b89c7",
+      "export_input_version": null,
+      "runtime_hash": "619ba1d8190b9ba85ccc6086819b764dd8096c1fa8bc7063481e6aa8322dc8bd"
+    },
+    "docs_share_activity": {
+      "job": "docs_share_activity",
+      "business_date": "20261109",
+      "output_version": "/home/ubuntu/repos/otterworks/lakehouse/.data/sfx-d1110-after/exports/documents/spark/20261109/.versions/docs_share_activity/592beff2d32c4beea1f5368c3cd4938d",
+      "export_input_version": null,
+      "runtime_hash": "619ba1d8190b9ba85ccc6086819b764dd8096c1fa8bc7063481e6aa8322dc8bd"
+    },
+    "docs_folder_legacy_report": {
+      "job": "docs_folder_legacy_report",
+      "business_date": "20261109",
+      "output_version": "/home/ubuntu/repos/otterworks/lakehouse/.data/sfx-d1110-after/exports/documents/spark/20261109/.versions/docs_folder_legacy_report/fe2aab55db554a9fbd4a33d513ba7d37",
+      "export_input_version": null,
+      "runtime_hash": "619ba1d8190b9ba85ccc6086819b764dd8096c1fa8bc7063481e6aa8322dc8bd"
+    },
+    "docs_search_log_parse": {
+      "job": "docs_search_log_parse",
+      "business_date": "20261109",
+      "output_version": "/home/ubuntu/repos/otterworks/lakehouse/.data/sfx-d1110-after/exports/documents/spark/20261109/.versions/docs_search_log_parse/37a604132abd4a85a71cd94f6adb89e4",
+      "export_input_version": null,
+      "runtime_hash": "619ba1d8190b9ba85ccc6086819b764dd8096c1fa8bc7063481e6aa8322dc8bd"
+    },
+    "docs_tag_normalize": {
+      "job": "docs_tag_normalize",
+      "business_date": "20261109",
+      "output_version": "/home/ubuntu/repos/otterworks/lakehouse/.data/sfx-d1110-after/exports/documents/spark/20261109/.versions/docs_tag_normalize/63c1d2ef047645938a3b6417b324a0ea",
+      "export_input_version": null,
+      "runtime_hash": "619ba1d8190b9ba85ccc6086819b764dd8096c1fa8bc7063481e6aa8322dc8bd"
+    },
+    "docs_event_export_hourly": {
+      "job": "docs_event_export_hourly",
+      "business_date": "20261109",
+      "output_version": "/home/ubuntu/repos/otterworks/lakehouse/.data/sfx-d1110-after/exports/documents/spark/20261109/.versions/docs_event_export_hourly/9c3eb8e5152a4997be572c7f0b89cb26",
+      "export_input_version": null,
+      "runtime_hash": "619ba1d8190b9ba85ccc6086819b764dd8096c1fa8bc7063481e6aa8322dc8bd"
+    },
+    "lake_compaction_documents": {
+      "job": "lake_compaction_documents",
+      "business_date": "20261109",
+      "output_version": "/home/ubuntu/repos/otterworks/lakehouse/.data/sfx-d1110-after/exports/documents/spark/20261109/.versions/lake_compaction_documents/692dcf2927664ca0ab61e7f60d8205e2",
+      "export_input_version": "/home/ubuntu/repos/otterworks/lakehouse/.data/sfx-d1110-after/exports/documents/spark/20261109/.versions/docs_event_export_hourly/9c3eb8e5152a4997be572c7f0b89cb26",
+      "runtime_hash": "619ba1d8190b9ba85ccc6086819b764dd8096c1fa8bc7063481e6aa8322dc8bd"
+    }
+  },
+  "offline_scala_compiler_jars": {
+    "scala-compiler-2.12.18.jar": "5680cee34200e8d8ed7965c71d8b1428d3eeb889eb14fec38d40ffbc3761a0d0",
+    "scala-library-2.12.18.jar": "e51e6636c003359e106bea4ad99def70e613c290190c8c84f10f9560dd5b00ae",
+    "scala-reflect-2.12.18.jar": "d6a24e175246541ffcbc965a231aa1d3bb01d61def196f91495690fabf9783bc"
+  },
+  "layouts": {
+    "legacy": {
+      "bucket_directories": 66,
+      "compacted_parquet_files": 3
+    },
+    "lakehouse": {
+      "bucket_directories": 66,
+      "compacted_parquet_files": 3
+    }
+  }
+}

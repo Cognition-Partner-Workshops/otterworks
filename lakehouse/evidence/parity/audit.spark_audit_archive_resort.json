@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "10face57afb192d61f211e3179bc75d11e728941",
+  "git_sha": "db86a5122c32983b905e92d893b0e4594e757aad",
   "id": "audit.spark_audit_archive_resort",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -157,5 +157,5 @@
     "legacy": 2000
   },
   "spec_hash": "4804327271d9c9f01ca4a9b8143d3ab69c8ce1bceea7d11d8b5b581d11bd22a6",
-  "timestamp": "2026-11-19T10:18:49.412078+00:00"
+  "timestamp": "2026-11-19T11:19:13.432479+00:00"
 }

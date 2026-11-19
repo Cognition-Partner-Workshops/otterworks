@@ -1,0 +1,23 @@
+{
+  "id": "documents.spark_doc_share_graph_reach",
+  "legacy_objects": [
+    "spark_job:doc_share_graph_reach",
+    "spark_submit:etl/spark/submit/doc_share_graph_reach.sh",
+    "cron_entry:etl/crontab#817f451e90ab"
+  ],
+  "legacy": {
+    "kind": "parquet",
+    "path": "lakehouse/.data/{NS}/legacy_spark/{business_date}/documents/doc_share_graph_reach"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.spark_doc_share_graph_reach"
+  },
+  "keys": [
+    "user_id"
+  ],
+  "columns": [
+    "user_id",
+    "distance"
+  ]
+}

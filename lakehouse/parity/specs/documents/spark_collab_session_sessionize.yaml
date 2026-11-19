@@ -1,0 +1,28 @@
+{
+  "id": "documents.spark_collab_session_sessionize",
+  "legacy_objects": [
+    "spark_job:collab_session_sessionize",
+    "spark_submit:etl/spark/submit/collab_session_sessionize.sh",
+    "cron_entry:etl/crontab#afa009bc6185"
+  ],
+  "legacy": {
+    "kind": "parquet",
+    "path": "lakehouse/.data/{NS}/legacy_spark/{business_date}/documents/collab_session_sessionize"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.spark_collab_session_sessionize"
+  },
+  "keys": [
+    "user_id",
+    "document_id",
+    "session_number"
+  ],
+  "columns": [
+    "user_id",
+    "document_id",
+    "session_number",
+    "start_at",
+    "end_at"
+  ]
+}

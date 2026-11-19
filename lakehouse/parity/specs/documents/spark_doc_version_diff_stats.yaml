@@ -1,0 +1,28 @@
+{
+  "id": "documents.spark_doc_version_diff_stats",
+  "legacy_objects": [
+    "spark_job:doc_version_diff_stats",
+    "spark_submit:etl/spark/submit/doc_version_diff_stats.sh",
+    "cron_entry:etl/crontab#d54b23093fd1"
+  ],
+  "legacy": {
+    "kind": "parquet",
+    "path": "lakehouse/.data/{NS}/legacy_spark/{business_date}/documents/doc_version_diff_stats"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.spark_doc_version_diff_stats"
+  },
+  "keys": [
+    "doc_version_id"
+  ],
+  "columns": [
+    "doc_version_id",
+    "document_id",
+    "version_number",
+    "body",
+    "created_at",
+    "previous_body",
+    "similarity"
+  ]
+}

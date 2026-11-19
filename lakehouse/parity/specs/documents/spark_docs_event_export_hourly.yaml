@@ -1,0 +1,42 @@
+{
+  "id": "documents.spark_docs_event_export_hourly",
+  "legacy_objects": [
+    "spark_job:docs_event_export_hourly",
+    "spark_submit:etl/spark/submit/docs_event_export_hourly.sh",
+    "cron_entry:etl/crontab#06b1c260f55b"
+  ],
+  "legacy": {
+    "kind": "parquet",
+    "path": "lakehouse/.data/{NS}/legacy_spark/{business_date}/documents/docs_event_export_hourly"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.spark_docs_event_export_hourly"
+  },
+  "keys": [
+    "document_id"
+  ],
+  "columns": [
+    "document_id",
+    "owner_user_id",
+    "folder_id",
+    "title",
+    "created_at",
+    "status",
+    "export_bucket"
+  ],
+  "normalize": {
+    "document_id": {
+      "numeric_scale": 0
+    },
+    "owner_user_id": {
+      "numeric_scale": 0
+    },
+    "folder_id": {
+      "numeric_scale": 0
+    },
+    "export_bucket": {
+      "numeric_scale": 0
+    }
+  }
+}

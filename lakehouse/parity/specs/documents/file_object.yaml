@@ -1,0 +1,32 @@
+{
+  "id": "documents.file_object",
+  "legacy_objects": [
+    "teradata_table:SFX_DOCUMENTS.FILE_OBJECT",
+    "bteq_script:warehouse/teradata/scripts/documents/04_load_objects.bteq",
+    "cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/04_load_objects"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT file_object_id, document_id, object_key, bytes_used, storage_class, created_dt FROM sfx_documents.file_object"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.file_object"
+  },
+  "keys": [
+    "file_object_id"
+  ],
+  "columns": [
+    "file_object_id",
+    "document_id",
+    "object_key",
+    "bytes_used",
+    "storage_class",
+    "created_dt"
+  ],
+  "normalize": {
+    "storage_class": {
+      "rstrip": true
+    }
+  }
+}

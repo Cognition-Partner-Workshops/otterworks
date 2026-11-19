@@ -2,7 +2,7 @@
   "NS": "sfx-d1110-after",
   "business_date": "20261109",
   "git_dirty": true,
-  "git_sha": "10face57afb192d61f211e3179bc75d11e728941",
+  "git_sha": "db86a5122c32983b905e92d893b0e4594e757aad",
   "id": "audit.spark_audit_actor_activity_join",
   "legacy_NS": "sfx-d1110-before",
   "legacy_objects": [
@@ -174,5 +174,5 @@
     "legacy": 4618
   },
   "spec_hash": "ef2fc2251a741dfae6a0aff283aed79810657fd1448938c3324c9cb70f4a61ca",
-  "timestamp": "2026-11-19T10:18:48.432526+00:00"
+  "timestamp": "2026-11-19T11:19:12.497025+00:00"
 }

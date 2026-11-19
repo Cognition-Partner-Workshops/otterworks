@@ -49,7 +49,11 @@ class Readers:
                 raise ValueError(f'{path}: JSON objects must contain the configured columns')
             return rows, names
         if kind == 'postgres_sql':
-            with postgres_connection(side.get('database')) as conn:
+            database = side.get('database')
+            if database and '{NS}' in database:
+                database = database.format(NS=os.environ['NS'])
+            connection = postgres_connection(database) if database else postgres_connection()
+            with connection as conn:
                 conn.read_only = True
                 with conn.cursor() as cursor:
                     cursor.execute(side['sql'].replace('{business_date}', self.business_date))
@@ -85,7 +89,7 @@ class Readers:
         elif kind == 'delta_table':
             frame = self.spark.table(side['table']) if 'table' in side else self.spark.read.format('delta').load(str(self.path(side)))
         elif kind == 'parquet':
-            frame = self.spark.read.parquet(str(self.path(side)))
+            frame = self.spark.read.parquet(str(self.path(side).resolve()))
         else:
             raise ValueError(f'Unknown reader kind: {kind}')
         names = [name.lower() for name in frame.columns]

@@ -1,0 +1,36 @@
+{
+  "id": "documents.spark_docs_folder_legacy_report",
+  "legacy_objects": [
+    "spark_job:docs_folder_legacy_report",
+    "spark_submit:etl/spark/submit/docs_folder_legacy_report.sh",
+    "cron_entry:etl/crontab#b40205d7056e"
+  ],
+  "legacy": {
+    "kind": "parquet",
+    "path": "lakehouse/.data/{NS}/legacy_spark/{business_date}/documents/docs_folder_legacy_report"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.spark_docs_folder_legacy_report"
+  },
+  "keys": [
+    "folder_id"
+  ],
+  "columns": [
+    "folder_id",
+    "folder_name",
+    "parent_folder_id",
+    "documents"
+  ],
+  "normalize": {
+    "folder_id": {
+      "numeric_scale": 0
+    },
+    "parent_folder_id": {
+      "numeric_scale": 0
+    },
+    "documents": {
+      "numeric_scale": 0
+    }
+  }
+}

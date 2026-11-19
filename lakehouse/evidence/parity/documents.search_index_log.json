@@ -1,0 +1,143 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "db86a5122c32983b905e92d893b0e4594e757aad",
+  "id": "documents.search_index_log",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "teradata_table:SFX_DOCUMENTS.SEARCH_INDEX_LOG"
+  ],
+  "results": {
+    "columns": [
+      "index_log_id",
+      "document_id",
+      "indexed_ts",
+      "status_cd",
+      "token_count"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "document_id": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "index_log_id": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "indexed_ts": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "status_cd": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "token_count": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        }
+      },
+      "legacy": {
+        "document_id": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "index_log_id": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "indexed_ts": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "status_cd": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        },
+        "token_count": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "null_count": 0,
+          "sum": null
+        }
+      }
+    },
+    "mismatches": {
+      "document_id": {
+        "count": 0,
+        "samples": []
+      },
+      "index_log_id": {
+        "count": 0,
+        "samples": []
+      },
+      "indexed_ts": {
+        "count": 0,
+        "samples": []
+      },
+      "status_cd": {
+        "count": 0,
+        "samples": []
+      },
+      "token_count": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 0,
+      "legacy": 0
+    }
+  },
+  "row_counts": {
+    "lakehouse": 0,
+    "legacy": 0
+  },
+  "spec_hash": "4732964b29317a6d7cca15f27d35ba78d96465750b16413b90daa0b18730043e",
+  "timestamp": "2026-11-19T11:19:52.016974+00:00"
+}

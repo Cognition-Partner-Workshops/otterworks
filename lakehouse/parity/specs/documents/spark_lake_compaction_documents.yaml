@@ -1,0 +1,42 @@
+{
+  "id": "documents.spark_lake_compaction_documents",
+  "legacy_objects": [
+    "spark_job:lake_compaction_documents",
+    "spark_submit:etl/spark/submit/lake_compaction_documents.sh",
+    "cron_entry:etl/crontab#d379dc30b522"
+  ],
+  "legacy": {
+    "kind": "parquet",
+    "path": "lakehouse/.data/{NS}/legacy_spark/{business_date}/documents/lake_compaction_documents"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.spark_lake_compaction_documents"
+  },
+  "keys": [
+    "document_id"
+  ],
+  "columns": [
+    "document_id",
+    "owner_user_id",
+    "folder_id",
+    "title",
+    "created_at",
+    "status",
+    "export_bucket"
+  ],
+  "normalize": {
+    "document_id": {
+      "numeric_scale": 0
+    },
+    "owner_user_id": {
+      "numeric_scale": 0
+    },
+    "folder_id": {
+      "numeric_scale": 0
+    },
+    "export_bucket": {
+      "numeric_scale": 0
+    }
+  }
+}

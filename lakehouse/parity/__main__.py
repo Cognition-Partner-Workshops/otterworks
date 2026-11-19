@@ -58,6 +58,9 @@ def run(selected, day, sample_limit, evidence=EVIDENCE):
                 json.dumps(report, indent=2, sort_keys=True, default=str) + '\n')
             print(f'{spec["id"]}: {"PASS" if report["results"]["passed"] else "FAIL"} '
                   f'{report["row_counts"]}')
+            if 'exact_matched_rows' in report['results']:
+                print('  ' + ' '.join(f'{key}={report["results"][key]}' for key in
+                                     ('exact_matched_rows', 'tie_resolved_rows', 'mismatches')))
             passed = passed and report['results']['passed']
     finally:
         readers.close()

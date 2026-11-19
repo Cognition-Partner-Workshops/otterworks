@@ -1,0 +1,52 @@
+{
+  "id": "documents.infa_stg_document",
+  "legacy_objects": [
+    "informatica_mapping:SFX_CONTENT.m_SFX_STG_DOCUMENT",
+    "informatica_session:SFX_CONTENT.s_m_SFX_STG_DOCUMENT",
+    "informatica_source:SFX_CONTENT.FF_DOCUMENT",
+    "informatica_target:SFX_CONTENT.STG_DOCUMENT"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "database": "lakehouse_documents_infa_{NS}",
+    "sql": "SELECT document_id, folder_id, owner_user_id, customer_id, document_name, created_dt, status_cd, file_type, row_number() OVER (ORDER BY document_id NULLS FIRST, folder_id NULLS FIRST, owner_user_id NULLS FIRST, customer_id NULLS FIRST, document_name NULLS FIRST, created_dt NULLS FIRST, status_cd NULLS FIRST, file_type NULLS FIRST) AS occurrence FROM sfx_documents.stg_document"
+  },
+  "lakehouse": {
+    "kind": "spark_sql",
+    "sql": "SELECT document_id, folder_id, owner_user_id, customer_id, document_name, created_dt, status_cd, file_type, row_number() OVER (ORDER BY document_id NULLS FIRST, folder_id NULLS FIRST, owner_user_id NULLS FIRST, customer_id NULLS FIRST, document_name NULLS FIRST, created_dt NULLS FIRST, status_cd NULLS FIRST, file_type NULLS FIRST) AS occurrence FROM silver_documents.infa_stg_document"
+  },
+  "keys": [
+    "occurrence"
+  ],
+  "columns": [
+    "document_id",
+    "folder_id",
+    "owner_user_id",
+    "customer_id",
+    "document_name",
+    "created_dt",
+    "status_cd",
+    "file_type",
+    "occurrence"
+  ],
+  "normalize": {
+    "document_id": {
+      "numeric_scale": 0
+    },
+    "folder_id": {
+      "numeric_scale": 0
+    },
+    "owner_user_id": {
+      "numeric_scale": 0
+    },
+    "customer_id": {
+      "numeric_scale": 0
+    },
+    "created_dt": {
+      "date_format": "%Y-%m-%d"
+    },
+    "occurrence": {
+      "numeric_scale": 0
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "NS": "sfx-d1110-after",
+  "business_date": "20261109",
+  "git_dirty": true,
+  "git_sha": "db86a5122c32983b905e92d893b0e4594e757aad",
+  "id": "documents.spark_docs_folder_legacy_report",
+  "legacy_NS": "sfx-d1110-before",
+  "legacy_objects": [
+    "spark_job:docs_folder_legacy_report",
+    "spark_submit:etl/spark/submit/docs_folder_legacy_report.sh",
+    "cron_entry:etl/crontab#b40205d7056e"
+  ],
+  "results": {
+    "columns": [
+      "folder_id",
+      "folder_name",
+      "parent_folder_id",
+      "documents"
+    ],
+    "duplicate_keys": {
+      "lakehouse": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      },
+      "legacy": {
+        "key_count": 0,
+        "row_count": 0,
+        "samples": []
+      }
+    },
+    "fingerprints": {
+      "lakehouse": {
+        "documents": {
+          "count": 10,
+          "hash": "7767282ca5118096947e317193a5d2a1be24a357ab4234c7211fd6aaa30143e1",
+          "null_count": 0,
+          "sum": "68"
+        },
+        "folder_id": {
+          "count": 10,
+          "hash": "e33cefd9c03d28d2966c8965bbd35453c33673e5720a77dafca41e7fa40b7ee3",
+          "null_count": 0,
+          "sum": "55"
+        },
+        "folder_name": {
+          "count": 10,
+          "hash": "6c360abfea0057c9418de7fb8b5d8a66e9111761892f986555400cef2b2b4051",
+          "null_count": 0,
+          "sum": null
+        },
+        "parent_folder_id": {
+          "count": 10,
+          "hash": "148636638637b41ede123b0b28e29d20c04f745a367a9d298052a675269a9d33",
+          "null_count": 1,
+          "sum": "9"
+        }
+      },
+      "legacy": {
+        "documents": {
+          "count": 10,
+          "hash": "7767282ca5118096947e317193a5d2a1be24a357ab4234c7211fd6aaa30143e1",
+          "null_count": 0,
+          "sum": "68"
+        },
+        "folder_id": {
+          "count": 10,
+          "hash": "e33cefd9c03d28d2966c8965bbd35453c33673e5720a77dafca41e7fa40b7ee3",
+          "null_count": 0,
+          "sum": "55"
+        },
+        "folder_name": {
+          "count": 10,
+          "hash": "6c360abfea0057c9418de7fb8b5d8a66e9111761892f986555400cef2b2b4051",
+          "null_count": 0,
+          "sum": null
+        },
+        "parent_folder_id": {
+          "count": 10,
+          "hash": "148636638637b41ede123b0b28e29d20c04f745a367a9d298052a675269a9d33",
+          "null_count": 1,
+          "sum": "9"
+        }
+      }
+    },
+    "mismatches": {
+      "documents": {
+        "count": 0,
+        "samples": []
+      },
+      "folder_id": {
+        "count": 0,
+        "samples": []
+      },
+      "folder_name": {
+        "count": 0,
+        "samples": []
+      },
+      "parent_folder_id": {
+        "count": 0,
+        "samples": []
+      }
+    },
+    "null_key_rows": {
+      "lakehouse": 0,
+      "legacy": 0
+    },
+    "only_in_lakehouse": {
+      "count": 0,
+      "samples": []
+    },
+    "only_in_legacy": {
+      "count": 0,
+      "samples": []
+    },
+    "passed": true,
+    "row_counts": {
+      "lakehouse": 10,
+      "legacy": 10
+    }
+  },
+  "row_counts": {
+    "lakehouse": 10,
+    "legacy": 10
+  },
+  "spec_hash": "3b2e7bcb6dec19f6136e51db2036b00fcb37a0fbfe212bcfc85883d28e9fed39",
+  "timestamp": "2026-11-19T11:19:54.543913+00:00"
+}

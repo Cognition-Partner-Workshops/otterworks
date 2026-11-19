@@ -1,0 +1,68 @@
+{
+  "id": "documents.infa_metrics",
+  "legacy_objects": [
+    "informatica_mapping:SFX_CONTENT.m_SFX_STG_DOCUMENT",
+    "informatica_session:SFX_CONTENT.s_m_SFX_STG_DOCUMENT",
+    "informatica_mapping:SFX_CONTENT.m_SFX_DOCUMENT",
+    "informatica_session:SFX_CONTENT.s_m_SFX_DOCUMENT",
+    "informatica_mapping:SFX_CONTENT.m_SFX_DOC_SHARE",
+    "informatica_session:SFX_CONTENT.s_m_SFX_DOC_SHARE"
+  ],
+  "legacy": {
+    "kind": "file",
+    "path": "lakehouse/.data/{NS}/legacy_informatica/metrics.psv",
+    "header": true
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.infa_metrics"
+  },
+  "keys": [
+    "pipeline"
+  ],
+  "columns": [
+    "pipeline",
+    "source_rows",
+    "transformation_errors",
+    "written_rows",
+    "rejected_rows",
+    "inserted_rows",
+    "updated_rows",
+    "rows_before",
+    "rows_after"
+  ],
+  "normalize": {
+    "source_rows": {
+      "numeric_scale": 0,
+      "empty_as_null": true
+    },
+    "transformation_errors": {
+      "numeric_scale": 0,
+      "empty_as_null": true
+    },
+    "written_rows": {
+      "numeric_scale": 0,
+      "empty_as_null": true
+    },
+    "rejected_rows": {
+      "numeric_scale": 0,
+      "empty_as_null": true
+    },
+    "inserted_rows": {
+      "numeric_scale": 0,
+      "empty_as_null": true
+    },
+    "updated_rows": {
+      "numeric_scale": 0,
+      "empty_as_null": true
+    },
+    "rows_before": {
+      "numeric_scale": 0,
+      "empty_as_null": true
+    },
+    "rows_after": {
+      "numeric_scale": 0,
+      "empty_as_null": true
+    }
+  }
+}

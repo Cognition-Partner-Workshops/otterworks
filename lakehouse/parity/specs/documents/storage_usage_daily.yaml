@@ -1,0 +1,27 @@
+{
+  "id": "documents.storage_usage_daily",
+  "legacy_objects": [
+    "teradata_table:SFX_DOCUMENTS.STORAGE_USAGE_DAILY",
+    "bteq_script:warehouse/teradata/scripts/documents/05_load_sessions.bteq",
+    "cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/05_load_sessions"
+  ],
+  "legacy": {
+    "kind": "postgres_sql",
+    "sql": "SELECT storage_usage_id, customer_id, owner_user_id, usage_dt, bytes_used, object_count FROM sfx_documents.storage_usage_daily"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.storage_usage_daily"
+  },
+  "keys": [
+    "storage_usage_id"
+  ],
+  "columns": [
+    "storage_usage_id",
+    "customer_id",
+    "owner_user_id",
+    "usage_dt",
+    "bytes_used",
+    "object_count"
+  ]
+}

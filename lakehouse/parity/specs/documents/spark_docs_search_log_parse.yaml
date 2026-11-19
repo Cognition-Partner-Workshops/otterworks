@@ -1,0 +1,35 @@
+{
+  "id": "documents.spark_docs_search_log_parse",
+  "legacy_objects": [
+    "spark_job:docs_search_log_parse",
+    "spark_submit:etl/spark/submit/docs_search_log_parse.sh",
+    "cron_entry:etl/crontab#0994e1d7781b"
+  ],
+  "legacy": {
+    "kind": "parquet",
+    "path": "lakehouse/.data/{NS}/legacy_spark/{business_date}/documents/docs_search_log_parse"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.spark_docs_search_log_parse"
+  },
+  "keys": [
+    "search_index_log_id"
+  ],
+  "columns": [
+    "search_index_log_id",
+    "document_id",
+    "event_at",
+    "raw_line",
+    "status",
+    "parsed_action"
+  ],
+  "normalize": {
+    "search_index_log_id": {
+      "numeric_scale": 0
+    },
+    "document_id": {
+      "numeric_scale": 0
+    }
+  }
+}
