@@ -4,6 +4,7 @@ from collections import Counter
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import sys
 import zlib
@@ -223,6 +224,7 @@ class SnowflakeMeasurements:
                     self.query_ids.append(cursor.sfqid)
 
     def compare(self, before, source, destination):
+        snowflake_relation(snowflake_connection.DATABASE + '.' + source)
         qualified = snowflake_connection.DATABASE + '.' + destination
         try:
             columns, rows = self.query('SELECT * FROM ' + snowflake_relation(qualified))
@@ -231,16 +233,25 @@ class SnowflakeMeasurements:
                 raise ValueError('output not materialized in Snowflake: ' + qualified) from error
             raise
         with duckdb.connect() as local:
-            definitions = before.execute('DESCRIBE ' + relation(source)).fetchall()
+            definitions = before.execute('DESCRIBE SELECT * FROM query_table(?)', [source]).fetchall()
             if columns != [c[0] for c in definitions]:
                 raise ValueError('Output column names/order differ')
-            local.execute('CREATE SCHEMA ' + quote(destination.split('.')[0]))
-            local.execute('CREATE TABLE ' + relation(destination) + ' (' +
-                          ', '.join(quote(c[0]) + ' ' + c[1] for c in definitions) + ')')
+            for column, kind, *_ in definitions:
+                identifier(column)
+                if not re.fullmatch(r'(?:SMALLINT|INTEGER|BIGINT|DATE|TIMESTAMP(?: WITH TIME ZONE)?|BOOLEAN|FLOAT|DOUBLE|BLOB|VARCHAR|DECIMAL\([0-9]+,[0-9]+\))', kind):
+                    raise ValueError('Unsupported snapshot column type: ' + kind)
+            staging = 'main.snapshot'
+            create = exp.Create(
+                this=exp.Schema(this=exp.Table(this=exp.to_identifier('snapshot'), db=exp.to_identifier('main')),
+                    expressions=[exp.ColumnDef(this=exp.to_identifier(c[0], quoted=True),
+                        kind=exp.DataType.build(c[1], dialect='duckdb')) for c in definitions]),
+                kind='TABLE')
+            local.execute(create.sql(dialect='duckdb'))
             if rows:
-                local.executemany('INSERT INTO ' + relation(destination) + ' VALUES (' +
-                                  ', '.join('?' for _ in columns) + ')', rows)
-            return compare(before, local, source, destination)
+                insert = exp.Insert(this=exp.Table(this=exp.to_identifier('snapshot'), db=exp.to_identifier('main')),
+                    expression=exp.Values(expressions=[exp.Tuple(expressions=[exp.Placeholder() for _ in columns])]))
+                local.executemany(insert.sql(dialect='duckdb'), rows)
+            return compare(before, local, source, staging)
 
     def exists(self, obj):
         target = obj.get('target', '')

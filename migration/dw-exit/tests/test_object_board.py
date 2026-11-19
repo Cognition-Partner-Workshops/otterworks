@@ -327,3 +327,50 @@ def test_snowflake_target_still_measures_both_legs(relations, monkeypatch):
     enable_snowflake(monkeypatch)
     row = board.build_board({'objects': [obj()]}, *relations, {'BILLING.T'}, target='snowflake')['rows'][0]
     assert row['status'] == 'green'
+
+
+@pytest.mark.parametrize('source,destination', [
+    ('SFX_BILLING.T;DROP', 'BILLING.T'), ('SFX_BILLING.T', 'BILLING.T;DROP'),
+    ('SFX-BILLING.T', 'BILLING.T'), ('SFX_BILLING.T', 'BILL-ING.T')])
+def test_snowflake_rejects_invalid_relation_identifiers(relations, monkeypatch, source, destination):
+    connection = enable_snowflake(monkeypatch)
+    measurements = board.SnowflakeMeasurements()
+    try:
+        with pytest.raises(ValueError, match='Invalid identifier'):
+            measurements.compare(relations[0], source, destination)
+        assert not any(s.startswith('SELECT') for s in connection.statements)
+    finally:
+        measurements.close()
+
+
+@pytest.mark.parametrize('column,kind,reason', [
+    ('BAD;COLUMN', 'INTEGER', 'Invalid identifier'),
+    ('ID', 'INTEGER); DROP TABLE snapshot; --', 'Unsupported snapshot column type')])
+def test_snowflake_rejects_invalid_staging_metadata(monkeypatch, column, kind, reason):
+    connection = enable_snowflake(monkeypatch)
+    class Metadata:
+        def execute(self, statement, parameters):
+            assert statement == 'DESCRIBE SELECT * FROM query_table(?)'
+            assert parameters == ['SFX_BILLING.T']
+            return self
+
+        def fetchall(self):
+            return [(column, kind), ('VALUE', 'VARCHAR')]
+
+    original = connection.cursor
+    def cursor():
+        result = original()
+        execute = result.execute
+        def matching_columns(statement):
+            execute(statement)
+            if statement.startswith('SELECT'):
+                result.description = [(column,), ('VALUE',)]
+        result.execute = matching_columns
+        return result
+    monkeypatch.setattr(connection, 'cursor', cursor)
+    measurements = board.SnowflakeMeasurements()
+    try:
+        with pytest.raises(ValueError, match=reason):
+            measurements.compare(Metadata(), 'SFX_BILLING.T', 'BILLING.T')
+    finally:
+        measurements.close()
