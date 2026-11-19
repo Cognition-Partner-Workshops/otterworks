@@ -74,9 +74,11 @@ jobs:
         name: Image name
         run: |
           app="$(basename "$APP_DIR")"
-          echo "app=$app" >> "$GITHUB_OUTPUT"
-          echo "image=${REGISTRY}/otterworks/bank-${app}" >> "$GITHUB_OUTPUT"
-          echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+          {
+            echo "app=$app"
+            echo "image=${REGISTRY}/otterworks/bank-${app}"
+            echo "tag=${GITHUB_SHA::12}"
+          } >> "$GITHUB_OUTPUT"
           { echo "APP=$app"; echo "IMAGE=${REGISTRY}/otterworks/bank-${app}"; echo "TAG=${GITHUB_SHA::12}"; } >> "$GITHUB_ENV"
       - id: unit
         name: Unit tests (Dockerfile test stage)
@@ -243,7 +245,7 @@ jobs:
       - name: Smoke test
         run: |
           if [ "$WORKLOAD" = web ]; then
-            for i in $(seq 1 30); do code=$(curl -s -o /dev/null -w '%{http_code}' "https://$HOST/health"); [ "$code" = 200 ] && break; sleep 10; done
+            for _ in $(seq 1 30); do code=$(curl -s -o /dev/null -w '%{http_code}' "https://$HOST/health"); [ "$code" = 200 ] && break; sleep 10; done
             echo "https://$HOST/health -> $code"; [ "$code" = 200 ]
           else
             kubectl -n "$NAMESPACE" create job "$CHART_APP-smoke-${GITHUB_RUN_ID}" --from="cronjob/$CHART_APP"

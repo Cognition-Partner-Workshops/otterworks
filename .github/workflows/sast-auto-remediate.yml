@@ -54,7 +54,7 @@ jobs:
             "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits?per_page=100" \
             --jq '[.[] | select(.author.login == "devin-ai-integration[bot]")] | length')
           echo "attempt_count=${ATTEMPT_COUNT}" >> "$GITHUB_OUTPUT"
-          if [ "$ATTEMPT_COUNT" -ge "${{ env.MAX_FIX_ATTEMPTS }}" ]; then
+          if [ "$ATTEMPT_COUNT" -ge "$MAX_FIX_ATTEMPTS" ]; then
             echo "exceeded_max=true" >> "$GITHUB_OUTPUT"
           else
             echo "exceeded_max=false" >> "$GITHUB_OUTPUT"
@@ -112,9 +112,11 @@ jobs:
           ' trivy-results.json | head -c 3000)
 
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "findings_summary<<$EOF" >> "$GITHUB_OUTPUT"
-          echo "$SUMMARY" >> "$GITHUB_OUTPUT"
-          echo "$EOF" >> "$GITHUB_OUTPUT"
+          {
+            echo "findings_summary<<$EOF"
+            echo "$SUMMARY"
+            echo "$EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Upload scan artifact
         if: steps.parse.outputs.has_findings == 'true'
