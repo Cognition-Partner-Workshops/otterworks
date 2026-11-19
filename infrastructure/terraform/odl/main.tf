@@ -26,7 +26,7 @@ provider "aws" {
 }
 
 resource "aws_ecr_repository" "images" {
-  for_each     = toset(["mock-jira", "mock-pagerduty", "odl-seed", "oracle-free", "mongo"])
+  for_each     = toset(["mock-jira", "mock-pagerduty", "mock-confluence", "odl-seed", "oracle-free", "mongo"])
   name         = "otterworks-odl/${each.key}"
   force_delete = true
   image_scanning_configuration {

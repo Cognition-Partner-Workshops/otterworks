@@ -1,0 +1,10 @@
+alertmanager:
+  alertmanagerSpec:
+    useExistingSecret: true
+    configSecret: alertmanager-odl-config
+    secrets:
+      - alertmanager-devin-webhook
+      - alertmanager-odl-pagerduty
+    podMetadata:
+      labels:
+        run_token: odl-1795112287

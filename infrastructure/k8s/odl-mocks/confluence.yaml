@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: confluence
+  labels: {app: confluence}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {app: confluence}
+  template:
+    metadata:
+      labels: {app: confluence}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 10001
+      containers:
+        - name: confluence
+          image: 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks-odl/mock-confluence:0fbc19b96a72611ecdb626b00bfc45efc5cd93f8
+          env:
+            - {name: CONFLUENCE_DATABASE, value: /data/confluence.sqlite3}
+          ports: [{containerPort: 8080}]
+          resources:
+            requests: {cpu: 25m, memory: 64Mi}
+            limits: {cpu: 250m, memory: 192Mi}
+          readinessProbe:
+            httpGet: {path: /health, port: 8080}
+          livenessProbe:
+            httpGet: {path: /health, port: 8080}
+            initialDelaySeconds: 20
+          volumeMounts:
+            - {name: data, mountPath: /data}
+        - name: seed
+          image: 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks-odl/mock-confluence:0fbc19b96a72611ecdb626b00bfc45efc5cd93f8
+          command: [python, -B, -u, /seed/confluence-seed.py]
+          resources:
+            requests: {cpu: 5m, memory: 24Mi}
+            limits: {cpu: 100m, memory: 64Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: seed, mountPath: /seed, readOnly: true}
+      volumes:
+        - name: data
+          emptyDir: {sizeLimit: 128Mi}
+        - name: seed
+          configMap:
+            name: confluence-odl-seed
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: confluence
+  labels: {app: confluence}
+spec:
+  type: ClusterIP
+  selector: {app: confluence}
+  ports: [{port: 8080, targetPort: 8080}]
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: confluence
+  labels: {app: confluence}
+  annotations:
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: confluence-mock-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: ODL demo
+    nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: confluence-odl.demo.otterworks.app
+      http:
+        paths:
+          - path: /wiki
+            pathType: Prefix
+            backend:
+              service:
+                name: confluence
+                port: {number: 8080}
+          - path: /static
+            pathType: Prefix
+            backend:
+              service:
+                name: confluence
+                port: {number: 8080}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: confluence
+  labels: {app: confluence}
+spec:
+  podSelector:
+    matchLabels: {app: confluence}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: ingress-nginx}
+      ports: [{protocol: TCP, port: 8080}]
