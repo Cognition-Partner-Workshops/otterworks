@@ -1,8 +1,8 @@
 {
   "job": "billing_payment_aging",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "2 1 * * *",
   "profile": "small"
 }

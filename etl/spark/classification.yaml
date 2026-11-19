@@ -8,8 +8,10 @@
   reason: "Joins invoice lines to the plan catalog and sums revenue per plan."
 - job: billing_payment_aging
   language: python
-  target: dbt
-  reason: "Computes payment aging with a left join and date arithmetic over billing tables."
+  target: spark_standard_template
+  reason: "Computes payment aging with a left join and date arithmetic over billing tables using the small standard Spark profile."
+  original_target: dbt
+  change_reason: "The run-scoped Snowflake database and warehouse are unavailable; retain the existing lake output on the standard Spark template."
 - job: billing_usage_append_daily
   language: python
   target: dbt
