@@ -1,8 +1,8 @@
 {
   "NS": "users-after",
   "business_date": "20261109",
-  "git_dirty": true,
-  "git_sha": "d48c11e07c4315a30d5a4eee747e2e7426d15a42",
+  "git_dirty": false,
+  "git_sha": "39d37413d413ca14fe38d24400298da0347e1cf9",
   "id": "users.activity_user_summaries",
   "legacy_NS": "users-before",
   "legacy_objects": [
@@ -121,6 +121,6 @@
     "lakehouse": 4,
     "legacy": 4
   },
-  "spec_hash": "6e0de94f64c86bfd53041577af7db8a33712dfb2d4df5d2cb7f3f288a1c7495d",
-  "timestamp": "2026-11-19T08:07:48.565153+00:00"
+  "spec_hash": "40baad7989e9317fd8e2f25cb3445d80c0bfad1d135d7cc2037f72718a0b75f1",
+  "timestamp": "2026-11-19T08:11:16.721659+00:00"
 }

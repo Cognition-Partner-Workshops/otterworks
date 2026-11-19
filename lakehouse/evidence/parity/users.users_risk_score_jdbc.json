@@ -1,8 +1,8 @@
 {
   "NS": "users-after",
   "business_date": "20261109",
-  "git_dirty": true,
-  "git_sha": "d48c11e07c4315a30d5a4eee747e2e7426d15a42",
+  "git_dirty": false,
+  "git_sha": "39d37413d413ca14fe38d24400298da0347e1cf9",
   "id": "users.users_risk_score_jdbc",
   "legacy_NS": "users-before",
   "legacy_objects": [
@@ -156,5 +156,5 @@
     "legacy": 70
   },
   "spec_hash": "0734f51d4c7e58fc5007a9fc7ea9b05810eeb249a2f0469ef6647347550fcb44",
-  "timestamp": "2026-11-19T08:10:14.269870+00:00"
+  "timestamp": "2026-11-19T08:11:57.455202+00:00"
 }
