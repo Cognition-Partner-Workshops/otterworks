@@ -988,8 +988,8 @@ assumptions:
   ambiguity: Evidence generated before a commit cannot cite that not-yet-existing commit SHA.
   decision: Record actual HEAD plus git_dirty, spec hash and timestamp; do not rewrite provenance after
     commit.
-  rationale: The committed pilot evidence was measured before the Step-2 implementation commit and honestly
-    records dirty=true.
+  rationale: The initial Step-2 evidence honestly recorded dirty=true before its implementation commit.
+    Subsequent runs record the actual contemporaneous worktree state, including clean rebased commits.
   risk: low
   verification: test:lakehouse/tests/test_parity.py::test_specs_and_evidence_failure_exit
   status: accepted
