@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Sidebar } from "./sidebar";
 import { Footer } from "./footer";
 import { SearchBar } from "@/components/ui/search-bar";
@@ -15,19 +15,34 @@ interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
+  const [viewportTop, setViewportTop] = useState(0);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const update = () => setViewportTop(viewport.offsetTop);
+    update();
+    viewport.addEventListener("resize", update);
+    viewport.addEventListener("scroll", update);
+    return () => {
+      viewport.removeEventListener("resize", update);
+      viewport.removeEventListener("scroll", update);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-otter-50">
+      <div aria-hidden="true" className="safe-status-backdrop" style={{ top: viewportTop }} />
       <Sidebar />
 
       <div
         className={cn(
-          "flex min-h-screen flex-col transition-all duration-200",
+          "safe-shell flex min-h-screen flex-col transition-all duration-200",
           sidebarOpen ? "lg:ml-64" : "lg:ml-16"
         )}
       >
         {/* Top utility bar */}
-        <header className="sticky top-0 z-30 bg-white border-b border-gray-300 h-12">
+        <header className="safe-header sticky top-0 z-30 bg-white border-b border-gray-300">
           <div className="flex items-center justify-between h-full px-3 lg:px-4">
             <div className="flex items-center gap-3 flex-1">
               <button

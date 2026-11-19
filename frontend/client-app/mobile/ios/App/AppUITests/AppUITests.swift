@@ -1,4 +1,5 @@
 import XCTest
+import UIKit
 
 class AppUITestCase: XCTestCase {
     let app = XCUIApplication()
@@ -90,8 +91,6 @@ class AppUITestCase: XCTestCase {
         app.buttons["Sign in"].tap()
         if password == "HarborPass123!" {
             XCTAssertTrue(app.links["Files"].waitForExistence(timeout: 10))
-            rotate(.landscapeLeft)
-            rotate(.portrait)
         }
     }
 
@@ -101,10 +100,8 @@ class AppUITestCase: XCTestCase {
 
     func openSidebar() {
         if !element(.button, "Sign out").exists {
-            rotate(.landscapeLeft)
             element(.button, "Open menu").tap()
             XCTAssertTrue(element(.button, "Sign out").waitForExistence(timeout: 5))
-            rotate(.portrait)
         }
     }
 
@@ -115,10 +112,8 @@ class AppUITestCase: XCTestCase {
         link.tap()
         XCTAssertTrue(app.webViews.descendants(matching: .other).matching(NSPredicate(format: "label == %@ AND value == '1'", name)).firstMatch.waitForExistence(timeout: 10), app.debugDescription)
         if dismissSidebar {
-            rotate(.landscapeLeft)
             element(.button, "Toggle sidebar").tap()
             XCTAssertTrue(element(.button, "Sign out").waitForNonExistence(timeout: 5), app.debugDescription)
-            rotate(.portrait)
         }
     }
 }
@@ -126,10 +121,65 @@ class AppUITestCase: XCTestCase {
 final class AppUITests: AppUITestCase {
     func testPortraitMenuReopens() {
         login()
-        navigate("Files")
-        XCTExpectFailure("Known safe-area bug: portrait Open menu is beneath the iOS status bar") {
-            app.buttons["Open menu"].tap()
-            XCTAssertTrue(app.links["Files"].waitForExistence(timeout: 3))
+        navigate("Dashboard")
+        let menu = element(.button, "Open menu")
+        XCTAssertGreaterThanOrEqual(menu.frame.minY, app.frame.minY + 44)
+        menu.tap()
+        XCTAssertTrue(element(.link, "Files").waitForExistence(timeout: 3))
+        let close = element(.button, "Toggle sidebar")
+        XCTAssertGreaterThanOrEqual(close.frame.minY, app.frame.minY + 44)
+        XCTAssertTrue(close.isHittable)
+        saveScreenshot("portrait-home")
+    }
+
+    func saveScreenshot(_ name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    func testLandscapeSafeArea() {
+        login()
+        navigate("Dashboard")
+        for orientation in [UIDeviceOrientation.landscapeLeft, .landscapeRight] {
+            rotate(orientation)
+            let menu = element(.button, "Open menu")
+            XCTAssertGreaterThanOrEqual(menu.frame.minX, app.frame.minX + 40)
+            let help = element(.link, "Help")
+            XCTAssertLessThanOrEqual(help.frame.maxX, app.frame.maxX - 40)
+            menu.tap()
+            let close = element(.button, "Toggle sidebar")
+            XCTAssertTrue(close.isHittable)
+            let navigation = element(.other, "Workspace navigation", contains: true)
+            XCTAssertTrue(navigation.waitForExistence(timeout: 5))
+            let dashboard = element(.link, "Dashboard")
+            func visibleInNavigation(_ link: XCUIElement) -> Bool {
+                link.isHittable && navigation.frame.contains(link.frame)
+            }
+            func seekInNavigation(_ link: XCUIElement) {
+                for _ in 0..<10 {
+                    if visibleInNavigation(link) { return }
+                    let targetAbove = link.frame.minY < navigation.frame.minY
+                    let start = navigation.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: targetAbove ? 0.33 : 0.67))
+                    let end = navigation.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: targetAbove ? 0.67 : 0.33))
+                    start.press(forDuration: 0.1, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.2)
+                }
+            }
+            seekInNavigation(dashboard)
+            XCTAssertGreaterThanOrEqual(element(.link, "Dashboard").frame.minX, app.frame.minX + 40)
+            saveScreenshot("landscape-safe-area")
+            for name in ["Margins", "Shared with me", "Starred", "Notifications", "Trash", "Settings"] {
+                let link = element(.link, name)
+                seekInNavigation(link)
+                XCTAssertTrue(link.isHittable, "Unreachable landscape drawer item: \(name)")
+                XCTAssertTrue(visibleInNavigation(link), "Clipped landscape drawer item: \(name)")
+            }
+            saveScreenshot("landscape-scrolled")
+            element(.link, "Settings").tap()
+            XCTAssertTrue(app.webViews.descendants(matching: .other).matching(NSPredicate(format: "label == 'Settings' AND value == '1'")).firstMatch.waitForExistence(timeout: 10))
+            close.tap()
+            assertText("Profile")
         }
     }
 
@@ -169,6 +219,7 @@ final class AppUITests: AppUITestCase {
         title.doubleTap()
         XCTAssertTrue(app.buttons["Download"].firstMatch.waitForExistence(timeout: 10))
         app.buttons["Download"].firstMatch.tap()
+        app.activate()
         // Known native bug: blob-anchor downloads are not persisted via Filesystem.
         // Do not claim a saved file; the browser suite verifies the response payload.
         assertText("Harbor report.txt")
@@ -177,15 +228,39 @@ final class AppUITests: AppUITestCase {
     func testDocumentEditing() {
         login()
         navigate("Documents")
-        let title = element(.staticText, "Voyage notes")
+        let title = element(.link, "Voyage notes", contains: true)
         reveal(title)
-        title.doubleTap()
+        title.tap()
         let editor = app.webViews.textViews.firstMatch
+        if !editor.waitForExistence(timeout: 2) { title.tap() }
         XCTAssertTrue(editor.waitForExistence(timeout: 10))
         XCTAssertTrue((editor.value as? String ?? "").contains("Welcome aboard the harbor."))
         editor.tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
         editor.typeText(" Native voyage edit")
+        let bold = element(.button, "Bold")
+        let keyboard = app.keyboards.firstMatch
+        let toolbarVisible = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            bold.exists && bold.isHittable && bold.frame.maxY <= keyboard.frame.minY && bold.frame.minY >= self.app.frame.minY + 44
+        }, object: nil)
+        wait(for: [toolbarVisible], timeout: 10)
+        bold.tap()
+        XCTAssertTrue(keyboard.exists)
+        assertStatusBarBackdrop()
+        saveScreenshot("editor-keyboard")
+        let done = app.toolbars.buttons["Done"]
+        XCTAssertTrue(done.waitForExistence(timeout: 5))
+        done.tap()
+        XCTAssertTrue(keyboard.waitForNonExistence(timeout: 5))
+        let controls = [element(.button, "Save"), element(.button, "Share"), element(.button, "Horizontal rule")]
+        let layoutRestored = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            let header = self.element(.other, "banner")
+            return header.exists && abs(header.frame.width - self.app.frame.width) <= 1 &&
+                abs(header.frame.minX - self.app.frame.minX) <= 1 &&
+                controls.allSatisfy { $0.exists && $0.isHittable && self.app.frame.contains($0.frame) }
+        }, object: nil)
+        wait(for: [layoutRestored], timeout: 10)
+        saveScreenshot("editor-after-edit")
         app.buttons["Save"].tap()
         let saved = expectation(description: "HTTP document save persisted")
         var request = URLRequest(url: URL(string: "http://127.0.0.1:4010/api/v1/documents/doc-1")!)
@@ -202,6 +277,30 @@ final class AppUITests: AppUITestCase {
             }
         }
         wait(for: [saved], timeout: 10)
+    }
+
+    func assertStatusBarBackdrop() {
+        let image = XCUIScreen.main.screenshot().image
+        guard let cgImage = image.cgImage else { return XCTFail("Missing screenshot pixels") }
+        let width = cgImage.width
+        let height = cgImage.height
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        guard let context = CGContext(data: &pixels, width: width, height: height,
+                                      bitsPerComponent: 8, bytesPerRow: width * 4,
+                                      space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            return XCTFail("Cannot read screenshot pixels")
+        }
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        let scale = CGFloat(width) / app.frame.width
+        // Above the system clock/icons, the status-bar backdrop must be solid white.
+        for y in stride(from: 4, through: 16, by: 4) {
+            for x in 10..<Int(app.frame.width - 10) {
+                let offset = (Int(CGFloat(y) * scale) * width + Int(CGFloat(x) * scale)) * 4
+                XCTAssertTrue(pixels[offset] > 245 && pixels[offset + 1] > 245 && pixels[offset + 2] > 245,
+                              "Web content is visible through the status-bar backdrop at \(x),\(y)")
+            }
+        }
     }
 
     func testSearch() {

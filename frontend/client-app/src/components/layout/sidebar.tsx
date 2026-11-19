@@ -80,13 +80,13 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full bg-otter-700 text-white border-r border-otter-800 transition-transform duration-200 flex flex-col",
+          "safe-sidebar fixed top-0 left-0 z-50 h-full bg-otter-700 text-white border-r border-otter-800 transition-transform duration-200 flex flex-col",
           "w-64",
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:w-16"
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between h-12 px-3 border-b border-otter-600">
+        <div className="flex items-center justify-between h-12 px-3 border-b border-otter-600 max-lg:shrink-0">
           {sidebarOpen && (
             <Link to="/dashboard" className="flex items-center gap-2">
               <Logo size={28} className="rounded-sm bg-white" />
@@ -116,7 +116,7 @@ export function Sidebar() {
         )}
 
         {/* Navigation */}
-        <nav className="flex-1 px-2 py-1 overflow-y-auto">
+        <nav aria-label="Workspace navigation" className="flex-1 px-2 py-1 overflow-y-auto max-lg:min-h-0 max-lg:overscroll-contain">
           {navGroups.map((group) => (
             <div key={group.label} className="mb-2">
               {sidebarOpen && (
@@ -151,7 +151,7 @@ export function Sidebar() {
         </nav>
 
         {/* User profile */}
-        <div className="border-t border-otter-600 px-3 py-2">
+        <div className="border-t border-otter-600 px-3 py-2 max-lg:shrink-0">
           {user && sidebarOpen && (
             <div className="flex items-center gap-3 px-1 py-2">
               <div className="w-8 h-8 rounded-full bg-otter-500 text-white flex items-center justify-center text-xs font-semibold">
