@@ -57,12 +57,13 @@ def guarded_commands(tmp_path, monkeypatch):
     ['RUN_TOKEN=invalid'], ['RUN_TOKEN='], ["RUN_TOKEN=sfx1119'quote"],
     ['RUN_TOKEN=invalid', 'NS=Demo_1'], ['INFA_NS='], ['INFA_NS= '],
     ['NS=..'], ['NS=../other'], ['NS=/'], ['NS='], ['NS=with-hyphen'],
-    ['NS=sfx-1119-before'], ['INFA_NS=sfx-1119-before'],
+    ['NS=sfx-2220-before'], ['NS=sfx-2220-after'], ['INFA_NS=sfx-2220-before'],
 ])
 def test_guard_rejects_invalid_scope(target, arguments, guarded_commands):
     directory, marker = guarded_commands
     result = subprocess.run(['make', target, f'INFA_DIR={directory}', 'INFA_DB=teradata',
-                             f'INFA_PY={directory}/bin/runner', 'INFA_WORKFLOWS=sample:job', *arguments],
+                             f'INFA_PY={directory}/bin/runner', f'MAKE={directory}/bin/runner',
+                             'INFA_WORKFLOWS=sample:job', *arguments],
                             cwd=ROOT, capture_output=True, text=True)
     assert result.returncode != 0
     assert 'RunConfig' in result.stderr or 'nonempty namespace' in result.stderr
@@ -80,7 +81,8 @@ def test_run_config_failure_or_empty_output_stops_commands(guarded_commands, mon
     executable.chmod(0o755)
     monkeypatch.setenv('PATH', str(tmp_path) + os.pathsep + os.environ['PATH'])
     result = subprocess.run(['make', target, f'INFA_DIR={tmp_path}', 'INFA_DB=teradata',
-                             f'INFA_PY={tmp_path}/bin/runner', 'INFA_WORKFLOWS=sample:job'],
+                             f'INFA_PY={tmp_path}/bin/runner', f'MAKE={tmp_path}/bin/runner',
+                             'INFA_WORKFLOWS=sample:job'],
                             cwd=ROOT, capture_output=True, text=True)
     assert result.returncode != 0
     assert 'RunConfig' in result.stderr or 'nonempty namespace' in result.stderr
@@ -88,7 +90,7 @@ def test_run_config_failure_or_empty_output_stops_commands(guarded_commands, mon
     assert not marker.exists()
 
 
-@pytest.mark.parametrize('namespace', [None, 'Demo_1', '_', '123'])
+@pytest.mark.parametrize('namespace', [None, 'Demo_1', '_', '123', 'sfx-2220-before', 'sfx-2220-after'])
 def test_valid_run_reaches_runner(guarded_commands, namespace):
     directory, marker = guarded_commands
     subprocess.run(['make', 'sfx-informatica-run', 'RUN_TOKEN=sfx2220', f'INFA_DIR={directory}',
@@ -98,7 +100,7 @@ def test_valid_run_reaches_runner(guarded_commands, namespace):
     assert marker.read_text() == 'reached'
 
 
-@pytest.mark.parametrize('namespace', [None, 'Demo_1'])
+@pytest.mark.parametrize('namespace', [None, 'Demo_1', 'sfx-2220-before', 'sfx-2220-after'])
 @pytest.mark.parametrize('target', ['sfx-informatica-up', 'sfx-informatica-snowconvert'])
 def test_valid_scope_reaches_setup(guarded_commands, namespace, target):
     directory, marker = guarded_commands
@@ -129,7 +131,7 @@ def test_unrelated_targets_ignore_runner_validation(tmp_path, target, expected):
     assert 'RunConfig failed' not in result.stderr and 'INFA_NS' not in result.stderr
 
 
-@pytest.mark.parametrize('namespace', [None, 'Demo_1'])
+@pytest.mark.parametrize('namespace', [None, 'Demo_1', 'sfx-2220-before', 'sfx-2220-after'])
 def test_teardown_removes_only_the_selected_child(tmp_path, namespace):
     parent = tmp_path / 'infa_shared'
     selected = parent / (namespace or 'sfx-2220-before')

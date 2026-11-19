@@ -900,10 +900,9 @@ INFA_COMPOSE = NS=$(INFA_NS) TD_PORT=$(INFA_TD_PORT) docker compose -f $(INFA_DI
 INFA_WORKFLOWS ?= SFX_CONTENT:wf_SFX_CONTENT_DAILY SFX_BILLING:wf_SFX_BILLING_DAILY SFX_AUDIT:wf_SFX_AUDIT_DAILY
 
 define INFA_VALIDATE
-infa_default=$$(RUN_TOKEN='$(subst ','"'"',$(RUN_TOKEN))' python3 -c 'from warehouse.run_config import RunConfig; print(RunConfig.from_env().before_namespace)') && [ -n "$$infa_default" ] || { echo 'RunConfig failed for RUN_TOKEN' >&2; exit 2; }; \
+infa_namespaces=$$(RUN_TOKEN='$(subst ','"'"',$(RUN_TOKEN))' python3 -c 'from warehouse.run_config import RunConfig; config = RunConfig.from_env(); print(config.before_namespace, config.after_namespace)') && read -r infa_before infa_after <<< "$$infa_namespaces" && [ -n "$$infa_before" ] && [ -n "$$infa_after" ] || { echo 'RunConfig failed for RUN_TOKEN' >&2; exit 2; }; \
 infa_ns='$(subst ','"'"',$(INFA_NS))'; \
-if [ '$(origin NS)' = undefined ] && [ '$(origin INFA_NS)' = file ] && [ "$$infa_ns" = "$$infa_default" ]; then :; \
-else [[ "$$infa_ns" =~ ^[A-Za-z0-9_]+$$ ]] || { echo 'INFA_NS must be a nonempty namespace containing only letters, digits, and underscores, or the RunConfig-generated default' >&2; exit 2; }; fi
+[[ ( '$(origin NS)' = undefined || -n '$(subst ','"'"',$(NS))' ) && -n "$$infa_ns" && ( "$$infa_ns" =~ ^[A-Za-z0-9_]+$$ || "$$infa_ns" = "$$infa_before" || "$$infa_ns" = "$$infa_after" ) ]] || { echo 'INFA_NS must be a nonempty namespace containing only letters, digits, and underscores, or a RunConfig-generated before/after namespace' >&2; exit 2; }
 endef
 
 sfx-informatica-up: ## Create the runner venv and start the warehouse database for NS (INFA_DB=fixture|teradata)
