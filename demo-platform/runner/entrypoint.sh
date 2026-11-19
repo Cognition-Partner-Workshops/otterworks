@@ -193,7 +193,7 @@ run_reset() {
 run_wake() {
   [ -n "${TENANT_ID:-}" ] || die "OP=wake requires TENANT_ID"
   "${REPO_DIR}/scripts/tenant-scale.sh" "${TENANT_ID}" up
-  ctl_audit "${TENANT_ID}" wake "scaled deployments to 1"
+  ctl_audit "${TENANT_ID}" wake "scaled tenant workloads to 1"
   log "woke ${TENANT_ID}"
 }
 

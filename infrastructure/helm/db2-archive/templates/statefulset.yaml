@@ -6,6 +6,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "db2-archive.labels" . | nindent 4 }}
+    {{- if eq .Values.storage.mode "emptyDir" }}
+    otterworks.io/scale-with-tenant: "true"
+    {{- end }}
   annotations:
     {{- include "db2-archive.annotations" . | nindent 4 }}
 spec:
@@ -25,7 +28,7 @@ spec:
       annotations:
         checksum/health: {{ .Files.Get "files/health.py" | sha256sum }}
     spec:
-      terminationGracePeriodSeconds: 120
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -122,5 +125,12 @@ spec:
           emptyDir:
             sizeLimit: {{ .Values.initJob.workVolumeSize }}
         - name: data
+          {{- if eq .Values.storage.mode "emptyDir" }}
+          emptyDir:
+            sizeLimit: {{ .Values.storage.sizeLimit }}
+          {{- else if eq .Values.storage.mode "persistentVolumeClaim" }}
           persistentVolumeClaim:
             claimName: db2-archive-data
+          {{- else }}
+          {{- fail "storage.mode must be persistentVolumeClaim or emptyDir" }}
+          {{- end }}

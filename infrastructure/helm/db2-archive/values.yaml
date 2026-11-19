@@ -20,6 +20,13 @@ image:
 # becomes the db2inst1 instance password; DB2_USER must be db2inst1 for the seed load.
 credentialsSecret: db2-archive-credentials
 
+storage:
+  mode: persistentVolumeClaim
+  sizeLimit: 20Gi
+
+extraLabels: {}
+terminationGracePeriodSeconds: 120
+
 # Static PV created by ops Terraform (EBS gp3). No storageClass => no dynamic provisioning.
 pv:
   # Name of the static PersistentVolume (otterworks-ldm-<token>-db2 from demo-aws Terraform).

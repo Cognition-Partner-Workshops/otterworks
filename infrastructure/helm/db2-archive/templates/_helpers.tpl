@@ -26,6 +26,9 @@ demo/name: legacy-data-migration
 demo/namespace: {{ .Values.namespaceToken | default .Release.Namespace | quote }}
 demo/owner: {{ .Values.owner | quote }}
 demo/expires: {{ .Values.expires | replace ":" "_" | quote }}
+{{- with .Values.extraLabels }}
+{{ toYaml . }}
+{{- end }}
 {{- end -}}
 
 {{- define "db2-archive.selectorLabels" -}}

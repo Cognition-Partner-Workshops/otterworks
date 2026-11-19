@@ -119,4 +119,9 @@ if [ "${KEEP_TRUST}" = false ]; then
   remove_irsa_trust
 fi
 
+source "${REPO_ROOT}/demo-platform/lib/control-common.sh"
+if [ "${KEEP_DB}" = false ] && [ "$(ctl_get "TENANT#${ATTENDEE_ID}" META | jq -r '.Item.run_token.S // empty')" = odl-1795112287 ]; then
+  ctl_delete_tenant "${ATTENDEE_ID}"
+fi
+
 log "Teardown complete for tenant ${ATTENDEE_ID} (namespace ${NS})."
