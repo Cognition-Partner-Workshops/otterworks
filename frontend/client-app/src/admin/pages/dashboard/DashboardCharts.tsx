@@ -18,9 +18,9 @@ interface DashboardChartsProps {
 export function DashboardCharts({ report }: DashboardChartsProps) {
   return (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(350px,1fr))] gap-5">
-      <section className="rounded bg-white p-6 shadow">
-        <h2 className="mb-4 text-xl font-medium">User Signups</h2>
-        <ResponsiveContainer width="100%" height={250}>
+      <section className="rounded bg-white p-4 shadow">
+        <h2 className="mb-2 text-xl font-medium">User Signups</h2>
+        <ResponsiveContainer width="100%" height={200}>
           <AreaChart data={report?.userSignups ?? []}>
             <CartesianGrid stroke="#eee" />
             <XAxis dataKey="label" />
@@ -35,9 +35,9 @@ export function DashboardCharts({ report }: DashboardChartsProps) {
           </AreaChart>
         </ResponsiveContainer>
       </section>
-      <section className="rounded bg-white p-6 shadow">
-        <h2 className="mb-4 text-xl font-medium">Document Activity</h2>
-        <ResponsiveContainer width="100%" height={250}>
+      <section className="rounded bg-white p-4 shadow">
+        <h2 className="mb-2 text-xl font-medium">Document Activity</h2>
+        <ResponsiveContainer width="100%" height={200}>
           <BarChart data={report?.documentActivity ?? []}>
             <CartesianGrid stroke="#eee" />
             <XAxis dataKey="label" />

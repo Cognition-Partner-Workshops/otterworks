@@ -19,7 +19,7 @@ export function StatCard({ label, value, growth, Icon, color }: StatCardProps) {
         <p className="text-xs uppercase tracking-wide text-gray-400">{label}</p>
         <p
           data-testid="admin-stat-value"
-          className="stat-value text-3xl font-bold"
+          className="stat-value text-2xl font-bold"
         >
           {value}
         </p>

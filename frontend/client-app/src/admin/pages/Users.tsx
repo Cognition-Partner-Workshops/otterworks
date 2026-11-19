@@ -114,7 +114,7 @@ export default function Users() {
 
   return (
     <>
-      <h1 className="mb-6 text-2xl font-semibold">User Management</h1>
+      <h1 className="mb-4 text-xl font-semibold">User Management</h1>
       <FiltersToolbar
         role={role}
         status={status}

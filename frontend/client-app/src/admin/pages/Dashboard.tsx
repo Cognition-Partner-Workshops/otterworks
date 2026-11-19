@@ -72,7 +72,7 @@ export default function Dashboard() {
     : [];
   return (
     <>
-      <h1 className="mb-6 text-2xl font-semibold">Dashboard</h1>
+      <h1 className="mb-6 text-xl font-semibold">Dashboard</h1>
       {!stats.data ? (
         <Spinner />
       ) : (

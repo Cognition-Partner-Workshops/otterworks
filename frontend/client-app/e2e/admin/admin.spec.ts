@@ -230,6 +230,43 @@ test("row menu items depend on active, suspended or pending status", async ({
   }
 });
 
+test("last-row actions stay in the viewport and remain clickable after suspend", async ({
+  page,
+  routes,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 600 });
+  await openUsers(page, routes);
+  await page.getByRole("button", { name: "Last page", exact: true }).click();
+  await expect(page.getByText("11 – 14 of 14", { exact: true })).toBeVisible();
+  await expect(userRows(page).last()).toContainText("Noah Clark");
+  await openActions(page, "Noah Clark");
+  await page.getByRole("menuitem").filter({ hasText: "Suspend" }).click();
+  await page.getByRole("button", { name: "Suspend", exact: true }).click();
+  await expect(userRow(page, "Alice Morgan")).toBeVisible();
+  await page.getByRole("button", { name: "Last page", exact: true }).click();
+  await openActions(page, "Noah Clark");
+  await expect(page.getByRole("menuitem")).toHaveCount(3);
+  for (const name of ["View Details", "Restore", "Delete"]) {
+    const item = page.getByRole("menuitem").filter({ hasText: name });
+    await expect(item).toBeVisible();
+    await expect(item).toBeInViewport({ ratio: 1 });
+  }
+  await page.getByRole("menuitem").filter({ hasText: "Delete" }).click();
+  await expect(page.getByRole("dialog")).toContainText("Delete User");
+  await expect(page.getByRole("dialog")).toContainText(
+    "permanently delete Noah Clark?"
+  );
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await openActions(page, "Noah Clark");
+  await page.getByRole("menuitem").filter({ hasText: "Restore" }).click();
+  await expect(page.getByText(/Noah Clark has been restored/)).toBeVisible();
+  await expect(userRow(page, "Alice Morgan")).toBeVisible();
+  await page.getByRole("button", { name: "Last page", exact: true }).click();
+  await openActions(page, "Noah Clark");
+  await page.getByRole("menuitem").filter({ hasText: "View Details" }).click();
+  await expect(page).toHaveURL(routes("userDetail", "fixture-user-14"));
+});
+
 test("suspend supports cancel and confirm, then shows snackbar and status", async ({
   page,
   routes,

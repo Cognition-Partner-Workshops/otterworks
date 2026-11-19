@@ -14,7 +14,7 @@ export function FiltersToolbar({
   setStatus,
 }: FiltersToolbarProps) {
   return (
-    <div className="mb-6 flex flex-wrap gap-4">
+    <div className="mb-2 flex flex-wrap gap-4">
       <label className="min-w-[250px] flex-1 text-xs text-gray-500">
         Search users
         <input

@@ -64,11 +64,11 @@ export function UsersTable({
     <div className="overflow-x-auto">
       <table className="w-full text-left">
         <thead>
-          <tr className="border-b">
+          <tr className="h-12 border-b">
             {headers.map(([key, label]) => (
               <th
                 key={key}
-                className="p-4 font-medium"
+                className="px-4 font-medium"
                 aria-sort={
                   sort?.key === key
                     ? sort.direction === "asc"
@@ -91,17 +91,17 @@ export function UsersTable({
                 </button>
               </th>
             ))}
-            <th className="p-4 font-medium">Actions</th>
+            <th className="px-4 font-medium">Actions</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user) => (
             <tr
               key={user.id}
-              className="cursor-pointer border-b hover:bg-gray-50"
+              className="h-12 cursor-pointer border-b hover:bg-gray-50"
               onClick={() => onView(user)}
             >
-              <td className="p-4">
+              <td className="px-4 py-1">
                 <div className="flex items-center gap-3">
                   <UserCircle size={36} className="text-gray-400" />
                   <div>
@@ -112,17 +112,17 @@ export function UsersTable({
                   </div>
                 </div>
               </td>
-              <td className="p-4">
+              <td className="px-4 py-1">
                 <Chip value={user.role} />
               </td>
-              <td className="p-4">
+              <td className="px-4 py-1">
                 <Chip value={user.status} />
               </td>
-              <td className="p-4">{user.department || "-"}</td>
-              <td className="p-4">
+              <td className="px-4 py-1">{user.department || "-"}</td>
+              <td className="px-4 py-1">
                 {user.lastLogin ? shortDate(user.lastLogin) : "Never"}
               </td>
-              <td className="relative p-4" onClick={(e) => e.stopPropagation()}>
+              <td className="px-4 py-1" onClick={(e) => e.stopPropagation()}>
                 <RowActionsMenu
                   user={user}
                   menu={menu}

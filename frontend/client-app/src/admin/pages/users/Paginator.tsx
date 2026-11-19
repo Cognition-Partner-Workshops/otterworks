@@ -22,7 +22,7 @@ export function Paginator({
 }: PaginatorProps) {
   const lastPage = Math.max(0, Math.ceil(total / size) - 1);
   return (
-    <div className="flex items-center justify-end gap-4 p-4 text-xs text-gray-600">
+    <div className="flex items-center justify-end gap-4 px-4 py-2 text-xs text-gray-600">
       <label>
         Items per page:{" "}
         <select
@@ -33,7 +33,7 @@ export function Paginator({
             setPage(Math.floor((currentPage * size) / next));
             setSize(next);
           }}
-          className="ml-2 rounded border p-2"
+          className="ml-2 rounded border p-1"
         >
           {[5, 10, 25].map((value) => (
             <option key={value}>{value}</option>
