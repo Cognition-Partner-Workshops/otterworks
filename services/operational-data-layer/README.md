@@ -130,6 +130,8 @@ omit the build argument for ordinary root-hosted dashboards.
 The target chart installs MongoDB and the combined API/sync Deployment and
 ClusterIP Service on port 8098. `sync.enabled` defaults to true; `sync.image`,
 `sync.intervalSeconds` and `sync.resources` configure the runtime.
+The 768Mi request covers normal sync; the 3Gi limit also accommodates an
+independent parity audit running alongside the API/sync process in the same pod.
 
 ```sh
 scripts/odl/deploy-target-observability.sh

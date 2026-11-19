@@ -82,7 +82,7 @@ class ChartTests(unittest.TestCase):
             self.assertEqual(container[name]["httpGet"], {"path": "/health", "port": "http"})
         self.assertEqual(container["resources"], {
             "requests": {"cpu": "250m", "memory": "768Mi"},
-            "limits": {"cpu": "1", "memory": "1536Mi"},
+            "limits": {"cpu": "1", "memory": "3Gi"},
         })
         env = {item["name"]: item for item in container["env"]}
         for name, value in {"DB2_HOST": "db2-archive", "DB2_PORT": "50000", "DB2_DATABASE": "ODL",

@@ -18,7 +18,7 @@ sync:
   intervalSeconds: 60
   resources:
     requests: {cpu: 250m, memory: 768Mi}
-    limits: {cpu: "1", memory: 1536Mi}
+    limits: {cpu: "1", memory: 3Gi}
   monitoring:
     enabled: true
     additionalLabels: {}
