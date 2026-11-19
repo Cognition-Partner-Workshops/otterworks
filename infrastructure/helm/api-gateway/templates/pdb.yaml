@@ -1,0 +1,15 @@
+{{- if ne (toString (.Values.podDisruptionBudget).enabled) "false" }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  maxUnavailable: {{ (.Values.podDisruptionBudget).maxUnavailable | default 1 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

@@ -1,0 +1,128 @@
+# Symptom-based SLO alerts and capacity/health alerts for the shared cluster.
+# Every alert carries team: sre and goes to the SRE receiver routed by the
+# sre-observability chart. page: devin is reserved for the document-service
+# incident-responder rules (docs/incident-responder/automation.md), so none of
+# these use it. t-main (otterworks-main) symptoms and cluster failures are
+# critical; demo-tenant alerts stay warnings, because demo tenants run planted
+# bugs and chaos scenarios on purpose.
+# Applied by scripts/install-cluster-addons.sh.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: otterworks-reliability
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/part-of: otterworks
+spec:
+  groups:
+    - name: otterworks-slo.recording
+      interval: 30s
+      rules:
+        - record: namespace:api_gateway_requests:rate5m
+          expr: sum by (namespace) (rate(api_gateway_http_requests_total[5m]))
+        - record: namespace:api_gateway_errors:rate5m
+          expr: sum by (namespace) (rate(api_gateway_http_requests_total{status=~"5.."}[5m]))
+        - record: namespace:api_gateway_error_ratio:rate5m
+          expr: namespace:api_gateway_errors:rate5m / clamp_min(namespace:api_gateway_requests:rate5m, 1e-9)
+        - record: namespace:api_gateway_latency_p95:rate5m
+          expr: histogram_quantile(0.95, sum by (namespace, le) (rate(api_gateway_http_request_duration_seconds_bucket[5m])))
+        - record: ingress:nginx_requests:rate5m
+          expr: sum by (exported_namespace, ingress, host) (rate(nginx_ingress_controller_requests[5m]))
+        - record: ingress:nginx_error_ratio:rate5m
+          expr: |
+            sum by (exported_namespace, ingress, host) (rate(nginx_ingress_controller_requests{status=~"5.."}[5m]))
+              / clamp_min(sum by (exported_namespace, ingress, host) (rate(nginx_ingress_controller_requests[5m])), 1e-9)
+        - record: ingress:nginx_latency_p95:rate5m
+          expr: histogram_quantile(0.95, sum by (exported_namespace, ingress, host, le) (rate(nginx_ingress_controller_request_duration_seconds_bucket[5m])))
+        - record: cluster:cpu_requests:ratio
+          expr: sum(kube_pod_container_resource_requests{resource="cpu"} * on (namespace, pod) group_left() (kube_pod_status_phase{phase=~"Running|Pending"} == 1)) / sum(kube_node_status_allocatable{resource="cpu"})
+        - record: cluster:memory_requests:ratio
+          expr: sum(kube_pod_container_resource_requests{resource="memory"} * on (namespace, pod) group_left() (kube_pod_status_phase{phase=~"Running|Pending"} == 1)) / sum(kube_node_status_allocatable{resource="memory"})
+
+    - name: otterworks-slo
+      rules:
+        - alert: OtterworksMainGatewayErrorBudgetBurn
+          expr: namespace:api_gateway_error_ratio:rate5m{namespace="otterworks-main"} > 0.05 and namespace:api_gateway_requests:rate5m{namespace="otterworks-main"} > 0.1
+          for: 5m
+          labels: {severity: critical, team: sre, service: api-gateway}
+          annotations:
+            summary: "t-main API gateway 5xx ratio {{ $value | humanizePercentage }} (>5% for 5m)"
+            description: "Users of t-main are getting server errors. Find the failing upstream in the gateway logs and the per-service error alerts."
+            runbook_url: docs/runbooks/high-error-rate.md
+        - alert: OtterworksMainGatewayLatencyHigh
+          expr: namespace:api_gateway_latency_p95:rate5m{namespace="otterworks-main"} > 1.5 and namespace:api_gateway_requests:rate5m{namespace="otterworks-main"} > 0.1
+          for: 10m
+          labels: {severity: critical, team: sre, service: api-gateway}
+          annotations:
+            summary: "t-main API gateway p95 latency {{ $value | humanizeDuration }} (>1.5s for 10m)"
+            runbook_url: docs/runbooks/high-latency.md
+        - alert: OtterworksMainIngressErrorRate
+          expr: ingress:nginx_error_ratio:rate5m{exported_namespace="otterworks-main"} > 0.05 and ingress:nginx_requests:rate5m{exported_namespace="otterworks-main"} > 0.1
+          for: 5m
+          labels: {severity: critical, team: sre, service: ingress}
+          annotations:
+            summary: "t-main ingress {{ $labels.host }} 5xx ratio {{ $value | humanizePercentage }}"
+            description: "Edge-measured errors, including frontends and 502/504s from pods that are down."
+            runbook_url: docs/runbooks/high-error-rate.md
+        - alert: OtterworksMainCoreServiceUnavailable
+          expr: kube_deployment_status_replicas_available{namespace="otterworks-main", deployment=~"api-gateway|auth-service|document-service|file-service|web-app"} == 0
+          for: 5m
+          labels: {severity: critical, team: sre}
+          annotations:
+            summary: "t-main {{ $labels.deployment }} has no available replicas"
+            runbook_url: docs/runbooks/service-down.md
+        - alert: OtterworksTenantGatewayErrorRate
+          expr: namespace:api_gateway_error_ratio:rate5m{namespace!="otterworks-main"} > 0.10 and namespace:api_gateway_requests:rate5m > 0.1
+          for: 10m
+          labels: {severity: warning, team: sre}
+          annotations:
+            summary: "{{ $labels.namespace }} gateway 5xx ratio {{ $value | humanizePercentage }}"
+            description: "Demo tenant; may be an injected scenario (scripts/inject-bug.sh)."
+
+    - name: otterworks-capacity
+      rules:
+        - alert: OtterworksNodeNotReady
+          expr: kube_node_status_condition{condition="Ready", status="true"} == 0
+          for: 5m
+          labels: {severity: critical, team: sre}
+          annotations:
+            summary: "Node {{ $labels.node }} NotReady for 5m (SPOT reclaim or kubelet failure)"
+            runbook_url: docs/runbooks/chaos-and-load-testing.md
+        - alert: OtterworksClusterCpuRequestsHigh
+          expr: cluster:cpu_requests:ratio > 0.85
+          for: 15m
+          labels: {severity: warning, team: sre}
+          annotations:
+            summary: "Cluster CPU requests at {{ $value | humanizePercentage }} of allocatable"
+            description: "New pods and HPA scale-ups will go Pending. Raise the node group max or scale idle tenants down (scripts/tenant-scale.sh)."
+        - alert: OtterworksClusterMemoryRequestsHigh
+          expr: cluster:memory_requests:ratio > 0.85
+          for: 15m
+          labels: {severity: warning, team: sre}
+          annotations:
+            summary: "Cluster memory requests at {{ $value | humanizePercentage }} of allocatable"
+        - alert: OtterworksPodsUnschedulable
+          expr: sum by (namespace) (kube_pod_status_unschedulable) > 0
+          for: 10m
+          labels: {severity: warning, team: sre}
+          annotations:
+            summary: "{{ $value }} pod(s) in {{ $labels.namespace }} cannot be scheduled"
+        - alert: OtterworksHPAAtMaxReplicas
+          expr: kube_horizontalpodautoscaler_status_current_replicas >= kube_horizontalpodautoscaler_spec_max_replicas and kube_horizontalpodautoscaler_spec_max_replicas > 1
+          for: 15m
+          labels: {severity: warning, team: sre}
+          annotations:
+            summary: "HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler }} pinned at max replicas"
+        - alert: OtterworksContainerOOMKilled
+          expr: increase(kube_pod_container_status_restarts_total{namespace=~"otterworks-.*"}[15m]) > 0 and on (namespace, pod, container) kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
+          labels: {severity: warning, team: sre}
+          annotations:
+            summary: "{{ $labels.namespace }}/{{ $labels.container }} was OOMKilled"
+            description: "Raise its memory limit or find the leak; under load this becomes a restart loop."
+        - alert: OtterworksMetricsServerMissing
+          expr: absent(kube_deployment_status_replicas_available{namespace="kube-system", deployment="metrics-server"} > 0)
+          for: 15m
+          labels: {severity: warning, team: sre}
+          annotations:
+            summary: "metrics-server is not running; HPAs and kubectl top cannot work"
+            description: "Install it with scripts/install-cluster-addons.sh."

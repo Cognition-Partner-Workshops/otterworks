@@ -1,0 +1,21 @@
+# Scrapes the shared ingress-nginx controller: the one entry point every tenant
+# (and every real user request) passes through, so it is the user-facing SLI
+# source for availability and latency, including the frontends that expose no
+# /metrics of their own. Applied by scripts/install-cluster-addons.sh.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/component: controller
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingress-nginx
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: ingress-nginx
+  endpoints:
+    - port: metrics
+      interval: 30s

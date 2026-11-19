@@ -9,7 +9,9 @@ metadata:
     platform/environment: {{ (.Values.global).environment | default "dev" }}
     platform/team: otterworks
 spec:
+  {{- if not (.Values.autoscaling).enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
   {{- with .Values.strategy }}
   strategy:
     {{- toYaml . | nindent 4 }}
@@ -24,6 +26,23 @@ spec:
         app.kubernetes.io/name: {{ .Chart.Name }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+      {{- if ne (toString (.Values.topologySpread).enabled) "false" }}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ .Chart.Name }}
+              app.kubernetes.io/instance: {{ .Release.Name }}
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ .Chart.Name }}
+              app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- end }}
       serviceAccountName: {{ .Release.Name }}
       containers:
         - name: {{ .Chart.Name }}
@@ -33,6 +52,15 @@ spec:
             - name: http
               containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
+          {{- if ne (toString (.Values.startupProbe).enabled) "false" }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.path }}
+              port: {{ .Values.healthCheck.port }}
+            periodSeconds: {{ (.Values.startupProbe).periodSeconds | default 5 }}
+            timeoutSeconds: 5
+            failureThreshold: {{ (.Values.startupProbe).failureThreshold | default 36 }}
+          {{- end }}
           livenessProbe:
             httpGet:
               path: {{ .Values.healthCheck.path }}

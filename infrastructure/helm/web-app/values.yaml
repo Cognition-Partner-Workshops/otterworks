@@ -45,7 +45,10 @@ env:
   API_GATEWAY_URL: "http://api-gateway:8080"
 
 monitoring:
-  enabled: true
+  # The Next.js/Angular servers expose no Prometheus endpoint (/metrics returns the
+  # SPA's HTML), so scraping only produced TargetDown noise. Frontend availability
+  # is covered by ingress-nginx metrics and the blackbox-style health alerts.
+  enabled: false
   path: /metrics
   port: 3000
 
@@ -61,3 +64,24 @@ config: {}
 # Sensitive configuration rendered into {{ .Release.Name }}-secrets (Opaque,
 # stringData) and injected via envFrom. Populate at deploy time; never commit values.
 secrets: {}
+
+# Availability. Per-tenant defaults stay at one replica to keep demo tenants cheap;
+# profiles/high-availability.yaml turns on HPA + multi-replica for busy periods.
+startupProbe:
+  enabled: true
+  periodSeconds: 5
+  failureThreshold: 36
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+topologySpread:
+  enabled: true
