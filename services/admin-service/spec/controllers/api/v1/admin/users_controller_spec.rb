@@ -4,6 +4,20 @@ RSpec.describe Api::V1::Admin::UsersController do
   before { set_jwt_env(request) }
 
   describe 'GET #index' do
+    it 'clamps negative pagination to the first page and one record' do
+      get :index, params: { page: -2, per_page: -10 }
+      body = JSON.parse(response.body)
+      expect(body).to include('page' => 1, 'per_page' => 1, 'total' => 3)
+      expect(body['users'].size).to eq(1)
+      expect(response.headers['X-Page']).to eq('1')
+    end
+
+    it 'caps page size at 100 and returns empty records past the last page' do
+      get :index, params: { page: 100, per_page: 1000 }
+      expect(JSON.parse(response.body)).to include('page' => 100, 'per_page' => 100, 'users' => [])
+      expect(response.headers['X-Per-Page']).to eq('100')
+    end
+
     let!(:users) { create_list(:admin_user, 3) }
 
     it 'returns paginated user list' do
