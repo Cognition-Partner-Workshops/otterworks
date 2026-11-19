@@ -101,7 +101,7 @@ def updated_config(config):
     if len(integrations) != 1:
         raise ValueError("Expected exactly one existing ODL PagerDuty Events v2 integration")
     receiver = {"name": RECEIVER, "webhook_configs": [{
-        "url_file": URL_FILE, "send_resolved": True,
+        "url_file": URL_FILE, "send_resolved": False,
         "http_config": {"http_headers": {"X-Webhook-Secret": {"files": [HEADER_FILE]}}}}],
         "pagerduty_configs": copy.deepcopy(integrations)}
     route = {"receiver": RECEIVER, "matchers": ['page="devin"', 'namespace="otterworks-odl"']}
@@ -110,6 +110,10 @@ def updated_config(config):
     existing_receivers = [r for r in updated["receivers"] if r["name"] == RECEIVER]
     existing_routes = [r for r in routes if r.get("receiver") == RECEIVER]
     if existing_receivers or existing_routes:
+        if len(existing_receivers) == 1:
+            webhooks = existing_receivers[0].get("webhook_configs", [])
+            if len(webhooks) == 1 and webhooks[0].get("send_resolved") is True:
+                webhooks[0]["send_resolved"] = False
         if (existing_receivers != [receiver] or existing_routes != [route]
                 or routes.index(existing_routes[0]) + 1 != routes.index(oncall_routes[0])):
             raise ValueError("Existing ODL receiver or route differs; refusing to overwrite it")
@@ -123,6 +127,7 @@ def structure(config):
     return {"route": config["route"], "receivers": [
         {"name": r["name"], **{k: [
             {"fields": sorted(i), **({"url": "<redacted>"} if "url" in i else {}),
+             **({"send_resolved": i["send_resolved"]} if "send_resolved" in i else {}),
              **({"url_file": i["url_file"]} if "url_file" in i else {}),
              **({"http_headers": {name: {key: value if key == "files" else "<redacted>"
                                          for key, value in header.items()}

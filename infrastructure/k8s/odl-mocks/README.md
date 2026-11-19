@@ -99,15 +99,18 @@ parser-checked on live Alertmanager **v0.34.1**. The Secret is mounted through
 `alertmanagerSpec.secrets`; neither value is embedded in Alertmanager YAML.
 
 The receiver also copies the existing ODL PagerDuty Events v2 configuration,
-using `alertmanager-odl-pagerduty`. Firing and resolved notifications go to both
-integrations. Every existing route/receiver and unrelated Secret mount is
+using `alertmanager-odl-pagerduty`. The webhook receives firing notifications only
+(`send_resolved: false`); PagerDuty receives firing and resolved notifications
+(`send_resolved: true`). Rerunning the script corrects the former webhook
+`send_resolved: true` setting without changing other receiver options.
+Every existing route/receiver and unrelated Secret mount is
 preserved: t-main and incident paging stay on `devin-oncall`. The new route
 inherits grouping intervals and copies the existing on-call `group_wait`, so
 resolution delivery can take the inherited group interval (currently five minutes).
 
 The resulting configuration is stored in `alertmanager-odl-config`; the overlay
 references that existing Secret rather than checking live URLs into Git. The
-script prints only added structural redacted configuration, then upgrades Helm release
+script prints a structural redacted diff, then upgrades Helm release
 `monitoring/prometheus` with `--reuse-values`, chart version **92.6.0**. Existing
 unrelated credentials are never overwritten. Do not run `helm get values`, print Secret
 objects/annotations, or commit live values/configuration exports: they contain

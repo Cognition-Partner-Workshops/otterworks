@@ -329,11 +329,23 @@ class RoutingTests(unittest.TestCase):
         self.assertEqual(original["inhibit_rules"], updated["inhibit_rules"])
         receiver = updated["receivers"][-1]
         self.assertEqual(receiver["pagerduty_configs"], original["receivers"][-1]["pagerduty_configs"])
-        self.assertEqual(receiver["webhook_configs"], [{"url_file": routing.URL_FILE, "send_resolved": True,
+        self.assertTrue(receiver["pagerduty_configs"][0]["send_resolved"])
+        self.assertEqual(receiver["webhook_configs"], [{"url_file": routing.URL_FILE, "send_resolved": False,
             "http_config": {"http_headers": {"X-Webhook-Secret": {"files": [routing.HEADER_FILE]}}}}])
         self.assertEqual(updated["route"]["routes"][1], {"receiver": routing.RECEIVER,
             "matchers": ['page="devin"', 'namespace="otterworks-odl"'], "group_wait": "5s"})
         self.assertNotIn("example.invalid", json.dumps(routing.structure(updated)))
+
+    def test_corrects_existing_resolved_webhook_without_other_changes(self):
+        expected = routing.updated_config(self.config())
+        existing = routing.updated_config(self.config())
+        existing["receivers"][-1]["webhook_configs"][0]["send_resolved"] = True
+        corrected = routing.updated_config(existing)
+        self.assertEqual(corrected, expected)
+        self.assertTrue(existing["receivers"][-1]["webhook_configs"][0]["send_resolved"])
+        self.assertFalse(corrected["receivers"][-1]["webhook_configs"][0]["send_resolved"])
+        self.assertTrue(corrected["receivers"][-1]["pagerduty_configs"][0]["send_resolved"])
+        self.assertEqual(routing.updated_config(corrected), corrected)
 
     def test_refuses_conflicting_or_partial_odl_routing(self):
         for part in ("route", "receiver", "position"):
