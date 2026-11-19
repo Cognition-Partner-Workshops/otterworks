@@ -114,6 +114,9 @@ nonzero exit and prints step timings. Defaults are `--rows 200000 --seed 1110
 to `warehouse/exports`. The close-period date range is the previous calendar
 month; the storage report uses the business date's calendar month.
 
+On the legacy demo, the chain also builds the finance account-status history
+and its dated spreadsheet extract. See [operation and optimization notes](teradata/LEGACY-ESTATE.md).
+
 For a single table count comparison after loading:
 
 ```sh

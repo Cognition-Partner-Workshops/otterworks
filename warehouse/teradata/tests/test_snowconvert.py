@@ -17,7 +17,7 @@ def test_conversion_staging(tmp_path):
     count = snowconvert.prepare_input(tmp_path)
     files = list(tmp_path.rglob('*.*'))
     assert len(files) == count
-    assert len(list(tmp_path.rglob('*.bteq'))) == 26
+    assert len(list(tmp_path.rglob('*.bteq'))) == 28
     assert len(list((tmp_path/'procedures').glob('*.sql'))) == 4
     for path in tmp_path.rglob('*.sql'):
         assert path.read_bytes() == (snowconvert.ROOT/path.relative_to(tmp_path)).read_bytes()

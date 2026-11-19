@@ -72,7 +72,9 @@ def test_column_order_ddl_and_controls():
             m = re.search(r'CREATE (SET|MULTISET) TABLE (SFX_\w+)\.(\w+), (?:NO )?FALLBACK \((.*)\) (?:NO |UNIQUE )?PRIMARY INDEX', statement, re.I | re.S)
             if m:
                 found[m[3]] = tuple(col.strip().split()[0] for col in split(m[4], ','))
-    assert len(found) == 84
+    assert set(found) - {name for table in TABLES for name in (table.name, 'STG_' + table.name)} == {
+        'ACCOUNT_HIST_BATCH', 'CUSTOMER_ACCOUNT_HIST',
+    }
     for table in TABLES:
         assert found[table.name] == found['STG_' + table.name] == table.names
         suffix, folder = ('.fl', 'fastload') if table.area in ('billing', 'users') else ('.tpt', 'tpt')

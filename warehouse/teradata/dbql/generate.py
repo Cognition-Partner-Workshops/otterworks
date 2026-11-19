@@ -172,6 +172,17 @@ def generate(out=Path(__file__).parent, seed=1110):
         if index % 13 == 0:
             add('svc_admin_fin', day, 15, 55, 'SELECT CAST(SUM(TOTAL_AMOUNT) AS DECIMAL(5,2)) FROM SFX_BILLING.INVOICE_HDR;', 2616)
 
+    rollout = AS_OF - dt.timedelta(days=1)
+    billing_scripts = ROOT / 'scripts' / 'billing'
+    rollout_queries = (
+        query for script in ('load_account_history.bteq', '14_account_history_extract.bteq')
+        for query in commands((billing_scripts / script).read_text())
+        if re.match(r'(INSERT|MERGE|SELECT)\b', query, re.I)
+    )
+    for minute, query in enumerate(rollout_queries):
+        events.append((dt.datetime.combine(rollout, dt.time(23, minute)),
+                       'svc_etl_billing', expand(query, rollout), 0))
+
     covered = set().union(*(references(query, objects) for _, _, query, _ in events))
     for offset, name in enumerate(sorted(objects.keys() - covered - QUIET_OBJECTS)):
         add('svc_report_recon', START, 6, offset % 60, 'SELECT COUNT(*) AS ROW_COUNT FROM '+name+';')

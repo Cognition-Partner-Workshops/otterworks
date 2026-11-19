@@ -19,6 +19,7 @@ from seed.generate import generate
 
 
 CORE = (
+    'billing/load_account_history',
     'users/01_load_users', 'users/02_load_teams', 'users/03_load_identity', 'users/04_load_events',
     'billing/01_load_accounts', 'billing/02_load_subscriptions', 'billing/03_load_invoices',
     'billing/04_load_payments', 'billing/05_load_usage',
@@ -29,7 +30,7 @@ CORE = (
 REPORTS = (
     'users/10_activity_daily', 'audit/10_summary_daily', 'billing/10_subscription_report',
     'billing/11_currency_daily', 'documents/10_storage_monthly',
-    'billing/12_invoice_monthly', 'billing/13_period_close',
+    'billing/12_invoice_monthly', 'billing/13_period_close', 'billing/14_account_history_extract',
 )
 
 
