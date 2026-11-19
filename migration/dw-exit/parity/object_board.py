@@ -4,6 +4,7 @@ from collections import Counter
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import sys
 import zlib
@@ -18,8 +19,11 @@ import yaml
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'migration/dw-exit/tools'))
+sys.path.insert(0, str(ROOT / 'migration/dw-exit'))
 from warehouse.run_config import RunConfig
 from assess import board as wave_board
+from parity import connection as snowflake_connection
+from parity.ladder import identifier, relation as snowflake_relation
 
 
 def quote(name):
@@ -184,53 +188,206 @@ def materialize(before, names, conversion_dir):
     return after, ready, errors
 
 
-def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None):
+FIELDS = ('row_count', 'column_profile', 'keyed_row_hash', 'sampled_differences')
+CREDENTIALS = ('SNOWFLAKE_ACCOUNT', 'SNOWFLAKE_USER', 'SNOWFLAKE_ROLE', 'SNOWFLAKE_PRIVATE_KEY')
+
+
+def empty_leg(reason=None):
+    return dict(status='red', reason=reason, **dict.fromkeys(FIELDS))
+
+
+class SnowflakeMeasurements:
+    def __init__(self):
+        self.connection = None
+        self.query_ids = []
+        self.session_query_ids = []
+        self.error = 'Snowflake credentials unavailable'
+        if all(os.environ.get(key) for key in CREDENTIALS):
+            try:
+                self.connection = snowflake_connection.connect('parity-board')
+                tag = canonical({'run_id': RunConfig.from_env().token, 'act': 'prove', 'step': 'parity-board'})
+                self.query("ALTER SESSION SET QUERY_TAG='" + tag.replace("'", "''") + "'")
+                self.query("ALTER SESSION SET TIMEZONE='UTC'")
+                self.session_query_ids = list(self.query_ids)
+                self.error = None
+            except Exception as error:
+                self.error = 'Snowflake session failed: ' + type(error).__name__
+
+    def query(self, statement):
+        with self.connection.cursor() as cursor:
+            try:
+                cursor.execute(statement)
+                columns = [c[0] for c in cursor.description] if cursor.description else []
+                return columns, cursor.fetchall()
+            finally:
+                if getattr(cursor, 'sfqid', None):
+                    self.query_ids.append(cursor.sfqid)
+
+    def compare(self, before, source, destination):
+        snowflake_relation(snowflake_connection.DATABASE + '.' + source)
+        qualified = snowflake_connection.DATABASE + '.' + destination
+        try:
+            columns, rows = self.query('SELECT * FROM ' + snowflake_relation(qualified))
+        except Exception as error:
+            if getattr(error, 'errno', None) == 2003 or getattr(error, 'sqlstate', None) == '42S02':
+                raise ValueError('output not materialized in Snowflake: ' + qualified) from error
+            raise
+        with duckdb.connect() as local:
+            definitions = before.execute('DESCRIBE SELECT * FROM query_table(?)', [source]).fetchall()
+            if columns != [c[0] for c in definitions]:
+                raise ValueError('Output column names/order differ')
+            for column, kind, *_ in definitions:
+                identifier(column)
+                if not re.fullmatch(r'(?:SMALLINT|INTEGER|BIGINT|DATE|TIMESTAMP(?: WITH TIME ZONE)?|BOOLEAN|FLOAT|DOUBLE|BLOB|VARCHAR|DECIMAL\([0-9]+,[0-9]+\))', kind):
+                    raise ValueError('Unsupported snapshot column type: ' + kind)
+            staging = 'main.snapshot'
+            create = exp.Create(
+                this=exp.Schema(this=exp.Table(this=exp.to_identifier('snapshot'), db=exp.to_identifier('main')),
+                    expressions=[exp.ColumnDef(this=exp.to_identifier(c[0], quoted=True),
+                        kind=exp.DataType.build(c[1], dialect='duckdb')) for c in definitions]),
+                kind='TABLE')
+            local.execute(create.sql(dialect='duckdb'))
+            if rows:
+                insert = exp.Insert(this=exp.Table(this=exp.to_identifier('snapshot'), db=exp.to_identifier('main')),
+                    expression=exp.Values(expressions=[exp.Tuple(expressions=[exp.Placeholder() for _ in columns])]))
+                local.executemany(insert.sql(dialect='duckdb'), rows)
+            return compare(before, local, source, staging)
+
+    def exists(self, obj):
+        target = obj.get('target', '')
+        parts = target.split('.')
+        if len(parts) != 2 or target == 'NONE':
+            return False
+        schema, name = parts
+        identifier(name)
+        scope = identifier(snowflake_connection.DATABASE) + '.' + identifier(schema)
+        kind = 'TASKS' if obj['kind'] in ('session', 'workflow', 'worklet') else 'PROCEDURES'
+        columns, rows = self.query('SHOW ' + kind + ' IN SCHEMA ' + scope)
+        index = [c.lower() for c in columns].index('name')
+        return any(str(row[index]).upper() == name.upper() for row in rows)
+
+    def close(self):
+        if self.connection is not None:
+            self.connection.close()
+
+
+def declared_outputs(obj):
+    outputs = obj.get('output_relations', [])
+    if outputs or obj.get('system') != 'spark':
+        return outputs
+    registry = ROOT / 'etl/spark/jobs/registry' / (obj['name'] + '.yaml')
+    declarations = [yaml.safe_load(registry.read_text())] if registry.is_file() else []
+    classification = ROOT / 'etl/spark/classification.yaml'
+    if classification.is_file():
+        declarations += [r for r in yaml.safe_load(classification.read_text()) if r['job'] == obj['name']]
+    return sorted({r for declaration in declarations for r in declaration.get('output_relations', [])})
+
+
+def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb',
+                counters=None, subject_area=None, snowflake=None):
     if target not in ('duckdb', 'snowflake'):
         raise ValueError('Unsupported parity target')
     objects = manifest['objects']
-    result = wave_board(objects, counters or {})
+    selected = [o for o in objects if subject_area is None or o['subject_area'] == subject_area]
+    result = wave_board(selected, counters or {})
     result.update(run_token=RunConfig.from_env().token, target=target, rows=[])
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
         'local_target': 'DuckDB', 'conversions': ['billing/initial/10_load.sql','billing/initial/30_views.sql'],
-        'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
+        'non_relational_objects': 'dependency parity and routine existence', 'migration_state': 'BEFORE'}
     available, errors = set(available or ()), errors or {}
-    for obj in objects:
-        row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
-        row.update(status='red', migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'),
-                   row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
-        if obj['system'] == 'spark':
-            if obj.get('source') and (ROOT / obj['source']).is_file():
-                row.update(source=obj['source'], source_ref=obj.get('source_ref'))
-                row['reason'] = 'Spark source available; output not materialized locally'
-            else:
-                row['reason'] = 'source on Spark baseline PR'
-        elif target == 'snowflake':
-            row['reason'] = 'Snowflake target selected; execution disabled'
-        elif not obj.get('output_relations'):
-            row['reason'] = 'no declared output relation'
+    own_snowflake = snowflake is None
+    snowflake = snowflake or SnowflakeMeasurements()
+    by_id = {o['id']: o for o in objects}
+    dependencies = {o['id']: set(o.get('depends_on', [])) for o in objects}
+    for a, b in manifest.get('dependencies', []):
+        if a not in by_id or b not in by_id:
+            continue
+        if by_id[b]['kind'] in ('session', 'workflow', 'worklet'):
+            dependencies[b].add(a)
         else:
-            measured = {}
-            for source in obj['output_relations']:
-                destination = source.removeprefix('SFX_')
-                if destination not in available:
-                    row['reason'] = errors.get(destination, errors.get('*', 'output not materialized: '+destination))
-                    break
-                try:
-                    measured[source] = compare(before, after, source, destination)
-                except (duckdb.Error, ValueError) as error:
-                    row['reason'] = 'measurement failed: '+str(error).splitlines()[0]
-                    break
-            if row['reason'] is None:
-                row['row_count'] = {side:sum(r['row_count'][side] for r in measured.values()) for side in ('before','after')}
-                for field in ('column_profile','keyed_row_hash','sampled_differences'):
-                    row[field] = {name:values[field] for name,values in measured.items()}
-                row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
-                if row['status'] == 'red':
-                    row['reason'] = 'measured parity mismatch'
-        result['rows'].append(row)
+            dependencies[a].add(b)
+    cache, visiting = {}, set()
+
+    def leg_for(obj, side):
+        key = (obj['id'], side)
+        if key in cache:
+            return cache[key]
+        leg = empty_leg()
+        if side == 'snowflake':
+            leg['query_ids'] = list(snowflake.session_query_ids)
+            if snowflake.error:
+                leg['reason'] = snowflake.error
+                cache[key] = leg
+                return leg
+        if key in visiting:
+            return empty_leg('dependency cycle: ' + obj['id'])
+        visiting.add(key)
+        query_start = len(snowflake.query_ids)
+        outputs = declared_outputs(obj)
+        try:
+            if outputs:
+                measured = {}
+                for source in outputs:
+                    destination = source.removeprefix('SFX_')
+                    if side == 'duckdb' and destination not in available:
+                        leg['reason'] = errors.get(destination, errors.get('*', 'output not materialized: ' + destination))
+                        break
+                    measured[source] = (compare(before, after, source, destination) if side == 'duckdb'
+                                        else snowflake.compare(before, source, destination))
+                if leg['reason'] is None:
+                    leg['row_count'] = {s: sum(r['row_count'][s] for r in measured.values()) for s in ('before', 'after')}
+                    for field in FIELDS[1:]:
+                        leg[field] = {name: values[field] for name, values in measured.items()}
+                    leg['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
+                    leg['reason'] = None if leg['status'] == 'green' else 'measured parity mismatch'
+            else:
+                deps = sorted(dependencies[obj['id']])
+                if not deps:
+                    leg['reason'] = 'no dependency declared'
+                else:
+                    for dep in deps:
+                        if dep not in by_id or leg_for(by_id[dep], side)['status'] != 'green':
+                            leg['reason'] = 'dependency red: ' + dep
+                            break
+                    if leg['reason'] is None:
+                        artifact = obj.get('converted_artifact')
+                        exists = (bool(artifact) and (ROOT / artifact).is_file()) if side == 'duckdb' else snowflake.exists(obj)
+                        if exists:
+                            leg.update(status='green', reason=None)
+                        else:
+                            leg['reason'] = 'routine missing: ' + str(obj.get('target', obj['name']))
+        except Exception as error:
+            message = str(error).splitlines()[0]
+            leg['reason'] = message if message.startswith('output not materialized in Snowflake: ') else 'measurement failed: ' + message
+        finally:
+            visiting.remove(key)
+        if side == 'snowflake':
+            leg['query_ids'] += snowflake.query_ids[query_start:]
+        cache[key] = leg
+        return leg
+
+    try:
+        for obj in selected:
+            row = {key: obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
+            for key in ('source', 'source_ref'):
+                if key in obj:
+                    row[key] = obj[key]
+            legs = {side: leg_for(obj, side) for side in ('duckdb', 'snowflake')}
+            red = next((side for side in legs if legs[side]['status'] == 'red'), None)
+            row.update(legs=legs, status='red' if red else 'green',
+                       reason=red + ': ' + legs[red]['reason'] if red else None,
+                       migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'))
+            row.update({field: legs['duckdb'][field] for field in FIELDS})
+            result['rows'].append(row)
+    finally:
+        if own_snowflake:
+            snowflake.close()
     total = sum(r['licence_dependency_count'] for r in result['rows'])
-    result['summary'] = dict(rows=len(objects), red=sum(r['status']=='red' for r in result['rows']),
-        green=sum(r['status']=='green' for r in result['rows']), measured=sum(r['row_count'] is not None for r in result['rows']),
+    def counts(rows):
+        return dict(green=sum(r['status']=='green' for r in rows), red=sum(r['status']=='red' for r in rows),
+                    measured=sum(r['row_count'] is not None for r in rows))
+    result['summary'] = dict(rows=len(selected), **counts(result['rows']),
+        legs={side: counts([r['legs'][side] for r in result['rows']]) for side in ('duckdb', 'snowflake')},
         migrated=0, licence_remaining=total, licence_total=total,
         licence_by_system=dict(Counter(r['licence_dependency'] for r in result['rows'] if r['licence_dependency']!='none')))
     return result
@@ -241,6 +398,7 @@ def main():
     parser.add_argument('--manifest',type=Path,default=ROOT/'migration/dw-exit/manifest.yaml')
     parser.add_argument('--output',type=Path,default=ROOT/'migration/dw-exit/board/board.json')
     parser.add_argument('--target',choices=['duckdb','snowflake'],default=os.environ.get('PARITY_TARGET','duckdb'))
+    parser.add_argument('--subject-area')
     args = parser.parse_args()
     manifest = yaml.safe_load(args.manifest.read_text())
     from assess import build
@@ -248,15 +406,16 @@ def main():
     before = after = None
     ready, errors = set(), {}
     try:
-        if args.target == 'duckdb' and manifest['objects']:
-            names = {r for obj in manifest['objects'] for r in obj.get('output_relations',[])}
+        if manifest['objects']:
+            names = {r for obj in manifest['objects'] for r in declared_outputs(obj)}
             ns = os.environ.get('NS',RunConfig.from_env().before_namespace)
             port = os.environ.get('TD_PG_PORT',str(54500+zlib.crc32(ns.encode())%1000))
             dsn = os.environ.get('BOARD_SOURCE_DSN',f'host=127.0.0.1 port={port} dbname=teradata user=postgres')
             before, source_ready, source_errors = source_snapshot(dsn,names)
-            after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing/initial')
+            if args.target == 'duckdb':
+                after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing/initial')
             errors.update(source_errors)
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters)
+        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,subject_area=args.subject_area)
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
