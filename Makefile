@@ -28,6 +28,7 @@ sfx-lakehouse-run: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Inges
 	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.runtime.dbt
 
 sfx-lakehouse-test: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Test lakehouse runtime and pilot
+	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.coverage check
 	$(SFX_LH_ENV) $(SFX_LH_PY) -m pytest -q lakehouse/tests
 
 sfx-lakehouse-down: sfx-lakehouse-validate ## Remove only this namespace's local lakehouse data
@@ -36,6 +37,10 @@ sfx-lakehouse-down: sfx-lakehouse-validate ## Remove only this namespace's local
 .PHONY: sfx-lakehouse-parity
 sfx-lakehouse-parity: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Compare built lakehouse outputs with the running legacy namespace
 	$(SFX_LH_ENV) LEGACY_NS="$(LEGACY_NS)" $(SFX_LH_PG_PORT_ENV) $(SFX_LH_PY) -m lakehouse.parity run --all --business-date "$(BUSINESS_DATE)"
+
+.PHONY: sfx-lakehouse-coverage
+sfx-lakehouse-coverage: sfx-lakehouse-validate lakehouse/.venv/.requirements ## Validate migration inventory and assumptions; render evidence
+	$(SFX_LH_ENV) $(SFX_LH_PY) -m lakehouse.coverage check
 
 .PHONY: sfx-teradata-up sfx-teradata-run sfx-teradata-test sfx-teradata-down sfx-teradata-validate
 

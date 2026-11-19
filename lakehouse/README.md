@@ -1,5 +1,53 @@
 # Local lakehouse foundation
 
+## Coverage and assumptions
+
+```sh
+make sfx-lakehouse-coverage NS=sfx-d1110-after
+lakehouse/.venv/bin/python -m lakehouse.coverage check --strict
+lakehouse/.venv/bin/python -m lakehouse.assumptions check
+```
+
+The non-strict coverage target validates both logs and renders
+`evidence/COVERAGE.md` and `evidence/ASSUMPTIONS.md`. Pending work is expected;
+strict mode fails until every pending object is resolved. Both validators also
+run before pytest in `sfx-lakehouse-test`. No Spark or legacy connection is
+needed for coverage validation: converted data objects require the latest saved
+PASS evidence with a matching spec hash and a spec covering that object. Evidence
+is scoped to the namespace/date recorded inside it, not refreshed by this target.
+Non-data orchestration/configuration objects may instead cite
+`verification: test:path/to/test_file.py::test_function` (or a class test node).
+A path without an existing named test does not qualify.
+
+`coverage/inventory.py` discovers logical objects from source, without running
+legacy code. SQL names are uppercased; Informatica names are folder-qualified,
+with workflow/worklet qualification for non-reusable nested tasks; Spark job-list,
+Python/Scala implementation and deployment sources are merged under job names.
+Repeated Informatica exports contribute source links, not duplicate objects.
+Thus the repository's 40 mapping definitions represent 20 logical mappings, and
+`jobs.txt` contains 30 jobs: 24 Python and 6 Scala (not 24 total). Disabled cron
+entries, including `docs_folder_legacy_report`, are retained. Cron IDs use a
+command hash rather than a source line number; daily-chain stages use stage names.
+
+Beyond the requested minimum, discovery includes DBQL tables/views; reusable
+Informatica source/target definitions, worklets, tasks and schedulers; shared Spark
+libraries, submit wrappers and execution configuration; batch runners; partner
+shell scripts; and ETL runtime configuration. Informatica parameter expressions,
+XML execution CONFIG elements and connection default-database/code-page settings
+carry behavior and are included; pure endpoint-only connection records are not.
+Fixture generators, emulator implementation internals, tests, READMEs, build
+metadata and generated landing/export data are not separate legacy business
+processing objects. Their semantics are cited by assumptions where relevant.
+
+When source objects are added, inventory changes automatically and the checker
+fails until `coverage/coverage.yaml` receives an explicit entry. Only the account
+output is converted; the surrounding BTEQ, staging schemas, Informatica mappings
+and cron/orchestration remain pending. FastLoad/TPT controls are platform-replaced
+by bronze ingestion, not certified against native vendor runtimes. Assumptions
+cite legacy sources and distinguish accepted choices from open/unverified gaps.
+
+## Runtime and pilot
+
 Java 17 and Python 3.10–3.12 are required. No services, credentials or Docker
 are needed. Run from the repository root:
 
