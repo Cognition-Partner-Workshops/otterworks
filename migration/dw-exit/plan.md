@@ -2,12 +2,18 @@
 
 ## Evidence and inventory
 
-As of 2026-11-10. The inclusive 90-day observation window is 2026-08-12 through
+As of 2026-11-10. The inclusive 90-day DBQL observation window is 2026-08-12 through
 2026-11-09. Join ObjectUsage to QryLog by QueryID; count READ usage rows (not
 result rows). No usage of any kind marks an SFX TablesV object dead. DBC objects
 are catalog replacements, not dead estate. Reads occurring only on the initial
 setup date are separately flagged, not retired. This is historical observation,
 not proof that an object is safe to delete: require an owner sign-off first.
+
+Spark uses a separate inclusive 90-day observation window ending on the newest
+packaged eventlog's application-start date: currently 2026-08-13 through
+2026-11-10. Derive the start by subtracting 89 days from that date; do not shift
+logs or substitute the local run for packaged history. With no applications,
+the Spark window is null and run counts are zero.
 
 DDL table/view statements are individually inventoried; macros and procedures
 are inventoried from their own source files rather than double-counting TablesV.
@@ -102,9 +108,43 @@ must not be confused with presence in warehouse/ETL load code.
   their direct read count is zero; referenced table/view counts are authoritative.
 - Setup-only flag uses the initial observation date, not an explicit DBQL setup
   marker. Validate those reads before any subsequent retirement decision.
-- No Spark estate exists at etl/spark: 0 Spark jobs found, 0 measured executor-hours,
-  status `no Spark estate on branch yet`. Repository search finds the unrelated
-  `migration/job/ldm/engines/spark_load.py`; it is explicitly excluded.
+- Spark is read from the current working tree under etl/spark; Teradata,
+  PowerCenter, registry and DBQL remain pinned to BEFORE_STATE. Inventory is the
+  union of jobs.txt and jobs/registry filenames. Registry status/classification
+  text is not decision evidence. Python AST and static Scala helper calls resolve
+  landing/register inputs, save/save_partition outputs and JDBC targets using
+  common/runtime.py and BatchSupport semantics. Landing paths reuse matching
+  FastLoad/TPT feed nodes; JDBC outputs absent from the pinned DDL are external
+  table nodes, not invented legacy inventory. Literal lake reads link producers
+  to consumers. Dynamic paths, indirect helper aliases and arbitrary custom
+  readers/writers require manual review; this is not a full language interpreter.
+- Spark LOC and complexity use the same scoring as other artifacts, with udf,
+  rdd, window, graph, binary, stateful and jdbc labels. Relational jobs target
+  dbt; UDF/RDD/graph/binary/stateful jobs target Snowpark. Retire jobs with a
+  disabled/missing cron OR zero in-window runs only when no output reader was
+  found. Compaction retires as `replaced by Snowflake storage management`.
+  Floors are billing wave 3, other Spark wave 2, retire wave 1; active dependency
+  edges raise floors. Ownership uses output readership, never input readership.
+- Spark listener logs in history/eventlogs are decompressed with eventlog.py and
+  summarized with compute_baseline.py; baseline.json must agree. Count application
+  starts in the Spark observation window defined above; last run and total
+  executor-hours retain all packaged history, with in-window hours reported
+  separately. The July 15 legacy-report run is outside that window.
+  The November 19 local run is not substituted for historical evidence. Its binary
+  extraction import failure is a finding, not a source fix. Output-reader scans
+  use hidden-consumer exclusions and exclude etl/spark except analyzed job code.
+  Readers must be another Spark job, a pinned registered consumer, or
+  service/client/notebook code. Exclude warehouse/dbt, warehouse/snowflake,
+  warehouse/parity, warehouse/snowpark, warehouse/pipeline, migration/,
+  etl/airflow, docs/ and *.md from readers. Preserve matching excluded paths and
+  relations as non_reader_mentions with the exclusion reason. Text mentions in
+  replacement models or descriptions are not evidence of legacy consumption.
+- Every retirement carries usage/run evidence. Teradata evidence joins the full
+  QryLog/ObjectUsage history, preserves usage counts in-window, last read/write
+  ever and the last five accesses with QueryIDs/principals. Dependent retirements
+  also name the dead objects they feed. Non-retired objects last read strictly
+  before September 10 (>60 days before November 9) are in the stale owner-review
+  list, not auto-retired. Null last reads do not assert an old read date.
 - Mermaid output uses sanitized stable IDs and quoted labels. Rendering is not
   performed by the offline validator; syntax and node completeness are checked.
 - No live Snowflake assessment/load, parity run, migration status transition or

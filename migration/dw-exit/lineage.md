@@ -58,6 +58,16 @@ flowchart LR
     nf13967053236fe77["SFX_AUDIT.AUDIT_DAILY_SUMMARY"]
     nfd3d4e92dd494560["SFX_USERS.ROLE_GRANT"]
   end
+  subgraph external_relations
+    n0a4fe95e77d5690b["SFX_USERS.SPARK_RISK_SCORE"]
+    n4205d2030d153ac1["SFX_BILLING.SPARK_USAGE_DAILY"]
+    n5045de9b751f376f["SFX_AUDIT.SPARK_AUDIT_SUMMARY"]
+    n656cdf050777cfd2["SFX_AUDIT.SPARK_COMPLIANCE_REVIEW"]
+    n89d7d195e0654372["SFX_BILLING.SPARK_INVOICE_SUMMARY"]
+    n98df95cef575cf84["SFX_USERS.SPARK_TEAM_ROLLUP"]
+    ndd76574b064683e5["SFX_BILLING.SPARK_GL_TRIAL_BALANCE"]
+    ndf67da08e2f1135f["SFX_AUDIT.SPARK_ALERT_ANOMALY"]
+  end
   subgraph landing_loads
     n00eea7237cb65fe2["documents_doc_comment"]
     n012c083ea3f176bc["billing_gl_journal_line"]
@@ -334,44 +344,83 @@ flowchart LR
   end
   n775a27804d55e181 --> n420cbbc61ebb5a20
   n551dfaf5481e6a7b --> n50a4e9247d1d3c2a
+  n918552d153898d5f --> n8966d99361db3a40
+  n918552d153898d5f --> na305277024d75d53
   n918552d153898d5f --> nb0cddb4ec8cfce35
+  n57b54160018730c9 --> na7a9d654bab3f884
   n57b54160018730c9 --> nef95aaa7df57a226
   n916d42897dd27eac --> n753e2b21e59720e0
   ncd5a4fec4a241ebd --> n4eae040d99820a15
+  ncd5a4fec4a241ebd --> n6b4402f4aec586b1
   n946f796d0896c8e8 --> n879dea5f6ab069e9
   n40be9535779fe94a --> n7e7df67764ffcff7
   nea4e329b862983fc --> nffedc7a70235904a
   n0abcc9aece89d398 --> nb11211913a9badb6
+  n0abcc9aece89d398 --> nf3b5c3eaa1bc272c
   n7664889c0b1f5c4a --> nee272b6a4740c39c
   n97e4b3307646ca7c --> n4d4dacece81c8d31
+  n97e4b3307646ca7c --> nc69cdf8b5dc1cf48
   n1c03346538700486 --> n625a7a2365905f32
   n1b6146e4948c44dc --> nb63db0271553cd31
+  n1b6146e4948c44dc --> nc69cdf8b5dc1cf48
   nb8956006fdd105b8 --> n012c083ea3f176bc
+  nb8956006fdd105b8 --> nc69cdf8b5dc1cf48
+  ndf2febe49f772614 --> n30eea7b5e4b0f036
   ndf2febe49f772614 --> nc74c3a48716696b0
   n12b64748e9c32a77 --> n1098a9801691255c
+  n12b64748e9c32a77 --> n30eea7b5e4b0f036
+  n12b64748e9c32a77 --> nc272de5514b12dd4
   n7b4fb0adbd0b88f9 --> n02d06d89a56c1b37
   n86e98ea612477e91 --> n7a2198bf157fd258
+  n86e98ea612477e91 --> nc272de5514b12dd4
   nb4369d4d9e5c1b9e --> n8bed42e6e57c8ee6
+  nb4369d4d9e5c1b9e --> nab9092239e992697
   n03f257e2109f1580 --> nbdeca66135c8557d
   n71d6fc10f9363381 --> n0223f8cb2e49599c
+  n71d6fc10f9363381 --> n217068cf70e21f45
   n0b1a97bac9cb287e --> n316f320495a7d7a7
+  n0b1a97bac9cb287e --> nda318831425979ea
+  n0d5ca45f4e7e3842 --> n62c507a6ebeca788
   n0d5ca45f4e7e3842 --> n960131df6fb3ee7d
+  n0d5ca45f4e7e3842 --> n99294cb574316a26
+  n0d5ca45f4e7e3842 --> n9e1cde11f1fcdf14
+  n0d5ca45f4e7e3842 --> nb17a88119e3df908
   n3689a7866faa1ff8 --> n00eea7237cb65fe2
   nb7e4b752ed02b319 --> n52fd8cca58044cb0
+  nb7e4b752ed02b319 --> n99294cb574316a26
+  nb7e4b752ed02b319 --> nb1e649b467d1d68d
+  nb75246ad4daab097 --> n2e6e7921f1c1a457
   nb75246ad4daab097 --> nd0c849ec187417ce
+  n3d145677fd896578 --> n73fc2c67175df7a7
   n3d145677fd896578 --> nb366b6ece0aafaf2
+  n35d2500550d506e4 --> n42b4ed91f0a96d32
   n35d2500550d506e4 --> n7101731ead5cafa6
+  n35d2500550d506e4 --> nb17a88119e3df908
+  nb07ff6162a1d438c --> n62c507a6ebeca788
+  nb07ff6162a1d438c --> nc7caadea569fe6a7
   nb07ff6162a1d438c --> nebefa5c1775e897f
   n41ac6e7b64844c18 --> n6926e7586c761642
+  n41ac6e7b64844c18 --> nacb901d117c72988
   n7f8f43f56347fa71 --> nd66c4bfb75689e73
   n9f7ed8113ab630d9 --> n5cfa3c4afcb4b359
+  n9f7ed8113ab630d9 --> nb17a88119e3df908
+  n9f7ed8113ab630d9 --> nc71a4f6251d9ca10
+  n86d38098b6d1e48d --> n1d48699afd1ffdb6
   n86d38098b6d1e48d --> n26eb854933fb16a3
+  n86d38098b6d1e48d --> na305277024d75d53
   n7b0d26b098ec17fe --> n9cb752fa5a7e6656
   n2fae51ea32885a0f --> n7afd80efc14db228
   n335a194f18c90876 --> nacba7b3de7583ddb
+  n335a194f18c90876 --> nc71a4f6251d9ca10
   n19d8cdee0401499d --> n58dfe8d308715b9f
+  n19d8cdee0401499d --> nc6160237cc5eb2cf
+  n19d8cdee0401499d --> nc71a4f6251d9ca10
+  n1f223e194ebc3603 --> na305277024d75d53
   n1f223e194ebc3603 --> nb36b77faa1a490f0
+  n1f223e194ebc3603 --> nb8c305d5ee549186
+  n1f223e194ebc3603 --> nccade0800035b66b
   nd9d4330331885643 --> n087e07637015719b
+  nd9d4330331885643 --> nadfca1251f9b6a28
   n9509a6eef99fb733 --> n877eaed6968f6f98
   n00702763b5a8c132 --> n2d7643f3f42bc7df
   n3fb3254786f7935b --> n2f5adf79707598c4
@@ -439,6 +488,7 @@ flowchart LR
   n21217e4029e00d59 --> nd57ecaa03385223c
   n21635c3e4ef179d8 --> nd57ecaa03385223c
   n21655cefa5f6f219 --> nd57ecaa03385223c
+  n217068cf70e21f45 --> n4205d2030d153ac1
   n21ff1c42e3c9b57a --> nce8bdc8c53ca38b7
   n21ffe85c86206094 --> nd57ecaa03385223c
   n228b7a12a3c5e1bb --> nfb832e1489ab265c
@@ -470,6 +520,7 @@ flowchart LR
   n2d7643f3f42bc7df --> nb91c260f3263b35b
   n2f5adf79707598c4 --> n3d22b7a534acc0bb
   n2f5adf79707598c4 --> n51b482910361c150
+  n30eea7b5e4b0f036 --> n89d7d195e0654372
   n312e40b4f842325b --> nc6b43eea6c8ff0bf
   n314aedf512c71123 --> nfb832e1489ab265c
   n316f320495a7d7a7 --> n1c075fb7d55b7b5d
@@ -488,6 +539,7 @@ flowchart LR
   n40359b042a48a08e --> n1474f16e03459229
   n40359b042a48a08e --> n41938b343c86904e
   n40359b042a48a08e --> n4bd29833185d98c9
+  n40359b042a48a08e --> n59a3415908e5a5c3
   n40359b042a48a08e --> n6ef7c748ddb91848
   n40359b042a48a08e --> n7d4be2219d74bf8d
   n40359b042a48a08e --> n94063447e4bdd0b7
@@ -515,6 +567,7 @@ flowchart LR
   n4752fbb3cc9908e1 --> nfb832e1489ab265c
   n4973826e5a2f58c2 --> n4d79811371fbb19b
   n4a90a6534be003c7 --> n4bf64f7e164e6d9a
+  n4a90a6534be003c7 --> n59a3415908e5a5c3
   n4a90a6534be003c7 --> n94063447e4bdd0b7
   n4a90a6534be003c7 --> n99d1552d14f9cca8
   n4a90a6534be003c7 --> nacd21346feee23f6
@@ -568,6 +621,7 @@ flowchart LR
   n69bb2e4d7f29d3bd --> nfffe08fdf7b38961
   n6aaec9f5432be4e3 --> n4752fbb3cc9908e1
   n6aaec9f5432be4e3 --> nf11074d59ce23bcd
+  n6b4402f4aec586b1 --> n656cdf050777cfd2
   n6d2da1bd427f0dda --> n1474f16e03459229
   n6d2da1bd427f0dda --> na5e973edf6219785
   n6d2da1bd427f0dda --> nacd21346feee23f6
@@ -612,6 +666,8 @@ flowchart LR
   n879dea5f6ab069e9 --> nefdf8a754bcdd35b
   n8935b0bad45140b4 --> n72c97d50fd30bdf3
   n8935b0bad45140b4 --> nacd21346feee23f6
+  n8966d99361db3a40 --> n5045de9b751f376f
+  n8966d99361db3a40 --> nb4c259fa9770ac59
   n8a8daebfb73b7912 --> n6ef7c748ddb91848
   n8a8daebfb73b7912 --> nacd21346feee23f6
   n8bed42e6e57c8ee6 --> n70c3af8091036a5e
@@ -654,6 +710,7 @@ flowchart LR
   n9cb752fa5a7e6656 --> nc317b0fdeb9af6bf
   n9da968be9406803e --> n228b7a12a3c5e1bb
   n9da968be9406803e --> nf9b0e87117c51046
+  n9e1cde11f1fcdf14 --> n46441ec8597bcf09
   n9ee1d4dc548187ae --> nacd21346feee23f6
   n9ee1d4dc548187ae --> nfc77ae74ea868828
   n9f30c3fd3b30fdad --> n1f9acfe77103914f
@@ -690,6 +747,7 @@ flowchart LR
   nb6bdea58b700dddc --> nb773b05ad273fd3c
   nb773b05ad273fd3c --> nb6bdea58b700dddc
   nb773b05ad273fd3c --> ndf20a077562bd331
+  nb8c305d5ee549186 --> n0a4fe95e77d5690b
   nb91c260f3263b35b --> n9370b20aebb2bf09
   nb91c260f3263b35b --> nacd21346feee23f6
   nbcf25336ae235f75 --> n00ae1e0d0a7ece39
@@ -704,6 +762,7 @@ flowchart LR
   nc132a28c351d5659 --> n04c6b6b63a36b7db
   nc317b0fdeb9af6bf --> nacd21346feee23f6
   nc317b0fdeb9af6bf --> nea506c6f70b8cca9
+  nc69cdf8b5dc1cf48 --> ndd76574b064683e5
   nc69fcaffa9f73bf0 --> n00694db68750e5f5
   nc69fcaffa9f73bf0 --> na532938d4b40bb58
   nc69fcaffa9f73bf0 --> nacd21346feee23f6
@@ -713,6 +772,7 @@ flowchart LR
   nc6b43eea6c8ff0bf --> nf11074d59ce23bcd
   nc6e232bf5387a7d8 --> n461e2b42ddf1d426
   nc6e232bf5387a7d8 --> ndf01a5c4d9653f6a
+  nc71a4f6251d9ca10 --> n98df95cef575cf84
   nc74c3a48716696b0 --> nf9b0e87117c51046
   nccfad5a895e6179a --> n00694db68750e5f5
   nccfad5a895e6179a --> nacd21346feee23f6
@@ -773,6 +833,7 @@ flowchart LR
   nf13967053236fe77 --> n1e025701f054c8fd
   nf13967053236fe77 --> n20b2133ac50829f7
   nf13967053236fe77 --> nacd21346feee23f6
+  nf3b5c3eaa1bc272c --> ndf67da08e2f1135f
   nf7e5d0b9bba5e7ef --> nacd21346feee23f6
   nf7e5d0b9bba5e7ef --> nfc77ae74ea868828
   nf8cc8d95c6ba4dcd --> nd57ecaa03385223c
@@ -807,4 +868,4 @@ flowchart LR
   class nc442fa6ff987701d dead
 ```
 
-252 artifacts; 54 feed nodes; 10 consumers; 463 parsed edges. Orange = unregistered consumer; gray dashed = no DBQL usage. Arrows indicate data dependency; session/workflow arrows indicate containment dependencies.
+252 artifacts; 54 feed nodes; 10 consumers; 514 parsed edges. Orange = unregistered consumer; gray dashed = no DBQL usage. Arrows indicate data dependency; session/workflow arrows indicate containment dependencies.

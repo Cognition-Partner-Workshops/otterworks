@@ -12,9 +12,13 @@ import re
 import subprocess
 import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
+from datetime import date, timedelta
 from pathlib import Path
 
 import yaml
+
+from spark_analysis import analyze as analyze_spark
+from deliverables import lineage_html, wave_plan
 
 ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / 'migration/dw-exit'
@@ -100,6 +104,28 @@ def dbql(root):
     return queries, usage, catalog, dead
 
 
+def usage_evidence(root):
+    base = root / 'warehouse/teradata/dbql'
+    queries = {r['QueryID']: r for r in rows(base / 'qrylog.csv')}
+    accesses = defaultdict(list)
+    for usage in rows(base / 'objectusage.csv'):
+        query = queries.get(usage['QueryID'])
+        if query:
+            accesses[usage['ObjectDatabaseName'] + '.' + usage['ObjectTableName']].append({
+                'QueryID': usage['QueryID'], 'principal': query['UserName'],
+                'timestamp': query['StartTime'], 'usage_type': usage['UsageType']})
+
+    def evidence(name):
+        history = sorted(accesses[name], key=lambda r: (r['timestamp'], r['QueryID'], r['usage_type']))
+        counts = Counter(r['usage_type'] for r in history if '2026-08-12' <= r['timestamp'][:10] <= '2026-11-09')
+        return {'window': ['2026-08-12', '2026-11-09'], 'usage_counts': dict(sorted(({'READ': 0, 'WRITE': 0} | counts).items())),
+                'read_count': counts['READ'],
+                'last_read': max((r['timestamp'] for r in history if r['usage_type'] == 'READ'), default=None),
+                'last_write': max((r['timestamp'] for r in history if r['usage_type'] == 'WRITE'), default=None),
+                'recent_accesses': history[-5:]}
+    return evidence
+
+
 def hidden_consumers(root, readers, commit=None):
     if commit:
         return snapshot_hidden_consumers(commit, readers)
@@ -161,7 +187,8 @@ def build(root=None):
         commit, root = BEFORE_STATE, before_state_root()
     artifacts, links, feeds = [], set(), set()
     def add(kind, name, path, text, constructs=()):
-        tokens = sorted(set(constructs) | {token for token in ['.IF', '.GOTO', '.EXPORT', 'QUALIFY', 'MERGE', 'VOLATILE', 'SET TABLE', 'CURSOR'] if token in text.upper()})
+        sql_tokens = [] if kind == 'spark_job' else ['.IF', '.GOTO', '.EXPORT', 'QUALIFY', 'MERGE', 'VOLATILE', 'SET TABLE', 'CURSOR']
+        tokens = sorted(set(constructs) | {token for token in sql_tokens if token in text.upper()})
         size = loc(text)
         complexity = 'high' if size >= 100 or len(tokens) >= 4 or any(t in tokens for t in ['Sequence', 'Use First Value', 'Unconnected']) else 'medium' if size >= 35 or tokens else 'low'
         row = dict(zip(FIELDS, [uid(kind + ':' + name), 'powercenter' if kind in ('mapping', 'session', 'worklet', 'workflow') else 'teradata', kind, name, str(path), size, complexity, '; '.join(tokens), 0, '']))
@@ -370,28 +397,125 @@ def build(root=None):
                 pending.extend(a for a, b in normalized if b == node and a in entries
                                and entries[a]['kind'] in ('mapping', 'session', 'worklet'))
         row['output_relations'] = sorted(outputs)
-    for job in json.loads((Path(__file__).parent / 'spark_objects.json').read_text()):
-        node = add('spark_job', job['name'], job['source'], '')
+    spark = analyze_spark(ROOT, scanned, registry)
+    external_relations = {}
+    def relation(name):
+        if name in by_name:
+            return by_name[name]
+        node = uid('relation:' + name)
+        external_relations[node] = {'id': node, 'name': name, 'kind': 'table'}
+        return node
+    for name, job in spark.items():
+        node = add('spark_job', name, job['source'], job['text'], job['constructs'])
         artifacts[-1]['system'] = 'spark'
-        manifest.append(dict(id=node, system='spark', kind='spark_job', name=job['name'],
-            complexity='medium', subject_area=job['subject_area'], licence_dependency='spark',
+        inventory = artifacts[-1]
+        for area, table in job['inputs']:
+            matching = [feed for feed in feeds if re.search(r'(?:^|/)' + re.escape(area + '/' + table) + r'/', feed)]
+            if not matching:
+                matching = [area + '/' + table + '/*.psv']
+                feeds.update(matching)
+            normalized.update(('feed:' + feed, node) for feed in matching)
+        normalized.update((relation(table), node) for table in job['jdbc_reads'])
+        normalized.update((node, relation(table)) for table in job['jdbc_writes'])
+        scores = Counter(q['UserName'] for table in job['jdbc_writes'] for q in reads[table]
+                         if q['UserName'] in registered)
+        for table in job['jdbc_writes']:
+            for account in sorted({q['UserName'] for q in reads[table]}):
+                job['readers'].append({'kind': 'dbql', 'account': account, 'relation': table})
+                consumer = next((c for c in consumers if c['account'] == account), None)
+                if consumer:
+                    normalized.add((node, consumer['id']))
+        for reader in job['readers']:
+            if reader['kind'] == 'spark_job':
+                normalized.add((node, uid('spark_job:' + reader['name'])))
+            scores.update(reader.get('accounts', []))
+            normalized.update((node, c['id']) for c in consumers if c['account'] in reader.get('accounts', []))
+        account = sorted(scores, key=lambda a: (-scores[a], a))[0] if scores else None
+        run = job['run_evidence']
+        reasons = []
+        target_type = 'snowpark' if job['constructs'] & {'udf', 'rdd', 'graph', 'binary', 'stateful'} else 'dbt_model'
+        if name.startswith('lake_compaction_'):
+            target_type = 'retire'
+            reasons.append('replaced by Snowflake storage management')
+        elif (run['cron']['state'] != 'enabled' or not run['runs_in_window']) and not job['readers'] and not scores:
+            target_type = 'retire'
+            reasons.append('disabled cron or no runs in window, and no output readers')
+        findings = []
+        if 'from common.binary_documents import' in job['text'] and 'from warehouse.run_config import' in (ROOT / 'etl/spark/jobs/py/common/binary_documents.py').read_text():
+            findings.append('Local run 2026-11-19 failed: ModuleNotFoundError: No module named warehouse; binary_documents imports warehouse.run_config, absent from common.zip and Spark service mounts')
+        manifest.append(dict(id=node, system='spark', kind='spark_job', name=name,
+            complexity=inventory['complexity'], subject_area=job['area'], licence_dependency='spark',
             source=job['source'], source_ref='demo-snowflake-dw-exit',
-            output_relations=[], target_type='dbt_model', target='spark__'+job['name'],
-            wave=3, owner='@otterworks/data-platform', owner_source='proposed', risk='med',
-            risk_reasons=[], status='not_started'))
+            output_relations=sorted(job['outputs'] | job['jdbc_writes']), target_type=target_type,
+            target='NONE' if target_type == 'retire' else 'spark__' + name,
+            wave=1 if target_type == 'retire' else 3 if job['area'] == 'billing' else 2,
+            owner=registered[account]['team'] if account else '@otterworks/data-platform',
+            owner_source='output readership via consumers/registry.yaml' if account else 'proposed',
+            risk='high' if findings or inventory['complexity'] == 'high' else 'med' if inventory['complexity'] == 'medium' else 'low',
+            risk_reasons=reasons, findings=findings, run_evidence=run, status='not_started'))
+    entries = {r['id']: r for r in manifest}
+    dependencies = sorted((a, b) for a, b in normalized if a in entries and b in entries
+                          and entries[a]['target_type'] != 'retire' and entries[b]['target_type'] != 'retire')
+    for _ in range(len(entries)):
+        changed = False
+        for a, b in dependencies:
+            if entries[b]['wave'] < entries[a]['wave']:
+                entries[b]['wave'] = entries[a]['wave']
+                changed = True
+        if not changed:
+            break
+    evidence = usage_evidence(root)
+    stale = []
+    cutoff = (date(2026, 11, 9) - timedelta(days=60)).isoformat()
+    def dead_destinations(node, seen=None):
+        seen = set() if seen is None else seen
+        if node in seen:
+            return set()
+        seen.add(node)
+        row = entries[node]
+        if row['name'] in dead:
+            return {row['name']}
+        if row['kind'] == 'session':
+            downstream = {a for a, b in normalized if b == node and a in retired and entries[a]['kind'] == 'mapping'}
+        else:
+            downstream = {b for a, b in normalized if a == node and b in retired
+                          and entries[b]['kind'] not in ('session', 'workflow', 'worklet')}
+            if row['kind'] == 'table' and '.STG_' in row['name']:
+                core = by_name.get(row['name'].replace('.STG_', '.'))
+                if core in retired:
+                    downstream.add(core)
+        return {name for destination in downstream for name in dead_destinations(destination, seen)}
+    for row in manifest:
+        facts = row.get('run_evidence', evidence(row['name']))
+        if row['target_type'] == 'retire':
+            row['retire_evidence'] = dict(facts)
+            if 'feeds only dead objects' in row['risk_reasons']:
+                row['retire_evidence']['feeds_dead_objects'] = sorted(dead_destinations(row['id']))
+        elif row['system'] != 'spark' and facts['last_read'] and facts['last_read'][:10] < cutoff:
+            stale.append({'id': row['id'], 'name': row['name'], 'review': 'owner review; not auto-retired', **facts})
     setup_only = sorted(name for name, qs in reads.items() if qs and all(q['StartTime'][:10] == '2026-08-12' for q in qs))
     cost = yaml.safe_load(_run_render((root / 'etl/informatica/licence.yaml').read_text()))['variables']
     counters = {'teradata_objects': {'remaining': len(catalog), 'target': 0}, 'powercenter_mappings': {'remaining': len(mapping_files), 'target': 0}, 'spark_executor_hours': {'remaining': 0, 'target': 0, 'status': 'no Spark estate on branch yet'}, 'powercenter_annual_cost': {'value': cost['ANNUAL_COST'], 'currency': cost['ANNUAL_COST_CURRENCY']}}
-    counters.pop('spark_executor_hours')
+    counters['spark_executor_hours'] = {'remaining': round(sum(j['run_evidence']['executor_hours'] for j in spark.values()), 9),
+                                       'in_window': round(sum(j['run_evidence']['executor_hours_in_window'] for j in spark.values()), 9),
+                                       'target': 0, 'scope': 'all packaged eventlogs; in_window reported separately'}
     counters['teradata_objects']['remaining'] = sum(r['licence_dependency'] == 'teradata' for r in manifest)
     counters['powercenter_objects'] = {'remaining': sum(r['licence_dependency'] == 'powercenter' for r in manifest), 'target': 0}
-    counters['spark_jobs'] = {'remaining': 30, 'target': 0}
+    counters['spark_jobs'] = {'remaining': sum(r['system'] == 'spark' and r['target_type'] != 'retire' for r in manifest), 'target': 0}
     counters['licence_dependencies'] = {'remaining': len(manifest), 'total': len(manifest), 'target': 0}
-    return {'artifacts': sorted(artifacts, key=lambda r: r['id']), 'objects': manifest, 'consumers': consumers, 'dead': dead, 'dead_dependents': dependents, 'setup_only': setup_only, 'scans': scans, 'links': sorted(normalized), 'dependencies': dependencies, 'feeds': sorted(feeds), 'counters': counters}
+    spark_nodes = {r['id'] for r in manifest if r['system'] == 'spark'}
+    spark_edges = sorted((a, b) for a, b in normalized if a in spark_nodes or b in spark_nodes)
+    return {'artifacts': sorted(artifacts, key=lambda r: r['id']), 'objects': manifest, 'consumers': consumers, 'dead': dead, 'dead_dependents': dependents, 'stale': stale, 'external_relations': sorted(external_relations.values(), key=lambda r: r['id']), 'spark_edges': spark_edges, 'setup_only': setup_only, 'scans': scans, 'links': sorted(normalized), 'dependencies': dependencies, 'feeds': sorted(feeds), 'counters': counters}
 
 
 def board(objects, counters):
     return {'waves': {str(w): {'total': sum(r['wave'] == w for r in objects), 'by_kind': dict(sorted(Counter(r['kind'] for r in objects if r['wave'] == w).items())), 'by_target': dict(sorted(Counter(r['target_type'] for r in objects if r['wave'] == w).items()))} for w in range(1, 5)}, 'licence_counters': counters}
+
+
+def update_board(path, objects, counters):
+    payload = json.loads(path.read_text()) if path.exists() else {}
+    payload.update(board(objects, counters))
+    path.write_text(json.dumps(payload, indent=2) + '\n')
 
 
 def main():
@@ -400,12 +524,13 @@ def main():
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator='\n')
         writer.writeheader()
         writer.writerows(data['artifacts'])
-    payload = {k: data[k] for k in ('objects', 'consumers', 'dead', 'dead_dependents', 'setup_only', 'dependencies')}
+    payload = {k: data[k] for k in ('objects', 'consumers', 'dead', 'dead_dependents', 'stale', 'external_relations', 'spark_edges', 'setup_only', 'dependencies')}
     (OUT / 'manifest.yaml').write_text(yaml.safe_dump(payload, sort_keys=False))
     b = board(data['objects'], data['counters'])
-    (OUT / 'board/board.json').write_text(json.dumps(b, indent=2) + '\n')
+    update_board(OUT / 'board/board.json', data['objects'], data['counters'])
     summary = {'by_kind': dict(sorted(Counter(r['kind'] for r in data['artifacts']).items())), 'total': len(data['artifacts']), 'loc_total': sum(r['loc'] for r in data['artifacts']), 'complexity': dict(Counter(r['complexity'] for r in data['artifacts'])), 'dead': data['dead'], 'setup_only_reads_not_dead': data['setup_only'], 'not_in_warehouse_etl': [u for u, v in data['scans'].items() if not v['warehouse_etl_hits']], 'not_in_any_repo_code': [u for u, v in data['scans'].items() if not v['repo_hits']], 'waves': b['waves'], 'licence_counters': data['counters']}
     summary['dead_dependents'] = data['dead_dependents']
+    summary['stale'] = data['stale']
     (OUT / 'inventory.md').write_text('# Inventory\n\nDBQL window 2026-08-12 through 2026-11-09 inclusive.\n\n```json\n' + json.dumps(summary, indent=2) + '\n```\n\n30 Spark jobs linked to merged sources on demo-snowflake-dw-exit.\n\nScan evidence for every DBQL reader:\n\n```json\n' + json.dumps(data['scans'], indent=2) + '\n```\n')
     lines = ['# Lineage', '', '```mermaid', 'flowchart LR']
     groups = defaultdict(list)
@@ -414,6 +539,7 @@ def main():
         groups[group].append((r['id'], r['name']))
     groups['source_feeds'] = [(uid('feed:' + f), re.sub(r'[^\w./-]', '_', f)) for f in data['feeds']]
     groups['consumers'] = [(r['id'], r['name']) for r in data['consumers']]
+    groups['external_relations'] = [(r['id'], r['name']) for r in data['external_relations']]
     for group, members in sorted(groups.items()):
         lines += ['  subgraph ' + group]
         lines += ['    ' + node + '["' + name + '"]' for node, name in members]
@@ -424,6 +550,8 @@ def main():
     lines += ['  class ' + r['id'] + ' dead' for r in data['artifacts'] if r['name'] in data['dead']]
     lines += ['```', '', f"{len(data['artifacts'])} artifacts; {len(data['feeds'])} feed nodes; {len(data['consumers'])} consumers; {len(data['links'])} parsed edges. Orange = unregistered consumer; gray dashed = no DBQL usage. Arrows indicate data dependency; session/workflow arrows indicate containment dependencies."]
     (OUT / 'lineage.md').write_text('\n'.join(lines) + '\n')
+    (OUT / 'lineage.html').write_text(lineage_html(data, uid))
+    (OUT / 'waves.md').write_text(wave_plan(data))
     table = '| Count | Wave 1 | Wave 2 | Wave 3 | Wave 4 |\n|---|---:|---:|---:|---:|\n'
     table += '| Total | ' + ' | '.join(str(b['waves'][str(w)]['total']) for w in range(1, 5)) + ' |\n'
     for field in ('by_kind', 'by_target'):
