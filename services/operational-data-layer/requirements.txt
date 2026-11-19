@@ -1,0 +1,5 @@
+ibm_db>=3.2,<4
+oracledb>=2,<27
+psycopg[binary]>=3.2,<4
+pymongo>=4.10,<5
+prometheus_client>=0.21,<1

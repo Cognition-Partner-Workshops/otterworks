@@ -1,0 +1,1 @@
+"""Customer operational projection synchronization."""
