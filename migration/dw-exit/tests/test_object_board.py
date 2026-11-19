@@ -32,6 +32,65 @@ def relations():
     after.close()
 
 
+@pytest.fixture(autouse=True)
+def offline_credentials(monkeypatch):
+    for key in board.CREDENTIALS:
+        monkeypatch.delenv(key, raising=False)
+
+
+class FakeCursor:
+    def __init__(self, connection):
+        self.connection = connection
+        self.description = None
+        self.sfqid = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        pass
+
+    def execute(self, statement):
+        self.connection.statements.append(statement)
+        self.sfqid = 'query-' + str(len(self.connection.statements))
+        self.rows = []
+        if statement.startswith('SELECT'):
+            if self.connection.error:
+                raise self.connection.error
+            self.description = [('ID',), ('VALUE',)]
+            self.rows = self.connection.rows
+        elif statement.startswith('SHOW'):
+            self.description = [('name',)]
+            self.rows = [(self.connection.routine,)] if self.connection.routine else []
+
+    def fetchall(self):
+        return self.rows
+
+
+class FakeConnection:
+    def __init__(self, rows=(), error=None, routine='JOB'):
+        self.rows, self.error, self.routine = rows, error, routine
+        self.statements = []
+        self.closed = False
+
+    def cursor(self):
+        return FakeCursor(self)
+
+    def close(self):
+        self.closed = True
+
+
+def enable_snowflake(monkeypatch, **kwargs):
+    for key in board.CREDENTIALS:
+        monkeypatch.setenv(key, 'offline-fake')
+    connection = FakeConnection(**kwargs)
+    def connect(step):
+        assert step == 'parity-board'
+        return connection
+    monkeypatch.setattr(board.snowflake_connection, 'connect', connect)
+    return connection
+
+
 @pytest.mark.parametrize('values',[[],[(1,'x')],[(1,None),(1,'x'),(1,'x')]])
 def test_actual_equal_outputs_do_not_migrate(relations,values):
     before,after=relations
@@ -40,7 +99,9 @@ def test_actual_equal_outputs_do_not_migrate(relations,values):
         after.executemany('INSERT INTO BILLING.T VALUES (?,?)',values)
     result=board.build_board({'objects':[obj()]},before,after,{'BILLING.T'})
     row=result['rows'][0]
-    assert row['status']=='green'
+    assert row['legs']['duckdb']['status']=='green'
+    assert row['status']=='red'
+    assert row['reason']=='snowflake: Snowflake credentials unavailable'
     assert row['row_count']=={'before':len(values),'after':len(values)}
     assert row['keyed_row_hash']['SFX_BILLING.T']['difference']==0
     assert len(row['keyed_row_hash']['SFX_BILLING.T']['before'])==64
@@ -62,9 +123,9 @@ def test_profiles_hashes_samples_preserve_duplicates_and_nulls(relations):
 
 
 @pytest.mark.parametrize('changes,reason',[
-    ({},'output not materialized: BILLING.T'),
-    ({'output_relations':[]},'no declared output relation'),
-    ({'system':'spark','licence_dependency':'spark'},'source on Spark baseline PR')])
+    ({},'duckdb: output not materialized: BILLING.T'),
+    ({'output_relations':[]},'duckdb: no dependency declared'),
+    ({'system':'spark','licence_dependency':'spark'},'duckdb: output not materialized: BILLING.T')])
 def test_unavailable_never_invents_measurements(changes,reason):
     row=board.build_board({'objects':[obj(**changes)]})['rows'][0]
     assert row['status']=='red' and row['reason']==reason
@@ -87,7 +148,7 @@ def test_merged_spark_sources_are_linked_without_fabricating_outputs(tmp_path, m
     assert row['source'] == 'job.py'
     assert row['source_ref'] == 'demo-snowflake-dw-exit'
     assert row['status'] == 'red'
-    assert row['reason'] == 'Spark source available; output not materialized locally'
+    assert row['reason'] == 'duckdb: output not materialized: BILLING.T'
     assert all(row[field] is None for field in ('row_count', 'column_profile', 'keyed_row_hash', 'sampled_differences'))
 
 
@@ -95,7 +156,8 @@ def test_empty_manifest_and_snowflake_plan(relations):
     assert board.build_board({'objects':[]})['summary']['rows']==0
     row=board.build_board({'objects':[obj()]},target='snowflake')['rows'][0]
     assert row['status']=='red' and row['row_count'] is None
-    assert row['reason']=='Snowflake target selected; execution disabled'
+    assert row['reason']=='duckdb: output not materialized: BILLING.T'
+    assert row['legs']['snowflake']['reason']=='Snowflake credentials unavailable'
     with pytest.raises(ValueError):
         board.build_board({'objects':[]},target='unknown')
 
@@ -123,7 +185,7 @@ def test_straight_conversion_and_missing_input(tmp_path):
             assert errors['*']=='conversion parse failed: 10_load.sql'
             row=board.build_board({'objects':[obj()]},before,after,ready,errors)['rows'][0]
             assert row['status']=='red' and row['row_count'] is None
-            assert row['reason']==errors['*']
+            assert row['reason']=='duckdb: '+errors['*']
         finally:
             after.close()
     finally:
@@ -159,3 +221,109 @@ def test_make_command_line_token_selects_namespace():
     output=subprocess.check_output(['make','-n','sfx-teradata-validate','RUN_TOKEN=sfx2220'],cwd=ROOT,text=True)
     assert 'sfx-2220-before' in output
     assert 'sfx-1119-before' not in output
+
+
+@pytest.mark.parametrize('values', [[], [(1, 'x')], [(1, None), (1, 'x'), (1, 'x')]])
+@pytest.mark.parametrize('system', ['spark', 'powercenter'])
+def test_snowflake_and_spark_measurements(relations, monkeypatch, values, system):
+    before, after = relations
+    if values:
+        before.executemany('INSERT INTO SFX_BILLING.T VALUES (?,?)', values)
+        after.executemany('INSERT INTO BILLING.T VALUES (?,?)', values)
+    connection = enable_snowflake(monkeypatch, rows=values)
+    monkeypatch.setenv('RUN_TOKEN', 'sfx1119')
+    result = board.build_board({'objects': [obj(system=system)]}, before, after, {'BILLING.T'})
+    row = result['rows'][0]
+    assert row['status'] == 'green'
+    assert row['legs']['snowflake']['row_count'] == {'before': len(values), 'after': len(values)}
+    assert row['legs']['snowflake']['query_ids'] == ['query-1', 'query-2', 'query-3']
+    assert connection.statements == [
+        'ALTER SESSION SET QUERY_TAG=\'{"act":"prove","run_id":"sfx1119","step":"parity-board"}\'',
+        "ALTER SESSION SET TIMEZONE='UTC'",
+        'SELECT * FROM "SFX_1119"."BILLING"."T"']
+    assert connection.closed
+    assert result['summary']['legs']['snowflake'] == {'green': 1, 'red': 0, 'measured': 1}
+
+
+def test_snowflake_mismatch(relations, monkeypatch):
+    before, after = relations
+    enable_snowflake(monkeypatch, rows=[(1, 'wrong')])
+    row = board.build_board({'objects': [obj()]}, before, after, {'BILLING.T'})['rows'][0]
+    assert row['reason'] == 'snowflake: measured parity mismatch'
+    assert row['legs']['snowflake']['sampled_differences']['SFX_BILLING.T']
+    assert row['legs']['duckdb']['status'] == 'green'
+
+
+@pytest.mark.parametrize('missing', [True, False])
+def test_snowflake_query_failure(relations, monkeypatch, missing):
+    class QueryError(Exception):
+        errno = 2003 if missing else 1234
+    enable_snowflake(monkeypatch, error=QueryError('denied'))
+    row = board.build_board({'objects': [obj()]}, *relations, {'BILLING.T'})['rows'][0]
+    reason = row['legs']['snowflake']['reason']
+    assert reason == ('output not materialized in Snowflake: SFX_1119.BILLING.T' if missing else 'measurement failed: denied')
+    assert row['legs']['snowflake']['query_ids'][-1] == 'query-3'
+
+
+@pytest.mark.parametrize('missing_key', board.CREDENTIALS)
+def test_no_login_with_any_missing_credential(monkeypatch, missing_key):
+    for key in board.CREDENTIALS:
+        monkeypatch.setenv(key, 'offline-fake')
+    monkeypatch.delenv(missing_key)
+    def forbidden(*args):
+        pytest.fail('must not connect')
+    monkeypatch.setattr(board.snowflake_connection, 'connect', forbidden)
+    rows = board.build_board({'objects': [obj(), obj(id='two', output_relations=[])]})['rows']
+    assert all(r['legs']['snowflake']['reason'] == 'Snowflake credentials unavailable' for r in rows)
+
+
+@pytest.mark.parametrize('case', ['green', 'dependency', 'missing_dependency', 'routine', 'no_dependency', 'cycle'])
+@pytest.mark.parametrize('kind', ['workflow', 'macro'])
+def test_no_output_dependency_proofs(relations, monkeypatch, tmp_path, case, kind):
+    connection = enable_snowflake(monkeypatch, routine=None if case == 'routine' else 'JOB')
+    artifact = tmp_path / 'converted.sql'
+    if case != 'routine':
+        artifact.touch()
+    dependency = obj(id='dep', subject_area='other')
+    routine = obj(id='routine', output_relations=[], kind=kind, target='TRANSFORM.JOB',
+                  converted_artifact=str(artifact), depends_on=['dep'])
+    if case == 'no_dependency':
+        routine['depends_on'] = []
+    if case == 'missing_dependency':
+        routine['depends_on'] = ['unknown']
+    if case == 'cycle':
+        routine['depends_on'] = ['routine']
+    available = set() if case == 'dependency' else {'BILLING.T'}
+    if case == 'dependency':
+        connection.rows = [(1, 'wrong')]
+    result = board.build_board({'objects': [dependency, routine]}, *relations, available, subject_area='billing')
+    assert len(result['rows']) == result['summary']['rows'] == 1
+    row = result['rows'][0]
+    if case == 'green':
+        assert row['status'] == 'green'
+        assert any(s.startswith('SHOW TASKS' if kind == 'workflow' else 'SHOW PROCEDURES') for s in connection.statements)
+    else:
+        expected = {'dependency': 'dependency red: dep', 'missing_dependency': 'dependency red: unknown',
+                    'routine': 'routine missing: TRANSFORM.JOB', 'no_dependency': 'no dependency declared',
+                    'cycle': 'dependency red: routine'}[case]
+        assert all(leg['reason'] == expected for leg in row['legs'].values())
+    assert row['row_count'] is None
+
+
+def test_area_filter_cli():
+    output = subprocess.check_output(['make', '-n', 'sfx-manifest-board', 'AREA=billing'], cwd=ROOT, text=True)
+    assert '--subject-area "billing"' in output
+
+
+def test_spark_registry_outputs(tmp_path, monkeypatch):
+    monkeypatch.setattr(board, 'ROOT', tmp_path)
+    registry = tmp_path / 'etl/spark/jobs/registry'
+    registry.mkdir(parents=True)
+    (registry / 'job.yaml').write_text('output_relations: [SFX_BILLING.T]')
+    assert board.declared_outputs(obj(system='spark', output_relations=[])) == ['SFX_BILLING.T']
+
+
+def test_snowflake_target_still_measures_both_legs(relations, monkeypatch):
+    enable_snowflake(monkeypatch)
+    row = board.build_board({'objects': [obj()]}, *relations, {'BILLING.T'}, target='snowflake')['rows'][0]
+    assert row['status'] == 'green'
