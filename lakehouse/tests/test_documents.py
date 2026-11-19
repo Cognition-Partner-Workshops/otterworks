@@ -136,10 +136,12 @@ def test_storage_set_and_macro_boundaries(spark):
 
 def test_documents_graph_and_ownership():
     specs = {key: value for key, value in discover().items() if key.startswith('documents.')}
-    assert len(specs) == 28
-    nodes = {node['id']: node for node in load()['lakehouse_daily']['nodes']}
+    assert len(specs) == 35
+    nodes = {node['id']: node for dag in load().values() for node in dag['nodes']}
     for identity in specs:
-        assert nodes['parity_' + identity.replace('.', '_')]['depends_on'] == ['dbt_documents']
+        target = ('dbt_spark_' + identity.removeprefix('documents.spark_')
+                  if identity.startswith('documents.spark_') else 'dbt_documents')
+        assert nodes['parity_' + identity.replace('.', '_')]['depends_on'] == [target]
     owned = yaml.safe_load((ROOT / 'coverage/domains/documents.yaml').read_text())['legacy_objects']
     assert len(owned) == len(set(owned)) == 97
     assert not any('10_storage_monthly' in identity for identity in owned)

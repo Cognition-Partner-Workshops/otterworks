@@ -24,10 +24,13 @@ def node(identity, dependencies=(), kind='noop', **options):
 
 def test_pipeline_contract_and_staging_replacement():
     dags = graph.load()
-    assert {'lakehouse_daily', 'lakehouse_hourly'} <= set(dags)
+    assert {'lakehouse_daily', 'lakehouse_hourly', 'lakehouse_documents_folder_manual',
+                         'lakehouse_documents_compaction', 'lakehouse_docs_storage_by_owner',
+                         'lakehouse_docs_share_activity', 'lakehouse_docs_search_log_parse',
+                         'lakehouse_docs_tag_normalize'} <= set(dags)
     daily = dags['lakehouse_daily']
     nodes = {node['id']: node for node in daily['nodes']}
-    sensors = [n for n in nodes.values() if n['kind'] == 'feed_sensor']
+    sensors = [n for n in nodes.values() if n['kind'] == 'feed_sensor' and not n.get('landing_prefix')]
     assert {(n['domain'], n['table']) for n in sensors} == {(t.area, t.name) for t in TABLES}
     assert len(sensors) == len(TABLES)
     for domain in ('billing', 'documents', 'users', 'audit'):

@@ -6,11 +6,11 @@ import yaml
 
 from lakehouse.coverage.inventory import discover
 from lakehouse.parity.spec import discover as discover_specs
-from lakehouse.runtime.layout import DOMAINS, ROOT
+from lakehouse.runtime.layout import DOMAINS, ROOT, data_root
 from warehouse.seed.columns import TABLES
 
 PIPELINE = ROOT / 'orchestration/pipeline.yaml'
-KINDS = {'feed_sensor', 'bronze_ingest', 'dbt', 'parity', 'export', 'noop'}
+KINDS = {'feed_sensor', 'artifact_sensor', 'bronze_ingest', 'dbt', 'parity', 'export', 'noop'}
 
 
 def business_date(value):
@@ -51,13 +51,17 @@ def load(path=PIPELINE, inventory=None, specs=None):
             raise ValueError('Invalid DAG id')
         if dag['id'] in dags:
             raise ValueError('Duplicate DAG id: ' + dag['id'])
-        if dag.get('schedule') not in ('@daily', '@hourly', '@weekly') or dag.get('timezone') != 'UTC':
-            raise ValueError('DAG schedule must be @daily/@hourly/@weekly in UTC')
+        schedule = dag.get('schedule')
+        timed_cron = isinstance(schedule, str) and re.fullmatch(r'[0-5]?\d (?:\*|[01]?\d|2[0-3]) \* \* \*', schedule)
+        if 'schedule' not in dag or not (schedule in (None, '@daily', '@hourly', '@weekly') or timed_cron) or dag.get('timezone') != 'UTC':
+            raise ValueError('DAG schedule must be @daily/@hourly, a daily/hourly clock cron or manual in UTC')
         business_date(dag.get('start_date'))
         if dag.get('catchup') is not True or dag.get('max_active_runs') != 1 or dag.get('max_active_tasks') != 1:
             raise ValueError('DAGs require catchup and one active run/task for embedded Derby')
         if not isinstance(dag.get('paused'), bool):
             raise ValueError('DAG paused must be boolean')
+        if dag['schedule'] is None and not dag['paused']:
+            raise ValueError('Unscheduled DAG must remain paused')
         nodes = dag.get('nodes')
         if not isinstance(nodes, list) or not nodes:
             raise ValueError('DAG requires nonempty nodes')
@@ -82,8 +86,26 @@ def load(path=PIPELINE, inventory=None, specs=None):
             if kind in ('feed_sensor', 'bronze_ingest', 'dbt') and node.get('domain') not in DOMAINS:
                 raise ValueError('Unknown domain')
             if kind == 'feed_sensor':
+                prefix = node.get('landing_prefix', '')
+                if not isinstance(prefix, str) or Path(prefix).is_absolute() or '..' in Path(prefix).parts:
+                    raise ValueError('Invalid landing prefix')
+                try:
+                    prefix.format(business_date='20261109')
+                except (KeyError, ValueError, IndexError, AttributeError) as exc:
+                    raise ValueError('Invalid landing prefix') from exc
                 if not any(t.area == node['domain'] and t.name == node.get('table') for t in TABLES):
                     raise ValueError('Unknown feed table')
+            if kind == 'artifact_sensor':
+                value = node.get('path')
+                if not isinstance(value, str) or not value.startswith('{data_root}/'):
+                    raise ValueError('Artifact sensor path must be namespace-scoped')
+                try:
+                    rendered = value.format(data_root='/namespace', business_date='20261109')
+                except (KeyError, ValueError, IndexError, AttributeError) as exc:
+                    raise ValueError('Invalid artifact sensor path') from exc
+                if '..' in Path(rendered).parts:
+                    raise ValueError('Invalid artifact sensor path')
+            if kind in ('feed_sensor', 'artifact_sensor'):
                 for field in ('timeout_seconds', 'poke_interval_seconds'):
                     if type(node.get(field)) is not int or node[field] <= 0:
                         raise ValueError(field + ' must be a positive integer')
@@ -112,4 +134,10 @@ def load(path=PIPELINE, inventory=None, specs=None):
 
 def feed_path(node, landing, day):
     business_date(day)
-    return Path(landing).resolve() / node['domain'] / node['table'] / f'{day}.psv'
+    prefix = node.get('landing_prefix', '').format(business_date=day)
+    return Path(landing).resolve() / prefix / node['domain'] / node['table'] / f'{day}.psv'
+
+
+def artifact_path(node, day):
+    business_date(day)
+    return Path(node['path'].format(data_root=data_root(), business_date=day))

@@ -1,0 +1,33 @@
+{
+  "id": "documents.spark_docs_tag_normalize",
+  "legacy_objects": [
+    "spark_job:docs_tag_normalize",
+    "spark_submit:etl/spark/submit/docs_tag_normalize.sh",
+    "cron_entry:etl/crontab#7ce72803f1b1"
+  ],
+  "legacy": {
+    "kind": "parquet",
+    "path": "lakehouse/.data/{NS}/legacy_spark/{business_date}/documents/docs_tag_normalize"
+  },
+  "lakehouse": {
+    "kind": "delta_table",
+    "table": "silver_documents.spark_docs_tag_normalize"
+  },
+  "keys": [
+    "doc_tag_id"
+  ],
+  "columns": [
+    "doc_tag_id",
+    "document_id",
+    "tag",
+    "normalized_tag"
+  ],
+  "normalize": {
+    "doc_tag_id": {
+      "numeric_scale": 0
+    },
+    "document_id": {
+      "numeric_scale": 0
+    }
+  }
+}

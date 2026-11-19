@@ -1241,6 +1241,160 @@ assumptions:
   - warehouse/teradata/jobs/daily_chain
   - etl/crontab
   - lakehouse/orchestration/pipeline.yaml
+- id: A-210
+  title: Spark-specific dated shared feeds
+  legacy_objects:
+  - "spark_job:docs_storage_by_owner"
+  - "spark_submit:etl/spark/submit/docs_storage_by_owner.sh"
+  - "cron_entry:etl/crontab#6cccad9ba92f"
+  - "spark_job:docs_share_activity"
+  - "spark_submit:etl/spark/submit/docs_share_activity.sh"
+  - "cron_entry:etl/crontab#e913aaa5c3d7"
+  - "spark_job:docs_folder_legacy_report"
+  - "spark_submit:etl/spark/submit/docs_folder_legacy_report.sh"
+  - "cron_entry:etl/crontab#b40205d7056e"
+  - "spark_job:docs_search_log_parse"
+  - "spark_submit:etl/spark/submit/docs_search_log_parse.sh"
+  - "cron_entry:etl/crontab#0994e1d7781b"
+  - "spark_job:docs_tag_normalize"
+  - "spark_submit:etl/spark/submit/docs_tag_normalize.sh"
+  - "cron_entry:etl/crontab#7ce72803f1b1"
+  - "spark_job:docs_event_export_hourly"
+  - "spark_submit:etl/spark/submit/docs_event_export_hourly.sh"
+  - "cron_entry:etl/crontab#06b1c260f55b"
+  - "spark_job:lake_compaction_documents"
+  - "spark_submit:etl/spark/submit/lake_compaction_documents.sh"
+  - "cron_entry:etl/crontab#d379dc30b522"
+  ambiguity: "Spark feed layouts are not the Teradata or Informatica layouts; Scala infers CSV types while Python supplies nullable schemas."
+  decision: "Read the identical immutable spark/{business_date} files on both sides. Preserve explicit Python schemas, permissive cell casts, Scala inference, Unicode Python regex/normalization, null sums and duplicate counts; fail fast on absent feeds, changed manifests or malformed headers."
+  rationale: "The dated generator and per-file SHA-256 manifest make the fixture independently reproducible. The legacy sources and both Scala classes run unchanged; their common libraries remain integration-owned."
+  risk: med
+  verification: "test:lakehouse/tests/test_documents_spark.py::test_spark_feed_transforms_normal"
+  status: accepted
+  sources:
+  - etl/spark/jobs/py/common/schemas.py
+  - etl/spark/jobs/py/common/runtime.py
+  - etl/spark/scala/src/main/scala/sfx/BatchSupport.scala
+  - lakehouse/parity/documents_spark_fixture.py
+- id: A-211
+  title: Disabled folder-report cron remains disabled
+  legacy_objects:
+  - "spark_job:docs_folder_legacy_report"
+  - "spark_submit:etl/spark/submit/docs_folder_legacy_report.sh"
+  - "cron_entry:etl/crontab#b40205d7056e"
+  ambiguity: "The folder report is implemented but its legacy cron is commented out."
+  decision: "Provide a paused, unscheduled manual-only folder-report DAG and distinct output/parity spec. Do not add it to an active daily DAG."
+  rationale: "Converting logic must not reactivate a disabled report."
+  risk: low
+  verification: "test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements"
+  status: accepted
+  sources:
+  - etl/crontab
+  - etl/spark/jobs/py/docs_folder_legacy_report.py
+- id: A-212
+  title: Hourly document export cadence and bucket contract
+  legacy_objects:
+  - "spark_job:docs_event_export_hourly"
+  - "spark_submit:etl/spark/submit/docs_event_export_hourly.sh"
+  - "cron_entry:etl/crontab#06b1c260f55b"
+  ambiguity: "The foundation hourly DAG was a paused stub; legacy exports at minute 18 and partitions by Spark pmod(DOCUMENT_ID, 10000)."
+  decision: "Replace the stub with the real export, dbt output and parity tasks. Keep schedule 18 * * * * and paused=true. Retain UTC logical-business-date handling, eight-way bucket repartitioning, overwrite snapshot semantics and nonnegative pmod buckets even for negative IDs."
+  rationale: "An unchanged input snapshot produces identical rows and bucket membership on retries; no append or new active hourly schedule is introduced."
+  risk: med
+  verification: "test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements"
+  status: accepted
+  sources:
+  - etl/crontab
+  - etl/spark/jobs/py/docs_event_export_hourly.py
+  - lakehouse/orchestration/pipeline.yaml
+- id: A-213
+  title: Atomic snapshot publication on the local filesystem
+  legacy_objects:
+  - "spark_job:docs_event_export_hourly"
+  - "spark_submit:etl/spark/submit/docs_event_export_hourly.sh"
+  - "cron_entry:etl/crontab#06b1c260f55b"
+  - "spark_job:lake_compaction_documents"
+  - "spark_submit:etl/spark/submit/lake_compaction_documents.sh"
+  - "cron_entry:etl/crontab#d379dc30b522"
+  ambiguity: "Legacy directory overwrite exposes partial output; compaction must not switch snapshots while reading."
+  decision: "Write a unique immutable version, require _SUCCESS and unchanged input hashes, then atomically replace a symlink. Pin resolved paths before Parquet reads, retain prior versions, and compact with coalesce(4). Idempotency is logical row/bucket equality, not stable filenames or identical version UUIDs."
+  rationale: "POSIX rename provides all-or-old publication on this single host; a failed write, validation or pointer swap retains the previous snapshot. Distributed/object-store publication and garbage collection are not implemented."
+  risk: med
+  verification: "test:lakehouse/tests/test_documents_spark.py::test_atomic_idempotent_partition_publication_and_pinned_reader"
+  status: accepted
+  sources:
+  - etl/spark/jobs/py/docs_event_export_hourly.py
+  - etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala
+  - lakehouse/runtime/documents_spark.py
+- id: A-214
+  title: Compaction retains 02:19 cadence behind paused export
+  legacy_objects:
+  - "spark_job:lake_compaction_documents"
+  - "spark_submit:etl/spark/submit/lake_compaction_documents.sh"
+  - "cron_entry:etl/crontab#d379dc30b522"
+  ambiguity: "Compaction is daily at 02:19, not hourly, but its converted producer intentionally remains paused."
+  decision: "Use a separate 19 2 * * * DAG, initially paused alongside the hourly producer. A date-scoped readiness task waits for a committed hourly snapshot before compaction; resolve and pin that version. Enable only when the export is explicitly enabled."
+  rationale: "Running compaction hourly would silently change the cron contract; activating a consumer while its producer is paused would cause avoidable timeouts."
+  risk: med
+  verification: "test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements"
+  status: accepted
+  sources:
+  - etl/crontab
+  - etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala
+  - lakehouse/orchestration/pipeline.yaml
+- id: A-215
+  title: Independent Spark dbt outputs and exact cron replacements
+  legacy_objects:
+  - "spark_job:docs_storage_by_owner"
+  - "spark_submit:etl/spark/submit/docs_storage_by_owner.sh"
+  - "cron_entry:etl/crontab#6cccad9ba92f"
+  - "spark_job:docs_share_activity"
+  - "spark_submit:etl/spark/submit/docs_share_activity.sh"
+  - "cron_entry:etl/crontab#e913aaa5c3d7"
+  - "spark_job:docs_folder_legacy_report"
+  - "spark_submit:etl/spark/submit/docs_folder_legacy_report.sh"
+  - "cron_entry:etl/crontab#b40205d7056e"
+  - "spark_job:docs_search_log_parse"
+  - "spark_submit:etl/spark/submit/docs_search_log_parse.sh"
+  - "cron_entry:etl/crontab#0994e1d7781b"
+  - "spark_job:docs_tag_normalize"
+  - "spark_submit:etl/spark/submit/docs_tag_normalize.sh"
+  - "cron_entry:etl/crontab#7ce72803f1b1"
+  - "spark_job:docs_event_export_hourly"
+  - "spark_submit:etl/spark/submit/docs_event_export_hourly.sh"
+  - "cron_entry:etl/crontab#06b1c260f55b"
+  - "spark_job:lake_compaction_documents"
+  - "spark_submit:etl/spark/submit/lake_compaction_documents.sh"
+  - "cron_entry:etl/crontab#d379dc30b522"
+  ambiguity: "The existing documents bronze feeds have incompatible columns; paused/manual Spark sources cannot be prerequisites of the active BTEQ dbt build."
+  decision: "Keep native dated Spark feeds isolated from warehouse bronze, expose date-partitioned Spark runtime Delta sources and seven distinct silver dbt models. Enable a model only for DOCUMENTS_SPARK_JOB=<job> (or all for explicit validation). Each job DAG selects its model, tests and parity; four enabled daily cron replacements keep their original UTC minute/hour and explicit Spark feed sensors, including users APP_USER."
+  rationale: "This follows the independent runtime-source pattern used for Informatica and prevents a tag:documents build from implicitly executing paused or disabled schedules. Source metadata is declared without claiming ownership of shared schemas or the users pipeline."
+  risk: med
+  verification: "test:lakehouse/tests/test_documents_spark.py::test_documents_spark_cron_replacements"
+  status: accepted
+  sources:
+  - etl/crontab
+  - lakehouse/dbt/models/sources.yml
+  - lakehouse/orchestration/pipeline.yaml
+  - lakehouse/dbt/models/silver/documents/spark_docs_storage_by_owner.sql
+- id: A-216
+  title: Empty partitioned exports do not supply an inferred Parquet schema
+  legacy_objects:
+  - "spark_job:docs_event_export_hourly"
+  - "spark_submit:etl/spark/submit/docs_event_export_hourly.sh"
+  - "cron_entry:etl/crontab#06b1c260f55b"
+  - "spark_job:lake_compaction_documents"
+  - "spark_submit:etl/spark/submit/lake_compaction_documents.sh"
+  - "cron_entry:etl/crontab#d379dc30b522"
+  ambiguity: "Spark writes an empty partitioned export with _SUCCESS but no data files; the unmodified Scala compactor cannot infer its schema."
+  decision: "Publish the empty export successfully and preserve its schema for the dbt runtime table. Preserve the legacy compactor's failure on a completely empty partitioned source rather than invent rows or silently treat missing input as empty."
+  rationale: "Readiness proves a completed publication, not a nonempty data set. Unit tests distinguish missing feeds, header-only feeds, empty transforms, successful empty publication and the missing-inference compaction error."
+  risk: low
+  verification: "test:lakehouse/tests/test_documents_spark.py::test_atomic_idempotent_partition_publication_and_pinned_reader"
+  status: accepted
+  sources:
+  - etl/spark/jobs/py/docs_event_export_hourly.py
+  - etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala
 - {"id":"A-200","title":"Deterministic latest version timestamp ties","legacy_objects":["teradata_table:SFX_DOCUMENTS.DOC_VERSION","bteq_script:warehouse/teradata/scripts/documents/02_current_versions.bteq","cron_entry:warehouse/teradata/jobs/daily_chain#stage=documents/02_current_versions","teradata_view:SFX_DOCUMENTS.V_DOCUMENT_VERSIONS","teradata_view:SFX_DOCUMENTS.V_WORKSPACE_STORAGE"],"ambiguity":"ROW_NUMBER orders only by VERSION_TS; equal timestamps do not define a winner.","decision":"Approved policy: latest VERSION_TS, then highest VERSION_ID, retaining DESC NULLS FIRST ordering. Legacy QUALIFY ROW_NUMBER() OVER (PARTITION BY DOCUMENT_ID ORDER BY VERSION_TS DESC) = 1 has no contract for tied timestamps.","rationale":"The fixture has 50 tied document groups; the emulator agrees with highest VERSION_ID in one and differs in 49. Approved candidate-set parity compares untied outputs exactly and tied winners against full latest-timestamp legacy staging rows. Workspace parity recomputes totals from legacy candidates selected by lakehouse version IDs and checks per-owner possible bounds, retaining exact published totals for untied owners. Reports expose exact-matched, tie-resolved and mismatch counts; no blanket normalization.","risk":"med","verification":"documents.doc_version","status":"accepted","sources":["warehouse/teradata/scripts/documents/02_current_versions.bteq"]}
 - {"id":"A-201","title":"Search history has no daily publisher","legacy_objects":["teradata_table:SFX_DOCUMENTS.SEARCH_INDEX_LOG","teradata_table:SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG","teradata_view:SFX_DOCUMENTS.V_SEARCH_HISTORY","tpt:warehouse/teradata/load/tpt/documents_search_index_log.tpt"],"ambiguity":"The loader populates STG_SEARCH_INDEX_LOG but the daily chain never copies it into SEARCH_INDEX_LOG.","decision":"Keep staging populated; initialize SEARCH_INDEX_LOG empty and use an empty incremental append to preserve any existing target rows. Never publish staging implicitly.","rationale":"Matches an untouched legacy table, not a repaired pipeline. External historical rows require an explicit initial migration, not this fresh fixture conversion.","risk":"med","verification":"documents.search_index_log","status":"accepted","sources":["warehouse/teradata/jobs/daily_chain","warehouse/teradata/load/tpt/documents_search_index_log.tpt","warehouse/teradata/ddl/documents/00_tables.sql"]}
 - {"id":"A-202","title":"Storage totals macro parameters and daily materialization","legacy_objects":["teradata_macro:SFX_DOCUMENTS.M_STORAGE_TOTALS"],"ambiguity":"The legacy macro accepts arbitrary date boundaries; dbt tables are built for a business date.","decision":"Expose documents_storage_totals(start_date, end_date) as a reusable SQL macro; materialize its current-business-month invocation in gold. Leave monthly billing writes and export to integration.","rationale":"Preserves the half-open predicate and arbitrary SQL date arguments without claiming the shared monthly script.","risk":"low","verification":"test:lakehouse/tests/test_documents.py::test_storage_set_and_macro_boundaries","status":"accepted","sources":["warehouse/teradata/macros/storage_totals.sql","warehouse/teradata/scripts/documents/10_storage_monthly.bteq"]}

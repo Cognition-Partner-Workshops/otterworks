@@ -1,5 +1,22 @@
 version: 2
 sources:
+  - name: documents_spark_runtime
+    schema: silver_documents
+    tables:
+      - name: spark_runtime_docs_storage_by_owner
+        identifier: "spark_runtime_docs_storage_by_owner_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_docs_share_activity
+        identifier: "spark_runtime_docs_share_activity_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_docs_folder_legacy_report
+        identifier: "spark_runtime_docs_folder_legacy_report_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_docs_search_log_parse
+        identifier: "spark_runtime_docs_search_log_parse_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_docs_tag_normalize
+        identifier: "spark_runtime_docs_tag_normalize_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_docs_event_export_hourly
+        identifier: "spark_runtime_docs_event_export_hourly_{{ env_var('BUSINESS_DATE') }}"
+      - name: spark_runtime_lake_compaction_documents
+        identifier: "spark_runtime_lake_compaction_documents_{{ env_var('BUSINESS_DATE') }}"
   - name: documents_informatica_runtime
     schema: silver_documents
     tables:

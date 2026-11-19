@@ -31,10 +31,15 @@ def test_dagbag_contract_and_templates():
             assert task.retry_delay.total_seconds() == node['retry_delay_seconds']
             logical_date = pendulum.datetime(2026, 11, 10, tz='UTC')
             task.render_template_fields({'logical_date': logical_date}, jinja_env=dag.get_template_env())
-            if node['kind'] == 'feed_sensor':
+            if node['kind'] in ('feed_sensor', 'artifact_sensor'):
                 assert isinstance(task, FileSensor)
                 assert Path(task.filepath).is_absolute()
-                assert task.filepath.endswith('/' + node['table'] + '/20261109.psv')
+                if node['kind'] == 'feed_sensor':
+                    assert task.filepath.endswith('/' + node['table'] + '/20261109.psv')
+                else:
+                    assert task.filepath.endswith('/20261109/docs_event_export_hourly/_SUCCESS')
+                if node.get('landing_prefix'):
+                    assert '/spark/20261109/' in task.filepath
                 assert task.mode == 'reschedule' and task.timeout == node['timeout_seconds']
             elif node['kind'] == 'noop':
                 assert isinstance(task, EmptyOperator)
