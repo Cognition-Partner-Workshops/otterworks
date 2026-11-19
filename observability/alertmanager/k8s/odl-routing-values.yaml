@@ -4,6 +4,7 @@ alertmanager:
     configSecret: alertmanager-odl-config
     secrets:
       - alertmanager-devin-webhook
+      - alertmanager-odl-devin-webhook
       - alertmanager-odl-pagerduty
     podMetadata:
       labels:
