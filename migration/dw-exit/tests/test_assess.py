@@ -14,6 +14,8 @@ from pathlib import Path
 
 import pytest
 import yaml
+from defusedxml import ElementTree as ET
+from defusedxml.common import EntitiesForbidden
 
 TOOLS = Path(__file__).resolve().parents[1] / 'tools'
 sys.path.insert(0, str(TOOLS))
@@ -48,6 +50,29 @@ def test_counts_and_xml(estate):
     assert any(r['name'] == 'm_SFX_DOC_SHARE' and r['target_type'] == 'snowpark' for r in estate['objects'])
 
 
+@pytest.mark.parametrize('relative', ['SFX_TEST/mappings/m_demo.XML', 'SFX_TEST/wf_demo.XML'])
+@pytest.mark.parametrize('declaration,reference', [
+    ('<!ENTITY file SYSTEM "file:///nonexistent/xxe-secret">', '&file;'),
+    ('<!ENTITY a "expansion"><!ENTITY b "&a;&a;"><!ENTITY c "&b;&b;">', '&c;'),
+])
+def test_assessment_rejects_entities(tmp_path, relative, declaration, reference):
+    path = tmp_path / 'etl/informatica/repository' / relative
+    path.parent.mkdir(parents=True)
+    path.write_text('<!DOCTYPE POWERMART [' + declaration + ']><POWERMART>' + reference + '</POWERMART>')
+    with pytest.raises(EntitiesForbidden):
+        assess.build(tmp_path)
+
+
+@pytest.mark.parametrize('relative', ['SFX_TEST/mappings/m_demo.XML', 'SFX_TEST/wf_demo.XML'])
+@pytest.mark.parametrize('document', ['', '<POWERMART>'])
+def test_assessment_rejects_malformed_xml(tmp_path, relative, document):
+    path = tmp_path / 'etl/informatica/repository' / relative
+    path.parent.mkdir(parents=True)
+    path.write_text(document)
+    with pytest.raises(ET.ParseError):
+        assess.build(tmp_path)
+
+
 def test_dead_and_setup(estate):
     assert estate['dead'] == ['SFX_AUDIT.AUDIT_EVENT_ARCHIVE', 'SFX_AUDIT.M_ARCHIVE_OVERVIEW', 'SFX_DOCUMENTS.SEARCH_INDEX_LOG', 'SFX_DOCUMENTS.V_SEARCH_HISTORY', 'SFX_USERS.USER_PREF', 'SFX_USERS.V_USER_SETTINGS']
     assert set(estate['dead']).isdisjoint(estate['setup_only'])
@@ -78,7 +103,6 @@ def test_dependency_order(estate):
 
 def test_every_target_matches_source_area(estate):
     import re
-    import xml.etree.ElementTree as ET
     for row in estate['objects']:
         if row['kind'] == 'spark_job':
             assert row['source_ref'] == 'demo-snowflake-dw-exit'

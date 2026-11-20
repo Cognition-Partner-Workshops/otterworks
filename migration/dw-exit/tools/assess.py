@@ -10,11 +10,11 @@ import hashlib
 import json
 import re
 import subprocess
-import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
 from pathlib import Path
 
 import yaml
+from defusedxml import ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / 'migration/dw-exit'
