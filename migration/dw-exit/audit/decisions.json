@@ -1,0 +1,16 @@
+[
+  {
+    "decision_id": "audit-archive-retirement",
+    "action": "retire",
+    "status": "approved",
+    "new_behaviour": "Owner-approved retirement of the six unused audit archive objects. Preserve Spark archive jobs and their landing feed; no physical deletion is performed by board generation.",
+    "board_objects": [
+      "m_SFX_AUDIT_EVENT_ARCHIVE",
+      "s_m_SFX_AUDIT_EVENT_ARCHIVE",
+      "SFX_AUDIT.M_ARCHIVE_OVERVIEW",
+      "SFX_AUDIT.AUDIT_EVENT_ARCHIVE",
+      "SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE",
+      "audit_audit_event_archive"
+    ]
+  }
+]

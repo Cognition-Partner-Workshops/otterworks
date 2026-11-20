@@ -1,0 +1,276 @@
+[
+  {
+    "name": "collab_session_sessionize",
+    "target": "spark__collab_session_sessionize",
+    "target_type": "dbt_model",
+    "source": "etl/spark/jobs/py/collab_session_sessionize.py",
+    "owner": "@otterworks/data-platform",
+    "owner_source": "proposed",
+    "inputs": [
+      "documents.COLLAB_SESSION"
+    ],
+    "area": "documents",
+    "keys": [
+      "USER_ID",
+      "DOCUMENT_ID",
+      "SESSION_NUMBER"
+    ],
+    "model": "warehouse/dbt/models/spark/collab_session_sessionize/collab_session_sessionize.sql",
+    "dependencies": [],
+    "contract": "SPARK_COLLAB_SESSION_SESSIONIZE",
+    "callers": [],
+    "ownership_note": "No output references in consumers/registry.yaml and no matching Spark CODEOWNERS rule; cannot infer an owner conflict from their absence."
+  },
+  {
+    "name": "doc_share_graph_reach",
+    "target": "spark__doc_share_graph_reach",
+    "target_type": "dbt_model",
+    "source": "etl/spark/jobs/py/doc_share_graph_reach.py",
+    "owner": "@otterworks/data-platform",
+    "owner_source": "proposed",
+    "inputs": [
+      "documents.DOC_SHARE"
+    ],
+    "area": "documents",
+    "keys": [
+      "USER_ID"
+    ],
+    "model": "warehouse/dbt/models/spark/doc_share_graph_reach/doc_share_graph_reach.sql",
+    "dependencies": [],
+    "contract": "SPARK_DOC_SHARE_GRAPH_REACH",
+    "callers": [],
+    "ownership_note": "No output references in consumers/registry.yaml and no matching Spark CODEOWNERS rule; cannot infer an owner conflict from their absence."
+  },
+  {
+    "name": "doc_version_diff_stats",
+    "target": "spark__doc_version_diff_stats",
+    "target_type": "dbt_model",
+    "source": "etl/spark/jobs/py/doc_version_diff_stats.py",
+    "owner": "@otterworks/data-platform",
+    "owner_source": "proposed",
+    "inputs": [
+      "documents.DOC_VERSION"
+    ],
+    "area": "documents",
+    "keys": [
+      "DOC_VERSION_ID"
+    ],
+    "model": "warehouse/dbt/models/spark/doc_version_diff_stats/doc_version_diff_stats.sql",
+    "dependencies": [],
+    "contract": "SPARK_DOC_VERSION_DIFF_STATS",
+    "callers": [],
+    "ownership_note": "No output references in consumers/registry.yaml and no matching Spark CODEOWNERS rule; cannot infer an owner conflict from their absence."
+  },
+  {
+    "name": "docs_event_export_hourly",
+    "target": "spark__docs_event_export_hourly",
+    "target_type": "dbt_model",
+    "source": "etl/spark/jobs/py/docs_event_export_hourly.py",
+    "owner": "@otterworks/data-platform",
+    "owner_source": "proposed",
+    "inputs": [
+      "documents.DOCUMENT"
+    ],
+    "area": "documents",
+    "keys": [
+      "DOCUMENT_ID"
+    ],
+    "model": "warehouse/dbt/models/spark/docs_event_export_hourly/docs_event_export_hourly.sql",
+    "dependencies": [],
+    "contract": "SPARK_DOCS_EVENT_EXPORT_HOURLY",
+    "callers": [
+      "etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala"
+    ],
+    "ownership_note": "No output references in consumers/registry.yaml and no matching Spark CODEOWNERS rule; cannot infer an owner conflict from their absence."
+  },
+  {
+    "name": "docs_folder_legacy_report",
+    "target": "spark__docs_folder_legacy_report",
+    "target_type": "dbt_model",
+    "source": "etl/spark/jobs/py/docs_folder_legacy_report.py",
+    "owner": "@otterworks/data-platform",
+    "owner_source": "proposed",
+    "inputs": [
+      "documents.FOLDER",
+      "documents.DOCUMENT"
+    ],
+    "area": "documents",
+    "keys": [
+      "FOLDER_ID"
+    ],
+    "model": "warehouse/dbt/models/spark/docs_folder_legacy_report/docs_folder_legacy_report.sql",
+    "dependencies": [],
+    "contract": "SPARK_DOCS_FOLDER_LEGACY_REPORT",
+    "callers": [],
+    "ownership_note": "No output references in consumers/registry.yaml and no matching Spark CODEOWNERS rule; cannot infer an owner conflict from their absence."
+  },
+  {
+    "name": "docs_folder_tree_walk",
+    "target": "spark__docs_folder_tree_walk",
+    "target_type": "dbt_model",
+    "source": "etl/spark/jobs/py/docs_folder_tree_walk.py",
+    "owner": "@otterworks/data-platform",
+    "owner_source": "proposed",
+    "inputs": [
+      "documents.FOLDER"
+    ],
+    "area": "documents",
+    "keys": [
+      "FOLDER_ID"
+    ],
+    "model": "warehouse/dbt/models/spark/docs_folder_tree_walk/docs_folder_tree_walk.sql",
+    "dependencies": [],
+    "contract": "SPARK_DOCS_FOLDER_TREE_WALK",
+    "callers": [],
+    "ownership_note": "No output references in consumers/registry.yaml and no matching Spark CODEOWNERS rule; cannot infer an owner conflict from their absence."
+  },
+  {
+    "name": "docs_search_log_parse",
+    "target": "spark__docs_search_log_parse",
+    "target_type": "dbt_model",
+    "source": "etl/spark/jobs/py/docs_search_log_parse.py",
+    "owner": "@otterworks/data-platform",
+    "owner_source": "proposed",
+    "inputs": [
+      "documents.SEARCH_INDEX_LOG"
+    ],
+    "area": "documents",
+    "keys": [
+      "SEARCH_INDEX_LOG_ID"
+    ],
+    "model": "warehouse/dbt/models/spark/docs_search_log_parse/docs_search_log_parse.sql",
+    "dependencies": [],
+    "contract": "SPARK_DOCS_SEARCH_LOG_PARSE",
+    "callers": [],
+    "ownership_note": "No output references in consumers/registry.yaml and no matching Spark CODEOWNERS rule; cannot infer an owner conflict from their absence."
+  },
+  {
+    "name": "docs_share_activity",
+    "target": "spark__docs_share_activity",
+    "target_type": "dbt_model",
+    "source": "etl/spark/scala/src/main/scala/sfx/DocsShareActivity.scala",
+    "owner": "@otterworks/data-platform",
+    "owner_source": "proposed",
+    "inputs": [
+      "documents.DOC_SHARE",
+      "documents.DOCUMENT"
+    ],
+    "area": "documents",
+    "keys": [
+      "OWNER_USER_ID",
+      "PERMISSION"
+    ],
+    "model": "warehouse/dbt/models/spark/docs_share_activity/docs_share_activity.sql",
+    "dependencies": [],
+    "contract": "SPARK_DOCS_SHARE_ACTIVITY",
+    "callers": [],
+    "ownership_note": "No output references in consumers/registry.yaml and no matching Spark CODEOWNERS rule; cannot infer an owner conflict from their absence."
+  },
+  {
+    "name": "docs_storage_by_owner",
+    "target": "spark__docs_storage_by_owner",
+    "target_type": "dbt_model",
+    "source": "etl/spark/jobs/py/docs_storage_by_owner.py",
+    "owner": "@otterworks/data-platform",
+    "owner_source": "proposed",
+    "inputs": [
+      "documents.DOCUMENT",
+      "documents.FILE_OBJECT",
+      "users.APP_USER"
+    ],
+    "area": "documents",
+    "keys": [
+      "USER_ID",
+      "EMAIL"
+    ],
+    "model": "warehouse/dbt/models/spark/docs_storage_by_owner/docs_storage_by_owner.sql",
+    "dependencies": [],
+    "contract": "SPARK_DOCS_STORAGE_BY_OWNER",
+    "callers": [],
+    "ownership_note": "No output references in consumers/registry.yaml and no matching Spark CODEOWNERS rule; cannot infer an owner conflict from their absence."
+  },
+  {
+    "name": "docs_tag_normalize",
+    "target": "spark__docs_tag_normalize",
+    "target_type": "dbt_model",
+    "source": "etl/spark/jobs/py/docs_tag_normalize.py",
+    "owner": "@otterworks/data-platform",
+    "owner_source": "proposed",
+    "inputs": [
+      "documents.DOC_TAG"
+    ],
+    "area": "documents",
+    "keys": [
+      "DOC_TAG_ID"
+    ],
+    "model": "warehouse/dbt/models/spark/docs_tag_normalize/docs_tag_normalize.sql",
+    "dependencies": [],
+    "contract": "SPARK_DOCS_TAG_NORMALIZE",
+    "callers": [],
+    "ownership_note": "No output references in consumers/registry.yaml and no matching Spark CODEOWNERS rule; cannot infer an owner conflict from their absence."
+  },
+  {
+    "name": "file_object_binary_extract",
+    "target": "spark__file_object_binary_extract",
+    "target_type": "dbt_model",
+    "source": "etl/spark/jobs/py/file_object_binary_extract.py",
+    "owner": "@otterworks/data-platform",
+    "owner_source": "proposed",
+    "inputs": [
+      "documents.FILE_OBJECT",
+      "documents.FILE_OBJECT_BLOBS"
+    ],
+    "area": "documents",
+    "keys": [
+      "FILE_OBJECT_ID",
+      "RUN_DATE"
+    ],
+    "model": "warehouse/dbt/models/spark/file_object_binary_extract/file_object_binary_extract.sql",
+    "dependencies": [],
+    "contract": "SPARK_FILE_OBJECT_BINARY_EXTRACT",
+    "callers": [],
+    "ownership_note": "No output references in consumers/registry.yaml and no matching Spark CODEOWNERS rule; cannot infer an owner conflict from their absence."
+  },
+  {
+    "name": "lake_compaction_documents",
+    "target": "spark__lake_compaction_documents",
+    "target_type": "dbt_model",
+    "source": "etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala",
+    "owner": "@otterworks/data-platform",
+    "owner_source": "proposed",
+    "inputs": [
+      "documents.DOCUMENT"
+    ],
+    "area": "documents",
+    "keys": [
+      "DOCUMENT_ID"
+    ],
+    "model": "warehouse/dbt/models/spark/lake_compaction_documents/lake_compaction_documents.sql",
+    "dependencies": [
+      "docs_event_export_hourly"
+    ],
+    "contract": "SPARK_LAKE_COMPACTION_DOCUMENTS",
+    "callers": [],
+    "ownership_note": "No output references in consumers/registry.yaml and no matching Spark CODEOWNERS rule; cannot infer an owner conflict from their absence."
+  },
+  {
+    "name": "security_alert_anomaly",
+    "target": "spark__security_alert_anomaly",
+    "target_type": "dbt_model",
+    "source": "etl/spark/jobs/py/security_alert_anomaly.py",
+    "owner": "@otterworks/data-platform",
+    "owner_source": "proposed",
+    "inputs": [
+      "audit.SECURITY_ALERT"
+    ],
+    "area": "audit",
+    "keys": [
+      "ALERT_ID"
+    ],
+    "model": "warehouse/dbt/models/spark/security_alert_anomaly/security_alert_anomaly.sql",
+    "dependencies": [],
+    "contract": "SPARK_SECURITY_ALERT_ANOMALY",
+    "callers": [],
+    "ownership_note": "No documents Spark output references in consumers/registry.yaml; no matching Spark CODEOWNERS rule. Manifest owner is data-platform. Audit input/output suggests subject-area misassignment."
+  }
+]

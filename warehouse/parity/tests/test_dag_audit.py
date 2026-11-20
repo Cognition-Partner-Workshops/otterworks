@@ -73,16 +73,21 @@ def test_summary_task_replays_model_reconciliation(tmp_path):
 
     model = Path(__file__).resolve().parents[2] / 'dbt/models/pc/audit/pc_audit__audit_daily_summary.sql'
     config = {}
-    Environment().from_string(_run_render(model.read_text())).render(
+    query = Environment().from_string(_run_render(model.read_text())).render(
         config=lambda **kw: config.update(kw) or '', this=_run_render('__RUN_DATABASE__.PC_AUDIT.AUDIT_DAILY_SUMMARY'),
         ref=lambda name: _run_render('__RUN_DATABASE__.PC_AUDIT.AUDIT_EVENT'),
         var=lambda name, default: default, is_incremental=lambda: True)
-    generated = pc_dag_audit.generate(fake_run(tmp_path), 'PC_FX_UNT9_AUDIT_WF', 'PC_AUDIT')
+    out = tmp_path/'audit.yml'
+    out.write_text(yaml.safe_dump(pc_dag_audit.generate(fake_run(tmp_path), 'PC_FX_UNT9_AUDIT_WF', 'PC_AUDIT')))
+    pc_dag_audit.refresh_summary(out, 'PC_AUDIT')
+    generated = yaml.safe_load(_run_render(out.read_text()))
     committed = yaml.safe_load(_run_render((pc_dag_audit.ROOT / 'pc_dag/audit.yml').read_text()))
     for doc in (generated, committed):
         sql = doc['tasks']['AUDIT_DAILY_SUMMARY']['sql']
-        assert config['post_hook'][0].strip() in sql
-        assert sql.index('merge into') < sql.index('delete from') < sql.index('COMMENT ON TABLE')
+        assert config['materialized'] == 'table'
+        assert query.strip() in sql
+        assert sql.index('CREATE OR REPLACE TRANSIENT TABLE') < sql.index('COMMENT ON TABLE')
+        assert 'FIRST_EVENT_ID' not in sql
         assert 'delete from' not in doc['tasks']['AUDIT_EVENT']['sql']
 
 

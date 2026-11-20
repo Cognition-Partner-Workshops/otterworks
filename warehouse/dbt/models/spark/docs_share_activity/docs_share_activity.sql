@@ -1,3 +1,4 @@
+{{ config(materialized='table', alias='spark__docs_share_activity') }}
 -- Replaces the Spark lake output documents/docs_share_activity.
 select
     d.OWNER_USER_ID,

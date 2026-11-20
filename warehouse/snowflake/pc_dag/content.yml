@@ -2,10 +2,8 @@
 # Each workflow link has the condition $<session>.Status=SUCCEEDED, which maps to AFTER:
 # a child task runs only when its predecessor succeeds.
 # The workflow has no worklets, decisions, timers or event waits.
-# s_m_SFX_ROLE_GRANT, s_m_SFX_LOGIN_EVENT and s_m_SFX_TEAM_MEMBER (disabled) belong to another
-# effort and have no task here. The DOC_SHARE model reads the ROLE_GRANT landing file itself.
-# Each session task checks the dbt-built relation: it fails on an empty table (division by zero)
-# or a duplicate business key, so a bad build stops the downstream tasks.
+# s_m_SFX_TEAM_MEMBER is disabled in the source workflow and has no task here.
+# Session procedures are owned by users and documents and share the core tables.
 root: START
 tasks:
   START:
@@ -13,23 +11,31 @@ tasks:
   STG_APP_USER:
     after: [START]
     warehouse: __RUN_DATABASE___TRANSFORM_WH
-    sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT USER_ID), 1, 0) FROM __RUN_DATABASE__.PC_CONTENT.STG_APP_USER
+    sql: CALL __RUN_DATABASE__.OPS.STG_USERS__S_M_SFX_STG_APP_USER()
   APP_USER:
     after: [STG_APP_USER]
     warehouse: __RUN_DATABASE___TRANSFORM_WH
-    sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT USER_ID), 1, 0) FROM __RUN_DATABASE__.PC_CONTENT.APP_USER
+    sql: CALL __RUN_DATABASE__.OPS.CORE_USERS__S_M_SFX_APP_USER()
   STG_DOCUMENT:
     after: [APP_USER]
     warehouse: __RUN_DATABASE___TRANSFORM_WH
-    sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT DOCUMENT_ID), 1, 0) FROM __RUN_DATABASE__.PC_CONTENT.STG_DOCUMENT
+    sql: CALL __RUN_DATABASE__.OPS.STG_DOCUMENTS__S_M_SFX_STG_DOCUMENT()
+  ROLE_GRANT:
+    after: [APP_USER]
+    warehouse: __RUN_DATABASE___TRANSFORM_WH
+    sql: CALL __RUN_DATABASE__.OPS.CORE_USERS__S_M_SFX_ROLE_GRANT()
+  LOGIN_EVENT:
+    after: [APP_USER]
+    warehouse: __RUN_DATABASE___TRANSFORM_WH
+    sql: CALL __RUN_DATABASE__.OPS.CORE_USERS__S_M_SFX_LOGIN_EVENT()
   DOCUMENT:
     after: [STG_DOCUMENT]
     warehouse: __RUN_DATABASE___TRANSFORM_WH
-    sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT DOCUMENT_ID), 1, 0) FROM __RUN_DATABASE__.PC_CONTENT.DOCUMENT
+    sql: CALL __RUN_DATABASE__.OPS.CORE_DOCUMENTS__S_M_SFX_DOCUMENT()
   DOC_SHARE:
-    after: [DOCUMENT]
+    after: [DOCUMENT, ROLE_GRANT]
     warehouse: __RUN_DATABASE___TRANSFORM_WH
-    sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT SHARE_ID), 1, 0) FROM __RUN_DATABASE__.PC_CONTENT.DOC_SHARE
+    sql: CALL __RUN_DATABASE__.OPS.CORE_DOCUMENTS__S_M_SFX_DOC_SHARE()
   FINISH:
-    after: [DOC_SHARE]
+    after: [DOC_SHARE, LOGIN_EVENT]
     sql: SELECT 1

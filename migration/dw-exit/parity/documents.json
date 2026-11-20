@@ -1,0 +1,303 @@
+[
+  {
+    "name": "COLLAB_SESSION",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.COLLAB_SESSION",
+    "after": "__RUN_DATABASE__.DOCUMENTS.COLLAB_SESSION",
+    "keys": [
+      "SESSION_ID"
+    ]
+  },
+  {
+    "name": "DOCUMENT",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.DOCUMENT",
+    "after": "__RUN_DATABASE__.DOCUMENTS.DOCUMENT",
+    "keys": [
+      "DOCUMENT_ID"
+    ]
+  },
+  {
+    "name": "DOC_COMMENT",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.DOC_COMMENT",
+    "after": "__RUN_DATABASE__.DOCUMENTS.DOC_COMMENT",
+    "keys": [
+      "COMMENT_ID"
+    ]
+  },
+  {
+    "name": "DOC_SHARE",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.DOC_SHARE",
+    "after": "__RUN_DATABASE__.DOCUMENTS.DOC_SHARE",
+    "keys": [
+      "SHARE_ID"
+    ]
+  },
+  {
+    "name": "DOC_TAG",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.DOC_TAG",
+    "after": "__RUN_DATABASE__.DOCUMENTS.DOC_TAG",
+    "keys": [
+      "TAG_ID"
+    ]
+  },
+  {
+    "name": "DOC_VERSION",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.DOC_VERSION",
+    "after": "__RUN_DATABASE__.DOCUMENTS.DOC_VERSION",
+    "keys": [
+      "VERSION_ID"
+    ]
+  },
+  {
+    "name": "FILE_OBJECT",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.FILE_OBJECT",
+    "after": "__RUN_DATABASE__.DOCUMENTS.FILE_OBJECT",
+    "keys": [
+      "FILE_OBJECT_ID"
+    ]
+  },
+  {
+    "name": "FOLDER",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.FOLDER",
+    "after": "__RUN_DATABASE__.DOCUMENTS.FOLDER",
+    "keys": [
+      "FOLDER_ID"
+    ]
+  },
+  {
+    "name": "STG_COLLAB_SESSION",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.STG_COLLAB_SESSION",
+    "after": "__RUN_DATABASE__.DOCUMENTS.STG_COLLAB_SESSION",
+    "keys": [
+      "SESSION_ID"
+    ]
+  },
+  {
+    "name": "STG_DOCUMENT",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.STG_DOCUMENT",
+    "after": "__RUN_DATABASE__.DOCUMENTS.STG_DOCUMENT",
+    "keys": [
+      "DOCUMENT_ID"
+    ]
+  },
+  {
+    "name": "STG_DOC_COMMENT",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.STG_DOC_COMMENT",
+    "after": "__RUN_DATABASE__.DOCUMENTS.STG_DOC_COMMENT",
+    "keys": [
+      "COMMENT_ID"
+    ]
+  },
+  {
+    "name": "STG_DOC_SHARE",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.STG_DOC_SHARE",
+    "after": "__RUN_DATABASE__.DOCUMENTS.STG_DOC_SHARE",
+    "keys": [
+      "SHARE_ID"
+    ]
+  },
+  {
+    "name": "STG_DOC_TAG",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.STG_DOC_TAG",
+    "after": "__RUN_DATABASE__.DOCUMENTS.STG_DOC_TAG",
+    "keys": [
+      "TAG_ID"
+    ]
+  },
+  {
+    "name": "STG_DOC_VERSION",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.STG_DOC_VERSION",
+    "after": "__RUN_DATABASE__.DOCUMENTS.STG_DOC_VERSION",
+    "keys": [
+      "VERSION_ID"
+    ]
+  },
+  {
+    "name": "STG_FILE_OBJECT",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.STG_FILE_OBJECT",
+    "after": "__RUN_DATABASE__.DOCUMENTS.STG_FILE_OBJECT",
+    "keys": [
+      "FILE_OBJECT_ID"
+    ]
+  },
+  {
+    "name": "STG_FOLDER",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.STG_FOLDER",
+    "after": "__RUN_DATABASE__.DOCUMENTS.STG_FOLDER",
+    "keys": [
+      "FOLDER_ID"
+    ]
+  },
+  {
+    "name": "STG_STORAGE_USAGE_DAILY",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.STG_STORAGE_USAGE_DAILY",
+    "after": "__RUN_DATABASE__.DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+    "keys": [
+      "STORAGE_USAGE_ID"
+    ]
+  },
+  {
+    "name": "STORAGE_USAGE_DAILY",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.STORAGE_USAGE_DAILY",
+    "after": "__RUN_DATABASE__.DOCUMENTS.STORAGE_USAGE_DAILY",
+    "keys": [
+      "STORAGE_USAGE_ID"
+    ]
+  },
+  {
+    "name": "V_DOCUMENT_VERSIONS",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.V_DOCUMENT_VERSIONS",
+    "after": "__RUN_DATABASE__.DOCUMENTS.V_DOCUMENT_VERSIONS",
+    "keys": [
+      "DOCUMENT_ID"
+    ]
+  },
+  {
+    "name": "V_WORKSPACE_STORAGE",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.V_WORKSPACE_STORAGE",
+    "after": "__RUN_DATABASE__.DOCUMENTS.V_WORKSPACE_STORAGE",
+    "keys": [
+      "OWNER_USER_ID"
+    ]
+  },
+  {
+    "name": "M_STORAGE_TOTALS_OUTPUT",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.M_STORAGE_TOTALS_OUTPUT",
+    "after": "__RUN_DATABASE__.DOCUMENTS.M_STORAGE_TOTALS_OUTPUT",
+    "keys": [
+      "CUSTOMER_ID"
+    ]
+  },
+  {
+    "name": "USAGE_DAILY",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.USAGE_DAILY",
+    "after": "__RUN_DATABASE__.BILLING.USAGE_DAILY",
+    "keys": [
+      "USAGE_ID"
+    ]
+  },
+  {
+    "name": "INVOICE_LINE",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.INVOICE_LINE",
+    "after": "__RUN_DATABASE__.BILLING.INVOICE_LINE",
+    "keys": [
+      "INVOICE_LINE_ID"
+    ]
+  },
+  {
+    "name": "SPARK_COLLAB_SESSION_SESSIONIZE",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.COLLAB_SESSION_SESSIONIZE",
+    "after": "__RUN_DATABASE__.MART_SPARK.SPARK__COLLAB_SESSION_SESSIONIZE",
+    "keys": [
+      "USER_ID",
+      "DOCUMENT_ID",
+      "SESSION_NUMBER"
+    ]
+  },
+  {
+    "name": "SPARK_DOC_SHARE_GRAPH_REACH",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.DOC_SHARE_GRAPH_REACH",
+    "after": "__RUN_DATABASE__.MART_SPARK.SPARK__DOC_SHARE_GRAPH_REACH",
+    "keys": [
+      "USER_ID"
+    ]
+  },
+  {
+    "name": "SPARK_DOC_VERSION_DIFF_STATS",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.DOC_VERSION_DIFF_STATS",
+    "after": "__RUN_DATABASE__.MART_SPARK.SPARK__DOC_VERSION_DIFF_STATS",
+    "keys": [
+      "DOC_VERSION_ID"
+    ]
+  },
+  {
+    "name": "SPARK_DOCS_EVENT_EXPORT_HOURLY",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.DOCS_EVENT_EXPORT_HOURLY",
+    "after": "__RUN_DATABASE__.MART_SPARK.SPARK__DOCS_EVENT_EXPORT_HOURLY",
+    "keys": [
+      "DOCUMENT_ID"
+    ]
+  },
+  {
+    "name": "SPARK_DOCS_FOLDER_LEGACY_REPORT",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.DOCS_FOLDER_LEGACY_REPORT",
+    "after": "__RUN_DATABASE__.MART_SPARK.SPARK__DOCS_FOLDER_LEGACY_REPORT",
+    "keys": [
+      "FOLDER_ID"
+    ]
+  },
+  {
+    "name": "SPARK_DOCS_FOLDER_TREE_WALK",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.DOCS_FOLDER_TREE_WALK",
+    "after": "__RUN_DATABASE__.MART_SPARK.SPARK__DOCS_FOLDER_TREE_WALK",
+    "keys": [
+      "FOLDER_ID"
+    ]
+  },
+  {
+    "name": "SPARK_DOCS_SEARCH_LOG_PARSE",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.DOCS_SEARCH_LOG_PARSE",
+    "after": "__RUN_DATABASE__.MART_SPARK.SPARK__DOCS_SEARCH_LOG_PARSE",
+    "keys": [
+      "SEARCH_INDEX_LOG_ID"
+    ]
+  },
+  {
+    "name": "SPARK_DOCS_SHARE_ACTIVITY",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.DOCS_SHARE_ACTIVITY",
+    "after": "__RUN_DATABASE__.MART_SPARK.SPARK__DOCS_SHARE_ACTIVITY",
+    "keys": [
+      "OWNER_USER_ID",
+      "PERMISSION"
+    ]
+  },
+  {
+    "name": "SPARK_DOCS_STORAGE_BY_OWNER",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.DOCS_STORAGE_BY_OWNER",
+    "after": "__RUN_DATABASE__.MART_SPARK.SPARK__DOCS_STORAGE_BY_OWNER",
+    "keys": [
+      "USER_ID",
+      "EMAIL"
+    ]
+  },
+  {
+    "name": "SPARK_DOCS_TAG_NORMALIZE",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.DOCS_TAG_NORMALIZE",
+    "after": "__RUN_DATABASE__.MART_SPARK.SPARK__DOCS_TAG_NORMALIZE",
+    "keys": [
+      "DOC_TAG_ID"
+    ]
+  },
+  {
+    "name": "SPARK_FILE_OBJECT_BINARY_EXTRACT",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.FILE_OBJECT_BINARY_EXTRACT",
+    "after": "__RUN_DATABASE__.MART_SPARK.SPARK__FILE_OBJECT_BINARY_EXTRACT",
+    "keys": [
+      "FILE_OBJECT_ID",
+      "RUN_DATE"
+    ]
+  },
+  {
+    "name": "SPARK_LAKE_COMPACTION_DOCUMENTS",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.LAKE_COMPACTION_DOCUMENTS",
+    "after": "__RUN_DATABASE__.MART_SPARK.SPARK__LAKE_COMPACTION_DOCUMENTS",
+    "keys": [
+      "DOCUMENT_ID"
+    ]
+  },
+  {
+    "name": "SPARK_SECURITY_ALERT_ANOMALY",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.SECURITY_ALERT_ANOMALY",
+    "after": "__RUN_DATABASE__.MART_SPARK.SPARK__SECURITY_ALERT_ANOMALY",
+    "keys": [
+      "ALERT_ID"
+    ]
+  },
+  {
+    "name": "SPARK_SECURITY_ALERT_ANOMALY_JDBC",
+    "before": "__RUN_DATABASE__.SPARK_DOCUMENTS_BASELINE.SPARK_ALERT_ANOMALY_JDBC",
+    "after": "__RUN_DATABASE__.COMPAT.SPARK_ALERT_ANOMALY",
+    "keys": [
+      "ALERT_ID"
+    ]
+  }
+]

@@ -1,3 +1,4 @@
+{{ config(materialized='table', alias='spark__docs_storage_by_owner') }}
 -- Replaces the Spark lake output documents/docs_storage_by_owner.
 select
     u.USER_ID,

@@ -1,0 +1,16 @@
+version: 2
+models:
+- name: compliance_flag_rules
+  description: >-
+    Audit compliance disposition, replacing lake audit/compliance_flag_rules and
+    JDBC sfx_audit.SPARK_COMPLIANCE_REVIEW. Closed status takes precedence over
+    the severity threshold of 7000. Null input values are not silently defaulted.
+  columns:
+  - name: FLAG_ID
+  - name: DOCUMENT_ID
+  - name: SEVERITY
+  - name: DISPOSITION
+    tests:
+    - not_null
+    - accepted_values:
+        values: ['resolved', 'review', 'monitor']
