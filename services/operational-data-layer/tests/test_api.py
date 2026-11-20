@@ -11,7 +11,7 @@ from pymongo.errors import ConnectionFailure
 import jwt
 
 from odl_sync import metrics, sync
-from odl_sync.api import PREFIX, create_app
+from odl_sync.api import PREFIX, create_app, ensure_indexes
 from odl_sync.parity import write_csv
 
 SECRET = 'odl-unit-test-secret-at-least-32-bytes'
@@ -71,6 +71,17 @@ def test_customer_filters_and_cursor(client):
     assert client.get(PREFIX + '/customers?db2_cust_no=missing').json()['items'] == []
     for query in ('limit=0', 'limit=101', 'oracle_account_id=bad', 'oracle_account_id=-1', 'match_status=bad'):
         assert client.get(PREFIX + '/customers?' + query).status_code == 422
+
+
+def test_customer_key_pagination_indexes(db):
+    ensure_indexes(db)
+    ensure_indexes(db)
+    indexes = db.customers.index_information().values()
+    for key in ('db2_cust_no', 'oracle_account_ids', 'crm_contact_id'):
+        index, = [index for index in indexes if index['key'] == [('source_keys.' + key, 1), ('_id', 1)]]
+        assert not index.get('unique', False)
+        assert 'partialFilterExpression' not in index
+        assert not index.get('sparse', False)
 
 
 @pytest.fixture

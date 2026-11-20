@@ -95,6 +95,12 @@ offset and matches only customers with `updated_at` strictly after that instant.
 timestamps return HTTP 400. All filters are applied together; repeat them when using the
 returned `next_cursor`.
 
+API startup creates non-unique, non-partial compound indexes on
+`(source_keys.db2_cust_no, _id)`, `(source_keys.oracle_account_ids, _id)` and
+`(source_keys.crm_contact_id, _id)` (all ascending), alongside `(match.status, _id)`,
+to support equality filters with cursor ordering. These supplement, rather than
+replace, the loader's partial unique source-key indexes.
+
 `updated_at` is the UTC time MongoDB assigns when ODL sync writes a new or changed customer
 document, not a source-system modification time. Unchanged syncs preserve it. Existing customers
 are stamped on their first sync after upgrade, so a cutoff before that sync can include

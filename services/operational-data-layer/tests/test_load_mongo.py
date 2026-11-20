@@ -6,8 +6,9 @@ from uuid import uuid4
 import pytest
 from pymongo import MongoClient
 
+from odl_sync.api import ensure_indexes
 from odl_sync.extract import Extract
-from odl_sync.load import load
+from odl_sync.load import indexes, load
 from odl_sync.merge import merge
 from test_core import record
 
@@ -22,6 +23,41 @@ def database():
             yield client[name]
         finally:
             client.drop_database(name)
+
+
+@pytest.mark.parametrize('key,value', [
+    ('db2_cust_no', 'C0001999'),
+    ('oracle_account_ids', 7001999),
+    ('crm_contact_id', 'contact-1999'),
+])
+def test_customer_key_pagination_explain(database, key, value):
+    indexes(database)
+    ensure_indexes(database)
+    database.customers.insert_many([
+        dict(_id=f'cus_{i:04}', match_key=f'match-{i}', source_keys=dict(
+            db2_cust_no=f'C{i:07}', oracle_account_ids=[7000000 + i], crm_contact_id=f'contact-{i}'))
+        for i in range(2000)
+    ])
+
+    def scans(plan):
+        if isinstance(plan, dict):
+            if plan.get('stage') == 'IXSCAN':
+                yield plan
+            for child in plan.values():
+                yield from scans(child)
+        elif isinstance(plan, list):
+            for child in plan:
+                yield from scans(child)
+
+    field = 'source_keys.' + key
+    for extra, expected in (({}, 1), ({'_id': {'$gt': 'cus_1998'}}, 1), ({'_id': {'$gt': 'cus_1999'}}, 0)):
+        explanation = database.customers.find({field: value, **extra}).sort('_id', 1).limit(101).explain()
+        winning_scans = list(scans(explanation['queryPlanner']['winningPlan']))
+        assert winning_scans, explanation
+        assert all(scan['keyPattern'] == {field: 1, '_id': 1} for scan in winning_scans), explanation
+        stats = explanation['executionStats']
+        assert stats['nReturned'] == expected, explanation
+        assert stats['totalDocsExamined'] <= 1, explanation
 
 
 def test_customer_unique_key_cycles_and_retry(database):
