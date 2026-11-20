@@ -4,7 +4,7 @@
 
 **Snowflake: red.** No login or object creation was attempted. Local parity is not cutover approval.
 
-The board covers exactly the 59 documents manifest objects and includes raw per-relation counts, column profiles, keyed row hashes, and samples of all differing fixture keys. Approved version deviations retain raw mismatches and include an independently calculated owner-decision scope proof. The documents share fixture matched the legacy output; a separate multi-match regression proves the approved highest-privilege rule. Storage remains amber pending finance confirmation of invoice impact.
+The shared generator covers all 59 documents manifest objects and includes raw per-relation counts, column profiles, keyed row hashes, and samples of all differing fixture keys. Approved version deviations retain raw mismatches and include an independently calculated owner-decision scope proof. The documents share fixture matched the legacy output; a separate multi-match regression proves the approved highest-privilege rule. Storage remains amber pending finance confirmation of invoice impact.
 
 ## Reproduce through the shared generator
 
@@ -32,16 +32,16 @@ warehouse/.venv/bin/python -m pytest -q migration/dw-exit/tests
 
 - Do not recapture over the frozen post-BTEQ/pre-PowerCenter state. Proof requires all three session logs after that capture and reads the actual post-session targets. It separately runs the dbt session queries, session procedure bodies and mapping publishers in DuckDB.
 - The TPT rewrite uses the original delimited inputs and checks empty strings versus numeric/date NULLs. Snowflake needs the external landing stage and file format in `05_tpt.sql`; those were not provisioned.
-- `OPS."10_STORAGE_MONTHLY"` reads the deduplicated documents table, updates shared billing tables, and returns the storage summary. The local check replays the legacy script in a rolled-back transaction to compare at the storage boundary, before later billing steps mutate invoices. In the combined migration, schedule the billing side effects once, not both this procedure and the existing billing storage slice.
+- `OPS."10_STORAGE_MONTHLY"` reads the deduplicated documents table, updates shared billing tables, and returns the storage summary. The local check replays the legacy script in a rolled-back transaction to compare at the storage boundary, before later billing steps mutate invoices. This is the single writer for the monthly storage boundary, not the existing billing storage slice. Amber propagates to 10_storage_monthly, DOCUMENTS.STORAGE_USAGE_DAILY, BILLING.USAGE_DAILY and BILLING.INVOICE_LINE only with passing local measurements.
 - The Spark proof uses actual local Spark outputs, including the audit JDBC output. The binary job replays two dates and compares the entire retained partition history on the date-inclusive key.
 
 ## Retirement and integration holds
 
 | Manifest retire candidate | Pinned DBQL finding | Cutover action |
 |---|---|---|
-| `SFX_DOCUMENTS.SEARCH_INDEX_LOG` | No relation reads | Keep while the search-history view remains. |
+| `SFX_DOCUMENTS.SEARCH_INDEX_LOG` | No relation reads | Owner-approved retirement together with V_SEARCH_HISTORY; drop the view first. |
 | `SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG` | Finance reconciliation count, QueryID `111000000071` pinned / `111000000072` in checkout | Keep until the finance caller is addressed. |
 | `documents_search_index_log` | No independent job event; writes the staging relation that finance reads | Retain the load until the finance caller is addressed; preserve the Spark landing feed. |
-| `SFX_DOCUMENTS.V_SEARCH_HISTORY` | No direct reads | No drop approval; confirm the view and table can be removed together. |
+| `SFX_DOCUMENTS.V_SEARCH_HISTORY` | No direct reads | Owner-approved retirement before SEARCH_INDEX_LOG. |
 
-The pinned assessment spans 2026-08-12 through 2026-11-09. The board links to DBQL query and object-use rows; retire classifications are not authorizations to drop. The separate [owner decisions](decisions.json) preserve approved semantics and the pending storage check.
+The pinned assessment spans 2026-08-12 through 2026-11-09. The board links to DBQL query and object-use rows; the two approved retirements record their view-first order, but this harness never executes drops. The separate [owner decisions](decisions.json) preserve approved semantics and the pending storage check.

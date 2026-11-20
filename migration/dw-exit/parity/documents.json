@@ -299,5 +299,13 @@
     "keys": [
       "ALERT_ID"
     ]
+  },
+  {
+    "name": "STG_SEARCH_INDEX_LOG",
+    "before": "__RUN_DATABASE__.TD_DOCUMENTS_BASELINE.STG_SEARCH_INDEX_LOG",
+    "after": "__RUN_DATABASE__.DOCUMENTS.STG_SEARCH_INDEX_LOG",
+    "keys": [
+      "INDEX_LOG_ID"
+    ]
   }
 ]

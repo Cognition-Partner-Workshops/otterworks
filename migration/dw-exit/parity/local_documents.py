@@ -97,8 +97,8 @@ def load_landing(connection, landing, business_date='20261109', conversion_dir=C
     day = validate_date(business_date)
     text = (conversion_dir/'05_tpt.sql').read_text()
     copies = re.findall(r'COPY INTO __RUN_DATABASE__\.DOCUMENTS\.(\w+)\s+FROM \(SELECT (.*?)\s+FROM @[^\n]+/documents/(\w+)/\)', text, re.S)
-    if len(copies) != 9:
-        raise ValueError('Expected nine documents TPT copies')
+    if len(copies) != 10:
+        raise ValueError('Expected ten documents TPT copies')
     for table, projection, folder in copies:
         connection.execute('BEGIN')
         try:

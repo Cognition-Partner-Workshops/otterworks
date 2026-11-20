@@ -52,7 +52,7 @@ def approved_retirements():
     return [decision for decision in json.loads((ROOT/'migration/dw-exit/audit/decisions.json').read_text())
             if decision.get('status') == 'approved' and decision.get('action') == 'retire'] + [
                 decision for decision in SFG1120_DECISIONS
-                if decision['decision_id'] == 'sfg1120-user-pref-retirement'
+                if decision['decision_id'] in ('sfg1120-user-pref-retirement', 'sfg1120-search-history-retirement')
                 and decision['status'] == 'approved']
 
 

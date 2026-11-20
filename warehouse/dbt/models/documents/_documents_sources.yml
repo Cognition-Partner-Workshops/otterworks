@@ -27,4 +27,5 @@ sources:
   - name: STG_FILE_OBJECT
   - name: STG_FOLDER
   - name: STG_STORAGE_USAGE_DAILY
+  - name: STG_SEARCH_INDEX_LOG
   - name: STORAGE_USAGE_DAILY

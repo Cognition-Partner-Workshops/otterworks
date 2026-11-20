@@ -35,6 +35,7 @@ def seed(before):
     before.execute("INSERT INTO SFX_DOCUMENTS.STG_DOC_SHARE VALUES (1,1,1,'VIEW  ','2026-11-09')")
     before.execute("INSERT INTO SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY VALUES (1,1,1,'2026-11-09',100,2),(1,1,1,'2026-11-09',100,2)")
     before.execute('INSERT INTO SFX_DOCUMENTS.STORAGE_USAGE_DAILY SELECT DISTINCT * FROM SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY')
+    before.execute("INSERT INTO SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG VALUES (1,1,'2026-11-09','ACTIVE  ',10),(2,NULL,NULL,'',NULL)")
 
 
 def test_executor_normal_and_approved_set_dedupe(connections):
@@ -53,7 +54,7 @@ def test_executor_normal_and_approved_set_dedupe(connections):
 def test_executor_empty(connections):
     before,after = connections
     ready,errors = documents.execute(after,before)
-    assert len(ready) == 20 and not errors
+    assert len(ready) == 21 and not errors
     assert after.execute('SELECT * FROM DOCUMENTS.DOC_VERSION').fetchall() == []
     assert after.execute('SELECT * FROM DOCUMENTS.V_WORKSPACE_STORAGE').fetchall() == []
 
@@ -124,10 +125,10 @@ def test_resultset_errors_no_partial_output(connections,tmp_path,failure):
 
 def test_contract_keys_and_all_manifest_routes():
     contract = json.loads((documents.CONVERSIONS.parent/'parity/documents.json').read_text())
-    assert len([r for r in contract if '.TD_DOCUMENTS_BASELINE.' in r['before']]) == 23
+    assert len([r for r in contract if '.TD_DOCUMENTS_BASELINE.' in r['before']]) == 24
     assert all(r['keys'] for r in contract)
     routes = json.loads((documents.CONVERSIONS/'objects.json').read_text())
-    assert len(routes) == 42
+    assert len(routes) == 44
     assert all((ROOT/r['conversion']).is_file() for r in routes)
     shared = next(r for r in routes if r['name']=='10_storage_monthly')
     assert shared['shared'] and shared['conversion']=='migration/dw-exit/documents/12_storage_monthly.sql'
@@ -152,8 +153,9 @@ def test_tpt_executes_shipped_projection(connections,tmp_path,populated):
         folder.mkdir(parents=True)
         before.execute('COPY SFX_DOCUMENTS.'+table+" TO '"+str(folder/'20261109.psv')+"' (DELIMITER '|', HEADER FALSE, NULL '')")
     documents.load_landing(after,tmp_path)
-    measured = local_compare(before,after,'SFX_DOCUMENTS.STG_DOCUMENT','DOCUMENTS.STG_DOCUMENT')
-    assert measured['passed']
+    for table in ('STG_DOCUMENT', 'STG_SEARCH_INDEX_LOG'):
+        measured = local_compare(before,after,'SFX_DOCUMENTS.'+table,'DOCUMENTS.'+table)
+        assert measured['passed']
 
 
 def test_tpt_missing_input_rolls_back(connections,tmp_path):

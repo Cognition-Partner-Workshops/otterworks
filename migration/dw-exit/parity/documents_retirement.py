@@ -3,6 +3,7 @@ import csv
 from pathlib import Path
 
 from assess import BEFORE_STATE, before_state_root, dbql
+from .owner_decisions import decision_registry
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -34,25 +35,28 @@ def query_usage(root, relation):
 
 
 def measure(objects):
+    decisions = [d for d in decision_registry() if d.get('decision_id') == 'sfg1120-search-history-retirement' and d.get('status') == 'approved']
     pinned = before_state_root()
     results = {}
     for obj in objects:
-        if obj['target_type'] != 'retire':
+        if obj['target_type'] != 'retire' or obj['name'] not in ('SFX_DOCUMENTS.V_SEARCH_HISTORY', 'SFX_DOCUMENTS.SEARCH_INDEX_LOG'):
             continue
         name = obj['name']
         relation, = obj['output_relations']
         baseline = query_usage(pinned, relation)
         current = query_usage(ROOT, relation)
         results[name] = {
-            'status': 'retired', 'deletion_approved': False, 'window_inclusive': WINDOW,
+            'status': 'retired' if decisions else 'red', 'deletion_approved': bool(decisions),
+            'decision_id': decisions[0]['decision_id'] if decisions else None,
+            'drop_order': decisions[0]['drop_order'] if decisions else [],
+            'preserve': ['Spark SEARCH_INDEX_LOG landing feed', 'DOCUMENTS.STG_SEARCH_INDEX_LOG', 'documents_search_index_log'],
+            'window_inclusive': WINDOW,
             'baseline_commit': BEFORE_STATE, 'checked_relation': relation,
             'baseline_reads': sum(q['usage']=='READ' for q in baseline),
             'checkout_reads': sum(q['usage']=='READ' for q in current),
             'baseline_queries': baseline, 'checkout_queries': current,
             'dependencies': DEPENDENCIES[name],
-            'reason': ('No independent DBQL job signal; staging relation has one finance reconciliation read. Keep search-log landing.'
-                       if obj['kind']=='tpt' else
-                       'One setup-date reconciliation read; preserve until finance signs off.' if baseline else
-                       'No relation reads in the assessment window; this is not deletion approval.'),
+            'reason': ('Owner-approved joint retirement: drop V_SEARCH_HISTORY before SEARCH_INDEX_LOG; preserve live staging/TPT and Spark landing. Board generation performs no drops.'
+                       if decisions else 'Search-history retirement lacks approved owner decision'),
         }
     return results

@@ -470,5 +470,27 @@
       "SFX_DOCUMENTS.V_WORKSPACE_STORAGE"
     ],
     "conversion": "migration/dw-exit/documents/20_views.sql"
+  },
+  {
+    "id": "nf0f34f0760b5db1f",
+    "name": "SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG",
+    "kind": "table",
+    "target_type": "dbt_model",
+    "target": "stg_documents__search_index_log",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG"
+    ],
+    "conversion": "warehouse/dbt/models/documents/stg_documents__search_index_log.sql"
+  },
+  {
+    "id": "n6926e7586c761642",
+    "name": "documents_search_index_log",
+    "kind": "tpt",
+    "target_type": "snowflake_scripting",
+    "target": "RAW_DOCUMENTS.LOAD_DOCUMENTS",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG"
+    ],
+    "conversion": "migration/dw-exit/documents/05_tpt.sql"
   }
 ]

@@ -34,13 +34,16 @@ def test_documents_board_is_reproducible_from_recorded_evidence():
             if link['start_line'] is not None and board.DOCUMENTS_BRANCH in link['url']:
                 assert 1<=link['start_line']<=link['end_line']<=len(file.read_text().splitlines())
         if row['status']=='retired':
-            assert not row['retirement']['deletion_approved']
+            assert row['retirement']['deletion_approved']
+            assert row['retirement']['drop_order'] == ['SFX_DOCUMENTS.V_SEARCH_HISTORY', 'SFX_DOCUMENTS.SEARCH_INDEX_LOG']
         else:
             assert p['converted'] and row['row_count'] is not None
             assert row['column_profile'] and row['keyed_row_hash']
     staging = next(row for row in rows if row['name']=='SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG')
-    assert {q['query_id'] for q in staging['retirement']['baseline_queries'] if q['usage']=='READ'}=={'111000000071'}
-    assert {q['query_id'] for q in staging['retirement']['checkout_queries'] if q['usage']=='READ'}=={'111000000072'}
+    assert staging['target_type'] == 'dbt_model' and staging['status'] == 'red'
+    assert 'retirement' not in staging
+    assert next(r for r in rows if r['name']=='documents_search_index_log')['status'] == 'red'
+    assert {r['name'] for r in rows if r['status']=='retired'} == {'SFX_DOCUMENTS.V_SEARCH_HISTORY', 'SFX_DOCUMENTS.SEARCH_INDEX_LOG'}
     assert '| Object |' in board.documents_markdown(rows, {})
     for row in (row for row in rows if row['status']=='approved_deviation'):
         assert row['measurement_status']=='red'
@@ -68,7 +71,7 @@ def test_replay_rejects_missing_or_stale_artifacts(tmp_path,monkeypatch):
         replay[field] = board.spark_documents.checksums([file])
     normal = tmp_path/'normal.json'
     normal.write_text(json.dumps(replay))
-    assert board.validated_history(normal)['passed']
+    assert board.documents_validated_history(normal)['passed']
     replay['conversion_sha256'][next(iter(replay['conversion_sha256']))] = 'not current'
     stale = tmp_path/'stale.json'
     stale.write_text(json.dumps(replay))

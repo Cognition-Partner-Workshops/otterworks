@@ -3086,8 +3086,8 @@ objects:
   subject_area: documents
   licence_dependency: teradata
   source: warehouse/teradata/ddl/documents/00_tables.sql
-  target_type: retire
-  target: NONE
+  target_type: dbt_model
+  target: stg_documents__search_index_log
   wave: 1
   owner: '@otterworks/finance-reporting'
   owner_source: DBQL readership via consumers/registry.yaml
@@ -3828,8 +3828,8 @@ objects:
   subject_area: documents
   licence_dependency: teradata
   source: warehouse/teradata/load/tpt/documents_search_index_log.tpt
-  target_type: retire
-  target: NONE
+  target_type: snowflake_scripting
+  target: RAW_DOCUMENTS.LOAD_DOCUMENTS
   wave: 1
   owner: '@otterworks/finance-reporting'
   owner_source: DBQL readership via consumers/registry.yaml
@@ -4792,10 +4792,8 @@ dead:
 - SFX_USERS.V_USER_SETTINGS
 dead_dependents:
 - SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE
-- SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG
 - SFX_USERS.STG_USER_PREF
 - audit_audit_event_archive
-- documents_search_index_log
 - m_SFX_AUDIT_EVENT_ARCHIVE
 - s_m_SFX_AUDIT_EVENT_ARCHIVE
 - users_user_pref
