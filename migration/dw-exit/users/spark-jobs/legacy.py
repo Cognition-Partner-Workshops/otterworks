@@ -30,7 +30,6 @@ def main():
              .config('spark.jars', str(jar)).config('spark.sql.shuffle.partitions', '4')
              .config('spark.ui.enabled', 'false').getOrCreate())
     runtime.session = lambda name: spark
-    runtime.landing = lambda session, table: session.read.parquet(str(WORK / 'inputs' / table))
     runtime.save = lambda frame, area, name, *args: frame.write.mode('overwrite').parquet(
         str(WORK / 'legacy' / name))
     stop = spark.stop
@@ -46,7 +45,8 @@ def main():
         spark._jvm.sfx.TeamGraphComponents.main(args)
     if 'users_risk_score' in selected:
         spark._jvm.sfx.UsersRiskScore.main(args)
-    stop()
+    if not spark.sparkContext._jsc.sc().isStopped():
+        stop()
 
 
 if __name__ == '__main__':

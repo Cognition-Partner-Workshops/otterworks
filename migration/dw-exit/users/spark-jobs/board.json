@@ -67,8 +67,8 @@
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
-        "before": 20,
-        "after": 20
+        "before": 200,
+        "after": 200
       },
       "column_profile": {
         "SFX_USERS.TEAM_GRAPH_COMPONENTS": {
@@ -76,28 +76,28 @@
             "USER_ID": {
               "nulls": 0,
               "min": 1,
-              "max": 20,
-              "distinct": 20
+              "max": 200,
+              "distinct": 200
             },
             "COMPONENT_ID": {
               "nulls": 0,
               "min": 1,
-              "max": 2,
-              "distinct": 2
+              "max": 196,
+              "distinct": 40
             }
           },
           "after": {
             "USER_ID": {
               "nulls": 0,
               "min": 1,
-              "max": 20,
-              "distinct": 20
+              "max": 200,
+              "distinct": 200
             },
             "COMPONENT_ID": {
               "nulls": 0,
               "min": 1,
-              "max": 2,
-              "distinct": 2
+              "max": 196,
+              "distinct": 40
             }
           }
         }
@@ -108,15 +108,15 @@
             "USER_ID"
           ],
           "difference": 0,
-          "before": "c9fad246e361cdeb031c2db47a868414e8aaabd4aa860b3af78e3f1c28fb5557",
-          "after": "c9fad246e361cdeb031c2db47a868414e8aaabd4aa860b3af78e3f1c28fb5557",
+          "before": "f1371c694fd019e82228ae09e08116368cc618e0d8b214cbea3f1d48f38921c7",
+          "after": "f1371c694fd019e82228ae09e08116368cc618e0d8b214cbea3f1d48f38921c7",
           "key_policy": "first declared column; full-row digest preserves multiplicity"
         }
       },
       "sampled_differences": {
         "SFX_USERS.TEAM_GRAPH_COMPONENTS": []
       },
-      "reason": null,
+      "reason": "Measured equal. Shared input: legacy Spark fixture generator, seed=1110; same PSV rows on both sides.",
       "snowflake": {
         "status": "red",
         "reason": "Snowflake login down; nothing created in Snowflake"
@@ -130,14 +130,108 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Legacy Spark input schema incompatible: SFX_USERS.STG_USER_PREF missing PREF_JSON, USER_PREF_ID; actual columns: PREF_ID, PREF_NAME, PREF_VALUE, UPDATED_DT, USER_ID. No inferred column mapping or fabricated legacy output applied.",
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_USERS.USER_PREF_JSON_FLATTEN": {
+          "before": {
+            "USER_PREF_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "PREF_JSON": {
+              "nulls": 0,
+              "min": "{\"theme\": \"dark\", \"notifications\": {\"email\": false, \"digest\": \"weekly\"}, \"locale\": \"de-DE\", \"timezone\": \"Europe/Berlin\"}",
+              "max": "{\"theme\": \"light\", \"notifications\": {\"email\": true, \"digest\": \"weekly\"}, \"locale\": \"fr-FR\", \"timezone\": \"Europe/Paris\"}",
+              "distinct": 8
+            },
+            "THEME": {
+              "nulls": 0,
+              "min": "dark",
+              "max": "light",
+              "distinct": 2
+            },
+            "NOTIFICATIONS": {
+              "nulls": 0,
+              "min": "{'email': False, 'digest': 'weekly'}",
+              "max": "{'email': True, 'digest': 'weekly'}",
+              "distinct": 2
+            },
+            "LOCALE": {
+              "nulls": 0,
+              "min": "de-DE",
+              "max": "fr-FR",
+              "distinct": 4
+            }
+          },
+          "after": {
+            "USER_PREF_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "PREF_JSON": {
+              "nulls": 0,
+              "min": "{\"theme\": \"dark\", \"notifications\": {\"email\": false, \"digest\": \"weekly\"}, \"locale\": \"de-DE\", \"timezone\": \"Europe/Berlin\"}",
+              "max": "{\"theme\": \"light\", \"notifications\": {\"email\": true, \"digest\": \"weekly\"}, \"locale\": \"fr-FR\", \"timezone\": \"Europe/Paris\"}",
+              "distinct": 8
+            },
+            "THEME": {
+              "nulls": 0,
+              "min": "dark",
+              "max": "light",
+              "distinct": 2
+            },
+            "NOTIFICATIONS": {
+              "nulls": 0,
+              "min": "{'email': False, 'digest': 'weekly'}",
+              "max": "{'email': True, 'digest': 'weekly'}",
+              "distinct": 2
+            },
+            "LOCALE": {
+              "nulls": 0,
+              "min": "de-DE",
+              "max": "fr-FR",
+              "distinct": 4
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.USER_PREF_JSON_FLATTEN": {
+          "keys": [
+            "USER_PREF_ID"
+          ],
+          "difference": 0,
+          "before": "22c4affa0a8afad489ce02d50a441789e7fb8f6cbb461af0a914da12a3bee223",
+          "after": "22c4affa0a8afad489ce02d50a441789e7fb8f6cbb461af0a914da12a3bee223",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.USER_PREF_JSON_FLATTEN": []
+      },
+      "reason": "Measured equal. Shared input: legacy Spark fixture generator, seed=1110; same PSV rows on both sides.",
       "snowflake": {
         "status": "red",
         "reason": "Snowflake login down; nothing created in Snowflake"
@@ -151,14 +245,84 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Legacy Spark input schema incompatible: SFX_USERS.STG_USER_ACTIVITY_DAILY missing ACTION_COUNT, ACTIVITY_DATE; actual columns: ACTIVITY_DT, ACTIVITY_ID, DOCUMENT_COUNT, LOGIN_COUNT, USER_ID. No inferred column mapping or fabricated legacy output applied.",
+      "row_count": {
+        "before": 7,
+        "after": 7
+      },
+      "column_profile": {
+        "SFX_USERS.USERS_ACTIVE_DAILY": {
+          "before": {
+            "ACTIVITY_DATE": {
+              "nulls": 0,
+              "min": "2026-11-03",
+              "max": "2026-11-09",
+              "distinct": 7
+            },
+            "ACTIVE_USERS": {
+              "nulls": 0,
+              "min": 28,
+              "max": 29,
+              "distinct": 2
+            },
+            "LOGINS": {
+              "nulls": 0,
+              "min": 318,
+              "max": 419,
+              "distinct": 7
+            },
+            "ACTIONS": {
+              "nulls": 0,
+              "min": 5336,
+              "max": 7461,
+              "distinct": 7
+            }
+          },
+          "after": {
+            "ACTIVITY_DATE": {
+              "nulls": 0,
+              "min": "2026-11-03",
+              "max": "2026-11-09",
+              "distinct": 7
+            },
+            "ACTIVE_USERS": {
+              "nulls": 0,
+              "min": 28,
+              "max": 29,
+              "distinct": 2
+            },
+            "LOGINS": {
+              "nulls": 0,
+              "min": 318,
+              "max": 419,
+              "distinct": 7
+            },
+            "ACTIONS": {
+              "nulls": 0,
+              "min": 5336,
+              "max": 7461,
+              "distinct": 7
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.USERS_ACTIVE_DAILY": {
+          "keys": [
+            "ACTIVITY_DATE"
+          ],
+          "difference": 0,
+          "before": "cb592c4cc8698e4cce9435d991933879d885e46b970d619f5af6ea4dba2ea41d",
+          "after": "cb592c4cc8698e4cce9435d991933879d885e46b970d619f5af6ea4dba2ea41d",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.USERS_ACTIVE_DAILY": []
+      },
+      "reason": "Measured equal. Shared input: legacy Spark fixture generator, seed=1110; same PSV rows on both sides.",
       "snowflake": {
         "status": "red",
         "reason": "Snowflake login down; nothing created in Snowflake"
@@ -172,14 +336,120 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Legacy Spark input schema incompatible: SFX_USERS.STG_LOGIN_EVENT missing EVENT_AT, IP_ADDRESS, LOGIN_EVENT_ID, RAW_LINE, USER_AGENT; actual columns: CLIENT_TYPE, LOGIN_ID, LOGIN_TS, RESULT_CD, USER_ID. No inferred column mapping or fabricated legacy output applied.",
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_USERS.USERS_LOGIN_USERAGENT_PARSE": {
+          "before": {
+            "LOGIN_EVENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "EVENT_AT": {
+              "nulls": 0,
+              "min": "2026-11-03 00:00:02",
+              "max": "2026-11-09 23:59:01",
+              "distinct": 200
+            },
+            "IP_ADDRESS": {
+              "nulls": 0,
+              "min": "192.0.2.10",
+              "max": "192.0.2.99",
+              "distinct": 200
+            },
+            "USER_AGENT": {
+              "nulls": 0,
+              "min": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 Version/17.6 Safari/605.1.15",
+              "max": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130.0 Safari/537.36",
+              "distinct": 3
+            },
+            "RAW_LINE": {
+              "nulls": 0,
+              "min": "2026-11-03T12:00:00Z level=INFO actor=adrian.patel@ternvale-materials.example document=99 action=login status=200 ip=192.0.2.100 agent=\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130.0 Safari/537.36\"",
+              "max": "2026-11-09T12:00:00Z level=INFO actor=theo.calder@willowmere-design.example document=133 action=login status=200 ip=192.0.2.134 agent=\"Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 Version/17.6 Safari/605.1.15\"",
+              "distinct": 200
+            },
+            "BROWSER": {
+              "nulls": 0,
+              "min": "Chrome/130.0",
+              "max": "Safari/605.1.15",
+              "distinct": 3
+            }
+          },
+          "after": {
+            "LOGIN_EVENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "EVENT_AT": {
+              "nulls": 0,
+              "min": "2026-11-03 00:00:02",
+              "max": "2026-11-09 23:59:01",
+              "distinct": 200
+            },
+            "IP_ADDRESS": {
+              "nulls": 0,
+              "min": "192.0.2.10",
+              "max": "192.0.2.99",
+              "distinct": 200
+            },
+            "USER_AGENT": {
+              "nulls": 0,
+              "min": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 Version/17.6 Safari/605.1.15",
+              "max": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130.0 Safari/537.36",
+              "distinct": 3
+            },
+            "RAW_LINE": {
+              "nulls": 0,
+              "min": "2026-11-03T12:00:00Z level=INFO actor=adrian.patel@ternvale-materials.example document=99 action=login status=200 ip=192.0.2.100 agent=\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130.0 Safari/537.36\"",
+              "max": "2026-11-09T12:00:00Z level=INFO actor=theo.calder@willowmere-design.example document=133 action=login status=200 ip=192.0.2.134 agent=\"Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 Version/17.6 Safari/605.1.15\"",
+              "distinct": 200
+            },
+            "BROWSER": {
+              "nulls": 0,
+              "min": "Chrome/130.0",
+              "max": "Safari/605.1.15",
+              "distinct": 3
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.USERS_LOGIN_USERAGENT_PARSE": {
+          "keys": [
+            "LOGIN_EVENT_ID"
+          ],
+          "difference": 0,
+          "before": "844c7e2448b0ca623e9822a022c731c0112e531549bf1c4e47297af5cd727c27",
+          "after": "844c7e2448b0ca623e9822a022c731c0112e531549bf1c4e47297af5cd727c27",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.USERS_LOGIN_USERAGENT_PARSE": []
+      },
+      "reason": "Measured equal. Shared input: legacy Spark fixture generator, seed=1110; same PSV rows on both sides.",
       "snowflake": {
         "status": "red",
         "reason": "Snowflake login down; nothing created in Snowflake"
@@ -193,14 +463,108 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "users",
       "licence_dependency": "spark",
-      "status": "red",
+      "status": "green",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
-      "row_count": null,
-      "column_profile": null,
-      "keyed_row_hash": null,
-      "sampled_differences": null,
-      "reason": "Legacy Spark input schema incompatible: SFX_USERS.STG_USER_ACTIVITY_DAILY missing ACTION_COUNT, ACTIVITY_DATE, USER_ACTIVITY_ID; actual columns: ACTIVITY_DT, ACTIVITY_ID, DOCUMENT_COUNT, LOGIN_COUNT, USER_ID. No inferred column mapping or fabricated legacy output applied.",
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_USERS.USERS_RISK_SCORE": {
+          "before": {
+            "USER_ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "ACTIVITY_DATE": {
+              "nulls": 0,
+              "min": "2026-11-03",
+              "max": "2026-11-09",
+              "distinct": 7
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 1,
+              "max": 24,
+              "distinct": 24
+            },
+            "ACTION_COUNT": {
+              "nulls": 0,
+              "min": 2,
+              "max": 446,
+              "distinct": 166
+            },
+            "RISK_SCORE": {
+              "nulls": 0,
+              "min": 0.10491201257792952,
+              "max": 0.10985725463327901,
+              "distinct": 172
+            }
+          },
+          "after": {
+            "USER_ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "ACTIVITY_DATE": {
+              "nulls": 0,
+              "min": "2026-11-03",
+              "max": "2026-11-09",
+              "distinct": 7
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 1,
+              "max": 24,
+              "distinct": 24
+            },
+            "ACTION_COUNT": {
+              "nulls": 0,
+              "min": 2,
+              "max": 446,
+              "distinct": 166
+            },
+            "RISK_SCORE": {
+              "nulls": 0,
+              "min": 0.10491201257792952,
+              "max": 0.10985725463327901,
+              "distinct": 172
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.USERS_RISK_SCORE": {
+          "keys": [
+            "USER_ACTIVITY_ID"
+          ],
+          "difference": 0,
+          "before": "3d2cccf918f34957ec78b1e1eb5e89cd4cd129f576472bc928fb3ef8edd59613",
+          "after": "3d2cccf918f34957ec78b1e1eb5e89cd4cd129f576472bc928fb3ef8edd59613",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.USERS_RISK_SCORE": []
+      },
+      "reason": "Measured equal. Shared input: legacy Spark fixture generator, seed=1110; same PSV rows on both sides.",
       "snowflake": {
         "status": "red",
         "reason": "Snowflake login down; nothing created in Snowflake"
@@ -218,8 +582,8 @@
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
-        "before": 2,
-        "after": 2
+        "before": 200,
+        "after": 200
       },
       "column_profile": {
         "SFX_USERS.USERS_TEAM_ROLLUP": {
@@ -227,40 +591,40 @@
             "TEAM_ID": {
               "nulls": 0,
               "min": 1,
-              "max": 2,
-              "distinct": 2
+              "max": 200,
+              "distinct": 200
             },
             "TEAM_NAME": {
               "nulls": 0,
-              "min": "Legal and Compliance",
-              "max": "Legal and Compliance",
-              "distinct": 1
+              "min": "Commercial Finance",
+              "max": "Security Operations Enablement",
+              "distinct": 72
             },
             "MEMBERS": {
               "nulls": 0,
-              "min": 20,
-              "max": 20,
-              "distinct": 1
+              "min": 0,
+              "max": 5,
+              "distinct": 2
             }
           },
           "after": {
             "TEAM_ID": {
               "nulls": 0,
               "min": 1,
-              "max": 2,
-              "distinct": 2
+              "max": 200,
+              "distinct": 200
             },
             "TEAM_NAME": {
               "nulls": 0,
-              "min": "Legal and Compliance",
-              "max": "Legal and Compliance",
-              "distinct": 1
+              "min": "Commercial Finance",
+              "max": "Security Operations Enablement",
+              "distinct": 72
             },
             "MEMBERS": {
               "nulls": 0,
-              "min": 20,
-              "max": 20,
-              "distinct": 1
+              "min": 0,
+              "max": 5,
+              "distinct": 2
             }
           }
         }
@@ -271,15 +635,15 @@
             "TEAM_ID"
           ],
           "difference": 0,
-          "before": "6dfec47f4e3a7a24e22af0d1a7967e86b5085210eef71ca7d4776b0b5c0fe4da",
-          "after": "6dfec47f4e3a7a24e22af0d1a7967e86b5085210eef71ca7d4776b0b5c0fe4da",
+          "before": "cb46c35b1b5d64200dbb10a3dbc3c44665f12a8c3c26cda4dc2b7307789d40ce",
+          "after": "cb46c35b1b5d64200dbb10a3dbc3c44665f12a8c3c26cda4dc2b7307789d40ce",
           "key_policy": "first declared column; full-row digest preserves multiplicity"
         }
       },
       "sampled_differences": {
         "SFX_USERS.USERS_TEAM_ROLLUP": []
       },
-      "reason": null,
+      "reason": "Measured equal. Shared input: legacy Spark fixture generator, seed=1110; same PSV rows on both sides.",
       "snowflake": {
         "status": "red",
         "reason": "Snowflake login down; nothing created in Snowflake"
@@ -288,19 +652,26 @@
   ],
   "group": "users/spark-jobs",
   "measurement_contract": {
-    "source": "PostgreSQL Teradata emulator snapshot",
+    "source": "Legacy Spark fixture PSV inputs; unmodified legacy Spark job bodies",
     "local_target": "DuckDB",
     "conversions": [
       "users/spark-jobs/10_load.sql"
     ],
     "non_relational_objects": "declared output relations",
-    "migration_state": "BEFORE"
+    "migration_state": "BEFORE",
+    "fixture": {
+      "generator": "etl/spark/fixture/generate_fixture.py",
+      "schemas": "etl/spark/jobs/py/common/schemas.py",
+      "seed": 1110,
+      "rows_per_table": 200,
+      "target_inputs": "USERS.SPARK_FIXTURE_*"
+    }
   },
   "summary": {
     "rows": 6,
-    "red": 4,
-    "green": 2,
-    "measured": 2,
+    "red": 0,
+    "green": 6,
+    "measured": 6,
     "migrated": 0,
     "licence_remaining": 6,
     "licence_total": 6,

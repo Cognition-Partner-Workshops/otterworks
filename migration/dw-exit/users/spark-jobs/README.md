@@ -4,13 +4,24 @@ Run the group using the command in `../README.md`. Local prerequisites additiona
 include Java 17/21 (with `javac`/`jar`), PySpark 3.5.3 and NumPy in `warehouse/.venv`:
 `uv pip install --python warehouse/.venv/bin/python pyspark==3.5.3 numpy==1.26.4`.
 
-The hook snapshots the six PostgreSQL `STG_` inputs once and supplies identical
-Parquet inputs to both sides. The baseline executes compatible Python source files
-with only session/landing/save adapters, and compiles the two unchanged Scala job
-bodies with `LegacySupport.scala` replacing only I/O. Spark writes baseline Parquet;
-the target independently executes SQL and Python over the staged inputs. No legacy
-output is used to populate any target. Runtime inputs and logs live under
+All six jobs use `etl/spark/fixture/generate_fixture.py`, fixed seed **1110** and
+`BOARD_ROWS` rows (default 200). Its own generator logic produces every row; no
+rows are hand-picked or mapped from incompatible warehouse schemas. The baseline
+executes all four unmodified Python job files with the original typed PSV landing
+reader, adapting only session/save. The two unchanged Scala job bodies are compiled
+with `LegacySupport.scala` adapting only session and I/O paths; its CSV inference
+matches the legacy BatchSupport reader. Spark writes the baseline Parquet outputs.
+DuckDB independently reads the **same PSV files**, with types and column order from
+`etl/spark/jobs/py/common/schemas.py`, into group-specific
+`USERS.SPARK_FIXTURE_*` inputs. SQL/Python conversions read only those inputs.
+No legacy output populates any target. Runtime inputs and logs live under
 `migration/dw-exit/.runs/<run-token>/users-spark/`.
+
+After the board make command, run
+`BOARD_ROWS=200 warehouse/.venv/bin/python migration/dw-exit/users/spark-jobs/annotate_board.py`
+to record the fixture source, seed, row setting and input namespace in the board's
+measurement contract and reasons. This replaces the shared board's generic
+PostgreSQL-source label without modifying shared code. Annotation is idempotent.
 
 The SQL file is Snowflake SQL using the run database and USERS schema. The hook's
 Python parsers, logistic model and six-step label propagation are the local
@@ -19,12 +30,8 @@ columns must remain red. Local proof does not change migration/licence state.
 
 ## Owner decisions/defaults
 
-* The local warehouse fixture is not the legacy Spark fixture: activity has
-  ACTIVITY_DT/DOCUMENT_COUNT rather than ACTIVITY_DATE/ACTION_COUNT; preferences
-  have PREF_NAME/PREF_VALUE rather than PREF_JSON; login has CLIENT_TYPE rather
-  than USER_AGENT. Default: leave the four affected jobs red with exact missing
-  columns, rather than inventing semantics or substituting synthetic outputs.
-  Owners need to supply real legacy-compatible inputs or approve a mapping.
+* Resolved input-selection question: use the legacy Spark fixture for all six jobs,
+  rather than the unrelated warehouse fixture. No owner mapping is needed.
 * The manifest calls all six targets dbt models. Classification and existing
   `warehouse/snowpark` implementations assign graph, JSON, user-agent parsing and
   risk scoring to Snowpark Python. Default: keep those four in Python; do not edit

@@ -1,5 +1,8 @@
 import importlib.util
+import json
 from pathlib import Path
+import subprocess
+import sys
 
 import duckdb
 import pytest
@@ -54,8 +57,44 @@ def test_empty_conversions():
         'APP_USER': 'USER_ID BIGINT',
     }
     for table, columns in definitions.items():
-        db.execute(f'CREATE TABLE USERS.STG_{table} ({columns})')
+        db.execute(f'CREATE TABLE USERS.SPARK_FIXTURE_{table} ({columns})')
     hook.convert(db)
     for job in hook.JOBS:
         assert db.execute(f'SELECT COUNT(*) FROM USERS.{job.upper()}').fetchone() == (0,)
     db.close()
+
+
+def test_fixture_loading_is_deterministic(tmp_path):
+    snapshots = []
+    for _ in range(2):
+        subprocess.run([sys.executable, str(hook.ROOT / 'etl/spark/fixture/generate_fixture.py'),
+                        '--rows', '3', '--seed', str(hook.FIXTURE_SEED), '--output', str(tmp_path)],
+                       check=True, capture_output=True)
+        db = duckdb.connect()
+        db.execute('CREATE SCHEMA USERS')
+        hook.load_fixture(db, tmp_path)
+        snapshots.append({table: db.execute(f'SELECT * FROM USERS.SPARK_FIXTURE_{table} ORDER BY 1').fetchall()
+                          for table in hook.INPUTS})
+        hook.convert(db)
+        assert db.execute('SELECT COUNT(*) FROM USERS.USER_PREF_JSON_FLATTEN').fetchone() == (3,)
+        assert db.execute('SELECT COUNT(*) FROM USERS.USERS_LOGIN_USERAGENT_PARSE').fetchone() == (3,)
+        assert db.execute('SELECT COUNT(*) FROM USERS.USERS_RISK_SCORE').fetchone() == (3,)
+        db.close()
+    assert snapshots[0] == snapshots[1]
+
+
+def test_board_annotation(tmp_path):
+    spec = importlib.util.spec_from_file_location('users_board_annotation', Path(__file__).with_name('annotate_board.py'))
+    annotation = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(annotation)
+    path = tmp_path / 'board.json'
+    path.write_text(json.dumps({'measurement_contract': {}, 'rows': [
+        {'status': 'green', 'reason': None}, {'status': 'red', 'reason': 'mismatch'}]}))
+    annotation.annotate(path)
+    first = path.read_text()
+    annotation.annotate(path)
+    assert path.read_text() == first
+    payload = json.loads(first)
+    assert payload['measurement_contract']['fixture']['seed'] == 1110
+    assert payload['rows'][0]['reason'].startswith('Measured equal.')
+    assert payload['rows'][1]['reason'].startswith('mismatch')
