@@ -1,5 +1,6 @@
 import builtins
 import importlib.util
+import json
 from pathlib import Path
 import socket
 import sys
@@ -18,7 +19,7 @@ from warehouse.run_config import RunConfig
 
 def obj(**changes):
     return dict(dict(id='one',name='job',kind='mapping',wave=2,owner='data',subject_area='fixture',
-                system='powercenter',licence_dependency='powercenter',target_type='dbt_model',
+                system='teradata',licence_dependency='teradata',target_type='dbt_model',
                 output_relations=['SFX_BILLING.T']),**changes)
 
 
@@ -61,6 +62,20 @@ def test_profiles_hashes_samples_preserve_duplicates_and_nulls(relations):
     assert row['column_profile']['SFX_BILLING.T']['before']['VALUE']['nulls']==1
     assert row['keyed_row_hash']['SFX_BILLING.T']['difference']==1
     assert row['sampled_differences']['SFX_BILLING.T'][0]['key']==[1]
+
+
+def test_powercenter_requires_independent_runner_and_model_relations(relations):
+    before,after = relations
+    pc = obj(system='powercenter', licence_dependency='powercenter')
+    row = board.build_board({'objects':[pc]},before,after,{'BILLING.T'})['rows'][0]
+    assert row['status']=='red' and row['reason']=='output not materialized: PC_BILLING.T'
+    before.execute('CREATE SCHEMA SFX_PC_BILLING')
+    after.execute('CREATE SCHEMA PC_BILLING')
+    before.execute('CREATE TABLE SFX_PC_BILLING.T AS SELECT 1 ID')
+    after.execute('CREATE TABLE PC_BILLING.T AS SELECT 1 ID')
+    row = board.build_board({'objects':[pc]},before,after,{'PC_BILLING.T'})['rows'][0]
+    assert row['status']=='green'
+    assert row['row_count']=={'before':1,'after':1}
 
 
 @pytest.mark.parametrize('changes,reason',[
@@ -158,6 +173,31 @@ def test_snowflake_stays_red_without_network(monkeypatch, relations, target):
     cell = result['rows'][0]['targets']['snowflake']
     assert cell['status'] == 'red'
     assert cell['reason'] == board.SNOWFLAKE_REASON
+
+
+def test_billing_records_independent_local_and_denied_live_legs(relations):
+    from parity.provenance import markdown
+    before,after=relations
+    result=board.build_board({'objects':[obj()]},before,after,{'BILLING.T'})
+    row=result['rows'][0]
+    assert row['local_duckdb']=='green' and row['snowflake']=='red'
+    assert row['snowflake_reason']==board.SNOWFLAKE_REASON
+    assert result['summary']['billing']['local_duckdb']=='green'
+    assert result['summary']['billing']['snowflake']=='red'
+    assert board.SNOWFLAKE_REASON in markdown(result['rows'])
+    after.execute("INSERT INTO BILLING.T VALUES (1,'different')")
+    red=board.build_board({'objects':[obj()]},before,after,{'BILLING.T'})
+    assert red['rows'][0]['local_duckdb']=='red'
+    assert red['summary']['billing']['local_red']==1
+
+
+def test_missing_or_out_of_scope_live_evidence_is_closed():
+    empty=board.build_board({'objects':[]})
+    assert empty['summary']['billing']['local_duckdb']=='red'
+    assert empty['summary']['billing']['snowflake']=='red'
+    row=board.build_board({'objects':[obj(output_relations=[])]})['rows'][0]
+    assert row['local_duckdb']=='red' and row['snowflake']=='red'
+    assert row['snowflake_reason']==board.SNOWFLAKE_REASON
 
 
 def test_straight_conversion_and_missing_input(tmp_path):

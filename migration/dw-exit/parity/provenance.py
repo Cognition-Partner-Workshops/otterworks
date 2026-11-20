@@ -99,8 +99,7 @@ def provenance(obj):
         return audit_provenance(obj)
     if obj.get('subject_area') == 'users':
         return users_provenance(obj)
-    return {'source': [source_link(obj)] if obj.get('source') else [],
-            'converted': {}, 'metrics': {}}
+    return _provenance(obj)
 
 
 def audit_markdown(rows):
@@ -144,6 +143,11 @@ def converted_links(relation):
 def _provenance(obj):
     outputs = obj.get('output_relations', [])
     converted = {name:converted_links(name) for name in outputs}
+    if obj.get('system') == 'powercenter' and obj.get('subject_area') == 'billing':
+        converted = {}
+        for name in outputs:
+            model = Path('warehouse/dbt/models/pc/billing') / ('pc_billing__'+name.split('.')[-1].lower()+'.sql')
+            converted[name] = [link(model)] if (ROOT/model).is_file() else []
     source = ROOT / obj.get('source', '')
     if source.is_file() and not any(converted.values()) and obj.get('target_type') != 'retire':
         text = source.read_text()

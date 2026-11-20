@@ -39,7 +39,7 @@ def lower_statements(text):
         for node in reversed(list(statement.walk())):
             if isinstance(node, exp.Anonymous) and node.name.upper() == 'TO_DATE':
                 value, fmt = node.expressions
-                formats = {'YYYYMMDD':'%Y%m%d'}
+                formats = {'YYYYMMDD':'%Y%m%d', 'DD/MM/YYYY':'%d/%m/%Y'}
                 if not isinstance(fmt, exp.Literal) or fmt.this not in formats:
                     raise ValueError('Unsupported TO_DATE format')
                 node.replace(exp.StrToDate(this=value.copy(), format=exp.Literal.string(formats[fmt.this])))

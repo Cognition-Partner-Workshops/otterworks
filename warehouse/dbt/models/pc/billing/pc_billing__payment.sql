@@ -9,7 +9,7 @@ with expressions as (
         to_date($4::varchar, 'YYYY-MM-DD') as PAYMENT_DT,
         round($5::number(38,18), 2)::number(14,2) as AMOUNT,
         left(upper(trim($6)), 12)::varchar(12) as METHOD_CD,
-        METADATA$FILE_ROW_NUMBER as SRC_ROW_NO
+        left(trim($7), 32)::varchar(32) as PAYMENT_REFERENCE
     from @__RUN_DATABASE__.PC_SRC.LANDING_STAGE/PAYMENT/
     (file_format => '__RUN_DATABASE__.PC_BILLING.BILLING_PSV',
      pattern => '.*{{ var("load_date", "20261109") }}[.]psv')
@@ -17,4 +17,3 @@ with expressions as (
 select *
 from expressions
 where PAYMENT_ID is not null and AMOUNT is not null
-qualify row_number() over (partition by PAYMENT_ID order by SRC_ROW_NO desc) = 1

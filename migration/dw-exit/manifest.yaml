@@ -1205,7 +1205,8 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
-  output_relations: []
+  output_relations:
+  - SFX_BILLING.M_SUBSCRIPTION_PLANS_OUTPUT
 - id: n34596a73305b4db2
   system: teradata
   kind: bteq
@@ -1239,7 +1240,8 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
-  output_relations: []
+  output_relations:
+  - SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT
 - id: nacd21346feee23f6
   system: teradata
   kind: bteq
@@ -1275,7 +1277,9 @@ objects:
   risk: med
   risk_reasons: []
   status: not_started
-  output_relations: []
+  output_relations:
+  - SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT
+  - SFX_BILLING.GL_TRIAL_BALANCE_OUTPUT
 - id: n4bd29833185d98c9
   system: teradata
   kind: bteq
@@ -1294,6 +1298,8 @@ objects:
   status: not_started
   output_relations:
   - SFX_BILLING.INVOICE_HDR
+  - SFX_BILLING.INVOICE_PERIODS_OUTPUT
+  - SFX_BILLING.PERIOD_CLOSE_OUTPUT
 - id: nb0721a93c9ea4800
   system: teradata
   kind: catalog
@@ -1850,7 +1856,8 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
-  output_relations: []
+  output_relations:
+  - SFX_BILLING.M_CURRENCY_TOTALS_OUTPUT
 - id: nb4507f31f948976c
   system: teradata
   kind: macro
@@ -1867,7 +1874,8 @@ objects:
   risk: low
   risk_reasons: []
   status: not_started
-  output_relations: []
+  output_relations:
+  - SFX_BILLING.M_SUBSCRIPTION_PLANS_OUTPUT
 - id: n2d399290c37850ff
   system: teradata
   kind: macro
@@ -4120,7 +4128,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_churn_score.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.BILLING_CHURN_SCORE
   target_type: dbt_model
   target: spark__billing_churn_score
   wave: 3
@@ -4138,7 +4147,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_gl_trial_balance.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.BILLING_GL_TRIAL_BALANCE
   target_type: dbt_model
   target: spark__billing_gl_trial_balance
   wave: 3
@@ -4156,7 +4166,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_invoice_summary_daily.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.BILLING_INVOICE_SUMMARY_DAILY
   target_type: dbt_model
   target: spark__billing_invoice_summary_daily
   wave: 3
@@ -4174,7 +4185,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_payment_aging.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.BILLING_PAYMENT_AGING
   target_type: dbt_model
   target: spark__billing_payment_aging
   wave: 3
@@ -4192,7 +4204,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_revenue_by_plan.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.BILLING_REVENUE_BY_PLAN
   target_type: dbt_model
   target: spark__billing_revenue_by_plan
   wave: 3
@@ -4210,7 +4223,8 @@ objects:
   licence_dependency: spark
   source: etl/spark/jobs/py/billing_usage_append_daily.py
   source_ref: demo-snowflake-dw-exit
-  output_relations: []
+  output_relations:
+  - SFX_SPARK.BILLING_USAGE_APPEND_DAILY
   target_type: dbt_model
   target: spark__billing_usage_append_daily
   wave: 3
