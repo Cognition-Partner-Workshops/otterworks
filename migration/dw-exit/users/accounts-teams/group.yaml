@@ -1,0 +1,31 @@
+name: users/accounts-teams
+description: User accounts, profiles, role grants and teams (01_load_users, 02_load_teams, their PowerCenter mappings, M_TEAM_COUNTS and V_TEAM_MEMBERS)
+objects:
+- n9f9ea7e045525b86  # mapping m_SFX_APP_USER
+- n82db93afad5cb04b  # mapping m_SFX_ROLE_GRANT
+- n2f5adf79707598c4  # mapping m_SFX_STG_APP_USER
+- n836f8884b17bb209  # mapping m_SFX_TEAM_MEMBER
+- ne9bc408e114b18b9  # session s_m_SFX_APP_USER
+- neecc7039dfeb4698  # session s_m_SFX_ROLE_GRANT
+- n3d22b7a534acc0bb  # session s_m_SFX_STG_APP_USER
+- n4480339208f0dc43  # session s_m_SFX_TEAM_MEMBER
+- nbcf25336ae235f75  # bteq 01_load_users
+- nea506c6f70b8cca9  # bteq 02_load_teams
+- n5cfa3c4afcb4b359  # fastload users_app_user
+- n9cb752fa5a7e6656  # fastload users_role_grant
+- nacba7b3de7583ddb  # fastload users_team
+- n58dfe8d308715b9f  # fastload users_team_member
+- n877eaed6968f6f98  # fastload users_user_profile
+- nb5c179d7a1d96e03  # macro SFX_USERS.M_TEAM_COUNTS
+- n97b11eada9b5eb49  # table SFX_USERS.APP_USER
+- nfd3d4e92dd494560  # table SFX_USERS.ROLE_GRANT
+- n51b482910361c150  # table SFX_USERS.STG_APP_USER
+- nc317b0fdeb9af6bf  # table SFX_USERS.STG_ROLE_GRANT
+- nbf90b4a7bc90d9af  # table SFX_USERS.STG_TEAM
+- n04d52ed873e0b510  # table SFX_USERS.STG_TEAM_MEMBER
+- n533cd80b40ebc9c5  # table SFX_USERS.STG_USER_PROFILE
+- n6d2da1bd427f0dda  # table SFX_USERS.TEAM
+- n2cfe39f5df4a12c6  # table SFX_USERS.TEAM_MEMBER
+- n00ae1e0d0a7ece39  # table SFX_USERS.USER_PROFILE
+- na5e973edf6219785  # view SFX_USERS.V_TEAM_MEMBERS
+outputs: {}

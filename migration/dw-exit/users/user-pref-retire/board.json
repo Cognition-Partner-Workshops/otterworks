@@ -1,0 +1,165 @@
+{
+  "waves": {
+    "1": {
+      "total": 4,
+      "by_kind": {
+        "fastload": 1,
+        "table": 2,
+        "view": 1
+      },
+      "by_target": {
+        "retire": 4
+      }
+    },
+    "2": {
+      "total": 0,
+      "by_kind": {},
+      "by_target": {}
+    },
+    "3": {
+      "total": 0,
+      "by_kind": {},
+      "by_target": {}
+    },
+    "4": {
+      "total": 0,
+      "by_kind": {},
+      "by_target": {}
+    }
+  },
+  "licence_counters": {
+    "teradata_objects": {
+      "remaining": 178,
+      "target": 0
+    },
+    "powercenter_mappings": {
+      "remaining": 20,
+      "target": 0
+    },
+    "powercenter_annual_cost": {
+      "value": 412000,
+      "currency": "USD"
+    },
+    "powercenter_objects": {
+      "remaining": 44,
+      "target": 0
+    },
+    "spark_jobs": {
+      "remaining": 30,
+      "target": 0
+    },
+    "licence_dependencies": {
+      "remaining": 252,
+      "total": 252,
+      "target": 0
+    }
+  },
+  "run_token": "sfx-sfg1120",
+  "target": "duckdb",
+  "rows": [
+    {
+      "id": "n087e07637015719b",
+      "name": "users_user_pref",
+      "kind": "fastload",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "red",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": null,
+      "column_profile": null,
+      "keyed_row_hash": null,
+      "sampled_differences": null,
+      "reason": "retired (manifest target_type retire, target NONE); no target relation to measure \u2014 retirement evidence in retirement.json",
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n0e52ccf39fb39efb",
+      "name": "SFX_USERS.STG_USER_PREF",
+      "kind": "table",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "red",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": null,
+      "column_profile": null,
+      "keyed_row_hash": null,
+      "sampled_differences": null,
+      "reason": "retired (manifest target_type retire, target NONE); no target relation to measure \u2014 retirement evidence in retirement.json",
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n73ad30d46cfc4990",
+      "name": "SFX_USERS.USER_PREF",
+      "kind": "table",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "red",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": null,
+      "column_profile": null,
+      "keyed_row_hash": null,
+      "sampled_differences": null,
+      "reason": "retired (manifest target_type retire, target NONE); no target relation to measure \u2014 retirement evidence in retirement.json",
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n92b259c0ed5e8918",
+      "name": "SFX_USERS.V_USER_SETTINGS",
+      "kind": "view",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "red",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": null,
+      "column_profile": null,
+      "keyed_row_hash": null,
+      "sampled_differences": null,
+      "reason": "retired (manifest target_type retire, target NONE); no target relation to measure \u2014 retirement evidence in retirement.json",
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    }
+  ],
+  "group": "users/user-pref-retire",
+  "measurement_contract": {
+    "source": "PostgreSQL Teradata emulator snapshot",
+    "local_target": "DuckDB",
+    "conversions": [],
+    "non_relational_objects": "declared output relations",
+    "migration_state": "BEFORE"
+  },
+  "summary": {
+    "rows": 4,
+    "red": 4,
+    "green": 0,
+    "measured": 0,
+    "migrated": 0,
+    "licence_remaining": 4,
+    "licence_total": 4,
+    "licence_by_system": {
+      "teradata": 4
+    }
+  }
+}
