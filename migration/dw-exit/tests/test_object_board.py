@@ -159,3 +159,37 @@ def test_make_command_line_token_selects_namespace():
     output=subprocess.check_output(['make','-n','sfx-teradata-validate','RUN_TOKEN=sfx2220'],cwd=ROOT,text=True)
     assert 'sfx-2220-before' in output
     assert 'sfx-1119-before' not in output
+
+
+def test_chain_runs_snowflake_scripting_and_date_formats():
+    connection = duckdb.connect()
+    try:
+        connection.execute('CREATE SCHEMA BILLING')
+        connection.execute("CREATE TABLE BILLING.T (ID INTEGER, D DATE)")
+        connection.execute("INSERT INTO BILLING.T VALUES (1, DATE '2026-11-09')")
+        chain = board.Chain(connection, {'BILLING.T'}, {}, {'BUSINESS_DATE': '20261109'})
+        chain.run_text("""CREATE OR REPLACE PROCEDURE SFX_1119.BILLING.P (P_DAY VARCHAR(8))
+RETURNS TABLE ()
+LANGUAGE SQL
+AS
+$$
+DECLARE
+run_day DATE;
+BEGIN
+run_day := TO_DATE(p_day, 'YYYYMMDD');
+LET res RESULTSET := (SELECT ID, TO_CHAR(D, 'YYYY-MM') AS PERIOD FROM SFX_1119.BILLING.T WHERE D <= :run_day);
+RETURN TABLE(res);
+END;
+$$;""", 'routines.sql')
+        assert chain.call('SFX_1119.BILLING.P', "'${BUSINESS_DATE}'") == (['ID', 'PERIOD'], [(1, '2026-11')])
+        assert chain.query("SELECT TO_DATE('20261109', 'YYYYMMDD') AS D")[1][0][0].isoformat() == '2026-11-09'
+    finally:
+        connection.close()
+
+
+def test_float_comparison_and_xsmall_estimate():
+    assert board.canonical([0.16246506258069604]) == board.canonical([0.1624650625806961])
+    estimate = board.capacity.estimate([{'workload': 'load', 'seconds': 0.5}, {'workload': 'parity', 'seconds': 90}])
+    rows = {r['workload']: r for r in estimate['workloads']}
+    assert rows['load']['size'] == 'XSMALL' and rows['load']['billed_seconds'] == 120
+    assert rows['parity']['billed_seconds'] == 150 and rows['transform']['credits_per_run'] == 0

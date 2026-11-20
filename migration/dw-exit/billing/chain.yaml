@@ -1,0 +1,74 @@
+# Billing daily chain replayed against the local DuckDB target (warehouse/teradata/jobs/daily_chain order).
+business_date: '20261109'
+inputs:
+  BILLING.STORAGE_USAGE_INPUT: SFX_DOCUMENTS.STORAGE_USAGE_DAILY
+steps:
+- name: core loads
+  scripts: [billing/01_load_accounts, billing/02_load_subscriptions, billing/03_load_invoices, billing/04_load_payments, billing/05_load_usage]
+  sql: [10_load.sql]
+  workload: load
+  workload_by_target:
+    BILLING.CUSTOMER_ACCOUNT: snowpark
+    BILLING.GL_JOURNAL_LINE: snowpark
+    BILLING.INVOICE_HDR: snowpark
+- name: routines
+  scripts: [SFX_BILLING.M_SUBSCRIPTION_PLANS, SFX_BILLING.M_CURRENCY_TOTALS, SFX_BILLING.P_MONTHLY_INVOICE]
+  sql: [20_routines.sql]
+  workload: transform
+- name: subscription report
+  scripts: [billing/10_subscription_report]
+  exports:
+    subscription_plans: CALL __RUN_DATABASE__.BILLING.M_SUBSCRIPTION_PLANS('${BUSINESS_DATE}');
+  workload: ops
+- name: currency daily
+  scripts: [billing/11_currency_daily]
+  exports:
+    currency_daily: CALL __RUN_DATABASE__.BILLING.M_CURRENCY_TOTALS('${BUSINESS_DATE}');
+  workload: ops
+- name: storage billing boundary
+  scripts: [documents/10_storage_monthly]
+  sql: [15_storage.sql]
+  workload: transform
+- name: invoice monthly
+  scripts: [billing/12_invoice_monthly]
+  sql: [25_invoice_monthly.sql]
+  exports:
+    invoice_monthly: CALL __RUN_DATABASE__.BILLING.M_CURRENCY_TOTALS('${BUSINESS_DATE}');
+    gl_trial_balance: >-
+      SELECT CAST(a.ACCOUNT_NUMBER AS VARCHAR(20)) AS ACCOUNT_NUMBER, a.ACCOUNT_NAME,
+      ZEROIFNULL(SUM(j.DEBIT_AMOUNT)) AS DEBIT_AMOUNT, ZEROIFNULL(SUM(j.CREDIT_AMOUNT)) AS CREDIT_AMOUNT
+      FROM __RUN_DATABASE__.BILLING.GL_ACCOUNT a LEFT JOIN __RUN_DATABASE__.BILLING.GL_JOURNAL_LINE j ON a.GL_ACCOUNT_ID=j.GL_ACCOUNT_ID
+      GROUP BY a.ACCOUNT_NUMBER, a.ACCOUNT_NAME
+      UNION ALL
+      SELECT 'TOTAL', 'All accounts', ZEROIFNULL(SUM(DEBIT_AMOUNT)), ZEROIFNULL(SUM(CREDIT_AMOUNT))
+      FROM __RUN_DATABASE__.BILLING.GL_JOURNAL_LINE
+  workload: transform
+- name: period close
+  scripts: [billing/13_period_close]
+  sql: [40_close.sql]
+  exports:
+    invoice_periods: >-
+      SELECT INVOICE_ID, PRIOR_PERIOD_END_DT AS PRIOR_DT, INVOICE_MONTH AS MONTH_NO, PERIOD_KEY, INVOICE_PERIOD,
+      TO_DATE('${BUSINESS_DATE}', 'YYYYMMDD') AS RUN_DT FROM __RUN_DATABASE__.BILLING.INVOICE_HDR
+    period_close: >-
+      SELECT MIN(RTRIM(CURRENCY_CD)) AS CURRENCY_CD, COUNT(*) AS INVOICE_COUNT, SUM(TOTAL_AMOUNT) AS TOTAL_AMOUNT
+      FROM __RUN_DATABASE__.BILLING.INVOICE_HDR
+      WHERE BILL_DT >= DATEADD(month, -1, DATE_TRUNC(month, TO_DATE('${BUSINESS_DATE}', 'YYYYMMDD')))
+      AND BILL_DT < DATE_TRUNC(month, TO_DATE('${BUSINESS_DATE}', 'YYYYMMDD'))
+      GROUP BY UPPER(RTRIM(CURRENCY_CD))
+  workload: ops
+- name: compatibility views
+  scripts: [SFX_BILLING.V_ACCOUNT_INVOICES, SFX_BILLING.V_INVOICE_BASE, SFX_BILLING.V_INVOICE_REVENUE, SFX_BILLING.V_SUBSCRIPTION_PLANS]
+  sql: [30_views.sql]
+  workload: transform
+# TD exports (warehouse/exports/<name>.psv) compared with the replayed result sets.
+# NOT CASESPECIFIC group keys: Teradata returns an arbitrary member's case, so they compare case-folded.
+case_folded: {currency_daily: [CURRENCY_CD], invoice_monthly: [CURRENCY_CD], period_close: [CURRENCY_CD]}
+result_sets:
+  10_subscription_report: [subscription_plans]
+  11_currency_daily: [currency_daily]
+  12_invoice_monthly: [invoice_monthly, gl_trial_balance]
+  13_period_close: [invoice_periods, period_close]
+  SFX_BILLING.M_SUBSCRIPTION_PLANS: [subscription_plans]
+  SFX_BILLING.M_CURRENCY_TOTALS: [currency_daily, invoice_monthly]
+  SFX_BILLING.P_MONTHLY_INVOICE: [invoice_monthly]
