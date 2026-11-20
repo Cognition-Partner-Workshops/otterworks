@@ -14,7 +14,7 @@ def render(text, branch):
     summary = board['summary']['audit']
     base = 'https://github.com/Cognition-Partner-Workshops/otterworks/blob/' + quote(branch, safe='/') + '/'
     lines = ['# Audit parity — all 57 objects', '',
-        f"Run sfg1120 (RUN_TOKEN=sfx-sfg1120-audit). Local DuckDB: **{summary['local_green']} green / {summary.get('local_approved_deviation',0)} approved deviations / {summary.get('local_retired',0)} retired / {summary['local_red']} red**. "
+        f"Run sfg1120 (RUN_TOKEN=sfx-sfg1120). Local DuckDB: **{summary['local_green']} green / {summary.get('local_approved_deviation',0)} approved deviations / {summary.get('local_retired',0)} retired / {summary['local_red']} red**. "
         + 'Snowflake: **red** — ' + summary['snowflake_reason'] + '.', '',
         'Spark compares actual legacy lake and JDBC outputs against shipped dbt models on the same landing PSVs. '
         'Batch and isolated PowerCenter runs are separate evidence paths. '

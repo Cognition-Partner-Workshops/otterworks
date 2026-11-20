@@ -1,6 +1,6 @@
 # Audit parity — all 57 objects
 
-Run sfg1120 (RUN_TOKEN=sfx-sfg1120-audit). Local DuckDB: **48 green / 3 approved deviations / 6 retired / 0 red**. Snowflake: **red** — Snowflake login down for run sfg1120; no live capture/prove.
+Run sfg1120 (RUN_TOKEN=sfx-sfg1120). Local DuckDB: **48 green / 3 approved deviations / 6 retired / 0 red**. Snowflake: **red** — Snowflake login down for run sfg1120; no live capture/prove.
 
 Spark compares actual legacy lake and JDBC outputs against shipped dbt models on the same landing PSVs. Batch and isolated PowerCenter runs are separate evidence paths. Six owner-approved retirements carry DBQL evidence. Local evidence is not live Snowflake proof.
 

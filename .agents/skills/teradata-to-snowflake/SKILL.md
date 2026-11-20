@@ -12,7 +12,7 @@ Requires Docker Compose, Python 3.11+, uv and Java 21 for Spark tests.
 ## Run scope
 
 ```sh
-export RUN_TOKEN=sfx1119
+export RUN_TOKEN=sfx-sfg1120
 eval "$(python3 warehouse/run_config.py env)"
 export NS="$RUN_BEFORE_NAMESPACE"
 ```
@@ -97,7 +97,7 @@ Stop the feed with `make sfx-observability-down`. Stop compute with
 ## Audit-learned rules
 
 - Derive namespaces with `warehouse/.venv/bin/python warehouse/run_config.py env`.
-  Run sfg1120 uses `RUN_TOKEN=sfx-sfg1120-audit`, not the invalid token `sfg1120`.
+  Run sfg1120 uses `RUN_TOKEN=sfx-sfg1120`, not the invalid token `sfg1120`.
 - Keep batch, PowerCenter, and Spark evidence separate. Run the audit PC workflow,
   then the batch chain before snapshotting: PC summary appends would otherwise
   contaminate the batch baseline. PC proof executes original mappings in a fresh,

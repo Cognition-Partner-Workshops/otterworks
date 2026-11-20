@@ -45,14 +45,14 @@ TABLESV / DBC_TABLESV 06:05:35 versus 06:05:30. This does not establish deletion
 The supplied `RUN_TOKEN=sfg1120` is rejected by `warehouse/run_config.py`:
 `ValueError: RUN_TOKEN must be a lowercase sfx-prefixed identifier`.
 Without broadening shared configuration, the local stack and generated board use
-`RUN_TOKEN=sfx1120`, namespace `sfx-1120-before`. Provenance stays on branch
+`RUN_TOKEN=sfx-sfg1120`, namespace `sfx-sfg1120-before`. Provenance stays on branch
 `devin/sfg1120-dbc`; Snowflake always stays red with reason
 `Snowflake login down; no connection attempted (sfg1120)`.
 
 ```sh
 uv venv warehouse/.venv -p 3.11
 uv pip install -p warehouse/.venv/bin/python -r warehouse/requirements.txt -r migration/dw-exit/requirements.txt
-export RUN_TOKEN=sfx1120
+export RUN_TOKEN=sfx-sfg1120
 eval "$(python3 warehouse/run_config.py env)"
 export NS="$RUN_BEFORE_NAMESPACE"
 make -o warehouse/.venv/.requirements sfx-teradata-up ROWS_PER_TABLE=200

@@ -9,9 +9,9 @@ board execution path and licence counters; migration status is still not_started
 ## Reproduce this run
 
 ```sh
-export RUN_TOKEN=sfx-sfg1120-audit
+export RUN_TOKEN=sfx-sfg1120
 eval "$(warehouse/.venv/bin/python warehouse/run_config.py env)"
-export NS="$RUN_BEFORE_NAMESPACE"  # sfx-sfg1120-audit-before
+export NS="$RUN_BEFORE_NAMESPACE"  # sfx-sfg1120-before
 # Stacks already seeded at ROWS_PER_TABLE=200.
 make sfx-informatica-run INFA_DB=teradata MAPPINGS=all INFA_WORKFLOWS=SFX_AUDIT:wf_SFX_AUDIT_DAILY
 make sfx-teradata-run ROWS_PER_TABLE=200
@@ -25,7 +25,7 @@ warehouse/.venv/bin/python migration/dw-exit/tools/audit_parity.py
 The fresh PC workflow succeeded (4/4 enabled sessions); archive was disabled.
 All five audit Spark jobs succeeded. The batch chain was rerun after PC so its
 snapshot is not contaminated by the PC summary's append behavior.
-Namespace after-side is `sfx-sfg1120-audit-after`; no Snowflake connection,
+Namespace after-side is `sfx-sfg1120-after`; no Snowflake connection,
 preflight, capture, deployment, or prove was performed.
 
 Result: **48 green, 3 approved_deviation, 6 retired, 0 red** locally.
@@ -152,7 +152,7 @@ of ongoing business ownership.
 
 ## Checks
 
-Using warehouse/.venv/bin/python with RUN_TOKEN=sfx-sfg1120-audit:
+Using warehouse/.venv/bin/python with RUN_TOKEN=sfx-sfg1120:
 
 ```text
 test_audit.py + test_audit_spark.py + test_object_board.py:
