@@ -87,6 +87,9 @@ class GeneratorTests(unittest.TestCase):
         manifest = json.loads((ROOT / "demos/app/complexity-manifest.json").read_text())
         self.assertEqual({r["id"] for r in manifest["classes"]}, {f"MIG-{i:02}" for i in range(1, 8)})
         self.assertEqual({r["id"] for r in manifest["odl"]["classes"]}, {f"ODL-{i:02}" for i in range(1, 10)})
+        incident = next(row for row in manifest["odl"]["classes"] if row["id"] == "ODL-09")
+        self.assertEqual(incident["replay"], [f"scripts/odl/scenario.sh {command} odl-read-latency"
+                                             for command in ("disarm", "reset", "arm")])
         for row in manifest["odl"]["classes"]:
             self.assertTrue(all(k in row for k in ("source", "table", "field", "query", "expected_count")))
 

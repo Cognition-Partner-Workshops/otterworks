@@ -120,6 +120,36 @@ def stop_load():
     print('load=stopped; SIGTERM drained; nothing else changed')
 
 
+def local_load_running():
+    if running():
+        return True
+    for process in Path('/proc').iterdir():
+        if not process.name.isdecimal():
+            continue
+        try:
+            args = (process / 'cmdline').read_bytes().decode().split('\0')
+            if (len(args) > 3 and Path(args[1]).parts[-3:] == ('scripts', 'odl', 'scenario.py')
+                    and args[2] == '--worker'):
+                process_start(int(process.name))
+                return True
+        except (OSError, UnicodeError, IndexError):
+            continue
+    return False
+
+
+def reset():
+    if local_load_running():
+        raise ScenarioError('Load is running on this VM; disarm and drain before reset')
+    data = json.loads(kubectl('get', 'secret', 'operational-data-layer-mongo', '-o', 'json'))['data']
+    credentials = {key: base64.b64decode(data[key], validate=True).decode()
+                   for key in ('username', 'password')}
+    if not all(credentials.values()):
+        raise ScenarioError('Tenant Mongo credentials are empty')
+    result = kubectl('exec', '-i', 'deployment/operational-data-layer', '--', 'python', '-c',
+                     (HERE / 'reset_indexes.py').read_text(), input=json.dumps(credentials))
+    print(json.dumps(json.loads(result)))
+
+
 @contextmanager
 def locked():
     STATE.mkdir(mode=0o700, exist_ok=True)
@@ -246,8 +276,8 @@ def main(args):
             raise ScenarioError('Duration must be 1..1800 seconds')
         worker(args[1], duration)
         return
-    if len(args) not in (2, 3) or args[0] not in ('arm', 'disarm', 'status') or args[1] != SCENARIO:
-        raise ScenarioError('Only arm|disarm|status odl-read-latency is supported; tenant is fixed to odl')
+    if len(args) not in (2, 3) or args[0] not in ('arm', 'disarm', 'status', 'reset') or args[1] != SCENARIO:
+        raise ScenarioError('Only arm|disarm|status|reset odl-read-latency is supported; tenant is fixed to odl')
     if len(args) == 3 and args[0] != 'arm':
         raise ScenarioError('Duration is accepted only for arm')
     duration = int(args[2]) if len(args) == 3 else DEFAULT_DURATION
@@ -258,6 +288,8 @@ def main(args):
             arm(duration)
         elif args[0] == 'disarm':
             stop_load()
+        elif args[0] == 'reset':
+            reset()
         else:
             status()
 
