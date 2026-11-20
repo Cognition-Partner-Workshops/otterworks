@@ -22,7 +22,7 @@ sys.path.insert(0, str(ROOT / 'migration/dw-exit/tools'))
 from warehouse.run_config import RunConfig
 from assess import board as wave_board
 from assess import build
-from parity import pc_users, spark_users, retirement_users, report_outputs
+from parity import pc_users, spark_users, retirement_users, report_outputs, owner_decisions
 from parity.provenance import provenance, markdown, compact_markdown
 from parity.ladder import local_compare
 from parity.local_sql import execute
@@ -233,8 +233,8 @@ def unavailable_cell(reason=None):
 
 def parity_counts(rows):
     return {target: {status: sum(row['targets'][target]['status'] == status for row in rows)
-                     for status in ('green', 'red', 'retire_verified')
-                     if status != 'retire_verified' or any(row['targets'][target]['status'] == status for row in rows)} for target in TARGETS}
+                     for status in ('green', 'red', 'retire_verified', 'approved_deviation')
+                     if status in ('green','red') or any(row['targets'][target]['status'] == status for row in rows)} for target in TARGETS}
 
 
 def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, pc_results=None):
@@ -250,6 +250,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     available, errors = set(available or ()), errors or {}
     retire_evidence = retirement_users.verify() if any(o['subject_area'] == 'users' and o['target_type'] == 'retire' for o in objects) else None
     for obj in objects:
+        decision_proofs = []
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
         row.update(migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'))
         local = unavailable_cell()
@@ -272,6 +273,10 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                     break
                 try:
                     measured[source] = (local_compare if obj['subject_area'] == 'users' else compare)(before, after, source, destination)
+                    if source in ('SFX_USERS.APP_USER','SFX_USERS.STG_APP_USER'):
+                        decision_proofs.append(owner_decisions.display_names(before,after,source,destination))
+                    elif not measured[source]['passed']:
+                        decision_proofs.append(dict(scope_valid=False))
                 except (duckdb.Error, ValueError) as error:
                     local['reason'] = 'measurement failed: '+str(error).splitlines()[0]
                     break
@@ -287,6 +292,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         mapping = obj['name'].removeprefix('s_')
         if target == 'duckdb' and obj['subject_area'] == 'users' and obj['kind'] in ('mapping','session') and pc_results is not None:
             proof = pc_results[mapping]
+            decision_proofs = [proof['owner_decision']] if 'owner_decision' in proof else []
             local['bteq_relation_measurement'] = {k: local.get(k) for k in
                 ('status','reason','row_count','column_profile','keyed_row_hash','sampled_differences','comparison_rules')}
             local.update(status=proof['status'],reason=proof['reason'],powercenter=proof,
@@ -307,6 +313,11 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
 
         row['targets'] = {'duckdb': local, 'snowflake': unavailable_cell(SNOWFLAKE_DISABLED)}
         row.update(local)
+        owner_decisions.apply(row, decision_proofs)
+        if row.get('decision_state') == 'approved' and mapping == 'm_SFX_APP_USER':
+            row.update(input_deviation_status='approved_deviation',status='red',
+                       reason='Display-name input deviation approved; TRANSFORM.M_SFX_APP_USER implementation not yet proved')
+        local.update({k:v for k,v in row.items() if k in ('status','reason','owner_decision_evidence','measurement_status','decision_state','input_deviation_status')})
         if obj['subject_area'] == 'users':
             row.update(local_duckdb=local['status'], snowflake='red', snowflake_reason=SNOWFLAKE_DISABLED)
         result['rows'].append(row)

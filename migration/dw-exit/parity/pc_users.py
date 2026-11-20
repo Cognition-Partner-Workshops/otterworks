@@ -20,6 +20,7 @@ from sqlglot import exp
 
 from warehouse.run_config import RunConfig
 from .ladder import local_compare
+from . import owner_decisions
 
 ROOT = Path(__file__).resolve().parents[3]
 ESTATE = ROOT/'etl/informatica'
@@ -204,6 +205,9 @@ def proofs(namespace,landing,day,out=OUT):
                 results[mapping] = dict(status='green' if measurement['passed'] else 'red',
                     reason=None if measurement['passed'] else 'PowerCenter runner / shipped dbt parity mismatch',
                     measurement=measurement)
+                if table in ('APP_USER','STG_APP_USER'):
+                    results[mapping]['owner_decision'] = owner_decisions.display_names(
+                        captured,converted,'SFX_USERS.'+table,'USERS.'+table)
             except (ValueError,duckdb.Error,sqlglot.errors.SqlglotError,TemplateError) as error:
                 results[mapping] = dict(status='red',reason='PC conversion execution failed: '+str(error),measurement=None)
     return results, metadata
