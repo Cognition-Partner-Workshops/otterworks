@@ -34,3 +34,21 @@ def test_char_padding_is_strict(monkeypatch, old, new, passed, pending):
                                     audit_after=after, audit_available={'AUDIT.T'})['rows'][0]
             assert row['status'] == 'red'
             assert row['reason'] == result['reason']
+
+
+@pytest.mark.parametrize('area', ['billing', 'documents', 'users', 'content'])
+@pytest.mark.parametrize('target_type', ['dbt_model', 'retire'])
+@pytest.mark.parametrize('materialized', [False, True])
+def test_held_areas_are_red_even_with_equal_outputs(area, target_type, materialized):
+    with duckdb.connect() as before, duckdb.connect() as after:
+        before.execute('CREATE SCHEMA SFX_BILLING')
+        after.execute('CREATE SCHEMA BILLING')
+        before.execute('CREATE TABLE SFX_BILLING.T (ID INTEGER)')
+        after.execute('CREATE TABLE BILLING.T (ID INTEGER)')
+        obj = dict(id=area, name='held', kind='table', wave=1, owner='owner',
+                   subject_area=area, system='teradata', licence_dependency='teradata',
+                   target_type=target_type, output_relations=['SFX_BILLING.T'])
+        row = board.build_board({'objects': [obj]}, before, after,
+                                {'BILLING.T'} if materialized else set())['rows'][0]
+        assert row['status'] == row['local_duckdb'] == 'red'
+        assert row['reason'] == 'held back at combine pending fixes/owner decisions'

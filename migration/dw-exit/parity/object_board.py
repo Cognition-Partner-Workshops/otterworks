@@ -252,6 +252,9 @@ def base_build_board(manifest, before=None, after=None, available=None, errors=N
                     row['reason'] = 'measured parity mismatch'
         if obj['subject_area'] == 'dbc':
             row.update(snowflake='red', snowflake_reason='Snowflake login down; no connection attempted (sfg1120)')
+        if obj['subject_area'] in ('billing', 'documents', 'users', 'content'):
+            row.update(status='red', local_duckdb='red',
+                       reason='held back at combine pending fixes/owner decisions')
         result['rows'].append(row)
     if dbc is not None:
         dbc.close()

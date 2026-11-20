@@ -15,7 +15,7 @@ from warehouse.run_config import RunConfig
 
 
 def obj(**changes):
-    return dict(dict(id='one',name='job',kind='mapping',wave=2,owner='data',subject_area='billing',
+    return dict(dict(id='one',name='job',kind='mapping',wave=2,owner='data',subject_area='fixture',
                 system='powercenter',licence_dependency='powercenter',target_type='dbt_model',
                 output_relations=['SFX_BILLING.T']),**changes)
 
