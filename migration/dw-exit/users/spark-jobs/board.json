@@ -1,0 +1,311 @@
+{
+  "waves": {
+    "1": {
+      "total": 0,
+      "by_kind": {},
+      "by_target": {}
+    },
+    "2": {
+      "total": 0,
+      "by_kind": {},
+      "by_target": {}
+    },
+    "3": {
+      "total": 6,
+      "by_kind": {
+        "spark_job": 6
+      },
+      "by_target": {
+        "dbt_model": 6
+      }
+    },
+    "4": {
+      "total": 0,
+      "by_kind": {},
+      "by_target": {}
+    }
+  },
+  "licence_counters": {
+    "teradata_objects": {
+      "remaining": 178,
+      "target": 0
+    },
+    "powercenter_mappings": {
+      "remaining": 20,
+      "target": 0
+    },
+    "powercenter_annual_cost": {
+      "value": 412000,
+      "currency": "USD"
+    },
+    "powercenter_objects": {
+      "remaining": 44,
+      "target": 0
+    },
+    "spark_jobs": {
+      "remaining": 30,
+      "target": 0
+    },
+    "licence_dependencies": {
+      "remaining": 252,
+      "total": 252,
+      "target": 0
+    }
+  },
+  "run_token": "sfx-sfg1120",
+  "target": "duckdb",
+  "rows": [
+    {
+      "id": "nc6160237cc5eb2cf",
+      "name": "team_graph_components",
+      "kind": "spark_job",
+      "wave": 3,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "spark",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.TEAM_GRAPH_COMPONENTS": {
+          "before": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "COMPONENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            }
+          },
+          "after": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "COMPONENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.TEAM_GRAPH_COMPONENTS": {
+          "keys": [
+            "USER_ID"
+          ],
+          "difference": 0,
+          "before": "c9fad246e361cdeb031c2db47a868414e8aaabd4aa860b3af78e3f1c28fb5557",
+          "after": "c9fad246e361cdeb031c2db47a868414e8aaabd4aa860b3af78e3f1c28fb5557",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.TEAM_GRAPH_COMPONENTS": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nadfca1251f9b6a28",
+      "name": "user_pref_json_flatten",
+      "kind": "spark_job",
+      "wave": 3,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "spark",
+      "status": "red",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": null,
+      "column_profile": null,
+      "keyed_row_hash": null,
+      "sampled_differences": null,
+      "reason": "Legacy Spark input schema incompatible: SFX_USERS.STG_USER_PREF missing PREF_JSON, USER_PREF_ID; actual columns: PREF_ID, PREF_NAME, PREF_VALUE, UPDATED_DT, USER_ID. No inferred column mapping or fabricated legacy output applied.",
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nccade0800035b66b",
+      "name": "users_active_daily",
+      "kind": "spark_job",
+      "wave": 3,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "spark",
+      "status": "red",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": null,
+      "column_profile": null,
+      "keyed_row_hash": null,
+      "sampled_differences": null,
+      "reason": "Legacy Spark input schema incompatible: SFX_USERS.STG_USER_ACTIVITY_DAILY missing ACTION_COUNT, ACTIVITY_DATE; actual columns: ACTIVITY_DT, ACTIVITY_ID, DOCUMENT_COUNT, LOGIN_COUNT, USER_ID. No inferred column mapping or fabricated legacy output applied.",
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n1d48699afd1ffdb6",
+      "name": "users_login_useragent_parse",
+      "kind": "spark_job",
+      "wave": 3,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "spark",
+      "status": "red",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": null,
+      "column_profile": null,
+      "keyed_row_hash": null,
+      "sampled_differences": null,
+      "reason": "Legacy Spark input schema incompatible: SFX_USERS.STG_LOGIN_EVENT missing EVENT_AT, IP_ADDRESS, LOGIN_EVENT_ID, RAW_LINE, USER_AGENT; actual columns: CLIENT_TYPE, LOGIN_ID, LOGIN_TS, RESULT_CD, USER_ID. No inferred column mapping or fabricated legacy output applied.",
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nb8c305d5ee549186",
+      "name": "users_risk_score",
+      "kind": "spark_job",
+      "wave": 3,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "spark",
+      "status": "red",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": null,
+      "column_profile": null,
+      "keyed_row_hash": null,
+      "sampled_differences": null,
+      "reason": "Legacy Spark input schema incompatible: SFX_USERS.STG_USER_ACTIVITY_DAILY missing ACTION_COUNT, ACTIVITY_DATE, USER_ACTIVITY_ID; actual columns: ACTIVITY_DT, ACTIVITY_ID, DOCUMENT_COUNT, LOGIN_COUNT, USER_ID. No inferred column mapping or fabricated legacy output applied.",
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nc71a4f6251d9ca10",
+      "name": "users_team_rollup",
+      "kind": "spark_job",
+      "wave": 3,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "spark",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 2,
+        "after": 2
+      },
+      "column_profile": {
+        "SFX_USERS.USERS_TEAM_ROLLUP": {
+          "before": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "MEMBERS": {
+              "nulls": 0,
+              "min": 20,
+              "max": 20,
+              "distinct": 1
+            }
+          },
+          "after": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "MEMBERS": {
+              "nulls": 0,
+              "min": 20,
+              "max": 20,
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.USERS_TEAM_ROLLUP": {
+          "keys": [
+            "TEAM_ID"
+          ],
+          "difference": 0,
+          "before": "6dfec47f4e3a7a24e22af0d1a7967e86b5085210eef71ca7d4776b0b5c0fe4da",
+          "after": "6dfec47f4e3a7a24e22af0d1a7967e86b5085210eef71ca7d4776b0b5c0fe4da",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.USERS_TEAM_ROLLUP": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    }
+  ],
+  "group": "users/spark-jobs",
+  "measurement_contract": {
+    "source": "PostgreSQL Teradata emulator snapshot",
+    "local_target": "DuckDB",
+    "conversions": [
+      "users/spark-jobs/10_load.sql"
+    ],
+    "non_relational_objects": "declared output relations",
+    "migration_state": "BEFORE"
+  },
+  "summary": {
+    "rows": 6,
+    "red": 4,
+    "green": 2,
+    "measured": 2,
+    "migrated": 0,
+    "licence_remaining": 6,
+    "licence_total": 6,
+    "licence_by_system": {
+      "spark": 6
+    }
+  }
+}

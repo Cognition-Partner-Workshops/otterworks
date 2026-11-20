@@ -7,4 +7,10 @@ objects:
 - n1d48699afd1ffdb6  # spark_job users_login_useragent_parse
 - nb8c305d5ee549186  # spark_job users_risk_score
 - nc71a4f6251d9ca10  # spark_job users_team_rollup
-outputs: {}
+outputs:
+  nc6160237cc5eb2cf: [SFX_USERS.TEAM_GRAPH_COMPONENTS]
+  nadfca1251f9b6a28: [SFX_USERS.USER_PREF_JSON_FLATTEN]
+  nccade0800035b66b: [SFX_USERS.USERS_ACTIVE_DAILY]
+  n1d48699afd1ffdb6: [SFX_USERS.USERS_LOGIN_USERAGENT_PARSE]
+  nb8c305d5ee549186: [SFX_USERS.USERS_RISK_SCORE]
+  nc71a4f6251d9ca10: [SFX_USERS.USERS_TEAM_ROLLUP]
