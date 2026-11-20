@@ -1,5 +1,6 @@
 import builtins
 import importlib.util
+import json
 from pathlib import Path
 import socket
 import sys
@@ -7,6 +8,7 @@ import subprocess
 
 import duckdb
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
@@ -73,6 +75,37 @@ def test_unavailable_never_invents_measurements(changes,reason):
     assert all(row[field] is None for field in ('row_count','column_profile','keyed_row_hash','sampled_differences'))
 
 
+@pytest.mark.parametrize('kind,condition', [
+    ('bteq', 'capture its result or export'),
+    ('macro', 'capture its result as a relation'),
+    ('spark_job', 'Declare the Spark job output'),
+])
+def test_no_output_green_conditions(kind, condition):
+    row = board.build_board({'objects': [obj(kind=kind, output_relations=[])]})['rows'][0]
+    assert row['status'] == 'red'
+    assert condition in row['targets']['duckdb']['green_condition']
+
+
+@pytest.mark.parametrize('unused,reads,owner,token,status,reason', [
+    (True, {}, '@otterworks/data-platform', 'sfx-g1120', 'green', 'retirement evidence complete'),
+    (False, {}, '@otterworks/data-platform', 'sfx-g1120', 'red', 'historical unused evidence missing'),
+    (True, None, '@otterworks/data-platform', 'sfx-g1120', 'red', 'no-reader check not run'),
+    (True, {'job': 1}, '@otterworks/data-platform', 'sfx-g1120', 'red', 'DBQL reads found'),
+    (True, {}, 'other team', 'sfx-g1120', 'red', 'owner sign-off missing'),
+    (True, {}, '@otterworks/data-platform', 'sfx-other', 'red', 'owner sign-off missing'),
+])
+def test_retirement_requires_all_three_evidence_gates(monkeypatch, unused, reads, owner, token, status, reason):
+    monkeypatch.setenv('RUN_TOKEN', token)
+    manifest = {'objects': [obj(owner=owner, target_type='retire')],
+                'dead': ['job'] if unused else []}
+    row = board.build_board(manifest, retirement_read_counts=reads)['rows'][0]
+    assert row['status'] == status
+    assert reason in row['reason']
+    assert row['targets']['duckdb']['green_condition'] == board.RETIREMENT_PROOF
+    assert row['targets']['snowflake']['status'] == 'red'
+    assert row['row_count'] is None
+
+
 def test_measurement_error_and_column_mismatch(relations):
     before,after=relations
     after.execute('ALTER TABLE BILLING.T RENAME VALUE TO OTHER')
@@ -129,7 +162,7 @@ def test_two_columns_and_subject_area_summary(relations):
         'users': {'duckdb': {'green': 0, 'red': 1}, 'snowflake': {'green': 0, 'red': 1}},
     }
     readme = board.render_readme(result)
-    assert '| billing | 1 green / 1 red | 0 green / 2 red |' in readme
+    assert '| billing | 2 | 1 | 1 | 0 green / 2 red | no declared output relation (1) |' in readme
     assert '| Object | Subject area | DuckDB | Snowflake |' in readme
     assert '| job | billing | green | red |' in readme
 
@@ -212,6 +245,22 @@ def test_manifest_fields_and_spark_references():
     assert all(r['licence_dependency'] in {'teradata','powercenter','spark','none'} and r['subject_area'] and r['wave'] and r['owner'] for r in objects)
     assert all(r['status']=='not_started' for r in objects)
     assert estate['counters']['licence_dependencies']['remaining']==252
+
+
+def test_published_board_covers_manifest_and_readme_matches():
+    root = ROOT / 'migration/dw-exit'
+    manifest = yaml.safe_load((root / 'manifest.yaml').read_text())
+    published = json.loads((root / 'board/board.json').read_text())
+    rows = published['rows']
+    assert len(rows) == len({row['id'] for row in rows}) == len(manifest['objects']) == 252
+    assert {row['id'] for row in rows} == {obj['id'] for obj in manifest['objects']}
+    assert {c['id'] for c in published['consumer_gates']} == {c['id'] for c in manifest['consumers']}
+    assert not {row['id'] for row in rows} & {c['id'] for c in manifest['consumers']}
+    assert all(row['targets']['duckdb']['green_condition'] for row in rows)
+    assert published['summary']['targets'] == board.parity_counts(rows)
+    for area, counts in published['summary']['by_subject_area'].items():
+        assert counts == board.parity_counts([row for row in rows if row['subject_area'] == area])
+    assert (root / 'board/README.md').read_text() == board.render_readme(published)
 
 
 def test_make_command_line_token_selects_namespace():

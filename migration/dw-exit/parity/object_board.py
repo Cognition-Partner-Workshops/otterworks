@@ -29,6 +29,17 @@ from assess import build
 
 TARGETS = ('duckdb', 'snowflake')
 SNOWFLAKE_DISABLED = 'Snowflake login down; execution disabled'
+OUTPUT_PARITY = 'All declared outputs are materialized and match the emulator in DuckDB'
+RETIREMENT_PROOF = 'Historical unused evidence, zero emulator DBQL readers, and owner sign-off'
+RETIREMENT_SIGN_OFF = {
+    '@otterworks/finance-reporting': 'Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z',
+    '@otterworks/data-platform': 'Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z',
+}
+NO_OUTPUT_PROOF = {
+    'bteq': 'Run the report with the same fixture parameters, declare and capture its result or export as a relation, and pass DuckDB output parity',
+    'macro': 'Invoke the macro equivalent with the same fixture parameters, declare and capture its result as a relation, and pass DuckDB output parity',
+    'spark_job': 'Declare the Spark job output, materialize its local replacement, and pass DuckDB output parity',
+}
 
 
 def quote(name):
@@ -319,24 +330,62 @@ def parity_counts(rows):
                      for status in ('green', 'red')} for target in TARGETS}
 
 
-def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, areas=None):
+def emulator_read_counts(dsn):
+    with psycopg.connect(dsn) as source:
+        return dict(source.execute("""
+            SELECT upper(objectdatabasename || '.' || objecttablename), count(*)
+            FROM dbc.dbc_qrylogobjects
+            WHERE usagetype = 'READ'
+            GROUP BY 1
+        """).fetchall())
+
+
+def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, areas=None,
+                retirement_read_counts=None):
     if target not in TARGETS:
         raise ValueError('Unsupported parity target')
     objects = manifest['objects']
+    if len({obj['id'] for obj in objects}) != len(objects):
+        raise ValueError('Duplicate ids in manifest objects')
     areas = registered_areas() if areas is None else areas
     schemas = {'SFX_'+c['schema']: c['schema'] for c in areas.values()}
     result = wave_board(objects, counters or {})
-    result.update(run_token=RunConfig.from_env().token, rows=[])
+    result.update(run_token=RunConfig.from_env().token, rows=[],
+                  consumer_gates=[{key: c[key] for key in ('id', 'name')} for c in manifest.get('consumers', [])])
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
         'local_target': 'DuckDB', 'conversions': [area+'/'+f for area,c in areas.items() for f in c.get('sql', [])],
         'areas': {area: {k:v for k,v in c.items() if k != 'directory'} for area,c in areas.items()},
-        'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
+        'non_relational_objects': 'per-object DuckDB green condition', 'migration_state': 'BEFORE'}
     available, errors = set(available or ()), errors or {}
+    dead = set(manifest.get('dead', []))
     for obj in objects:
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
         row.update(migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'))
         local = unavailable_cell()
-        if obj['system'] == 'spark' and not (obj['subject_area'] in areas and any(
+        retiring = obj['target_type'] == 'retire'
+        local['green_condition'] = (RETIREMENT_PROOF if retiring else
+                                    OUTPUT_PARITY if obj.get('output_relations') else
+                                    NO_OUTPUT_PROOF.get(obj['kind'], 'Declare a representative output and pass DuckDB output parity'))
+        if target == 'snowflake':
+            local['reason'] = 'Snowflake target selected; execution disabled'
+        elif retiring:
+            unused = obj['name'] in dead
+            readers = None if retirement_read_counts is None else retirement_read_counts.get(obj['name'], 0)
+            sign_off = RETIREMENT_SIGN_OFF.get(obj['owner']) if result['run_token'] == 'sfx-g1120' else None
+            local['retirement_evidence'] = dict(
+                unused_evidence='manifest.dead: no historical DBQL usage' if unused else None,
+                emulator_dbql_read_count=readers, owner_sign_off=sign_off)
+            if not unused:
+                local['reason'] = 'retirement: historical unused evidence missing'
+            elif readers is None:
+                local['reason'] = 'retirement: emulator DBQL no-reader check not run'
+            elif readers:
+                local['reason'] = 'retirement: emulator DBQL reads found'
+            elif not sign_off:
+                local['reason'] = 'retirement: owner sign-off missing'
+            else:
+                local.update(status='green', reason='retirement evidence complete')
+        elif obj['system'] == 'spark' and not (obj['subject_area'] in areas and any(
                 schemas.get(s.split('.')[0], '')+'.'+s.split('.')[1] in available
                 for s in obj.get('output_relations', []))):
             if obj.get('source') and (ROOT / obj['source']).is_file():
@@ -344,8 +393,6 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 local['reason'] = 'Spark source available; output not materialized locally'
             else:
                 local['reason'] = 'source on Spark baseline PR'
-        elif target == 'snowflake':
-            local['reason'] = 'Snowflake target selected; execution disabled'
         elif not obj.get('output_relations'):
             local['reason'] = 'no declared output relation'
         else:
@@ -384,8 +431,15 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
 
 
 def render_readme(board):
-    def count_row(label, counts):
-        cells = [f"{counts[target]['green']} green / {counts[target]['red']} red" for target in TARGETS]
+    def count_row(label, counts, rows):
+        duckdb = counts['duckdb']
+        snowflake = counts['snowflake']
+        reasons = Counter(row['targets']['duckdb']['reason'].removeprefix('retirement: ').split(':')[0]
+                          for row in rows if row['targets']['duckdb']['status'] == 'red')
+        top = sorted(reasons.items(), key=lambda item: (-item[1], item[0]))
+        reason_text = '; '.join(f'{reason} ({count})' for reason, count in top) or '—'
+        cells = [str(duckdb['green'] + duckdb['red']), str(duckdb['green']), str(duckdb['red']),
+                 f"{snowflake['green']} green / {snowflake['red']} red", escape(reason_text)]
         return '| ' + ' | '.join([label, *cells]) + ' |'
 
     def escape(value):
@@ -395,9 +449,33 @@ def render_readme(board):
     lines = ['# Migration board', '', '## Parity by subject area', '',
              'An object counts as green only when its DuckDB column is green.',
              SNOWFLAKE_DISABLED + '.', '',
-             '| Subject area | DuckDB | Snowflake |', '|---|---:|---:|',
-             count_row('**Total**', summary['targets'])]
-    lines.extend(count_row(escape(area), counts) for area, counts in summary['by_subject_area'].items())
+             '| Subject area | Total | DuckDB green | DuckDB red | Snowflake | DuckDB red reasons (count) |',
+             '|---|---:|---:|---:|---:|---|',
+             count_row('**Total**', summary['targets'], board['rows'])]
+    lines.extend(count_row(escape(area), counts, (r for r in board['rows'] if r['subject_area'] == area))
+                 for area, counts in summary['by_subject_area'].items())
+    consumers = board['consumer_gates']
+    if consumers:
+        lines += ['', '## Scope', '',
+                  f"`manifest.yaml` contains **{summary['rows']} entries under `objects`**, each with one board row.",
+                  f"A raw `- id:` count also includes {len(consumers)} entries under `consumers` "
+                  f"({summary['rows'] + len(consumers)} ID lines in all). These are reader/cutover gates, not parity objects:",
+                  '']
+        lines.extend(f"- `{c['name']}` (`{c['id']}`)" for c in consumers)
+    lines += ['', '## DuckDB green conditions', '',
+              '- Declared outputs: materialize and compare every output (row count, column profiles and keyed row hashes). '
+              'Sessions inherit their mapping outputs; workflows and worklets inherit the outputs of their sessions/worklets.',
+              '- BTEQ reports without a declared output: run with the same fixture parameters and declare and capture '
+              'the report result or export as a relation for parity.',
+              '- Macros without a declared output: invoke the equivalent with the same fixture parameters and '
+              'declare and capture its result as a relation for parity.',
+              '- Spark jobs without a declared output: declare the job output and materialize a local replacement '
+              'before measuring parity; a source file alone is not proof.',
+              '- Retirement candidates (including DBC catalog replacements): require historical unused evidence '
+              '(`manifest.dead`), zero reads in the seeded emulator DBQL, and owner sign-off for the run. '
+              'A proposed replacement or an inferred dependent retirement is not unused evidence. '
+              'This is local evidence only, not production retirement authorization.',
+              '', 'Each DuckDB cell records its green condition and, where applicable, the retirement evidence.']
     lines += ['', '## Object parity', '', 'See [board.json](board.json) for reasons and measurement evidence.', '',
               '| Object | Subject area | DuckDB | Snowflake |', '|---|---|---|---|']
     for row in board['rows']:
@@ -431,6 +509,7 @@ def main():
         areas = {args.area: areas[args.area]}
     counters = build()['counters']
     before = after = None
+    retirement_read_counts = None
     ready, errors = set(), {}
     try:
         if args.target == 'duckdb' and manifest['objects']:
@@ -438,10 +517,12 @@ def main():
             ns = os.environ.get('NS',RunConfig.from_env().before_namespace)
             port = os.environ.get('TD_PG_PORT',str(54500+zlib.crc32(ns.encode())%1000))
             dsn = os.environ.get('BOARD_SOURCE_DSN',f'host=127.0.0.1 port={port} dbname=teradata user=postgres')
+            retirement_read_counts = emulator_read_counts(dsn)
             before, source_ready, source_errors = source_snapshot(dsn,names,areas)
             after, ready, errors = materialize(before,source_ready,areas=areas)
             errors.update(source_errors)
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,areas=areas)
+        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,areas=areas,
+                              retirement_read_counts=retirement_read_counts)
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         if args.output.resolve() == default_output:
             default_output.with_name('README.md').write_text(render_readme(payload))

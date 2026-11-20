@@ -5,15 +5,41 @@
 An object counts as green only when its DuckDB column is green.
 Snowflake login down; execution disabled.
 
-| Subject area | DuckDB | Snowflake |
-|---|---:|---:|
-| **Total** | 29 green / 223 red | 0 green / 252 red |
-| audit | 0 green / 57 red | 0 green / 57 red |
-| billing | 29 green / 45 red | 0 green / 74 red |
-| content | 0 green / 1 red | 0 green / 1 red |
-| dbc | 0 green / 6 red | 0 green / 6 red |
-| documents | 0 green / 59 red | 0 green / 59 red |
-| users | 0 green / 55 red | 0 green / 55 red |
+| Subject area | Total | DuckDB green | DuckDB red | Snowflake | DuckDB red reasons (count) |
+|---|---:|---:|---:|---:|---|
+| **Total** | 252 | 35 | 217 | 0 green / 252 red | output not materialized (133); Spark source available; output not materialized locally (30); measured parity mismatch (30); historical unused evidence missing (14); no declared output relation (10) |
+| audit | 57 | 2 | 55 | 0 green / 57 red | output not materialized (44); Spark source available; output not materialized locally (5); historical unused evidence missing (4); no declared output relation (2) |
+| billing | 74 | 29 | 45 | 0 green / 74 red | measured parity mismatch (29); Spark source available; output not materialized locally (6); no declared output relation (5); output not materialized (5) |
+| content | 1 | 0 | 1 | 0 green / 1 red | output not materialized (1) |
+| dbc | 6 | 0 | 6 | 0 green / 6 red | historical unused evidence missing (6) |
+| documents | 59 | 2 | 57 | 0 green / 59 red | output not materialized (40); Spark source available; output not materialized locally (13); historical unused evidence missing (2); measured parity mismatch (1); no declared output relation (1) |
+| users | 55 | 2 | 53 | 0 green / 55 red | output not materialized (43); Spark source available; output not materialized locally (6); historical unused evidence missing (2); no declared output relation (2) |
+
+## Scope
+
+`manifest.yaml` contains **252 entries under `objects`**, each with one board row.
+A raw `- id:` count also includes 10 entries under `consumers` (262 ID lines in all). These are reader/cutover gates, not parity objects:
+
+- `FIN_ANALYST_JMORALES` (`n7d4be2219d74bf8d`)
+- `nb_dsci_pkhan` (`n99d1552d14f9cca8`)
+- `finance-notebook` (`n5af1393dfb98cf5f`)
+- `admin-service` (`n11fe0064545979d7`)
+- `analytics-service` (`n1474f16e03459229`)
+- `bi-semantic` (`nde049af295ce6235`)
+- `billing-service` (`n94063447e4bdd0b7`)
+- `legacy-billing` (`n41938b343c86904e`)
+- `partner-extract` (`ne22ca451d8d7ea5d`)
+- `report-service` (`nd57ecaa03385223c`)
+
+## DuckDB green conditions
+
+- Declared outputs: materialize and compare every output (row count, column profiles and keyed row hashes). Sessions inherit their mapping outputs; workflows and worklets inherit the outputs of their sessions/worklets.
+- BTEQ reports without a declared output: run with the same fixture parameters and declare and capture the report result or export as a relation for parity.
+- Macros without a declared output: invoke the equivalent with the same fixture parameters and declare and capture its result as a relation for parity.
+- Spark jobs without a declared output: declare the job output and materialize a local replacement before measuring parity; a source file alone is not proof.
+- Retirement candidates (including DBC catalog replacements): require historical unused evidence (`manifest.dead`), zero reads in the seeded emulator DBQL, and owner sign-off for the run. A proposed replacement or an inferred dependent retirement is not unused evidence. This is local evidence only, not production retirement authorization.
+
+Each DuckDB cell records its green condition and, where applicable, the retirement evidence.
 
 ## Object parity
 
@@ -118,7 +144,7 @@ See [board.json](board.json) for reasons and measurement evidence.
 | users_user_pref | users | red | red |
 | users_user_profile | users | red | red |
 | users_user_status_hist | users | red | red |
-| SFX_AUDIT.M_ARCHIVE_OVERVIEW | audit | red | red |
+| SFX_AUDIT.M_ARCHIVE_OVERVIEW | audit | green | red |
 | SFX_AUDIT.M_RECON_TOTALS | audit | red | red |
 | SFX_BILLING.M_CURRENCY_TOTALS | billing | red | red |
 | SFX_BILLING.M_SUBSCRIPTION_PLANS | billing | red | red |
@@ -131,7 +157,7 @@ See [board.json](board.json) for reasons and measurement evidence.
 | SFX_AUDIT.ACCESS_REVIEW | audit | red | red |
 | SFX_AUDIT.AUDIT_DAILY_SUMMARY | audit | red | red |
 | SFX_AUDIT.AUDIT_EVENT | audit | red | red |
-| SFX_AUDIT.AUDIT_EVENT_ARCHIVE | audit | red | red |
+| SFX_AUDIT.AUDIT_EVENT_ARCHIVE | audit | green | red |
 | SFX_AUDIT.AUDIT_RECON | audit | red | red |
 | SFX_AUDIT.COMPLIANCE_FLAG | audit | red | red |
 | SFX_AUDIT.DATA_EXPORT_REQ | audit | red | red |
@@ -180,7 +206,7 @@ See [board.json](board.json) for reasons and measurement evidence.
 | SFX_DOCUMENTS.DOC_VERSION | documents | red | red |
 | SFX_DOCUMENTS.FILE_OBJECT | documents | red | red |
 | SFX_DOCUMENTS.FOLDER | documents | red | red |
-| SFX_DOCUMENTS.SEARCH_INDEX_LOG | documents | red | red |
+| SFX_DOCUMENTS.SEARCH_INDEX_LOG | documents | green | red |
 | SFX_DOCUMENTS.STG_COLLAB_SESSION | documents | red | red |
 | SFX_DOCUMENTS.STG_DOCUMENT | documents | red | red |
 | SFX_DOCUMENTS.STG_DOC_COMMENT | documents | red | red |
@@ -209,7 +235,7 @@ See [board.json](board.json) for reasons and measurement evidence.
 | SFX_USERS.TEAM | users | red | red |
 | SFX_USERS.TEAM_MEMBER | users | red | red |
 | SFX_USERS.USER_ACTIVITY_DAILY | users | red | red |
-| SFX_USERS.USER_PREF | users | red | red |
+| SFX_USERS.USER_PREF | users | green | red |
 | SFX_USERS.USER_PROFILE | users | red | red |
 | SFX_USERS.USER_STATUS_HIST | users | red | red |
 | audit_access_review | audit | red | red |
@@ -239,10 +265,10 @@ See [board.json](board.json) for reasons and measurement evidence.
 | SFX_BILLING.V_INVOICE_REVENUE | billing | red | red |
 | SFX_BILLING.V_SUBSCRIPTION_PLANS | billing | red | red |
 | SFX_DOCUMENTS.V_DOCUMENT_VERSIONS | documents | red | red |
-| SFX_DOCUMENTS.V_SEARCH_HISTORY | documents | red | red |
+| SFX_DOCUMENTS.V_SEARCH_HISTORY | documents | green | red |
 | SFX_DOCUMENTS.V_WORKSPACE_STORAGE | documents | red | red |
 | SFX_USERS.V_TEAM_MEMBERS | users | red | red |
-| SFX_USERS.V_USER_SETTINGS | users | red | red |
+| SFX_USERS.V_USER_SETTINGS | users | green | red |
 | audit_actor_activity_join | audit | red | red |
 | audit_archive_resort | audit | red | red |
 | audit_daily_summary | audit | red | red |
