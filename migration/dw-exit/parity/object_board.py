@@ -309,7 +309,8 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
             for field in ('column_profile','keyed_row_hash','sampled_differences','comparison_rules'):
                 row[field] = {name:m[field] for name,m in measured.items()}
             row['status'] = 'green' if all(m['passed'] for m in measured.values()) else 'red'
-            row['reason'] = None if row['status'] == 'green' else 'measured parity mismatch'
+            row['reason'] = None if row['status'] == 'green' else next(
+                (m['reason'] for m in measured.values() if m.get('reason')), 'measured parity mismatch')
             if obj['system'] == 'powercenter' and 'SFX_AUDIT.AUDIT_DAILY_SUMMARY' in measured:
                 raw = (audit_pc_results or {}).get('raw_summary_measurement')
                 row['raw_summary_measurement'] = raw
