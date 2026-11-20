@@ -1,14 +1,16 @@
 """Retirement is not measurable target parity."""
 
-OUTPUTS = ('USERS.USER_PREF', 'USERS.STG_USER_PREF', 'USERS.V_USER_SETTINGS')
+OUTPUTS = {
+    'USERS.USER_PREF': 'DROP TABLE IF EXISTS "USERS"."USER_PREF"',
+    'USERS.STG_USER_PREF': 'DROP TABLE IF EXISTS "USERS"."STG_USER_PREF"',
+    'USERS.V_USER_SETTINGS': 'DROP TABLE IF EXISTS "USERS"."V_USER_SETTINGS"',
+}
 REASON = ('retired (manifest target_type retire, target NONE); no target relation to '
           'measure — retirement evidence in retirement.json')
 
 
 def materialize(before, after, ready, errors):
-    for name in OUTPUTS:
+    for name, statement in OUTPUTS.items():
         ready.discard(name)
-        # Identifiers come only from OUTPUTS, not external input.
-        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        after.execute('DROP TABLE IF EXISTS ' + '.'.join('"' + p.replace('"', '""') + '"' for p in name.split('.')))
+        after.execute(statement)
         errors[name] = REASON
