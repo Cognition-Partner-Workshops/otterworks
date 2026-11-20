@@ -85,6 +85,9 @@ jobs:
               - 'tests/api/**'
               - 'tests/compliance/**'
               - 'compliance/control-catalogs/**'
+              - 'tests/slo/**'
+              - 'observability/**'
+              - 'scripts/slo/**'
               - 'docs/api-route-matrix.md'
               - 'services/api-gateway/internal/config/**'
               - 'docker-compose*.yml'
@@ -462,6 +465,8 @@ jobs:
       - run: python -m py_compile tests/api/*.py
       - run: python -m pytest tests/api --collect-only -q
       - run: python -m pytest tests/compliance -q
+      - run: python -m pip install -r tests/slo/requirements.txt
+      - run: python -m pytest tests/slo -q
 
   # Legacy data migration job (migration/job): ruff + pytest (in-memory drivers, a real PostgreSQL
   # service for the default target, PySpark local mode for the Spark LOAD engine), Helm lint of the

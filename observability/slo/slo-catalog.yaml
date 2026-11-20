@@ -1,0 +1,326 @@
+# Phase 0 / Sprint 1 — SLI and SLO catalog for the core OtterWorks estate.
+#
+# Every objective below is a PROPOSAL to ratify with the named owner during
+# Phase 0. Keep any stricter existing commitment. Owners are roles until the
+# CIO names a person per service (owner.name: null means "to be named").
+#
+# Conventions
+#   window:           rolling evaluation window for the SLO and its error budget
+#   numerator/denominator: PromQL over the window (good / valid events). Each
+#                     maps to a recording rule in
+#                     observability/prometheus/slo_recording_rules.yml
+#   threshold:        latency SLIs count requests at or under this bound as good
+#   instrumented:     true  = the metric exists today and was seen in otterworks-dev
+#                     false = the gap blocks this SLI; `gap` says what is missing
+#   workload:         which traffic the claim covers; baseline numbers are only
+#                     valid for the recorded workload and environment
+version: 1
+phase: 0
+sprint: 1
+window: 30d
+environment_of_record: otterworks-dev / namespace otterworks-main (t-main)
+error_budget_policy:
+  budget: "1 - objective over the window (e.g. 99.5% over 30d = 216 minutes of full outage or 0.5% of requests)"
+  burn_alerts:
+    page: "14.4x burn over 1h and 5m (2% of a 30d budget in 1h)"
+    ticket: "6x burn over 6h and 30m"
+  on_exhaustion: "freeze non-reliability changes on the owning service until budget recovers; owner may grant a documented exception"
+  phase0_rule: "missing measurement or unexplained regression = no-go at the Phase 0 gate"
+
+owners:
+  platform:      {role: "Platform/SRE owner (EKS, ingress, monitoring)", name: null}
+  api-gateway:   {role: "API Gateway service owner", name: null}
+  auth:          {role: "Auth service owner", name: null}
+  file:          {role: "File service owner", name: null}
+  document:      {role: "Document service owner", name: null}
+  collaboration: {role: "Collaboration service owner", name: null}
+  notification:  {role: "Notification service owner", name: null}
+  search:        {role: "Search service owner", name: null}
+  analytics:     {role: "Analytics service owner", name: null}
+  admin:         {role: "Admin service owner", name: null}
+  audit:         {role: "Audit service owner", name: null}
+  report:        {role: "Report service owner", name: null}
+  data:          {role: "Data/DBA owner (shared RDS PostgreSQL, DynamoDB, S3)", name: null}
+
+slis:
+  # ---------------------------------------------------------------- gateway
+  - id: gw-availability
+    service: api-gateway
+    owner: api-gateway
+    kind: availability
+    routes: ["/api/v1/*"]
+    numerator: 'sum(rate(api_gateway_http_requests_total{path=~"/api/v1/.*",status!~"5.."}[$window]))'
+    denominator: 'sum(rate(api_gateway_http_requests_total{path=~"/api/v1/.*"}[$window]))'
+    objective: 0.995
+    instrumented: true
+    workload: "all user API traffic through the gateway, excluding /health and /metrics"
+  - id: gw-route-errors
+    service: api-gateway
+    owner: api-gateway
+    kind: per_route_errors
+    routes: ["/api/v1/auth", "/api/v1/files", "/api/v1/documents", "/api/v1/collab", "/api/v1/notifications", "/api/v1/search", "/api/v1/analytics", "/api/v1/admin", "/api/v1/audit"]
+    numerator: 'sum by (path) (rate(api_gateway_http_requests_total{status=~"5.."}[$window]))'
+    denominator: 'sum by (path) (rate(api_gateway_http_requests_total[$window]))'
+    objective: "<= 0.5% 5xx per route; unrelated-route rise <= 0.1 pp during a scoped failure drill"
+    instrumented: partial
+    gap: "gateway normalizePath() buckets /api/v1/folders, /templates, /reports, /preferences, /settings and /socket.io into path=\"other\" together with /health; per-route SLIs for those prefixes need a label-only instrumentation change (Sprint 2, no behavior change)"
+  - id: gw-latency
+    service: api-gateway
+    owner: api-gateway
+    kind: latency
+    routes: ["/api/v1/*"]
+    threshold_seconds: {p95: 0.5, p99: 1.0}
+    numerator: 'sum by (path) (rate(api_gateway_http_request_duration_seconds_bucket{le="0.5"}[$window]))'
+    denominator: 'sum by (path) (rate(api_gateway_http_request_duration_seconds_count[$window]))'
+    objective: "95% of requests <= 500 ms and 99% <= 1 s per route"
+    instrumented: true
+    workload: "end-to-end gateway latency including backend time; upload/download/export bodies are excluded once per-route labels exist"
+  - id: gw-throughput
+    service: api-gateway
+    owner: api-gateway
+    kind: throughput
+    numerator: 'sum by (path, method) (rate(api_gateway_http_requests_total[$window]))'
+    objective: "baseline only (requests per window; p50, p95, peak per route); sets the 2x targets of later phases"
+    instrumented: true
+  - id: gw-saturation
+    service: api-gateway
+    owner: api-gateway
+    kind: saturation
+    numerator: 'max(api_gateway_http_active_connections)'
+    objective: "baseline only; alert threshold set from 30d peak"
+    instrumented: true
+
+  # ---------------------------------------------------------------- auth
+  - id: auth-availability
+    service: auth-service
+    owner: auth
+    kind: availability
+    routes: ["POST /api/v1/auth/login", "POST /api/v1/auth/refresh", "POST /api/v1/auth/register", "GET /api/v1/auth/profile"]
+    numerator: 'sum(rate(http_server_requests_seconds_count{job="auth-service",uri=~"/api/v1/auth/.*",status!~"5.."}[$window]))'
+    denominator: 'sum(rate(http_server_requests_seconds_count{job="auth-service",uri=~"/api/v1/auth/.*"}[$window]))'
+    objective: 0.999
+    instrumented: true
+  - id: auth-latency
+    service: auth-service
+    owner: auth
+    kind: latency
+    threshold_seconds: {p95: 0.3, p99: 0.8}
+    numerator: 'histogram_quantile(0.95, sum by (le, uri) (rate(http_server_requests_seconds_bucket{job="auth-service"}[$window])))'
+    objective: "login/refresh p95 <= 300 ms, p99 <= 800 ms"
+    instrumented: false
+    gap: "Micrometer publishes only _count/_sum/_max; percentile histograms need management.metrics.distribution.percentiles-histogram.http.server.requests=true (config-only, Sprint 2). Until then use gateway latency on /api/v1/auth"
+  - id: auth-db-saturation
+    service: auth-service
+    owner: auth
+    kind: saturation
+    numerator: 'max(hikaricp_connections_pending{job="auth-service"})'
+    denominator: 'max(hikaricp_connections_max{job="auth-service"})'
+    objective: "pending connections 0 at p99; active/max < 80% at 30d peak"
+    instrumented: true
+
+  # ---------------------------------------------------------------- file
+  - id: file-availability
+    service: file-service
+    owner: file
+    kind: availability
+    routes: ["POST /api/v1/files/upload", "GET /api/v1/files/{id}", "GET /api/v1/files/{id}/download", "/api/v1/folders/*"]
+    numerator: 'sum(rate(http_requests_total{job="file-service",path!~"/health|/metrics",status!~"5.."}[$window]))'
+    denominator: 'sum(rate(http_requests_total{job="file-service",path!~"/health|/metrics"}[$window]))'
+    objective: 0.995
+    instrumented: true
+  - id: file-latency
+    service: file-service
+    owner: file
+    kind: latency
+    threshold_seconds: {p95: 0.5, p99: 2.5}
+    numerator: 'sum(rate(http_request_duration_seconds_bucket{job="file-service",path!~"/health|/metrics",le="0.5"}[$window]))'
+    denominator: 'sum(rate(http_request_duration_seconds_count{job="file-service",path!~"/health|/metrics"}[$window]))'
+    objective: "metadata routes p95 <= 500 ms; upload/download measured per MB once size labels exist"
+    instrumented: true
+
+  # ---------------------------------------------------------------- document
+  - id: doc-availability
+    service: document-service
+    owner: document
+    kind: availability
+    routes: ["POST /api/v1/documents/", "GET /api/v1/documents/{id}", "PUT|PATCH /api/v1/documents/{id}", "/api/v1/documents/{id}/versions", "/api/v1/documents/{id}/comments", "/api/v1/templates"]
+    numerator: 'sum(rate(http_requests_total{job="document-service",status!~"5.."}[$window]))'
+    denominator: 'sum(rate(http_requests_total{job="document-service"}[$window]))'
+    objective: 0.995
+    instrumented: true
+    workload: "prometheus-fastapi-instrumentator series appear only after the first non-health request"
+  - id: doc-latency
+    service: document-service
+    owner: document
+    kind: latency
+    threshold_seconds: {p95: 0.4, p99: 1.0}
+    numerator: 'histogram_quantile(0.95, sum by (le) (rate(http_request_duration_highr_seconds_bucket{job="document-service"}[$window])))'
+    objective: "authoring p95 <= 400 ms; Phase 2 gate is <= 105% of this baseline"
+    instrumented: true
+  - id: doc-db-fanout
+    service: document-service
+    owner: document
+    kind: saturation
+    numerator: 'histogram_quantile(0.95, sum by (le, handler) (rate(otterworks_db_queries_per_request_bucket[$window])))'
+    objective: "baseline only; regression > 2x on any handler is a stop trigger"
+    instrumented: true
+
+  # ---------------------------------------------------------------- collaboration
+  - id: collab-connect-errors
+    service: collab-service
+    owner: collaboration
+    kind: availability
+    routes: ["/socket.io (WebSocket upgrade and polling)", "GET /api/v1/collab/documents/{id}/presence"]
+    numerator: 'sum(rate(collab_connection_errors_total[$window]))'
+    denominator: 'sum(rate(collab_messages_total{type="connect"}[$window]))'
+    objective: "<= 0.5% failed socket connects"
+    instrumented: partial
+    gap: "denominator uses collab_messages_total; confirm a connect counter exists or add one (label-only, Sprint 2). Gateway /socket.io falls into path=\"other\""
+  - id: collab-sync-latency
+    service: collab-service
+    owner: collaboration
+    kind: latency
+    threshold_seconds: {p95: 0.25, p99: 1.0}
+    numerator: 'histogram_quantile(0.95, sum by (le) (rate(collab_document_sync_duration_seconds_bucket[$window])))'
+    objective: "edit sync p95 <= 250 ms"
+    instrumented: true
+  - id: collab-persistence
+    service: collab-service
+    owner: collaboration
+    kind: availability
+    numerator: 'sum(rate(collab_persistence_operations_total{status="success"}[$window]))'
+    denominator: 'sum(rate(collab_persistence_operations_total[$window]))'
+    objective: 0.999
+    instrumented: true
+    workload: "Redis-backed snapshot persistence; service continues without Redis today, so this SLI is the only signal of silent persistence loss"
+  - id: collab-saturation
+    service: collab-service
+    owner: collaboration
+    kind: saturation
+    numerator: 'max(collab_active_connections)'
+    objective: "baseline concurrent sockets/rooms and nodejs_eventloop_lag_p99_seconds <= 0.1"
+    instrumented: true
+
+  # ---------------------------------------------------------------- notification (worker)
+  - id: notif-availability
+    service: notification-service
+    owner: notification
+    kind: availability
+    routes: ["GET /api/v1/notifications", "/api/v1/preferences"]
+    numerator: 'sum(rate(ktor_http_server_requests_seconds_count{job="notification-service",route!~"/health|/metrics",status!~"5.."}[$window]))'
+    denominator: 'sum(rate(ktor_http_server_requests_seconds_count{job="notification-service",route!~"/health|/metrics"}[$window]))'
+    objective: 0.995
+    instrumented: true
+  - id: notif-worker-success
+    service: notification-service
+    owner: notification
+    kind: worker_errors
+    numerator: 'sum(rate(notifications_processed_total[$window]))'
+    denominator: 'sum(rate(notifications_processed_total[$window])) + sum(rate(notifications_processing_errors_total[$window]))'
+    objective: 0.999
+    instrumented: true
+  - id: notif-queue-age
+    service: notification-service
+    owner: notification
+    kind: queue_age
+    numerator: 'max(aws_sqs_approximate_age_of_oldest_message_maximum{queue_name=~"otterworks-notification.*"})'
+    objective: "oldest message <= 60 s at p95; DLQ empty"
+    instrumented: false
+    gap: "SNS/SQS is disabled in tenants (SQS_QUEUE_URL empty in otterworks-main) and no CloudWatch exporter is scraped; measure in the environment that runs eventing, from CloudWatch ApproximateAgeOfOldestMessage"
+
+  # ---------------------------------------------------------------- search
+  - id: search-availability
+    service: search-service
+    owner: search
+    kind: availability
+    routes: ["GET /api/v1/search", "GET /api/v1/search/suggest", "POST /api/v1/search/advanced"]
+    numerator: 'sum(rate(search_service_requests_total{endpoint!~"health.*|metrics",status!~"5.."}[$window]))'
+    denominator: 'sum(rate(search_service_requests_total{endpoint!~"health.*|metrics"}[$window]))'
+    objective: 0.995
+    instrumented: partial
+    gap: "search_service_requests_total is declared but no series is exported in otterworks-main; confirm it is incremented per request. Gateway /api/v1/search is the interim source"
+  - id: search-latency
+    service: search-service
+    owner: search
+    kind: latency
+    threshold_seconds: {p95: 0.3, p99: 0.8}
+    numerator: 'histogram_quantile(0.95, sum by (le) (rate(api_gateway_http_request_duration_seconds_bucket{path="/api/v1/search"}[$window])))'
+    objective: "query p95 <= 300 ms (Phase 1 gate: 2x baseline peak at this p95)"
+    instrumented: true
+  - id: search-index-freshness
+    promql: false
+    service: search-service
+    owner: search
+    kind: queue_age
+    numerator: "time from document/file write to searchable (journey J-SEARCH-FRESH probe)"
+    objective: "p95 <= 60 s at baseline peak (Phase 1 target)"
+    instrumented: false
+    gap: "no freshness metric; SQS indexing disabled in tenants (SQS_ENABLED=false). Use the journey probe and add an index-lag gauge in Phase 1"
+
+  # ---------------------------------------------------------------- audit
+  - id: audit-availability
+    service: audit-service
+    owner: audit
+    kind: availability
+    routes: ["POST /api/v1/audit/events", "GET /api/v1/audit/events", "GET /api/v1/audit/export"]
+    numerator: 'sum(rate(microsoft_aspnetcore_hosting_http_server_request_duration_count{job="audit-service",http_route!~"/health|/metrics",http_response_status_code!~"5.."}[$window]))'
+    denominator: 'sum(rate(microsoft_aspnetcore_hosting_http_server_request_duration_count{job="audit-service",http_route!~"/health|/metrics"}[$window]))'
+    objective: 0.999
+    instrumented: true
+
+  # ---------------------------------------------------------------- analytics, admin, report
+  - id: analytics-availability
+    service: analytics-service
+    owner: analytics
+    kind: availability
+    routes: ["POST /api/v1/analytics/events", "GET /api/v1/analytics/*"]
+    numerator: 'sum(rate(api_gateway_http_requests_total{path="/api/v1/analytics",status!~"5.."}[$window]))'
+    denominator: 'sum(rate(api_gateway_http_requests_total{path="/api/v1/analytics"}[$window]))'
+    objective: 0.99
+    instrumented: partial
+    gap: "analytics-service exports no HTTP request metrics (only up); gateway is the source. Also record which metrics backend is active (in-memory fallback vs PostgreSQL)"
+  - id: admin-availability
+    service: admin-service
+    owner: admin
+    kind: availability
+    numerator: 'sum(rate(api_gateway_http_requests_total{path="/api/v1/admin",status!~"5.."}[$window]))'
+    denominator: 'sum(rate(api_gateway_http_requests_total{path="/api/v1/admin"}[$window]))'
+    objective: 0.99
+    instrumented: partial
+    gap: "admin-service is down on the golden app by design (planted Rails boot defect, see AGENTS.md); baseline records it as unavailable and the defect is not fixed"
+  - id: report-availability
+    service: report-service
+    owner: report
+    kind: availability
+    routes: ["POST /api/v1/reports", "GET /api/v1/reports/{id}/download"]
+    numerator: 'sum(rate(http_server_requests_seconds_count{job="report-service",uri=~"/api/v1/reports.*",status!~"5.."}[$window]))'
+    denominator: 'sum(rate(http_server_requests_seconds_count{job="report-service",uri=~"/api/v1/reports.*"}[$window]))'
+    objective: 0.99
+    instrumented: partial
+    gap: "report-service scrape target is down in otterworks-main (pod running, /metrics not reachable); confirm actuator path vs ServiceMonitor path /metrics. Report is in scope for baseline only, its migration is Phase 4"
+
+  # ---------------------------------------------------------------- platform / recovery / data
+  - id: platform-recovery
+    promql: false
+    service: all
+    owner: platform
+    kind: recovery
+    numerator: 'time from pod NotReady/up==0 to Ready/up==1 per deployment (kube_pod_status_ready, up)'
+    objective: "single-pod recovery <= 2 min; DB RTO <= 15 min and RPO <= 5 min in rehearsal (Sprint 3)"
+    instrumented: true
+  - id: platform-saturation
+    service: all
+    owner: platform
+    kind: saturation
+    numerator: 'sum by (namespace, pod) (rate(container_cpu_usage_seconds_total{container!=""}[5m])) / sum by (namespace, pod) (kube_pod_container_resource_limits{resource="cpu"})'
+    objective: "baseline CPU/memory vs limits per deployment; sizing input for HPA in Sprint 2"
+    instrumented: true
+  - id: data-rds-saturation
+    promql: false
+    service: shared-rds
+    owner: data
+    kind: saturation
+    numerator: "CloudWatch AWS/RDS DatabaseConnections, CPUUtilization, ReadLatency, WriteLatency for otterworks-postgres-dev"
+    objective: "baseline only; connections < 80% of max_connections at 30d peak"
+    instrumented: false
+    gap: "RDS metrics live in CloudWatch, not Prometheus; pull read-only with aws cloudwatch get-metric-statistics alongside each daily snapshot (not automated yet)"

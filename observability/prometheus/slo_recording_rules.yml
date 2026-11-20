@@ -1,0 +1,112 @@
+# Phase 0 SLI recording rules. One series per SLI in observability/slo/slo-catalog.yaml,
+# named sli:<id>:<kind>:<window>. 5m ratios feed burn-rate alerts; the 30d SLO is
+# avg_over_time of the 5m ratio, which the baseline collector also computes from raw metrics.
+groups:
+  - name: otterworks.sli.availability
+    interval: 30s
+    rules:
+      - record: sli:gw_availability:ratio_rate5m
+        expr: |
+          sum(rate(api_gateway_http_requests_total{path=~"/api/v1/.*",status!~"5.."}[5m]))
+          / sum(rate(api_gateway_http_requests_total{path=~"/api/v1/.*"}[5m]))
+      - record: sli:gw_route_errors:ratio_rate5m
+        expr: |
+          sum by (path) (rate(api_gateway_http_requests_total{status=~"5.."}[5m]))
+          / sum by (path) (rate(api_gateway_http_requests_total[5m]))
+      - record: sli:auth_availability:ratio_rate5m
+        expr: |
+          sum(rate(http_server_requests_seconds_count{job="auth-service",uri=~"/api/v1/auth/.*",status!~"5.."}[5m]))
+          / sum(rate(http_server_requests_seconds_count{job="auth-service",uri=~"/api/v1/auth/.*"}[5m]))
+      - record: sli:file_availability:ratio_rate5m
+        expr: |
+          sum(rate(http_requests_total{job="file-service",path!~"/health|/metrics",status!~"5.."}[5m]))
+          / sum(rate(http_requests_total{job="file-service",path!~"/health|/metrics"}[5m]))
+      - record: sli:doc_availability:ratio_rate5m
+        expr: |
+          sum(rate(http_requests_total{job="document-service",status!~"5.."}[5m]))
+          / sum(rate(http_requests_total{job="document-service"}[5m]))
+      - record: sli:notif_availability:ratio_rate5m
+        expr: |
+          sum(rate(ktor_http_server_requests_seconds_count{job="notification-service",route!~"/health|/metrics",status!~"5.."}[5m]))
+          / sum(rate(ktor_http_server_requests_seconds_count{job="notification-service",route!~"/health|/metrics"}[5m]))
+      - record: sli:search_availability:ratio_rate5m
+        expr: |
+          sum(rate(search_service_requests_total{endpoint!~"health.*|metrics",status!~"5.."}[5m]))
+          / sum(rate(search_service_requests_total{endpoint!~"health.*|metrics"}[5m]))
+      - record: sli:audit_availability:ratio_rate5m
+        expr: |
+          sum(rate(microsoft_aspnetcore_hosting_http_server_request_duration_count{job="audit-service",http_route!~"/health|/metrics",http_response_status_code!~"5.."}[5m]))
+          / sum(rate(microsoft_aspnetcore_hosting_http_server_request_duration_count{job="audit-service",http_route!~"/health|/metrics"}[5m]))
+      - record: sli:analytics_availability:ratio_rate5m
+        expr: |
+          sum(rate(api_gateway_http_requests_total{path="/api/v1/analytics",status!~"5.."}[5m]))
+          / sum(rate(api_gateway_http_requests_total{path="/api/v1/analytics"}[5m]))
+      - record: sli:admin_availability:ratio_rate5m
+        expr: |
+          sum(rate(api_gateway_http_requests_total{path="/api/v1/admin",status!~"5.."}[5m]))
+          / sum(rate(api_gateway_http_requests_total{path="/api/v1/admin"}[5m]))
+      - record: sli:report_availability:ratio_rate5m
+        expr: |
+          sum(rate(http_server_requests_seconds_count{job="report-service",uri=~"/api/v1/reports.*",status!~"5.."}[5m]))
+          / sum(rate(http_server_requests_seconds_count{job="report-service",uri=~"/api/v1/reports.*"}[5m]))
+      - record: sli:collab_persistence:ratio_rate5m
+        expr: |
+          sum(rate(collab_persistence_operations_total{status="success"}[5m]))
+          / sum(rate(collab_persistence_operations_total[5m]))
+      - record: sli:collab_connect_errors:rate5m
+        expr: sum(rate(collab_connection_errors_total[5m]))
+      - record: sli:notif_worker_success:ratio_rate5m
+        expr: |
+          sum(rate(notifications_processed_total[5m]))
+          / (sum(rate(notifications_processed_total[5m])) + sum(rate(notifications_processing_errors_total[5m])))
+
+  - name: otterworks.sli.latency
+    interval: 30s
+    rules:
+      - record: sli:gw_latency:good_ratio_rate5m
+        expr: |
+          sum by (path) (rate(api_gateway_http_request_duration_seconds_bucket{le="0.5"}[5m]))
+          / sum by (path) (rate(api_gateway_http_request_duration_seconds_count[5m]))
+      - record: sli:gw_latency:p95_5m
+        expr: histogram_quantile(0.95, sum by (le, path) (rate(api_gateway_http_request_duration_seconds_bucket[5m])))
+      - record: sli:gw_latency:p99_5m
+        expr: histogram_quantile(0.99, sum by (le, path) (rate(api_gateway_http_request_duration_seconds_bucket[5m])))
+      - record: sli:file_latency:good_ratio_rate5m
+        expr: |
+          sum(rate(http_request_duration_seconds_bucket{job="file-service",path!~"/health|/metrics",le="0.5"}[5m]))
+          / sum(rate(http_request_duration_seconds_count{job="file-service",path!~"/health|/metrics"}[5m]))
+      - record: sli:doc_latency:p95_5m
+        expr: histogram_quantile(0.95, sum by (le) (rate(http_request_duration_highr_seconds_bucket{job="document-service"}[5m])))
+      - record: sli:doc_latency:p99_5m
+        expr: histogram_quantile(0.99, sum by (le) (rate(http_request_duration_highr_seconds_bucket{job="document-service"}[5m])))
+      - record: sli:collab_sync_latency:p95_5m
+        expr: histogram_quantile(0.95, sum by (le) (rate(collab_document_sync_duration_seconds_bucket[5m])))
+      - record: sli:search_latency:p95_5m
+        expr: histogram_quantile(0.95, sum by (le) (rate(api_gateway_http_request_duration_seconds_bucket{path="/api/v1/search"}[5m])))
+      - record: sli:doc_db_fanout:p95_5m
+        expr: histogram_quantile(0.95, sum by (le, handler) (rate(otterworks_db_queries_per_request_bucket[5m])))
+
+  - name: otterworks.sli.throughput_saturation
+    interval: 30s
+    rules:
+      - record: sli:gw_throughput:rate5m
+        expr: sum by (path, method) (rate(api_gateway_http_requests_total[5m]))
+      - record: sli:gw_saturation:active_connections
+        expr: max(api_gateway_http_active_connections)
+      - record: sli:auth_db_saturation:pending
+        expr: max(hikaricp_connections_pending{job="auth-service"})
+      - record: sli:collab_saturation:active_connections
+        expr: max(collab_active_connections)
+      - record: sli:platform_saturation:cpu_limit_ratio
+        expr: |
+          sum by (namespace, pod) (rate(container_cpu_usage_seconds_total{container!=""}[5m]))
+          / sum by (namespace, pod) (kube_pod_container_resource_limits{resource="cpu"})
+
+  - name: otterworks.sli.burn
+    interval: 1m
+    rules:
+      # Error-budget burn for the 99.5% gateway SLO (budget 0.005). 14.4 = page, 6 = ticket.
+      - record: slo:gw_availability:burn_rate5m
+        expr: (1 - sli:gw_availability:ratio_rate5m) / 0.005
+      - record: slo:gw_availability:ratio_30d
+        expr: avg_over_time(sli:gw_availability:ratio_rate5m[30d])
