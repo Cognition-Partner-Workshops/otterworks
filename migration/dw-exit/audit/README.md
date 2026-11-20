@@ -57,8 +57,9 @@ These schemas differ from batch audit feeds. Input SHA-256 hashes and freshness
 checks are retained; compaction reads the converted summary, not source output.
 
 Counts, per-column null/min/max/distinct profiles, keyed full-row multiset hashes
-and sampled differences come from `parity/ladder.py`. Trailing spaces are
-ignored only for source CHAR columns derived from Teradata DDL. Duplicate
+and sampled differences come from `parity/ladder.py`. CHAR trailing spaces are
+compared strictly pending an owner decision. A trim-only diagnostic can label a
+mismatch but never promote its status. Duplicate
 multiplicity remains part of parity. Every audit row links source, converted SQL,
 and the current metric implementation on this branch. Retire rows link DBQL
 files and keep both pinned BEFORE and current-checkout query records.

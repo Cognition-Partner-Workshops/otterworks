@@ -21,8 +21,7 @@ sys.path.insert(0, str(ROOT / 'migration/dw-exit/tools'))
 sys.path.insert(0, str(ROOT / 'migration/dw-exit'))
 from warehouse.run_config import RunConfig
 from assess import board as wave_board
-sys.path.insert(0, str(ROOT / 'migration/dw-exit'))
-from parity import local_audit, powercenter_audit, spark_audit
+from parity import dbc_retire, local_audit, powercenter_audit, spark_audit
 from parity.ladder import local_compare
 from parity.provenance import provenance, audit_markdown
 from parity.owner_decisions import approved_retirements, approved_summary_ids, apply_retirement
@@ -36,7 +35,6 @@ def relation_contract(objects):
                  **({'output_artifacts': audit_artifacts(obj)} if audit_artifacts(obj) else {}))
             if obj['subject_area'] == 'audit' else dict(obj) for obj in objects]
 
-from parity import dbc_retire
 
 
 def quote(name):
