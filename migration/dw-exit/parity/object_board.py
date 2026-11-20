@@ -22,10 +22,16 @@ sys.path.insert(0, str(ROOT / 'migration/dw-exit'))
 from warehouse.run_config import RunConfig
 from assess import board as wave_board
 from parity import dbc_retire, local_audit, powercenter_audit, spark_audit
+from parity import pc_users, spark_users, retirement_users, report_outputs, owner_decisions, snowpark_users
+from parity.local_sql import execute
+from parity.semantics import columns as source_columns
 from parity.ladder import local_compare
-from parity.provenance import provenance, audit_markdown
+from parity.provenance import provenance, audit_markdown, markdown, compact_markdown
 from parity.owner_decisions import approved_retirements, approved_summary_ids, apply_retirement, decision_registry
 from audit_outputs import outputs as audit_outputs, artifacts as audit_artifacts
+
+TARGETS = ('duckdb', 'snowflake')
+SNOWFLAKE_DISABLED = 'Snowflake login down; execution disabled'
 
 SNOWFLAKE_REASON = 'Snowflake login down for run sfg1120; no live capture/prove'
 HELD_BACK_AREAS = frozenset(('billing', 'documents', 'users', 'content'))
@@ -138,7 +144,9 @@ def source_snapshot(dsn, names):
     return connection, ready, errors
 
 
-def materialize(before, names, conversion_dir):
+def materialize(before, names, conversion_dir, business_date='20261109', subject='billing', after=None):
+    if subject == 'users':
+        return materialize_users(before, names, conversion_dir, business_date, after)
     after = duckdb.connect()
     ready, errors = set(), {}
     after.execute('CREATE SCHEMA BILLING')
@@ -265,10 +273,198 @@ def base_build_board(manifest, before=None, after=None, available=None, errors=N
 
 
 
+def materialize_users(before, names, conversion_dir, business_date='20261109', after=None):
+    after = after if after is not None else duckdb.connect()
+    ready, errors = set(), {}
+    schema = 'USERS'
+    after.execute('CREATE SCHEMA '+schema)
+    for name in sorted(names):
+        if not name.startswith('SFX_'+schema+'.'):
+            continue
+        table = name.split('.')[1]
+        if table.startswith('V_'):
+            continue
+        target = schema+'.'+table
+        # DuckDB metadata and identifiers are local; relation()/quote() escape identifiers.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        definitions = before.execute('DESCRIBE '+relation(name)).fetchall()
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        rules = source_columns(name)
+        after.execute(f'CREATE TABLE {relation(target)} ({", ".join(quote(c[0])+" "+c[1]+(" COLLATE NOCASE" if rules.get(c[0], {}).get("case_insensitive") else "") for c in definitions)})')
+        if table.startswith('STG_'):
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+            rows = before.execute('SELECT * FROM '+relation(name)).fetchall()
+            if rows:
+                after.executemany(f'INSERT INTO {relation(target)} VALUES ({", ".join("?" for _ in definitions)})', rows)
+            ready.add(target)
+    if (conversion_dir / '20_routines.sql').exists():
+        errors.update(execute(after, conversion_dir, ready, business_date, 'users'))
+        return after, ready, errors
+    return after, ready, errors
+
+
+def unavailable_cell(reason=None):
+    return dict(status='red', reason=reason, row_count=None, column_profile=None,
+                keyed_row_hash=None, sampled_differences=None)
+
+
+def parity_counts(rows):
+    return {target: {status: sum(row['targets'][target]['status'] == status for row in rows)
+                     for status in ('green', 'red', 'retire_verified', 'approved_deviation')
+                     if status in ('green','red') or any(row['targets'][target]['status'] == status for row in rows)} for target in TARGETS}
+
+
+def users_build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, pc_results=None):
+    if target not in TARGETS:
+        raise ValueError('Unsupported parity target')
+    objects = manifest['objects']
+    result = wave_board(objects, counters or {})
+    result.update(run_token=RunConfig.from_env().token, rows=[])
+    result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
+        'local_target': 'DuckDB', 'conversions': ['billing/initial/10_load.sql','billing/initial/30_views.sql',
+            'users/10_load.sql','users/20_routines.sql','users/30_views.sql'],
+        'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
+    available, errors = set(available or ()), errors or {}
+    retire_evidence = retirement_users.verify() if any(o['subject_area'] == 'users' and o['target_type'] == 'retire' for o in objects) else None
+    for obj in objects:
+        decision_proofs = []
+        row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
+        row.update(migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'))
+        local = unavailable_cell()
+        if obj['system'] == 'spark' and not any(r.startswith('SFX_SPARK.') for r in obj.get('output_relations', [])):
+            if obj.get('source') and (ROOT / obj['source']).is_file():
+                row.update(source=obj['source'], source_ref=obj.get('source_ref'))
+                local['reason'] = 'Spark source available; output not materialized locally'
+            else:
+                local['reason'] = 'source on Spark baseline PR'
+        elif target == 'snowflake':
+            local['reason'] = 'Snowflake target selected; execution disabled'
+        elif not obj.get('output_relations'):
+            local['reason'] = 'no declared output relation'
+        else:
+            measured = {}
+            for source in obj['output_relations']:
+                destination = source.removeprefix('SFX_')
+                if destination not in available:
+                    local['reason'] = errors.get(destination, errors.get('*', 'output not materialized: '+destination))
+                    break
+                try:
+                    measured[source] = (local_compare if obj['subject_area'] == 'users' else compare)(before, after, source, destination)
+                    if source in ('SFX_USERS.APP_USER','SFX_USERS.STG_APP_USER'):
+                        decision_proofs.append(owner_decisions.display_names(before,after,source,destination))
+                    elif not measured[source]['passed']:
+                        decision_proofs.append(dict(scope_valid=False))
+                except (duckdb.Error, ValueError) as error:
+                    local['reason'] = 'measurement failed: '+str(error).splitlines()[0]
+                    break
+            if local['reason'] is None:
+                local['row_count'] = {side:sum(r['row_count'][side] for r in measured.values()) for side in ('before','after')}
+                for field in ('column_profile','keyed_row_hash','sampled_differences'):
+                    local[field] = {name:values[field] for name,values in measured.items()}
+                local['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
+                if local['status'] == 'red':
+                    local['reason'] = 'measured parity mismatch'
+        if obj['subject_area'] == 'users':
+            row['provenance'] = provenance(obj)
+        mapping = obj['name'].removeprefix('s_')
+        if target == 'duckdb' and obj['subject_area'] == 'users' and obj['kind'] in ('mapping','session') and pc_results is not None:
+            proof = pc_results[mapping]
+            decision_proofs = [proof['owner_decision']] if 'owner_decision' in proof else []
+            if mapping == 'm_SFX_APP_USER' and proof.get('snowpark_local'):
+                decision_proofs.append(proof['snowpark_local']['input_owner_decision'])
+            local['bteq_relation_measurement'] = {k: local.get(k) for k in
+                ('status','reason','row_count','column_profile','keyed_row_hash','sampled_differences','comparison_rules')}
+            local.update(status=proof['status'],reason=proof['reason'],powercenter=proof,
+                       measurement_basis='actual PowerCenter runner targets vs '+('Snowpark local_testing handler' if proof.get('snowpark_local') else 'shipped dbt model')+' on captured inputs')
+            measurement = proof['measurement']
+            for field in ('row_count','column_profile','keyed_row_hash','sampled_differences','comparison_rules'):
+                local[field] = None if measurement is None else (measurement[field] if field == 'row_count' else
+                    {'SFX_USERS.'+pc_users.MAPPINGS[mapping]:measurement[field]})
+            if mapping == 'm_SFX_APP_USER' and not proof.get('snowpark_local'):
+                local.update(status='red',reason='Held on APP_USER display-name truncation decision; isolated PC/dbt proof has hash_difference=0 and does not clear the escalation' if measurement and measurement['keyed_row_hash']['difference'] == 0 else 'Held on APP_USER display-name truncation decision; see independent PC/dbt proof for current measurements')
+        if target == 'duckdb' and obj['subject_area'] == 'users' and obj['target_type'] == 'retire':
+            approved = (obj['name'] in retirement_users.DEAD | retirement_users.DEPENDENTS
+                        and obj['name'] in manifest.get('dead' if obj['name'] in retirement_users.DEAD else 'dead_dependents', [])
+                        and retire_evidence['passed'])
+            local.update(status='retire_verified' if approved else 'red', retirement_evidence=retire_evidence,
+                       reason=(retire_evidence['reason'] if approved else 'Retirement evidence failed or manifest declaration disagrees')+'; '+retirement_users.CAVEAT,
+                       row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None)
+
+        row['targets'] = {'duckdb': local, 'snowflake': unavailable_cell(SNOWFLAKE_DISABLED)}
+        row.update(local)
+        owner_decisions.apply(row, decision_proofs)
+        if row.get('decision_state') == 'approved' and mapping == 'm_SFX_APP_USER' and not (pc_results or {}).get(mapping, {}).get('snowpark_local'):
+            row.update(input_deviation_status='approved_deviation',status='red',
+                       reason='Display-name input deviation approved; TRANSFORM.M_SFX_APP_USER implementation not yet proved')
+        local.update({k:v for k,v in row.items() if k in ('status','reason','owner_decision_evidence','measurement_status','decision_state','input_deviation_status')})
+        if obj['subject_area'] == 'users':
+            row.update(local_duckdb=local['status'], snowflake='red', snowflake_reason=SNOWFLAKE_DISABLED)
+        result['rows'].append(row)
+    rows = result['rows']
+    targets = parity_counts(rows)
+    areas = {area: parity_counts([r for r in rows if r['subject_area'] == area])
+             for area in sorted({r['subject_area'] for r in rows})}
+    total = sum(r['licence_dependency_count'] for r in rows)
+    result['summary'] = dict(rows=len(rows), **targets['duckdb'], targets=targets, by_subject_area=areas,
+        measured=sum(r['targets']['duckdb']['row_count'] is not None for r in rows),
+        migrated=0, licence_remaining=total, licence_total=total,
+        licence_by_system=dict(Counter(r['licence_dependency'] for r in rows if r['licence_dependency']!='none')))
+    users = [r for r in rows if r['subject_area'] == 'users']
+    result['summary']['users'] = dict(local_green=sum(r['status'] == 'green' for r in users),
+        local_approved_deviation=sum(r['status'] == 'approved_deviation' for r in users),
+        local_red=sum(r['status'] == 'red' for r in users),
+        local_retire_verified=sum(r['status'] == 'retire_verified' for r in users), snowflake='red')
+    return result
+
+
+def render_readme(board):
+    def count_row(label, counts):
+        cells = [f"{counts[target]['green']} green / {counts[target]['red']} red" +
+                 (f" / {counts[target]['retire_verified']} retire_verified" if counts[target].get('retire_verified') else '') +
+                 (f" / {counts[target]['approved_deviation']} approved_deviation" if counts[target].get('approved_deviation') else '') for target in TARGETS]
+        return '| ' + ' | '.join([label, *cells]) + ' |'
+
+    def escape(value):
+        return str(value).replace('|', r'\|')
+
+    summary = board['summary']
+    lines = ['# Migration board', '', '## Parity by subject area', '',
+             'An object counts as green only when its DuckDB column is green.',
+             SNOWFLAKE_DISABLED + '.', '',
+             '| Subject area | DuckDB | Snowflake |', '|---|---:|---:|',
+             count_row('**Total**', summary['targets'])]
+    lines.extend(count_row(escape(area), counts) for area, counts in summary['by_subject_area'].items())
+    lines += ['', '## Object parity', '', 'See [board.json](board.json) for reasons and measurement evidence.', '',
+              '| Object | Subject area | DuckDB | Snowflake |', '|---|---|---|---|']
+    for row in board['rows']:
+        cells = [row['targets'][target]['status'] for target in TARGETS]
+        lines.append('| ' + ' | '.join([escape(row['name']), escape(row['subject_area']), *cells]) + ' |')
+    waves = list(board['waves'].values())
+    lines += ['', '## Waves', '', '| Count | Wave 1 | Wave 2 | Wave 3 | Wave 4 |',
+              '|---|---:|---:|---:|---:|', '| Total | ' + ' | '.join(str(w['total']) for w in waves) + ' |']
+    for field in ('by_kind', 'by_target'):
+        for key in sorted({k for w in waves for k in w[field]}):
+            lines.append(f'| {field}: {key} | ' + ' | '.join(str(w[field].get(key, 0)) for w in waves) + ' |')
+    lines += ['', '## Licence counters', '', '| Counter | Remaining | Target |', '|---|---:|---:|']
+    lines.extend(f"| {k} | {v['remaining']} | {v['target']} |"
+                 for k, v in board['licence_counters'].items() if 'remaining' in v)
+    lines += ['', 'All objects remain not_started. Parity measurements do not migrate or retire objects.', '']
+    return '\n'.join(lines)
+
+
 def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb',
                 counters=None, audit_before=None, audit_after=None, audit_available=None,
-                audit_errors=None, audit_pc_results=None):
+                audit_errors=None, audit_pc_results=None, pc_results=None):
     result = base_build_board(manifest, before, after, available, errors, target, counters)
+    users_manifest = dict(manifest, objects=[obj for obj in manifest['objects'] if obj['subject_area'] == 'users'])
+    if users_manifest['objects']:
+        users = users_build_board(users_manifest, before, after, available, errors, target, counters, pc_results)
+        replacements = {row['id']: row for row in users['rows']}
+        result['rows'] = [replacements.get(row['id'], row) for row in result['rows']]
+        result['summary']['users'] = users['summary']['users']
+        for row in result['rows']:
+            if row['subject_area'] in HELD_BACK_AREAS:
+                row.update(status='red', local_duckdb='red', reason='held back at combine pending fixes/owner decisions')
     result['owner_decisions'] = decision_registry()
     contracts = {o['id']:o for o in relation_contract(manifest['objects'])}
     decisions = approved_retirements()
@@ -341,6 +537,14 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         'batch_source':'fresh Teradata chain snapshot',
         'powercenter_source':'fresh isolated rollback-only legacy mappings on same landing PSVs',
         'cross_area_inputs':'read-only source snapshots; not converted by this audit proof'}
+    for row in result['rows']:
+        local = {key: value for key, value in row.items() if key not in ('targets', 'provenance')}
+        row['targets'] = {'duckdb': local, 'snowflake': unavailable_cell(SNOWFLAKE_REASON)}
+        row['local_duckdb'] = row['status']
+    result['summary']['targets'] = parity_counts(result['rows'])
+    result['summary']['by_subject_area'] = {
+        area: parity_counts([row for row in result['rows'] if row['subject_area'] == area])
+        for area in sorted({row['subject_area'] for row in result['rows']})}
     return result
 
 def main():
@@ -358,7 +562,8 @@ def main():
     ready, errors = set(), {}
     try:
         if args.target == 'duckdb' and manifest['objects']:
-            names = {r for obj in manifest['objects'] for r in obj.get('output_relations',[])}
+            names = {r for obj in manifest['objects'] for r in obj.get('output_relations',[])
+                     if not r.startswith('SFX_SPARK.') and r != 'SFX_USERS.M_TEAM_COUNTS_OUTPUT'}
             ns = os.environ.get('NS',RunConfig.from_env().before_namespace)
             port = os.environ.get('TD_PG_PORT',str(54500+zlib.crc32(ns.encode())%1000))
             dsn = os.environ.get('BOARD_SOURCE_DSN',f'host=127.0.0.1 port={port} dbname=teradata user=postgres')
@@ -375,16 +580,43 @@ def main():
             pc_errors, pc_evidence = powercenter_audit.materialize(
                 before,audit_after,dsn,audit_ready,os.environ.get('BUSINESS_DATE','20261109'))
             audit_errors.update(pc_errors)
+            outputs = {r for obj in manifest['objects'] if obj['subject_area'] == 'users'
+                       and obj['target_type'] != 'retire' for r in obj.get('output_relations', [])}
+            after, users_ready, users_errors = materialize_users(before, source_ready & outputs,
+                ROOT/'migration/dw-exit/users', os.environ.get('BUSINESS_DATE','20261109'), after)
+            if '*' in users_errors:
+                errors.update({r.removeprefix('SFX_'): users_errors['*'] for r in outputs})
+            else:
+                errors.update(users_errors)
+                errors.update(report_outputs.materialize(before, after, dsn, users_ready,
+                    os.environ.get('BUSINESS_DATE','20261109'), 'users'))
+            ready.update(users_ready)
+            users_ready, users_errors, users_spark_evidence = spark_users.materialize(before, after, manifest['objects'], ns)
+            ready.update(users_ready)
+            errors.update(users_errors)
+        pc_results = users_pc_evidence = None
+        if args.target == 'duckdb' and manifest['objects'] and (pc_users.OUT/'capture.json').exists():
+            try:
+                pc_results, users_pc_evidence = pc_users.proofs(ns, ROOT/'warehouse/landing', os.environ.get('BUSINESS_DATE','20261109'))
+                proof = snowpark_users.proof(ns, ROOT/'warehouse/landing', os.environ.get('BUSINESS_DATE','20261109'))
+                pc_results['m_SFX_APP_USER'] = dict(status=proof['status'],
+                    reason=None if proof['status'] == 'green' else 'Snowpark local / actual PC mismatch',
+                    measurement=proof['measurement'], owner_decision=proof['owner_decision'], snowpark_local=proof)
+            except (OSError, ValueError, duckdb.Error, ImportError) as error:
+                pc_results = {m:dict(status='red', reason='PC evidence unavailable: '+str(error), measurement=None) for m in pc_users.MAPPINGS}
         payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,
             audit_before=before,audit_after=audit_after,audit_available=audit_ready,
-            audit_errors=audit_errors,audit_pc_results=pc_evidence)
+            audit_errors=audit_errors,audit_pc_results=pc_evidence,pc_results=pc_results)
         payload.update(audit_evidence=audit_evidence,audit_powercenter_evidence=pc_evidence,
-                       audit_spark_evidence=spark_evidence)
+                       audit_spark_evidence=spark_evidence,
+                       powercenter_evidence=users_pc_evidence)
+        if args.target == 'duckdb' and manifest['objects']:
+            payload['users_spark_evidence'] = users_spark_evidence
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         readme = args.output.parent / 'README.md'
         if readme.exists():
             text = readme.read_text().split('## Audit parity provenance')[0].split('## DBC parity provenance')[0]
-            readme.write_text(text.rstrip()+'\n\n'+audit_markdown(payload['rows'])+'\n'+dbc_retire.markdown(payload['rows']))
+            readme.write_text(text.rstrip()+'\n\n'+audit_markdown(payload['rows'])+'\n'+dbc_retire.markdown(payload['rows'])+'\n'+markdown(payload['rows'], 'users'))
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
         if before is not None:

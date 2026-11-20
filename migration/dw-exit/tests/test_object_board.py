@@ -1,5 +1,7 @@
+import builtins
 import importlib.util
 from pathlib import Path
+import socket
 import sys
 import subprocess
 
@@ -98,6 +100,63 @@ def test_empty_manifest_and_snowflake_plan(relations):
     assert row['reason']=='Snowflake target selected; execution disabled'
     with pytest.raises(ValueError):
         board.build_board({'objects':[]},target='unknown')
+
+
+def test_two_columns_and_subject_area_summary(relations):
+    before, after = relations
+    before.execute("INSERT INTO SFX_BILLING.T VALUES (1, 'x')")
+    after.execute("INSERT INTO BILLING.T VALUES (1, 'x')")
+    manifest = {'objects': [obj(), obj(id='two', name='missing', output_relations=[]),
+                            obj(id='three', name='spark', subject_area='users', system='spark')]}
+    result = board.build_board(manifest, before, after, {'BILLING.T'})
+    for row, expected in zip(result['rows'], ('green', 'red', 'red'), strict=True):
+        assert set(row['targets']) == {'duckdb', 'snowflake'}
+        assert row['status'] == row['targets']['duckdb']['status'] == expected
+        assert row['migration_status'] == 'not_started'
+        assert row['targets']['snowflake'] == {
+            'status': 'red', 'reason': 'Snowflake login down; execution disabled',
+            'row_count': None, 'column_profile': None, 'keyed_row_hash': None,
+            'sampled_differences': None,
+        }
+    duckdb_cell = result['rows'][0]['targets']['duckdb']
+    assert duckdb_cell['row_count'] == {'before': 1, 'after': 1}
+    assert duckdb_cell['keyed_row_hash']['SFX_BILLING.T']['difference'] == 0
+    assert result['summary']['targets'] == {
+        'duckdb': {'green': 1, 'red': 2}, 'snowflake': {'green': 0, 'red': 3},
+    }
+    assert result['summary']['by_subject_area'] == {
+        'billing': {'duckdb': {'green': 1, 'red': 1}, 'snowflake': {'green': 0, 'red': 2}},
+        'users': {'duckdb': {'green': 0, 'red': 1}, 'snowflake': {'green': 0, 'red': 1}},
+    }
+    readme = board.render_readme(result)
+    assert '| billing | 1 green / 1 red | 0 green / 2 red |' in readme
+    assert '| Object | Subject area | DuckDB | Snowflake |' in readme
+    assert '| job | billing | green | red |' in readme
+
+
+@pytest.mark.parametrize('target', ['duckdb', 'snowflake'])
+def test_snowflake_stays_red_without_network(monkeypatch, relations, target):
+    original_import = builtins.__import__
+
+    def deny_snowflake(name, *args, **kwargs):
+        assert name.partition('.')[0] != 'snowflake' and name.rsplit('.', 1)[-1] != 'connection', name
+        return original_import(name, *args, **kwargs)
+
+    def deny_network(*args, **kwargs):
+        pytest.fail('building board cells must not open a network connection')
+
+    isolated_board = importlib.util.module_from_spec(spec)
+    with monkeypatch.context() as patch:
+        patch.setattr(builtins, '__import__', deny_snowflake)
+        patch.setattr(socket, 'socket', deny_network)
+        patch.setattr(socket, 'create_connection', deny_network)
+        patch.setattr(board.psycopg, 'connect', deny_network)
+        spec.loader.exec_module(isolated_board)
+        before, after = relations
+        result = isolated_board.build_board({'objects': [obj()]}, before, after, {'BILLING.T'}, target=target)
+    cell = result['rows'][0]['targets']['snowflake']
+    assert cell['status'] == 'red'
+    assert cell['reason'] == 'Snowflake login down; execution disabled'
 
 
 def test_straight_conversion_and_missing_input(tmp_path):

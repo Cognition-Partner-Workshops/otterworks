@@ -17,6 +17,23 @@ eval "$(python3 warehouse/run_config.py env)"
 export NS="$RUN_BEFORE_NAMESPACE"
 ```
 
+## Conversion rules
+
+- Local `RUN_TOKEN` must have an `sfx` prefix; a branch/commit tag such as `sfg1120`
+  is separate. Use the namespace printed by `warehouse/run_config.py env`.
+- Users DISPLAY_NAME is owner-approved at VARCHAR(200), including APP_USER and PC
+  outputs. Retain raw mismatch metrics; approve only unchanged keys/counts, legacy
+  `LEFT(new,60)` names and hash-equal non-name columns under existing CHAR rules.
+- PC string port precision slices before expressions; preserve slice/trim/case order,
+  date/numeric coercion and reject/drop paths, not just declared target widths.
+- Disabled workflow sessions stay disabled in schedules. A standalone mapping proof
+  or broad dbt folder build is not workflow parity; check selectors and task DAGs.
+- Prove Snowpark with `Session.builder.config("local_testing", True).create()` on
+  captured PC inputs against actual runner outputs through the local ladder. This
+  is not live Snowflake certification: use no credentials and keep that board leg red.
+- Confirm SET versus MULTISET and lookup-source keys before inferring duplicate
+  suppression or first-match nondeterminism. Inventory JDBC side outputs separately.
+
 ## Teradata emulator and PowerCenter runner
 
 ```sh

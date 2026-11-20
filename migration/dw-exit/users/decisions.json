@@ -1,0 +1,9 @@
+[
+  {
+    "decision_id": "users-display-name-200",
+    "status": "approved",
+    "new_behaviour": "User display names are widened to 200 characters.",
+    "board_objects": ["SFX_USERS.APP_USER", "01_load_users", "m_SFX_STG_APP_USER", "s_m_SFX_STG_APP_USER", "m_SFX_APP_USER", "s_m_SFX_APP_USER"],
+    "scope": "Only DISPLAY_NAME may differ; legacy equals LEFT(new,60); all other columns hash-equal; no row additions or removals"
+  }
+]
