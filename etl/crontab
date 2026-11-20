@@ -12,7 +12,6 @@
 2 1 * * * /opt/etl/spark/submit/billing_payment_aging.sh >> /var/log/etl/spark-billing_payment_aging.log 2>&1
 3 1 * * * /opt/etl/spark/submit/billing_usage_append_daily.sh >> /var/log/etl/spark-billing_usage_append_daily.log 2>&1
 4 1 * * * /opt/etl/spark/submit/docs_storage_by_owner.sh >> /var/log/etl/spark-docs_storage_by_owner.log 2>&1
-5 1 * * * /opt/etl/spark/submit/docs_share_activity.sh >> /var/log/etl/spark-docs_share_activity.log 2>&1
 6 1 * * * /opt/etl/spark/submit/users_active_daily.sh >> /var/log/etl/spark-users_active_daily.log 2>&1
 7 1 * * * /opt/etl/spark/submit/users_team_rollup.sh >> /var/log/etl/spark-users_team_rollup.log 2>&1
 8 1 * * * /opt/etl/spark/submit/audit_daily_summary.sh >> /var/log/etl/spark-audit_daily_summary.log 2>&1

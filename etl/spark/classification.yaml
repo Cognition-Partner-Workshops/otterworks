@@ -20,8 +20,10 @@
   reason: "Joins documents, files and users to aggregate storage by owner."
 - job: docs_share_activity
   language: scala
-  target: dbt
-  reason: "Groups document shares by owner and permission using relational joins and distinct counts."
+  target: retired
+  reason: "No in-repository consumer reads the documents/docs_share_activity Parquet output."
+  original_target: dbt
+  change_reason: "The dbt model reads DOC_SHARE and DOCUMENT directly and does not depend on the Spark output."
 - job: users_active_daily
   language: python
   target: dbt

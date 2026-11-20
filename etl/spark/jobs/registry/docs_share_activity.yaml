@@ -1,8 +1,8 @@
 {
   "job": "docs_share_activity",
   "language": "scala",
-  "target": "spark",
-  "status": "legacy",
+  "target": "retired",
+  "status": "retired",
   "schedule": "5 1 * * *",
   "profile": "small"
 }
