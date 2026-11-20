@@ -1,4 +1,6 @@
 import json
+import sys
+from types import SimpleNamespace
 from pathlib import Path
 
 import pytest
@@ -13,6 +15,23 @@ ROOT = Path(__file__).resolve().parents[3]
 def objects():
     manifest = yaml.safe_load((ROOT/'migration/dw-exit/manifest.yaml').read_text())
     return [obj for obj in manifest['objects'] if obj['subject_area']=='documents']
+
+
+@pytest.mark.parametrize('failure', [False, True])
+def test_shared_materializer_uses_frozen_proof_and_fails_closed(monkeypatch, tmp_path, failure):
+    def prove(pre_pc, landing, namespace, day, objects):
+        assert pre_pc == tmp_path and namespace == 'scoped' and day == '20261109'
+        assert objects == []
+        if failure:
+            raise ValueError('missing frozen capture')
+        return {'objects': []}
+    monkeypatch.setitem(sys.modules, 'documents.prove_local', SimpleNamespace(prove=prove))
+    monkeypatch.setattr(board.spark_documents, 'materialize', lambda *args: (set(), {}, {}))
+    monkeypatch.setattr(board, 'documents_validated_history', lambda: {'passed': True})
+    evidence = board.materialize_documents([], 'scoped', '20261109', tmp_path)
+    assert evidence['objects'] == []
+    assert ('missing frozen capture' in evidence.get('error', '')) == failure
+    assert evidence['spark']['jobs'] == {}
 
 
 def test_documents_board_is_reproducible_from_recorded_evidence():

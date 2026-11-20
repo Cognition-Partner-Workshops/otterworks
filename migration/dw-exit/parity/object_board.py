@@ -35,7 +35,7 @@ from audit_outputs import outputs as audit_outputs, artifacts as audit_artifacts
 TARGETS = ('duckdb', 'snowflake')
 SNOWFLAKE_REASON = 'Snowflake login down for run sfg1120; no live capture/prove'
 SNOWFLAKE_DISABLED = SNOWFLAKE_REASON
-HELD_BACK_AREAS = frozenset(('billing', 'documents', 'content'))
+HELD_BACK_AREAS = frozenset(('billing', 'content'))
 DOCUMENTS_DIRECTORY = ROOT/'migration/dw-exit/documents'
 DOCUMENTS_EVIDENCE = ROOT/'migration/dw-exit/board/board.json'
 DOCUMENTS_BRANCH = 'devin/sfg1120-integration'
@@ -735,15 +735,15 @@ def documents_build_rows(objects, evidence, evidence_path=DOCUMENTS_EVIDENCE):
         converted = [documents_link(spec[k]) for k in ('conversion','producer','model') if k in spec]
         if obj['system']=='spark':
             converted.extend(documents_link(p) for p in sorted((ROOT/spec['model']).parent.glob('*_jdbc.sql')))
-        sources = [documents_link(obj['source'])]
+        sources = [documents_link(obj.get('source', 'migration/dw-exit/manifest.yaml'))]
         retirement = item.get('retirement')
         if retirement:
             for query in retirement.get('baseline_queries', []):
                 sources.extend([documents_link(documents_retirement.DBQL/'qrylog.csv',query['qrylog_line'],ref=retirement['baseline_commit']),
                                 documents_link(documents_retirement.DBQL/'objectusage.csv',query['objectusage_line'],ref=retirement['baseline_commit'])])
-        row = {k:obj[k] for k in ('id','name','kind','wave','owner','subject_area','licence_dependency','target','target_type')}
+        row = {k:obj.get(k) for k in ('id','name','kind','wave','owner','subject_area','licence_dependency','target','target_type')}
         row.update(status=item['status'],local_duckdb=item['status'],reason=item['reason'],
-                   migration_status=obj['status'],licence_dependency_count=int(obj['licence_dependency']!='none'),
+                   migration_status=obj.get('status', 'not_started'),licence_dependency_count=int(obj['licence_dependency']!='none'),
                    snowflake='red',snowflake_reason=SNOWFLAKE_REASON,
                    row_count={side:sum(m['row_count'][side] for m in measurements.values())
                               for side in ('before','after')} if measurements else None,
@@ -850,7 +850,7 @@ def main():
                     measurement=proof['measurement'], owner_decision=proof['owner_decision'], snowpark_local=proof)
             except (OSError, ValueError, duckdb.Error, ImportError) as error:
                 pc_results = {m:dict(status='red', reason='PC evidence unavailable: '+str(error), measurement=None) for m in pc_users.MAPPINGS}
-        if args.target == 'duckdb':
+        if args.target == 'duckdb' and any(o['subject_area'] == 'documents' for o in manifest['objects']):
             documents_evidence = materialize_documents(
                 [o for o in relation_contract(manifest['objects']) if o['subject_area'] == 'documents'],
                 os.environ.get('NS', RunConfig.from_env().before_namespace),
@@ -868,8 +868,8 @@ def main():
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         readme = args.output.parent / 'README.md'
         if readme.exists():
-            text = readme.read_text().split('## Audit parity provenance')[0].split('## DBC parity provenance')[0]
-            readme.write_text(text.rstrip()+'\n\n'+audit_markdown(payload['rows'])+'\n'+dbc_retire.markdown(payload['rows'])+'\n'+markdown(payload['rows'], 'users'))
+            text = readme.read_text().split('## Audit parity provenance')[0].split('## DBC parity provenance')[0].split('## Documents parity provenance')[0]
+            readme.write_text(text.rstrip()+'\n\n'+audit_markdown(payload['rows'])+'\n'+dbc_retire.markdown(payload['rows'])+'\n'+markdown(payload['rows'], 'users')+'\n## Documents parity provenance\n\n'+documents_markdown(\n                [row for row in payload['rows'] if row['subject_area'] == 'documents'],\n                payload['summary']['by_subject_area'].get('documents', {})))
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
         if before is not None:

@@ -57,7 +57,7 @@ def test_owner_registry_preserves_all_decisions():
     assert payload['owner_decisions'] == registry
 
 
-@pytest.mark.parametrize('area', ['billing', 'documents', 'content'])
+@pytest.mark.parametrize('area', ['billing', 'content'])
 @pytest.mark.parametrize('target_type', ['dbt_model', 'retire'])
 @pytest.mark.parametrize('materialized', [False, True])
 def test_held_areas_are_red_even_with_equal_outputs(area, target_type, materialized):
@@ -84,12 +84,12 @@ def test_full_manifest_retirements_and_dbc_contract(monkeypatch):
     manifest = yaml.safe_load((board.ROOT / 'migration/dw-exit/manifest.yaml').read_text())
     rows = board.build_board(manifest)['rows']
     approved = {name for decision in board.approved_retirements() for name in decision['board_objects']}
-    assert len(approved) == 10
+    assert len(approved) == 12
     assert {row['name'] for row in rows if row['status'] == 'retired'} == approved
-    assert all(row['subject_area'] in ('audit', 'users') for row in rows if row['status'] == 'retired')
+    assert all(row['subject_area'] in ('audit', 'users', 'documents') for row in rows if row['status'] == 'retired')
     assert all(row['snowflake'] == 'red' for row in rows)
     for row in rows:
-        if row['subject_area'] in ('billing', 'documents', 'content'):
+        if row['subject_area'] in ('billing', 'content'):
             assert row['status'] == 'red'
         if row['subject_area'] == 'dbc':
             query_log = row['name'].split('.')[-1] in ('DBC_QRYLOG', 'QRYLOGV')
