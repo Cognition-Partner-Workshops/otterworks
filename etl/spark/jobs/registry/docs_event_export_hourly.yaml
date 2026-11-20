@@ -1,8 +1,8 @@
 {
   "job": "docs_event_export_hourly",
   "language": "python",
-  "target": "spark_standard_template",
-  "status": "template",
+  "target": "retired",
+  "status": "retired",
   "schedule": "18 * * * *",
   "profile": "small"
 }
