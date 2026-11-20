@@ -370,13 +370,29 @@ def build(root=None):
                 pending.extend(a for a, b in normalized if b == node and a in entries
                                and entries[a]['kind'] in ('mapping', 'session', 'worklet'))
         row['output_relations'] = sorted(outputs)
+        users_reports = {
+            '10_activity_daily': ['SFX_USERS.USER_ACTIVITY_DAILY', 'SFX_USERS.M_TEAM_COUNTS_OUTPUT'],
+            'SFX_USERS.M_TEAM_COUNTS': ['SFX_USERS.M_TEAM_COUNTS_OUTPUT'],
+        }
+        if row['name'] in users_reports:
+            row['output_relations'] = users_reports[row['name']]
+        billing_reports = {
+            '10_subscription_report': ['M_SUBSCRIPTION_PLANS_OUTPUT'],
+            '11_currency_daily': ['M_CURRENCY_TOTALS_OUTPUT'],
+            '12_invoice_monthly': ['M_CURRENCY_TOTALS_OUTPUT', 'GL_TRIAL_BALANCE_OUTPUT'],
+            '13_period_close': ['INVOICE_HDR', 'INVOICE_PERIODS_OUTPUT', 'PERIOD_CLOSE_OUTPUT'],
+            'SFX_BILLING.M_SUBSCRIPTION_PLANS': ['M_SUBSCRIPTION_PLANS_OUTPUT'],
+            'SFX_BILLING.M_CURRENCY_TOTALS': ['M_CURRENCY_TOTALS_OUTPUT'],
+        }
+        if row['name'] in billing_reports:
+            row['output_relations'] = ['SFX_BILLING.'+name for name in billing_reports[row['name']]]
     for job in json.loads((Path(__file__).parent / 'spark_objects.json').read_text()):
         node = add('spark_job', job['name'], job['source'], '')
         artifacts[-1]['system'] = 'spark'
         manifest.append(dict(id=node, system='spark', kind='spark_job', name=job['name'],
             complexity='medium', subject_area=job['subject_area'], licence_dependency='spark',
             source=job['source'], source_ref='demo-snowflake-dw-exit',
-            output_relations=[], target_type='dbt_model', target='spark__'+job['name'],
+            output_relations=['SFX_SPARK.'+job['name'].upper()] if job['subject_area'] in ('users', 'billing') else [], target_type='dbt_model', target='spark__'+job['name'],
             wave=3, owner='@otterworks/data-platform', owner_source='proposed', risk='med',
             risk_reasons=[], status='not_started'))
     setup_only = sorted(name for name, qs in reads.items() if qs and all(q['StartTime'][:10] == '2026-08-12' for q in qs))
@@ -403,7 +419,6 @@ def main():
     payload = {k: data[k] for k in ('objects', 'consumers', 'dead', 'dead_dependents', 'setup_only', 'dependencies')}
     (OUT / 'manifest.yaml').write_text(yaml.safe_dump(payload, sort_keys=False))
     b = board(data['objects'], data['counters'])
-    (OUT / 'board/board.json').write_text(json.dumps(b, indent=2) + '\n')
     summary = {'by_kind': dict(sorted(Counter(r['kind'] for r in data['artifacts']).items())), 'total': len(data['artifacts']), 'loc_total': sum(r['loc'] for r in data['artifacts']), 'complexity': dict(Counter(r['complexity'] for r in data['artifacts'])), 'dead': data['dead'], 'setup_only_reads_not_dead': data['setup_only'], 'not_in_warehouse_etl': [u for u, v in data['scans'].items() if not v['warehouse_etl_hits']], 'not_in_any_repo_code': [u for u, v in data['scans'].items() if not v['repo_hits']], 'waves': b['waves'], 'licence_counters': data['counters']}
     summary['dead_dependents'] = data['dead_dependents']
     (OUT / 'inventory.md').write_text('# Inventory\n\nDBQL window 2026-08-12 through 2026-11-09 inclusive.\n\n```json\n' + json.dumps(summary, indent=2) + '\n```\n\n30 Spark jobs linked to merged sources on demo-snowflake-dw-exit.\n\nScan evidence for every DBQL reader:\n\n```json\n' + json.dumps(data['scans'], indent=2) + '\n```\n')
@@ -424,12 +439,6 @@ def main():
     lines += ['  class ' + r['id'] + ' dead' for r in data['artifacts'] if r['name'] in data['dead']]
     lines += ['```', '', f"{len(data['artifacts'])} artifacts; {len(data['feeds'])} feed nodes; {len(data['consumers'])} consumers; {len(data['links'])} parsed edges. Orange = unregistered consumer; gray dashed = no DBQL usage. Arrows indicate data dependency; session/workflow arrows indicate containment dependencies."]
     (OUT / 'lineage.md').write_text('\n'.join(lines) + '\n')
-    table = '| Count | Wave 1 | Wave 2 | Wave 3 | Wave 4 |\n|---|---:|---:|---:|---:|\n'
-    table += '| Total | ' + ' | '.join(str(b['waves'][str(w)]['total']) for w in range(1, 5)) + ' |\n'
-    for field in ('by_kind', 'by_target'):
-        for key in sorted({k for v in b['waves'].values() for k in v[field]}):
-            table += '| ' + field + ': ' + key + ' | ' + ' | '.join(str(b['waves'][str(w)][field].get(key, 0)) for w in range(1, 5)) + ' |\n'
-    (OUT / 'board/README.md').write_text('# Migration board\n\n' + table + '\n## Licence counters\n\n| Counter | Remaining | Target |\n|---|---:|---:|\n' + '\n'.join(f"| {k} | {v['remaining']} | {v['target']} |" for k, v in data['counters'].items() if 'remaining' in v) + '\n\nAll objects remain not_started. Parity measurements do not migrate or retire objects.\n')
     print(json.dumps(summary, indent=2))
 
 

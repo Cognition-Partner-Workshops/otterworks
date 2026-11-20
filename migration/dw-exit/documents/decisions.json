@@ -1,0 +1,29 @@
+[
+  {
+    "decision_id": "documents-storage-finance-confirmation",
+    "object": "SFX_DOCUMENTS.STORAGE_USAGE_DAILY / 10_storage_monthly",
+    "old_behaviour": "SET table silently removes exact duplicate rows. Seeded staging has 300 rows, 250 distinct; source has 250. runner.py enforces UNIQUE NULLS NOT DISTINCT plus ON CONFLICT DO NOTHING.",
+    "new_behaviour": "SELECT DISTINCT drops exact duplicates to match Teradata SET semantics (300 to 250). Billing and audit consume the deduped core table.",
+    "status": "approved-pending-confirmation",
+    "confirmation": "Finance still has to confirm the invoice impact.",
+    "board_objects": ["SFX_DOCUMENTS.STORAGE_USAGE_DAILY", "10_storage_monthly", "SFX_BILLING.USAGE_DAILY", "SFX_BILLING.INVOICE_LINE"],
+    "blocks": ["SFX_DOCUMENTS.STORAGE_USAGE_DAILY", "10_storage_monthly", "SFX_BILLING.USAGE_DAILY", "SFX_BILLING.INVOICE_LINE"],
+    "single_writer": "migration/dw-exit/documents/12_storage_monthly.sql:OPS.10_STORAGE_MONTHLY"
+  },
+  {
+    "decision_id": "documents-latest-version",
+    "object": "02_current_versions / SFX_DOCUMENTS.DOC_VERSION",
+    "old_behaviour": "ROW_NUMBER partitions by DOCUMENT_ID and sorts only VERSION_TS DESC. Fifty seeded documents have two distinct versions at the same latest timestamp; winner is unspecified.",
+    "new_behaviour": "Owner-approved: highest VERSION_NO wins tied latest VERSION_TS. Deliberately differs from legacy arbitrary selection.",
+    "status": "approved",
+    "blocks": ["SFX_DOCUMENTS.DOC_VERSION", "SFX_DOCUMENTS.V_DOCUMENT_VERSIONS", "SFX_DOCUMENTS.V_WORKSPACE_STORAGE"]
+  },
+  {
+    "decision_id": "documents-role-grant-highest-privilege",
+    "object": "m_SFX_DOC_SHARE / s_m_SFX_DOC_SHARE duplicate role lookup",
+    "old_behaviour": "XML lookup policy is Use First Value. For multiple role grants per USER_ID the runner selects the first cached match.",
+    "new_behaviour": "Owner-approved: highest privilege wins, ADMIN then EDITOR then other roles; no role leaves the source access unchanged. Deliberately differs from legacy first cached match.",
+    "status": "approved",
+    "blocks": ["powercenter.m_SFX_DOC_SHARE", "powercenter.s_m_SFX_DOC_SHARE"]
+  }
+]

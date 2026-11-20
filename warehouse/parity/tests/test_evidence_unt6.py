@@ -189,7 +189,8 @@ def test_macro_and_fixture_enablement():
     assert 'max(ROUTE_COUNT) over ()' in sql and '1 / iff(MAX_ROUTE_COUNT>1,0,1) = 1' in sql
     assert 'order by ROUTE desc' in sql and "rpad(CLIENT_TYPE,12,' ')" in sql
     rejects = module.pc_content_login_event('SRC', rejects=True, raw_input=True)
-    assert 'from routed where ROUTE<>3 and WRITER_REJECT' in rejects
+    assert 'from routed where WRITER_REJECT' in rejects
+    assert 'ROUTE<>3' not in sql and 'ROUTE<>3' not in rejects
     assert 'rpad(' not in rejects and 'try_to_timestamp_ntz' in rejects
     for subject in u.SCENARIOS[1:]:
         model = u.ROOT / ('warehouse/dbt/models/pc/content/unt6_fixture/' + u.model(subject) + '.sql')

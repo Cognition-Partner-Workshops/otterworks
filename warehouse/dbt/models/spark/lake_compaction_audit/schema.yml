@@ -1,0 +1,7 @@
+version: 2
+models:
+- name: lake_compaction_audit
+  description: >-
+    Multiset-preserving copy of audit_daily_summary, replacing lake
+    audit/lake_compaction_audit. Spark's two-file layout is physical, not a
+    relational output contract; Snowflake manages storage independently.

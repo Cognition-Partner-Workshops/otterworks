@@ -29,11 +29,11 @@ with input_rows as (
 select iff(LOGIN_ID is not null and LOGIN_ID between -9223372036854775808 and 9223372036854775807,1,0)::number(38,0) as ROW_TYPE,
        LOGIN_ID, USER_ID, LOGIN_TS::timestamp_ntz(9) as LOGIN_TS,
        RESULT_CD::varchar(12) as RESULT_CD, CLIENT_TYPE::varchar(12) as CLIENT_TYPE
-from routed where ROUTE<>3 and WRITER_REJECT
+from routed where WRITER_REJECT
 {% else %}
 , candidates as (
     select *, count(*) over (partition by ROUTE,LOGIN_ID) as ROUTE_COUNT
-    from routed where ROUTE<>3 and not WRITER_REJECT
+    from routed where not WRITER_REJECT
 ), guarded as (
     select *, max(ROUTE_COUNT) over () as MAX_ROUTE_COUNT from candidates
 )

@@ -12,7 +12,12 @@ role_grant as (
     select
         cast(USER_ID as bigint) as USER_ID,
         left(upper(trim(ROLE_CD, ' ')), 12) as ROLE_CD
-    from {{ source('pc_content_src', 'ROLE_GRANT') }}
+    from {{ source('users_converted', 'ROLE_GRANT') }}
+    qualify row_number() over (
+        partition by USER_ID
+        order by case left(upper(trim(ROLE_CD, ' ')), 12)
+            when 'ADMIN' then 2 when 'EDITOR' then 1 else 0 end desc
+    ) = 1
 )
 select
     s.SHARE_ID,

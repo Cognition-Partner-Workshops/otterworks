@@ -38,6 +38,8 @@ def build(mapping=None, folder=None, load_date=None):
         selection = 'path:models/pc/' + area.lower()
     command = [sys.executable, str(ROOT / 'warehouse/snowflake/run_dbt.py'), 'build',
                '--select', selection, '--step', 'dbt']
+    if not mapping and area == 'CONTENT':
+        command += ['--exclude', 'pc_content__team_member']
     if mapping:
         command += ['--mapping', mapping]
     if load_date:

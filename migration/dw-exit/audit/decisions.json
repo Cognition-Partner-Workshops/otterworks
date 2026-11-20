@@ -1,0 +1,23 @@
+[
+  {
+    "decision_id": "audit-archive-retirement",
+    "action": "retire",
+    "status": "approved",
+    "new_behaviour": "Owner-approved retirement of six audit archive objects, including staging with a svc_report_recon setup-day COUNT(*) read. Preserve Spark archive jobs and their landing feed; no physical deletion is performed by board generation.",
+    "board_objects": [
+      "m_SFX_AUDIT_EVENT_ARCHIVE",
+      "s_m_SFX_AUDIT_EVENT_ARCHIVE",
+      "SFX_AUDIT.M_ARCHIVE_OVERVIEW",
+      "SFX_AUDIT.AUDIT_EVENT_ARCHIVE",
+      "SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE",
+      "audit_audit_event_archive"
+    ]
+  },
+  {
+    "decision_id": "audit-summary-stable-ids",
+    "action": "deviation",
+    "status": "approved",
+    "new_behaviour": "Assign daily summary IDs starting 50001 in stable SUMMARY_DT, CUSTOMER_ID NULLS FIRST order. Retain raw legacy first-seen sequence measurements.",
+    "board_objects": ["m_SFX_AUDIT_DAILY_SUMMARY", "s_m_SFX_AUDIT_DAILY_SUMMARY", "wf_SFX_AUDIT_DAILY"]
+  }
+]

@@ -1,0 +1,496 @@
+[
+  {
+    "id": "n4120240510221fa9",
+    "name": "m_SFX_DOCUMENT",
+    "kind": "mapping",
+    "target": "TRANSFORM.M_SFX_DOCUMENT",
+    "target_type": "snowpark",
+    "output_relations": [
+      "SFX_DOCUMENTS.DOCUMENT"
+    ],
+    "conversion": "warehouse/snowpark/m_sfx_document.py",
+    "producer": "warehouse/dbt/models/pc/content/pc_content__document.sql"
+  },
+  {
+    "id": "nb64c2c6bce79c145",
+    "name": "m_SFX_DOC_SHARE",
+    "kind": "mapping",
+    "target": "TRANSFORM.M_SFX_DOC_SHARE",
+    "target_type": "snowpark",
+    "output_relations": [
+      "SFX_DOCUMENTS.DOC_SHARE"
+    ],
+    "conversion": "warehouse/snowpark/m_sfx_doc_share.py",
+    "producer": "warehouse/dbt/models/pc/content/pc_content__doc_share.sql"
+  },
+  {
+    "id": "n9be69430933a863f",
+    "name": "m_SFX_STG_DOCUMENT",
+    "kind": "mapping",
+    "target": "stg_documents__m_sfx_stg_document",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_DOCUMENT"
+    ],
+    "conversion": "warehouse/dbt/models/documents/stg_documents__m_sfx_stg_document.sql",
+    "producer": "warehouse/dbt/models/pc/content/pc_content__stg_document.sql"
+  },
+  {
+    "id": "n8c4f1371cd88fbd6",
+    "name": "s_m_SFX_DOCUMENT",
+    "kind": "session",
+    "target": "core_documents__s_m_sfx_document",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.DOCUMENT"
+    ],
+    "conversion": "warehouse/dbt/models/documents/core_documents__s_m_sfx_document.sql",
+    "producer": "warehouse/dbt/models/pc/content/pc_content__document.sql"
+  },
+  {
+    "id": "ndea27aebd8808486",
+    "name": "s_m_SFX_DOC_SHARE",
+    "kind": "session",
+    "target": "core_documents__s_m_sfx_doc_share",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.DOC_SHARE"
+    ],
+    "conversion": "warehouse/dbt/models/documents/core_documents__s_m_sfx_doc_share.sql",
+    "producer": "warehouse/dbt/models/pc/content/pc_content__doc_share.sql"
+  },
+  {
+    "id": "n36558a0ededd2006",
+    "name": "s_m_SFX_STG_DOCUMENT",
+    "kind": "session",
+    "target": "stg_documents__s_m_sfx_stg_document",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_DOCUMENT"
+    ],
+    "conversion": "warehouse/dbt/models/documents/stg_documents__s_m_sfx_stg_document.sql",
+    "producer": "warehouse/dbt/models/pc/content/pc_content__stg_document.sql"
+  },
+  {
+    "id": "ned5c84172e82cd20",
+    "name": "01_load_folders",
+    "kind": "bteq",
+    "target": "OPS.01_LOAD_FOLDERS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.DOCUMENT",
+      "SFX_DOCUMENTS.FOLDER"
+    ],
+    "conversion": "migration/dw-exit/documents/11_procedures.sql"
+  },
+  {
+    "id": "n8e844039a21420a5",
+    "name": "02_current_versions",
+    "kind": "bteq",
+    "target": "OPS.02_CURRENT_VERSIONS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.DOC_VERSION"
+    ],
+    "conversion": "migration/dw-exit/documents/11_procedures.sql"
+  },
+  {
+    "id": "nb773b05ad273fd3c",
+    "name": "03_load_access",
+    "kind": "bteq",
+    "target": "OPS.03_LOAD_ACCESS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.DOC_SHARE",
+      "SFX_DOCUMENTS.DOC_TAG"
+    ],
+    "conversion": "migration/dw-exit/documents/11_procedures.sql"
+  },
+  {
+    "id": "n72c97d50fd30bdf3",
+    "name": "04_load_objects",
+    "kind": "bteq",
+    "target": "OPS.04_LOAD_OBJECTS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.DOC_COMMENT",
+      "SFX_DOCUMENTS.FILE_OBJECT"
+    ],
+    "conversion": "migration/dw-exit/documents/11_procedures.sql"
+  },
+  {
+    "id": "nce49ec3b894a0e12",
+    "name": "05_load_sessions",
+    "kind": "bteq",
+    "target": "OPS.05_LOAD_SESSIONS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.COLLAB_SESSION",
+      "SFX_DOCUMENTS.STORAGE_USAGE_DAILY"
+    ],
+    "conversion": "migration/dw-exit/documents/11_procedures.sql"
+  },
+  {
+    "id": "na532938d4b40bb58",
+    "name": "10_storage_monthly",
+    "kind": "bteq",
+    "target": "OPS.10_STORAGE_MONTHLY",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_BILLING.INVOICE_LINE",
+      "SFX_BILLING.USAGE_DAILY"
+    ],
+    "conversion": "migration/dw-exit/documents/12_storage_monthly.sql",
+    "shared": true
+  },
+  {
+    "id": "n2d399290c37850ff",
+    "name": "SFX_DOCUMENTS.M_STORAGE_TOTALS",
+    "kind": "macro",
+    "target": "OPS.SFX_DOCUMENTS_M_STORAGE_TOTALS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [],
+    "conversion": "migration/dw-exit/documents/35_reports.sql"
+  },
+  {
+    "id": "n8ce4b4c31fb7d641",
+    "name": "SFX_DOCUMENTS.COLLAB_SESSION",
+    "kind": "table",
+    "target": "core_documents__collab_session",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.COLLAB_SESSION"
+    ],
+    "conversion": "warehouse/dbt/models/documents/core_documents__collab_session.sql"
+  },
+  {
+    "id": "n27673208f946113a",
+    "name": "SFX_DOCUMENTS.DOCUMENT",
+    "kind": "table",
+    "target": "core_documents__document",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.DOCUMENT"
+    ],
+    "conversion": "warehouse/dbt/models/documents/core_documents__document.sql"
+  },
+  {
+    "id": "n4fe6621de3ee3647",
+    "name": "SFX_DOCUMENTS.DOC_COMMENT",
+    "kind": "table",
+    "target": "core_documents__doc_comment",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.DOC_COMMENT"
+    ],
+    "conversion": "warehouse/dbt/models/documents/core_documents__doc_comment.sql"
+  },
+  {
+    "id": "ndf20a077562bd331",
+    "name": "SFX_DOCUMENTS.DOC_SHARE",
+    "kind": "table",
+    "target": "core_documents__doc_share",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.DOC_SHARE"
+    ],
+    "conversion": "warehouse/dbt/models/documents/core_documents__doc_share.sql"
+  },
+  {
+    "id": "nb6bdea58b700dddc",
+    "name": "SFX_DOCUMENTS.DOC_TAG",
+    "kind": "table",
+    "target": "core_documents__doc_tag",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.DOC_TAG"
+    ],
+    "conversion": "warehouse/dbt/models/documents/core_documents__doc_tag.sql"
+  },
+  {
+    "id": "n69bb2e4d7f29d3bd",
+    "name": "SFX_DOCUMENTS.DOC_VERSION",
+    "kind": "table",
+    "target": "core_documents__doc_version",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.DOC_VERSION"
+    ],
+    "conversion": "warehouse/dbt/models/documents/core_documents__doc_version.sql"
+  },
+  {
+    "id": "n8935b0bad45140b4",
+    "name": "SFX_DOCUMENTS.FILE_OBJECT",
+    "kind": "table",
+    "target": "core_documents__file_object",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.FILE_OBJECT"
+    ],
+    "conversion": "warehouse/dbt/models/documents/core_documents__file_object.sql"
+  },
+  {
+    "id": "n591b73a5345bb764",
+    "name": "SFX_DOCUMENTS.FOLDER",
+    "kind": "table",
+    "target": "core_documents__folder",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.FOLDER"
+    ],
+    "conversion": "warehouse/dbt/models/documents/core_documents__folder.sql"
+  },
+  {
+    "id": "n1c075fb7d55b7b5d",
+    "name": "SFX_DOCUMENTS.STG_COLLAB_SESSION",
+    "kind": "table",
+    "target": "stg_documents__collab_session",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_COLLAB_SESSION"
+    ],
+    "conversion": "warehouse/dbt/models/documents/stg_documents__collab_session.sql"
+  },
+  {
+    "id": "nec3789e47f899a3a",
+    "name": "SFX_DOCUMENTS.STG_DOCUMENT",
+    "kind": "table",
+    "target": "stg_documents__document",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_DOCUMENT"
+    ],
+    "conversion": "warehouse/dbt/models/documents/stg_documents__document.sql"
+  },
+  {
+    "id": "n995ef340875ac9f0",
+    "name": "SFX_DOCUMENTS.STG_DOC_COMMENT",
+    "kind": "table",
+    "target": "stg_documents__doc_comment",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_DOC_COMMENT"
+    ],
+    "conversion": "warehouse/dbt/models/documents/stg_documents__doc_comment.sql"
+  },
+  {
+    "id": "n916a578badf75be5",
+    "name": "SFX_DOCUMENTS.STG_DOC_SHARE",
+    "kind": "table",
+    "target": "stg_documents__doc_share",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_DOC_SHARE"
+    ],
+    "conversion": "warehouse/dbt/models/documents/stg_documents__doc_share.sql"
+  },
+  {
+    "id": "n3222a42b0b10373f",
+    "name": "SFX_DOCUMENTS.STG_DOC_TAG",
+    "kind": "table",
+    "target": "stg_documents__doc_tag",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_DOC_TAG"
+    ],
+    "conversion": "warehouse/dbt/models/documents/stg_documents__doc_tag.sql"
+  },
+  {
+    "id": "ne0d64de0c6f5d0c5",
+    "name": "SFX_DOCUMENTS.STG_DOC_VERSION",
+    "kind": "table",
+    "target": "stg_documents__doc_version",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_DOC_VERSION"
+    ],
+    "conversion": "warehouse/dbt/models/documents/stg_documents__doc_version.sql"
+  },
+  {
+    "id": "n2ca368bd87d7d5ae",
+    "name": "SFX_DOCUMENTS.STG_FILE_OBJECT",
+    "kind": "table",
+    "target": "stg_documents__file_object",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_FILE_OBJECT"
+    ],
+    "conversion": "warehouse/dbt/models/documents/stg_documents__file_object.sql"
+  },
+  {
+    "id": "n8cc95a044ef844a6",
+    "name": "SFX_DOCUMENTS.STG_FOLDER",
+    "kind": "table",
+    "target": "stg_documents__folder",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_FOLDER"
+    ],
+    "conversion": "warehouse/dbt/models/documents/stg_documents__folder.sql"
+  },
+  {
+    "id": "nce35ed86fccc09d6",
+    "name": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+    "kind": "table",
+    "target": "stg_documents__storage_usage_daily",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY"
+    ],
+    "conversion": "warehouse/dbt/models/documents/stg_documents__storage_usage_daily.sql"
+  },
+  {
+    "id": "n28cb37f5be5b66f5",
+    "name": "SFX_DOCUMENTS.STORAGE_USAGE_DAILY",
+    "kind": "table",
+    "target": "core_documents__storage_usage_daily",
+    "target_type": "dbt_model",
+    "output_relations": [
+      "SFX_DOCUMENTS.STORAGE_USAGE_DAILY"
+    ],
+    "conversion": "warehouse/dbt/models/documents/core_documents__storage_usage_daily.sql"
+  },
+  {
+    "id": "n316f320495a7d7a7",
+    "name": "documents_collab_session",
+    "kind": "tpt",
+    "target": "RAW_DOCUMENTS.LOAD_DOCUMENTS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_COLLAB_SESSION"
+    ],
+    "conversion": "migration/dw-exit/documents/05_tpt.sql"
+  },
+  {
+    "id": "n00eea7237cb65fe2",
+    "name": "documents_doc_comment",
+    "kind": "tpt",
+    "target": "RAW_DOCUMENTS.LOAD_DOCUMENTS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_DOC_COMMENT"
+    ],
+    "conversion": "migration/dw-exit/documents/05_tpt.sql"
+  },
+  {
+    "id": "n52fd8cca58044cb0",
+    "name": "documents_doc_share",
+    "kind": "tpt",
+    "target": "RAW_DOCUMENTS.LOAD_DOCUMENTS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_DOC_SHARE"
+    ],
+    "conversion": "migration/dw-exit/documents/05_tpt.sql"
+  },
+  {
+    "id": "nd0c849ec187417ce",
+    "name": "documents_doc_tag",
+    "kind": "tpt",
+    "target": "RAW_DOCUMENTS.LOAD_DOCUMENTS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_DOC_TAG"
+    ],
+    "conversion": "migration/dw-exit/documents/05_tpt.sql"
+  },
+  {
+    "id": "nb366b6ece0aafaf2",
+    "name": "documents_doc_version",
+    "kind": "tpt",
+    "target": "RAW_DOCUMENTS.LOAD_DOCUMENTS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_DOC_VERSION"
+    ],
+    "conversion": "migration/dw-exit/documents/05_tpt.sql"
+  },
+  {
+    "id": "n960131df6fb3ee7d",
+    "name": "documents_document",
+    "kind": "tpt",
+    "target": "RAW_DOCUMENTS.LOAD_DOCUMENTS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_DOCUMENT"
+    ],
+    "conversion": "migration/dw-exit/documents/05_tpt.sql"
+  },
+  {
+    "id": "n7101731ead5cafa6",
+    "name": "documents_file_object",
+    "kind": "tpt",
+    "target": "RAW_DOCUMENTS.LOAD_DOCUMENTS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_FILE_OBJECT"
+    ],
+    "conversion": "migration/dw-exit/documents/05_tpt.sql"
+  },
+  {
+    "id": "nebefa5c1775e897f",
+    "name": "documents_folder",
+    "kind": "tpt",
+    "target": "RAW_DOCUMENTS.LOAD_DOCUMENTS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_FOLDER"
+    ],
+    "conversion": "migration/dw-exit/documents/05_tpt.sql"
+  },
+  {
+    "id": "nd66c4bfb75689e73",
+    "name": "documents_storage_usage_daily",
+    "kind": "tpt",
+    "target": "RAW_DOCUMENTS.LOAD_DOCUMENTS",
+    "target_type": "snowflake_scripting",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY"
+    ],
+    "conversion": "migration/dw-exit/documents/05_tpt.sql"
+  },
+  {
+    "id": "nfffe08fdf7b38961",
+    "name": "SFX_DOCUMENTS.V_DOCUMENT_VERSIONS",
+    "kind": "view",
+    "target": "COMPAT.SFX_DOCUMENTS__V_DOCUMENT_VERSIONS",
+    "target_type": "compatibility_view",
+    "output_relations": [
+      "SFX_DOCUMENTS.V_DOCUMENT_VERSIONS"
+    ],
+    "conversion": "migration/dw-exit/documents/20_views.sql"
+  },
+  {
+    "id": "ne711c6aec2d571c4",
+    "name": "SFX_DOCUMENTS.V_WORKSPACE_STORAGE",
+    "kind": "view",
+    "target": "COMPAT.SFX_DOCUMENTS__V_WORKSPACE_STORAGE",
+    "target_type": "compatibility_view",
+    "output_relations": [
+      "SFX_DOCUMENTS.V_WORKSPACE_STORAGE"
+    ],
+    "conversion": "migration/dw-exit/documents/20_views.sql"
+  },
+  {
+    "id": "nf0f34f0760b5db1f",
+    "name": "SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG",
+    "kind": "table",
+    "target_type": "dbt_model",
+    "target": "stg_documents__search_index_log",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG"
+    ],
+    "conversion": "warehouse/dbt/models/documents/stg_documents__search_index_log.sql"
+  },
+  {
+    "id": "n6926e7586c761642",
+    "name": "documents_search_index_log",
+    "kind": "tpt",
+    "target_type": "snowflake_scripting",
+    "target": "RAW_DOCUMENTS.LOAD_DOCUMENTS",
+    "output_relations": [
+      "SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG"
+    ],
+    "conversion": "migration/dw-exit/documents/05_tpt.sql"
+  }
+]
