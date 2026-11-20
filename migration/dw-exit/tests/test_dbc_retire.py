@@ -20,8 +20,9 @@ def test_catalog_evidence_and_real_mismatches(database, name, monkeypatch):
     result = dbc.measure(obj, database, [])
     assert result['status']=='red' and result['snowflake']=='red'
     assert result['keyed_row_hash']['difference']>0
-    assert result['owner_decision']['question']
-    assert result['reason'].startswith('Owner decision:')
+    assert result['reason'].startswith('Differences outside approved missing-field scope')
+    assert result['owner_decision']['status'] == 'approved'
+    assert not result['owner_decision']['scope_valid']
     assert result['mapped_columns_parity']['passed']
     assert result['consumer_parity']['passed'] is False
     assert result['consumer_mapped_columns_parity']['passed']
@@ -69,3 +70,22 @@ def test_provenance_has_exact_ranges(database, monkeypatch):
     assert '10_account_usage.sql#L' in text
     assert 'ladder.py#L' in text
     assert 'inventory.csv#L' in text
+
+
+@pytest.mark.parametrize('external',[False,True])
+def test_only_missing_fields_use_generic_approved_deviation(database,monkeypatch,external):
+    monkeypatch.setattr(dbc,'emulator',lambda *args:{})
+    database.execute('BEGIN')
+    try:
+        database.execute('''CREATE OR REPLACE VIEW COMPAT.QRYLOGV AS
+            SELECT * REPLACE (CAST(NULL AS VARCHAR) AS ClientID,
+                              CAST(NULL AS DECIMAL(14,6)) AS AMPCPUTime,
+                              CAST(NULL AS BIGINT) AS TotalIOCount) FROM DBC.QRYLOGV''')
+        row = dbc.measure({'name':'DBC.QRYLOGV','kind':'catalog'},database,
+                          [{'file':'services/caller.sql'}] if external else [])
+        assert row['status']==('red' if external else 'approved_deviation')
+        assert row['owner_decision']['scope_valid']
+        assert row['keyed_row_hash']['difference']>0
+        assert row['snowflake']=='red'
+    finally:
+        database.execute('ROLLBACK')

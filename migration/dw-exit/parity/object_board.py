@@ -31,7 +31,7 @@ from parity.subjects import SUBJECTS
 from audit_outputs import outputs as audit_outputs
 from audit_outputs import artifacts as audit_artifacts
 from parity import local_content
-from parity.owner_decisions import apply_confirmation, apply_deviation, pending_confirmations
+from parity.owner_decisions import apply_confirmation, apply_deviation, pending_confirmations, approved_retirements, apply_retirement
 
 
 def quote(name):
@@ -195,6 +195,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     snowflake_reason = preflight['reason'] if preflight else 'No live Snowflake evidence; capture/prove not run'
     objects = relation_contract(manifest['objects'])
     confirmations = pending_confirmations()
+    retirements = approved_retirements()
     result = wave_board(objects, counters or {})
     result.update(run_token=RunConfig.from_env().token, target=target, rows=[])
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
@@ -245,6 +246,8 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 row['reason'] = 'source on Spark baseline PR'
         elif obj.get('target_type') == 'retire' and obj['subject_area'] == 'audit':
             row['reason'] = 'retirement proposed; not converted or retired'
+            if target == 'duckdb':
+                apply_retirement(row, obj, retirements)
         elif target == 'snowflake':
             row['reason'] = 'Snowflake target selected; execution disabled'
         elif not obj.get('output_relations'):
@@ -342,10 +345,11 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         result['summary']['documents'] = dict(total=len(documents),local_green=counts['green'],local_red=counts['red'],
             local_approved_deviation=counts['approved_deviation'],
             local_amber=counts['amber'], retired=counts['retired'],local_duckdb='red' if counts['red'] else 'amber' if counts['amber'] else 'approved_deviation' if counts['approved_deviation'] else 'green',snowflake='red',snowflake_reason=snowflake_reason)
-        result['summary']['retired'] = sum(row['status']=='retired' for row in result['rows'])
     audit = [row for row in result['rows'] if row['subject_area'] == 'audit']
     audit_green = sum(row['local_duckdb'] == 'green' for row in audit)
-    result['summary']['audit'] = dict(local_green=audit_green, local_red=len(audit)-audit_green,
+    result['summary']['audit'] = dict(local_green=audit_green,
+        local_retired=sum(row['local_duckdb'] == 'retired' for row in audit),
+        local_red=sum(row['local_duckdb'] == 'red' for row in audit),
         snowflake='red', snowflake_reason=snowflake_reason)
     for subject in {'users'}:
         rows = [row for row in result['rows'] if row['subject_area'] == subject]
@@ -357,6 +361,14 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     content = [row for row in result['rows'] if row['subject_area'] == 'content']
     result['summary']['content'] = dict(local_green=sum(row['local_duckdb'] == 'green' for row in content),
                                       local_red=sum(row['local_duckdb'] == 'red' for row in content), snowflake='red')
+    result['summary']['retired'] = sum(row['status']=='retired' for row in result['rows'])
+    result['summary']['areas'] = {}
+    for subject in sorted({row['subject_area'] for row in result['rows']}):
+        rows = [row for row in result['rows'] if row['subject_area'] == subject]
+        counts = Counter(row['status'] for row in rows)
+        result['summary']['areas'][subject] = dict(total=len(rows), green=counts['green'],
+            approved_deviation=counts['approved_deviation'], amber=counts['amber'],
+            retire=counts['retired']+counts['retire_verified'], red=counts['red'])
     return result
 
 

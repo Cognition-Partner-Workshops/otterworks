@@ -12,8 +12,11 @@ late-arriving groups cannot make IDs depend on load order. The committed DAG's
 summary task is recompiled from the model with `pc_dag_audit.py --refresh-summary`;
 this is offline SQL generation, not evidence of a live dbt/Snowflake run.
 
-No retire object is converted. The archive landing feed remains untouched for Spark.
-Spark models live under `warehouse/dbt/models/spark/<job>/`. Nothing here authorizes retirement, migration-state
+The owner approved retirement of the six unused audit archive objects listed in
+`decisions.json`. They are `retired` on the board only when the approved record
+matches a manifest `retire` target. No retire object is converted or physically
+deleted by this proof. The archive landing feed remains untouched for Spark.
+Spark models live under `warehouse/dbt/models/spark/<job>/`. These proofs do not authorize physical deletion, migration-state
 promotion, or live Snowflake execution.
 
 ## Execution paths

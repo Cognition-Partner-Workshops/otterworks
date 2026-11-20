@@ -1,11 +1,52 @@
 """Explicit owner-approved comparison contracts, retaining raw legacy measurements."""
 from pathlib import Path
+from collections import Counter
 import json
 
 import duckdb
 from . import ladder
 
 ROOT = Path(__file__).resolve().parents[3]
+
+
+def approved_retirements():
+    return [decision for path in sorted((ROOT/'migration/dw-exit').glob('*/decisions.json'))
+            for decision in json.loads(path.read_text())
+            if decision.get('status') == 'approved' and decision.get('action') == 'retire']
+
+
+def apply_retirement(row, obj, decisions):
+    for decision in decisions:
+        if obj.get('target_type') == 'retire' and row['name'] in decision.get('board_objects', []):
+            row.update(status='retired', decision_state='approved', reason=decision['new_behaviour'],
+                       retirement_evidence={'decision_id':decision['decision_id'],
+                                            'owner_approved':True, 'manifest_target':'retire'})
+    return row
+
+
+def missing_fields(db, source, target, raw, decision):
+    def relation(name):
+        quoted = '.'.join(ladder.identifier(part) for part in name.split('.'))
+        # Validated, quoted local relation identifiers; row values never become SQL.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        cursor = db.execute('SELECT * FROM '+quoted)
+        return [column[0] for column in cursor.description], cursor.fetchall()
+    columns, before = relation(source)
+    target_columns, after = relation(target)
+    excluded = set(decision['missing_fields']) & set(columns)
+    kept = [index for index,column in enumerate(columns) if column not in excluded]
+    project = lambda rows: Counter(tuple(ladder.canonical(row[index]) for index in kept) for row in rows)
+    old, new = project(before), project(after) if columns == target_columns else Counter()
+    unavailable = columns == target_columns and all(
+        row[index] is None for row in after for index,column in enumerate(columns) if column in excluded)
+    passed = columns == target_columns and old == new and unavailable
+    return {**raw, 'owner_decision':{
+        'decision_id':decision['decision_id'], 'scope_valid':passed,
+        'missing_fields':sorted(excluded), 'unavailable_fields_are_null':unavailable,
+        'approved_comparison':{'passed':passed, 'row_count':{'before':len(before),'after':len(after)},
+                               'removed_rows':sum((old-new).values()), 'added_rows':sum((new-old).values()),
+                               'compared_columns':[columns[index] for index in kept]},
+    }}
 
 
 def pending_confirmations():

@@ -4,6 +4,7 @@ import ast
 from collections import Counter
 import os
 import io
+import json
 import re
 import subprocess
 import zlib
@@ -15,6 +16,7 @@ import psycopg
 
 from parity.ladder import local_compare, canonical
 from parity.provenance import link
+from parity.owner_decisions import apply_deviation, missing_fields
 from warehouse.run_config import RunConfig
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -182,12 +184,14 @@ def measure(obj, db, external):
     elif family in ('DBC_QRYLOG','QRYLOGV'):
         decision = {'old_behaviour': 'DBQL preserves ProcID, collect timestamp, ClientID, CPU, IO and statement group',
                     'new_behaviour': 'ACCOUNT_USAGE has no equivalent fields; NULL for unavailable metrics, QUERY_TAG assumed AppID, END_TIME used for collect/first response',
-                    'question': 'Which legacy fields may be dropped or redefined? Error code namespace equivalence also needs live validation.'}
+                    'question': 'ProcID, collect timestamp and statement group differ outside the CPU/IO/client-id approval. Error code namespace equivalence also needs live validation.'}
     else:
         decision = {'old_behaviour': 'ObjectUsage includes READ, WRITE and EXECUTE and T/V/M/P kinds',
                     'new_behaviour': 'DIRECT_OBJECTS_ACCESSED reads plus OBJECTS_MODIFIED writes; EXECUTE and M/P attribution not established by these arrays or QUERY_HISTORY',
                     'question': 'Approve excluding legacy macro/procedure EXECUTE lineage, or supply an authoritative target attribution contract?'}
-    return {**{k: comparison[k] for k in ('row_count','column_profile','keyed_row_hash','sampled_differences')},
+    approval = json.loads((ROOT/'migration/dw-exit/dbc/decisions.json').read_text())[0]
+    scoped = missing_fields(db, obj['name'], 'COMPAT.'+family, comparison, approval)
+    row = {**{k: comparison[k] for k in ('row_count','column_profile','keyed_row_hash','sampled_differences')},
             'status': 'green' if proof['passed'] and comparison['passed'] else 'red',
             'reason': None if proof['passed'] and comparison['passed'] else ('Owner decision: '+decision['question'] if proof['passed'] else 'Retirement evidence failed; '+decision['question']),
             'local_duckdb': 'green' if proof['passed'] and comparison['passed'] else 'red',
@@ -200,6 +204,12 @@ def measure(obj, db, external):
             'consumer_parity': local_compare(db, db, 'DBC.CONSUMER', 'COMPAT.CONSUMER'),
             'consumer_mapped_columns_parity': mapped_compare(db, 'CONSUMER'),
             'emulation_assumption': 'QUERY_HISTORY, ACCESS_HISTORY and TABLES synthesized from identical DBQL CSVs, not Snowflake data; QUERY_TAG=AppID assumed'}
+    row['owner_decision'] = {**scoped['owner_decision'], 'status':approval['status'],
+                             'new_behaviour':approval['new_behaviour'], 'residual_contract':decision}
+    if proof['passed']:
+        row['reason'] = None if comparison['passed'] else 'Differences outside approved missing-field scope; see owner_decision.approved_comparison'
+        apply_deviation(row, {obj['name']:scoped}, [approval])
+    return row
 
 
 def markdown(rows):
@@ -219,7 +229,7 @@ def markdown(rows):
     metrics = function(ladder, 'local_compare')+'<br>'+function(ladder, 'local_measure')
     details = []
     lines = ['\n## DBC parity provenance', '',
-             'Local ACCOUNT_USAGE shapes are assumed from identical DBQL CSVs; live ACCOUNT_USAGE is unverified (role lacks grant; no connection attempted). Retirement requires owner sign-off.',
+             'Local ACCOUNT_USAGE shapes are assumed from identical DBQL CSVs; live ACCOUNT_USAGE is unverified (role lacks grant; no connection attempted). Owner approved unavailable CPU, IO and client-id fields; all other differences stay red. This is not catalog deletion approval.',
              'Mapped-columns ladders exclude the named decision columns **and explicitly labelled unsupported row kinds**; their green result is not full-shape parity.', '',
              '| Object | local_duckdb / snowflake | Full rows old/new; hash delta | Mapped rows old/new; hash delta | Retirement reads | Exact source / replacement / evidence / ladder |',
              '|---|---|---|---|---|---|']

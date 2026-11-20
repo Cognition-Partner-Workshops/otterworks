@@ -1106,14 +1106,14 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "audit",
       "licence_dependency": "powercenter",
-      "status": "red",
+      "status": "retired",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "retirement proposed; not converted or retired",
+      "reason": "Owner-approved retirement of the six unused audit archive objects. Preserve Spark archive jobs and their landing feed; no physical deletion is performed by board generation.",
       "provenance": {
         "source": [
           {
@@ -1124,7 +1124,7 @@
           }
         ],
         "converted": {},
-        "conversion_note": "Retirement proposed; no conversion",
+        "conversion_note": "Retirement candidate; see board owner approval evidence; no conversion",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -1146,7 +1146,13 @@
           }
         }
       },
-      "local_duckdb": "red",
+      "decision_state": "approved",
+      "retirement_evidence": {
+        "decision_id": "audit-archive-retirement",
+        "owner_approved": true,
+        "manifest_target": "retire"
+      },
+      "local_duckdb": "retired",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -7107,14 +7113,14 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "audit",
       "licence_dependency": "powercenter",
-      "status": "red",
+      "status": "retired",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "retirement proposed; not converted or retired",
+      "reason": "Owner-approved retirement of the six unused audit archive objects. Preserve Spark archive jobs and their landing feed; no physical deletion is performed by board generation.",
       "provenance": {
         "source": [
           {
@@ -7125,7 +7131,7 @@
           }
         ],
         "converted": {},
-        "conversion_note": "Retirement proposed; no conversion",
+        "conversion_note": "Retirement candidate; see board owner approval evidence; no conversion",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -7147,7 +7153,13 @@
           }
         }
       },
-      "local_duckdb": "red",
+      "decision_state": "approved",
+      "retirement_evidence": {
+        "decision_id": "audit-archive-retirement",
+        "owner_approved": true,
+        "manifest_target": "retire"
+      },
+      "local_duckdb": "retired",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -28104,7 +28116,7 @@
           "after": []
         }
       ],
-      "reason": "Owner decision: Which legacy fields may be dropped or redefined? Error code namespace equivalence also needs live validation.",
+      "reason": "Differences outside approved missing-field scope; see owner_decision.approved_comparison",
       "local_duckdb": "red",
       "snowflake": "red",
       "snowflake_reason": "Role lacks grant; live ACCOUNT_USAGE unverified; no connection attempted",
@@ -28211,9 +28223,45 @@
         "external_callers": []
       },
       "owner_decision": {
-        "old_behaviour": "DBQL preserves ProcID, collect timestamp, ClientID, CPU, IO and statement group",
-        "new_behaviour": "ACCOUNT_USAGE has no equivalent fields; NULL for unavailable metrics, QUERY_TAG assumed AppID, END_TIME used for collect/first response",
-        "question": "Which legacy fields may be dropped or redefined? Error code namespace equivalence also needs live validation."
+        "decision_id": "dbc-missing-query-log-fields",
+        "scope_valid": false,
+        "missing_fields": [
+          "AMPCPUTime",
+          "ClientID",
+          "TotalIOCount"
+        ],
+        "unavailable_fields_are_null": true,
+        "approved_comparison": {
+          "passed": false,
+          "row_count": {
+            "before": 8080,
+            "after": 8080
+          },
+          "removed_rows": 8080,
+          "added_rows": 8080,
+          "compared_columns": [
+            "ProcID",
+            "CollectTimeStamp",
+            "QueryID",
+            "UserName",
+            "DefaultDatabase",
+            "AppID",
+            "StartTime",
+            "FirstRespTime",
+            "StatementType",
+            "StatementGroup",
+            "QueryText",
+            "NumResultRows",
+            "ErrorCode"
+          ]
+        },
+        "status": "approved",
+        "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
+        "residual_contract": {
+          "old_behaviour": "DBQL preserves ProcID, collect timestamp, ClientID, CPU, IO and statement group",
+          "new_behaviour": "ACCOUNT_USAGE has no equivalent fields; NULL for unavailable metrics, QUERY_TAG assumed AppID, END_TIME used for collect/first response",
+          "question": "ProcID, collect timestamp and statement group differ outside the CPU/IO/client-id approval. Error code namespace equivalence also needs live validation."
+        }
       },
       "mapped_columns_parity": {
         "label": "target-equivalent columns only; explicit supported row scope, not full-shape parity",
@@ -28382,7 +28430,7 @@
       ],
       "emulator": {
         "status": "red",
-        "rows": 8296,
+        "rows": 8284,
         "csv_rows": 8080,
         "scope": "full relation, including runtime tooling writes",
         "window_reads": 2,
@@ -28970,7 +29018,7 @@
           ]
         }
       ],
-      "reason": "Owner decision: Approve excluding legacy macro/procedure EXECUTE lineage, or supply an authoritative target attribution contract?",
+      "reason": "Differences outside approved missing-field scope; see owner_decision.approved_comparison",
       "local_duckdb": "red",
       "snowflake": "red",
       "snowflake_reason": "Role lacks grant; live ACCOUNT_USAGE unverified; no connection attempted",
@@ -29077,9 +29125,33 @@
         "external_callers": []
       },
       "owner_decision": {
-        "old_behaviour": "ObjectUsage includes READ, WRITE and EXECUTE and T/V/M/P kinds",
-        "new_behaviour": "DIRECT_OBJECTS_ACCESSED reads plus OBJECTS_MODIFIED writes; EXECUTE and M/P attribution not established by these arrays or QUERY_HISTORY",
-        "question": "Approve excluding legacy macro/procedure EXECUTE lineage, or supply an authoritative target attribution contract?"
+        "decision_id": "dbc-missing-query-log-fields",
+        "scope_valid": false,
+        "missing_fields": [],
+        "unavailable_fields_are_null": true,
+        "approved_comparison": {
+          "passed": false,
+          "row_count": {
+            "before": 20443,
+            "after": 19633
+          },
+          "removed_rows": 810,
+          "added_rows": 0,
+          "compared_columns": [
+            "QueryID",
+            "ObjectDatabaseName",
+            "ObjectTableName",
+            "ObjectType",
+            "UsageType"
+          ]
+        },
+        "status": "approved",
+        "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
+        "residual_contract": {
+          "old_behaviour": "ObjectUsage includes READ, WRITE and EXECUTE and T/V/M/P kinds",
+          "new_behaviour": "DIRECT_OBJECTS_ACCESSED reads plus OBJECTS_MODIFIED writes; EXECUTE and M/P attribution not established by these arrays or QUERY_HISTORY",
+          "question": "Approve excluding legacy macro/procedure EXECUTE lineage, or supply an authoritative target attribution contract?"
+        }
       },
       "mapped_columns_parity": {
         "label": "target-equivalent columns only; explicit supported row scope, not full-shape parity",
@@ -29187,7 +29259,7 @@
       ],
       "emulator": {
         "status": "red",
-        "rows": 20803,
+        "rows": 20785,
         "csv_rows": 20443,
         "scope": "full relation, including runtime tooling writes",
         "window_reads": 2,
@@ -29965,7 +30037,7 @@
           ]
         }
       ],
-      "reason": "Owner decision: Approve read/write-only counts, NULL never-accessed timestamp and reduced catalog scope, or specify a replacement contract?",
+      "reason": "Differences outside approved missing-field scope; see owner_decision.approved_comparison",
       "local_duckdb": "red",
       "snowflake": "red",
       "snowflake_reason": "Role lacks grant; live ACCOUNT_USAGE unverified; no connection attempted",
@@ -30072,9 +30144,34 @@
         "external_callers": []
       },
       "owner_decision": {
-        "old_behaviour": "generate.py increments access for every usage (READ/WRITE/EXECUTE), and defaults never-accessed last timestamp to 2026-07-01 17:30:00",
-        "new_behaviour": "read/write access aggregate; never-accessed timestamp NULL; TABLES lacks procedure/macro coverage",
-        "question": "Approve read/write-only counts, NULL never-accessed timestamp and reduced catalog scope, or specify a replacement contract?"
+        "decision_id": "dbc-missing-query-log-fields",
+        "scope_valid": false,
+        "missing_fields": [],
+        "unavailable_fields_are_null": true,
+        "approved_comparison": {
+          "passed": false,
+          "row_count": {
+            "before": 111,
+            "after": 101
+          },
+          "removed_rows": 15,
+          "added_rows": 5,
+          "compared_columns": [
+            "DatabaseName",
+            "TableName",
+            "TableKind",
+            "CreateTimeStamp",
+            "LastAccessTimeStamp",
+            "AccessCount"
+          ]
+        },
+        "status": "approved",
+        "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
+        "residual_contract": {
+          "old_behaviour": "generate.py increments access for every usage (READ/WRITE/EXECUTE), and defaults never-accessed last timestamp to 2026-07-01 17:30:00",
+          "new_behaviour": "read/write access aggregate; never-accessed timestamp NULL; TABLES lacks procedure/macro coverage",
+          "question": "Approve read/write-only counts, NULL never-accessed timestamp and reduced catalog scope, or specify a replacement contract?"
+        }
       },
       "mapped_columns_parity": {
         "label": "target-equivalent columns only; explicit supported row scope, not full-shape parity",
@@ -30759,7 +30856,7 @@
           ]
         }
       ],
-      "reason": "Owner decision: Approve excluding legacy macro/procedure EXECUTE lineage, or supply an authoritative target attribution contract?",
+      "reason": "Differences outside approved missing-field scope; see owner_decision.approved_comparison",
       "local_duckdb": "red",
       "snowflake": "red",
       "snowflake_reason": "Role lacks grant; live ACCOUNT_USAGE unverified; no connection attempted",
@@ -30830,9 +30927,33 @@
         "external_callers": []
       },
       "owner_decision": {
-        "old_behaviour": "ObjectUsage includes READ, WRITE and EXECUTE and T/V/M/P kinds",
-        "new_behaviour": "DIRECT_OBJECTS_ACCESSED reads plus OBJECTS_MODIFIED writes; EXECUTE and M/P attribution not established by these arrays or QUERY_HISTORY",
-        "question": "Approve excluding legacy macro/procedure EXECUTE lineage, or supply an authoritative target attribution contract?"
+        "decision_id": "dbc-missing-query-log-fields",
+        "scope_valid": false,
+        "missing_fields": [],
+        "unavailable_fields_are_null": true,
+        "approved_comparison": {
+          "passed": false,
+          "row_count": {
+            "before": 20443,
+            "after": 19633
+          },
+          "removed_rows": 810,
+          "added_rows": 0,
+          "compared_columns": [
+            "QueryID",
+            "ObjectDatabaseName",
+            "ObjectTableName",
+            "ObjectType",
+            "UsageType"
+          ]
+        },
+        "status": "approved",
+        "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
+        "residual_contract": {
+          "old_behaviour": "ObjectUsage includes READ, WRITE and EXECUTE and T/V/M/P kinds",
+          "new_behaviour": "DIRECT_OBJECTS_ACCESSED reads plus OBJECTS_MODIFIED writes; EXECUTE and M/P attribution not established by these arrays or QUERY_HISTORY",
+          "question": "Approve excluding legacy macro/procedure EXECUTE lineage, or supply an authoritative target attribution contract?"
+        }
       },
       "mapped_columns_parity": {
         "label": "target-equivalent columns only; explicit supported row scope, not full-shape parity",
@@ -30940,7 +31061,7 @@
       ],
       "emulator": {
         "status": "red",
-        "rows": 20803,
+        "rows": 20785,
         "csv_rows": 20443,
         "scope": "full relation, including runtime tooling writes",
         "window_reads": 1,
@@ -31967,7 +32088,7 @@
           "after": []
         }
       ],
-      "reason": "Owner decision: Which legacy fields may be dropped or redefined? Error code namespace equivalence also needs live validation.",
+      "reason": "Differences outside approved missing-field scope; see owner_decision.approved_comparison",
       "local_duckdb": "red",
       "snowflake": "red",
       "snowflake_reason": "Role lacks grant; live ACCOUNT_USAGE unverified; no connection attempted",
@@ -32038,9 +32159,45 @@
         "external_callers": []
       },
       "owner_decision": {
-        "old_behaviour": "DBQL preserves ProcID, collect timestamp, ClientID, CPU, IO and statement group",
-        "new_behaviour": "ACCOUNT_USAGE has no equivalent fields; NULL for unavailable metrics, QUERY_TAG assumed AppID, END_TIME used for collect/first response",
-        "question": "Which legacy fields may be dropped or redefined? Error code namespace equivalence also needs live validation."
+        "decision_id": "dbc-missing-query-log-fields",
+        "scope_valid": false,
+        "missing_fields": [
+          "AMPCPUTime",
+          "ClientID",
+          "TotalIOCount"
+        ],
+        "unavailable_fields_are_null": true,
+        "approved_comparison": {
+          "passed": false,
+          "row_count": {
+            "before": 8080,
+            "after": 8080
+          },
+          "removed_rows": 8080,
+          "added_rows": 8080,
+          "compared_columns": [
+            "ProcID",
+            "CollectTimeStamp",
+            "QueryID",
+            "UserName",
+            "DefaultDatabase",
+            "AppID",
+            "StartTime",
+            "FirstRespTime",
+            "StatementType",
+            "StatementGroup",
+            "QueryText",
+            "NumResultRows",
+            "ErrorCode"
+          ]
+        },
+        "status": "approved",
+        "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
+        "residual_contract": {
+          "old_behaviour": "DBQL preserves ProcID, collect timestamp, ClientID, CPU, IO and statement group",
+          "new_behaviour": "ACCOUNT_USAGE has no equivalent fields; NULL for unavailable metrics, QUERY_TAG assumed AppID, END_TIME used for collect/first response",
+          "question": "ProcID, collect timestamp and statement group differ outside the CPU/IO/client-id approval. Error code namespace equivalence also needs live validation."
+        }
       },
       "mapped_columns_parity": {
         "label": "target-equivalent columns only; explicit supported row scope, not full-shape parity",
@@ -32209,7 +32366,7 @@
       ],
       "emulator": {
         "status": "red",
-        "rows": 8296,
+        "rows": 8284,
         "csv_rows": 8080,
         "scope": "full relation, including runtime tooling writes",
         "window_reads": 1,
@@ -32982,7 +33139,7 @@
           ]
         }
       ],
-      "reason": "Owner decision: Approve read/write-only counts, NULL never-accessed timestamp and reduced catalog scope, or specify a replacement contract?",
+      "reason": "Differences outside approved missing-field scope; see owner_decision.approved_comparison",
       "local_duckdb": "red",
       "snowflake": "red",
       "snowflake_reason": "Role lacks grant; live ACCOUNT_USAGE unverified; no connection attempted",
@@ -33053,9 +33210,34 @@
         "external_callers": []
       },
       "owner_decision": {
-        "old_behaviour": "generate.py increments access for every usage (READ/WRITE/EXECUTE), and defaults never-accessed last timestamp to 2026-07-01 17:30:00",
-        "new_behaviour": "read/write access aggregate; never-accessed timestamp NULL; TABLES lacks procedure/macro coverage",
-        "question": "Approve read/write-only counts, NULL never-accessed timestamp and reduced catalog scope, or specify a replacement contract?"
+        "decision_id": "dbc-missing-query-log-fields",
+        "scope_valid": false,
+        "missing_fields": [],
+        "unavailable_fields_are_null": true,
+        "approved_comparison": {
+          "passed": false,
+          "row_count": {
+            "before": 111,
+            "after": 101
+          },
+          "removed_rows": 15,
+          "added_rows": 5,
+          "compared_columns": [
+            "DatabaseName",
+            "TableName",
+            "TableKind",
+            "CreateTimeStamp",
+            "LastAccessTimeStamp",
+            "AccessCount"
+          ]
+        },
+        "status": "approved",
+        "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
+        "residual_contract": {
+          "old_behaviour": "generate.py increments access for every usage (READ/WRITE/EXECUTE), and defaults never-accessed last timestamp to 2026-07-01 17:30:00",
+          "new_behaviour": "read/write access aggregate; never-accessed timestamp NULL; TABLES lacks procedure/macro coverage",
+          "question": "Approve read/write-only counts, NULL never-accessed timestamp and reduced catalog scope, or specify a replacement contract?"
+        }
       },
       "mapped_columns_parity": {
         "label": "target-equivalent columns only; explicit supported row scope, not full-shape parity",
@@ -38223,14 +38405,14 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "audit",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "retired",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "retirement proposed; not converted or retired",
+      "reason": "Owner-approved retirement of the six unused audit archive objects. Preserve Spark archive jobs and their landing feed; no physical deletion is performed by board generation.",
       "provenance": {
         "source": [
           {
@@ -38241,7 +38423,7 @@
           }
         ],
         "converted": {},
-        "conversion_note": "Retirement proposed; no conversion",
+        "conversion_note": "Retirement candidate; see board owner approval evidence; no conversion",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -38305,7 +38487,13 @@
           }
         }
       },
-      "local_duckdb": "red",
+      "decision_state": "approved",
+      "retirement_evidence": {
+        "decision_id": "audit-archive-retirement",
+        "owner_approved": true,
+        "manifest_target": "retire"
+      },
+      "local_duckdb": "retired",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -41486,14 +41674,14 @@
       "owner": "@otterworks/data-platform",
       "subject_area": "audit",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "retired",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "retirement proposed; not converted or retired",
+      "reason": "Owner-approved retirement of the six unused audit archive objects. Preserve Spark archive jobs and their landing feed; no physical deletion is performed by board generation.",
       "provenance": {
         "source": [
           {
@@ -41504,7 +41692,7 @@
           }
         ],
         "converted": {},
-        "conversion_note": "Retirement proposed; no conversion",
+        "conversion_note": "Retirement candidate; see board owner approval evidence; no conversion",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -41568,7 +41756,13 @@
           }
         }
       },
-      "local_duckdb": "red",
+      "decision_state": "approved",
+      "retirement_evidence": {
+        "decision_id": "audit-archive-retirement",
+        "owner_approved": true,
+        "manifest_target": "retire"
+      },
+      "local_duckdb": "retired",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -43815,14 +44009,14 @@
       "owner": "@otterworks/finance-reporting",
       "subject_area": "audit",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "retired",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "retirement proposed; not converted or retired",
+      "reason": "Owner-approved retirement of the six unused audit archive objects. Preserve Spark archive jobs and their landing feed; no physical deletion is performed by board generation.",
       "provenance": {
         "source": [
           {
@@ -43833,7 +44027,7 @@
           }
         ],
         "converted": {},
-        "conversion_note": "Retirement proposed; no conversion",
+        "conversion_note": "Retirement candidate; see board owner approval evidence; no conversion",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -43897,7 +44091,13 @@
           }
         }
       },
-      "local_duckdb": "red",
+      "decision_state": "approved",
+      "retirement_evidence": {
+        "decision_id": "audit-archive-retirement",
+        "owner_approved": true,
+        "manifest_target": "retire"
+      },
+      "local_duckdb": "retired",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -61674,14 +61874,14 @@
       "owner": "@otterworks/finance-reporting",
       "subject_area": "audit",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "retired",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "reason": "retirement proposed; not converted or retired",
+      "reason": "Owner-approved retirement of the six unused audit archive objects. Preserve Spark archive jobs and their landing feed; no physical deletion is performed by board generation.",
       "provenance": {
         "source": [
           {
@@ -61692,7 +61892,7 @@
           }
         ],
         "converted": {},
-        "conversion_note": "Retirement proposed; no conversion",
+        "conversion_note": "Retirement candidate; see board owner approval evidence; no conversion",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -61756,7 +61956,13 @@
           }
         }
       },
-      "local_duckdb": "red",
+      "decision_state": "approved",
+      "retirement_evidence": {
+        "decision_id": "audit-archive-retirement",
+        "owner_approved": true,
+        "manifest_target": "retire"
+      },
+      "local_duckdb": "retired",
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run",
       "snowflake_preflight": {
@@ -76274,7 +76480,7 @@
   },
   "summary": {
     "rows": 252,
-    "red": 12,
+    "red": 6,
     "retire_verified": 4,
     "green": 227,
     "amber": 1,
@@ -76306,10 +76512,10 @@
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run"
     },
-    "retired": 4,
     "audit": {
       "local_green": 51,
-      "local_red": 6,
+      "local_retired": 6,
+      "local_red": 0,
       "snowflake": "red",
       "snowflake_reason": "role SFX_D1110_ROLE not authorized on SFX_1119 (002003); live capture/prove not run"
     },
@@ -76325,6 +76531,57 @@
       "local_green": 1,
       "local_red": 0,
       "snowflake": "red"
+    },
+    "retired": 10,
+    "areas": {
+      "audit": {
+        "total": 57,
+        "green": 51,
+        "approved_deviation": 0,
+        "amber": 0,
+        "retire": 6,
+        "red": 0
+      },
+      "billing": {
+        "total": 74,
+        "green": 74,
+        "approved_deviation": 0,
+        "amber": 0,
+        "retire": 0,
+        "red": 0
+      },
+      "content": {
+        "total": 1,
+        "green": 1,
+        "approved_deviation": 0,
+        "amber": 0,
+        "retire": 0,
+        "red": 0
+      },
+      "dbc": {
+        "total": 6,
+        "green": 0,
+        "approved_deviation": 0,
+        "amber": 0,
+        "retire": 0,
+        "red": 6
+      },
+      "documents": {
+        "total": 59,
+        "green": 50,
+        "approved_deviation": 4,
+        "amber": 1,
+        "retire": 4,
+        "red": 0
+      },
+      "users": {
+        "total": 55,
+        "green": 51,
+        "approved_deviation": 0,
+        "amber": 0,
+        "retire": 4,
+        "red": 0
+      }
     }
   },
   "powercenter_evidence": {
@@ -76819,10 +77076,10 @@
         ""
       ],
       "log": [
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : FR_3055 : Reading data from input source file [/home/ubuntu/repos/otterworks/warehouse/landing/audit/AUDIT_EVENT/20261109.psv]",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [FF_AUDIT_EVENT]: read [200] rows through [SQ_FF_AUDIT_EVENT]",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8124 : Target Table stg_audit_event :Truncated using DELETE FROM",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_4df82686ef144f76b4c81d9ea318619d.stg_audit_event] (instance [STG_AUDIT_EVENT]) row count before load [0], after load [200]"
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : FR_3055 : Reading data from input source file [/home/ubuntu/repos/otterworks/warehouse/landing/audit/AUDIT_EVENT/20261109.psv]",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [FF_AUDIT_EVENT]: read [200] rows through [SQ_FF_AUDIT_EVENT]",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8124 : Target Table stg_audit_event :Truncated using DELETE FROM",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee.stg_audit_event] (instance [STG_AUDIT_EVENT]) row count before load [0], after load [200]"
       ]
     },
     "s_m_SFX_AUDIT_EVENT": {
@@ -76834,9 +77091,9 @@
         ""
       ],
       "log": [
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : RR_4049 : SQL Query issued to database : (Thu Nov 19 22:14:25 2026) [SELECT \"event_id\", \"actor_user_id\", \"document_id\", \"customer_id\", \"event_ts\", \"event_type\", \"details\" FROM \"audit_parity_4df82686ef144f76b4c81d9ea318619d\".\"stg_audit_event\"]",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [STG_AUDIT_EVENT]: read [200] rows through [SQ_STG_AUDIT_EVENT]",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_4df82686ef144f76b4c81d9ea318619d.audit_event] (instance [AUDIT_EVENT]) row count before load [0], after load [200]"
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : RR_4049 : SQL Query issued to database : (Fri Nov 20 16:55:15 2026) [SELECT \"event_id\", \"actor_user_id\", \"document_id\", \"customer_id\", \"event_ts\", \"event_type\", \"details\" FROM \"audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee\".\"stg_audit_event\"]",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [STG_AUDIT_EVENT]: read [200] rows through [SQ_STG_AUDIT_EVENT]",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee.audit_event] (instance [AUDIT_EVENT]) row count before load [0], after load [200]"
       ]
     },
     "s_m_SFX_AUDIT_DAILY_SUMMARY": {
@@ -76848,10 +77105,10 @@
         ""
       ],
       "log": [
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : RR_4049 : SQL Query issued to database : (Thu Nov 19 22:14:25 2026) [SELECT \"event_id\", \"customer_id\", \"event_ts\", \"event_type\" FROM \"audit_parity_4df82686ef144f76b4c81d9ea318619d\".\"audit_event\"]",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [AUDIT_EVENT]: read [200] rows through [SQ_AUDIT_EVENT]",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11031 : Aggregator [AGG_DAILY_EVENTS]: [60] groups produced",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_4df82686ef144f76b4c81d9ea318619d.audit_daily_summary] (instance [AUDIT_DAILY_SUMMARY]) row count before load [0], after load [60]"
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : RR_4049 : SQL Query issued to database : (Fri Nov 20 16:55:15 2026) [SELECT \"event_id\", \"customer_id\", \"event_ts\", \"event_type\" FROM \"audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee\".\"audit_event\"]",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [AUDIT_EVENT]: read [200] rows through [SQ_AUDIT_EVENT]",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11031 : Aggregator [AGG_DAILY_EVENTS]: [60] groups produced",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee.audit_daily_summary] (instance [AUDIT_DAILY_SUMMARY]) row count before load [0], after load [60]"
       ]
     },
     "s_m_SFX_SECURITY_ALERT": {
@@ -76863,14 +77120,14 @@
         ""
       ],
       "log": [
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : FR_3055 : Reading data from input source file [/home/ubuntu/repos/otterworks/warehouse/landing/audit/SECURITY_ALERT/20261109.psv]",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [FF_SECURITY_ALERT]: read [10] rows through [SQ_FF_SECURITY_ALERT]",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11033 : Router [RTR_SEVERITY] group [CRITICAL]: [2] rows",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11033 : Router [RTR_SEVERITY] group [STANDARD]: [8] rows",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11033 : Router [RTR_SEVERITY] group [DEFAULT1]: [0] rows",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_4df82686ef144f76b4c81d9ea318619d.security_alert] (instance [SECURITY_ALERT]) row count before load [0], after load [2]",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_4df82686ef144f76b4c81d9ea318619d.security_alert] (instance [SECURITY_ALERT1]) row count before load [2], after load [10]",
-        "2026-11-19 22:14:25 : INFO : (403333 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_4df82686ef144f76b4c81d9ea318619d.security_alert] (instance [SECURITY_ALERT2]) row count before load [10], after load [10]"
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : FR_3055 : Reading data from input source file [/home/ubuntu/repos/otterworks/warehouse/landing/audit/SECURITY_ALERT/20261109.psv]",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [FF_SECURITY_ALERT]: read [10] rows through [SQ_FF_SECURITY_ALERT]",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11033 : Router [RTR_SEVERITY] group [CRITICAL]: [2] rows",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11033 : Router [RTR_SEVERITY] group [STANDARD]: [8] rows",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11033 : Router [RTR_SEVERITY] group [DEFAULT1]: [0] rows",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee.security_alert] (instance [SECURITY_ALERT]) row count before load [0], after load [2]",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee.security_alert] (instance [SECURITY_ALERT1]) row count before load [2], after load [10]",
+        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee.security_alert] (instance [SECURITY_ALERT2]) row count before load [10], after load [10]"
       ]
     },
     "raw_summary_measurement": {
@@ -77555,7 +77812,7 @@
     "lake_compaction_audit": {
       "legacy_output": "lake/audit/lake_compaction_audit",
       "input_sha256": {
-        "etl/spark/.data/sfx-1119-before/lake/audit/audit_daily_summary/part-00000-b3dfd842-8fd9-4a05-ab38-855c4c7a5820-c000.snappy.parquet": "6a645bdcc8b86fa89e9df90eec0b7666dec7f8ac25ca99419a1098771528ef77"
+        "etl/spark/.data/sfx-1119-before/lake/audit/audit_daily_summary/part-00000-072a31e8-a2b7-419e-bede-a98cdb2d0263-c000.snappy.parquet": "e0465b91ea2abbc3a06f08ab1ae6bb98cda24e92088c08d38fcf459f8692d376"
       },
       "build": "initial table; physical partition/file order not compared"
     }

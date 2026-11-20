@@ -64,7 +64,7 @@ def audit_provenance(obj):
     if source:
         source = link(source['file'], source['start_line'], source['end_line'], branch=branch)
     return {'source': [source] if source else [], 'converted': converted,
-            'conversion_note': 'Retirement proposed; no conversion' if obj.get('target_type') == 'retire' else None,
+            'conversion_note': 'Retirement candidate; see board owner approval evidence; no conversion' if obj.get('target_type') == 'retire' else None,
             'metrics': {key: link(value['file'], value['start_line'], value['end_line'], branch=branch)
                         for key, value in metric_links().items()}}
 
@@ -223,7 +223,7 @@ def billing_markdown(rows, subject='billing'):
     audit = [row for row in rows if row['subject_area'] == 'audit']
     if audit and subject == 'billing':
         lines += ['', '## Audit parity provenance', '',
-                  'Batch, isolated PowerCenter, and actual Spark lake/JDBC outputs are separate evidence paths. Retirements remain unconverted.', '',
+                  'Batch, isolated PowerCenter, and actual Spark lake/JDBC outputs are separate evidence paths. The six unused archive objects have owner-approved retirement; Spark archive feeds/jobs remain intact. Retirement is not green migration.', '',
                   '| Object | Local DuckDB | Snowflake | Source | Converted producers | Metrics |', '|---|---|---|---|---|---|']
         for row in audit:
             p = row['provenance']

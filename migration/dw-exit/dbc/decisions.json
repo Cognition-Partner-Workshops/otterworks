@@ -1,0 +1,10 @@
+[
+  {
+    "decision_id": "dbc-missing-query-log-fields",
+    "object": "Six DBC catalog compatibility views",
+    "status": "approved",
+    "old_behaviour": "DBQL exposes legacy CPU, IO and client-id metrics.",
+    "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
+    "missing_fields": ["AMPCPUTime", "TotalIOCount", "ClientID"]
+  }
+]

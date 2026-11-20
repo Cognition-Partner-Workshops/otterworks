@@ -4,7 +4,7 @@
     "2026-11-18",
     "2026-11-19"
   ],
-  "initial_log_date": "2026-11-19",
+  "initial_log_date": "2026-11-18",
   "steps": [
     {
       "phase": "initial history",
@@ -81,8 +81,8 @@
             },
             "RUN_DATE": {
               "nulls": 0,
-              "min": "2026-11-19",
-              "max": "2026-11-19",
+              "min": "2026-11-18",
+              "max": "2026-11-18",
               "distinct": 1
             }
           },
@@ -149,8 +149,8 @@
             },
             "RUN_DATE": {
               "nulls": 0,
-              "min": "2026-11-19",
-              "max": "2026-11-19",
+              "min": "2026-11-18",
+              "max": "2026-11-18",
               "distinct": 1
             }
           }
@@ -161,8 +161,8 @@
             "RUN_DATE"
           ],
           "difference": 0,
-          "before": "7404b9a252d23f35006816dd5e4aee0307343772aac6dc69555c58407f427dbb",
-          "after": "7404b9a252d23f35006816dd5e4aee0307343772aac6dc69555c58407f427dbb",
+          "before": "4b87a58016dde712380142dd16e7ca1c499563e7a735ad9316e1156a0ec0fff3",
+          "after": "4b87a58016dde712380142dd16e7ca1c499563e7a735ad9316e1156a0ec0fff3",
           "key_policy": "contract keys; full-row digest preserves multiplicity"
         },
         "sampled_differences": [],
@@ -188,8 +188,8 @@
       ],
       "measurement": {
         "row_count": {
-          "before": 400,
-          "after": 400
+          "before": 200,
+          "after": 200
         },
         "comparison_rules": {
           "trailing_pad_insensitive": [],
@@ -252,7 +252,7 @@
               "distinct": 1
             },
             "ERROR": {
-              "nulls": 400,
+              "nulls": 200,
               "min": null,
               "max": null,
               "distinct": 0
@@ -260,8 +260,8 @@
             "RUN_DATE": {
               "nulls": 0,
               "min": "2026-11-18",
-              "max": "2026-11-19",
-              "distinct": 2
+              "max": "2026-11-18",
+              "distinct": 1
             }
           },
           "after": {
@@ -320,7 +320,7 @@
               "distinct": 1
             },
             "ERROR": {
-              "nulls": 400,
+              "nulls": 200,
               "min": null,
               "max": null,
               "distinct": 0
@@ -328,8 +328,8 @@
             "RUN_DATE": {
               "nulls": 0,
               "min": "2026-11-18",
-              "max": "2026-11-19",
-              "distinct": 2
+              "max": "2026-11-18",
+              "distinct": 1
             }
           }
         },
@@ -339,8 +339,8 @@
             "RUN_DATE"
           ],
           "difference": 0,
-          "before": "3798af11506c692856f1cd424330bec9375f3a665a60d76339e0817be792df58",
-          "after": "3798af11506c692856f1cd424330bec9375f3a665a60d76339e0817be792df58",
+          "before": "4b87a58016dde712380142dd16e7ca1c499563e7a735ad9316e1156a0ec0fff3",
+          "after": "4b87a58016dde712380142dd16e7ca1c499563e7a735ad9316e1156a0ec0fff3",
           "key_policy": "contract keys; full-row digest preserves multiplicity"
         },
         "sampled_differences": [],
@@ -532,13 +532,13 @@
     "etl/spark/.data/sfx-1119-before/landing/documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87"
   },
   "output_sha256": {
-    "etl/spark/.data/sfx-1119-before/lake/documents/file_object_binary_extract/run_date=2026-11-18/part-00000-5462ddd3-a847-474a-bf0b-e455de69ead4.c000.snappy.parquet": "304a627923f929b915009d3cd395c0251135399348d379ebd0b17265ad4807f9",
-    "etl/spark/.data/sfx-1119-before/lake/documents/file_object_binary_extract/run_date=2026-11-19/part-00000-706ecbfb-fbb3-4c1c-860a-343133ca61a6.c000.snappy.parquet": "b94791bb68c895610ab7bd9ac0cb0b7a3e9f7570dd6b31705369e9135d7a7a21"
+    "etl/spark/.data/sfx-1119-before/lake/documents/file_object_binary_extract/run_date=2026-11-18/part-00000-edbe293b-e0ea-422e-bbd2-668cd64d3669.c000.snappy.parquet": "9e4a5528de9ca0c35d08c90ed7464fa9e626f5e2514e08a156e703f84828730d",
+    "etl/spark/.data/sfx-1119-before/lake/documents/file_object_binary_extract/run_date=2026-11-19/part-00000-c43249f3-21fc-4310-b193-fa1221a6bc39.c000.snappy.parquet": "f7decb7ce873b815cd160ee01fea3b52c4a31d60f65b6a3ec92b6dd712892af6"
   },
   "execution_log_sha256": {
-    "etl/spark/.data/sfx-1119-before/logs/file_object_binary_extract.2026-11-18.log": "00e762a4e568179cbc0838efffd92a74dacd7085cc21ea8f5117d02647993272",
-    "etl/spark/.data/sfx-1119-before/logs/file_object_binary_extract.2026-11-19.log": "24c4072190a21b7ba9c326da9f9ffe0e2e86d116b7465b9180167fdfa9121ea4",
-    "etl/spark/.data/sfx-1119-before/logs/file_object_binary_extract.log": "24c4072190a21b7ba9c326da9f9ffe0e2e86d116b7465b9180167fdfa9121ea4"
+    "etl/spark/.data/sfx-1119-before/logs/file_object_binary_extract.2026-11-18.log": "ae4725d203f70050548f232389f05c10b4d92f5c14084b35f72ac93a120eceb0",
+    "etl/spark/.data/sfx-1119-before/logs/file_object_binary_extract.2026-11-19.log": "78bd1a70a8986004abb13a4584d6a6f31f6645e9948d77b8d0444fa08c5a9e8c",
+    "etl/spark/.data/sfx-1119-before/logs/file_object_binary_extract.log": "78bd1a70a8986004abb13a4584d6a6f31f6645e9948d77b8d0444fa08c5a9e8c"
   },
   "conversion_sha256": {
     "warehouse/dbt/macros/documents_spark_udfs.sql": "febdaacec63681c09fa183b30b3a517a802bfdaa0df4cef41dbcfb1fca0be9d8",
