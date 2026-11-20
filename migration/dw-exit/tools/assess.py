@@ -403,7 +403,6 @@ def main():
     payload = {k: data[k] for k in ('objects', 'consumers', 'dead', 'dead_dependents', 'setup_only', 'dependencies')}
     (OUT / 'manifest.yaml').write_text(yaml.safe_dump(payload, sort_keys=False))
     b = board(data['objects'], data['counters'])
-    (OUT / 'board/board.json').write_text(json.dumps(b, indent=2) + '\n')
     summary = {'by_kind': dict(sorted(Counter(r['kind'] for r in data['artifacts']).items())), 'total': len(data['artifacts']), 'loc_total': sum(r['loc'] for r in data['artifacts']), 'complexity': dict(Counter(r['complexity'] for r in data['artifacts'])), 'dead': data['dead'], 'setup_only_reads_not_dead': data['setup_only'], 'not_in_warehouse_etl': [u for u, v in data['scans'].items() if not v['warehouse_etl_hits']], 'not_in_any_repo_code': [u for u, v in data['scans'].items() if not v['repo_hits']], 'waves': b['waves'], 'licence_counters': data['counters']}
     summary['dead_dependents'] = data['dead_dependents']
     (OUT / 'inventory.md').write_text('# Inventory\n\nDBQL window 2026-08-12 through 2026-11-09 inclusive.\n\n```json\n' + json.dumps(summary, indent=2) + '\n```\n\n30 Spark jobs linked to merged sources on demo-snowflake-dw-exit.\n\nScan evidence for every DBQL reader:\n\n```json\n' + json.dumps(data['scans'], indent=2) + '\n```\n')
@@ -424,12 +423,6 @@ def main():
     lines += ['  class ' + r['id'] + ' dead' for r in data['artifacts'] if r['name'] in data['dead']]
     lines += ['```', '', f"{len(data['artifacts'])} artifacts; {len(data['feeds'])} feed nodes; {len(data['consumers'])} consumers; {len(data['links'])} parsed edges. Orange = unregistered consumer; gray dashed = no DBQL usage. Arrows indicate data dependency; session/workflow arrows indicate containment dependencies."]
     (OUT / 'lineage.md').write_text('\n'.join(lines) + '\n')
-    table = '| Count | Wave 1 | Wave 2 | Wave 3 | Wave 4 |\n|---|---:|---:|---:|---:|\n'
-    table += '| Total | ' + ' | '.join(str(b['waves'][str(w)]['total']) for w in range(1, 5)) + ' |\n'
-    for field in ('by_kind', 'by_target'):
-        for key in sorted({k for v in b['waves'].values() for k in v[field]}):
-            table += '| ' + field + ': ' + key + ' | ' + ' | '.join(str(b['waves'][str(w)][field].get(key, 0)) for w in range(1, 5)) + ' |\n'
-    (OUT / 'board/README.md').write_text('# Migration board\n\n' + table + '\n## Licence counters\n\n| Counter | Remaining | Target |\n|---|---:|---:|\n' + '\n'.join(f"| {k} | {v['remaining']} | {v['target']} |" for k, v in data['counters'].items() if 'remaining' in v) + '\n\nAll objects remain not_started. Parity measurements do not migrate or retire objects.\n')
     print(json.dumps(summary, indent=2))
 
 
