@@ -1,0 +1,5 @@
+name: board_fixture
+version: '1.0'
+config-version: 2
+profile: board_fixture
+model-paths: ['models']

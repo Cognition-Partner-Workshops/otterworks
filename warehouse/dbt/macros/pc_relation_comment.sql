@@ -1,9 +1,11 @@
 {% macro pc_relation_comment() %}
+    {% if target is defined and target.type == 'duckdb' %}{{ return('') }}{% endif %}
     comment on {{ 'view' if model.config.materialized == 'view' else 'table' }} {{ this }}
     is 'run_token=__RUN_TOKEN__ expires=2026-11-24'
 {% endmacro %}
 
 {% macro pc_finalize_comments(results) %}
+    {% if target is defined and target.type == 'duckdb' %}{{ return('') }}{% endif %}
     {% if execute %}
         {% for result in results if result.status == 'success' %}
             {% set node = result.node %}

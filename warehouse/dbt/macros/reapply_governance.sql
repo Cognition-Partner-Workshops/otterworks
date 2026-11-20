@@ -7,6 +7,7 @@
 {% endmacro %}
 
 {% macro reapply_governance(results=none) %}
+    {% if target is defined and target.type == 'duckdb' %}{{ return('') }}{% endif %}
   {% if not execute %}{{ return('') }}{% endif %}
   {% set token = env_var('RUN_TOKEN', '__RUN_TOKEN__') | replace("'", "''") %}
   {% set nodes = [] %}

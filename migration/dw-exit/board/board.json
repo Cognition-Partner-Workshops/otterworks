@@ -36702,6 +36702,18 @@
       "billing/initial/10_load.sql",
       "billing/initial/30_views.sql"
     ],
+    "areas": {
+      "billing": {
+        "schema": "BILLING",
+        "seed": [
+          "STG_*"
+        ],
+        "sql": [
+          "initial/10_load.sql",
+          "initial/30_views.sql"
+        ]
+      }
+    },
     "non_relational_objects": "declared output relations",
     "migration_state": "BEFORE"
   },
