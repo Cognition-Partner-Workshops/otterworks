@@ -31,14 +31,15 @@ def test_shipped_models_empty_and_normalized_replacement(populated):
         assert db.execute('SELECT GRANT_ID,ROLE_CD FROM USERS.ROLE_GRANT').fetchall() == ([(1,'OWNER       ')] if populated else [])
 
 
-def test_shipped_router_drops_default_and_merge_preserves_old_rows():
+def test_owner_retains_unrecognised_login_result_and_merge_preserves_old_rows():
     with duckdb.connect() as db:
         inputs(db)
         db.execute("INSERT INTO USERS.LOGIN_EVENT VALUES (8,8,NULL,'OLD','WEB')")
         db.execute("INSERT INTO USERS.LOGIN_EVENT VALUES (1,9,NULL,'OLD','WEB')")
         db.execute("INSERT INTO INPUT.LOGIN_EVENT VALUES (1,1,'2026-11-09','success','web'),(2,1,'2026-11-09','failed','web'),(3,1,'2026-11-09','locked','web'),(4,1,'2026-11-09','mfa_failed','web'),(5,1,'2026-11-09','OTHER','web')")
         pc_users.execute_model(db,'LOGIN_EVENT')
-        assert db.execute('SELECT LOGIN_ID FROM USERS.LOGIN_EVENT ORDER BY 1').fetchall() == [(1,),(2,),(3,),(4,),(8,)]
+        assert db.execute('SELECT LOGIN_ID FROM USERS.LOGIN_EVENT ORDER BY 1').fetchall() == [(1,),(2,),(3,),(4,),(5,),(8,)]
+        assert db.execute('SELECT RTRIM(RESULT_CD) FROM USERS.LOGIN_EVENT WHERE LOGIN_ID=5').fetchone() == ('OTHER',)
         assert db.execute('SELECT USER_ID FROM USERS.LOGIN_EVENT WHERE LOGIN_ID=1').fetchone() == (1,)
 
 
