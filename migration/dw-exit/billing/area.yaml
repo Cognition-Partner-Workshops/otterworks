@@ -1,0 +1,5 @@
+schema: BILLING
+seed: ['STG_*']
+sql:
+  - initial/10_load.sql
+  - initial/30_views.sql

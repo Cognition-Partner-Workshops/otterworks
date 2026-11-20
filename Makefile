@@ -99,6 +99,14 @@ sfx-billing-test: warehouse/.venv/.billing-requirements ## Offline parity tool r
 
 .PHONY: sfx-manifest-board sfx-manifest-board-test sfx-run-render
 BOARD_ROWS ?= 200
+sfx-area-prove: NS ?= $(RUN_BEFORE_NAMESPACE)
+sfx-area-prove: ROWS_PER_TABLE=$(BOARD_ROWS)
+sfx-area-prove: sfx-teradata-up warehouse/.venv/.billing-requirements
+	@test -n "$(AREA)" || (echo 'AREA is required'; exit 1)
+	$(SFX_TD_PY) migration/dw-exit/tools/assess.py
+	$(SFX_TD_ENV) $(SFX_TD_PY) migration/dw-exit/parity/object_board.py --area "$(AREA)"
+
+.PHONY: sfx-area-prove
 sfx-manifest-board: ROWS_PER_TABLE=$(BOARD_ROWS)
 sfx-manifest-board: sfx-teradata-up warehouse/.venv/.billing-requirements
 	$(SFX_TD_PY) migration/dw-exit/tools/assess.py
