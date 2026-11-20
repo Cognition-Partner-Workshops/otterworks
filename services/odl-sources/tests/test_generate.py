@@ -86,7 +86,7 @@ class GeneratorTests(unittest.TestCase):
     def test_manifest_contract(self):
         manifest = json.loads((ROOT / "demos/app/complexity-manifest.json").read_text())
         self.assertEqual({r["id"] for r in manifest["classes"]}, {f"MIG-{i:02}" for i in range(1, 8)})
-        self.assertEqual({r["id"] for r in manifest["odl"]["classes"]}, {f"ODL-{i:02}" for i in range(1, 9)})
+        self.assertEqual({r["id"] for r in manifest["odl"]["classes"]}, {f"ODL-{i:02}" for i in range(1, 10)})
         for row in manifest["odl"]["classes"]:
             self.assertTrue(all(k in row for k in ("source", "table", "field", "query", "expected_count")))
 

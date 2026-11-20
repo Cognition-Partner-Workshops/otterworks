@@ -118,6 +118,75 @@ unrelated embedded credentials.
 
 Local tests: `python -m unittest discover -s scripts/odl -p 'test_*.py' -v`.
 
+## ODL read-latency incident (ODL-09)
+
+Requires Python 3 (standard library only), `kubectl`, Linux `setsid`/`/proc`,
+and cluster credentials authorized to read the tenant JWT Secret and execute
+read-only monitoring queries from the runtime pod. Only **t-odl**, namespace
+`otterworks-odl`, and scenario **odl-read-latency** are accepted; tenant/URL
+overrides are deliberately unavailable.
+
+```sh
+scripts/odl/scenario.sh status odl-read-latency
+scripts/odl/scenario.sh arm odl-read-latency       # bounded 1800-second default
+scripts/odl/scenario.sh status odl-read-latency
+scripts/odl/scenario.sh disarm odl-read-latency    # ALWAYS run after the demo
+```
+
+Arm reads the tenant's JWT signing key into memory, signs an expiring bearer
+token, and fetches real source keys from an authenticated customer-list read.
+Detached load then cycles Db2, Oracle and CRM key filters through
+`https://api-t-odl.demo.otterworks.app/api/v1/odl/customers`, with **6 offered
+requests/second and at most 16 in flight**. Saturated dispatches are shed rather
+than queued; redirects cannot forward the token to another host. Tokens,
+credentials, response bodies and customer keys are not logged. PID identity,
+start time and process group are checked before disarm; SIGTERM stops dispatch
+and drains outstanding requests. PID/readiness/log files live in gitignored
+`scripts/odl/.state/`. Logs contain numeric summaries only. Natural expiry also
+drains; disarm afterward cleans the stale PID. Do not delete state while armed.
+
+This is **load-only**: no indexes, predicates, Mongo data, API configuration,
+resources, alert thresholds or alert hold times are changed. Disarm stops load
+only; there is nothing else to restore. Status prints load identity, recorded
+p95/p99, completed request rate and both latency alert states. With no traffic,
+quantiles may be `NaN`/no-data; that is not a passing latency measurement.
+
+The unchanged critical rule requires p99 >2s and >1 completed request/second
+for **10m**, using a 5m rate window. Allow approximately **12–15 minutes** for
+the rate ramp, hold and delivery. `ODLReadLatencyHigh` is the non-paging p95
+warning. Critical alerts retain `namespace="otterworks-odl", page="devin"`
+and route to **odl-devin-oncall**, which delivers firing notifications to the
+new Devin automation and firing/resolved events to PagerDuty. Stopping load
+clears the rate gate after the window decays; allow the inherited grouping
+interval for PagerDuty's resolved delivery.
+
+### Calibration and before/after gate
+
+Only a **150-second** calibration burst has been run; the full 10-minute hold
+was intentionally not exercised. At the defaults, one burst completed **601
+HTTP 200s**, shed 299 dispatches, and drained in **151.9s**. A direct histogram
+query over the burst window measured **3.66 requests/s, p95 9.23s, p99 10s**
+(p99 reaches the top finite histogram bucket, so is not an exact tail timing).
+Both latency alerts were pending, not firing; the webhook notification counter
+was unchanged. Wait at least **five quiet minutes after draining between any
+calibration bursts**, start only with inactive alerts, and verify no firing
+latency alerts or new webhook notifications after each burst. Never use repeated
+short bursts to accumulate the 10-minute hold.
+
+Before gate: sustain the normal demo load, verify >1 completed request/s and
+p99 >2s, then observe `ODLReadLatencyCritical` fire and its real notification.
+After gate: deploy the responder's code fix and rerun **the same** load; require
+>1 completed request/s, p99 staying below 2s (and p95 below 0.5s), with the
+critical/warning alerts inactive after their windows clear. An idle/NaN graph,
+reduced offered load, changed resources or shortened alert hold does not pass.
+**Always disarm after either gate.**
+
+The durable responder fix belongs in
+`services/operational-data-layer/odl_sync/api.py`: make the source-key query
+predicates match the existing partial-index conditions (string type for Db2/CRM;
+array-element existence for Oracle), with real-Mongo plan regression coverage.
+The scenario harness deliberately does not implement or deploy that fix.
+
 For cleanup, first remove only the dedicated ODL route/receiver and safely
 reconcile the monitoring release; do not delete its mounted
 Secrets while referenced. Also remove the original mock PagerDuty integration
