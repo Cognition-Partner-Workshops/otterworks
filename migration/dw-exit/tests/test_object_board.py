@@ -102,11 +102,12 @@ def test_empty_manifest_and_snowflake_plan(relations):
         board.build_board({'objects':[]},target='unknown')
 
 
-def test_two_columns_and_subject_area_summary(relations):
+def test_two_columns_and_subject_area_summary(relations, monkeypatch):
+    monkeypatch.setattr(board, 'HELD_BACK_AREAS', frozenset())
     before, after = relations
     before.execute("INSERT INTO SFX_BILLING.T VALUES (1, 'x')")
     after.execute("INSERT INTO BILLING.T VALUES (1, 'x')")
-    manifest = {'objects': [obj(), obj(id='two', name='missing', output_relations=[]),
+    manifest = {'objects': [obj(subject_area='billing'), obj(id='two', name='missing', subject_area='billing', output_relations=[]),
                             obj(id='three', name='spark', subject_area='users', system='spark')]}
     result = board.build_board(manifest, before, after, {'BILLING.T'})
     for row, expected in zip(result['rows'], ('green', 'red', 'red'), strict=True):
@@ -114,7 +115,7 @@ def test_two_columns_and_subject_area_summary(relations):
         assert row['status'] == row['targets']['duckdb']['status'] == expected
         assert row['migration_status'] == 'not_started'
         assert row['targets']['snowflake'] == {
-            'status': 'red', 'reason': 'Snowflake login down; execution disabled',
+            'status': 'red', 'reason': board.SNOWFLAKE_REASON,
             'row_count': None, 'column_profile': None, 'keyed_row_hash': None,
             'sampled_differences': None,
         }
@@ -156,7 +157,7 @@ def test_snowflake_stays_red_without_network(monkeypatch, relations, target):
         result = isolated_board.build_board({'objects': [obj()]}, before, after, {'BILLING.T'}, target=target)
     cell = result['rows'][0]['targets']['snowflake']
     assert cell['status'] == 'red'
-    assert cell['reason'] == 'Snowflake login down; execution disabled'
+    assert cell['reason'] == board.SNOWFLAKE_REASON
 
 
 def test_straight_conversion_and_missing_input(tmp_path):

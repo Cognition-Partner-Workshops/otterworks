@@ -91,7 +91,7 @@ def test_users_declarations_and_provenance_exclude_retirement():
             assert bool(p['converted'][output]) == (obj['target_type'] != 'retire')
             links += p['converted'][output]
         for entry in links:
-            assert '/blob/devin/sfg1120-users/' in entry['url']
+            assert '/blob/devin/sfg1120-integration/' in entry['url']
             assert 1 <= entry['start_line'] <= entry['end_line'] <= len((ROOT/entry['file']).read_text().splitlines())
     chain = next(o for o in objects if o['name'] == '10_activity_daily')
     assert chain['output_relations'] == ['SFX_USERS.USER_ACTIVITY_DAILY','SFX_USERS.M_TEAM_COUNTS_OUTPUT']
@@ -151,7 +151,7 @@ def test_users_errors_fail_closed_and_local_green_is_not_live(tmp_path):
         result = object_board.build_board({'objects':[obj]},before,after,{'USERS.APP_USER'})
         row = result['rows'][0]
         assert row['local_duckdb'] == 'green' and row['snowflake'] == 'red'
-        assert row['snowflake_reason'] == object_board.SNOWFLAKE_DISABLED
+        assert row['snowflake_reason'] == object_board.SNOWFLAKE_REASON
         assert result['summary']['users']['local_green'] == 1
         assert result['summary']['users']['snowflake'] == 'red'
         assert '## Users parity provenance' in provenance.markdown(result['rows'])

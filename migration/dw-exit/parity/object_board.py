@@ -34,7 +34,7 @@ TARGETS = ('duckdb', 'snowflake')
 SNOWFLAKE_DISABLED = 'Snowflake login down; execution disabled'
 
 SNOWFLAKE_REASON = 'Snowflake login down for run sfg1120; no live capture/prove'
-HELD_BACK_AREAS = frozenset(('billing', 'documents', 'users', 'content'))
+HELD_BACK_AREAS = frozenset(('billing', 'documents', 'content'))
 
 
 def relation_contract(objects):
@@ -394,6 +394,7 @@ def users_build_board(manifest, before=None, after=None, available=None, errors=
                 apply_retirement(retirement, obj, approved_retirements())
                 local.update(retirement)
                 local['retirement_evidence']['dbql'] = retire_evidence
+                local['reason'] += '; ' + retirement_users.CAVEAT
 
         row['targets'] = {'duckdb': local, 'snowflake': unavailable_cell(SNOWFLAKE_DISABLED)}
         row.update(local)
