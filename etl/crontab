@@ -15,7 +15,6 @@
 5 1 * * * /opt/etl/spark/submit/docs_share_activity.sh >> /var/log/etl/spark-docs_share_activity.log 2>&1
 6 1 * * * /opt/etl/spark/submit/users_active_daily.sh >> /var/log/etl/spark-users_active_daily.log 2>&1
 7 1 * * * /opt/etl/spark/submit/users_team_rollup.sh >> /var/log/etl/spark-users_team_rollup.log 2>&1
-8 1 * * * /opt/etl/spark/submit/audit_daily_summary.sh >> /var/log/etl/spark-audit_daily_summary.log 2>&1
 9 1 * * * /opt/etl/spark/submit/audit_actor_activity_join.sh >> /var/log/etl/spark-audit_actor_activity_join.log 2>&1
 10 2 * * * /opt/etl/spark/submit/billing_gl_trial_balance.sh >> /var/log/etl/spark-billing_gl_trial_balance.log 2>&1
 # 11 2 * * * /opt/etl/spark/submit/docs_folder_legacy_report.sh >> /var/log/etl/spark-docs_folder_legacy_report.log 2>&1

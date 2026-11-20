@@ -1,8 +1,9 @@
 {
   "job": "audit_daily_summary",
   "language": "scala",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
+  "class": "sfx.AuditDailySummary",
   "schedule": "8 1 * * *",
   "profile": "small"
 }

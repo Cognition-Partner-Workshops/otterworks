@@ -32,8 +32,10 @@
   reason: "Builds team membership totals with left joins and grouped counts."
 - job: audit_daily_summary
   language: scala
-  target: dbt
-  reason: "Summarizes event dates and types with counts and distinct actor counts."
+  target: spark_standard_template
+  reason: "Summarizes event dates and types for the active lake_compaction_audit parquet reader."
+  original_target: dbt
+  change_reason: "Retain the Spark lake contract while its registered legacy consumer remains active; use explicit schemas and cached input and results on the small template profile."
 - job: audit_actor_activity_join
   language: python
   target: dbt
