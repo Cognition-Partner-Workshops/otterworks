@@ -1,1 +1,0 @@
-19 2 * * * /opt/etl/spark/submit/lake_compaction_documents.sh >> /var/log/etl/spark-lake_compaction_documents.log 2>&1
