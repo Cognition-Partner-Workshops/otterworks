@@ -130,6 +130,8 @@ def sync_loop(settings, stop, interval):
 
 def ensure_indexes(db):
     db.customers.create_index([('match.status', 1), ('_id', 1)])
+    for key in ('db2_cust_no', 'oracle_account_ids', 'crm_contact_id'):
+        db.customers.create_index([('source_keys.' + key, 1), ('_id', 1)])
     for fields in ([('reason', 1), ('status', 1), ('_id', 1)], [('reason', 1), ('_id', 1)], [('status', 1), ('_id', 1)]):
         db.mapping_exceptions.create_index(fields)
     db.parity_reports.create_index('run_id', unique=True)
