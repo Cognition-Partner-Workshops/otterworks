@@ -22,14 +22,20 @@ def canonical(value):
 def local_measure(connection, name):
     schema, table = name.split('.')
     source = identifier(schema)+'.'+identifier(table)
+    # Relation components are identifier-validated and quoted; SQL contains no row values.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     cursor = connection.execute('SELECT * FROM '+source)
     names = [c[0] for c in cursor.description]
     expressions = [identifier(c) for c in names]
     expressions = [expression+' COLLATE "binary"' if str(info[1]) == 'VARCHAR' else expression
                    for expression, info in zip(expressions, cursor.description)]
+    # Expressions contain only validated identifiers and a fixed binary collation.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     rows = connection.execute('SELECT '+', '.join(expressions)+' FROM '+source).fetchall()
     profiles = {}
     for column, expression in zip(names, expressions):
+        # All interpolated SQL is quoted identifiers or fixed aggregate/collation syntax.
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         values = connection.execute(f'SELECT COUNT(*)-COUNT({expression}), MIN({expression}), MAX({expression}), COUNT(DISTINCT {expression}) FROM {source}').fetchone()
         profiles[column] = dict(zip(('nulls','min','max','distinct'), values))
     return names, rows, profiles

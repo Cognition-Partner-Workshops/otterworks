@@ -11,6 +11,8 @@ from psycopg import sql
 import sqlglot
 from sqlglot import exp
 
+from .ladder import identifier
+
 
 ROOT = Path(__file__).resolve().parents[3]
 SCHEMAS_FILE = ROOT / 'etl/spark/jobs/py/common/schemas.py'
@@ -32,8 +34,14 @@ def schemas():
 
 
 def uppercase_columns(connection, name):
+    schema, table = name.split('.')
+    name = identifier(schema) + '.' + identifier(table)
+    # Relation components are validated identifiers, not SQL fragments.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     for column in connection.execute('DESCRIBE ' + name).fetchall():
         if column[0] != column[0].upper():
+            # Relation is validated/quoted above; metadata column names escape embedded quotes.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             connection.execute('ALTER TABLE ' + name + ' RENAME COLUMN "' +
                                column[0].replace('"', '""') + '" TO "' + column[0].upper().replace('"', '""') + '"')
 

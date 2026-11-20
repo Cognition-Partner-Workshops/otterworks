@@ -21,6 +21,24 @@ def model(name):
     return spark_audit.render_model((ROOT / 'warehouse/dbt/models/spark' / name / (name + '.sql')).read_text())
 
 
+@pytest.mark.parametrize('name', ['', 'SPARK', 'SPARK.A.B', 'SPARK.A; DROP TABLE X', 'SPARK.A--'])
+def test_uppercase_columns_rejects_invalid_relations(name):
+    with pytest.raises(ValueError):
+        spark_audit.uppercase_columns(None, name)
+
+
+@pytest.mark.parametrize('rows', [[], [(7,)]])
+def test_uppercase_columns_quotes_metadata(rows):
+    with duckdb.connect() as connection:
+        connection.execute('CREATE SCHEMA SPARK')
+        connection.execute('CREATE TABLE SPARK.OUTPUT ("a""b" INTEGER)')
+        if rows:
+            connection.executemany('INSERT INTO SPARK.OUTPUT VALUES (?)', rows)
+        spark_audit.uppercase_columns(connection, 'SPARK.OUTPUT')
+        assert connection.execute('DESCRIBE SPARK.OUTPUT').fetchone()[0] == 'A"B'
+        assert connection.execute('SELECT * FROM SPARK.OUTPUT').fetchall() == rows
+
+
 @pytest.fixture
 def db():
     with duckdb.connect() as connection:
