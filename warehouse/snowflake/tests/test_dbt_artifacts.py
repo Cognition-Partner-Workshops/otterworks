@@ -60,3 +60,19 @@ def test_no_artifacts_fabricated(project, monkeypatch):
     assert not (project / 'target/run_results.json').exists()
     assert not (project / 'logs/dbt.log').exists()
     assert not list((project / 'target').glob('sfx2220-*'))
+
+
+@pytest.mark.parametrize('excluded', [None, 'pc_content__team_member'])
+def test_build_forwards_optional_exclusion(project, monkeypatch, excluded):
+    argv = ['run_dbt.py', 'build', '--select', 'path:models/pc/content']
+    if excluded:
+        argv += ['--exclude', excluded]
+    monkeypatch.setattr(sys, 'argv', argv)
+    commands = []
+    monkeypatch.setattr(run_dbt.subprocess, 'run', lambda command, **kwargs: commands.append(command))
+    run_dbt.main()
+    assert commands[0][commands[0].index('--select') + 1] == 'path:models/pc/content'
+    if excluded:
+        assert commands[0][commands[0].index('--exclude') + 1] == excluded
+    else:
+        assert '--exclude' not in commands[0]

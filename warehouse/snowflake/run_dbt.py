@@ -26,6 +26,7 @@ def main():
     parser.add_argument("--step")
     parser.add_argument("--mapping")
     parser.add_argument("--select", dest="selection", default="staging.billing")
+    parser.add_argument("--exclude")
     parser.add_argument("--load-date")
     args = parser.parse_args()
     if args.load_date is not None and not re.fullmatch(r"[0-9]{8}", args.load_date):
@@ -68,6 +69,8 @@ def main():
                "--target-path", str(target), "--log-path", str(source_project / 'logs')]
     if args.command == "build":
         command += ["--select", args.selection]
+        if args.exclude:
+            command += ["--exclude", args.exclude]
     variables = {"phase": args.phase}
     if args.load_date:
         variables["load_date"] = args.load_date
