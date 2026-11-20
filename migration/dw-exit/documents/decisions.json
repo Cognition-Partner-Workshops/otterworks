@@ -19,6 +19,7 @@
     "blocks": ["SFX_DOCUMENTS.DOC_VERSION", "SFX_DOCUMENTS.V_DOCUMENT_VERSIONS", "SFX_DOCUMENTS.V_WORKSPACE_STORAGE"]
   },
   {
+    "decision_id": "documents-role-grant-highest-privilege",
     "object": "m_SFX_DOC_SHARE / s_m_SFX_DOC_SHARE duplicate role lookup",
     "old_behaviour": "XML lookup policy is Use First Value. For multiple role grants per USER_ID the runner selects the first cached match.",
     "new_behaviour": "Owner-approved: highest privilege wins, ADMIN then EDITOR then other roles; no role leaves the source access unchanged. Deliberately differs from legacy first cached match.",

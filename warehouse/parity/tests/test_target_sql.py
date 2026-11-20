@@ -18,7 +18,7 @@ def render(path):
 
 
 @pytest.mark.parametrize("grants,expected", [([], ["VIEW"]), ([(1, "ADMIN")], ["OWNER"]),
-                                         ([(1, "ADMIN"), (1, "EDITOR")], ["EDIT", "OWNER"])])
+                                         ([(1, "ADMIN"), (1, "EDITOR")], ["OWNER"])])
 def test_share_projection(grants, expected):
     query = render("dbt/models/pc/content/pc_content__doc_share.sql")
     with sqlite3.connect(":memory:") as db:

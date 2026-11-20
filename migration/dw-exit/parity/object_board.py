@@ -45,7 +45,15 @@ DOCUMENTS_METRICS = {'row_count': ladder.local_measure, 'column_profile': ladder
 
 
 def relation_contract(objects):
-    return [dict(obj, output_relations=audit_outputs(obj),
+    retained = {name for d in decision_registry() if d.get('action') == 'retain' and d.get('status') == 'approved'
+                for name in d.get('board_objects', [])}
+    live_documents = {
+        'table': dict(target_type='dbt_model', target='stg_documents__search_index_log'),
+        'tpt': dict(target_type='snowflake_scripting', target='RAW_DOCUMENTS.LOAD_DOCUMENTS'),
+    }
+    return [dict(obj, **live_documents[obj['kind']])
+            if obj['subject_area'] == 'documents' and obj['name'] in retained else
+            dict(obj, output_relations=audit_outputs(obj),
                  **({'output_artifacts': audit_artifacts(obj)} if audit_artifacts(obj) else {}))
             if obj['subject_area'] == 'audit' else dict(obj) for obj in objects]
 
@@ -702,7 +710,7 @@ def documents_object_measurements(objects, evidence):
                 item['measurements']['SFX_SPARK.'+name.upper()] = result['measurement']
             for relation,side in result.get('side_outputs',{}).items():
                 item['measurements'][relation] = side['measurement']
-            if name=='file_object_binary_extract' and evidence['spark']['binary_history'].get('passed'):
+            if name=='file_object_binary_extract' and evidence.get('spark', {}).get('binary_history', {}).get('passed'):
                 item['measurements']['SFX_SPARK.'+name.upper()] = evidence['spark']['binary_history']['steps'][-1]['measurement']
             item.update(status=result['status'],reason=result.get('error') or '; '.join(result.get('blockers',[])) or None,
                         group='spark')
@@ -869,7 +877,9 @@ def main():
         readme = args.output.parent / 'README.md'
         if readme.exists():
             text = readme.read_text().split('## Audit parity provenance')[0].split('## DBC parity provenance')[0].split('## Documents parity provenance')[0]
-            readme.write_text(text.rstrip()+'\n\n'+audit_markdown(payload['rows'])+'\n'+dbc_retire.markdown(payload['rows'])+'\n'+markdown(payload['rows'], 'users')+'\n## Documents parity provenance\n\n'+documents_markdown(\n                [row for row in payload['rows'] if row['subject_area'] == 'documents'],\n                payload['summary']['by_subject_area'].get('documents', {})))
+            readme.write_text(text.rstrip()+'\n\n'+audit_markdown(payload['rows'])+'\n'+dbc_retire.markdown(payload['rows'])+'\n'+markdown(payload['rows'], 'users')+'\n## Documents parity provenance\n\n'+documents_markdown(
+                [row for row in payload['rows'] if row['subject_area'] == 'documents'],
+                payload['summary']['by_subject_area'].get('documents', {})))
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
         if before is not None:

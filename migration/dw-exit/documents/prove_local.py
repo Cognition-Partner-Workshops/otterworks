@@ -20,7 +20,7 @@ from bteq import Runner
 from parity.ladder import identifier, local_compare
 from parity.local_billing import lower_statements
 from parity.local_documents import CONVERSIONS, compare, execute, load_landing, merge_pc, render_pc, resultset, storage_statements
-from parity.object_board import source_snapshot
+from parity.object_board import source_snapshot, relation_contract
 from parity.documents_decisions import version_scope
 from warehouse.run_config import RunConfig
 from warehouse.snowpark import m_sfx_doc_share, m_sfx_document
@@ -215,7 +215,7 @@ def prove(pre_path, landing, namespace, day, objects=None):
         blocked = {r for d in pending if d.get('status') != 'approved-pending-confirmation' for r in d['blocks']}
         manifest = yaml.safe_load((CONVERSIONS.parent/'manifest.yaml').read_text())
         object_rows = []
-        for obj in (objects if objects is not None else manifest['objects']):
+        for obj in (objects if objects is not None else relation_contract(manifest['objects'])):
             if obj['subject_area'] != 'documents' or obj['system'] == 'spark':
                 continue
             if obj['target_type'] == 'retire':

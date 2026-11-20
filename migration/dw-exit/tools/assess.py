@@ -340,8 +340,6 @@ def build(root=None):
                 retired.add(node)
         if previous == retired:
             break
-    retained = {'SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG', 'documents_search_index_log'}
-    retired = {node for node in retired if entries[node]['name'] not in retained}
     dependents = sorted(entries[node]['name'] for node in retired if entries[node]['name'] not in dead)
     for node in retired:
         if entries[node]['name'] not in dead:

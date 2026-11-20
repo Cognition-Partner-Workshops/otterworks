@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[3]
 
 def objects():
     manifest = yaml.safe_load((ROOT/'migration/dw-exit/manifest.yaml').read_text())
-    return [obj for obj in manifest['objects'] if obj['subject_area']=='documents']
+    return [obj for obj in board.relation_contract(manifest['objects']) if obj['subject_area']=='documents']
 
 
 @pytest.mark.parametrize('failure', [False, True])
@@ -56,8 +56,13 @@ def test_documents_board_is_reproducible_from_recorded_evidence():
             assert row['retirement']['deletion_approved']
             assert row['retirement']['drop_order'] == ['SFX_DOCUMENTS.V_SEARCH_HISTORY', 'SFX_DOCUMENTS.SEARCH_INDEX_LOG']
         else:
-            assert p['converted'] and row['row_count'] is not None
-            assert row['column_profile'] and row['keyed_row_hash']
+            assert p['converted']
+            if row['row_count'] is None:
+                assert row['name'] in ('SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG', 'documents_search_index_log')
+                assert row['status'] == 'red' and row['reason']
+                assert row['column_profile'] is row['keyed_row_hash'] is None
+            else:
+                assert row['column_profile'] and row['keyed_row_hash']
     staging = next(row for row in rows if row['name']=='SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG')
     assert staging['target_type'] == 'dbt_model' and staging['status'] == 'red'
     assert 'retirement' not in staging
@@ -95,8 +100,8 @@ def test_replay_rejects_missing_or_stale_artifacts(tmp_path,monkeypatch):
     stale = tmp_path/'stale.json'
     stale.write_text(json.dumps(replay))
     with pytest.raises(ValueError,match='Stale'):
-        board.validated_history(stale)
+        board.documents_validated_history(stale)
     replay['passed'] = False
     stale.write_text(json.dumps(replay))
     with pytest.raises(ValueError,match='not passed'):
-        board.validated_history(stale)
+        board.documents_validated_history(stale)
