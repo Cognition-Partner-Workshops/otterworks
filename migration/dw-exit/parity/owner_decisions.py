@@ -29,7 +29,7 @@ SFG1120_DECISIONS = [
          preserve=['Spark PREF_JSON landing feed'],
          new_behaviour='Retire preference table, staging, dbt model and settings view; keep the Spark PREF_JSON landing feed.'),
     dict(decision_id='sfg1120-storage-finance-confirmation', status='approved-pending-confirmation', action='deviation',
-         board_objects=['10_storage_monthly', 'SFX_BILLING.USAGE_DAILY', 'SFX_BILLING.INVOICE_LINE'],
+         board_objects=['SFX_DOCUMENTS.STORAGE_USAGE_DAILY', '10_storage_monthly', 'SFX_BILLING.USAGE_DAILY', 'SFX_BILLING.INVOICE_LINE'],
          confirmation='Pending Finance invoice confirmation',
          new_behaviour='Storage decision amber extends to monthly storage, usage daily and invoice line pending Finance invoice confirmation.'),
 ]

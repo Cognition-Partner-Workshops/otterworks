@@ -3,7 +3,24 @@ import pytest
 
 from parity.documents_decisions import version_scope
 from parity.ladder import local_compare
-from parity.object_board import documents_apply_deviation as apply_deviation
+from parity.object_board import documents_apply_deviation as apply_deviation, documents_apply_storage
+
+
+@pytest.mark.parametrize('populated', [False, True])
+@pytest.mark.parametrize('failed', [False, True])
+def test_storage_amber_spreads_only_from_proven_single_writer(populated, failed):
+    from parity.owner_decisions import decision_registry
+    decision = next(d for d in decision_registry() if d.get('decision_id') == 'documents-storage-finance-confirmation')
+    rows = [dict(name=name, subject_area='billing' if 'SFX_BILLING.' in name else 'documents',
+                 status='red' if 'SFX_BILLING.' in name or failed else 'green') for name in decision['blocks']]
+    measurement = dict(passed=not failed, row_count={'before': int(populated), 'after': int(populated)},
+                       column_profile={}, keyed_row_hash={'difference': 0}, sampled_differences=[])
+    evidence = {'shared_billing_boundary': {name:measurement for name in ('USAGE_DAILY', 'INVOICE_LINE')}}
+    documents_apply_storage(rows, evidence)
+    assert {row['status'] for row in rows} == ({'red'} if failed else {'amber'})
+    if not failed:
+        assert all(row['storage_writer'].endswith('12_storage_monthly.sql:OPS.10_STORAGE_MONTHLY') for row in rows)
+    documents_apply_storage(rows, {}, 'snowflake')
 
 
 @pytest.mark.parametrize('failure',[None,'outside','inside','legacy','empty'])

@@ -1,12 +1,14 @@
 [
   {
-    "object": "SFX_DOCUMENTS.STORAGE_USAGE_DAILY / 05_load_sessions",
+    "decision_id": "documents-storage-finance-confirmation",
+    "object": "SFX_DOCUMENTS.STORAGE_USAGE_DAILY / 10_storage_monthly",
     "old_behaviour": "SET table silently removes exact duplicate rows. Seeded staging has 300 rows, 250 distinct; source has 250. runner.py enforces UNIQUE NULLS NOT DISTINCT plus ON CONFLICT DO NOTHING.",
     "new_behaviour": "SELECT DISTINCT drops exact duplicates to match Teradata SET semantics (300 to 250). Billing and audit consume the deduped core table.",
     "status": "approved-pending-confirmation",
     "confirmation": "Finance still has to confirm the invoice impact.",
-    "board_objects": ["SFX_DOCUMENTS.STORAGE_USAGE_DAILY"],
-    "blocks": ["SFX_DOCUMENTS.STORAGE_USAGE_DAILY", "SFX_DOCUMENTS.M_STORAGE_TOTALS_OUTPUT", "SFX_BILLING.USAGE_DAILY", "SFX_BILLING.INVOICE_LINE"]
+    "board_objects": ["SFX_DOCUMENTS.STORAGE_USAGE_DAILY", "10_storage_monthly", "SFX_BILLING.USAGE_DAILY", "SFX_BILLING.INVOICE_LINE"],
+    "blocks": ["SFX_DOCUMENTS.STORAGE_USAGE_DAILY", "10_storage_monthly", "SFX_BILLING.USAGE_DAILY", "SFX_BILLING.INVOICE_LINE"],
+    "single_writer": "migration/dw-exit/documents/12_storage_monthly.sql:OPS.10_STORAGE_MONTHLY"
   },
   {
     "decision_id": "documents-latest-version",

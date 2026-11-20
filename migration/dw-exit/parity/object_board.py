@@ -319,7 +319,7 @@ def unavailable_cell(reason=None):
 
 def parity_counts(rows):
     return {target: {status: sum(row['targets'][target]['status'] == status for row in rows)
-                     for status in ('green', 'red', 'retired', 'approved_deviation')
+                     for status in ('green', 'red', 'retired', 'approved_deviation', 'amber')
                      if status in ('green','red') or any(row['targets'][target]['status'] == status for row in rows)} for target in TARGETS}
 
 
@@ -439,6 +439,7 @@ def render_readme(board):
     def count_row(label, counts):
         cells = [f"{counts[target]['green']} green / {counts[target]['red']} red" +
                  (f" / {counts[target]['retired']} retired" if counts[target].get('retired') else '') +
+                 (f" / {counts[target]['amber']} amber" if counts[target].get('amber') else '') +
                  (f" / {counts[target]['approved_deviation']} approved_deviation" if counts[target].get('approved_deviation') else '') for target in TARGETS]
         return '| ' + ' | '.join([label, *cells]) + ' |'
 
@@ -548,7 +549,8 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 elif raw and not raw['passed'] and row['status'] == 'green':
                     row.update(status='red', reason='Summary ID deviation lacks valid owner approval')
         row['local_duckdb'] = row['status'] if target == 'duckdb' else 'red'
-    for state in ('red','green','retired','approved_deviation'):
+    documents_apply_storage(result['rows'], documents_evidence, target)
+    for state in ('red','green','retired','approved_deviation','amber'):
         result['summary'][state] = sum(r['status']==state for r in result['rows'])
     result['summary']['measured'] = sum(r['row_count'] is not None for r in result['rows'])
     audit = [r for r in result['rows'] if r['subject_area']=='audit']
@@ -656,6 +658,30 @@ def documents_apply_deviation(item, measurements, decisions):
                     reason='; '.join(dict.fromkeys(pending or [d['new_behaviour'] for d in entries])),
                     owner_decision_evidence=proofs)
     return item
+
+
+def documents_apply_storage(rows, evidence, target='duckdb'):
+    if target != 'duckdb' or not evidence:
+        return
+    decision = next(d for d in decision_registry() if d.get('decision_id') == 'documents-storage-finance-confirmation')
+    if decision['status'] != 'approved-pending-confirmation':
+        return
+    boundary = evidence.get('shared_billing_boundary', {})
+    for row in rows:
+        if row['name'] not in decision['blocks']:
+            continue
+        if row['subject_area'] == 'billing':
+            measurement = boundary.get(row['name'].split('.')[-1])
+            if not measurement or not measurement['passed']:
+                continue
+            row.update(row_count=measurement['row_count'],
+                       **{key:{row['name']:measurement[key]} for key in
+                          ('column_profile','keyed_row_hash','sampled_differences')})
+        elif row['status'] not in ('green', 'approved_deviation', 'amber'):
+            continue
+        row.update(status='amber', local_duckdb='amber', decision_state='approved-pending-confirmation',
+                   reason=decision['confirmation'], owner_decision_evidence=decision,
+                   storage_writer=decision['single_writer'])
 
 
 def documents_object_measurements(objects, evidence):
