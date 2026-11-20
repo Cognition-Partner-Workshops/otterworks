@@ -1,0 +1,15 @@
+name: users/login-activity
+description: Login events and daily user activity (04_load_events, 10_activity_daily, P_ACTIVITY_DAILY, m_SFX_LOGIN_EVENT)
+objects:
+- n42c8c3678ac93f94  # mapping m_SFX_LOGIN_EVENT
+- n6ef643cd421ba7da  # session s_m_SFX_LOGIN_EVENT
+- n9c864a5529054222  # bteq 04_load_events
+- n1b1458f718efb391  # bteq 10_activity_daily
+- n26eb854933fb16a3  # fastload users_login_event
+- nb36b77faa1a490f0  # fastload users_user_activity_daily
+- n18d91c4923da39f4  # procedure SFX_USERS.P_ACTIVITY_DAILY
+- n3e2eb63a0ecb2ec8  # table SFX_USERS.LOGIN_EVENT
+- n209c8bcb96a81a00  # table SFX_USERS.STG_LOGIN_EVENT
+- nfd5485510ca65cd9  # table SFX_USERS.STG_USER_ACTIVITY_DAILY
+- ne229d0f17e598ca1  # table SFX_USERS.USER_ACTIVITY_DAILY
+outputs: {}

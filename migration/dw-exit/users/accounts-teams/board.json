@@ -1,0 +1,2957 @@
+{
+  "waves": {
+    "1": {
+      "total": 12,
+      "by_kind": {
+        "fastload": 5,
+        "mapping": 1,
+        "session": 1,
+        "table": 5
+      },
+      "by_target": {
+        "dbt_model": 7,
+        "snowflake_scripting": 5
+      }
+    },
+    "2": {
+      "total": 13,
+      "by_kind": {
+        "bteq": 2,
+        "mapping": 3,
+        "session": 3,
+        "table": 5
+      },
+      "by_target": {
+        "dbt_model": 10,
+        "snowflake_scripting": 2,
+        "snowpark": 1
+      }
+    },
+    "3": {
+      "total": 1,
+      "by_kind": {
+        "macro": 1
+      },
+      "by_target": {
+        "snowflake_scripting": 1
+      }
+    },
+    "4": {
+      "total": 1,
+      "by_kind": {
+        "view": 1
+      },
+      "by_target": {
+        "compatibility_view": 1
+      }
+    }
+  },
+  "licence_counters": {
+    "teradata_objects": {
+      "remaining": 178,
+      "target": 0
+    },
+    "powercenter_mappings": {
+      "remaining": 20,
+      "target": 0
+    },
+    "powercenter_annual_cost": {
+      "value": 412000,
+      "currency": "USD"
+    },
+    "powercenter_objects": {
+      "remaining": 44,
+      "target": 0
+    },
+    "spark_jobs": {
+      "remaining": 30,
+      "target": 0
+    },
+    "licence_dependencies": {
+      "remaining": 252,
+      "total": 252,
+      "target": 0
+    }
+  },
+  "run_token": "sfx-sfg1120",
+  "target": "duckdb",
+  "rows": [
+    {
+      "id": "n9f9ea7e045525b86",
+      "name": "m_SFX_APP_USER",
+      "kind": "mapping",
+      "wave": 2,
+      "owner": "@otterworks/analytics",
+      "subject_area": "users",
+      "licence_dependency": "powercenter",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 120,
+        "after": 120
+      },
+      "column_profile": {
+        "SFX_USERS.PC_APP_USER": {
+          "before": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.PC_APP_USER": {
+          "keys": [
+            "USER_ID"
+          ],
+          "difference": 0,
+          "before": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "after": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.PC_APP_USER": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n82db93afad5cb04b",
+      "name": "m_SFX_ROLE_GRANT",
+      "kind": "mapping",
+      "wave": 2,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "powercenter",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.PC_ROLE_GRANT": {
+          "before": {
+            "GRANT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "GRANTED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "GRANT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "GRANTED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.PC_ROLE_GRANT": {
+          "keys": [
+            "GRANT_ID"
+          ],
+          "difference": 0,
+          "before": "ee68d3d1417ae8eda4d0a571ad66f38ea52d164ba069b21ec5b0c13f091d951a",
+          "after": "ee68d3d1417ae8eda4d0a571ad66f38ea52d164ba069b21ec5b0c13f091d951a",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.PC_ROLE_GRANT": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n2f5adf79707598c4",
+      "name": "m_SFX_STG_APP_USER",
+      "kind": "mapping",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "powercenter",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 120,
+        "after": 120
+      },
+      "column_profile": {
+        "SFX_USERS.PC_STG_APP_USER": {
+          "before": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE",
+              "max": "ACTIVE",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE",
+              "max": "ACTIVE",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.PC_STG_APP_USER": {
+          "keys": [
+            "USER_ID"
+          ],
+          "difference": 0,
+          "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+          "after": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.PC_STG_APP_USER": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n836f8884b17bb209",
+      "name": "m_SFX_TEAM_MEMBER",
+      "kind": "mapping",
+      "wave": 2,
+      "owner": "@otterworks/analytics",
+      "subject_area": "users",
+      "licence_dependency": "powercenter",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 40,
+        "after": 40
+      },
+      "column_profile": {
+        "SFX_USERS.PC_TEAM_MEMBER": {
+          "before": {
+            "TEAM_MEMBER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "JOINED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "TEAM_MEMBER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "JOINED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.PC_TEAM_MEMBER": {
+          "keys": [
+            "TEAM_MEMBER_ID"
+          ],
+          "difference": 0,
+          "before": "477d542778cff43dec7de66ddca3cc832e0dfee62d0cf29231a42fa04633cf7a",
+          "after": "477d542778cff43dec7de66ddca3cc832e0dfee62d0cf29231a42fa04633cf7a",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.PC_TEAM_MEMBER": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "ne9bc408e114b18b9",
+      "name": "s_m_SFX_APP_USER",
+      "kind": "session",
+      "wave": 2,
+      "owner": "@otterworks/analytics",
+      "subject_area": "users",
+      "licence_dependency": "powercenter",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 120,
+        "after": 120
+      },
+      "column_profile": {
+        "SFX_USERS.PC_APP_USER": {
+          "before": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.PC_APP_USER": {
+          "keys": [
+            "USER_ID"
+          ],
+          "difference": 0,
+          "before": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "after": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.PC_APP_USER": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "neecc7039dfeb4698",
+      "name": "s_m_SFX_ROLE_GRANT",
+      "kind": "session",
+      "wave": 2,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "powercenter",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.PC_ROLE_GRANT": {
+          "before": {
+            "GRANT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "GRANTED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "GRANT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "GRANTED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.PC_ROLE_GRANT": {
+          "keys": [
+            "GRANT_ID"
+          ],
+          "difference": 0,
+          "before": "ee68d3d1417ae8eda4d0a571ad66f38ea52d164ba069b21ec5b0c13f091d951a",
+          "after": "ee68d3d1417ae8eda4d0a571ad66f38ea52d164ba069b21ec5b0c13f091d951a",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.PC_ROLE_GRANT": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n3d22b7a534acc0bb",
+      "name": "s_m_SFX_STG_APP_USER",
+      "kind": "session",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "powercenter",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 120,
+        "after": 120
+      },
+      "column_profile": {
+        "SFX_USERS.PC_STG_APP_USER": {
+          "before": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE",
+              "max": "ACTIVE",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE",
+              "max": "ACTIVE",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.PC_STG_APP_USER": {
+          "keys": [
+            "USER_ID"
+          ],
+          "difference": 0,
+          "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+          "after": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.PC_STG_APP_USER": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n4480339208f0dc43",
+      "name": "s_m_SFX_TEAM_MEMBER",
+      "kind": "session",
+      "wave": 2,
+      "owner": "@otterworks/analytics",
+      "subject_area": "users",
+      "licence_dependency": "powercenter",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 40,
+        "after": 40
+      },
+      "column_profile": {
+        "SFX_USERS.PC_TEAM_MEMBER": {
+          "before": {
+            "TEAM_MEMBER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "JOINED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "TEAM_MEMBER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "JOINED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.PC_TEAM_MEMBER": {
+          "keys": [
+            "TEAM_MEMBER_ID"
+          ],
+          "difference": 0,
+          "before": "477d542778cff43dec7de66ddca3cc832e0dfee62d0cf29231a42fa04633cf7a",
+          "after": "477d542778cff43dec7de66ddca3cc832e0dfee62d0cf29231a42fa04633cf7a",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.PC_TEAM_MEMBER": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nbcf25336ae235f75",
+      "name": "01_load_users",
+      "kind": "bteq",
+      "wave": 2,
+      "owner": "@otterworks/analytics",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 140,
+        "after": 140
+      },
+      "column_profile": {
+        "SFX_USERS.APP_USER": {
+          "before": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        },
+        "SFX_USERS.USER_PROFILE": {
+          "before": {
+            "PROFILE_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "TITLE": {
+              "nulls": 0,
+              "min": "Client Operations Lead",
+              "max": "Records Administrator",
+              "distinct": 5
+            },
+            "COUNTRY_CD": {
+              "nulls": 0,
+              "min": "AU",
+              "max": "US",
+              "distinct": 7
+            },
+            "TIMEZONE": {
+              "nulls": 0,
+              "min": "America/Los_Angeles",
+              "max": "Europe/Paris",
+              "distinct": 7
+            }
+          },
+          "after": {
+            "PROFILE_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "TITLE": {
+              "nulls": 0,
+              "min": "Client Operations Lead",
+              "max": "Records Administrator",
+              "distinct": 5
+            },
+            "COUNTRY_CD": {
+              "nulls": 0,
+              "min": "AU",
+              "max": "US",
+              "distinct": 7
+            },
+            "TIMEZONE": {
+              "nulls": 0,
+              "min": "America/Los_Angeles",
+              "max": "Europe/Paris",
+              "distinct": 7
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.APP_USER": {
+          "keys": [
+            "USER_ID"
+          ],
+          "difference": 0,
+          "before": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "after": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        },
+        "SFX_USERS.USER_PROFILE": {
+          "keys": [
+            "PROFILE_ID"
+          ],
+          "difference": 0,
+          "before": "988a9ebde13cff27501b6557ba98bdd7d9f019868756ac4b3af933576ce72147",
+          "after": "988a9ebde13cff27501b6557ba98bdd7d9f019868756ac4b3af933576ce72147",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.APP_USER": [],
+        "SFX_USERS.USER_PROFILE": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nea506c6f70b8cca9",
+      "name": "02_load_teams",
+      "kind": "bteq",
+      "wave": 2,
+      "owner": "@otterworks/analytics",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 62,
+        "after": 62
+      },
+      "column_profile": {
+        "SFX_USERS.TEAM": {
+          "before": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "OWNER_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "OWNER_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        },
+        "SFX_USERS.TEAM_MEMBER": {
+          "before": {
+            "TEAM_MEMBER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "JOINED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "TEAM_MEMBER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "JOINED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        },
+        "SFX_USERS.ROLE_GRANT": {
+          "before": {
+            "GRANT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "GRANTED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "GRANT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "GRANTED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.TEAM": {
+          "keys": [
+            "TEAM_ID"
+          ],
+          "difference": 0,
+          "before": "31ce4b8bc945a061ddab207b091f3401c1f0a753d8093bc80df84e9d28728dbf",
+          "after": "31ce4b8bc945a061ddab207b091f3401c1f0a753d8093bc80df84e9d28728dbf",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        },
+        "SFX_USERS.TEAM_MEMBER": {
+          "keys": [
+            "TEAM_MEMBER_ID"
+          ],
+          "difference": 0,
+          "before": "477d542778cff43dec7de66ddca3cc832e0dfee62d0cf29231a42fa04633cf7a",
+          "after": "477d542778cff43dec7de66ddca3cc832e0dfee62d0cf29231a42fa04633cf7a",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        },
+        "SFX_USERS.ROLE_GRANT": {
+          "keys": [
+            "GRANT_ID"
+          ],
+          "difference": 0,
+          "before": "ee68d3d1417ae8eda4d0a571ad66f38ea52d164ba069b21ec5b0c13f091d951a",
+          "after": "ee68d3d1417ae8eda4d0a571ad66f38ea52d164ba069b21ec5b0c13f091d951a",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.TEAM": [],
+        "SFX_USERS.TEAM_MEMBER": [],
+        "SFX_USERS.ROLE_GRANT": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n5cfa3c4afcb4b359",
+      "name": "users_app_user",
+      "kind": "fastload",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 120,
+        "after": 120
+      },
+      "column_profile": {
+        "SFX_USERS.STG_APP_USER": {
+          "before": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE",
+              "max": "ACTIVE",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE",
+              "max": "ACTIVE",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_APP_USER": {
+          "keys": [
+            "USER_ID"
+          ],
+          "difference": 0,
+          "before": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+          "after": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_APP_USER": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n9cb752fa5a7e6656",
+      "name": "users_role_grant",
+      "kind": "fastload",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.STG_ROLE_GRANT": {
+          "before": {
+            "GRANT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN",
+              "max": "REVIEWER",
+              "distinct": 4
+            },
+            "GRANTED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "GRANT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN",
+              "max": "REVIEWER",
+              "distinct": 4
+            },
+            "GRANTED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_ROLE_GRANT": {
+          "keys": [
+            "GRANT_ID"
+          ],
+          "difference": 0,
+          "before": "4ac5b36f4bcacb5655a018c16110e78941a659f9e31f80d20645e4de0a99534d",
+          "after": "4ac5b36f4bcacb5655a018c16110e78941a659f9e31f80d20645e4de0a99534d",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_ROLE_GRANT": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nacba7b3de7583ddb",
+      "name": "users_team",
+      "kind": "fastload",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 2,
+        "after": 2
+      },
+      "column_profile": {
+        "SFX_USERS.STG_TEAM": {
+          "before": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "OWNER_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "OWNER_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_TEAM": {
+          "keys": [
+            "TEAM_ID"
+          ],
+          "difference": 0,
+          "before": "31ce4b8bc945a061ddab207b091f3401c1f0a753d8093bc80df84e9d28728dbf",
+          "after": "31ce4b8bc945a061ddab207b091f3401c1f0a753d8093bc80df84e9d28728dbf",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_TEAM": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n58dfe8d308715b9f",
+      "name": "users_team_member",
+      "kind": "fastload",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 40,
+        "after": 40
+      },
+      "column_profile": {
+        "SFX_USERS.STG_TEAM_MEMBER": {
+          "before": {
+            "TEAM_MEMBER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN",
+              "max": "REVIEWER",
+              "distinct": 4
+            },
+            "JOINED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "TEAM_MEMBER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN",
+              "max": "REVIEWER",
+              "distinct": 4
+            },
+            "JOINED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_TEAM_MEMBER": {
+          "keys": [
+            "TEAM_MEMBER_ID"
+          ],
+          "difference": 0,
+          "before": "ce967aaa4e33563df55f1e8e90c3486e81e7b8016726505c82c2b4f042468d14",
+          "after": "ce967aaa4e33563df55f1e8e90c3486e81e7b8016726505c82c2b4f042468d14",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_TEAM_MEMBER": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n877eaed6968f6f98",
+      "name": "users_user_profile",
+      "kind": "fastload",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.STG_USER_PROFILE": {
+          "before": {
+            "PROFILE_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "TITLE": {
+              "nulls": 0,
+              "min": "Client Operations Lead",
+              "max": "Records Administrator",
+              "distinct": 5
+            },
+            "COUNTRY_CD": {
+              "nulls": 0,
+              "min": "AU",
+              "max": "US",
+              "distinct": 7
+            },
+            "TIMEZONE": {
+              "nulls": 0,
+              "min": "America/Los_Angeles",
+              "max": "Europe/Paris",
+              "distinct": 7
+            }
+          },
+          "after": {
+            "PROFILE_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "TITLE": {
+              "nulls": 0,
+              "min": "Client Operations Lead",
+              "max": "Records Administrator",
+              "distinct": 5
+            },
+            "COUNTRY_CD": {
+              "nulls": 0,
+              "min": "AU",
+              "max": "US",
+              "distinct": 7
+            },
+            "TIMEZONE": {
+              "nulls": 0,
+              "min": "America/Los_Angeles",
+              "max": "Europe/Paris",
+              "distinct": 7
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_USER_PROFILE": {
+          "keys": [
+            "PROFILE_ID"
+          ],
+          "difference": 0,
+          "before": "988a9ebde13cff27501b6557ba98bdd7d9f019868756ac4b3af933576ce72147",
+          "after": "988a9ebde13cff27501b6557ba98bdd7d9f019868756ac4b3af933576ce72147",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_USER_PROFILE": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nb5c179d7a1d96e03",
+      "name": "SFX_USERS.M_TEAM_COUNTS",
+      "kind": "macro",
+      "wave": 3,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 2,
+        "after": 2
+      },
+      "column_profile": {
+        "SFX_USERS.V_M_TEAM_COUNTS_RESULT": {
+          "before": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "MEMBER_COUNT": {
+              "nulls": 0,
+              "min": 20,
+              "max": 20,
+              "distinct": 1
+            }
+          },
+          "after": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "MEMBER_COUNT": {
+              "nulls": 0,
+              "min": 20,
+              "max": 20,
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.V_M_TEAM_COUNTS_RESULT": {
+          "keys": [
+            "TEAM_ID"
+          ],
+          "difference": 0,
+          "before": "6dfec47f4e3a7a24e22af0d1a7967e86b5085210eef71ca7d4776b0b5c0fe4da",
+          "after": "6dfec47f4e3a7a24e22af0d1a7967e86b5085210eef71ca7d4776b0b5c0fe4da",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.V_M_TEAM_COUNTS_RESULT": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n97b11eada9b5eb49",
+      "name": "SFX_USERS.APP_USER",
+      "kind": "table",
+      "wave": 2,
+      "owner": "@otterworks/analytics",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 120,
+        "after": 120
+      },
+      "column_profile": {
+        "SFX_USERS.APP_USER": {
+          "before": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.APP_USER": {
+          "keys": [
+            "USER_ID"
+          ],
+          "difference": 0,
+          "before": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "after": "c8d1596c98975db7d4935f10aa2d044dd14100f415d5a8150a063c2d3ea90b3c",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.APP_USER": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nfd3d4e92dd494560",
+      "name": "SFX_USERS.ROLE_GRANT",
+      "kind": "table",
+      "wave": 2,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.ROLE_GRANT": {
+          "before": {
+            "GRANT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "GRANTED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "GRANT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "GRANTED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.ROLE_GRANT": {
+          "keys": [
+            "GRANT_ID"
+          ],
+          "difference": 0,
+          "before": "ee68d3d1417ae8eda4d0a571ad66f38ea52d164ba069b21ec5b0c13f091d951a",
+          "after": "ee68d3d1417ae8eda4d0a571ad66f38ea52d164ba069b21ec5b0c13f091d951a",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.ROLE_GRANT": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n51b482910361c150",
+      "name": "SFX_USERS.STG_APP_USER",
+      "kind": "table",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 120,
+        "after": 120
+      },
+      "column_profile": {
+        "SFX_USERS.STG_APP_USER": {
+          "before": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE",
+              "max": "ACTIVE",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 9000000100,
+              "distinct": 120
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Briarlund - Senior Workspace Operations and Records Governance Coordinator",
+              "max": "Tomas Wrenwell",
+              "distinct": 116
+            },
+            "EMAIL": {
+              "nulls": 0,
+              "min": "amara.briarlund.9000000074@northwood.example",
+              "max": "tomas.wrenwell.6@meadowridge.example",
+              "distinct": 120
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE",
+              "max": "ACTIVE",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_APP_USER": {
+          "keys": [
+            "USER_ID"
+          ],
+          "difference": 0,
+          "before": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+          "after": "6f89cf2af26ddc81f2b5fa2ef717da120339a7a15b35e550c3abc04e57691ec7",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_APP_USER": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nc317b0fdeb9af6bf",
+      "name": "SFX_USERS.STG_ROLE_GRANT",
+      "kind": "table",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.STG_ROLE_GRANT": {
+          "before": {
+            "GRANT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN",
+              "max": "REVIEWER",
+              "distinct": 4
+            },
+            "GRANTED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "GRANT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN",
+              "max": "REVIEWER",
+              "distinct": 4
+            },
+            "GRANTED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_ROLE_GRANT": {
+          "keys": [
+            "GRANT_ID"
+          ],
+          "difference": 0,
+          "before": "4ac5b36f4bcacb5655a018c16110e78941a659f9e31f80d20645e4de0a99534d",
+          "after": "4ac5b36f4bcacb5655a018c16110e78941a659f9e31f80d20645e4de0a99534d",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_ROLE_GRANT": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nbf90b4a7bc90d9af",
+      "name": "SFX_USERS.STG_TEAM",
+      "kind": "table",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 2,
+        "after": 2
+      },
+      "column_profile": {
+        "SFX_USERS.STG_TEAM": {
+          "before": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "OWNER_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "OWNER_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_TEAM": {
+          "keys": [
+            "TEAM_ID"
+          ],
+          "difference": 0,
+          "before": "31ce4b8bc945a061ddab207b091f3401c1f0a753d8093bc80df84e9d28728dbf",
+          "after": "31ce4b8bc945a061ddab207b091f3401c1f0a753d8093bc80df84e9d28728dbf",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_TEAM": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n04d52ed873e0b510",
+      "name": "SFX_USERS.STG_TEAM_MEMBER",
+      "kind": "table",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 40,
+        "after": 40
+      },
+      "column_profile": {
+        "SFX_USERS.STG_TEAM_MEMBER": {
+          "before": {
+            "TEAM_MEMBER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN",
+              "max": "REVIEWER",
+              "distinct": 4
+            },
+            "JOINED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "TEAM_MEMBER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN",
+              "max": "REVIEWER",
+              "distinct": 4
+            },
+            "JOINED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_TEAM_MEMBER": {
+          "keys": [
+            "TEAM_MEMBER_ID"
+          ],
+          "difference": 0,
+          "before": "ce967aaa4e33563df55f1e8e90c3486e81e7b8016726505c82c2b4f042468d14",
+          "after": "ce967aaa4e33563df55f1e8e90c3486e81e7b8016726505c82c2b4f042468d14",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_TEAM_MEMBER": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n533cd80b40ebc9c5",
+      "name": "SFX_USERS.STG_USER_PROFILE",
+      "kind": "table",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.STG_USER_PROFILE": {
+          "before": {
+            "PROFILE_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "TITLE": {
+              "nulls": 0,
+              "min": "Client Operations Lead",
+              "max": "Records Administrator",
+              "distinct": 5
+            },
+            "COUNTRY_CD": {
+              "nulls": 0,
+              "min": "AU",
+              "max": "US",
+              "distinct": 7
+            },
+            "TIMEZONE": {
+              "nulls": 0,
+              "min": "America/Los_Angeles",
+              "max": "Europe/Paris",
+              "distinct": 7
+            }
+          },
+          "after": {
+            "PROFILE_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "TITLE": {
+              "nulls": 0,
+              "min": "Client Operations Lead",
+              "max": "Records Administrator",
+              "distinct": 5
+            },
+            "COUNTRY_CD": {
+              "nulls": 0,
+              "min": "AU",
+              "max": "US",
+              "distinct": 7
+            },
+            "TIMEZONE": {
+              "nulls": 0,
+              "min": "America/Los_Angeles",
+              "max": "Europe/Paris",
+              "distinct": 7
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_USER_PROFILE": {
+          "keys": [
+            "PROFILE_ID"
+          ],
+          "difference": 0,
+          "before": "988a9ebde13cff27501b6557ba98bdd7d9f019868756ac4b3af933576ce72147",
+          "after": "988a9ebde13cff27501b6557ba98bdd7d9f019868756ac4b3af933576ce72147",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_USER_PROFILE": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n6d2da1bd427f0dda",
+      "name": "SFX_USERS.TEAM",
+      "kind": "table",
+      "wave": 2,
+      "owner": "@otterworks/analytics",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 2,
+        "after": 2
+      },
+      "column_profile": {
+        "SFX_USERS.TEAM": {
+          "before": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "OWNER_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "OWNER_USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.TEAM": {
+          "keys": [
+            "TEAM_ID"
+          ],
+          "difference": 0,
+          "before": "31ce4b8bc945a061ddab207b091f3401c1f0a753d8093bc80df84e9d28728dbf",
+          "after": "31ce4b8bc945a061ddab207b091f3401c1f0a753d8093bc80df84e9d28728dbf",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.TEAM": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n2cfe39f5df4a12c6",
+      "name": "SFX_USERS.TEAM_MEMBER",
+      "kind": "table",
+      "wave": 2,
+      "owner": "@otterworks/analytics",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 40,
+        "after": 40
+      },
+      "column_profile": {
+        "SFX_USERS.TEAM_MEMBER": {
+          "before": {
+            "TEAM_MEMBER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "JOINED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "TEAM_MEMBER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ROLE_CD": {
+              "nulls": 0,
+              "min": "ADMIN       ",
+              "max": "REVIEWER    ",
+              "distinct": 4
+            },
+            "JOINED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.TEAM_MEMBER": {
+          "keys": [
+            "TEAM_MEMBER_ID"
+          ],
+          "difference": 0,
+          "before": "477d542778cff43dec7de66ddca3cc832e0dfee62d0cf29231a42fa04633cf7a",
+          "after": "477d542778cff43dec7de66ddca3cc832e0dfee62d0cf29231a42fa04633cf7a",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.TEAM_MEMBER": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n00ae1e0d0a7ece39",
+      "name": "SFX_USERS.USER_PROFILE",
+      "kind": "table",
+      "wave": 2,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.USER_PROFILE": {
+          "before": {
+            "PROFILE_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "TITLE": {
+              "nulls": 0,
+              "min": "Client Operations Lead",
+              "max": "Records Administrator",
+              "distinct": 5
+            },
+            "COUNTRY_CD": {
+              "nulls": 0,
+              "min": "AU",
+              "max": "US",
+              "distinct": 7
+            },
+            "TIMEZONE": {
+              "nulls": 0,
+              "min": "America/Los_Angeles",
+              "max": "Europe/Paris",
+              "distinct": 7
+            }
+          },
+          "after": {
+            "PROFILE_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "TITLE": {
+              "nulls": 0,
+              "min": "Client Operations Lead",
+              "max": "Records Administrator",
+              "distinct": 5
+            },
+            "COUNTRY_CD": {
+              "nulls": 0,
+              "min": "AU",
+              "max": "US",
+              "distinct": 7
+            },
+            "TIMEZONE": {
+              "nulls": 0,
+              "min": "America/Los_Angeles",
+              "max": "Europe/Paris",
+              "distinct": 7
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.USER_PROFILE": {
+          "keys": [
+            "PROFILE_ID"
+          ],
+          "difference": 0,
+          "before": "988a9ebde13cff27501b6557ba98bdd7d9f019868756ac4b3af933576ce72147",
+          "after": "988a9ebde13cff27501b6557ba98bdd7d9f019868756ac4b3af933576ce72147",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.USER_PROFILE": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "na5e973edf6219785",
+      "name": "SFX_USERS.V_TEAM_MEMBERS",
+      "kind": "view",
+      "wave": 4,
+      "owner": "@otterworks/analytics",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 40,
+        "after": 40
+      },
+      "column_profile": {
+        "SFX_USERS.V_TEAM_MEMBERS": {
+          "before": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Merrvik",
+              "max": "Tomas Wrenwell",
+              "distinct": 20
+            }
+          },
+          "after": {
+            "TEAM_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 2,
+              "distinct": 2
+            },
+            "TEAM_NAME": {
+              "nulls": 0,
+              "min": "Legal and Compliance",
+              "max": "Legal and Compliance",
+              "distinct": 1
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "DISPLAY_NAME": {
+              "nulls": 0,
+              "min": "Amara Merrvik",
+              "max": "Tomas Wrenwell",
+              "distinct": 20
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.V_TEAM_MEMBERS": {
+          "keys": [
+            "TEAM_ID"
+          ],
+          "difference": 0,
+          "before": "7154efcf5249211a5384258a6b3e1ba7c0f8d54e806d27e434e8bbf28eb4366d",
+          "after": "7154efcf5249211a5384258a6b3e1ba7c0f8d54e806d27e434e8bbf28eb4366d",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.V_TEAM_MEMBERS": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    }
+  ],
+  "group": "users/accounts-teams",
+  "measurement_contract": {
+    "source": "PostgreSQL Teradata emulator snapshot",
+    "local_target": "DuckDB",
+    "conversions": [
+      "users/accounts-teams/10_load.sql",
+      "users/accounts-teams/30_views.sql"
+    ],
+    "non_relational_objects": "declared output relations",
+    "migration_state": "BEFORE"
+  },
+  "summary": {
+    "rows": 27,
+    "red": 0,
+    "green": 27,
+    "measured": 27,
+    "migrated": 0,
+    "licence_remaining": 27,
+    "licence_total": 27,
+    "licence_by_system": {
+      "powercenter": 8,
+      "teradata": 19
+    }
+  }
+}
