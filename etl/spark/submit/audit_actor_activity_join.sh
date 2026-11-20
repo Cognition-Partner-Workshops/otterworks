@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e
-export TD_JDBC_PASSWORD="${TD_JDBC_PASSWORD:?TD_JDBC_PASSWORD is required}"
+: "${TD_JDBC_PASSWORD:?TD_JDBC_PASSWORD is required}"
+export TD_JDBC_PASSWORD
 /opt/spark/bin/spark-submit \
   --master spark://spark-master:7077 --deploy-mode client \
   --executor-memory 640m --executor-cores 2 --total-executor-cores 4 --conf spark.sql.shuffle.partitions=4 --conf spark.sql.autoBroadcastJoinThreshold=-1 --conf spark.sql.adaptive.enabled=false --conf spark.task.maxFailures=8 --conf spark.memory.fraction=0.094 --conf spark.shuffle.spill.numElementsForceSpillThreshold=4096 \

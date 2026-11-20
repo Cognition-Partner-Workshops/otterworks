@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e
-export TD_JDBC_PASSWORD="${TD_JDBC_PASSWORD:?TD_JDBC_PASSWORD is required}"
+: "${TD_JDBC_PASSWORD:?TD_JDBC_PASSWORD is required}"
+export TD_JDBC_PASSWORD
 /opt/spark/bin/spark-submit \
   --master spark://spark-master:7077 --deploy-mode client \
   --executor-memory 850m --executor-cores 1 --num-executors 2 --conf spark.python.worker.memory=128m \
