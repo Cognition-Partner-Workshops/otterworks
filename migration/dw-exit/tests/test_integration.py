@@ -5,16 +5,18 @@ from parity.ladder import local_compare
 from parity import object_board as board
 
 
-@pytest.mark.parametrize('old,new,passed,pending', [
-    ([], [], True, False),
-    (['x'], ['x'], True, False),
-    (['x '], ['x'], False, True),
-    (['x '], ['y'], False, False),
-    (['x ', 'x '], ['x'], False, False),
+@pytest.mark.parametrize('old,new,passed', [
+    ([], [], True),
+    (['x'], ['x'], True),
+    (['x '], ['x'], True),
+    (['x '], ['y'], False),
+    (['x ', 'x '], ['x'], False),
+    ([None], [None], True),
 ])
-def test_char_padding_is_strict(monkeypatch, old, new, passed, pending):
+@pytest.mark.parametrize('declared_char', [True, False])
+def test_owner_char_padding_only(monkeypatch, old, new, passed, declared_char):
     from parity import ladder
-    monkeypatch.setattr(ladder, 'char_columns', lambda source: ['VALUE'])
+    monkeypatch.setattr(ladder, 'char_columns', lambda source: ['VALUE'] if declared_char else [])
     with duckdb.connect() as before, duckdb.connect() as after:
         for db, schema, values in ((before, 'SFX_AUDIT', old), (after, 'AUDIT', new)):
             db.execute('CREATE SCHEMA '+schema)
@@ -22,18 +24,37 @@ def test_char_padding_is_strict(monkeypatch, old, new, passed, pending):
             for value in values:
                 db.execute('INSERT INTO '+schema+'.T VALUES (1, ?)', [value])
         result = local_compare(before, after, 'SFX_AUDIT.T', 'AUDIT.T')
-        assert result['passed'] is passed
-        assert ('pending owner decision' in result.get('reason', '')) is pending
-        assert result['comparison_rules']['trailing_pad_insensitive'] == []
-        if pending:
+        expected = passed if declared_char else old == new
+        assert result['passed'] is expected
+        assert result['comparison_rules']['trailing_pad_insensitive'] == (['VALUE'] if declared_char else [])
+        if old == ['x '] and new == ['x']:
+            assert not local_compare(before, after, 'SFX_AUDIT.T', 'AUDIT.T', approved_decisions=False)['passed']
             monkeypatch.setattr(board, 'relation_contract', lambda objects: objects)
             obj = dict(id='char', name='char', kind='table', wave=1, owner='owner',
                        subject_area='audit', system='teradata', licence_dependency='teradata',
                        target_type='table', output_relations=['SFX_AUDIT.T'])
             row = board.build_board({'objects': [obj]}, audit_before=before,
                                     audit_after=after, audit_available={'AUDIT.T'})['rows'][0]
-            assert row['status'] == 'red'
-            assert row['reason'] == result['reason']
+            assert row['status'] == ('green' if expected else 'red')
+            assert row['snowflake'] == 'red'
+
+
+def test_owner_registry_preserves_all_decisions():
+    import yaml
+    from parity.owner_decisions import decision_registry, SFG1120_DECISIONS
+    registry = decision_registry()
+    assert len(SFG1120_DECISIONS) == 6
+    manifest = yaml.safe_load((board.ROOT / 'migration/dw-exit/manifest.yaml').read_text())
+    names = {obj['name'] for obj in manifest['objects']}
+    assert all(name in names for decision in SFG1120_DECISIONS for name in decision.get('board_objects', []))
+    assert all(d in registry for d in SFG1120_DECISIONS)
+    assert any(d['decision_id'] == 'audit-archive-retirement' for d in registry)
+    assert any(d['decision_id'] == 'dbc-missing-query-log-fields' for d in registry)
+    retirement = next(d for d in registry if d['decision_id'] == 'sfg1120-search-history-retirement')
+    assert retirement['drop_order'] == ['SFX_DOCUMENTS.V_SEARCH_HISTORY', 'SFX_DOCUMENTS.SEARCH_INDEX_LOG']
+    assert next(d for d in registry if d['decision_id'] == 'sfg1120-storage-finance-confirmation')['status'] == 'approved-pending-confirmation'
+    payload = board.build_board({'objects': []})
+    assert payload['owner_decisions'] == registry
 
 
 @pytest.mark.parametrize('area', ['billing', 'documents', 'users', 'content'])

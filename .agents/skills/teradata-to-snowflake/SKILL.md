@@ -62,6 +62,14 @@ credentials; it is not needed for local DuckDB checks.
 
 ## Conversion rules
 
+- sfg1120 owner: parity ignores trailing ASCII blanks only on DDL-declared CHAR columns; VARCHAR stays exact (`sfg1120-char-trailing-padding`).
+- sfg1120 owner: LOGIN_EVENT keeps every row (BTEQ semantics); retire the PowerCenter router drop.
+- sfg1120 owner: retain STG_SEARCH_INDEX_LOG and documents_search_index_log until Finance agrees an alternative.
+- sfg1120 owner: retire V_SEARCH_HISTORY and SEARCH_INDEX_LOG together, dropping the view before the table.
+- sfg1120 owner: retire USER_PREF, STG_USER_PREF, users_user_pref and V_USER_SETTINGS; preserve the Spark PREF_JSON landing feed.
+- sfg1120 owner: storage amber extends to 10_storage_monthly, SFX_BILLING.USAGE_DAILY and SFX_BILLING.INVOICE_LINE pending Finance invoice confirmation.
+- These decisions are registered in `parity/owner_decisions.py`; held-back area overrides remain authoritative until each area's engineering fixes land. Board generation never performs physical drops.
+
 - DBQL TablesV includes M/P catalog rows and last-access timestamps / ACCOUNT_USAGE differs / owner approved only M/P catalog omissions and last-access timestamp differences; retained T/V rows and access counts must match / `dbc/decisions.json`, `parity/dbc_retire.py`.
 - DBQL records process, client, CPU, IO and collection metadata / QUERY_HISTORY cannot project equivalent values / owner approved missing CPU/IO/client-id/ProcID as NULL and collection/access timestamp differences; compare every retained field and multiplicity through the generic deviation gate; StatementGroup is NOT approved and keeps query-log views red; QUERY_TAG as AppID remains a local assumption / `dbc/decisions.json`, `dbc/README.md`, `parity/owner_decisions.py`, `parity/dbc_retire.py`.
 - DBQL ObjectUsage includes writes and executes / ACCESS_HISTORY lacks M/P EXECUTE attribution / owner approved only missing rows satisfying EXECUTE AND M/P; retain READ/WRITE and non-M/P EXECUTE rows, never filter target extras / `dbc/decisions.json`, `dbc/10_account_usage.sql`, `parity/dbc_retire.py`.

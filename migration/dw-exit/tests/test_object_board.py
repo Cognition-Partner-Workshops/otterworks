@@ -220,3 +220,18 @@ def test_audit_summary_approval_is_scoped_and_preserves_raw(monkeypatch, approve
     assert result['status'] == expected
     assert result['raw_summary_measurement']['keyed_row_hash']['difference'] == 2
     assert result['keyed_row_hash']['SFX_AUDIT.AUDIT_DAILY_SUMMARY']['difference'] == 0
+
+
+def test_audit_workflow_preserves_non_summary_failure_reason(monkeypatch):
+    monkeypatch.setattr(board, 'relation_contract', lambda objects: objects)
+    record = obj(subject_area='audit', name='wf_SFX_AUDIT_DAILY',
+                 output_relations=['SFX_AUDIT.AUDIT_DAILY_SUMMARY', 'SFX_AUDIT.AUDIT_EVENT'])
+    measured = dict(passed=False, row_count={'before': 1, 'after': 1},
+                    column_profile={}, keyed_row_hash={}, sampled_differences=[], comparison_rules={})
+    summary = dict(measured, passed=True)
+    event = dict(measured, reason='event payload mismatch')
+    row = board.build_board({'objects': [record]}, audit_pc_results={
+        'measurements': {'SFX_AUDIT.AUDIT_DAILY_SUMMARY': summary, 'SFX_AUDIT.AUDIT_EVENT': event},
+        'raw_summary_measurement': measured, 'summary_non_identity_multiset_matches': True})['rows'][0]
+    assert row['status'] == 'red'
+    assert row['reason'] == 'event payload mismatch'

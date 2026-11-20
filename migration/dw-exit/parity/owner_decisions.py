@@ -10,6 +10,40 @@ from functools import lru_cache
 
 ROOT = Path(__file__).resolve().parents[3]
 
+SFG1120_DECISIONS = [
+    dict(decision_id='sfg1120-char-trailing-padding', status='approved', action='comparison',
+         new_behaviour='Ignore trailing ASCII blanks on DDL-declared CHAR columns only in parity; VARCHAR remains exact.'),
+    dict(decision_id='sfg1120-login-event-keep-all', status='approved', action='retain',
+         board_objects=['SFX_USERS.LOGIN_EVENT', 'm_SFX_LOGIN_EVENT', 's_m_SFX_LOGIN_EVENT'],
+         new_behaviour='Keep every LOGIN_EVENT row using BTEQ semantics; retire the PowerCenter router drop.'),
+    dict(decision_id='sfg1120-search-staging-retained', status='approved', action='retain',
+         board_objects=['SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG', 'documents_search_index_log'],
+         new_behaviour='Keep staging and dbt model until Finance agrees an alternative.'),
+    dict(decision_id='sfg1120-search-history-retirement', status='approved', action='retire',
+         board_objects=['SFX_DOCUMENTS.V_SEARCH_HISTORY', 'SFX_DOCUMENTS.SEARCH_INDEX_LOG'],
+         drop_order=['SFX_DOCUMENTS.V_SEARCH_HISTORY', 'SFX_DOCUMENTS.SEARCH_INDEX_LOG'],
+         new_behaviour='Retire search history view and table together; drop view before table.'),
+    dict(decision_id='sfg1120-user-pref-retirement', status='approved', action='retire',
+         board_objects=['SFX_USERS.USER_PREF', 'SFX_USERS.STG_USER_PREF', 'users_user_pref', 'SFX_USERS.V_USER_SETTINGS'],
+         preserve=['Spark PREF_JSON landing feed'],
+         new_behaviour='Retire preference table, staging, dbt model and settings view; keep the Spark PREF_JSON landing feed.'),
+    dict(decision_id='sfg1120-storage-finance-confirmation', status='approved-pending-confirmation', action='deviation',
+         board_objects=['10_storage_monthly', 'SFX_BILLING.USAGE_DAILY', 'SFX_BILLING.INVOICE_LINE'],
+         confirmation='Pending Finance invoice confirmation',
+         new_behaviour='Storage decision amber extends to monthly storage, usage daily and invoice line pending Finance invoice confirmation.'),
+]
+
+
+def decision_registry():
+    return [*json.loads((ROOT/'migration/dw-exit/audit/decisions.json').read_text()),
+            *json.loads((ROOT/'migration/dw-exit/dbc/decisions.json').read_text()),
+            *SFG1120_DECISIONS]
+
+
+def approved_char_padding():
+    return next(decision for decision in SFG1120_DECISIONS
+                if decision['decision_id'] == 'sfg1120-char-trailing-padding')['status'] == 'approved'
+
 
 def approved_retirements():
     return [decision for decision in json.loads((ROOT/'migration/dw-exit/audit/decisions.json').read_text())

@@ -11,6 +11,7 @@ import json
 import re
 from pathlib import Path
 
+from . import owner_decisions
 from .connection import connect
 from .semantics import char_columns
 
@@ -19,7 +20,7 @@ def canonical(value):
     return json.dumps(value, default=str, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
 
 
-def local_measure(connection, name):
+def local_measure(connection, name, trim_columns=()):
     schema, table = name.split('.')
     source = identifier(schema)+'.'+identifier(table)
     # Relation components are identifier-validated and quoted; SQL contains no row values.
@@ -27,6 +28,8 @@ def local_measure(connection, name):
     cursor = connection.execute('SELECT * FROM '+source)
     names = [c[0] for c in cursor.description]
     expressions = [identifier(c) for c in names]
+    expressions = ['RTRIM(' + expression + ", ' ')" if name in trim_columns else expression
+                   for name, expression in zip(names, expressions)]
     expressions = [expression+' COLLATE "binary"' if str(info[1]) == 'VARCHAR' else expression
                    for expression, info in zip(expressions, cursor.description)]
     # Expressions contain only validated identifiers and a fixed binary collation.
@@ -42,8 +45,9 @@ def local_measure(connection, name):
 
 
 def local_compare(before, after, source, target, sample_size=5, keys=None, approved_decisions=True):
-    bcols, brows, bp = local_measure(before, source)
-    acols, arows, ap = local_measure(after, target)
+    padded = char_columns(source) if approved_decisions and owner_decisions.approved_char_padding() else []
+    bcols, brows, bp = local_measure(before, source, padded)
+    acols, arows, ap = local_measure(after, target, padded)
     if not bcols or bcols != acols:
         raise ValueError('Output column names/order differ')
     declared_keys = keys is not None
@@ -65,20 +69,15 @@ def local_compare(before, after, source, target, sample_size=5, keys=None, appro
                         'before': sorted((r for r in brows if row_key(r) == key), key=canonical)[:sample_size],
                         'after': sorted((r for r in arows if row_key(r) == key), key=canonical)[:sample_size]})
     result = {'row_count': {'before': len(brows), 'after': len(arows)},
-            'comparison_rules': {'trailing_pad_insensitive': [], 'pending_char_trailing_pad_decision': True, 'other_columns': 'exact'},
+            'comparison_rules': {'trailing_pad_insensitive': padded,
+                                 'owner_decision': 'sfg1120-char-trailing-padding' if padded else None,
+                                 'other_columns': 'exact'},
             'column_profile': {'before': bp, 'after': ap},
             'keyed_row_hash': {'keys': keys, 'difference': sum(delta.values()),
                                'before': checksum(bh), 'after': checksum(ah),
                                'key_policy': 'contract keys; full-row digest preserves multiplicity' if declared_keys else 'first declared column; full-row digest preserves multiplicity'},
             'sampled_differences': samples,
             'passed': len(brows) == len(arows) and canonical(bp) == canonical(ap) and not delta}
-    if not result['passed']:
-        padded = set(char_columns(source))
-        def diagnostic(rows):
-            return Counter(canonical(tuple(value.rstrip(' ') if column in padded and isinstance(value, str)
-                                           else value for column, value in zip(bcols, row))) for row in rows)
-        if padded and diagnostic(brows) == diagnostic(arows):
-            result['reason'] = 'pending owner decision: CHAR(n) trailing-pad comparison'
     return result
 
 

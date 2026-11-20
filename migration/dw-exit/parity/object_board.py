@@ -24,10 +24,11 @@ from assess import board as wave_board
 from parity import dbc_retire, local_audit, powercenter_audit, spark_audit
 from parity.ladder import local_compare
 from parity.provenance import provenance, audit_markdown
-from parity.owner_decisions import approved_retirements, approved_summary_ids, apply_retirement
+from parity.owner_decisions import approved_retirements, approved_summary_ids, apply_retirement, decision_registry
 from audit_outputs import outputs as audit_outputs, artifacts as audit_artifacts
 
 SNOWFLAKE_REASON = 'Snowflake login down for run sfg1120; no live capture/prove'
+HELD_BACK_AREAS = frozenset(('billing', 'documents', 'users', 'content'))
 
 
 def relation_contract(objects):
@@ -249,7 +250,7 @@ def base_build_board(manifest, before=None, after=None, available=None, errors=N
                 if row['status'] == 'red':
                     row['reason'] = 'measured parity mismatch'
         row.update(snowflake='red', snowflake_reason=SNOWFLAKE_REASON)
-        if obj['subject_area'] in ('billing', 'documents', 'users', 'content'):
+        if obj['subject_area'] in HELD_BACK_AREAS:
             row.update(status='red', local_duckdb='red',
                        reason='held back at combine pending fixes/owner decisions')
         result['rows'].append(row)
@@ -268,6 +269,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 counters=None, audit_before=None, audit_after=None, audit_available=None,
                 audit_errors=None, audit_pc_results=None):
     result = base_build_board(manifest, before, after, available, errors, target, counters)
+    result['owner_decisions'] = decision_registry()
     contracts = {o['id']:o for o in relation_contract(manifest['objects'])}
     decisions = approved_retirements()
     for row in result['rows']:
@@ -320,7 +322,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                                owner_decision_evidence={'decision_id':'audit-summary-stable-ids',
                                    'contract':audit_pc_results['summary_id_contract'],
                                    'non_identity_multiset_matches':audit_pc_results['summary_non_identity_multiset_matches']})
-                elif raw and not raw['passed']:
+                elif raw and not raw['passed'] and row['status'] == 'green':
                     row.update(status='red', reason='Summary ID deviation lacks valid owner approval')
         row['local_duckdb'] = row['status'] if target == 'duckdb' else 'red'
     for state in ('red','green','retired','approved_deviation'):
