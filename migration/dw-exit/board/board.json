@@ -216,17 +216,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 0,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -238,17 +233,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 0,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "n6aaec9f5432be4e3",
@@ -4110,17 +4100,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 0,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -4132,17 +4117,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 0,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "n4752fbb3cc9908e1",
@@ -16990,17 +16970,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 2,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -17012,17 +16987,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 2,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "n3a3914073bbdc5a1",
@@ -17037,17 +17007,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 2,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -17059,17 +17024,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 2,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "nead75e45ecc6b8c1",
@@ -17084,17 +17044,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 2,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -17106,17 +17061,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 2,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "nb66dbaba0e618e92",
@@ -17131,17 +17081,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 1,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -17153,17 +17098,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 1,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "n86d47bca6ce013e3",
@@ -17178,17 +17118,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 1,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -17200,17 +17135,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 1,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "nf8cc8d95c6ba4dcd",
@@ -17225,17 +17155,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 1,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -17247,17 +17172,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 1,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "nee272b6a4740c39c",
@@ -20687,17 +20607,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 0,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -20709,17 +20624,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 0,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "n877eaed6968f6f98",
@@ -20807,18 +20717,13 @@
       "licence_dependency_count": 1,
       "targets": {
         "duckdb": {
-          "status": "green",
-          "reason": "retirement evidence complete",
+          "status": "red",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": "manifest.dead: no historical DBQL usage",
-            "emulator_dbql_read_count": 0,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -20829,18 +20734,13 @@
           "sampled_differences": null
         }
       },
-      "status": "green",
-      "reason": "retirement evidence complete",
+      "status": "red",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": "manifest.dead: no historical DBQL usage",
-        "emulator_dbql_read_count": 0,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "ncc8932a645bd1e39",
@@ -21298,18 +21198,13 @@
       "licence_dependency_count": 1,
       "targets": {
         "duckdb": {
-          "status": "green",
-          "reason": "retirement evidence complete",
+          "status": "red",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": "manifest.dead: no historical DBQL usage",
-            "emulator_dbql_read_count": 0,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -21320,18 +21215,13 @@
           "sampled_differences": null
         }
       },
-      "status": "green",
-      "reason": "retirement evidence complete",
+      "status": "red",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": "manifest.dead: no historical DBQL usage",
-        "emulator_dbql_read_count": 0,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "n21217e4029e00d59",
@@ -21679,17 +21569,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 1,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -21701,17 +21586,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 1,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "ne92ffdc17fbda312",
@@ -30965,18 +30845,13 @@
       "licence_dependency_count": 1,
       "targets": {
         "duckdb": {
-          "status": "green",
-          "reason": "retirement evidence complete",
+          "status": "red",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": "manifest.dead: no historical DBQL usage",
-            "emulator_dbql_read_count": 0,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -30987,18 +30862,13 @@
           "sampled_differences": null
         }
       },
-      "status": "green",
-      "reason": "retirement evidence complete",
+      "status": "red",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": "manifest.dead: no historical DBQL usage",
-        "emulator_dbql_read_count": 0,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "n1c075fb7d55b7b5d",
@@ -31309,17 +31179,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 1,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -31331,17 +31196,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 1,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "nce35ed86fccc09d6",
@@ -31837,17 +31697,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 0,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -31859,17 +31714,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 0,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "n533cd80b40ebc9c5",
@@ -32068,18 +31918,13 @@
       "licence_dependency_count": 1,
       "targets": {
         "duckdb": {
-          "status": "green",
-          "reason": "retirement evidence complete",
+          "status": "red",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": "manifest.dead: no historical DBQL usage",
-            "emulator_dbql_read_count": 0,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -32090,18 +31935,13 @@
           "sampled_differences": null
         }
       },
-      "status": "green",
-      "reason": "retirement evidence complete",
+      "status": "red",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": "manifest.dead: no historical DBQL usage",
-        "emulator_dbql_read_count": 0,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "n00ae1e0d0a7ece39",
@@ -32301,17 +32141,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 0,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -32323,17 +32158,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 0,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "n753e2b21e59720e0",
@@ -32866,17 +32696,12 @@
       "targets": {
         "duckdb": {
           "status": "red",
-          "reason": "retirement: historical unused evidence missing",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": null,
-            "emulator_dbql_read_count": 0,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -32888,17 +32713,12 @@
         }
       },
       "status": "red",
-      "reason": "retirement: historical unused evidence missing",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": null,
-        "emulator_dbql_read_count": 0,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "nd66c4bfb75689e73",
@@ -36072,18 +35892,13 @@
       "licence_dependency_count": 1,
       "targets": {
         "duckdb": {
-          "status": "green",
-          "reason": "retirement evidence complete",
+          "status": "red",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": "manifest.dead: no historical DBQL usage",
-            "emulator_dbql_read_count": 0,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -36094,18 +35909,13 @@
           "sampled_differences": null
         }
       },
-      "status": "green",
-      "reason": "retirement evidence complete",
+      "status": "red",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": "manifest.dead: no historical DBQL usage",
-        "emulator_dbql_read_count": 0,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "ne711c6aec2d571c4",
@@ -36193,18 +36003,13 @@
       "licence_dependency_count": 1,
       "targets": {
         "duckdb": {
-          "status": "green",
-          "reason": "retirement evidence complete",
+          "status": "red",
+          "reason": "retirement green condition pending s2.1",
           "row_count": null,
           "column_profile": null,
           "keyed_row_hash": null,
           "sampled_differences": null,
-          "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-          "retirement_evidence": {
-            "unused_evidence": "manifest.dead: no historical DBQL usage",
-            "emulator_dbql_read_count": 0,
-            "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-          }
+          "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
         },
         "snowflake": {
           "status": "red",
@@ -36215,18 +36020,13 @@
           "sampled_differences": null
         }
       },
-      "status": "green",
-      "reason": "retirement evidence complete",
+      "status": "red",
+      "reason": "retirement green condition pending s2.1",
       "row_count": null,
       "column_profile": null,
       "keyed_row_hash": null,
       "sampled_differences": null,
-      "green_condition": "Historical unused evidence, zero emulator DBQL readers, and owner sign-off",
-      "retirement_evidence": {
-        "unused_evidence": "manifest.dead: no historical DBQL usage",
-        "emulator_dbql_read_count": 0,
-        "owner_sign_off": "Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z"
-      }
+      "green_condition": "Unused evidence, a no-reader check that no non-retired manifest object and no consumer in consumers/registry.yaml reads the retired output, and owner sign-off in migration/dw-exit/retirements/<id>.yaml"
     },
     {
       "id": "na305277024d75d53",
@@ -37465,12 +37265,12 @@
   },
   "summary": {
     "rows": 252,
-    "green": 35,
-    "red": 217,
+    "green": 29,
+    "red": 223,
     "targets": {
       "duckdb": {
-        "green": 35,
-        "red": 217
+        "green": 29,
+        "red": 223
       },
       "snowflake": {
         "green": 0,
@@ -37480,8 +37280,8 @@
     "by_subject_area": {
       "audit": {
         "duckdb": {
-          "green": 2,
-          "red": 55
+          "green": 0,
+          "red": 57
         },
         "snowflake": {
           "green": 0,
@@ -37520,8 +37320,8 @@
       },
       "documents": {
         "duckdb": {
-          "green": 2,
-          "red": 57
+          "green": 0,
+          "red": 59
         },
         "snowflake": {
           "green": 0,
@@ -37530,8 +37330,8 @@
       },
       "users": {
         "duckdb": {
-          "green": 2,
-          "red": 53
+          "green": 0,
+          "red": 55
         },
         "snowflake": {
           "green": 0,

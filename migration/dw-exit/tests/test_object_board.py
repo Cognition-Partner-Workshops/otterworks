@@ -86,22 +86,18 @@ def test_no_output_green_conditions(kind, condition):
     assert condition in row['targets']['duckdb']['green_condition']
 
 
-@pytest.mark.parametrize('unused,reads,owner,token,status,reason', [
-    (True, {}, '@otterworks/data-platform', 'sfx-g1120', 'green', 'retirement evidence complete'),
-    (False, {}, '@otterworks/data-platform', 'sfx-g1120', 'red', 'historical unused evidence missing'),
-    (True, None, '@otterworks/data-platform', 'sfx-g1120', 'red', 'no-reader check not run'),
-    (True, {'job': 1}, '@otterworks/data-platform', 'sfx-g1120', 'red', 'DBQL reads found'),
-    (True, {}, 'other team', 'sfx-g1120', 'red', 'owner sign-off missing'),
-    (True, {}, '@otterworks/data-platform', 'sfx-other', 'red', 'owner sign-off missing'),
-])
-def test_retirement_requires_all_three_evidence_gates(monkeypatch, unused, reads, owner, token, status, reason):
-    monkeypatch.setenv('RUN_TOKEN', token)
-    manifest = {'objects': [obj(owner=owner, target_type='retire')],
-                'dead': ['job'] if unused else []}
-    row = board.build_board(manifest, retirement_read_counts=reads)['rows'][0]
-    assert row['status'] == status
-    assert reason in row['reason']
-    assert row['targets']['duckdb']['green_condition'] == board.RETIREMENT_PROOF
+@pytest.mark.parametrize('outputs', [[], ['SFX_BILLING.T']])
+def test_retirement_stays_red_pending_s2_1(relations, outputs):
+    before, after = relations
+    manifest = {'objects': [obj(target_type='retire', output_relations=outputs)], 'dead': ['job']}
+    row = board.build_board(manifest, before, after, {'BILLING.T'})['rows'][0]
+    assert row['status'] == 'red'
+    assert 'pending s2.1' in row['reason']
+    condition = row['targets']['duckdb']['green_condition']
+    assert 'Unused evidence' in condition
+    assert 'no non-retired manifest object' in condition
+    assert 'no consumer in consumers/registry.yaml' in condition
+    assert 'owner sign-off in migration/dw-exit/retirements/<id>.yaml' in condition
     assert row['targets']['snowflake']['status'] == 'red'
     assert row['row_count'] is None
 
@@ -257,6 +253,9 @@ def test_published_board_covers_manifest_and_readme_matches():
     assert {c['id'] for c in published['consumer_gates']} == {c['id'] for c in manifest['consumers']}
     assert not {row['id'] for row in rows} & {c['id'] for c in manifest['consumers']}
     assert all(row['targets']['duckdb']['green_condition'] for row in rows)
+    retiring = {obj['id'] for obj in manifest['objects'] if obj['target_type'] == 'retire'}
+    assert all(row['status'] == 'red' and 'pending s2.1' in row['reason']
+               for row in rows if row['id'] in retiring)
     assert published['summary']['targets'] == board.parity_counts(rows)
     for area, counts in published['summary']['by_subject_area'].items():
         assert counts == board.parity_counts([row for row in rows if row['subject_area'] == area])

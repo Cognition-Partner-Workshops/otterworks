@@ -7,13 +7,13 @@ Snowflake login down; execution disabled.
 
 | Subject area | Total | DuckDB green | DuckDB red | Snowflake | DuckDB red reasons (count) |
 |---|---:|---:|---:|---:|---|
-| **Total** | 252 | 35 | 217 | 0 green / 252 red | output not materialized (133); Spark source available; output not materialized locally (30); measured parity mismatch (30); historical unused evidence missing (14); no declared output relation (10) |
-| audit | 57 | 2 | 55 | 0 green / 57 red | output not materialized (44); Spark source available; output not materialized locally (5); historical unused evidence missing (4); no declared output relation (2) |
+| **Total** | 252 | 29 | 223 | 0 green / 252 red | output not materialized (133); Spark source available; output not materialized locally (30); measured parity mismatch (30); retirement green condition pending s2.1 (20); no declared output relation (10) |
+| audit | 57 | 0 | 57 | 0 green / 57 red | output not materialized (44); retirement green condition pending s2.1 (6); Spark source available; output not materialized locally (5); no declared output relation (2) |
 | billing | 74 | 29 | 45 | 0 green / 74 red | measured parity mismatch (29); Spark source available; output not materialized locally (6); no declared output relation (5); output not materialized (5) |
 | content | 1 | 0 | 1 | 0 green / 1 red | output not materialized (1) |
-| dbc | 6 | 0 | 6 | 0 green / 6 red | historical unused evidence missing (6) |
-| documents | 59 | 2 | 57 | 0 green / 59 red | output not materialized (40); Spark source available; output not materialized locally (13); historical unused evidence missing (2); measured parity mismatch (1); no declared output relation (1) |
-| users | 55 | 2 | 53 | 0 green / 55 red | output not materialized (43); Spark source available; output not materialized locally (6); historical unused evidence missing (2); no declared output relation (2) |
+| dbc | 6 | 0 | 6 | 0 green / 6 red | retirement green condition pending s2.1 (6) |
+| documents | 59 | 0 | 59 | 0 green / 59 red | output not materialized (40); Spark source available; output not materialized locally (13); retirement green condition pending s2.1 (4); measured parity mismatch (1); no declared output relation (1) |
+| users | 55 | 0 | 55 | 0 green / 55 red | output not materialized (43); Spark source available; output not materialized locally (6); retirement green condition pending s2.1 (4); no declared output relation (2) |
 
 ## Scope
 
@@ -37,9 +37,9 @@ A raw `- id:` count also includes 10 entries under `consumers` (262 ID lines in 
 - BTEQ reports without a declared output: run with the same fixture parameters and declare and capture the report result or export as a relation for parity.
 - Macros without a declared output: invoke the equivalent with the same fixture parameters and declare and capture its result as a relation for parity.
 - Spark jobs without a declared output: declare the job output and materialize a local replacement before measuring parity; a source file alone is not proof.
-- Retirement candidates (including DBC catalog replacements): require historical unused evidence (`manifest.dead`), zero reads in the seeded emulator DBQL, and owner sign-off for the run. A proposed replacement or an inferred dependent retirement is not unused evidence. This is local evidence only, not production retirement authorization.
+- Retirement candidates (including DBC catalog replacements) stay red pending s2.1 ("Define when a retired object is green"). That step requires unused evidence, a check that no non-retired manifest object and no consumer in `consumers/registry.yaml` reads the retired output, and owner sign-off in `migration/dw-exit/retirements/<id>.yaml`.
 
-Each DuckDB cell records its green condition and, where applicable, the retirement evidence.
+Each DuckDB cell records its green condition.
 
 ## Object parity
 
@@ -144,7 +144,7 @@ See [board.json](board.json) for reasons and measurement evidence.
 | users_user_pref | users | red | red |
 | users_user_profile | users | red | red |
 | users_user_status_hist | users | red | red |
-| SFX_AUDIT.M_ARCHIVE_OVERVIEW | audit | green | red |
+| SFX_AUDIT.M_ARCHIVE_OVERVIEW | audit | red | red |
 | SFX_AUDIT.M_RECON_TOTALS | audit | red | red |
 | SFX_BILLING.M_CURRENCY_TOTALS | billing | red | red |
 | SFX_BILLING.M_SUBSCRIPTION_PLANS | billing | red | red |
@@ -157,7 +157,7 @@ See [board.json](board.json) for reasons and measurement evidence.
 | SFX_AUDIT.ACCESS_REVIEW | audit | red | red |
 | SFX_AUDIT.AUDIT_DAILY_SUMMARY | audit | red | red |
 | SFX_AUDIT.AUDIT_EVENT | audit | red | red |
-| SFX_AUDIT.AUDIT_EVENT_ARCHIVE | audit | green | red |
+| SFX_AUDIT.AUDIT_EVENT_ARCHIVE | audit | red | red |
 | SFX_AUDIT.AUDIT_RECON | audit | red | red |
 | SFX_AUDIT.COMPLIANCE_FLAG | audit | red | red |
 | SFX_AUDIT.DATA_EXPORT_REQ | audit | red | red |
@@ -206,7 +206,7 @@ See [board.json](board.json) for reasons and measurement evidence.
 | SFX_DOCUMENTS.DOC_VERSION | documents | red | red |
 | SFX_DOCUMENTS.FILE_OBJECT | documents | red | red |
 | SFX_DOCUMENTS.FOLDER | documents | red | red |
-| SFX_DOCUMENTS.SEARCH_INDEX_LOG | documents | green | red |
+| SFX_DOCUMENTS.SEARCH_INDEX_LOG | documents | red | red |
 | SFX_DOCUMENTS.STG_COLLAB_SESSION | documents | red | red |
 | SFX_DOCUMENTS.STG_DOCUMENT | documents | red | red |
 | SFX_DOCUMENTS.STG_DOC_COMMENT | documents | red | red |
@@ -235,7 +235,7 @@ See [board.json](board.json) for reasons and measurement evidence.
 | SFX_USERS.TEAM | users | red | red |
 | SFX_USERS.TEAM_MEMBER | users | red | red |
 | SFX_USERS.USER_ACTIVITY_DAILY | users | red | red |
-| SFX_USERS.USER_PREF | users | green | red |
+| SFX_USERS.USER_PREF | users | red | red |
 | SFX_USERS.USER_PROFILE | users | red | red |
 | SFX_USERS.USER_STATUS_HIST | users | red | red |
 | audit_access_review | audit | red | red |
@@ -265,10 +265,10 @@ See [board.json](board.json) for reasons and measurement evidence.
 | SFX_BILLING.V_INVOICE_REVENUE | billing | red | red |
 | SFX_BILLING.V_SUBSCRIPTION_PLANS | billing | red | red |
 | SFX_DOCUMENTS.V_DOCUMENT_VERSIONS | documents | red | red |
-| SFX_DOCUMENTS.V_SEARCH_HISTORY | documents | green | red |
+| SFX_DOCUMENTS.V_SEARCH_HISTORY | documents | red | red |
 | SFX_DOCUMENTS.V_WORKSPACE_STORAGE | documents | red | red |
 | SFX_USERS.V_TEAM_MEMBERS | users | red | red |
-| SFX_USERS.V_USER_SETTINGS | users | green | red |
+| SFX_USERS.V_USER_SETTINGS | users | red | red |
 | audit_actor_activity_join | audit | red | red |
 | audit_archive_resort | audit | red | red |
 | audit_daily_summary | audit | red | red |

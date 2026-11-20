@@ -30,11 +30,12 @@ from assess import build
 TARGETS = ('duckdb', 'snowflake')
 SNOWFLAKE_DISABLED = 'Snowflake login down; execution disabled'
 OUTPUT_PARITY = 'All declared outputs are materialized and match the emulator in DuckDB'
-RETIREMENT_PROOF = 'Historical unused evidence, zero emulator DBQL readers, and owner sign-off'
-RETIREMENT_SIGN_OFF = {
-    '@otterworks/finance-reporting': 'Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z',
-    '@otterworks/data-platform': 'Snowflake (snowflake@fieldkit.devin.external), 2026-11-20T17:07Z',
-}
+RETIREMENT_PROOF = (
+    'Unused evidence, a no-reader check that no non-retired manifest object and no consumer in '
+    'consumers/registry.yaml reads the retired output, and owner sign-off in '
+    'migration/dw-exit/retirements/<id>.yaml'
+)
+RETIREMENT_PENDING = 'retirement green condition pending s2.1'
 NO_OUTPUT_PROOF = {
     'bteq': 'Run the report with the same fixture parameters, declare and capture its result or export as a relation, and pass DuckDB output parity',
     'macro': 'Invoke the macro equivalent with the same fixture parameters, declare and capture its result as a relation, and pass DuckDB output parity',
@@ -330,18 +331,7 @@ def parity_counts(rows):
                      for status in ('green', 'red')} for target in TARGETS}
 
 
-def emulator_read_counts(dsn):
-    with psycopg.connect(dsn) as source:
-        return dict(source.execute("""
-            SELECT upper(objectdatabasename || '.' || objecttablename), count(*)
-            FROM dbc.dbc_qrylogobjects
-            WHERE usagetype = 'READ'
-            GROUP BY 1
-        """).fetchall())
-
-
-def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, areas=None,
-                retirement_read_counts=None):
+def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None, areas=None):
     if target not in TARGETS:
         raise ValueError('Unsupported parity target')
     objects = manifest['objects']
@@ -357,7 +347,6 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         'areas': {area: {k:v for k,v in c.items() if k != 'directory'} for area,c in areas.items()},
         'non_relational_objects': 'per-object DuckDB green condition', 'migration_state': 'BEFORE'}
     available, errors = set(available or ()), errors or {}
-    dead = set(manifest.get('dead', []))
     for obj in objects:
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
         row.update(migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'))
@@ -366,25 +355,10 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         local['green_condition'] = (RETIREMENT_PROOF if retiring else
                                     OUTPUT_PARITY if obj.get('output_relations') else
                                     NO_OUTPUT_PROOF.get(obj['kind'], 'Declare a representative output and pass DuckDB output parity'))
-        if target == 'snowflake':
+        if retiring:
+            local['reason'] = RETIREMENT_PENDING
+        elif target == 'snowflake':
             local['reason'] = 'Snowflake target selected; execution disabled'
-        elif retiring:
-            unused = obj['name'] in dead
-            readers = None if retirement_read_counts is None else retirement_read_counts.get(obj['name'], 0)
-            sign_off = RETIREMENT_SIGN_OFF.get(obj['owner']) if result['run_token'] == 'sfx-g1120' else None
-            local['retirement_evidence'] = dict(
-                unused_evidence='manifest.dead: no historical DBQL usage' if unused else None,
-                emulator_dbql_read_count=readers, owner_sign_off=sign_off)
-            if not unused:
-                local['reason'] = 'retirement: historical unused evidence missing'
-            elif readers is None:
-                local['reason'] = 'retirement: emulator DBQL no-reader check not run'
-            elif readers:
-                local['reason'] = 'retirement: emulator DBQL reads found'
-            elif not sign_off:
-                local['reason'] = 'retirement: owner sign-off missing'
-            else:
-                local.update(status='green', reason='retirement evidence complete')
         elif obj['system'] == 'spark' and not (obj['subject_area'] in areas and any(
                 schemas.get(s.split('.')[0], '')+'.'+s.split('.')[1] in available
                 for s in obj.get('output_relations', []))):
@@ -434,7 +408,7 @@ def render_readme(board):
     def count_row(label, counts, rows):
         duckdb = counts['duckdb']
         snowflake = counts['snowflake']
-        reasons = Counter(row['targets']['duckdb']['reason'].removeprefix('retirement: ').split(':')[0]
+        reasons = Counter(row['targets']['duckdb']['reason'].split(':')[0]
                           for row in rows if row['targets']['duckdb']['status'] == 'red')
         top = sorted(reasons.items(), key=lambda item: (-item[1], item[0]))
         reason_text = '; '.join(f'{reason} ({count})' for reason, count in top) or '—'
@@ -471,11 +445,11 @@ def render_readme(board):
               'declare and capture its result as a relation for parity.',
               '- Spark jobs without a declared output: declare the job output and materialize a local replacement '
               'before measuring parity; a source file alone is not proof.',
-              '- Retirement candidates (including DBC catalog replacements): require historical unused evidence '
-              '(`manifest.dead`), zero reads in the seeded emulator DBQL, and owner sign-off for the run. '
-              'A proposed replacement or an inferred dependent retirement is not unused evidence. '
-              'This is local evidence only, not production retirement authorization.',
-              '', 'Each DuckDB cell records its green condition and, where applicable, the retirement evidence.']
+              '- Retirement candidates (including DBC catalog replacements) stay red pending s2.1 '
+              '("Define when a retired object is green"). That step requires unused evidence, a check that '
+              'no non-retired manifest object and no consumer in `consumers/registry.yaml` reads the retired output, '
+              'and owner sign-off in `migration/dw-exit/retirements/<id>.yaml`.',
+              '', 'Each DuckDB cell records its green condition.']
     lines += ['', '## Object parity', '', 'See [board.json](board.json) for reasons and measurement evidence.', '',
               '| Object | Subject area | DuckDB | Snowflake |', '|---|---|---|---|']
     for row in board['rows']:
@@ -509,7 +483,6 @@ def main():
         areas = {args.area: areas[args.area]}
     counters = build()['counters']
     before = after = None
-    retirement_read_counts = None
     ready, errors = set(), {}
     try:
         if args.target == 'duckdb' and manifest['objects']:
@@ -517,12 +490,10 @@ def main():
             ns = os.environ.get('NS',RunConfig.from_env().before_namespace)
             port = os.environ.get('TD_PG_PORT',str(54500+zlib.crc32(ns.encode())%1000))
             dsn = os.environ.get('BOARD_SOURCE_DSN',f'host=127.0.0.1 port={port} dbname=teradata user=postgres')
-            retirement_read_counts = emulator_read_counts(dsn)
             before, source_ready, source_errors = source_snapshot(dsn,names,areas)
             after, ready, errors = materialize(before,source_ready,areas=areas)
             errors.update(source_errors)
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,areas=areas,
-                              retirement_read_counts=retirement_read_counts)
+        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,areas=areas)
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         if args.output.resolve() == default_output:
             default_output.with_name('README.md').write_text(render_readme(payload))
