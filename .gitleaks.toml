@@ -1,7 +1,7 @@
 # Gitleaks configuration for OtterWorks.
 #
 # The upstream default ruleset is used as-is; nothing is disabled. The single
-# allowlist below covers the two share-link placeholders inside the equivalence
+# fixture allowlist below covers the two share-link placeholders inside the equivalence
 # fixtures: the fake token the characterization cases feed to the service to pin
 # the "unknown token is rejected" behaviour, and the SHARE_LINK_SECRET the
 # fixture exports so the recorded tokens are deterministic. They grant no access
@@ -16,3 +16,13 @@ description = "Share-link placeholder tokens in the equivalence fixtures"
 matchCondition = "AND"
 paths = ['''security/equivalence/(cases|expected)/OW-SEC-\d+\.json''']
 regexes = ['''^(not-a-real-share-token|fixture-share-secret-2b7f4c)$''']
+
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "SonarQube finding and quality-profile UUIDs, not authentication tokens"
+condition = "AND"
+paths = ['''^security/sast/baseline/(issues|quality-profiles|scan-meta)\.json$''']
+regexTarget = "line"
+regexes = ['''^\s*"key": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",?\s*$''']
