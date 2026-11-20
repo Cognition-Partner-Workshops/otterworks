@@ -74,10 +74,10 @@
   reason: "Computes distributed score moments and applies a z-score function through RDD transformations."
 - job: docs_event_export_hourly
   language: python
-  target: dbt
-  reason: "Selects document rows and computes EXPORT_BUCKET with modulo arithmetic, which can be materialized as one Snowflake table."
-  original_target: spark_standard_template
-  change_reason: "The only in-repository reader of the bucketed parquet export is lake_compaction_documents, which is retired, so no retained consumer requires its physical directory layout."
+  target: spark_standard_template
+  reason: "Refreshes the existing Parquet export without a shuffle or per-bucket files."
+  original_target: dbt
+  change_reason: "The current lake_compaction_documents job still reads the Parquet export root."
 - job: lake_compaction_documents
   language: scala
   target: retired

@@ -1,9 +1,19 @@
-from pyspark.sql.functions import col, pmod
-from common.runtime import landing, session
+from pyspark.sql.functions import col, lit, pmod
 
-spark = session("docs_event_export_hourly")
-events = landing(spark, "DOCUMENT").withColumn("EXPORT_BUCKET", pmod(col("DOCUMENT_ID"), col("DOCUMENT_ID") * 0 + 10000))
-events.repartition(8, "EXPORT_BUCKET").write.mode("overwrite").partitionBy("EXPORT_BUCKET").parquet(
-    "/opt/lake/documents/docs_event_export_hourly"
-)
-spark.stop()
+from common.runtime import landing, save, session
+
+
+def run(spark):
+    # Match Spark's inferred type for the former bucket directories.
+    events = landing(spark, "DOCUMENT").withColumn(
+        "EXPORT_BUCKET", pmod(col("DOCUMENT_ID"), lit(10000)).cast("int")
+    )
+    save(events, "documents", "docs_event_export_hourly")
+
+
+if __name__ == "__main__":
+    spark = session("docs_event_export_hourly")
+    try:
+        run(spark)
+    finally:
+        spark.stop()

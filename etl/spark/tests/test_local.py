@@ -27,6 +27,44 @@ from generate_fixture import generate
 
 @unittest.skipUnless(importlib.util.find_spec("pyspark"), "pyspark is not installed")
 class LocalTest(unittest.TestCase):
+    def test_document_export_replaces_bucket_layout_and_preserves_schema(self):
+        import docs_event_export_hourly as job
+        from pyspark.sql.functions import lit, pmod
+
+        spark = (
+            SparkSession.builder.master("local[1]")
+            .config("spark.ui.enabled", "false")
+            .config("spark.sql.sources.partitionOverwriteMode", "dynamic")
+            .getOrCreate()
+        )
+        try:
+            with tempfile.TemporaryDirectory() as lake, patch.dict(os.environ, {"LAKE_DIR": lake}):
+                path = Path(lake) / "documents/docs_event_export_hourly"
+                documents = spark.createDataFrame([(-1,), (None,), (10000,), (-1,)], "DOCUMENT_ID long")
+                documents.withColumn("EXPORT_BUCKET", pmod("DOCUMENT_ID", lit(10000))).write.partitionBy(
+                    "EXPORT_BUCKET"
+                ).parquet(str(path))
+
+                def read_export():
+                    return spark.read.option("basePath", str(path)).parquet(str(path))
+
+                legacy = read_export()
+                expected_schema = legacy.schema
+                expected_rows = legacy.collect()
+                with patch.object(job, "landing", return_value=documents):
+                    job.run(spark)
+                export = read_export()
+                self.assertEqual(export.schema, expected_schema)
+                self.assertCountEqual(export.collect(), expected_rows)
+                self.assertFalse(list(path.glob("EXPORT_BUCKET=*")))
+
+                updated = spark.createDataFrame([(2,)], "DOCUMENT_ID long")
+                with patch.object(job, "landing", return_value=updated):
+                    job.run(spark)
+                self.assertEqual([tuple(row) for row in read_export().collect()], [(2, 2)])
+        finally:
+            spark.stop()
+
     def test_python_jobs(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
