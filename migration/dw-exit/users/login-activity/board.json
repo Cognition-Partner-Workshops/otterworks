@@ -1,0 +1,1308 @@
+{
+  "waves": {
+    "1": {
+      "total": 4,
+      "by_kind": {
+        "fastload": 2,
+        "table": 2
+      },
+      "by_target": {
+        "dbt_model": 2,
+        "snowflake_scripting": 2
+      }
+    },
+    "2": {
+      "total": 3,
+      "by_kind": {
+        "bteq": 1,
+        "mapping": 1,
+        "session": 1
+      },
+      "by_target": {
+        "dbt_model": 2,
+        "snowflake_scripting": 1
+      }
+    },
+    "3": {
+      "total": 4,
+      "by_kind": {
+        "bteq": 1,
+        "procedure": 1,
+        "table": 2
+      },
+      "by_target": {
+        "dbt_model": 2,
+        "snowflake_scripting": 2
+      }
+    },
+    "4": {
+      "total": 0,
+      "by_kind": {},
+      "by_target": {}
+    }
+  },
+  "licence_counters": {
+    "teradata_objects": {
+      "remaining": 178,
+      "target": 0
+    },
+    "powercenter_mappings": {
+      "remaining": 20,
+      "target": 0
+    },
+    "powercenter_annual_cost": {
+      "value": 412000,
+      "currency": "USD"
+    },
+    "powercenter_objects": {
+      "remaining": 44,
+      "target": 0
+    },
+    "spark_jobs": {
+      "remaining": 30,
+      "target": 0
+    },
+    "licence_dependencies": {
+      "remaining": 252,
+      "total": 252,
+      "target": 0
+    }
+  },
+  "run_token": "sfx-sfg1120",
+  "target": "duckdb",
+  "rows": [
+    {
+      "id": "n42c8c3678ac93f94",
+      "name": "m_SFX_LOGIN_EVENT",
+      "kind": "mapping",
+      "wave": 2,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "powercenter",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_USERS.LOGIN_EVENT": {
+          "before": {
+            "LOGIN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "LOGIN_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "RESULT_CD": {
+              "nulls": 0,
+              "min": "SUCCESS     ",
+              "max": "SUCCESS     ",
+              "distinct": 1
+            },
+            "CLIENT_TYPE": {
+              "nulls": 0,
+              "min": "API         ",
+              "max": "WEB         ",
+              "distinct": 4
+            }
+          },
+          "after": {
+            "LOGIN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "LOGIN_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "RESULT_CD": {
+              "nulls": 0,
+              "min": "SUCCESS     ",
+              "max": "SUCCESS     ",
+              "distinct": 1
+            },
+            "CLIENT_TYPE": {
+              "nulls": 0,
+              "min": "API         ",
+              "max": "WEB         ",
+              "distinct": 4
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.LOGIN_EVENT": {
+          "keys": [
+            "LOGIN_ID"
+          ],
+          "difference": 0,
+          "before": "44906a26bedca5b48d1b716c842891bacd8ab076cc4236bbb12b12e25c833dc8",
+          "after": "44906a26bedca5b48d1b716c842891bacd8ab076cc4236bbb12b12e25c833dc8",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.LOGIN_EVENT": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n6ef643cd421ba7da",
+      "name": "s_m_SFX_LOGIN_EVENT",
+      "kind": "session",
+      "wave": 2,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "powercenter",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_USERS.LOGIN_EVENT": {
+          "before": {
+            "LOGIN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "LOGIN_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "RESULT_CD": {
+              "nulls": 0,
+              "min": "SUCCESS     ",
+              "max": "SUCCESS     ",
+              "distinct": 1
+            },
+            "CLIENT_TYPE": {
+              "nulls": 0,
+              "min": "API         ",
+              "max": "WEB         ",
+              "distinct": 4
+            }
+          },
+          "after": {
+            "LOGIN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "LOGIN_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "RESULT_CD": {
+              "nulls": 0,
+              "min": "SUCCESS     ",
+              "max": "SUCCESS     ",
+              "distinct": 1
+            },
+            "CLIENT_TYPE": {
+              "nulls": 0,
+              "min": "API         ",
+              "max": "WEB         ",
+              "distinct": 4
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.LOGIN_EVENT": {
+          "keys": [
+            "LOGIN_ID"
+          ],
+          "difference": 0,
+          "before": "44906a26bedca5b48d1b716c842891bacd8ab076cc4236bbb12b12e25c833dc8",
+          "after": "44906a26bedca5b48d1b716c842891bacd8ab076cc4236bbb12b12e25c833dc8",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.LOGIN_EVENT": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n9c864a5529054222",
+      "name": "04_load_events",
+      "kind": "bteq",
+      "wave": 3,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 240,
+        "after": 240
+      },
+      "column_profile": {
+        "SFX_USERS.LOGIN_EVENT": {
+          "before": {
+            "LOGIN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "LOGIN_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "RESULT_CD": {
+              "nulls": 0,
+              "min": "SUCCESS     ",
+              "max": "SUCCESS     ",
+              "distinct": 1
+            },
+            "CLIENT_TYPE": {
+              "nulls": 0,
+              "min": "API         ",
+              "max": "WEB         ",
+              "distinct": 4
+            }
+          },
+          "after": {
+            "LOGIN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "LOGIN_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "RESULT_CD": {
+              "nulls": 0,
+              "min": "SUCCESS     ",
+              "max": "SUCCESS     ",
+              "distinct": 1
+            },
+            "CLIENT_TYPE": {
+              "nulls": 0,
+              "min": "API         ",
+              "max": "WEB         ",
+              "distinct": 4
+            }
+          }
+        },
+        "SFX_USERS.USER_ACTIVITY_DAILY": {
+          "before": {
+            "ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 10000000020,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ACTIVITY_DT": {
+              "nulls": 0,
+              "min": "2026-11-07",
+              "max": "2026-11-09",
+              "distinct": 3
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 3,
+              "max": 9885,
+              "distinct": 22
+            },
+            "DOCUMENT_COUNT": {
+              "nulls": 0,
+              "min": 0,
+              "max": 9954,
+              "distinct": 21
+            }
+          },
+          "after": {
+            "ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 10000000020,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ACTIVITY_DT": {
+              "nulls": 0,
+              "min": "2026-11-07",
+              "max": "2026-11-09",
+              "distinct": 3
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 3,
+              "max": 9885,
+              "distinct": 22
+            },
+            "DOCUMENT_COUNT": {
+              "nulls": 0,
+              "min": 0,
+              "max": 9954,
+              "distinct": 21
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.LOGIN_EVENT": {
+          "keys": [
+            "LOGIN_ID"
+          ],
+          "difference": 0,
+          "before": "44906a26bedca5b48d1b716c842891bacd8ab076cc4236bbb12b12e25c833dc8",
+          "after": "44906a26bedca5b48d1b716c842891bacd8ab076cc4236bbb12b12e25c833dc8",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        },
+        "SFX_USERS.USER_ACTIVITY_DAILY": {
+          "keys": [
+            "ACTIVITY_ID"
+          ],
+          "difference": 0,
+          "before": "6413bba8d096793da829297136b20960a75195b3a26867e5635cc96c1bbf3648",
+          "after": "6413bba8d096793da829297136b20960a75195b3a26867e5635cc96c1bbf3648",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.LOGIN_EVENT": [],
+        "SFX_USERS.USER_ACTIVITY_DAILY": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n1b1458f718efb391",
+      "name": "10_activity_daily",
+      "kind": "bteq",
+      "wave": 2,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 40,
+        "after": 40
+      },
+      "column_profile": {
+        "SFX_USERS.USER_ACTIVITY_DAILY": {
+          "before": {
+            "ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 10000000020,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ACTIVITY_DT": {
+              "nulls": 0,
+              "min": "2026-11-07",
+              "max": "2026-11-09",
+              "distinct": 3
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 3,
+              "max": 9885,
+              "distinct": 22
+            },
+            "DOCUMENT_COUNT": {
+              "nulls": 0,
+              "min": 0,
+              "max": 9954,
+              "distinct": 21
+            }
+          },
+          "after": {
+            "ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 10000000020,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ACTIVITY_DT": {
+              "nulls": 0,
+              "min": "2026-11-07",
+              "max": "2026-11-09",
+              "distinct": 3
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 3,
+              "max": 9885,
+              "distinct": 22
+            },
+            "DOCUMENT_COUNT": {
+              "nulls": 0,
+              "min": 0,
+              "max": 9954,
+              "distinct": 21
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.USER_ACTIVITY_DAILY": {
+          "keys": [
+            "ACTIVITY_ID"
+          ],
+          "difference": 0,
+          "before": "6413bba8d096793da829297136b20960a75195b3a26867e5635cc96c1bbf3648",
+          "after": "6413bba8d096793da829297136b20960a75195b3a26867e5635cc96c1bbf3648",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.USER_ACTIVITY_DAILY": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n26eb854933fb16a3",
+      "name": "users_login_event",
+      "kind": "fastload",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_USERS.STG_LOGIN_EVENT": {
+          "before": {
+            "LOGIN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "LOGIN_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "RESULT_CD": {
+              "nulls": 0,
+              "min": "SUCCESS",
+              "max": "SUCCESS",
+              "distinct": 1
+            },
+            "CLIENT_TYPE": {
+              "nulls": 0,
+              "min": "API",
+              "max": "WEB",
+              "distinct": 4
+            }
+          },
+          "after": {
+            "LOGIN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "LOGIN_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "RESULT_CD": {
+              "nulls": 0,
+              "min": "SUCCESS",
+              "max": "SUCCESS",
+              "distinct": 1
+            },
+            "CLIENT_TYPE": {
+              "nulls": 0,
+              "min": "API",
+              "max": "WEB",
+              "distinct": 4
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_LOGIN_EVENT": {
+          "keys": [
+            "LOGIN_ID"
+          ],
+          "difference": 0,
+          "before": "f25d87d83c22836f6650afd437e6bf475cd502a01c833dc785e6602ec4e665a6",
+          "after": "f25d87d83c22836f6650afd437e6bf475cd502a01c833dc785e6602ec4e665a6",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_LOGIN_EVENT": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nb36b77faa1a490f0",
+      "name": "users_user_activity_daily",
+      "kind": "fastload",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.STG_USER_ACTIVITY_DAILY": {
+          "before": {
+            "ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ACTIVITY_DT": {
+              "nulls": 0,
+              "min": "2026-11-07",
+              "max": "2026-11-09",
+              "distinct": 3
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 823,
+              "max": 9885,
+              "distinct": 20
+            },
+            "DOCUMENT_COUNT": {
+              "nulls": 0,
+              "min": 254,
+              "max": 9954,
+              "distinct": 20
+            }
+          },
+          "after": {
+            "ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ACTIVITY_DT": {
+              "nulls": 0,
+              "min": "2026-11-07",
+              "max": "2026-11-09",
+              "distinct": 3
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 823,
+              "max": 9885,
+              "distinct": 20
+            },
+            "DOCUMENT_COUNT": {
+              "nulls": 0,
+              "min": 254,
+              "max": 9954,
+              "distinct": 20
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_USER_ACTIVITY_DAILY": {
+          "keys": [
+            "ACTIVITY_ID"
+          ],
+          "difference": 0,
+          "before": "a1a8878113b29c8002d60487255b1afe1d3c93ea009293dfa6dca89297647c89",
+          "after": "a1a8878113b29c8002d60487255b1afe1d3c93ea009293dfa6dca89297647c89",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_USER_ACTIVITY_DAILY": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n18d91c4923da39f4",
+      "name": "SFX_USERS.P_ACTIVITY_DAILY",
+      "kind": "procedure",
+      "wave": 3,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 40,
+        "after": 40
+      },
+      "column_profile": {
+        "SFX_USERS.USER_ACTIVITY_DAILY": {
+          "before": {
+            "ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 10000000020,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ACTIVITY_DT": {
+              "nulls": 0,
+              "min": "2026-11-07",
+              "max": "2026-11-09",
+              "distinct": 3
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 3,
+              "max": 9885,
+              "distinct": 22
+            },
+            "DOCUMENT_COUNT": {
+              "nulls": 0,
+              "min": 0,
+              "max": 9954,
+              "distinct": 21
+            }
+          },
+          "after": {
+            "ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 10000000020,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ACTIVITY_DT": {
+              "nulls": 0,
+              "min": "2026-11-07",
+              "max": "2026-11-09",
+              "distinct": 3
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 3,
+              "max": 9885,
+              "distinct": 22
+            },
+            "DOCUMENT_COUNT": {
+              "nulls": 0,
+              "min": 0,
+              "max": 9954,
+              "distinct": 21
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.USER_ACTIVITY_DAILY": {
+          "keys": [
+            "ACTIVITY_ID"
+          ],
+          "difference": 0,
+          "before": "6413bba8d096793da829297136b20960a75195b3a26867e5635cc96c1bbf3648",
+          "after": "6413bba8d096793da829297136b20960a75195b3a26867e5635cc96c1bbf3648",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.USER_ACTIVITY_DAILY": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n3e2eb63a0ecb2ec8",
+      "name": "SFX_USERS.LOGIN_EVENT",
+      "kind": "table",
+      "wave": 3,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_USERS.LOGIN_EVENT": {
+          "before": {
+            "LOGIN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "LOGIN_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "RESULT_CD": {
+              "nulls": 0,
+              "min": "SUCCESS     ",
+              "max": "SUCCESS     ",
+              "distinct": 1
+            },
+            "CLIENT_TYPE": {
+              "nulls": 0,
+              "min": "API         ",
+              "max": "WEB         ",
+              "distinct": 4
+            }
+          },
+          "after": {
+            "LOGIN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "LOGIN_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "RESULT_CD": {
+              "nulls": 0,
+              "min": "SUCCESS     ",
+              "max": "SUCCESS     ",
+              "distinct": 1
+            },
+            "CLIENT_TYPE": {
+              "nulls": 0,
+              "min": "API         ",
+              "max": "WEB         ",
+              "distinct": 4
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.LOGIN_EVENT": {
+          "keys": [
+            "LOGIN_ID"
+          ],
+          "difference": 0,
+          "before": "44906a26bedca5b48d1b716c842891bacd8ab076cc4236bbb12b12e25c833dc8",
+          "after": "44906a26bedca5b48d1b716c842891bacd8ab076cc4236bbb12b12e25c833dc8",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.LOGIN_EVENT": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n209c8bcb96a81a00",
+      "name": "SFX_USERS.STG_LOGIN_EVENT",
+      "kind": "table",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 200,
+        "after": 200
+      },
+      "column_profile": {
+        "SFX_USERS.STG_LOGIN_EVENT": {
+          "before": {
+            "LOGIN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "LOGIN_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "RESULT_CD": {
+              "nulls": 0,
+              "min": "SUCCESS",
+              "max": "SUCCESS",
+              "distinct": 1
+            },
+            "CLIENT_TYPE": {
+              "nulls": 0,
+              "min": "API",
+              "max": "WEB",
+              "distinct": 4
+            }
+          },
+          "after": {
+            "LOGIN_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "LOGIN_TS": {
+              "nulls": 0,
+              "min": "2026-11-07 12:00:02",
+              "max": "2026-11-09 12:03:18",
+              "distinct": 200
+            },
+            "RESULT_CD": {
+              "nulls": 0,
+              "min": "SUCCESS",
+              "max": "SUCCESS",
+              "distinct": 1
+            },
+            "CLIENT_TYPE": {
+              "nulls": 0,
+              "min": "API",
+              "max": "WEB",
+              "distinct": 4
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_LOGIN_EVENT": {
+          "keys": [
+            "LOGIN_ID"
+          ],
+          "difference": 0,
+          "before": "f25d87d83c22836f6650afd437e6bf475cd502a01c833dc785e6602ec4e665a6",
+          "after": "f25d87d83c22836f6650afd437e6bf475cd502a01c833dc785e6602ec4e665a6",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_LOGIN_EVENT": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nfd5485510ca65cd9",
+      "name": "SFX_USERS.STG_USER_ACTIVITY_DAILY",
+      "kind": "table",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.STG_USER_ACTIVITY_DAILY": {
+          "before": {
+            "ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ACTIVITY_DT": {
+              "nulls": 0,
+              "min": "2026-11-07",
+              "max": "2026-11-09",
+              "distinct": 3
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 823,
+              "max": 9885,
+              "distinct": 20
+            },
+            "DOCUMENT_COUNT": {
+              "nulls": 0,
+              "min": 254,
+              "max": 9954,
+              "distinct": 20
+            }
+          },
+          "after": {
+            "ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ACTIVITY_DT": {
+              "nulls": 0,
+              "min": "2026-11-07",
+              "max": "2026-11-09",
+              "distinct": 3
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 823,
+              "max": 9885,
+              "distinct": 20
+            },
+            "DOCUMENT_COUNT": {
+              "nulls": 0,
+              "min": 254,
+              "max": 9954,
+              "distinct": 20
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_USER_ACTIVITY_DAILY": {
+          "keys": [
+            "ACTIVITY_ID"
+          ],
+          "difference": 0,
+          "before": "a1a8878113b29c8002d60487255b1afe1d3c93ea009293dfa6dca89297647c89",
+          "after": "a1a8878113b29c8002d60487255b1afe1d3c93ea009293dfa6dca89297647c89",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_USER_ACTIVITY_DAILY": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "ne229d0f17e598ca1",
+      "name": "SFX_USERS.USER_ACTIVITY_DAILY",
+      "kind": "table",
+      "wave": 3,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 40,
+        "after": 40
+      },
+      "column_profile": {
+        "SFX_USERS.USER_ACTIVITY_DAILY": {
+          "before": {
+            "ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 10000000020,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ACTIVITY_DT": {
+              "nulls": 0,
+              "min": "2026-11-07",
+              "max": "2026-11-09",
+              "distinct": 3
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 3,
+              "max": 9885,
+              "distinct": 22
+            },
+            "DOCUMENT_COUNT": {
+              "nulls": 0,
+              "min": 0,
+              "max": 9954,
+              "distinct": 21
+            }
+          },
+          "after": {
+            "ACTIVITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 10000000020,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "ACTIVITY_DT": {
+              "nulls": 0,
+              "min": "2026-11-07",
+              "max": "2026-11-09",
+              "distinct": 3
+            },
+            "LOGIN_COUNT": {
+              "nulls": 0,
+              "min": 3,
+              "max": 9885,
+              "distinct": 22
+            },
+            "DOCUMENT_COUNT": {
+              "nulls": 0,
+              "min": 0,
+              "max": 9954,
+              "distinct": 21
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.USER_ACTIVITY_DAILY": {
+          "keys": [
+            "ACTIVITY_ID"
+          ],
+          "difference": 0,
+          "before": "6413bba8d096793da829297136b20960a75195b3a26867e5635cc96c1bbf3648",
+          "after": "6413bba8d096793da829297136b20960a75195b3a26867e5635cc96c1bbf3648",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.USER_ACTIVITY_DAILY": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    }
+  ],
+  "group": "users/login-activity",
+  "measurement_contract": {
+    "source": "PostgreSQL Teradata emulator snapshot",
+    "local_target": "DuckDB",
+    "conversions": [
+      "users/login-activity/10_load.sql",
+      "users/login-activity/30_views.sql"
+    ],
+    "non_relational_objects": "declared output relations",
+    "migration_state": "BEFORE"
+  },
+  "summary": {
+    "rows": 11,
+    "red": 0,
+    "green": 11,
+    "measured": 11,
+    "migrated": 0,
+    "licence_remaining": 11,
+    "licence_total": 11,
+    "licence_by_system": {
+      "powercenter": 2,
+      "teradata": 9
+    }
+  }
+}
