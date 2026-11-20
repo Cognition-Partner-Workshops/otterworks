@@ -1,8 +1,6 @@
 import importlib.util
 import json
 from pathlib import Path
-import subprocess
-import sys
 
 import duckdb
 import pytest
@@ -48,45 +46,52 @@ def test_components():
 def test_empty_conversions():
     db = duckdb.connect()
     db.execute('CREATE SCHEMA USERS')
-    definitions = {
-        'USER_PREF': 'USER_PREF_ID BIGINT, USER_ID BIGINT, PREF_JSON VARCHAR',
-        'LOGIN_EVENT': 'LOGIN_EVENT_ID BIGINT, USER_AGENT VARCHAR',
-        'USER_ACTIVITY_DAILY': 'USER_ACTIVITY_ID BIGINT, USER_ID BIGINT, ACTIVITY_DATE DATE, LOGIN_COUNT BIGINT, ACTION_COUNT BIGINT',
-        'TEAM': 'TEAM_ID BIGINT, TEAM_NAME VARCHAR',
-        'TEAM_MEMBER': 'TEAM_ID BIGINT, USER_ID BIGINT',
-        'APP_USER': 'USER_ID BIGINT',
-    }
-    for table, columns in definitions.items():
-        # Both identifiers and type declarations are fixed test literals above.
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        db.execute(f'CREATE TABLE USERS.SPARK_FIXTURE_{table} ({columns})')
+    for table in hook.INPUTS:
+        columns = [hook.exp.ColumnDef(this=hook.exp.to_identifier(name, quoted=True),
+                                     kind=hook.exp.DataType.build('VARCHAR' if kind == 'TEXT' else kind))
+                   for name, kind in hook.SCHEMAS[table]]
+        statement = hook.exp.Create(kind='TABLE', this=hook.exp.Schema(
+            this=hook.table_expression('USERS', 'SPARK_FIXTURE_' + table), expressions=columns))
+        db.execute(statement.sql(dialect='duckdb'))
     hook.convert(db)
     for job in hook.JOBS:
-        # Identifier comes from the fixed JOBS tuple.
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        assert db.execute(f'SELECT COUNT(*) FROM USERS.{job.upper()}').fetchone() == (0,)
+        statement = hook.exp.select(hook.exp.Count(this=hook.exp.Star())).from_(hook.table_expression('USERS', job.upper()))
+        assert db.execute(statement.sql(dialect='duckdb')).fetchone() == (0,)
     db.close()
 
 
 def test_fixture_loading_is_deterministic(tmp_path):
     snapshots = []
     for _ in range(2):
-        subprocess.run([sys.executable, str(hook.ROOT / 'etl/spark/fixture/generate_fixture.py'),
-                        '--rows', '3', '--seed', str(hook.FIXTURE_SEED), '--output', str(tmp_path)],
-                       check=True, capture_output=True)
+        hook.generate(tmp_path, 3, hook.FIXTURE_SEED)
         db = duckdb.connect()
         db.execute('CREATE SCHEMA USERS')
         hook.load_fixture(db, tmp_path)
-        # Identifiers come from the fixed INPUTS tuple.
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        snapshots.append({table: db.execute(f'SELECT * FROM USERS.SPARK_FIXTURE_{table} ORDER BY 1').fetchall()
-                          for table in hook.INPUTS})
+        snapshot = {}
+        for table in hook.INPUTS:
+            statement = hook.exp.select('*').from_(hook.table_expression('USERS', 'SPARK_FIXTURE_' + table)).order_by(hook.exp.Literal.number(1))
+            snapshot[table] = db.execute(statement.sql(dialect='duckdb')).fetchall()
+        snapshots.append(snapshot)
         hook.convert(db)
         assert db.execute('SELECT COUNT(*) FROM USERS.USER_PREF_JSON_FLATTEN').fetchone() == (3,)
         assert db.execute('SELECT COUNT(*) FROM USERS.USERS_LOGIN_USERAGENT_PARSE').fetchone() == (3,)
         assert db.execute('SELECT COUNT(*) FROM USERS.USERS_RISK_SCORE').fetchone() == (3,)
         db.close()
     assert snapshots[0] == snapshots[1]
+
+
+def test_table_expression():
+    db = duckdb.connect()
+    name = 'input"; DROP SCHEMA USERS CASCADE; --'
+    db.execute('CREATE SCHEMA USERS')
+    statement = hook.sqlglot.parse_one('CREATE TABLE placeholder (value INTEGER)')
+    statement.this.set('this', hook.table_expression('USERS', name))
+    db.execute(statement.sql(dialect='duckdb'))
+    statement = hook.exp.select(hook.exp.Count(this=hook.exp.Star())).from_(hook.table_expression('USERS', name))
+    assert db.execute(statement.sql(dialect='duckdb')).fetchone() == (0,)
+    with pytest.raises(duckdb.ParserException):
+        db.execute(hook.exp.select('*').from_(hook.table_expression('USERS', '')).sql(dialect='duckdb'))
+    db.close()
 
 
 def test_board_annotation(tmp_path):

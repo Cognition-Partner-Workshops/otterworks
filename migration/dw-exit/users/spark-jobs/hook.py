@@ -1,4 +1,5 @@
 """Local Snowpark-Python equivalents and independently executed Spark baseline."""
+from contextlib import redirect_stdout
 import json
 import math
 import os
@@ -14,7 +15,9 @@ from sqlglot import exp
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
 sys.path.insert(0, str(ROOT / 'etl/spark/jobs/py'))
+sys.path.insert(0, str(ROOT / 'etl/spark/fixture'))
 from common.schemas import SCHEMAS
+from generate_fixture import generate
 from warehouse.run_config import RunConfig
 
 INPUTS = ('USER_PREF', 'LOGIN_EVENT', 'USER_ACTIVITY_DAILY', 'TEAM', 'TEAM_MEMBER', 'APP_USER')
@@ -23,13 +26,17 @@ JOBS = ('team_graph_components', 'user_pref_json_flatten', 'users_active_daily',
 FIXTURE_SEED = 1110
 
 
+def table_expression(schema, name):
+    return exp.Table(db=exp.to_identifier(schema, quoted=True),
+                     this=exp.to_identifier(name, quoted=True))
+
+
 def load_fixture(after, landing):
     for table in INPUTS:
         columns = {name: 'VARCHAR' if kind == 'TEXT' else kind for name, kind in SCHEMAS[table]}
-        # Identifier comes from INPUTS; the CSV path and column definitions are bound.
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        after.execute(f'CREATE OR REPLACE TABLE USERS.SPARK_FIXTURE_{table} AS SELECT * FROM read_csv(?, delim=\'|\', header=true, columns=?, escape=\'"\', nullstr=\'\')',
-                      [str(landing / 'users' / table / '*.psv'), columns])
+        statement = sqlglot.parse_one('CREATE OR REPLACE TABLE placeholder AS SELECT * FROM read_csv(?, delim=\'|\', header=true, columns=?, escape=\'"\', nullstr=\'\')', read='duckdb')
+        statement.set('this', table_expression('USERS', 'SPARK_FIXTURE_' + table))
+        after.execute(statement.sql(dialect='duckdb'), [str(landing / 'users' / table / '*.psv'), columns])
 
 
 def preference(raw, key):
@@ -95,26 +102,22 @@ def materialize(before, after, ready, errors):
     work.mkdir(parents=True, exist_ok=True)
     try:
         rows = int(os.environ.get('BOARD_ROWS', '200'))
-        with (work / 'fixture.log').open('w') as log:
-            # Fixed executable/script, integer row count and argv list; no shell expansion.
-            # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
-            subprocess.run([sys.executable, str(ROOT / 'etl/spark/fixture/generate_fixture.py'),
-                            '--rows', str(rows), '--seed', str(FIXTURE_SEED), '--output', str(landing)],
-                           stdout=log, stderr=subprocess.STDOUT, check=True, timeout=120)
+        with (work / 'fixture.log').open('w') as log, redirect_stdout(log):
+            generate(landing, rows, FIXTURE_SEED)
         load_fixture(after, landing)
         convert(after)
-        env = dict(os.environ, USERS_PARITY_WORK=str(work), USERS_PARITY_JOBS=','.join(JOBS),
-                   LANDING_DIR=str(landing), SPARK_LOCAL_IP='127.0.0.1',
-                   PYSPARK_PYTHON=sys.executable, PYSPARK_DRIVER_PYTHON=sys.executable)
+        env = {'PATH': '/usr/bin:/bin', 'HOME': str(Path.home()),
+               'USERS_PARITY_WORK': str(work), 'USERS_PARITY_JOBS': ','.join(JOBS),
+               'LANDING_DIR': str(landing), 'SPARK_LOCAL_IP': '127.0.0.1',
+               'PYSPARK_PYTHON': sys.executable, 'PYSPARK_DRIVER_PYTHON': sys.executable}
         with (work / 'legacy.log').open('w') as log:
             subprocess.run([sys.executable, str(HERE / 'legacy.py')], env=env,
                            stdout=log, stderr=subprocess.STDOUT, check=True, timeout=240)
         before.execute('CREATE SCHEMA IF NOT EXISTS SFX_USERS')
         for job in JOBS:
-            # Identifier comes from JOBS; the Parquet path is bound.
-            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-            before.execute(f'CREATE OR REPLACE TABLE SFX_USERS.{job.upper()} AS SELECT * FROM read_parquet(?)',
-                           [str(work / 'legacy' / job / '*.parquet')])
+            statement = sqlglot.parse_one('CREATE OR REPLACE TABLE placeholder AS SELECT * FROM read_parquet(?)', read='duckdb')
+            statement.set('this', table_expression('SFX_USERS', job.upper()))
+            before.execute(statement.sql(dialect='duckdb'), [str(work / 'legacy' / job / '*.parquet')])
             ready.add('USERS.' + job.upper())
             errors.pop('USERS.' + job.upper(), None)
         print(f'Input: legacy Spark fixture, seed={FIXTURE_SEED}, rows={rows}; both sides read identical PSV files')
