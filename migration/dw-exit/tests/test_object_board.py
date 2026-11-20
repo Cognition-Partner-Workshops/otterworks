@@ -159,3 +159,38 @@ def test_make_command_line_token_selects_namespace():
     output=subprocess.check_output(['make','-n','sfx-teradata-validate','RUN_TOKEN=sfx2220'],cwd=ROOT,text=True)
     assert 'sfx-2220-before' in output
     assert 'sfx-1119-before' not in output
+
+
+def test_group_scopes_rows_outputs_and_snowflake_column(tmp_path, relations):
+    before, after = relations
+    before.execute("INSERT INTO SFX_BILLING.T VALUES (1,'x')")
+    after.execute("INSERT INTO BILLING.T VALUES (1,'x')")
+    (tmp_path/'group.yaml').write_text('name: billing/t\nobjects: [two, one]\noutputs:\n  two: [SFX_BILLING.T]\n')
+    group = board.load_group(tmp_path)
+    manifest = board.select_group({'objects': [obj(), obj(id='two', system='spark', output_relations=[]), obj(id='other')]}, group)
+    assert [o['id'] for o in manifest['objects']] == ['two', 'one']
+    result = board.build_board(manifest, before, after, {'BILLING.T'}, outputs=group['outputs'],
+                               snowflake_reason='login down', group=group['name'])
+    assert result['group'] == 'billing/t' and result['summary']['rows'] == 2
+    assert [r['status'] for r in result['rows']] == ['green', 'green']
+    assert all(r['snowflake'] == {'status': 'red', 'reason': 'login down'} for r in result['rows'])
+    with pytest.raises(ValueError):
+        board.select_group({'objects': [obj()]}, group)
+
+
+def test_group_conversions_and_hook_use_group_schema(tmp_path):
+    before = duckdb.connect()
+    try:
+        before.execute('CREATE SCHEMA SFX_USERS')
+        before.execute('CREATE TABLE SFX_USERS.STG_T (ID INTEGER)')
+        before.execute('INSERT INTO SFX_USERS.STG_T VALUES (1),(2)')
+        (tmp_path/'10_load.sql').write_text('CREATE TABLE SFX_1119.USERS.T AS SELECT * FROM SFX_1119.USERS.STG_T;')
+        (tmp_path/'hook.py').write_text("def materialize(before, after, ready, errors):\n    ready.add('USERS.HOOKED')\n")
+        after, ready, errors = board.materialize(before, {'SFX_USERS.STG_T', 'SFX_BILLING.X'}, tmp_path, ('USERS',))
+        try:
+            assert after.execute('SELECT COUNT(*) FROM USERS.T').fetchone() == (2,)
+            assert {'USERS.STG_T', 'USERS.T', 'USERS.HOOKED'} <= ready and not errors
+        finally:
+            after.close()
+    finally:
+        before.close()
