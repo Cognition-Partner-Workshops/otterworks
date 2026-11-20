@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e
-export TD_JDBC_PASSWORD=Fake-sfx1119-jdbc
+: "${TD_JDBC_PASSWORD:?TD_JDBC_PASSWORD is required}"
+export TD_JDBC_PASSWORD
 export AWS_ACCESS_KEY_ID=Fake-sfx1119-access
 export AWS_SECRET_ACCESS_KEY=Fake-sfx1119-secret
 /opt/spark/bin/spark-submit \

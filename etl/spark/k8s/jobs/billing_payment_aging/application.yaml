@@ -44,7 +44,10 @@ spec:
       - name: "TD_JDBC_USER"
         value: "etl_batch"
       - name: "TD_JDBC_PASSWORD"
-        value: "Fake-sfx1119-jdbc"
+        valueFrom:
+          secretKeyRef:
+            name: "sfx-d1110-jdbc"
+            key: "password"
       - name: "AWS_ACCESS_KEY_ID"
         value: "Fake-sfx1119-access"
       - name: "AWS_SECRET_ACCESS_KEY"
@@ -75,7 +78,10 @@ spec:
       - name: "TD_JDBC_USER"
         value: "etl_batch"
       - name: "TD_JDBC_PASSWORD"
-        value: "Fake-sfx1119-jdbc"
+        valueFrom:
+          secretKeyRef:
+            name: "sfx-d1110-jdbc"
+            key: "password"
       - name: "AWS_ACCESS_KEY_ID"
         value: "Fake-sfx1119-access"
       - name: "AWS_SECRET_ACCESS_KEY"
