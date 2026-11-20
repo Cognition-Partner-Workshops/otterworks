@@ -18,6 +18,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'migration/dw-exit/tools'))
+sys.path.insert(0, str(ROOT / 'migration/dw-exit'))
 from warehouse.run_config import RunConfig
 from assess import board as wave_board
 sys.path.insert(0, str(ROOT / 'migration/dw-exit'))
@@ -35,6 +36,7 @@ def relation_contract(objects):
                  **({'output_artifacts': audit_artifacts(obj)} if audit_artifacts(obj) else {}))
             if obj['subject_area'] == 'audit' else dict(obj) for obj in objects]
 
+from parity import dbc_retire
 
 
 def quote(name):
@@ -209,11 +211,17 @@ def base_build_board(manifest, before=None, after=None, available=None, errors=N
         'local_target': 'DuckDB', 'conversions': ['billing/initial/10_load.sql','billing/initial/30_views.sql'],
         'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
     available, errors = set(available or ()), errors or {}
+    dbc = dbc_retire.materialize() if target == 'duckdb' and any(o['subject_area'] == 'dbc' for o in objects) else None
+    dbc_callers = dbc_retire.callers() if dbc is not None else []
+    dbc_references = dbc_retire.callers(('warehouse', 'scripts')) if dbc is not None else []
     for obj in objects:
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
         row.update(status='red', migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'),
                    row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
-        if obj['system'] == 'spark':
+        if obj['subject_area'] == 'dbc' and dbc is not None:
+            row.update(dbc_retire.measure(obj, dbc, dbc_callers))
+            row['retire_evidence']['tooling_references'] = dbc_references
+        elif obj['system'] == 'spark':
             if obj.get('source') and (ROOT / obj['source']).is_file():
                 row.update(source=obj['source'], source_ref=obj.get('source_ref'))
                 row['reason'] = 'Spark source available; output not materialized locally'
@@ -242,7 +250,11 @@ def base_build_board(manifest, before=None, after=None, available=None, errors=N
                 row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
                 if row['status'] == 'red':
                     row['reason'] = 'measured parity mismatch'
+        if obj['subject_area'] == 'dbc':
+            row.update(snowflake='red', snowflake_reason='Snowflake login down; no connection attempted (sfg1120)')
         result['rows'].append(row)
+    if dbc is not None:
+        dbc.close()
     total = sum(r['licence_dependency_count'] for r in result['rows'])
     result['summary'] = dict(rows=len(objects), red=sum(r['status']=='red' for r in result['rows']),
         green=sum(r['status']=='green' for r in result['rows']), measured=sum(r['row_count'] is not None for r in result['rows']),
@@ -368,8 +380,8 @@ def main():
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         readme = args.output.parent / 'README.md'
         if readme.exists():
-            text = readme.read_text().split('## Audit parity provenance')[0]
-            readme.write_text(text.rstrip()+'\n\n'+audit_markdown(payload['rows']))
+            text = readme.read_text().split('## Audit parity provenance')[0].split('## DBC parity provenance')[0]
+            readme.write_text(text.rstrip()+'\n\n'+audit_markdown(payload['rows'])+'\n'+dbc_retire.markdown(payload['rows']))
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
         if before is not None:
