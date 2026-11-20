@@ -1,0 +1,6 @@
+version: 2
+sources:
+  - name: fixture
+    schema: SNOWFLAKE_ONLY
+    tables:
+      - name: STG_T

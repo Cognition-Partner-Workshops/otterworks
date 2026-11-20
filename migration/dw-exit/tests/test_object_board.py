@@ -1,10 +1,14 @@
+import builtins
 import importlib.util
+import json
 from pathlib import Path
+import socket
 import sys
 import subprocess
 
 import duckdb
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
@@ -71,6 +75,33 @@ def test_unavailable_never_invents_measurements(changes,reason):
     assert all(row[field] is None for field in ('row_count','column_profile','keyed_row_hash','sampled_differences'))
 
 
+@pytest.mark.parametrize('kind,condition', [
+    ('bteq', 'capture its result or export'),
+    ('macro', 'capture its result as a relation'),
+    ('spark_job', 'Declare the Spark job output'),
+])
+def test_no_output_green_conditions(kind, condition):
+    row = board.build_board({'objects': [obj(kind=kind, output_relations=[])]})['rows'][0]
+    assert row['status'] == 'red'
+    assert condition in row['targets']['duckdb']['green_condition']
+
+
+@pytest.mark.parametrize('outputs', [[], ['SFX_BILLING.T']])
+def test_retirement_stays_red_pending_s2_1(relations, outputs):
+    before, after = relations
+    manifest = {'objects': [obj(target_type='retire', output_relations=outputs)], 'dead': ['job']}
+    row = board.build_board(manifest, before, after, {'BILLING.T'})['rows'][0]
+    assert row['status'] == 'red'
+    assert 'pending s2.1' in row['reason']
+    condition = row['targets']['duckdb']['green_condition']
+    assert 'Unused evidence' in condition
+    assert 'no non-retired manifest object' in condition
+    assert 'no consumer in consumers/registry.yaml' in condition
+    assert 'owner sign-off in migration/dw-exit/retirements/<id>.yaml' in condition
+    assert row['targets']['snowflake']['status'] == 'red'
+    assert row['row_count'] is None
+
+
 def test_measurement_error_and_column_mismatch(relations):
     before,after=relations
     after.execute('ALTER TABLE BILLING.T RENAME VALUE TO OTHER')
@@ -98,6 +129,63 @@ def test_empty_manifest_and_snowflake_plan(relations):
     assert row['reason']=='Snowflake target selected; execution disabled'
     with pytest.raises(ValueError):
         board.build_board({'objects':[]},target='unknown')
+
+
+def test_two_columns_and_subject_area_summary(relations):
+    before, after = relations
+    before.execute("INSERT INTO SFX_BILLING.T VALUES (1, 'x')")
+    after.execute("INSERT INTO BILLING.T VALUES (1, 'x')")
+    manifest = {'objects': [obj(), obj(id='two', name='missing', output_relations=[]),
+                            obj(id='three', name='spark', subject_area='users', system='spark')]}
+    result = board.build_board(manifest, before, after, {'BILLING.T'})
+    for row, expected in zip(result['rows'], ('green', 'red', 'red'), strict=True):
+        assert set(row['targets']) == {'duckdb', 'snowflake'}
+        assert row['status'] == row['targets']['duckdb']['status'] == expected
+        assert row['migration_status'] == 'not_started'
+        assert row['targets']['snowflake'] == {
+            'status': 'red', 'reason': 'Snowflake login down; execution disabled',
+            'row_count': None, 'column_profile': None, 'keyed_row_hash': None,
+            'sampled_differences': None,
+        }
+    duckdb_cell = result['rows'][0]['targets']['duckdb']
+    assert duckdb_cell['row_count'] == {'before': 1, 'after': 1}
+    assert duckdb_cell['keyed_row_hash']['SFX_BILLING.T']['difference'] == 0
+    assert result['summary']['targets'] == {
+        'duckdb': {'green': 1, 'red': 2}, 'snowflake': {'green': 0, 'red': 3},
+    }
+    assert result['summary']['by_subject_area'] == {
+        'billing': {'duckdb': {'green': 1, 'red': 1}, 'snowflake': {'green': 0, 'red': 2}},
+        'users': {'duckdb': {'green': 0, 'red': 1}, 'snowflake': {'green': 0, 'red': 1}},
+    }
+    readme = board.render_readme(result)
+    assert '| billing | 2 | 1 | 1 | 0 green / 2 red | no declared output relation (1) |' in readme
+    assert '| Object | Subject area | DuckDB | Snowflake |' in readme
+    assert '| job | billing | green | red |' in readme
+
+
+@pytest.mark.parametrize('target', ['duckdb', 'snowflake'])
+def test_snowflake_stays_red_without_network(monkeypatch, relations, target):
+    original_import = builtins.__import__
+
+    def deny_snowflake(name, *args, **kwargs):
+        assert name.partition('.')[0] != 'snowflake' and name.rsplit('.', 1)[-1] != 'connection', name
+        return original_import(name, *args, **kwargs)
+
+    def deny_network(*args, **kwargs):
+        pytest.fail('building board cells must not open a network connection')
+
+    isolated_board = importlib.util.module_from_spec(spec)
+    with monkeypatch.context() as patch:
+        patch.setattr(builtins, '__import__', deny_snowflake)
+        patch.setattr(socket, 'socket', deny_network)
+        patch.setattr(socket, 'create_connection', deny_network)
+        patch.setattr(board.psycopg, 'connect', deny_network)
+        spec.loader.exec_module(isolated_board)
+        before, after = relations
+        result = isolated_board.build_board({'objects': [obj()]}, before, after, {'BILLING.T'}, target=target)
+    cell = result['rows'][0]['targets']['snowflake']
+    assert cell['status'] == 'red'
+    assert cell['reason'] == 'Snowflake login down; execution disabled'
 
 
 def test_straight_conversion_and_missing_input(tmp_path):
@@ -153,6 +241,25 @@ def test_manifest_fields_and_spark_references():
     assert all(r['licence_dependency'] in {'teradata','powercenter','spark','none'} and r['subject_area'] and r['wave'] and r['owner'] for r in objects)
     assert all(r['status']=='not_started' for r in objects)
     assert estate['counters']['licence_dependencies']['remaining']==252
+
+
+def test_published_board_covers_manifest_and_readme_matches():
+    root = ROOT / 'migration/dw-exit'
+    manifest = yaml.safe_load((root / 'manifest.yaml').read_text())
+    published = json.loads((root / 'board/board.json').read_text())
+    rows = published['rows']
+    assert len(rows) == len({row['id'] for row in rows}) == len(manifest['objects']) == 252
+    assert {row['id'] for row in rows} == {obj['id'] for obj in manifest['objects']}
+    assert {c['id'] for c in published['consumer_gates']} == {c['id'] for c in manifest['consumers']}
+    assert not {row['id'] for row in rows} & {c['id'] for c in manifest['consumers']}
+    assert all(row['targets']['duckdb']['green_condition'] for row in rows)
+    retiring = {obj['id'] for obj in manifest['objects'] if obj['target_type'] == 'retire'}
+    assert all(row['status'] == 'red' and 'pending s2.1' in row['reason']
+               for row in rows if row['id'] in retiring)
+    assert published['summary']['targets'] == board.parity_counts(rows)
+    for area, counts in published['summary']['by_subject_area'].items():
+        assert counts == board.parity_counts([row for row in rows if row['subject_area'] == area])
+    assert (root / 'board/README.md').read_text() == board.render_readme(published)
 
 
 def test_make_command_line_token_selects_namespace():
