@@ -3,8 +3,15 @@
     "decision_id": "dbc-missing-query-log-fields",
     "object": "Six DBC catalog compatibility views",
     "status": "approved",
-    "old_behaviour": "DBQL exposes legacy CPU, IO and client-id metrics.",
-    "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
-    "missing_fields": ["AMPCPUTime", "TotalIOCount", "ClientID"]
+    "old_behaviour": "DBQL exposes legacy metrics, collection/access timestamps and macro/procedure catalog and EXECUTE attribution.",
+    "new_behaviour": "Owner-approved Snowflake semantics: unavailable CPU, IO, client-id and ProcID are NULL; collection and last-access timestamps may differ; macro/procedure EXECUTE attribution and M/P catalog rows may be absent. StatementGroup and every other retained field and row multiplicity must match.",
+    "missing_fields": ["AMPCPUTime", "TotalIOCount", "ClientID", "ProcID"],
+    "ignored_fields": ["CollectTimeStamp", "LastAccessTimeStamp"],
+    "relation_scopes": {
+      "DBC_QRYLOGOBJECTS": {"UsageType": ["EXECUTE"], "ObjectType": ["M", "P"]},
+      "QRYLOGOBJECTSV": {"UsageType": ["EXECUTE"], "ObjectType": ["M", "P"]},
+      "DBC_TABLESV": {"TableKind": ["M", "P"]},
+      "TABLESV": {"TableKind": ["M", "P"]}
+    }
   }
 ]

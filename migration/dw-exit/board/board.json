@@ -28228,8 +28228,14 @@
         "missing_fields": [
           "AMPCPUTime",
           "ClientID",
+          "ProcID",
           "TotalIOCount"
         ],
+        "ignored_fields": [
+          "CollectTimeStamp"
+        ],
+        "missing_row_scope": {},
+        "excluded_source_rows": 0,
         "unavailable_fields_are_null": true,
         "approved_comparison": {
           "passed": false,
@@ -28237,11 +28243,9 @@
             "before": 8080,
             "after": 8080
           },
-          "removed_rows": 8080,
-          "added_rows": 8080,
+          "removed_rows": 4770,
+          "added_rows": 4770,
           "compared_columns": [
-            "ProcID",
-            "CollectTimeStamp",
             "QueryID",
             "UserName",
             "DefaultDatabase",
@@ -28256,11 +28260,11 @@
           ]
         },
         "status": "approved",
-        "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
+        "new_behaviour": "Owner-approved Snowflake semantics: unavailable CPU, IO, client-id and ProcID are NULL; collection and last-access timestamps may differ; macro/procedure EXECUTE attribution and M/P catalog rows may be absent. StatementGroup and every other retained field and row multiplicity must match.",
         "residual_contract": {
           "old_behaviour": "DBQL preserves ProcID, collect timestamp, ClientID, CPU, IO and statement group",
           "new_behaviour": "ACCOUNT_USAGE has no equivalent fields; NULL for unavailable metrics, QUERY_TAG assumed AppID, END_TIME used for collect/first response",
-          "question": "ProcID, collect timestamp and statement group differ outside the CPU/IO/client-id approval. Error code namespace equivalence also needs live validation."
+          "question": "StatementGroup differences remain unapproved. Error code namespace equivalence also needs live validation."
         }
       },
       "mapped_columns_parity": {
@@ -28430,7 +28434,7 @@
       ],
       "emulator": {
         "status": "red",
-        "rows": 8284,
+        "rows": 8296,
         "csv_rows": 8080,
         "scope": "full relation, including runtime tooling writes",
         "window_reads": 2,
@@ -28756,7 +28760,7 @@
       "owner": "@otterworks/finance-reporting",
       "subject_area": "dbc",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "approved_deviation",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
@@ -29018,8 +29022,8 @@
           ]
         }
       ],
-      "reason": "Differences outside approved missing-field scope; see owner_decision.approved_comparison",
-      "local_duckdb": "red",
+      "reason": "Owner-approved Snowflake semantics: unavailable CPU, IO, client-id and ProcID are NULL; collection and last-access timestamps may differ; macro/procedure EXECUTE attribution and M/P catalog rows may be absent. StatementGroup and every other retained field and row multiplicity must match.",
+      "local_duckdb": "approved_deviation",
       "snowflake": "red",
       "snowflake_reason": "Role lacks grant; live ACCOUNT_USAGE unverified; no connection attempted",
       "retire_evidence": {
@@ -29126,16 +29130,27 @@
       },
       "owner_decision": {
         "decision_id": "dbc-missing-query-log-fields",
-        "scope_valid": false,
+        "scope_valid": true,
         "missing_fields": [],
+        "ignored_fields": [],
+        "missing_row_scope": {
+          "UsageType": [
+            "EXECUTE"
+          ],
+          "ObjectType": [
+            "M",
+            "P"
+          ]
+        },
+        "excluded_source_rows": 810,
         "unavailable_fields_are_null": true,
         "approved_comparison": {
-          "passed": false,
+          "passed": true,
           "row_count": {
             "before": 20443,
             "after": 19633
           },
-          "removed_rows": 810,
+          "removed_rows": 0,
           "added_rows": 0,
           "compared_columns": [
             "QueryID",
@@ -29146,11 +29161,11 @@
           ]
         },
         "status": "approved",
-        "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
+        "new_behaviour": "Owner-approved Snowflake semantics: unavailable CPU, IO, client-id and ProcID are NULL; collection and last-access timestamps may differ; macro/procedure EXECUTE attribution and M/P catalog rows may be absent. StatementGroup and every other retained field and row multiplicity must match.",
         "residual_contract": {
           "old_behaviour": "ObjectUsage includes READ, WRITE and EXECUTE and T/V/M/P kinds",
           "new_behaviour": "DIRECT_OBJECTS_ACCESSED reads plus OBJECTS_MODIFIED writes; EXECUTE and M/P attribution not established by these arrays or QUERY_HISTORY",
-          "question": "Approve excluding legacy macro/procedure EXECUTE lineage, or supply an authoritative target attribution contract?"
+          "question": "Missing M/P EXECUTE attribution approved; every other usage row must still match."
         }
       },
       "mapped_columns_parity": {
@@ -29259,7 +29274,7 @@
       ],
       "emulator": {
         "status": "red",
-        "rows": 20785,
+        "rows": 20803,
         "csv_rows": 20443,
         "scope": "full relation, including runtime tooling writes",
         "window_reads": 2,
@@ -29575,7 +29590,44 @@
         "sampled_differences": [],
         "passed": true
       },
-      "emulation_assumption": "QUERY_HISTORY, ACCESS_HISTORY and TABLES synthesized from identical DBQL CSVs, not Snowflake data; QUERY_TAG=AppID assumed"
+      "emulation_assumption": "QUERY_HISTORY, ACCESS_HISTORY and TABLES synthesized from identical DBQL CSVs, not Snowflake data; QUERY_TAG=AppID assumed",
+      "measurement_status": "red",
+      "decision_state": "approved",
+      "owner_decision_evidence": [
+        {
+          "decision_id": "dbc-missing-query-log-fields",
+          "scope_valid": true,
+          "missing_fields": [],
+          "ignored_fields": [],
+          "missing_row_scope": {
+            "UsageType": [
+              "EXECUTE"
+            ],
+            "ObjectType": [
+              "M",
+              "P"
+            ]
+          },
+          "excluded_source_rows": 810,
+          "unavailable_fields_are_null": true,
+          "approved_comparison": {
+            "passed": true,
+            "row_count": {
+              "before": 20443,
+              "after": 19633
+            },
+            "removed_rows": 0,
+            "added_rows": 0,
+            "compared_columns": [
+              "QueryID",
+              "ObjectDatabaseName",
+              "ObjectTableName",
+              "ObjectType",
+              "UsageType"
+            ]
+          }
+        }
+      ]
     },
     {
       "id": "nead75e45ecc6b8c1",
@@ -29585,7 +29637,7 @@
       "owner": "@otterworks/finance-reporting",
       "subject_area": "dbc",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "approved_deviation",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
@@ -30037,8 +30089,8 @@
           ]
         }
       ],
-      "reason": "Differences outside approved missing-field scope; see owner_decision.approved_comparison",
-      "local_duckdb": "red",
+      "reason": "Owner-approved Snowflake semantics: unavailable CPU, IO, client-id and ProcID are NULL; collection and last-access timestamps may differ; macro/procedure EXECUTE attribution and M/P catalog rows may be absent. StatementGroup and every other retained field and row multiplicity must match.",
+      "local_duckdb": "approved_deviation",
       "snowflake": "red",
       "snowflake_reason": "Role lacks grant; live ACCOUNT_USAGE unverified; no connection attempted",
       "retire_evidence": {
@@ -30145,32 +30197,41 @@
       },
       "owner_decision": {
         "decision_id": "dbc-missing-query-log-fields",
-        "scope_valid": false,
+        "scope_valid": true,
         "missing_fields": [],
+        "ignored_fields": [
+          "LastAccessTimeStamp"
+        ],
+        "missing_row_scope": {
+          "TableKind": [
+            "M",
+            "P"
+          ]
+        },
+        "excluded_source_rows": 10,
         "unavailable_fields_are_null": true,
         "approved_comparison": {
-          "passed": false,
+          "passed": true,
           "row_count": {
             "before": 111,
             "after": 101
           },
-          "removed_rows": 15,
-          "added_rows": 5,
+          "removed_rows": 0,
+          "added_rows": 0,
           "compared_columns": [
             "DatabaseName",
             "TableName",
             "TableKind",
             "CreateTimeStamp",
-            "LastAccessTimeStamp",
             "AccessCount"
           ]
         },
         "status": "approved",
-        "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
+        "new_behaviour": "Owner-approved Snowflake semantics: unavailable CPU, IO, client-id and ProcID are NULL; collection and last-access timestamps may differ; macro/procedure EXECUTE attribution and M/P catalog rows may be absent. StatementGroup and every other retained field and row multiplicity must match.",
         "residual_contract": {
           "old_behaviour": "generate.py increments access for every usage (READ/WRITE/EXECUTE), and defaults never-accessed last timestamp to 2026-07-01 17:30:00",
           "new_behaviour": "read/write access aggregate; never-accessed timestamp NULL; TABLES lacks procedure/macro coverage",
-          "question": "Approve read/write-only counts, NULL never-accessed timestamp and reduced catalog scope, or specify a replacement contract?"
+          "question": "M/P catalog omissions and last-access timestamps approved; access counts and retained T/V rows must still match."
         }
       },
       "mapped_columns_parity": {
@@ -30584,7 +30645,43 @@
         "sampled_differences": [],
         "passed": true
       },
-      "emulation_assumption": "QUERY_HISTORY, ACCESS_HISTORY and TABLES synthesized from identical DBQL CSVs, not Snowflake data; QUERY_TAG=AppID assumed"
+      "emulation_assumption": "QUERY_HISTORY, ACCESS_HISTORY and TABLES synthesized from identical DBQL CSVs, not Snowflake data; QUERY_TAG=AppID assumed",
+      "measurement_status": "red",
+      "decision_state": "approved",
+      "owner_decision_evidence": [
+        {
+          "decision_id": "dbc-missing-query-log-fields",
+          "scope_valid": true,
+          "missing_fields": [],
+          "ignored_fields": [
+            "LastAccessTimeStamp"
+          ],
+          "missing_row_scope": {
+            "TableKind": [
+              "M",
+              "P"
+            ]
+          },
+          "excluded_source_rows": 10,
+          "unavailable_fields_are_null": true,
+          "approved_comparison": {
+            "passed": true,
+            "row_count": {
+              "before": 111,
+              "after": 101
+            },
+            "removed_rows": 0,
+            "added_rows": 0,
+            "compared_columns": [
+              "DatabaseName",
+              "TableName",
+              "TableKind",
+              "CreateTimeStamp",
+              "AccessCount"
+            ]
+          }
+        }
+      ]
     },
     {
       "id": "nb66dbaba0e618e92",
@@ -30594,7 +30691,7 @@
       "owner": "@otterworks/finance-reporting",
       "subject_area": "dbc",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "approved_deviation",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
@@ -30856,8 +30953,8 @@
           ]
         }
       ],
-      "reason": "Differences outside approved missing-field scope; see owner_decision.approved_comparison",
-      "local_duckdb": "red",
+      "reason": "Owner-approved Snowflake semantics: unavailable CPU, IO, client-id and ProcID are NULL; collection and last-access timestamps may differ; macro/procedure EXECUTE attribution and M/P catalog rows may be absent. StatementGroup and every other retained field and row multiplicity must match.",
+      "local_duckdb": "approved_deviation",
       "snowflake": "red",
       "snowflake_reason": "Role lacks grant; live ACCOUNT_USAGE unverified; no connection attempted",
       "retire_evidence": {
@@ -30928,16 +31025,27 @@
       },
       "owner_decision": {
         "decision_id": "dbc-missing-query-log-fields",
-        "scope_valid": false,
+        "scope_valid": true,
         "missing_fields": [],
+        "ignored_fields": [],
+        "missing_row_scope": {
+          "UsageType": [
+            "EXECUTE"
+          ],
+          "ObjectType": [
+            "M",
+            "P"
+          ]
+        },
+        "excluded_source_rows": 810,
         "unavailable_fields_are_null": true,
         "approved_comparison": {
-          "passed": false,
+          "passed": true,
           "row_count": {
             "before": 20443,
             "after": 19633
           },
-          "removed_rows": 810,
+          "removed_rows": 0,
           "added_rows": 0,
           "compared_columns": [
             "QueryID",
@@ -30948,11 +31056,11 @@
           ]
         },
         "status": "approved",
-        "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
+        "new_behaviour": "Owner-approved Snowflake semantics: unavailable CPU, IO, client-id and ProcID are NULL; collection and last-access timestamps may differ; macro/procedure EXECUTE attribution and M/P catalog rows may be absent. StatementGroup and every other retained field and row multiplicity must match.",
         "residual_contract": {
           "old_behaviour": "ObjectUsage includes READ, WRITE and EXECUTE and T/V/M/P kinds",
           "new_behaviour": "DIRECT_OBJECTS_ACCESSED reads plus OBJECTS_MODIFIED writes; EXECUTE and M/P attribution not established by these arrays or QUERY_HISTORY",
-          "question": "Approve excluding legacy macro/procedure EXECUTE lineage, or supply an authoritative target attribution contract?"
+          "question": "Missing M/P EXECUTE attribution approved; every other usage row must still match."
         }
       },
       "mapped_columns_parity": {
@@ -31061,7 +31169,7 @@
       ],
       "emulator": {
         "status": "red",
-        "rows": 20785,
+        "rows": 20803,
         "csv_rows": 20443,
         "scope": "full relation, including runtime tooling writes",
         "window_reads": 1,
@@ -31372,7 +31480,44 @@
         "sampled_differences": [],
         "passed": true
       },
-      "emulation_assumption": "QUERY_HISTORY, ACCESS_HISTORY and TABLES synthesized from identical DBQL CSVs, not Snowflake data; QUERY_TAG=AppID assumed"
+      "emulation_assumption": "QUERY_HISTORY, ACCESS_HISTORY and TABLES synthesized from identical DBQL CSVs, not Snowflake data; QUERY_TAG=AppID assumed",
+      "measurement_status": "red",
+      "decision_state": "approved",
+      "owner_decision_evidence": [
+        {
+          "decision_id": "dbc-missing-query-log-fields",
+          "scope_valid": true,
+          "missing_fields": [],
+          "ignored_fields": [],
+          "missing_row_scope": {
+            "UsageType": [
+              "EXECUTE"
+            ],
+            "ObjectType": [
+              "M",
+              "P"
+            ]
+          },
+          "excluded_source_rows": 810,
+          "unavailable_fields_are_null": true,
+          "approved_comparison": {
+            "passed": true,
+            "row_count": {
+              "before": 20443,
+              "after": 19633
+            },
+            "removed_rows": 0,
+            "added_rows": 0,
+            "compared_columns": [
+              "QueryID",
+              "ObjectDatabaseName",
+              "ObjectTableName",
+              "ObjectType",
+              "UsageType"
+            ]
+          }
+        }
+      ]
     },
     {
       "id": "n86d47bca6ce013e3",
@@ -32164,8 +32309,14 @@
         "missing_fields": [
           "AMPCPUTime",
           "ClientID",
+          "ProcID",
           "TotalIOCount"
         ],
+        "ignored_fields": [
+          "CollectTimeStamp"
+        ],
+        "missing_row_scope": {},
+        "excluded_source_rows": 0,
         "unavailable_fields_are_null": true,
         "approved_comparison": {
           "passed": false,
@@ -32173,11 +32324,9 @@
             "before": 8080,
             "after": 8080
           },
-          "removed_rows": 8080,
-          "added_rows": 8080,
+          "removed_rows": 4770,
+          "added_rows": 4770,
           "compared_columns": [
-            "ProcID",
-            "CollectTimeStamp",
             "QueryID",
             "UserName",
             "DefaultDatabase",
@@ -32192,11 +32341,11 @@
           ]
         },
         "status": "approved",
-        "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
+        "new_behaviour": "Owner-approved Snowflake semantics: unavailable CPU, IO, client-id and ProcID are NULL; collection and last-access timestamps may differ; macro/procedure EXECUTE attribution and M/P catalog rows may be absent. StatementGroup and every other retained field and row multiplicity must match.",
         "residual_contract": {
           "old_behaviour": "DBQL preserves ProcID, collect timestamp, ClientID, CPU, IO and statement group",
           "new_behaviour": "ACCOUNT_USAGE has no equivalent fields; NULL for unavailable metrics, QUERY_TAG assumed AppID, END_TIME used for collect/first response",
-          "question": "ProcID, collect timestamp and statement group differ outside the CPU/IO/client-id approval. Error code namespace equivalence also needs live validation."
+          "question": "StatementGroup differences remain unapproved. Error code namespace equivalence also needs live validation."
         }
       },
       "mapped_columns_parity": {
@@ -32366,7 +32515,7 @@
       ],
       "emulator": {
         "status": "red",
-        "rows": 8284,
+        "rows": 8296,
         "csv_rows": 8080,
         "scope": "full relation, including runtime tooling writes",
         "window_reads": 1,
@@ -32687,7 +32836,7 @@
       "owner": "@otterworks/finance-reporting",
       "subject_area": "dbc",
       "licence_dependency": "teradata",
-      "status": "red",
+      "status": "approved_deviation",
       "migration_status": "not_started",
       "licence_dependency_count": 1,
       "row_count": {
@@ -33139,8 +33288,8 @@
           ]
         }
       ],
-      "reason": "Differences outside approved missing-field scope; see owner_decision.approved_comparison",
-      "local_duckdb": "red",
+      "reason": "Owner-approved Snowflake semantics: unavailable CPU, IO, client-id and ProcID are NULL; collection and last-access timestamps may differ; macro/procedure EXECUTE attribution and M/P catalog rows may be absent. StatementGroup and every other retained field and row multiplicity must match.",
+      "local_duckdb": "approved_deviation",
       "snowflake": "red",
       "snowflake_reason": "Role lacks grant; live ACCOUNT_USAGE unverified; no connection attempted",
       "retire_evidence": {
@@ -33211,32 +33360,41 @@
       },
       "owner_decision": {
         "decision_id": "dbc-missing-query-log-fields",
-        "scope_valid": false,
+        "scope_valid": true,
         "missing_fields": [],
+        "ignored_fields": [
+          "LastAccessTimeStamp"
+        ],
+        "missing_row_scope": {
+          "TableKind": [
+            "M",
+            "P"
+          ]
+        },
+        "excluded_source_rows": 10,
         "unavailable_fields_are_null": true,
         "approved_comparison": {
-          "passed": false,
+          "passed": true,
           "row_count": {
             "before": 111,
             "after": 101
           },
-          "removed_rows": 15,
-          "added_rows": 5,
+          "removed_rows": 0,
+          "added_rows": 0,
           "compared_columns": [
             "DatabaseName",
             "TableName",
             "TableKind",
             "CreateTimeStamp",
-            "LastAccessTimeStamp",
             "AccessCount"
           ]
         },
         "status": "approved",
-        "new_behaviour": "Owner-approved Snowflake query-log semantics: unavailable AMPCPUTime, TotalIOCount and ClientID are NULL. Only these missing fields may differ; all other columns and row multiplicities must match.",
+        "new_behaviour": "Owner-approved Snowflake semantics: unavailable CPU, IO, client-id and ProcID are NULL; collection and last-access timestamps may differ; macro/procedure EXECUTE attribution and M/P catalog rows may be absent. StatementGroup and every other retained field and row multiplicity must match.",
         "residual_contract": {
           "old_behaviour": "generate.py increments access for every usage (READ/WRITE/EXECUTE), and defaults never-accessed last timestamp to 2026-07-01 17:30:00",
           "new_behaviour": "read/write access aggregate; never-accessed timestamp NULL; TABLES lacks procedure/macro coverage",
-          "question": "Approve read/write-only counts, NULL never-accessed timestamp and reduced catalog scope, or specify a replacement contract?"
+          "question": "M/P catalog omissions and last-access timestamps approved; access counts and retained T/V rows must still match."
         }
       },
       "mapped_columns_parity": {
@@ -33645,7 +33803,43 @@
         "sampled_differences": [],
         "passed": true
       },
-      "emulation_assumption": "QUERY_HISTORY, ACCESS_HISTORY and TABLES synthesized from identical DBQL CSVs, not Snowflake data; QUERY_TAG=AppID assumed"
+      "emulation_assumption": "QUERY_HISTORY, ACCESS_HISTORY and TABLES synthesized from identical DBQL CSVs, not Snowflake data; QUERY_TAG=AppID assumed",
+      "measurement_status": "red",
+      "decision_state": "approved",
+      "owner_decision_evidence": [
+        {
+          "decision_id": "dbc-missing-query-log-fields",
+          "scope_valid": true,
+          "missing_fields": [],
+          "ignored_fields": [
+            "LastAccessTimeStamp"
+          ],
+          "missing_row_scope": {
+            "TableKind": [
+              "M",
+              "P"
+            ]
+          },
+          "excluded_source_rows": 10,
+          "unavailable_fields_are_null": true,
+          "approved_comparison": {
+            "passed": true,
+            "row_count": {
+              "before": 111,
+              "after": 101
+            },
+            "removed_rows": 0,
+            "added_rows": 0,
+            "compared_columns": [
+              "DatabaseName",
+              "TableName",
+              "TableKind",
+              "CreateTimeStamp",
+              "AccessCount"
+            ]
+          }
+        }
+      ]
     },
     {
       "id": "nee272b6a4740c39c",
@@ -76480,12 +76674,12 @@
   },
   "summary": {
     "rows": 252,
-    "red": 6,
+    "red": 2,
     "retire_verified": 4,
     "green": 227,
     "amber": 1,
     "measured": 238,
-    "approved_deviation": 4,
+    "approved_deviation": 8,
     "migrated": 0,
     "licence_remaining": 252,
     "licence_total": 252,
@@ -76561,10 +76755,10 @@
       "dbc": {
         "total": 6,
         "green": 0,
-        "approved_deviation": 0,
+        "approved_deviation": 4,
         "amber": 0,
         "retire": 0,
-        "red": 6
+        "red": 2
       },
       "documents": {
         "total": 59,
@@ -77076,10 +77270,10 @@
         ""
       ],
       "log": [
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : FR_3055 : Reading data from input source file [/home/ubuntu/repos/otterworks/warehouse/landing/audit/AUDIT_EVENT/20261109.psv]",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [FF_AUDIT_EVENT]: read [200] rows through [SQ_FF_AUDIT_EVENT]",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8124 : Target Table stg_audit_event :Truncated using DELETE FROM",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee.stg_audit_event] (instance [STG_AUDIT_EVENT]) row count before load [0], after load [200]"
+        "2026-11-20 17:10:53 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : FR_3055 : Reading data from input source file [/home/ubuntu/repos/otterworks/warehouse/landing/audit/AUDIT_EVENT/20261109.psv]",
+        "2026-11-20 17:10:53 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [FF_AUDIT_EVENT]: read [200] rows through [SQ_FF_AUDIT_EVENT]",
+        "2026-11-20 17:10:53 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8124 : Target Table stg_audit_event :Truncated using DELETE FROM",
+        "2026-11-20 17:10:53 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5cc4bff982084945a2bc2b888462a742.stg_audit_event] (instance [STG_AUDIT_EVENT]) row count before load [0], after load [200]"
       ]
     },
     "s_m_SFX_AUDIT_EVENT": {
@@ -77091,9 +77285,9 @@
         ""
       ],
       "log": [
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : RR_4049 : SQL Query issued to database : (Fri Nov 20 16:55:15 2026) [SELECT \"event_id\", \"actor_user_id\", \"document_id\", \"customer_id\", \"event_ts\", \"event_type\", \"details\" FROM \"audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee\".\"stg_audit_event\"]",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [STG_AUDIT_EVENT]: read [200] rows through [SQ_STG_AUDIT_EVENT]",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee.audit_event] (instance [AUDIT_EVENT]) row count before load [0], after load [200]"
+        "2026-11-20 17:10:53 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : RR_4049 : SQL Query issued to database : (Fri Nov 20 17:10:53 2026) [SELECT \"event_id\", \"actor_user_id\", \"document_id\", \"customer_id\", \"event_ts\", \"event_type\", \"details\" FROM \"audit_parity_5cc4bff982084945a2bc2b888462a742\".\"stg_audit_event\"]",
+        "2026-11-20 17:10:53 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [STG_AUDIT_EVENT]: read [200] rows through [SQ_STG_AUDIT_EVENT]",
+        "2026-11-20 17:10:53 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5cc4bff982084945a2bc2b888462a742.audit_event] (instance [AUDIT_EVENT]) row count before load [0], after load [200]"
       ]
     },
     "s_m_SFX_AUDIT_DAILY_SUMMARY": {
@@ -77105,10 +77299,10 @@
         ""
       ],
       "log": [
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : RR_4049 : SQL Query issued to database : (Fri Nov 20 16:55:15 2026) [SELECT \"event_id\", \"customer_id\", \"event_ts\", \"event_type\" FROM \"audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee\".\"audit_event\"]",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [AUDIT_EVENT]: read [200] rows through [SQ_AUDIT_EVENT]",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11031 : Aggregator [AGG_DAILY_EVENTS]: [60] groups produced",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee.audit_daily_summary] (instance [AUDIT_DAILY_SUMMARY]) row count before load [0], after load [60]"
+        "2026-11-20 17:10:53 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : RR_4049 : SQL Query issued to database : (Fri Nov 20 17:10:53 2026) [SELECT \"event_id\", \"customer_id\", \"event_ts\", \"event_type\" FROM \"audit_parity_5cc4bff982084945a2bc2b888462a742\".\"audit_event\"]",
+        "2026-11-20 17:10:53 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [AUDIT_EVENT]: read [200] rows through [SQ_AUDIT_EVENT]",
+        "2026-11-20 17:10:53 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11031 : Aggregator [AGG_DAILY_EVENTS]: [60] groups produced",
+        "2026-11-20 17:10:54 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5cc4bff982084945a2bc2b888462a742.audit_daily_summary] (instance [AUDIT_DAILY_SUMMARY]) row count before load [0], after load [60]"
       ]
     },
     "s_m_SFX_SECURITY_ALERT": {
@@ -77120,14 +77314,14 @@
         ""
       ],
       "log": [
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : FR_3055 : Reading data from input source file [/home/ubuntu/repos/otterworks/warehouse/landing/audit/SECURITY_ALERT/20261109.psv]",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [FF_SECURITY_ALERT]: read [10] rows through [SQ_FF_SECURITY_ALERT]",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11033 : Router [RTR_SEVERITY] group [CRITICAL]: [2] rows",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11033 : Router [RTR_SEVERITY] group [STANDARD]: [8] rows",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11033 : Router [RTR_SEVERITY] group [DEFAULT1]: [0] rows",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee.security_alert] (instance [SECURITY_ALERT]) row count before load [0], after load [2]",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee.security_alert] (instance [SECURITY_ALERT1]) row count before load [2], after load [10]",
-        "2026-11-20 16:55:15 : INFO : (634892 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5be5fc30fcc44ec7987b1fdee8ab57ee.security_alert] (instance [SECURITY_ALERT2]) row count before load [10], after load [10]"
+        "2026-11-20 17:10:54 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : FR_3055 : Reading data from input source file [/home/ubuntu/repos/otterworks/warehouse/landing/audit/SECURITY_ALERT/20261109.psv]",
+        "2026-11-20 17:10:54 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : READER_1021 : Source [FF_SECURITY_ALERT]: read [10] rows through [SQ_FF_SECURITY_ALERT]",
+        "2026-11-20 17:10:54 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11033 : Router [RTR_SEVERITY] group [CRITICAL]: [2] rows",
+        "2026-11-20 17:10:54 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11033 : Router [RTR_SEVERITY] group [STANDARD]: [8] rows",
+        "2026-11-20 17:10:54 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : TT_11033 : Router [RTR_SEVERITY] group [DEFAULT1]: [0] rows",
+        "2026-11-20 17:10:54 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5cc4bff982084945a2bc2b888462a742.security_alert] (instance [SECURITY_ALERT]) row count before load [0], after load [2]",
+        "2026-11-20 17:10:54 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5cc4bff982084945a2bc2b888462a742.security_alert] (instance [SECURITY_ALERT1]) row count before load [2], after load [10]",
+        "2026-11-20 17:10:54 : INFO : (711742 | MANAGER) : (IS_SFX_1119) : node01_sfx : WRT_8167 : Target table [audit_parity_5cc4bff982084945a2bc2b888462a742.security_alert] (instance [SECURITY_ALERT2]) row count before load [10], after load [10]"
       ]
     },
     "raw_summary_measurement": {

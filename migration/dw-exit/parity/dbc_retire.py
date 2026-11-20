@@ -180,17 +180,18 @@ def measure(obj, db, external):
     if family in ('DBC_TABLESV','TABLESV'):
         decision = {'old_behaviour': 'generate.py increments access for every usage (READ/WRITE/EXECUTE), and defaults never-accessed last timestamp to 2026-07-01 17:30:00',
                     'new_behaviour': 'read/write access aggregate; never-accessed timestamp NULL; TABLES lacks procedure/macro coverage',
-                    'question': 'Approve read/write-only counts, NULL never-accessed timestamp and reduced catalog scope, or specify a replacement contract?'}
+                    'question': 'M/P catalog omissions and last-access timestamps approved; access counts and retained T/V rows must still match.'}
     elif family in ('DBC_QRYLOG','QRYLOGV'):
         decision = {'old_behaviour': 'DBQL preserves ProcID, collect timestamp, ClientID, CPU, IO and statement group',
                     'new_behaviour': 'ACCOUNT_USAGE has no equivalent fields; NULL for unavailable metrics, QUERY_TAG assumed AppID, END_TIME used for collect/first response',
-                    'question': 'ProcID, collect timestamp and statement group differ outside the CPU/IO/client-id approval. Error code namespace equivalence also needs live validation.'}
+                    'question': 'StatementGroup differences remain unapproved. Error code namespace equivalence also needs live validation.'}
     else:
         decision = {'old_behaviour': 'ObjectUsage includes READ, WRITE and EXECUTE and T/V/M/P kinds',
                     'new_behaviour': 'DIRECT_OBJECTS_ACCESSED reads plus OBJECTS_MODIFIED writes; EXECUTE and M/P attribution not established by these arrays or QUERY_HISTORY',
-                    'question': 'Approve excluding legacy macro/procedure EXECUTE lineage, or supply an authoritative target attribution contract?'}
+                    'question': 'Missing M/P EXECUTE attribution approved; every other usage row must still match.'}
     approval = json.loads((ROOT/'migration/dw-exit/dbc/decisions.json').read_text())[0]
-    scoped = missing_fields(db, obj['name'], 'COMPAT.'+family, comparison, approval)
+    scoped = missing_fields(db, obj['name'], 'COMPAT.'+family, comparison,
+                            {**approval, 'missing_rows':approval.get('relation_scopes',{}).get(family,{})})
     row = {**{k: comparison[k] for k in ('row_count','column_profile','keyed_row_hash','sampled_differences')},
             'status': 'green' if proof['passed'] and comparison['passed'] else 'red',
             'reason': None if proof['passed'] and comparison['passed'] else ('Owner decision: '+decision['question'] if proof['passed'] else 'Retirement evidence failed; '+decision['question']),
@@ -229,7 +230,7 @@ def markdown(rows):
     metrics = function(ladder, 'local_compare')+'<br>'+function(ladder, 'local_measure')
     details = []
     lines = ['\n## DBC parity provenance', '',
-             'Local ACCOUNT_USAGE shapes are assumed from identical DBQL CSVs; live ACCOUNT_USAGE is unverified (role lacks grant; no connection attempted). Owner approved unavailable CPU, IO and client-id fields; all other differences stay red. This is not catalog deletion approval.',
+             'Local ACCOUNT_USAGE shapes are assumed from identical DBQL CSVs; live ACCOUNT_USAGE is unverified (role lacks grant; no connection attempted). Owner approved missing CPU/IO/client-id/ProcID, collection/access timestamps, M/P EXECUTE attribution and M/P catalog omissions. StatementGroup and all other differences stay red. This is not catalog deletion approval.',
              'Mapped-columns ladders exclude the named decision columns **and explicitly labelled unsupported row kinds**; their green result is not full-shape parity.', '',
              '| Object | local_duckdb / snowflake | Full rows old/new; hash delta | Mapped rows old/new; hash delta | Retirement reads | Exact source / replacement / evidence / ladder |',
              '|---|---|---|---|---|---|']

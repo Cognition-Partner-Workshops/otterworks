@@ -18,11 +18,16 @@ def test_catalog_evidence_and_real_mismatches(database, name, monkeypatch):
     assert proof['last_read_matches_snapshot']
     monkeypatch.setattr(dbc, 'emulator', lambda *args: {'status':'red','reason':'not requested in unit test'})
     result = dbc.measure(obj, database, [])
-    assert result['status']=='red' and result['snowflake']=='red'
+    query_log = name in ('DBC_QRYLOG','QRYLOGV')
+    assert result['status']==('red' if query_log else 'approved_deviation')
+    assert result['snowflake']=='red'
     assert result['keyed_row_hash']['difference']>0
-    assert result['reason'].startswith('Differences outside approved missing-field scope')
+    if query_log:
+        assert result['reason'].startswith('Differences outside approved missing-field scope')
     assert result['owner_decision']['status'] == 'approved'
-    assert not result['owner_decision']['scope_valid']
+    assert result['owner_decision']['scope_valid'] is (not query_log)
+    if not query_log:
+        assert result['owner_decision']['excluded_source_rows'] == (810 if 'QRYLOGOBJECT' in name else 10)
     assert result['mapped_columns_parity']['passed']
     assert result['consumer_parity']['passed'] is False
     assert result['consumer_mapped_columns_parity']['passed']
@@ -78,7 +83,7 @@ def test_only_missing_fields_use_generic_approved_deviation(database,monkeypatch
     database.execute('BEGIN')
     try:
         database.execute('''CREATE OR REPLACE VIEW COMPAT.QRYLOGV AS
-            SELECT * REPLACE (CAST(NULL AS VARCHAR) AS ClientID,
+            SELECT * REPLACE (CAST(NULL AS INTEGER) AS ProcID, CAST(NULL AS VARCHAR) AS ClientID,
                               CAST(NULL AS DECIMAL(14,6)) AS AMPCPUTime,
                               CAST(NULL AS BIGINT) AS TotalIOCount) FROM DBC.QRYLOGV''')
         row = dbc.measure({'name':'DBC.QRYLOGV','kind':'catalog'},database,

@@ -45,6 +45,42 @@ def test_missing_field_identifiers_are_validated():
         owner_decisions.missing_fields(None,'SRC.LOG; SELECT 1','DST.LOG',{},approval())
 
 
+@pytest.mark.parametrize('case',['normal','partial','empty','read','non_mp_execute','mp_read','extra','multiplicity'])
+def test_row_scope_requires_both_mp_and_execute_and_never_filters_target(case):
+    with duckdb.connect() as db:
+        db.execute('CREATE TABLE OLD (ID BIGINT,ObjectType VARCHAR,UsageType VARCHAR)')
+        db.execute('CREATE TABLE NEW AS SELECT * FROM OLD')
+        if case != 'empty':
+            db.execute("INSERT INTO OLD VALUES (1,'T','READ'),(2,'M','EXECUTE'),(3,'P','EXECUTE'),(4,'T','EXECUTE'),(5,'M','READ')")
+            db.execute('INSERT INTO NEW SELECT * FROM OLD WHERE ID IN (1,4,5)')
+        if case in ('read','non_mp_execute','mp_read'):
+            db.execute('DELETE FROM NEW WHERE ID=?',[{'read':1,'non_mp_execute':4,'mp_read':5}[case]])
+        elif case == 'partial':
+            db.execute("INSERT INTO NEW VALUES (2,'M','EXECUTE')")
+        elif case == 'extra':
+            db.execute("INSERT INTO NEW VALUES (99,'M','EXECUTE')")
+        elif case == 'multiplicity':
+            db.execute('INSERT INTO NEW SELECT * FROM NEW LIMIT 1')
+        decision = {**approval(),'missing_rows':{'ObjectType':['M','P'],'UsageType':['EXECUTE']}}
+        result = owner_decisions.missing_fields(db,'OLD','NEW',{'passed':False},decision)
+        assert result['owner_decision']['scope_valid'] == (case in ('normal','partial','empty'))
+        assert result['owner_decision']['excluded_source_rows'] == (0 if case=='empty' else 1 if case=='partial' else 2)
+
+
+@pytest.mark.parametrize('column',['StatementGroup','AccessCount'])
+def test_widened_timestamp_scope_does_not_ignore_other_fields(column):
+    with duckdb.connect() as db:
+        db.execute('CREATE TABLE OLD (CollectTimeStamp BIGINT,LastAccessTimeStamp BIGINT,StatementGroup VARCHAR,AccessCount BIGINT)')
+        db.execute("INSERT INTO OLD VALUES (1,2,'SELECT',9)")
+        db.execute("CREATE TABLE NEW AS SELECT 99 AS CollectTimeStamp,NULL AS LastAccessTimeStamp,StatementGroup,AccessCount FROM OLD")
+        assert owner_decisions.missing_fields(db,'OLD','NEW',{'passed':False},approval())['owner_decision']['scope_valid']
+        if column == 'StatementGroup':
+            db.execute("UPDATE NEW SET StatementGroup='other'")
+        else:
+            db.execute('UPDATE NEW SET AccessCount=10')
+        assert not owner_decisions.missing_fields(db,'OLD','NEW',{'passed':False},approval())['owner_decision']['scope_valid']
+
+
 @pytest.mark.parametrize('approved',[False,True])
 def test_audit_retirement_requires_manifest_target_and_owner_approval(monkeypatch,approved):
     decisions = owner_decisions.approved_retirements() if approved else []
