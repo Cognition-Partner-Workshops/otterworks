@@ -1,0 +1,187 @@
+{
+  "run_token": "sfx-sfg1120",
+  "scope": "local supporting evidence; board remains red; not retirement approval",
+  "source": "object_board.source_snapshot PostgreSQL Teradata emulator; same DSN resolution",
+  "usage_basis": {
+    "snapshot_commit": "a48ea0e29c31ca5a5445e22074a99a0549d7d6b3",
+    "window_inclusive": [
+      "2026-08-12",
+      "2026-11-09"
+    ],
+    "method": "assess.dbql joins objectusage.csv to qrylog.csv by QueryID in window",
+    "query_history_sql": "query_history*.sql measures Snowflake prove/assess runs, not legacy DBQL; not executed",
+    "window_query_count": 7990
+  },
+  "non_retired_readers": [
+    {
+      "id": "nadfca1251f9b6a28",
+      "name": "user_pref_json_flatten",
+      "target_type": "dbt_model",
+      "group": "users/spark-jobs",
+      "source": "etl/spark/jobs/py/user_pref_json_flatten.py",
+      "dependency": "landing psv only, not Teradata tables or fastload",
+      "evidence": "landing(spark, \"USER_PREF\") uses common/runtime.py CSV reader; save has no jdbc_table",
+      "landing": "${LANDING_DIR}/users/USER_PREF/*.psv",
+      "owner_decision": "Preserve landing feed for this live reader; retirement does not authorize deleting it."
+    }
+  ],
+  "repository_reader_review": {
+    "scope": "tracked SQL/Python/ETL sources reviewed with USER_PREF/users_user_pref/V_USER_SETTINGS search",
+    "teradata_reader": "warehouse/teradata/ddl/users/10_views.sql: V_USER_SETTINGS joins USER_PREF; also retired",
+    "other_references": [
+      "warehouse/dbt/models/sources.yml and staging/spark/sources.yml are source declarations",
+      "warehouse/snowpark/user_pref_json_flatten.py reads SPARK_RAW_USERS.USER_PREF, not SFX_USERS",
+      "warehouse/snowflake/migrations declares/loads RAW_USERS.USER_PREF, not SFX_USERS",
+      "seed, fixtures, schemas and DBQL generation are not live table readers"
+    ],
+    "limitation": "Static repository evidence only; external readers outside captured DBQL are not ruled out"
+  },
+  "decision_notes": [
+    "STG_USER_PREF has DBQL usage but no reads; its fastload inherits output usage, not execution attribution. Conservative retirement_check fails these two pending review."
+  ],
+  "objects": [
+    {
+      "id": "n087e07637015719b",
+      "name": "users_user_pref",
+      "source_row_counts": {
+        "SFX_USERS.STG_USER_PREF": 20
+      },
+      "source_errors": {},
+      "row_count_scope": "declared outputs; fastload count is its STG output, not executions",
+      "dependencies": {
+        "pass": true,
+        "downstream_dependents": [
+          {
+            "id": "n0e52ccf39fb39efb",
+            "name": "SFX_USERS.STG_USER_PREF",
+            "target_type": "retire"
+          },
+          {
+            "id": "n73ad30d46cfc4990",
+            "name": "SFX_USERS.USER_PREF",
+            "target_type": "retire"
+          },
+          {
+            "id": "n92b259c0ed5e8918",
+            "name": "SFX_USERS.V_USER_SETTINGS",
+            "target_type": "retire"
+          }
+        ],
+        "sources": [
+          "manifest.dependencies (retire edges excluded by assess.py)",
+          "lineage.md data-dependency arrows",
+          "assess.py STG-to-core inference"
+        ]
+      },
+      "dbql": {
+        "usage_events": 20,
+        "read_events": 0,
+        "query_count": 20,
+        "catalog_dead_outputs": []
+      },
+      "retirement_check": "fail"
+    },
+    {
+      "id": "n0e52ccf39fb39efb",
+      "name": "SFX_USERS.STG_USER_PREF",
+      "source_row_counts": {
+        "SFX_USERS.STG_USER_PREF": 20
+      },
+      "source_errors": {},
+      "row_count_scope": "declared outputs; fastload count is its STG output, not executions",
+      "dependencies": {
+        "pass": true,
+        "downstream_dependents": [
+          {
+            "id": "n73ad30d46cfc4990",
+            "name": "SFX_USERS.USER_PREF",
+            "target_type": "retire"
+          },
+          {
+            "id": "n92b259c0ed5e8918",
+            "name": "SFX_USERS.V_USER_SETTINGS",
+            "target_type": "retire"
+          }
+        ],
+        "sources": [
+          "manifest.dependencies (retire edges excluded by assess.py)",
+          "lineage.md data-dependency arrows",
+          "assess.py STG-to-core inference"
+        ]
+      },
+      "dbql": {
+        "usage_events": 20,
+        "read_events": 0,
+        "query_count": 20,
+        "catalog_dead_outputs": []
+      },
+      "retirement_check": "fail"
+    },
+    {
+      "id": "n73ad30d46cfc4990",
+      "name": "SFX_USERS.USER_PREF",
+      "source_row_counts": {
+        "SFX_USERS.USER_PREF": 0
+      },
+      "source_errors": {},
+      "row_count_scope": "declared outputs; fastload count is its STG output, not executions",
+      "dependencies": {
+        "pass": true,
+        "downstream_dependents": [
+          {
+            "id": "n92b259c0ed5e8918",
+            "name": "SFX_USERS.V_USER_SETTINGS",
+            "target_type": "retire"
+          }
+        ],
+        "sources": [
+          "manifest.dependencies (retire edges excluded by assess.py)",
+          "lineage.md data-dependency arrows",
+          "assess.py STG-to-core inference"
+        ]
+      },
+      "dbql": {
+        "usage_events": 0,
+        "read_events": 0,
+        "query_count": 0,
+        "catalog_dead_outputs": [
+          "SFX_USERS.USER_PREF"
+        ]
+      },
+      "retirement_check": "pass"
+    },
+    {
+      "id": "n92b259c0ed5e8918",
+      "name": "SFX_USERS.V_USER_SETTINGS",
+      "source_row_counts": {
+        "SFX_USERS.V_USER_SETTINGS": 0
+      },
+      "source_errors": {},
+      "row_count_scope": "declared outputs; fastload count is its STG output, not executions",
+      "dependencies": {
+        "pass": true,
+        "downstream_dependents": [],
+        "sources": [
+          "manifest.dependencies (retire edges excluded by assess.py)",
+          "lineage.md data-dependency arrows",
+          "assess.py STG-to-core inference"
+        ]
+      },
+      "dbql": {
+        "usage_events": 0,
+        "read_events": 0,
+        "query_count": 0,
+        "catalog_dead_outputs": [
+          "SFX_USERS.V_USER_SETTINGS"
+        ]
+      },
+      "retirement_check": "pass"
+    }
+  ],
+  "summary": {
+    "objects": 4,
+    "pass": 2,
+    "fail": 2,
+    "board_status_changed": false
+  }
+}
