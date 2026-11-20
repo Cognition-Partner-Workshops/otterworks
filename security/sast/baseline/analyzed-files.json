@@ -1,0 +1,2990 @@
+[
+  {
+    "key": "otterworks-core-baseline:services/document-service/alembic/versions/001_initial_schema.py",
+    "name": "001_initial_schema.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/alembic/versions/001_initial_schema.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/alembic/versions/002_document_stats_rollups.py",
+    "name": "002_document_stats_rollups.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/alembic/versions/002_document_stats_rollups.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/alembic/versions/003_backfill_word_count.py",
+    "name": "003_backfill_word_count.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/alembic/versions/003_backfill_word_count.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/models/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/models/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/api/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/api/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/jobs/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/jobs/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/schemas/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/schemas/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/middleware/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/middleware/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/services/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/services/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/db/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/db/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/middleware/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/middleware/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/api/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/api/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/models/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/models/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/services/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/services/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/tests/__init__.py",
+    "name": "__init__.py",
+    "qualifier": "UTS",
+    "path": "services/search-service/tests/__init__.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/main/res/layout/activity_main.xml",
+    "name": "activity_main.xml",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/main/res/layout/activity_main.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/admin-api.service.spec.ts",
+    "name": "admin-api.service.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/admin-dashboard/src/app/core/services/admin-api.service.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/admin-api.service.ts",
+    "name": "admin-api.service.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/services/admin-api.service.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Archive/AdoArchiveEventStore.cs",
+    "name": "AdoArchiveEventStore.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Archive/AdoArchiveEventStore.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/features/billing/alert.tsx",
+    "name": "alert.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/features/billing/alert.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/analytics/analytics.component.ts",
+    "name": "analytics.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/pages/analytics/analytics.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/analytics.mock.ts",
+    "name": "analytics.mock.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/services/mock-data/analytics.mock.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/models/analytics.model.ts",
+    "name": "analytics.model.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/models/analytics.model.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/debug/AndroidManifest.xml",
+    "name": "AndroidManifest.xml",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/debug/AndroidManifest.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/main/AndroidManifest.xml",
+    "name": "AndroidManifest.xml",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/main/AndroidManifest.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/models/announcement.model.ts",
+    "name": "announcement.model.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/models/announcement.model.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/announcements/announcements.component.ts",
+    "name": "announcements.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/pages/announcements/announcements.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/announcements.mock.ts",
+    "name": "announcements.mock.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/services/mock-data/announcements.mock.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/lib/api-client.ts",
+    "name": "api-client.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/lib/api-client.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/lib/api.ts",
+    "name": "api.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/lib/api.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/features/billing/api.ts",
+    "name": "api.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/features/billing/api.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/layout/app-shell.tsx",
+    "name": "app-shell.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/layout/app-shell.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/app.component.ts",
+    "name": "app.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/app.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/app.routes.ts",
+    "name": "app.routes.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/app.routes.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/App.tsx",
+    "name": "App.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/App.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/config/AppConfig.java",
+    "name": "AppConfig.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/config/AppConfig.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/main/kotlin/com/otterworks/notification/config/AppConfig.kt",
+    "name": "AppConfig.kt",
+    "qualifier": "FIL",
+    "path": "services/notification-service/src/main/kotlin/com/otterworks/notification/config/AppConfig.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/resources/application-prod.yml",
+    "name": "application-prod.yml",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/resources/application-prod.yml",
+    "language": "yaml"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/main/kotlin/com/otterworks/notification/Application.kt",
+    "name": "Application.kt",
+    "qualifier": "FIL",
+    "path": "services/notification-service/src/main/kotlin/com/otterworks/notification/Application.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/resources/application.properties",
+    "name": "application.properties",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/resources/application.properties"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/resources/application.yml",
+    "name": "application.yml",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/resources/application.yml",
+    "language": "yaml"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/migration/archive-compare.component.spec.ts",
+    "name": "archive-compare.component.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/admin-dashboard/src/app/pages/migration/archive-compare.component.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/migration/archive-compare.component.ts",
+    "name": "archive-compare.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/pages/migration/archive-compare.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/config/ArchiveConfig.java",
+    "name": "ArchiveConfig.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/config/ArchiveConfig.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Controllers/ArchiveController.cs",
+    "name": "ArchiveController.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Controllers/ArchiveController.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/ArchiveController.java",
+    "name": "ArchiveController.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/ArchiveController.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/archive/ArchiveControllerTest.java",
+    "name": "ArchiveControllerTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/archive/ArchiveControllerTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/ArchiveDocument.java",
+    "name": "ArchiveDocument.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/ArchiveDocument.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Archive/ArchiveEventRow.cs",
+    "name": "ArchiveEventRow.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Archive/ArchiveEventRow.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/tests/AuditService.Tests/ArchiveEventsTests.cs",
+    "name": "ArchiveEventsTests.cs",
+    "qualifier": "UTS",
+    "path": "services/audit-service/tests/AuditService.Tests/ArchiveEventsTests.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/ArchiveExceptionHandler.java",
+    "name": "ArchiveExceptionHandler.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/ArchiveExceptionHandler.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/ArchiveFeatureDisabledException.java",
+    "name": "ArchiveFeatureDisabledException.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/ArchiveFeatureDisabledException.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/ArchiveProperties.java",
+    "name": "ArchiveProperties.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/ArchiveProperties.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Models/ArchiveResult.cs",
+    "name": "ArchiveResult.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Models/ArchiveResult.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/ArchiveStore.java",
+    "name": "ArchiveStore.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/ArchiveStore.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Archive/ArchiveStoreOptions.cs",
+    "name": "ArchiveStoreOptions.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Archive/ArchiveStoreOptions.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Archive/ArchiveStoreRegistry.cs",
+    "name": "ArchiveStoreRegistry.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Archive/ArchiveStoreRegistry.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/ArchiveStoreRegistry.java",
+    "name": "ArchiveStoreRegistry.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/ArchiveStoreRegistry.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/archive/ArchiveStoreRegistryTest.java",
+    "name": "ArchiveStoreRegistryTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/archive/ArchiveStoreRegistryTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/ArchiveStoreType.java",
+    "name": "ArchiveStoreType.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/ArchiveStoreType.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/ArchiveStoreUnavailableException.java",
+    "name": "ArchiveStoreUnavailableException.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/ArchiveStoreUnavailableException.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Archive/ArchiveVersionRow.cs",
+    "name": "ArchiveVersionRow.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Archive/ArchiveVersionRow.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/audit/audit.component.ts",
+    "name": "audit.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/pages/audit/audit.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+    "name": "audit.mock.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/models/audit.model.ts",
+    "name": "audit.model.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/models/audit.model.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Controllers/AuditController.cs",
+    "name": "AuditController.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Controllers/AuditController.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Services/AuditEvent.cs",
+    "name": "AuditEvent.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Services/AuditEvent.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Models/AuditEventRequest.cs",
+    "name": "AuditEventRequest.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Models/AuditEventRequest.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Models/AuditEventResponse.cs",
+    "name": "AuditEventResponse.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Models/AuditEventResponse.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Services/AuditService.cs",
+    "name": "AuditService.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Services/AuditService.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/tests/AuditService.Tests/AuditServiceTests.cs",
+    "name": "AuditServiceTests.cs",
+    "qualifier": "UTS",
+    "path": "services/audit-service/tests/AuditService.Tests/AuditServiceTests.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/providers/auth-provider.tsx",
+    "name": "auth-provider.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/providers/auth-provider.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/stores/auth-store.ts",
+    "name": "auth-store.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/stores/auth-store.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/guards/auth.guard.spec.ts",
+    "name": "auth.guard.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/admin-dashboard/src/app/core/guards/auth.guard.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/guards/auth.guard.ts",
+    "name": "auth.guard.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/guards/auth.guard.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/middleware/auth.py",
+    "name": "auth.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/middleware/auth.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/auth.service.spec.ts",
+    "name": "auth.service.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/admin-dashboard/src/app/core/services/auth.service.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/auth.service.ts",
+    "name": "auth.service.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/services/auth.service.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/e2e/auth.spec.ts",
+    "name": "auth.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/e2e/auth.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/src/middleware/auth.ts",
+    "name": "auth.ts",
+    "qualifier": "FIL",
+    "path": "services/collab-service/src/middleware/auth.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/controller/AuthController.java",
+    "name": "AuthController.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/controller/AuthController.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/test/java/com/otterworks/auth/controller/AuthControllerIntegrationTest.java",
+    "name": "AuthControllerIntegrationTest.java",
+    "qualifier": "UTS",
+    "path": "services/auth-service/src/test/java/com/otterworks/auth/controller/AuthControllerIntegrationTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/dto/AuthResponse.java",
+    "name": "AuthResponse.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/dto/AuthResponse.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/service/AuthService.java",
+    "name": "AuthService.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/service/AuthService.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/AuthServiceApplication.java",
+    "name": "AuthServiceApplication.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/AuthServiceApplication.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/test/java/com/otterworks/auth/service/AuthServiceTest.java",
+    "name": "AuthServiceTest.java",
+    "qualifier": "UTS",
+    "path": "services/auth-service/src/test/java/com/otterworks/auth/service/AuthServiceTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/src/__tests__/awareness.test.ts",
+    "name": "awareness.test.ts",
+    "qualifier": "UTS",
+    "path": "services/collab-service/src/__tests__/awareness.test.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/src/services/awareness.ts",
+    "name": "awareness.ts",
+    "qualifier": "FIL",
+    "path": "services/collab-service/src/services/awareness.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Config/AwsSettings.cs",
+    "name": "AwsSettings.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Config/AwsSettings.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Archive/AzureSqlArchiveEventStore.cs",
+    "name": "AzureSqlArchiveEventStore.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Archive/AzureSqlArchiveEventStore.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/AzureSqlArchiveStore.java",
+    "name": "AzureSqlArchiveStore.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/AzureSqlArchiveStore.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/db/base.py",
+    "name": "base.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/db/base.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/features/billing/billing-pages.test.tsx",
+    "name": "billing-pages.test.tsx",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/src/features/billing/billing-pages.test.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/layout/breadcrumb.tsx",
+    "name": "breadcrumb.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/layout/breadcrumb.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/build.gradle.kts",
+    "name": "build.gradle.kts",
+    "qualifier": "FIL",
+    "path": "services/notification-service/build.gradle.kts",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/BusinessHash.java",
+    "name": "BusinessHash.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/BusinessHash.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/archive/BusinessHashTest.java",
+    "name": "BusinessHashTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/archive/BusinessHashTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/capacitor.config.ts",
+    "name": "capacitor.config.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/capacitor.config.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/features/billing/change-plan-page.tsx",
+    "name": "change-plan-page.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/features/billing/change-plan-page.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/dto/ChangePasswordRequest.java",
+    "name": "ChangePasswordRequest.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/dto/ChangePasswordRequest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/chaos.py",
+    "name": "chaos.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/chaos.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/checkstyle-suppressions.xml",
+    "name": "checkstyle-suppressions.xml",
+    "qualifier": "FIL",
+    "path": "services/report-service/checkstyle-suppressions.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/checkstyle.xml",
+    "name": "checkstyle.xml",
+    "qualifier": "FIL",
+    "path": "services/report-service/checkstyle.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/proxy/circuitbreaker.go",
+    "name": "circuitbreaker.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/internal/proxy/circuitbreaker.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/proxy/circuitbreaker_test.go",
+    "name": "circuitbreaker_test.go",
+    "qualifier": "UTS",
+    "path": "services/api-gateway/internal/proxy/circuitbreaker_test.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/client.go",
+    "name": "client.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/internal/middleware/client.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/client_test.go",
+    "name": "client_test.go",
+    "qualifier": "UTS",
+    "path": "services/api-gateway/internal/middleware/client_test.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/src/__tests__/collaboration.test.ts",
+    "name": "collaboration.test.ts",
+    "qualifier": "UTS",
+    "path": "services/collab-service/src/__tests__/collaboration.test.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/src/handlers/collaboration.ts",
+    "name": "collaboration.ts",
+    "qualifier": "FIL",
+    "path": "services/collab-service/src/handlers/collaboration.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/editor/collaborative-editor.tsx",
+    "name": "collaborative-editor.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/editor/collaborative-editor.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/api/comments.py",
+    "name": "comments.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/api/comments.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/bdd/steps/common.steps.ts",
+    "name": "common.steps.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/bdd/steps/common.steps.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Models/ComplianceReport.cs",
+    "name": "ComplianceReport.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Models/ComplianceReport.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/config/config.go",
+    "name": "config.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/internal/config/config.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/config.py",
+    "name": "config.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/config.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/config.py",
+    "name": "config.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/config.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/src/config.ts",
+    "name": "config.ts",
+    "qualifier": "FIL",
+    "path": "services/collab-service/src/config.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/shared/components/confirm-dialog.component.ts",
+    "name": "confirm-dialog.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/shared/components/confirm-dialog.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/ui/confirm-dialog.tsx",
+    "name": "confirm-dialog.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/ui/confirm-dialog.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/conftest.py",
+    "name": "conftest.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/conftest.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/tests/conftest.py",
+    "name": "conftest.py",
+    "qualifier": "UTS",
+    "path": "services/search-service/tests/conftest.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/lib/corporate.test.ts",
+    "name": "corporate.test.ts",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/src/lib/corporate.test.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/lib/corporate.ts",
+    "name": "corporate.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/lib/corporate.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/cors.go",
+    "name": "cors.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/internal/middleware/cors.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/cors_test.go",
+    "name": "cors_test.go",
+    "qualifier": "UTS",
+    "path": "services/api-gateway/internal/middleware/cors_test.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/service/CsvReportGenerator.java",
+    "name": "CsvReportGenerator.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/service/CsvReportGenerator.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/service/CsvReportGeneratorTest.java",
+    "name": "CsvReportGeneratorTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/service/CsvReportGeneratorTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/cucumber.js",
+    "name": "cucumber.js",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/cucumber.js",
+    "language": "js"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/dashboard/dashboard.component.spec.ts",
+    "name": "dashboard.component.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/admin-dashboard/src/app/pages/dashboard/dashboard.component.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/dashboard/dashboard.component.ts",
+    "name": "dashboard.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/pages/dashboard/dashboard.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/e2e/dashboard.spec.ts",
+    "name": "dashboard.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/e2e/dashboard.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/dashboard.tsx",
+    "name": "dashboard.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/dashboard.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Archive/Db2ArchiveEventStore.cs",
+    "name": "Db2ArchiveEventStore.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Archive/Db2ArchiveEventStore.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/Db2ArchiveStore.java",
+    "name": "Db2ArchiveStore.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/Db2ArchiveStore.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Archive/Db2Text.cs",
+    "name": "Db2Text.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Archive/Db2Text.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/Db2Text.java",
+    "name": "Db2Text.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/Db2Text.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/archive/Db2TextTest.java",
+    "name": "Db2TextTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/archive/Db2TextTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/deps/DependencyTranscriptEmitterTest.java",
+    "name": "DependencyTranscriptEmitterTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/deps/DependencyTranscriptEmitterTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/test/kotlin/com/otterworks/notification/deps/DependencyTranscriptEmitterTest.kt",
+    "name": "DependencyTranscriptEmitterTest.kt",
+    "qualifier": "UTS",
+    "path": "services/notification-service/src/test/kotlin/com/otterworks/notification/deps/DependencyTranscriptEmitterTest.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/Dockerfile",
+    "name": "Dockerfile",
+    "qualifier": "FIL",
+    "path": "services/audit-service/Dockerfile",
+    "language": "docker"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/Dockerfile",
+    "name": "Dockerfile",
+    "qualifier": "FIL",
+    "path": "services/auth-service/Dockerfile",
+    "language": "docker"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/Dockerfile",
+    "name": "Dockerfile",
+    "qualifier": "FIL",
+    "path": "services/report-service/Dockerfile",
+    "language": "docker"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/Dockerfile",
+    "name": "Dockerfile",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/Dockerfile",
+    "language": "docker"
+  },
+  {
+    "key": "otterworks-core-baseline:services/analytics-service/Dockerfile",
+    "name": "Dockerfile",
+    "qualifier": "FIL",
+    "path": "services/analytics-service/Dockerfile",
+    "language": "docker"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/Dockerfile",
+    "name": "Dockerfile",
+    "qualifier": "FIL",
+    "path": "services/document-service/Dockerfile",
+    "language": "docker"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/Dockerfile",
+    "name": "Dockerfile",
+    "qualifier": "FIL",
+    "path": "services/collab-service/Dockerfile",
+    "language": "docker"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/Dockerfile",
+    "name": "Dockerfile",
+    "qualifier": "FIL",
+    "path": "services/search-service/Dockerfile",
+    "language": "docker"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/Dockerfile",
+    "name": "Dockerfile",
+    "qualifier": "FIL",
+    "path": "services/notification-service/Dockerfile",
+    "language": "docker"
+  },
+  {
+    "key": "otterworks-core-baseline:services/admin-service/Dockerfile",
+    "name": "Dockerfile",
+    "qualifier": "FIL",
+    "path": "services/admin-service/Dockerfile",
+    "language": "docker"
+  },
+  {
+    "key": "otterworks-core-baseline:services/file-service/Dockerfile",
+    "name": "Dockerfile",
+    "qualifier": "FIL",
+    "path": "services/file-service/Dockerfile",
+    "language": "docker"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/Dockerfile",
+    "name": "Dockerfile",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/Dockerfile",
+    "language": "docker"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/Dockerfile",
+    "name": "Dockerfile",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/Dockerfile",
+    "language": "docker"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/documents/document-card.tsx",
+    "name": "document-card.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/documents/document-card.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/document-editor.tsx",
+    "name": "document-editor.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/document-editor.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/src/__tests__/document-store.test.ts",
+    "name": "document-store.test.ts",
+    "qualifier": "UTS",
+    "path": "services/collab-service/src/__tests__/document-store.test.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/src/services/document-store.ts",
+    "name": "document-store.ts",
+    "qualifier": "FIL",
+    "path": "services/collab-service/src/services/document-store.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/models/document.py",
+    "name": "document.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/models/document.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/schemas/document.py",
+    "name": "document.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/schemas/document.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/services/document_query_repository.py",
+    "name": "document_query_repository.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/services/document_query_repository.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/services/document_service.py",
+    "name": "document_service.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/services/document_service.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/api/documents.py",
+    "name": "documents.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/api/documents.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/e2e/documents.spec.ts",
+    "name": "documents.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/e2e/documents.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/documents.tsx",
+    "name": "documents.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/documents.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Services/DynamoDbAuditRepository.cs",
+    "name": "DynamoDbAuditRepository.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Services/DynamoDbAuditRepository.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/tests/AuditService.Tests/DynamoDbAuditRepositoryTests.cs",
+    "name": "DynamoDbAuditRepositoryTests.cs",
+    "qualifier": "UTS",
+    "path": "services/audit-service/tests/AuditService.Tests/DynamoDbAuditRepositoryTests.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/main/kotlin/com/otterworks/notification/service/EmailSender.kt",
+    "name": "EmailSender.kt",
+    "qualifier": "FIL",
+    "path": "services/notification-service/src/main/kotlin/com/otterworks/notification/service/EmailSender.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/ui/empty-state.tsx",
+    "name": "empty-state.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/ui/empty-state.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/features/billing/entitlement-page.tsx",
+    "name": "entitlement-page.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/features/billing/entitlement-page.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/alembic/env.py",
+    "name": "env.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/alembic/env.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/ui/error-boundary.tsx",
+    "name": "error-boundary.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/ui/error-boundary.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Middleware/ErrorHandlingMiddleware.cs",
+    "name": "ErrorHandlingMiddleware.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Middleware/ErrorHandlingMiddleware.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/services/event_publisher.py",
+    "name": "event_publisher.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/services/event_publisher.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java",
+    "name": "ExampleInstrumentedTest.java",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java",
+    "name": "ExampleUnitTest.java",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/mobile/android/app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/service/ExcelReportGenerator.java",
+    "name": "ExcelReportGenerator.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/service/ExcelReportGenerator.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/service/ExcelReportGeneratorTest.java",
+    "name": "ExcelReportGeneratorTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/service/ExcelReportGeneratorTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/services/export_archive.py",
+    "name": "export_archive.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/services/export_archive.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Models/ExportResult.cs",
+    "name": "ExportResult.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Models/ExportResult.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/models/feature-flag.model.ts",
+    "name": "feature-flag.model.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/models/feature-flag.model.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/features/features.component.ts",
+    "name": "features.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/pages/features/features.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/features.mock.ts",
+    "name": "features.mock.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/services/mock-data/features.mock.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/files/file-card.tsx",
+    "name": "file-card.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/files/file-card.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/file-detail.tsx",
+    "name": "file-detail.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/file-detail.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/files/file-preview.tsx",
+    "name": "file-preview.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/files/file-preview.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/files/file-upload-dropzone.tsx",
+    "name": "file-upload-dropzone.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/files/file-upload-dropzone.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/main/res/xml/file_paths.xml",
+    "name": "file_paths.xml",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/main/res/xml/file_paths.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/e2e/files.spec.ts",
+    "name": "files.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/e2e/files.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/files.tsx",
+    "name": "files.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/files.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/chaos/flags.go",
+    "name": "flags.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/internal/chaos/flags.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/chaos/flags_test.go",
+    "name": "flags_test.go",
+    "qualifier": "UTS",
+    "path": "services/api-gateway/internal/chaos/flags_test.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/files/folder-card.tsx",
+    "name": "folder-card.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/files/folder-card.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/layout/footer.tsx",
+    "name": "footer.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/layout/footer.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/exception/GlobalExceptionHandler.java",
+    "name": "GlobalExceptionHandler.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/exception/GlobalExceptionHandler.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/globals.css",
+    "name": "globals.css",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/globals.css",
+    "language": "css"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/health/handler.go",
+    "name": "handler.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/internal/health/handler.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/health/handler_test.go",
+    "name": "handler_test.go",
+    "qualifier": "UTS",
+    "path": "services/api-gateway/internal/health/handler_test.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/health/health.component.spec.ts",
+    "name": "health.component.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/admin-dashboard/src/app/pages/health/health.component.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/health/health.component.ts",
+    "name": "health.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/pages/health/health.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/health.mock.ts",
+    "name": "health.mock.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/services/mock-data/health.mock.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/api/health.py",
+    "name": "health.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/api/health.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/api/health.py",
+    "name": "health.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/api/health.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/controller/HealthController.java",
+    "name": "HealthController.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/controller/HealthController.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/controller/HealthController.java",
+    "name": "HealthController.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/controller/HealthController.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/bdd/support/hooks.ts",
+    "name": "hooks.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/bdd/support/hooks.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Archive/IArchiveEventStore.cs",
+    "name": "IArchiveEventStore.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Archive/IArchiveEventStore.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Services/IAuditArchiver.cs",
+    "name": "IAuditArchiver.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Services/IAuditArchiver.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Services/IAuditRepository.cs",
+    "name": "IAuditRepository.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Services/IAuditRepository.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Services/IAuditService.cs",
+    "name": "IAuditService.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Services/IAuditService.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+    "name": "ic_launcher.xml",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/main/res/drawable/ic_launcher_background.xml",
+    "name": "ic_launcher_background.xml",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/main/res/drawable/ic_launcher_background.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/main/res/values/ic_launcher_background.xml",
+    "name": "ic_launcher_background.xml",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/main/res/values/ic_launcher_background.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml",
+    "name": "ic_launcher_foreground.xml",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+    "name": "ic_launcher_round.xml",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/models/incident.model.ts",
+    "name": "incident.model.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/models/incident.model.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/incidents/incidents.component.spec.ts",
+    "name": "incidents.component.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/admin-dashboard/src/app/pages/incidents/incidents.component.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/incidents/incidents.component.ts",
+    "name": "incidents.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/pages/incidents/incidents.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/incidents.mock.ts",
+    "name": "incidents.mock.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/services/mock-data/incidents.mock.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/index.html",
+    "name": "index.html",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/index.html",
+    "language": "web"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/index.html",
+    "name": "index.html",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/index.html",
+    "language": "web"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/api/index.py",
+    "name": "index.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/api/index.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/src/index.ts",
+    "name": "index.ts",
+    "qualifier": "FIL",
+    "path": "services/collab-service/src/index.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/types/index.ts",
+    "name": "index.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/types/index.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/services/indexer.py",
+    "name": "indexer.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/services/indexer.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/JdbcArchiveStore.java",
+    "name": "JdbcArchiveStore.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/JdbcArchiveStore.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/archive/JdbcArchiveStoreTest.java",
+    "name": "JdbcArchiveStoreTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/archive/JdbcArchiveStoreTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/jest.config.js",
+    "name": "jest.config.js",
+    "qualifier": "FIL",
+    "path": "services/collab-service/jest.config.js",
+    "language": "js"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/jwt.go",
+    "name": "jwt.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/internal/middleware/jwt.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/interceptors/jwt.interceptor.spec.ts",
+    "name": "jwt.interceptor.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/admin-dashboard/src/app/core/interceptors/jwt.interceptor.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/interceptors/jwt.interceptor.ts",
+    "name": "jwt.interceptor.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/interceptors/jwt.interceptor.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/jwt_test.go",
+    "name": "jwt_test.go",
+    "qualifier": "UTS",
+    "path": "services/api-gateway/internal/middleware/jwt_test.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/security/JwtAuthFilter.java",
+    "name": "JwtAuthFilter.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/security/JwtAuthFilter.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/config/JwtConfig.java",
+    "name": "JwtConfig.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/config/JwtConfig.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/security/JwtTokenProvider.java",
+    "name": "JwtTokenProvider.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/security/JwtTokenProvider.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/test/java/com/otterworks/auth/security/JwtTokenProviderTest.java",
+    "name": "JwtTokenProviderTest.java",
+    "qualifier": "UTS",
+    "path": "services/auth-service/src/test/java/com/otterworks/auth/security/JwtTokenProviderTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/karma.conf.js",
+    "name": "karma.conf.js",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/karma.conf.js",
+    "language": "js"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/e2e/landing.spec.ts",
+    "name": "landing.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/e2e/landing.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/landing.tsx",
+    "name": "landing.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/landing.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/ui/loading-spinner.tsx",
+    "name": "loading-spinner.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/ui/loading-spinner.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/resources/logback-spring.xml",
+    "name": "logback-spring.xml",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/resources/logback-spring.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/test/resources/logback-test.xml",
+    "name": "logback-test.xml",
+    "qualifier": "UTS",
+    "path": "services/notification-service/src/test/resources/logback-test.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:services/analytics-service/src/main/resources/logback.xml",
+    "name": "logback.xml",
+    "qualifier": "FIL",
+    "path": "services/analytics-service/src/main/resources/logback.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/main/resources/logback.xml",
+    "name": "logback.xml",
+    "qualifier": "FIL",
+    "path": "services/notification-service/src/main/resources/logback.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/logging.go",
+    "name": "logging.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/internal/middleware/logging.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/logging_test.go",
+    "name": "logging_test.go",
+    "qualifier": "UTS",
+    "path": "services/api-gateway/internal/middleware/logging_test.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/login/login.component.spec.ts",
+    "name": "login.component.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/admin-dashboard/src/app/pages/login/login.component.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/login/login.component.ts",
+    "name": "login.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/pages/login/login.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/login.tsx",
+    "name": "login.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/login.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/dto/LoginRequest.java",
+    "name": "LoginRequest.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/dto/LoginRequest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/ui/logo.tsx",
+    "name": "logo.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/ui/logo.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/cmd/server/main.go",
+    "name": "main.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/cmd/server/main.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/main.py",
+    "name": "main.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/main.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/main.py",
+    "name": "main.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/main.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/desktop/src/main.ts",
+    "name": "main.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/desktop/src/main.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/main.ts",
+    "name": "main.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/main.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/main.tsx",
+    "name": "main.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/main.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/main/java/com/otterworks/app/MainActivity.java",
+    "name": "MainActivity.java",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/main/java/com/otterworks/app/MainActivity.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/e2e/margins.spec.ts",
+    "name": "margins.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/e2e/margins.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/bdd/steps/margins.steps.ts",
+    "name": "margins.steps.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/bdd/steps/margins.steps.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/margins.tsx",
+    "name": "margins.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/margins.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/services/meilisearch_client.py",
+    "name": "meilisearch_client.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/services/meilisearch_client.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/metrics.go",
+    "name": "metrics.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/internal/middleware/metrics.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/src/metrics.ts",
+    "name": "metrics.ts",
+    "qualifier": "FIL",
+    "path": "services/collab-service/src/metrics.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/db/migrate.py",
+    "name": "migrate.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/db/migrate.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/migration-api.service.spec.ts",
+    "name": "migration-api.service.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/admin-dashboard/src/app/core/services/migration-api.service.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/migration-api.service.ts",
+    "name": "migration-api.service.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/services/migration-api.service.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/migration/migration.component.spec.ts",
+    "name": "migration.component.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/admin-dashboard/src/app/pages/migration/migration.component.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/migration/migration.component.ts",
+    "name": "migration.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/pages/migration/migration.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/models/migration.model.ts",
+    "name": "migration.model.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/models/migration.model.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/mobilelatency.go",
+    "name": "mobilelatency.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/internal/middleware/mobilelatency.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/mobilelatency_test.go",
+    "name": "mobilelatency_test.go",
+    "qualifier": "UTS",
+    "path": "services/api-gateway/internal/middleware/mobilelatency_test.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/main/kotlin/com/otterworks/notification/plugins/Monitoring.kt",
+    "name": "Monitoring.kt",
+    "qualifier": "FIL",
+    "path": "services/notification-service/src/main/kotlin/com/otterworks/notification/plugins/Monitoring.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/e2e/navigation.spec.ts",
+    "name": "navigation.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/e2e/navigation.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/debug/res/xml/network_security_config.xml",
+    "name": "network_security_config.xml",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/debug/res/xml/network_security_config.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/ui/notification-bell.tsx",
+    "name": "notification-bell.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/ui/notification-bell.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/main/kotlin/com/otterworks/notification/model/NotificationEvent.kt",
+    "name": "NotificationEvent.kt",
+    "qualifier": "FIL",
+    "path": "services/notification-service/src/main/kotlin/com/otterworks/notification/model/NotificationEvent.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/test/kotlin/com/otterworks/notification/template/NotificationFooterTest.kt",
+    "name": "NotificationFooterTest.kt",
+    "qualifier": "UTS",
+    "path": "services/notification-service/src/test/kotlin/com/otterworks/notification/template/NotificationFooterTest.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/main/kotlin/com/otterworks/notification/repository/NotificationRepository.kt",
+    "name": "NotificationRepository.kt",
+    "qualifier": "FIL",
+    "path": "services/notification-service/src/main/kotlin/com/otterworks/notification/repository/NotificationRepository.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/e2e/notifications.spec.ts",
+    "name": "notifications.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/e2e/notifications.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/notifications.tsx",
+    "name": "notifications.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/notifications.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/main/kotlin/com/otterworks/notification/service/NotificationService.kt",
+    "name": "NotificationService.kt",
+    "qualifier": "FIL",
+    "path": "services/notification-service/src/main/kotlin/com/otterworks/notification/service/NotificationService.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/test/kotlin/com/otterworks/notification/service/NotificationServiceTest.kt",
+    "name": "NotificationServiceTest.kt",
+    "qualifier": "UTS",
+    "path": "services/notification-service/src/test/kotlin/com/otterworks/notification/service/NotificationServiceTest.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/main/kotlin/com/otterworks/notification/template/NotificationTemplates.kt",
+    "name": "NotificationTemplates.kt",
+    "qualifier": "FIL",
+    "path": "services/notification-service/src/main/kotlin/com/otterworks/notification/template/NotificationTemplates.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/test/kotlin/com/otterworks/notification/service/NotificationTemplatesTest.kt",
+    "name": "NotificationTemplatesTest.kt",
+    "qualifier": "UTS",
+    "path": "services/notification-service/src/test/kotlin/com/otterworks/notification/service/NotificationTemplatesTest.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/service/PdfReportGenerator.java",
+    "name": "PdfReportGenerator.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/service/PdfReportGenerator.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/service/PdfReportGeneratorTest.java",
+    "name": "PdfReportGeneratorTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/service/PdfReportGeneratorTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/features/billing/plans-page.test.tsx",
+    "name": "plans-page.test.tsx",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/src/features/billing/plans-page.test.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/features/billing/plans-page.tsx",
+    "name": "plans-page.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/features/billing/plans-page.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/playwright.config.ts",
+    "name": "playwright.config.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/playwright.config.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/pom.xml",
+    "name": "pom.xml",
+    "qualifier": "FIL",
+    "path": "services/report-service/pom.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/postcss.config.js",
+    "name": "postcss.config.js",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/postcss.config.js",
+    "language": "js"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Archive/PostgresArchiveEventStore.cs",
+    "name": "PostgresArchiveEventStore.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Archive/PostgresArchiveEventStore.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/archive/PostgresArchiveStore.java",
+    "name": "PostgresArchiveStore.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/archive/PostgresArchiveStore.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/src/handlers/presence.ts",
+    "name": "presence.ts",
+    "qualifier": "FIL",
+    "path": "services/collab-service/src/handlers/presence.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/privacy.tsx",
+    "name": "privacy.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/privacy.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/Program.cs",
+    "name": "Program.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/Program.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/proxy.conf.mjs",
+    "name": "proxy.conf.mjs",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/proxy.conf.mjs",
+    "language": "js"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/providers/query-provider.tsx",
+    "name": "query-provider.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/providers/query-provider.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/quotas/quotas.component.ts",
+    "name": "quotas.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/pages/quotas/quotas.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/ratelimit.go",
+    "name": "ratelimit.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/internal/middleware/ratelimit.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/ratelimit_test.go",
+    "name": "ratelimit_test.go",
+    "qualifier": "UTS",
+    "path": "services/api-gateway/internal/middleware/ratelimit_test.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/recent.tsx",
+    "name": "recent.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/recent.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/reconciliation/ReconciliationController.java",
+    "name": "ReconciliationController.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/reconciliation/ReconciliationController.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/reconciliation/ReconciliationControllerTest.java",
+    "name": "ReconciliationControllerTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/reconciliation/ReconciliationControllerTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/reconciliation/ReconciliationCsvWriter.java",
+    "name": "ReconciliationCsvWriter.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/reconciliation/ReconciliationCsvWriter.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/reconciliation/ReconciliationHtmlRenderer.java",
+    "name": "ReconciliationHtmlRenderer.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/reconciliation/ReconciliationHtmlRenderer.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/reconciliation/ReconciliationReport.java",
+    "name": "ReconciliationReport.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/reconciliation/ReconciliationReport.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/reconciliation/ReconciliationRepository.java",
+    "name": "ReconciliationRepository.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/reconciliation/ReconciliationRepository.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/reconciliation/ReconciliationRepositoryTest.java",
+    "name": "ReconciliationRepositoryTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/reconciliation/ReconciliationRepositoryTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/collab-service/src/services/redis-adapter.ts",
+    "name": "redis-adapter.ts",
+    "qualifier": "FIL",
+    "path": "services/collab-service/src/services/redis-adapter.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/entity/RefreshToken.java",
+    "name": "RefreshToken.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/entity/RefreshToken.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/repository/RefreshTokenRepository.java",
+    "name": "RefreshTokenRepository.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/repository/RefreshTokenRepository.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/register.tsx",
+    "name": "register.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/register.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/dto/RegisterRequest.java",
+    "name": "RegisterRequest.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/dto/RegisterRequest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/services/render_cache.py",
+    "name": "render_cache.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/services/render_cache.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/model/Report.java",
+    "name": "Report.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/model/Report.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/ReportApplication.java",
+    "name": "ReportApplication.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/ReportApplication.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/model/ReportCategory.java",
+    "name": "ReportCategory.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/model/ReportCategory.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/controller/ReportController.java",
+    "name": "ReportController.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/controller/ReportController.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/controller/ReportControllerIntegrationTest.java",
+    "name": "ReportControllerIntegrationTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/controller/ReportControllerIntegrationTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/service/ReportDataFetcher.java",
+    "name": "ReportDataFetcher.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/service/ReportDataFetcher.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/util/ReportDateUtils.java",
+    "name": "ReportDateUtils.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/util/ReportDateUtils.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/service/ReportGenerationWorker.java",
+    "name": "ReportGenerationWorker.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/service/ReportGenerationWorker.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/service/ReportHeaderRenderer.java",
+    "name": "ReportHeaderRenderer.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/service/ReportHeaderRenderer.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/service/ReportHeaderRendererTest.java",
+    "name": "ReportHeaderRendererTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/service/ReportHeaderRendererTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/repository/ReportRepository.java",
+    "name": "ReportRepository.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/repository/ReportRepository.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/model/ReportRequest.java",
+    "name": "ReportRequest.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/model/ReportRequest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/model/ReportResponse.java",
+    "name": "ReportResponse.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/model/ReportResponse.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/service/ReportService.java",
+    "name": "ReportService.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/service/ReportService.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/test/java/com/otterworks/report/ReportServiceTest.java",
+    "name": "ReportServiceTest.java",
+    "qualifier": "UTS",
+    "path": "services/report-service/src/test/java/com/otterworks/report/ReportServiceTest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/model/ReportStatus.java",
+    "name": "ReportStatus.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/model/ReportStatus.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/model/ReportType.java",
+    "name": "ReportType.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/model/ReportType.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/middleware/request_log.py",
+    "name": "request_log.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/middleware/request_log.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/requestid.go",
+    "name": "requestid.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/internal/middleware/requestid.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/middleware/requestid_test.go",
+    "name": "requestid_test.go",
+    "qualifier": "UTS",
+    "path": "services/api-gateway/internal/middleware/requestid_test.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Middleware/RequestLoggingMiddleware.cs",
+    "name": "RequestLoggingMiddleware.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Middleware/RequestLoggingMiddleware.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Models/ResourceHistory.cs",
+    "name": "ResourceHistory.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Models/ResourceHistory.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/entity/Role.java",
+    "name": "Role.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/entity/Role.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/repository/RoleRepository.java",
+    "name": "RoleRepository.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/repository/RoleRepository.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/api-gateway/internal/proxy/router.go",
+    "name": "router.go",
+    "qualifier": "FIL",
+    "path": "services/api-gateway/internal/proxy/router.go",
+    "language": "go"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/main/kotlin/com/otterworks/notification/routes/Routes.kt",
+    "name": "Routes.kt",
+    "qualifier": "FIL",
+    "path": "services/notification-service/src/main/kotlin/com/otterworks/notification/routes/Routes.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Services/S3AuditArchiver.cs",
+    "name": "S3AuditArchiver.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Services/S3AuditArchiver.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/tests/AuditService.Tests/S3AuditArchiverTests.cs",
+    "name": "S3AuditArchiverTests.cs",
+    "qualifier": "UTS",
+    "path": "services/audit-service/tests/AuditService.Tests/S3AuditArchiverTests.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/ui/search-bar.tsx",
+    "name": "search-bar.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/ui/search-bar.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/api/search.py",
+    "name": "search.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/api/search.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/e2e/search.spec.ts",
+    "name": "search.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/e2e/search.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/search.tsx",
+    "name": "search.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/search.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/models/search_result.py",
+    "name": "search_result.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/models/search_result.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/config/SecurityConfig.java",
+    "name": "SecurityConfig.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/config/SecurityConfig.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/config/SecurityConfig.java",
+    "name": "SecurityConfig.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/config/SecurityConfig.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/desktop/test/server.smoke.js",
+    "name": "server.smoke.js",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/desktop/test/server.smoke.js",
+    "language": "js"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/desktop/src/server.ts",
+    "name": "server.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/desktop/src/server.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/db/session.py",
+    "name": "session.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/db/session.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/settings.gradle.kts",
+    "name": "settings.gradle.kts",
+    "qualifier": "FIL",
+    "path": "services/notification-service/settings.gradle.kts",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/e2e/settings.spec.ts",
+    "name": "settings.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/e2e/settings.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/settings.tsx",
+    "name": "settings.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/settings.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/controller/SettingsController.java",
+    "name": "SettingsController.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/controller/SettingsController.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/files/share-dialog.tsx",
+    "name": "share-dialog.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/files/share-dialog.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/services/share_link.py",
+    "name": "share_link.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/services/share_link.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/e2e/shared-trash.spec.ts",
+    "name": "shared-trash.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/client-app/e2e/shared-trash.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/shared.tsx",
+    "name": "shared.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/shared.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/layout/sidebar/sidebar.component.spec.ts",
+    "name": "sidebar.component.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/admin-dashboard/src/app/layout/sidebar/sidebar.component.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/layout/sidebar/sidebar.component.ts",
+    "name": "sidebar.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/layout/sidebar/sidebar.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/layout/sidebar.tsx",
+    "name": "sidebar.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/layout/sidebar.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/ui/skeleton.tsx",
+    "name": "skeleton.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/ui/skeleton.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Services/SnsConsumer.cs",
+    "name": "SnsConsumer.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Services/SnsConsumer.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/app/services/sqs_consumer.py",
+    "name": "sqs_consumer.py",
+    "qualifier": "FIL",
+    "path": "services/search-service/app/services/sqs_consumer.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/main/kotlin/com/otterworks/notification/consumer/SqsConsumer.kt",
+    "name": "SqsConsumer.kt",
+    "qualifier": "FIL",
+    "path": "services/notification-service/src/main/kotlin/com/otterworks/notification/consumer/SqsConsumer.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/test/kotlin/com/otterworks/notification/consumer/SqsConsumerTest.kt",
+    "name": "SqsConsumerTest.kt",
+    "qualifier": "UTS",
+    "path": "services/notification-service/src/test/kotlin/com/otterworks/notification/consumer/SqsConsumerTest.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/starred.tsx",
+    "name": "starred.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/starred.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/jobs/stats_rollup.py",
+    "name": "stats_rollup.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/jobs/stats_rollup.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/main/res/values/strings.xml",
+    "name": "strings.xml",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/main/res/values/strings.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/styles.scss",
+    "name": "styles.scss",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/styles.scss",
+    "language": "css"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/main/res/values/styles.xml",
+    "name": "styles.xml",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/mobile/android/app/src/main/res/values/styles.xml",
+    "language": "xml"
+  },
+  {
+    "key": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/config/SwaggerConfig.java",
+    "name": "SwaggerConfig.java",
+    "qualifier": "FIL",
+    "path": "services/report-service/src/main/java/com/otterworks/report/config/SwaggerConfig.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/models/system-health.model.ts",
+    "name": "system-health.model.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/models/system-health.model.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/tailwind.config.ts",
+    "name": "tailwind.config.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/tailwind.config.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/telemetry.py",
+    "name": "telemetry.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/telemetry.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/app/api/templates.py",
+    "name": "templates.py",
+    "qualifier": "FIL",
+    "path": "services/document-service/app/api/templates.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/terms.tsx",
+    "name": "terms.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/terms.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/e2e/fixtures/test-helpers.ts",
+    "name": "test-helpers.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/e2e/fixtures/test-helpers.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/test-setup.ts",
+    "name": "test-setup.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/test-setup.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/test_chaos_flags.py",
+    "name": "test_chaos_flags.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/test_chaos_flags.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/test_comments_api.py",
+    "name": "test_comments_api.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/test_comments_api.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/test_document_filters.py",
+    "name": "test_document_filters.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/test_document_filters.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/test_document_service.py",
+    "name": "test_document_service.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/test_document_service.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/test_documents_api.py",
+    "name": "test_documents_api.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/test_documents_api.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/test_export_archive.py",
+    "name": "test_export_archive.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/test_export_archive.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/test_health.py",
+    "name": "test_health.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/test_health.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/tests/test_health.py",
+    "name": "test_health.py",
+    "qualifier": "UTS",
+    "path": "services/search-service/tests/test_health.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/tests/test_index_api.py",
+    "name": "test_index_api.py",
+    "qualifier": "UTS",
+    "path": "services/search-service/tests/test_index_api.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/tests/test_indexer.py",
+    "name": "test_indexer.py",
+    "qualifier": "UTS",
+    "path": "services/search-service/tests/test_indexer.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/test_migrate.py",
+    "name": "test_migrate.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/test_migrate.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/tests/test_models.py",
+    "name": "test_models.py",
+    "qualifier": "UTS",
+    "path": "services/search-service/tests/test_models.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/test_request_log.py",
+    "name": "test_request_log.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/test_request_log.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/search-service/tests/test_search_api.py",
+    "name": "test_search_api.py",
+    "qualifier": "UTS",
+    "path": "services/search-service/tests/test_search_api.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/test_share_link.py",
+    "name": "test_share_link.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/test_share_link.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/test_stats_rollup.py",
+    "name": "test_stats_rollup.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/test_stats_rollup.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/test_telemetry.py",
+    "name": "test_telemetry.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/test_telemetry.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:services/document-service/tests/test_templates_api.py",
+    "name": "test_templates_api.py",
+    "qualifier": "UTS",
+    "path": "services/document-service/tests/test_templates_api.py",
+    "language": "py"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/layout/toolbar/toolbar.component.ts",
+    "name": "toolbar.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/layout/toolbar/toolbar.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/pages/trash.tsx",
+    "name": "trash.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/pages/trash.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/stores/ui-store.ts",
+    "name": "ui-store.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/stores/ui-store.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/dto/UpdateProfileRequest.java",
+    "name": "UpdateProfileRequest.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/dto/UpdateProfileRequest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/dto/UpdateSettingsRequest.java",
+    "name": "UpdateSettingsRequest.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/dto/UpdateSettingsRequest.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/user-detail/user-detail.component.ts",
+    "name": "user-detail.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/pages/user-detail/user-detail.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/components/editor/user-presence-avatars.tsx",
+    "name": "user-presence-avatars.tsx",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/components/editor/user-presence-avatars.tsx",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/entity/User.java",
+    "name": "User.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/entity/User.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/models/user.model.ts",
+    "name": "user.model.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/models/user.model.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/audit-service/src/Models/UserActivityReport.cs",
+    "name": "UserActivityReport.cs",
+    "qualifier": "FIL",
+    "path": "services/audit-service/src/Models/UserActivityReport.cs",
+    "language": "cs"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/dto/UserDTO.java",
+    "name": "UserDTO.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/dto/UserDTO.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/dto/UserLookupResponse.java",
+    "name": "UserLookupResponse.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/dto/UserLookupResponse.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/repository/UserRepository.java",
+    "name": "UserRepository.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/repository/UserRepository.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/users/users.component.spec.ts",
+    "name": "users.component.spec.ts",
+    "qualifier": "UTS",
+    "path": "frontend/admin-dashboard/src/app/pages/users/users.component.spec.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/users/users.component.ts",
+    "name": "users.component.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/pages/users/users.component.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+    "name": "users.mock.ts",
+    "qualifier": "FIL",
+    "path": "frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/service/UserService.java",
+    "name": "UserService.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/service/UserService.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/entity/UserSettings.java",
+    "name": "UserSettings.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/entity/UserSettings.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/dto/UserSettingsDTO.java",
+    "name": "UserSettingsDTO.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/dto/UserSettingsDTO.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/repository/UserSettingsRepository.java",
+    "name": "UserSettingsRepository.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/repository/UserSettingsRepository.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:services/auth-service/src/main/java/com/otterworks/auth/service/UserSettingsService.java",
+    "name": "UserSettingsService.java",
+    "qualifier": "FIL",
+    "path": "services/auth-service/src/main/java/com/otterworks/auth/service/UserSettingsService.java",
+    "language": "java"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/src/lib/utils.ts",
+    "name": "utils.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/src/lib/utils.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/vite.config.ts",
+    "name": "vite.config.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/vite.config.ts",
+    "language": "ts"
+  },
+  {
+    "key": "otterworks-core-baseline:services/notification-service/src/main/kotlin/com/otterworks/notification/websocket/WebSocketManager.kt",
+    "name": "WebSocketManager.kt",
+    "qualifier": "FIL",
+    "path": "services/notification-service/src/main/kotlin/com/otterworks/notification/websocket/WebSocketManager.kt",
+    "language": "kotlin"
+  },
+  {
+    "key": "otterworks-core-baseline:frontend/client-app/bdd/support/world.ts",
+    "name": "world.ts",
+    "qualifier": "FIL",
+    "path": "frontend/client-app/bdd/support/world.ts",
+    "language": "ts"
+  }
+]
