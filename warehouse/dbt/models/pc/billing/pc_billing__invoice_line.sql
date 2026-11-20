@@ -10,8 +10,7 @@ with expressions as (
         trunc($5::number(38,18))::integer as QUANTITY,
         round($6::number(38,18), 2)::number(14,2) as UNIT_PRICE,
         coalesce(round($7::number(38,18), 2),
-            round(trunc($5::number(38,18)) * round($6::number(38,18), 2), 2))::number(14,2) as LINE_AMOUNT,
-        METADATA$FILE_ROW_NUMBER as SRC_ROW_NO
+            round(trunc($5::number(38,18)) * round($6::number(38,18), 2), 2))::number(14,2) as LINE_AMOUNT
     from @__RUN_DATABASE__.PC_SRC.LANDING_STAGE/INVOICE_LINE/
     (file_format => '__RUN_DATABASE__.PC_BILLING.BILLING_PSV',
      pattern => '.*{{ var("load_date", "20261109") }}[.]psv')
@@ -19,4 +18,3 @@ with expressions as (
 select *
 from expressions
 where INVOICE_ID is not null and INVOICE_LINE_ID is not null
-qualify row_number() over (partition by INVOICE_LINE_ID order by SRC_ROW_NO desc) = 1
