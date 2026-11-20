@@ -54,3 +54,27 @@ def test_held_areas_are_red_even_with_equal_outputs(area, target_type, materiali
         assert row['snowflake_reason'] == board.SNOWFLAKE_REASON
         assert row['status'] == row['local_duckdb'] == 'red'
         assert row['reason'] == 'held back at combine pending fixes/owner decisions'
+
+
+def test_full_manifest_retirements_and_dbc_contract(monkeypatch):
+    import yaml
+    from parity import dbc_retire
+    monkeypatch.setattr(dbc_retire, 'emulator', lambda *args: {'status': 'red', 'reason': 'not run'})
+    manifest = yaml.safe_load((board.ROOT / 'migration/dw-exit/manifest.yaml').read_text())
+    rows = board.build_board(manifest)['rows']
+    approved = {name for decision in board.approved_retirements() for name in decision['board_objects']}
+    assert len(approved) == 6
+    assert {row['name'] for row in rows if row['status'] == 'retired'} == approved
+    assert all(row['subject_area'] == 'audit' for row in rows if row['status'] == 'retired')
+    assert all(row['snowflake'] == 'red' for row in rows)
+    for row in rows:
+        if row['subject_area'] in ('billing', 'documents', 'users', 'content'):
+            assert row['status'] == 'red'
+        if row['subject_area'] == 'dbc':
+            query_log = row['name'].split('.')[-1] in ('DBC_QRYLOG', 'QRYLOGV')
+            assert row['status'] == ('red' if query_log else 'approved_deviation')
+            if query_log:
+                assert 'StatementGroup' in row['reason']
+    assert all('/devin/sfg1120-integration/' in item['url']
+               for row in rows if row['subject_area'] == 'dbc'
+               for item in row['metric_evidence'].values())

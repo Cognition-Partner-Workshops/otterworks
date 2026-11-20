@@ -221,6 +221,8 @@ def measure(obj, db, external):
     if proof['passed']:
         row['reason'] = None if comparison['passed'] else 'Differences outside approved missing-field scope; see owner_decision.approved_comparison'
         apply_deviation(row, {obj['name']:scoped}, [approval])
+        if row['status'] == 'red' and family in ('DBC_QRYLOG', 'QRYLOGV'):
+            row['reason'] += '; StatementGroup comparison is not owner approved'
     return row
 
 

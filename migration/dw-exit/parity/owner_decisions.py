@@ -49,7 +49,10 @@ def retirement_dbql():
 
 def apply_retirement(row, obj, decisions):
     for decision in decisions:
-        if obj.get('target_type') == 'retire' and row['name'] in decision.get('board_objects', []):
+        if (obj.get('subject_area') == 'audit' and obj.get('target_type') == 'retire'
+                and decision.get('decision_id') == 'audit-archive-retirement'
+                and decision.get('status') == 'approved'
+                and row['name'] in decision.get('board_objects', [])):
             row.update(status='retired', decision_state='approved', reason=decision['new_behaviour'],
                        retirement_evidence={'decision_id':decision['decision_id'],
                                             'owner_approved':True, 'manifest_target':'retire',
