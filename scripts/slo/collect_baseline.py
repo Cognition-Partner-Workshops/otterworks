@@ -19,8 +19,8 @@ import json
 import math
 import re
 import sys
+import http.client
 import urllib.parse
-import urllib.request
 from pathlib import Path
 
 import yaml
@@ -86,12 +86,21 @@ def promql_slis(catalog: dict) -> list[dict]:
 
 class Prometheus:
     def __init__(self, url: str, timeout: float = 30.0):
+        parsed = urllib.parse.urlsplit(url)
+        if parsed.scheme not in ("http", "https") or not parsed.netloc:
+            raise ValueError(f"Prometheus URL must be http(s)://host[:port], got {url!r}")
         self.url, self.timeout = url.rstrip("/"), timeout
+        self._scheme, self._netloc, self._base = parsed.scheme, parsed.netloc, parsed.path.rstrip("/")
 
     def get(self, path: str, **params) -> dict:
-        q = urllib.parse.urlencode(params)
-        with urllib.request.urlopen(f"{self.url}{path}?{q}", timeout=self.timeout) as r:
-            body = json.load(r)
+        conn_cls = http.client.HTTPSConnection if self._scheme == "https" else http.client.HTTPConnection
+        conn = conn_cls(self._netloc, timeout=self.timeout)
+        try:
+            conn.request("GET", f"{self._base}{path}?{urllib.parse.urlencode(params)}")
+            resp = conn.getresponse()
+            body = json.loads(resp.read())
+        finally:
+            conn.close()
         if body.get("status") != "success":
             raise RuntimeError(f"{path}: {body.get('error')}")
         return body["data"]
