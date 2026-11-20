@@ -57,9 +57,13 @@ def test_empty_conversions():
         'APP_USER': 'USER_ID BIGINT',
     }
     for table, columns in definitions.items():
+        # Both identifiers and type declarations are fixed test literals above.
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute(f'CREATE TABLE USERS.SPARK_FIXTURE_{table} ({columns})')
     hook.convert(db)
     for job in hook.JOBS:
+        # Identifier comes from the fixed JOBS tuple.
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         assert db.execute(f'SELECT COUNT(*) FROM USERS.{job.upper()}').fetchone() == (0,)
     db.close()
 
@@ -73,6 +77,8 @@ def test_fixture_loading_is_deterministic(tmp_path):
         db = duckdb.connect()
         db.execute('CREATE SCHEMA USERS')
         hook.load_fixture(db, tmp_path)
+        # Identifiers come from the fixed INPUTS tuple.
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         snapshots.append({table: db.execute(f'SELECT * FROM USERS.SPARK_FIXTURE_{table} ORDER BY 1').fetchall()
                           for table in hook.INPUTS})
         hook.convert(db)

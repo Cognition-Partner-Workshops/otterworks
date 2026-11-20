@@ -26,6 +26,8 @@ FIXTURE_SEED = 1110
 def load_fixture(after, landing):
     for table in INPUTS:
         columns = {name: 'VARCHAR' if kind == 'TEXT' else kind for name, kind in SCHEMAS[table]}
+        # Identifier comes from INPUTS; the CSV path and column definitions are bound.
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         after.execute(f'CREATE OR REPLACE TABLE USERS.SPARK_FIXTURE_{table} AS SELECT * FROM read_csv(?, delim=\'|\', header=true, columns=?, escape=\'"\', nullstr=\'\')',
                       [str(landing / 'users' / table / '*.psv'), columns])
 
@@ -94,6 +96,8 @@ def materialize(before, after, ready, errors):
     try:
         rows = int(os.environ.get('BOARD_ROWS', '200'))
         with (work / 'fixture.log').open('w') as log:
+            # Fixed executable/script, integer row count and argv list; no shell expansion.
+            # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
             subprocess.run([sys.executable, str(ROOT / 'etl/spark/fixture/generate_fixture.py'),
                             '--rows', str(rows), '--seed', str(FIXTURE_SEED), '--output', str(landing)],
                            stdout=log, stderr=subprocess.STDOUT, check=True, timeout=120)
@@ -107,6 +111,8 @@ def materialize(before, after, ready, errors):
                            stdout=log, stderr=subprocess.STDOUT, check=True, timeout=240)
         before.execute('CREATE SCHEMA IF NOT EXISTS SFX_USERS')
         for job in JOBS:
+            # Identifier comes from JOBS; the Parquet path is bound.
+            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             before.execute(f'CREATE OR REPLACE TABLE SFX_USERS.{job.upper()} AS SELECT * FROM read_parquet(?)',
                            [str(work / 'legacy' / job / '*.parquet')])
             ready.add('USERS.' + job.upper())
