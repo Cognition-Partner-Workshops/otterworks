@@ -1,12 +1,11 @@
 import os
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime
 from uuid import uuid4
 
 import pytest
 from pymongo import MongoClient
 
-from odl_sync import load as loader
 from odl_sync.extract import Extract
 from odl_sync.load import load
 from odl_sync.merge import merge
@@ -57,35 +56,32 @@ def test_interrupted_key_release_recovers_even_if_source_reverts(database):
     assert database.customers.find_one()['source_keys'] == customers[0]['source_keys']
 
 
-def test_customer_updated_at_tracks_changes_and_backfills_legacy_rows(database, monkeypatch):
-    class Clock(datetime):
-        instant = datetime(2026, 11, 19, tzinfo=timezone.utc)
-
-        @classmethod
-        def now(cls, tz):
-            return cls.instant.astimezone(tz)
-
-    monkeypatch.setattr(loader, 'datetime', Clock)
+def test_customer_updated_at_tracks_changes_and_backfills_legacy_rows(database):
     customers, _ = merge([Extract('db2', [record('db2', 'C0000001', 'A'), record('db2', 'C0000002', 'B')])])
     changed_id, legacy_id = (doc['_id'] for doc in customers)
 
     def timestamps():
-        return {doc['_id']: doc['updated_at'].replace(tzinfo=timezone.utc) for doc in database.customers.find()}
+        return {doc['_id']: doc['updated_at'] for doc in database.customers.find()}
 
+    before = database.command('hello')['localTime']
     assert load(database, customers, [])['customers']['inserted'] == 2
-    assert timestamps() == {changed_id: Clock.instant, legacy_id: Clock.instant}
-    Clock.instant = Clock.instant.replace(hour=1)
-    assert load(database, customers, [])['customers']['unchanged'] == 2
-    assert timestamps() == {changed_id: Clock.instant.replace(hour=0), legacy_id: Clock.instant.replace(hour=0)}
+    after = database.command('hello')['localTime']
+    assert all(before <= stamp <= after for stamp in timestamps().values())
 
-    customers[0]['account_history'] = [{'history_id': 1}]
+    baseline = datetime(2000, 1, 1)
+    database.customers.update_many({}, {'$set': {'updated_at': baseline}})
+    assert load(database, customers, [])['customers']['unchanged'] == 2
+    assert timestamps() == {changed_id: baseline, legacy_id: baseline}
+
+    customers[0]['name'] = '$literal customer name'
     assert load(database, customers, [])['customers']['modified'] == 1
-    assert timestamps() == {changed_id: Clock.instant, legacy_id: Clock.instant.replace(hour=0)}
+    changed_at = timestamps()[changed_id]
+    assert changed_at > baseline and timestamps()[legacy_id] == baseline
+    assert database.customers.find_one({'_id': changed_id})['name'] == customers[0]['name']
 
     database.customers.update_one({'_id': legacy_id}, {'$unset': {'updated_at': ''}})
-    Clock.instant = Clock.instant.replace(hour=2)
     assert load(database, customers, [])['customers']['modified'] == 1
-    assert timestamps() == {changed_id: Clock.instant.replace(hour=1), legacy_id: Clock.instant}
+    assert timestamps()[changed_id] == changed_at and timestamps()[legacy_id] > baseline
     assert load(database, customers, [])['customers']['unchanged'] == 2
 
 

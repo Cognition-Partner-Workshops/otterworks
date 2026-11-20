@@ -1,9 +1,10 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from uuid import uuid4
 
 import pytest
 
+from odl_sync import load as loader
 from odl_sync.extract import Extract, SourceRecord
 from odl_sync.extract import db2, oracle, postgres
 from odl_sync.load import load
@@ -99,6 +100,7 @@ class Result:
 class Collection:
     def __init__(self):
         self.docs = {}
+        self.now = lambda: datetime.now(timezone.utc)
 
     def create_index(self, *args, **kwargs):
         pass
@@ -116,7 +118,11 @@ class Collection:
                 updated += 1
             else:
                 inserted += 1
-            if '$set' in op._doc:
+            if isinstance(op._doc, list):
+                replacement, timestamps = op._doc[0]['$replaceWith']['$mergeObjects']
+                assert timestamps == {'updated_at': '$$NOW'}
+                self.docs[key] = dict(replacement['$literal'], updated_at=self.now())
+            elif '$set' in op._doc:
                 document = self.docs.setdefault(key, {'_id': key})
                 if not existed:
                     document.update(op._doc.get('$setOnInsert', {}))
@@ -155,6 +161,33 @@ def test_load_idempotency_update_and_delete():
     docs[0]['address'] = 'changed'
     assert load(db, docs, errors)['customers']['modified'] == 1
     assert load(db, [], [])['customers']['removed'] == 1
+
+
+def test_customer_written_after_poll_gets_newer_timestamp(monkeypatch):
+    db = Database()
+    docs, errors = merge([Extract('db2', [record('db2', 'C0000001')])])
+    key = docs[0]['_id']
+    started = datetime(2026, 11, 19, 12, 0, 0, tzinfo=timezone.utc)
+    cutoff = started.replace(second=1)
+    written = started.replace(second=2)
+
+    class AppClock(datetime):
+        @classmethod
+        def now(cls, tz):
+            return started.astimezone(tz)
+
+    write = db.customers.bulk_write
+
+    def poll_then_write(operations, ordered):
+        assert key not in db.customers.docs
+        return write(operations, ordered)
+
+    monkeypatch.setattr(loader, 'datetime', AppClock, raising=False)
+    monkeypatch.setattr(db.customers, 'bulk_write', poll_then_write)
+    db.customers.now = lambda: written
+    assert load(db, docs, errors)['customers']['inserted'] == 1
+    assert load(db, docs, errors)['customers']['unchanged'] == 1
+    assert db.customers.docs[key]['updated_at'] > cutoff
 
 
 def test_load_write_failure():

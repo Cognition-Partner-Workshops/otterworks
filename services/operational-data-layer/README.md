@@ -95,8 +95,8 @@ offset and matches only customers with `updated_at` strictly after that instant.
 timestamps return HTTP 400. All filters are applied together; repeat them when using the
 returned `next_cursor`.
 
-`updated_at` is the UTC time when ODL sync first writes or changes the customer document,
-not a source-system modification time. Unchanged syncs preserve it. Existing customers
+`updated_at` is the UTC time MongoDB assigns when ODL sync writes a new or changed customer
+document, not a source-system modification time. Unchanged syncs preserve it. Existing customers
 are stamped on their first sync after upgrade, so a cutoff before that sync can include
 customers whose source data did not change. Until stamped, customers appear only in reads
 without `updated_since`.

@@ -1,9 +1,8 @@
 import hashlib
 from collections import Counter
-from datetime import datetime, timezone
 
 from bson import json_util
-from pymongo import ASCENDING, ReplaceOne, UpdateOne
+from pymongo import ASCENDING, UpdateOne
 
 
 def content_hash(doc):
@@ -28,7 +27,6 @@ def indexes(db):
 def replace_changed(collection, documents, applied, preserve_review=False):
     previous = {r['_id']: r for r in collection.find(
         {}, {'content_hash': 1, 'match_key': 1, 'source_keys': 1, 'updated_at': 1})}
-    updated_at = datetime.now(timezone.utc)
     changed = []
     for original in documents:
         doc = dict(original)
@@ -79,8 +77,8 @@ def replace_changed(collection, documents, applied, preserve_review=False):
                 '$set': values, '$setOnInsert': {'status': 'open'},
             }, upsert=True))
         else:
-            doc['updated_at'] = updated_at
-            operations.append(ReplaceOne({'_id': doc['_id']}, doc, upsert=True))
+            replacement = {'$mergeObjects': [{'$literal': doc}, {'updated_at': '$$NOW'}]}
+            operations.append(UpdateOne({'_id': doc['_id']}, [{'$replaceWith': replacement}], upsert=True))
         written.append(doc)
         if len(operations) >= 1000:
             flush()
