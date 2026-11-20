@@ -21,26 +21,35 @@ SPEC.loader.exec_module(board)
 def test_full_refresh_preserves_values_and_is_repeatable(count):
     before = duckdb.connect()
     before.execute('CREATE SCHEMA SFX_USERS')
-    names = set()
-    for table, columns in (
-        ('SSO_IDENTITY', 'IDENTITY_ID BIGINT, USER_ID BIGINT, PROVIDER_CD VARCHAR, '
-         'SUBJECT_ID VARCHAR, CREATED_DT DATE'),
-        ('USER_STATUS_HIST', 'STATUS_HISTORY_ID BIGINT, USER_ID BIGINT, STATUS_CD VARCHAR, '
-         'VALID_FROM DATE, VALID_TO DATE'),
-    ):
-        for prefix in ('', 'STG_'):
-            name = 'SFX_USERS.' + prefix + table
-            names.add(name)
-            before.execute(f'CREATE TABLE {name} ({columns})')
-        if count:
-            values = ("(1, NULL, 'oIdC', 'CaseSensitive', DATE '2026-01-01'),"
-                      "(2, 7, NULL, NULL, NULL)" if table == 'SSO_IDENTITY' else
-                      "(1, 7, 'Active', DATE '2026-01-01', NULL),"
-                      "(2, NULL, NULL, NULL, NULL)")
-            before.execute(f'INSERT INTO SFX_USERS.STG_{table} VALUES {values}')
-            before.execute(f'INSERT INTO SFX_USERS.{table} VALUES {values}')
-            code = 'PROVIDER_CD' if table == 'SSO_IDENTITY' else 'STATUS_CD'
-            before.execute(f"UPDATE SFX_USERS.{table} SET {code} = RPAD({code}, 12, ' ')")
+    names = {'SFX_USERS.SSO_IDENTITY', 'SFX_USERS.STG_SSO_IDENTITY',
+             'SFX_USERS.USER_STATUS_HIST', 'SFX_USERS.STG_USER_STATUS_HIST'}
+    before.execute('CREATE TABLE SFX_USERS.SSO_IDENTITY '
+                   '(IDENTITY_ID BIGINT, USER_ID BIGINT, PROVIDER_CD VARCHAR, '
+                   'SUBJECT_ID VARCHAR, CREATED_DT DATE)')
+    before.execute('CREATE TABLE SFX_USERS.STG_SSO_IDENTITY '
+                   '(IDENTITY_ID BIGINT, USER_ID BIGINT, PROVIDER_CD VARCHAR, '
+                   'SUBJECT_ID VARCHAR, CREATED_DT DATE)')
+    before.execute('CREATE TABLE SFX_USERS.USER_STATUS_HIST '
+                   '(STATUS_HISTORY_ID BIGINT, USER_ID BIGINT, STATUS_CD VARCHAR, '
+                   'VALID_FROM DATE, VALID_TO DATE)')
+    before.execute('CREATE TABLE SFX_USERS.STG_USER_STATUS_HIST '
+                   '(STATUS_HISTORY_ID BIGINT, USER_ID BIGINT, STATUS_CD VARCHAR, '
+                   'VALID_FROM DATE, VALID_TO DATE)')
+    if count:
+        identities = [(1, None, 'oIdC', 'CaseSensitive', '2026-01-01'),
+                      (2, 7, None, None, None)]
+        statuses = [(1, 7, 'Active', '2026-01-01', None),
+                    (2, None, None, None, None)]
+        before.executemany('INSERT INTO SFX_USERS.STG_SSO_IDENTITY VALUES (?, ?, ?, ?, ?)',
+                           identities)
+        before.executemany('INSERT INTO SFX_USERS.SSO_IDENTITY VALUES (?, ?, ?, ?, ?)',
+                           identities)
+        before.executemany('INSERT INTO SFX_USERS.STG_USER_STATUS_HIST VALUES (?, ?, ?, ?, ?)',
+                           statuses)
+        before.executemany('INSERT INTO SFX_USERS.USER_STATUS_HIST VALUES (?, ?, ?, ?, ?)',
+                           statuses)
+        before.execute("UPDATE SFX_USERS.SSO_IDENTITY SET PROVIDER_CD = RPAD(PROVIDER_CD, 12, ' ')")
+        before.execute("UPDATE SFX_USERS.USER_STATUS_HIST SET STATUS_CD = RPAD(STATUS_CD, 12, ' ')")
     after, ready, errors = board.materialize(before, names, GROUP, ('USERS',))
     try:
         assert not errors
