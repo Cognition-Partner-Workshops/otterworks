@@ -115,7 +115,7 @@ def test_provenance_ranges_are_real_and_clickable():
     for entry in p['source']+p['converted']['SFX_BILLING.INVOICE_HDR']+list(p['metrics'].values()):
         lines=(ROOT/entry['file']).read_text().splitlines()
         assert 1 <= entry['start_line'] <= entry['end_line'] <= len(lines)
-        assert '/blob/devin/sfg1120-billing/' in entry['url']
+        assert '/blob/devin/sfg1120-integration/' in entry['url']
         assert entry['url'].endswith(f"#L{entry['start_line']}-L{entry['end_line']}")
     assert provenance.provenance(dict(obj,output_relations=[]))['conversion_note']
 

@@ -19,7 +19,7 @@ from warehouse.run_config import RunConfig
 
 def obj(**changes):
     return dict(dict(id='one',name='job',kind='mapping',wave=2,owner='data',subject_area='fixture',
-                system='teradata',licence_dependency='teradata',target_type='dbt_model',
+                system='powercenter',licence_dependency='powercenter',target_type='dbt_model',
                 output_relations=['SFX_BILLING.T']),**changes)
 
 
@@ -66,7 +66,7 @@ def test_profiles_hashes_samples_preserve_duplicates_and_nulls(relations):
 
 def test_powercenter_requires_independent_runner_and_model_relations(relations):
     before,after = relations
-    pc = obj(system='powercenter', licence_dependency='powercenter')
+    pc = obj(subject_area='billing', system='powercenter', licence_dependency='powercenter')
     row = board.build_board({'objects':[pc]},before,after,{'BILLING.T'})['rows'][0]
     assert row['status']=='red' and row['reason']=='output not materialized: PC_BILLING.T'
     before.execute('CREATE SCHEMA SFX_PC_BILLING')
@@ -122,7 +122,7 @@ def test_two_columns_and_subject_area_summary(relations, monkeypatch):
     before, after = relations
     before.execute("INSERT INTO SFX_BILLING.T VALUES (1, 'x')")
     after.execute("INSERT INTO BILLING.T VALUES (1, 'x')")
-    manifest = {'objects': [obj(subject_area='billing'), obj(id='two', name='missing', subject_area='billing', output_relations=[]),
+    manifest = {'objects': [obj(subject_area='billing', system='teradata'), obj(id='two', name='missing', subject_area='billing', system='teradata', output_relations=[]),
                             obj(id='three', name='spark', subject_area='users', system='spark')]}
     result = board.build_board(manifest, before, after, {'BILLING.T'})
     for row, expected in zip(result['rows'], ('green', 'red', 'red'), strict=True):
@@ -178,7 +178,7 @@ def test_snowflake_stays_red_without_network(monkeypatch, relations, target):
 def test_billing_records_independent_local_and_denied_live_legs(relations):
     from parity.provenance import markdown
     before,after=relations
-    result=board.build_board({'objects':[obj()]},before,after,{'BILLING.T'})
+    result=board.build_board({'objects':[obj(subject_area='billing', system='teradata')]},before,after,{'BILLING.T'})
     row=result['rows'][0]
     assert row['local_duckdb']=='green' and row['snowflake']=='red'
     assert row['snowflake_reason']==board.SNOWFLAKE_REASON
@@ -186,7 +186,7 @@ def test_billing_records_independent_local_and_denied_live_legs(relations):
     assert result['summary']['billing']['snowflake']=='red'
     assert board.SNOWFLAKE_REASON in markdown(result['rows'])
     after.execute("INSERT INTO BILLING.T VALUES (1,'different')")
-    red=board.build_board({'objects':[obj()]},before,after,{'BILLING.T'})
+    red=board.build_board({'objects':[obj(subject_area='billing', system='teradata')]},before,after,{'BILLING.T'})
     assert red['rows'][0]['local_duckdb']=='red'
     assert red['summary']['billing']['local_red']==1
 

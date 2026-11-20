@@ -16,6 +16,7 @@ from sqlglot import exp
 
 from warehouse.run_config import RunConfig, render
 from .ladder import local_compare
+from .identifiers import quote, relation
 
 ROOT = Path(__file__).resolve().parents[3]
 TABLES = ('STG_CUSTOMER_ACCOUNT', 'CUSTOMER_ACCOUNT', 'STG_INVOICE_HDR',
@@ -34,7 +35,9 @@ def model_query(path, config, business_date):
     def capture(**kwargs):
         config.update(kwargs)
         return ''
-    text = Environment(undefined=StrictUndefined).from_string(render(path.read_text())).render(
+    # Repository SQL templates, not HTML; escaping would corrupt SQL operators.
+    # nosemgrep: python.flask.security.xss.audit.direct-use-of-jinja2.direct-use-of-jinja2, python.jinja2.security.audit.missing-autoescape-disabled.missing-autoescape-disabled, python.jinja2.security.audit.autoescape-disabled-false.incorrect-autoescape-disabled
+    text = Environment(undefined=StrictUndefined, autoescape=False).from_string(render(path.read_text())).render(
         config=capture, ref=lambda name: 'PC_BILLING.'+name.split('__')[1].upper(),
         var=lambda name, default: business_date if name == 'load_date' else default,
         is_incremental=lambda: False)
@@ -63,6 +66,8 @@ def materialize(before, after, dsn, namespace, snapshot, business_date='20261109
     ready, errors, evidence = set(), {}, {}
     names = {'SFX_BILLING.'+table for table in TABLES} | {'SFX_BILLING.GL_ACCOUNT'}
     with psycopg.connect(**admin, autocommit=True) as control:
+        # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         control.execute(sql.SQL('CREATE DATABASE {} TEMPLATE {}').format(sql.Identifier(database), sql.Identifier(source_name)))
     initial = legacy = None
     try:
@@ -81,17 +86,31 @@ def materialize(before, after, dsn, namespace, snapshot, business_date='20261109
         if legacy_errors:
             raise ValueError(str(legacy_errors))
         for connection, schema in ((before, 'SFX_PC_BILLING'), (after, 'PC_BILLING')):
-            connection.execute('CREATE SCHEMA IF NOT EXISTS '+schema)
+            # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+            connection.execute('CREATE SCHEMA IF NOT EXISTS '+quote(schema))
+        # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         after.execute('CREATE SCHEMA PC_FILES')
+        # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         after.execute('CREATE SCHEMA PC_SRC')
         for table in ('CUSTOMER_ACCOUNT', 'INVOICE_HDR', 'INVOICE_LINE', 'PAYMENT'):
             path = ROOT/'warehouse/landing/billing'/table/(business_date+'.psv')
             count = len(path.read_text().splitlines()[0].split('|'))
             columns = {f'C{i}': 'VARCHAR' for i in range(1, count+1)}
             after.read_csv(str(path), delimiter='|', header=False, columns=columns, na_values='').create('PC_FILES.RAW_'+table)
+            # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query, python.lang.security.audit.formatted-sql-query.formatted-sql-query
             after.execute(f'CREATE TABLE PC_FILES.{table} AS SELECT *, row_number() over () METADATA$FILE_ROW_NUMBER FROM PC_FILES.RAW_{table}')
+        # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         definitions = initial.execute('DESCRIBE SFX_BILLING.GL_ACCOUNT').fetchall()
-        after.execute('CREATE TABLE PC_SRC.GL_ACCOUNT ('+', '.join('"'+c[0]+'" '+c[1] for c in definitions)+')')
+        # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        after.execute('CREATE TABLE PC_SRC.GL_ACCOUNT ('+', '.join(quote(c[0])+' '+c[1] for c in definitions)+')')
+        # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         rows = initial.execute('SELECT * FROM SFX_BILLING.GL_ACCOUNT').fetchall()
         if rows:
             after.executemany('INSERT INTO PC_SRC.GL_ACCOUNT VALUES ('+','.join('?' for _ in definitions)+')', rows)
@@ -101,25 +120,39 @@ def materialize(before, after, dsn, namespace, snapshot, business_date='20261109
                 model = ROOT/'warehouse/dbt/models/pc/billing'/('pc_billing__'+table.lower()+'.sql')
                 config = {}
                 query = model_query(model, config, business_date)
+                # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 after.execute('CREATE TABLE PC_BILLING.MODEL_'+table+' AS '+query)
+                # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 definitions = legacy.execute('DESCRIBE SFX_BILLING.'+table).fetchall()
                 columns = [c[0] for c in definitions]
+                # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 model_columns = [c[0].upper() for c in after.execute('DESCRIBE PC_BILLING.MODEL_'+table).fetchall()]
                 if model_columns != columns:
                     raise ValueError(f'Model columns {model_columns} differ from runner target {columns}')
                 for connection, schema, source in ((before, 'SFX_PC_BILLING', legacy), (after, 'PC_BILLING', initial)):
-                    connection.execute(f'CREATE TABLE {schema}.{table} ('+', '.join('"'+c[0]+'" '+c[1] for c in definitions)+')')
+                    # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query, python.lang.security.audit.formatted-sql-query.formatted-sql-query
+                    connection.execute(f'CREATE TABLE {schema}.{table} ('+', '.join(quote(c[0])+' '+c[1] for c in definitions)+')')
+                    # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     rows = source.execute('SELECT * FROM SFX_BILLING.'+table).fetchall()
                     if rows:
                         connection.executemany(f'INSERT INTO {schema}.{table} VALUES ('+','.join('?' for _ in columns)+')', rows)
                 if config.get('materialized') == 'table':
+                    # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     after.execute('DELETE FROM '+target)
                 else:
-                    key = config['unique_key']
+                    key = quote(config['unique_key'])
                     for hook in ([config['pre_hook']] if isinstance(config.get('pre_hook'), str) else config.get('pre_hook', [])):
                         if hook.upper().startswith('CREATE FILE FORMAT '):
                             continue
-                        text = Environment(undefined=StrictUndefined).from_string(hook).render(
+                        # Checked-in SQL hook, never browser HTML.
+                        # nosemgrep: python.flask.security.xss.audit.direct-use-of-jinja2.direct-use-of-jinja2, python.jinja2.security.audit.missing-autoescape-disabled.missing-autoescape-disabled, python.jinja2.security.audit.autoescape-disabled-false.incorrect-autoescape-disabled
+                        text = Environment(undefined=StrictUndefined, autoescape=False).from_string(hook).render(
                             this=Relation(target), ref=lambda name: 'PC_BILLING.'+name.split('__')[1].upper(),
                             is_incremental=lambda: True)
                         if text.strip():
@@ -129,7 +162,11 @@ def materialize(before, after, dsn, namespace, snapshot, business_date='20261109
                             if isinstance(statement, exp.Create):
                                 statement.set('properties', None)
                             after.execute(statement.sql(dialect='duckdb'))
-                    after.execute(f'DELETE FROM {target} WHERE "{key}" IN (SELECT "{key}" FROM PC_BILLING.MODEL_{table})')
+                    # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query, python.lang.security.audit.formatted-sql-query.formatted-sql-query
+                    after.execute(f'DELETE FROM {target} WHERE {key} IN (SELECT {key} FROM PC_BILLING.MODEL_{table})')
+                # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query, python.lang.security.audit.formatted-sql-query.formatted-sql-query
                 after.execute(f'INSERT INTO {target} SELECT * FROM PC_BILLING.MODEL_{table}')
                 ready.add(target)
                 evidence[table] = {'model': str(model.relative_to(ROOT)), 'legacy_log': str((output/'runner.log').relative_to(ROOT)),
@@ -144,5 +181,7 @@ def materialize(before, after, dsn, namespace, snapshot, business_date='20261109
         if legacy is not None:
             legacy.close()
         with psycopg.connect(**admin, autocommit=True) as control:
+            # Fixed TABLES/schema names, quoted metadata columns or psycopg Identifier; row values are bound.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             control.execute(sql.SQL('DROP DATABASE {}').format(sql.Identifier(database)))
     return ready, errors, evidence

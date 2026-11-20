@@ -26,6 +26,7 @@ from parity import dbc_retire, local_audit, powercenter_audit, spark_audit, docu
 from parity import ladder
 from parity import pc_users, spark_users, retirement_users, report_outputs, owner_decisions, snowpark_users
 from parity.local_billing import execute
+from parity.local_sql import execute as execute_users
 from parity.semantics import columns as source_columns, numeric_type
 from parity.ladder import local_compare
 from parity.provenance import provenance, audit_markdown, markdown, compact_markdown
@@ -292,7 +293,7 @@ def materialize_users(before, names, conversion_dir, business_date='20261109', a
                 after.executemany(f'INSERT INTO {relation(target)} VALUES ({", ".join("?" for _ in definitions)})', rows)
             ready.add(target)
     if (conversion_dir / '20_routines.sql').exists():
-        errors.update(execute(after, conversion_dir, ready, business_date, 'users'))
+        errors.update(execute_users(after, conversion_dir, ready, business_date, 'users'))
         return after, ready, errors
     return after, ready, errors
 
@@ -559,6 +560,12 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     result['summary']['by_subject_area'] = {
         area: parity_counts([row for row in result['rows'] if row['subject_area'] == area])
         for area in sorted({row['subject_area'] for row in result['rows']})}
+    billing = [row for row in result['rows'] if row['subject_area'] == 'billing']
+    states = Counter(row['status'] for row in billing)
+    result['summary']['billing'].update(
+        local_duckdb='green' if billing and states['green'] == len(billing) else
+                     'amber' if billing and states['green'] + states['amber'] == len(billing) else 'red',
+        local_green=states['green'], local_amber=states['amber'], local_red=states['red'])
     return result
 
 def documents_link(path, start=None, end=None, ref=DOCUMENTS_BRANCH):
@@ -797,7 +804,7 @@ def main():
     try:
         if args.target == 'duckdb' and manifest['objects']:
             names = {r for obj in manifest['objects'] for r in obj.get('output_relations',[])
-                     if not r.startswith('SFX_SPARK.') and r != 'SFX_USERS.M_TEAM_COUNTS_OUTPUT' and r.split('.')[-1] not in report_outputs.OUTPUTS}
+                     if not r.startswith(('SFX_SPARK.', 'SFX_PC_BILLING.')) and r != 'SFX_USERS.M_TEAM_COUNTS_OUTPUT' and r.split('.')[-1] not in report_outputs.OUTPUTS}
             ns = os.environ.get('NS',RunConfig.from_env().before_namespace)
             port = os.environ.get('TD_PG_PORT',str(54500+zlib.crc32(ns.encode())%1000))
             dsn = os.environ.get('BOARD_SOURCE_DSN',f'host=127.0.0.1 port={port} dbname=teradata user=postgres')

@@ -509,6 +509,8 @@ Retirement checks use current checked-out DBQL, 2026-08-12–2026-11-09, and dea
 
 ## Billing parity provenance
 
+Historical billing-branch evidence below, not a regeneration of this integration board. Current billing results will be emitted by the shared generator when a board regeneration is authorized.
+
 Local DuckDB: 74 green / 0 red (including unmeasured outputs).
 Snowflake: **red** — Snowflake login down; not run.
 These are separate evidence legs; local green does not imply live Snowflake parity.

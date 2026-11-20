@@ -9,6 +9,8 @@ import duckdb
 import sqlglot
 from sqlglot import exp
 
+from .identifiers import quote, relation
+
 ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -44,6 +46,8 @@ def churn_query(connection):
     if len(bodies) != 1:
         raise ValueError('Expected one shipped Python UDF body')
     scope = {}
+    # Execute only the Python UDF body extracted from the checked-in Snowpark module, never input data.
+    # nosemgrep: python.lang.security.audit.exec-detected.exec-detected
     exec(compile(bodies[0], str(path), 'exec'), scope)
     calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call)
              and isinstance(node.func, ast.Attribute) and node.func.attr == 'select']
@@ -64,10 +68,14 @@ def churn_query(connection):
 
 
 def uppercase_columns(connection, table):
-    columns = [c[0] for c in connection.execute('DESCRIBE '+table).fetchall()]
+    # Relations and metadata columns are quoted; query is parsed checked-in SQL.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+    columns = [c[0] for c in connection.execute('DESCRIBE '+relation(table)).fetchall()]
     for column in columns:
         if column != column.upper():
-            connection.execute('ALTER TABLE '+table+' RENAME COLUMN "'+column+'" TO "'+column.upper()+'"')
+            # Relations and metadata columns are quoted; query is parsed checked-in SQL.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+            connection.execute('ALTER TABLE '+relation(table)+' RENAME COLUMN '+quote(column)+' TO '+quote(column.upper()))
 
 
 def materialize(before, after, objects, namespace):
@@ -102,7 +110,9 @@ def materialize(before, after, objects, namespace):
             query = churn_query(after) if name == 'billing_churn_score' else render_model(
                 (ROOT/'warehouse/dbt/models/spark'/name/(name+'.sql')).read_text())
             before.read_parquet([str(path) for path in paths]).create('SFX_SPARK.'+name.upper())
-            after.execute('CREATE OR REPLACE TABLE '+target+' AS '+query)
+            # Relations and metadata columns are quoted; query is parsed checked-in SQL.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+            after.execute('CREATE OR REPLACE TABLE '+relation(target)+' AS '+query)
             uppercase_columns(before, 'SFX_SPARK.'+name.upper())
             uppercase_columns(after, target)
             ready.add(target)

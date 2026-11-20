@@ -228,6 +228,10 @@ def markdown(rows, subject='billing'):
     deviations = sum(row['local_duckdb'] == 'approved_deviation' for row in billing)
     counts = (f'Local DuckDB: {green} green / {deviations} approved_deviation / {retired} retired / {len(billing)-green-retired-deviations} red (retirement evidence is not green-migrated).'
               if subject == 'users' else f'Local DuckDB: {green} green / {len(billing)-green} red (including unmeasured outputs).')
+    if subject == 'billing':
+        amber = sum(row['local_duckdb'] == 'amber' for row in billing)
+        red = sum(row['local_duckdb'] == 'red' for row in billing)
+        counts = f'Local DuckDB: {green} green / {amber} amber pending Finance / {red} red (including unmeasured outputs).'
     lines = ['\n## '+subject.title()+' parity provenance', '',
              counts,
              'Snowflake: **red** — '+(billing[0]['snowflake_reason'] if billing else 'No '+subject+' evidence')+'.',
