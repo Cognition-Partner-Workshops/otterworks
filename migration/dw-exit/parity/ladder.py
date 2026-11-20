@@ -4,12 +4,64 @@ from pathlib import Path as _RunPath
 _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
 from warehouse.run_config import render as _run_render
 
+from collections import Counter
+import hashlib
+
 import argparse
 import json
 import re
 from pathlib import Path
 
 from .connection import connect
+from .semantics import char_columns
+
+def canonical(value):
+    return json.dumps(value, default=str, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
+
+
+def local_measure(connection, name, padded):
+    schema, table = name.split('.')
+    source = identifier(schema)+'.'+identifier(table)
+    cursor = connection.execute('SELECT * FROM '+source)
+    names = [c[0] for c in cursor.description]
+    expressions = [f'RTRIM({identifier(c)}, \x27 \x27)' if c in padded else identifier(c) for c in names]
+    expressions = [expression+' COLLATE "binary"' if str(info[1]) == 'VARCHAR' else expression
+                   for expression, info in zip(expressions, cursor.description)]
+    rows = connection.execute('SELECT '+', '.join(expressions)+' FROM '+source).fetchall()
+    profiles = {}
+    for column, expression in zip(names, expressions):
+        values = connection.execute(f'SELECT COUNT(*)-COUNT({expression}), MIN({expression}), MAX({expression}), COUNT(DISTINCT {expression}) FROM {source}').fetchone()
+        profiles[column] = dict(zip(('nulls','min','max','distinct'), values))
+    return names, rows, profiles
+
+
+def local_compare(before, after, source, target, sample_size=5):
+    padded = char_columns(source)
+    bcols, brows, bp = local_measure(before, source, padded)
+    acols, arows, ap = local_measure(after, target, padded)
+    if not bcols or bcols != acols:
+        raise ValueError('Output column names/order differ')
+    def digests(rows):
+        return Counter((canonical(row[:1]), hashlib.sha256(canonical(row).encode()).hexdigest()) for row in rows)
+    bh, ah = digests(brows), digests(arows)
+    def checksum(values):
+        return hashlib.sha256(canonical(sorted((key,digest,count) for (key,digest),count in values.items())).encode()).hexdigest()
+    delta = (bh-ah) + (ah-bh)
+    samples = []
+    for key in sorted({key for key, digest in delta})[:sample_size]:
+        samples.append({'key': json.loads(key),
+                        'before': sorted((r for r in brows if canonical(r[:1]) == key), key=canonical)[:sample_size],
+                        'after': sorted((r for r in arows if canonical(r[:1]) == key), key=canonical)[:sample_size]})
+    return {'row_count': {'before': len(brows), 'after': len(arows)},
+            'comparison_rules': {'trailing_pad_insensitive': padded, 'other_columns': 'exact'},
+            'column_profile': {'before': bp, 'after': ap},
+            'keyed_row_hash': {'keys': bcols[:1], 'difference': sum(delta.values()),
+                               'before': checksum(bh), 'after': checksum(ah),
+                               'key_policy': 'first declared column; full-row digest preserves multiplicity'},
+            'sampled_differences': samples,
+            'passed': len(brows) == len(arows) and canonical(bp) == canonical(ap) and not delta}
+
+
 
 
 def identifier(value):
