@@ -8,5 +8,7 @@ REASON = ('retired (manifest target_type retire, target NONE); no target relatio
 def materialize(before, after, ready, errors):
     for name in OUTPUTS:
         ready.discard(name)
-        after.execute('DROP TABLE IF EXISTS ' + '.'.join('"' + p + '"' for p in name.split('.')))
+        # Identifiers come only from OUTPUTS, not external input.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        after.execute('DROP TABLE IF EXISTS ' + '.'.join('"' + p.replace('"', '""') + '"' for p in name.split('.')))
         errors[name] = REASON

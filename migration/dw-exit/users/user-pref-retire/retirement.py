@@ -53,7 +53,7 @@ def build():
     result = []
     try:
         for obj in objects:
-            counts = {name: snapshot.execute('SELECT COUNT(*) FROM ' + board.relation(name)).fetchone()[0]
+            counts = {name: snapshot.table(board.relation(name)).count('*').fetchone()[0]
                       if name in ready else None for name in obj['output_relations']}
             deps = dependency_check(manifest, obj['id'], lineage)
             hits = [row for row in usage if row['ObjectDatabaseName'] + '.' + row['ObjectTableName']
