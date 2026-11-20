@@ -1,7 +1,8 @@
+-- depends_on: {{ ref('pc_content__app_user') }}
 {{ config(materialized='incremental', incremental_strategy='merge', unique_key='DOCUMENT_ID', on_schema_change='append_new_columns') }}
 with owner_status as (
     select USER_ID, STATUS_CD
-    from {{ source('documents_user_lookups', 'APP_USER') }}
+    from {{ source('users_converted', 'APP_USER') }}
     qualify row_number() over (partition by USER_ID order by USER_ID) = 1
 )
 select

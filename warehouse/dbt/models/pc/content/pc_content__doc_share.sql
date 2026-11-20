@@ -12,7 +12,7 @@ role_grant as (
     select
         cast(USER_ID as bigint) as USER_ID,
         left(upper(trim(ROLE_CD, ' ')), 12) as ROLE_CD
-    from {{ source('documents_user_lookups', 'ROLE_GRANT') }}
+    from {{ source('users_converted', 'ROLE_GRANT') }}
     qualify row_number() over (
         partition by USER_ID
         order by case left(upper(trim(ROLE_CD, ' ')), 12)

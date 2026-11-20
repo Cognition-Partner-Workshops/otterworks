@@ -142,7 +142,7 @@ def compare(before, after, contract):
 def render_pc(path):
     text = re.sub(r'\{\{\s*config\(.*?\)\s*\}\}', '', path.read_text(), flags=re.S)
     text = re.sub(r"\{\{\s*source\('pc_content_src',\s*'(\w+)'\)\s*\}\}", r'PC_SRC.\1', text)
-    text = re.sub(r"\{\{\s*source\('documents_user_lookups',\s*'(\w+)'\)\s*\}\}", r'USERS.\1', text)
+    text = re.sub(r"\{\{\s*source\('users_converted',\s*'(\w+)'\)\s*\}\}", r'USERS.\1', text)
     text = re.sub(r"\{\{\s*source\('documents_converted',\s*'(\w+)'\)\s*\}\}", r'DOCUMENTS.\1', text)
     text = re.sub(r"\{\{\s*ref\('pc_content__(\w+)'\)\s*\}\}", lambda m: 'PC_CONTENT.'+m[1].upper(), text)
     if '{{' in text or '{%' in text:

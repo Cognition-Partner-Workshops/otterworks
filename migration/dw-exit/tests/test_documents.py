@@ -201,7 +201,7 @@ def test_pc_effective_access_highest_privilege():
         c.execute("INSERT INTO USERS.ROLE_GRANT VALUES (2,'READER'),(2,'EDITOR'),(3,'READER'),(3,'ADMIN')")
         documents.merge_pc(c,'DOC_SHARE',query,'SHARE_ID')
         assert c.execute('SELECT ACCESS_LEVEL FROM PC_CONTENT.DOC_SHARE ORDER BY SHARE_ID').fetchall()==[('OWNER',),('EDIT',),('OWNER',)]
-        assert c.execute('SELECT COUNT(*) FROM PC_CONTENT.DOC_SHARE').fetchone()[0] == 3
+        assert c.execute('SELECT COUNT(*), COUNT(DISTINCT SHARE_ID) FROM PC_CONTENT.DOC_SHARE').fetchone() == (3, 3)
         c.execute('DELETE FROM PC_SRC.DOC_SHARE')
         assert c.execute(query).fetchall() == []
 
@@ -239,3 +239,13 @@ def test_snowpark_publisher_emits_merge(name,key):
         def collect(self):
             return ['local SQL shape only']
     assert module.run(Session()) == ['local SQL shape only']
+
+def test_document_dag_and_converted_role_grant_source():
+    import yaml
+    assert "-- depends_on: {{ ref('pc_content__app_user') }}" in (MODELS/'pc_content__document.sql').read_text()
+    model = (MODELS/'pc_content__doc_share.sql').read_text()
+    assert "source('users_converted', 'ROLE_GRANT')" in model
+    sources = yaml.safe_load((documents.CONVERSIONS.parents[2]/'warehouse/dbt/models/documents/_documents_sources.yml').read_text())['sources']
+    source = next(s for s in sources if s['name']=='users_converted')
+    assert source['schema']=='USERS'
+    assert {'name':'ROLE_GRANT'} in source['tables']

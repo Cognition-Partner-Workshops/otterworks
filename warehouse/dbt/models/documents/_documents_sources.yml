@@ -1,6 +1,6 @@
 version: 2
 sources:
-- name: documents_user_lookups
+- name: users_converted
   database: '{{ env_var(''RUN_DATABASE'', target.database) }}'
   schema: USERS
   tables:
