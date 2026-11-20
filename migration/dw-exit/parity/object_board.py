@@ -153,7 +153,9 @@ def materialize(before, names, conversion_dir=None, *, areas=None, database=None
     after = duckdb.connect(str(database))
     ready, errors = set(), {}
     for area, config in areas.items():
-        after.execute('CREATE SCHEMA IF NOT EXISTS '+quote(config['schema']))
+        schema = exp.Create(this=exp.Table(this=exp.Identifier(this=config['schema'], quoted=True)),
+                            kind='SCHEMA', exists=True)
+        after.execute(schema.sql(dialect='duckdb'))
     for name in sorted(names):
         source_schema, table = name.split('.')
         config = next((c for c in areas.values() if source_schema == 'SFX_'+c['schema']), None)
@@ -271,10 +273,10 @@ def run_snowpark(config, job, after):
 
     with Session.builder.config('local_testing', True).create() as session:
         for local, remote in job.get('inputs', {}).items():
-            name = relation(config['schema']+'.'+local)
-            columns = after.execute('DESCRIBE '+name).fetchall()
+            source = after.table(relation(config['schema']+'.'+local))
             fields = []
-            for column, dtype, *_ in columns:
+            for column, datatype in zip(source.columns, source.types):
+                dtype = str(datatype)
                 kind = {'INTEGER': types.IntegerType(), 'SMALLINT': types.ShortType(),
                         'BIGINT': types.LongType(), 'FLOAT': types.FloatType(),
                         'DOUBLE': types.DoubleType(), 'BOOLEAN': types.BooleanType(),
@@ -286,7 +288,7 @@ def run_snowpark(config, job, after):
                 if kind is None:
                     raise ValueError('Unsupported Snowpark input type: '+dtype)
                 fields.append(types.StructField(column, kind))
-            rows = after.execute('SELECT * FROM '+name).fetchall()
+            rows = source.fetchall()
             session.create_dataframe(rows, schema=types.StructType(fields)).write.save_as_table(remote, mode='overwrite')
         path = ROOT / job['job']
         spec = importlib.util.spec_from_file_location('board_snowpark_job', path)
@@ -298,8 +300,11 @@ def run_snowpark(config, job, after):
         frame = result.to_pandas()
         after.register('_snowpark_result', frame)
         try:
-            after.execute('CREATE OR REPLACE TABLE '+relation(config['schema']+'.'+job['target'])+
-                          ' AS SELECT * FROM _snowpark_result')
+            statement = exp.Create(this=exp.Table(
+                db=exp.Identifier(this=config['schema'], quoted=True),
+                this=exp.Identifier(this=job['target'], quoted=True)), kind='TABLE',
+                replace=True, expression=exp.select('*').from_('_snowpark_result'))
+            after.execute(statement.sql(dialect='duckdb'))
         finally:
             after.unregister('_snowpark_result')
 
