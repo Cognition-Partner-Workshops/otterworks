@@ -9,7 +9,8 @@ The initial estimate of 52/3 excludes the dependent view from retirement.
 Run scope is `RUN_TOKEN=sfx1120` because the validator requires an sfx prefix;
 branch and commit tag is sfg1120. `warehouse/run_config.py env` resolves
 `RUN_BEFORE_NAMESPACE=sfx-1120-before`. No validator, source SQL, PowerCenter XML,
-Spark job, shipped dbt/Snowpark conversion, or billing SQL was changed.
+Spark job or billing SQL was changed. Step 2 widens target APP_USER/dbt display names
+and adds the declared Snowpark APP_USER handler.
 
 Parity is local DuckDB only. Every Snowflake cell is red:
 **Snowflake login down; execution disabled**. No Snowflake connection, preflight,
@@ -17,7 +18,8 @@ credentials, or live certification was attempted.
 
 ## Shipped users SQL and local measurement
 
-- `00_tables.sql`: 18 non-retired tables, source column order/width/nullability.
+- `00_tables.sql`: 18 non-retired tables, source column order/nullability and widths
+  except the explicitly approved APP_USER DISPLAY_NAME widening from 60 to 200.
 - `10_load.sql`: replacement loads for the users BTEQ chain.
 - `20_routines.sql`: P_ACTIVITY_DAILY and M_TEAM_COUNTS resultset.
 - `30_views.sql`: V_TEAM_MEMBERS.
@@ -73,7 +75,34 @@ inputs, merge retention, replacement, router default-route dropping, stale/missi
 evidence and conversion errors. A separate router probe and external-consumer
 search from the historical run were **not repeated** for this run.
 
-## Results and held differences
+## Step 2: approved widening and local Snowpark proof
+
+Owner decision: **User display names are widened to 200 characters.**
+`decisions.json` records scope; the board preserves raw counts/hash differences and
+uses `approved_deviation` only after checking every key, name prefix and non-name hash.
+Only pre-existing declared CHAR trailing-pad semantics are applied; case folding or
+VARCHAR trimming is not permitted. Missing outputs and out-of-scope changes stay red.
+
+`warehouse/snowpark/m_sfx_app_user.py` implements TRANSFORM.M_SFX_APP_USER as a keyed
+update/insert merge. `parity/snowpark_users.py` runs it with local_testing=True on the
+captured INITIAL.APP_USER and actual PC STG_APP_USER, compares actual runner output
+through the DuckDB ladder and records input/handler checksums. The 120 captured rows
+all update; synthetic tests additionally cover insert, retention, empty input and
+missing-input failure without a live connector. The upstream staging deviation is
+validated independently, not hidden by comparing only the already-truncated inputs.
+No procedure registration, task deployment or Snowflake execution was attempted.
+
+See [quiet-behaviors.md](quiet-behaviors.md) for all-object semantics and local firing
+evidence, and [shared-surfaces.md](shared-surfaces.md) for cross-area readers/writers,
+DBQL/registry discrepancies, JDBC side outputs and all 55 manifest owners.
+Notably, folder-wide content dbt builds can include disabled TEAM_MEMBER; the
+legacy BTEQ and PC login writers disagree outside the all-SUCCESS local fixture.
+These audit findings were **not** fixed. JDBC side tables remain unverified.
+
+Current statuses are generated in [board.json](../board/board.json) and
+[users-pr.md](../board/users-pr.md); the following Step 1 hold list is historical.
+
+## Step 1 historical results and held differences
 
 Local users board: **45 green / 6 red / 4 retire_verified**.
 All 55 Snowflake cells remain red. All migration states remain not_started and
@@ -96,8 +125,9 @@ target: Nadia Norford - Senior Workspace Operations and Records Governance Coord
 ```
 
 The zero-diff APP_USER PC proof is conditional on the already-truncated captured
-PC staging input. It does not prove end-to-end parity or implement the declared
-Snowpark target. These issues are deliberately not fixed in this step.
+PC staging input. It did not prove end-to-end parity or implement the declared
+Snowpark target. Step 2 above adds the handler and independently validates the
+upstream owner-approved difference; the raw Step 1 measurements are retained here.
 
 | Actual Spark job | Before / after | Hash difference |
 |---|---:|---:|
