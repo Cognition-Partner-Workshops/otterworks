@@ -14,6 +14,29 @@ from parity.harness import control_table
 from parity.inventory import target_relation
 
 
+@pytest.mark.parametrize('folder', ['CONTENT', 'SFX_CONTENT', 'PC_CONTENT'])
+def test_content_folder_build_excludes_disabled_team_member(monkeypatch, folder):
+    from parity import commands
+    monkeypatch.setenv('SNOWFLAKE_DATABASE', commands.DATABASE)
+    monkeypatch.setattr(commands, 'inventory', lambda: [])
+    calls = []
+    monkeypatch.setattr(commands.subprocess, 'run', lambda command, **kwargs: calls.append(command))
+    commands.build(folder=folder)
+    assert calls[0][calls[0].index('--select') + 1] == 'path:models/pc/content'
+    assert calls[0][calls[0].index('--exclude') + 1] == 'pc_content__team_member'
+
+
+def test_team_member_mapping_build_remains_available(monkeypatch):
+    from parity import commands
+    monkeypatch.setenv('SNOWFLAKE_DATABASE', commands.DATABASE)
+    monkeypatch.setattr(commands, 'inventory', lambda: [dict(mapping='m_SFX_TEAM_MEMBER', dbt_model='pc_content__team_member')])
+    calls = []
+    monkeypatch.setattr(commands.subprocess, 'run', lambda command, **kwargs: calls.append(command))
+    commands.build(mapping='m_SFX_TEAM_MEMBER')
+    assert calls[0][calls[0].index('--select') + 1] == 'pc_content__team_member'
+    assert '--exclude' not in calls[0]
+
+
 def test_normalisation():
     assert normal(Decimal('1.00')) == normal(1)
     assert normal(Decimal('123456789012345678901234567890.10'))[1] == '123456789012345678901234567890.1'
