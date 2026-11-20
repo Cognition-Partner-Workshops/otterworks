@@ -1,0 +1,20 @@
+[
+  {
+    "object": "wf_SFX_CONTENT_DAILY",
+    "relations": ["SFX_USERS.STG_APP_USER"],
+    "status": "approved",
+    "old_behaviour": "Source qualifier coerces DISPLAY_NAME to precision 60 before TRIM",
+    "new_behaviour": "Staging model retains up to 200 characters",
+    "question": "Already settled by owner display-name widening decision",
+    "recommendation": "Retain the scoped owner_decisions.py proof and raw measurements"
+  },
+  {
+    "object": "wf_SFX_CONTENT_DAILY",
+    "relations": ["SFX_DOCUMENTS.DOCUMENT", "SFX_DOCUMENTS.DOC_SHARE", "SFX_USERS.APP_USER"],
+    "status": "pending",
+    "old_behaviour": "CHAR storage pads STATUS_CD to 12, FILE_TYPE to 8 and ACCESS_LEVEL to 12",
+    "new_behaviour": "Existing Snowflake mapping SELECTs return unpadded strings",
+    "question": "Must exact stored trailing blanks survive, or may only DDL-declared CHAR pads be ignored?",
+    "recommendation": "Approve a DDL-scoped trailing-pad comparison contract, without trimming VARCHAR data or changing mapping expressions"
+  }
+]

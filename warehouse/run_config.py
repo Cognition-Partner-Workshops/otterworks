@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 import shlex
 
-TOKEN_PATTERN = re.compile(r"sfx-?[a-z0-9]+(?:-[a-z0-9]+)*")
+TOKEN_PATTERN = re.compile(r"sf[xg]-?[a-z0-9]+(?:-[a-z0-9]+)*")
 
 
 @dataclass(frozen=True)
@@ -15,7 +15,7 @@ class RunConfig:
 
     def __post_init__(self):
         if not TOKEN_PATTERN.fullmatch(self.token):
-            raise ValueError("RUN_TOKEN must be a lowercase sfx-prefixed identifier")
+            raise ValueError("RUN_TOKEN must be a lowercase sfx- or sfg-prefixed identifier")
 
     @classmethod
     def from_env(cls):

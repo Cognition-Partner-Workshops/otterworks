@@ -33,3 +33,30 @@
 | licence_dependencies | 252 | 0 |
 
 All objects remain not_started. Parity measurements do not migrate or retire objects.
+
+## Content parity provenance
+
+BEFORE: actual PowerCenter workflow on the Teradata emulator; AFTER: shipped procedure body on DuckDB,
+using identical landing inputs and typed pre-workflow tables. TEAM_MEMBER remains untouched.
+Snowflake: **red** — Snowflake login down.
+
+| Object | Local DuckDB | Snowflake | Source | Converted procedure | Metrics |
+|---|---|---|---|---|---|
+| wf_SFX_CONTENT_DAILY | red | red | [etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML:1–1359](https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfg1120-content/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L1-L1359) | [migration/dw-exit/content/workflow.sql:1–173](https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfg1120-content/migration/dw-exit/content/workflow.sql#L1-L173) | [migration/dw-exit/parity/object_board.py:58–89](https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfg1120-content/migration/dw-exit/parity/object_board.py#L58-L89)<br>[migration/dw-exit/parity/object_board.py:43–55](https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfg1120-content/migration/dw-exit/parity/object_board.py#L43-L55)<br>[migration/dw-exit/parity/object_board.py:58–89](https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfg1120-content/migration/dw-exit/parity/object_board.py#L58-L89) |
+
+pending owner decision: exact stored CHAR padding; see content/decisions.json
+
+Decision evidence: [etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML:16–16](https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfg1120-content/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L16-L16)<br>[etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML:179–179](https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfg1120-content/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L179-L179)<br>[etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML:197–197](https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfg1120-content/etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#L197-L197)<br>[warehouse/dbt/models/pc/content/pc_content__stg_app_user.sql:4–4](https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfg1120-content/warehouse/dbt/models/pc/content/pc_content__stg_app_user.sql#L4-L4)
+
+| Relation | BEFORE rows | AFTER rows | Profiles | Keyed hashes |
+|---|---:|---:|---|---|
+| SFX_DOCUMENTS.DOCUMENT | 90 | 90 | differ | 180 unmatched occurrences |
+| SFX_DOCUMENTS.DOC_SHARE | 100 | 100 | differ | 200 unmatched occurrences |
+| SFX_DOCUMENTS.STG_DOCUMENT | 90 | 90 | match | match |
+| SFX_USERS.APP_USER | 120 | 120 | differ | 240 unmatched occurrences |
+| SFX_USERS.LOGIN_EVENT | 200 | 200 | match | match |
+| SFX_USERS.ROLE_GRANT | 20 | 20 | match | match |
+| SFX_USERS.STG_APP_USER | 120 | 120 | differ | 200 unmatched occurrences |
+| SFX_USERS.TEAM_MEMBER | 40 | 40 | match | match |
+
+Samples for every differing key are recorded in `board.json` → `sampled_differences`.

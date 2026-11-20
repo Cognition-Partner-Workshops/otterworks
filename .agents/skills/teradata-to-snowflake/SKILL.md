@@ -5,6 +5,22 @@ description: Start and verify the local warehouse, PowerCenter, Spark, dbt and D
 
 # Local estate mechanics
 
+## Content workflow conversion rules
+
+- Prove the actual workflow runner against the shipped Snowflake Scripting body using
+  identical landing files and typed pre-workflow tables; preserve disabled TEAM_MEMBER.
+- Session truncate/merge/update-else-insert and both DOC_SHARE success dependencies
+  must survive orchestration conversion. Do not add all-workflow rollback.
+- Source qualifier string precision applies before expressions (DISPLAY_NAME 60
+  before TRIM); owner-approved widening needs scoped evidence, not input truncation.
+- DuckDB ignores VARCHAR cast lengths; lower those casts explicitly in the local
+  executor, never change the shipped SQL merely to satisfy DuckDB.
+- CHAR storage pads can create raw row-hash differences even when mapping values
+  match. Record the storage-only decision; never silently trim VARCHAR or all strings.
+- For sfg1120 use the RunConfig-derived namespace sfx-1120-before and 200 fixture rows.
+  Regenerate the board via `make -o sfx-teradata-up sfx-manifest-board RUN_TOKEN=sfg1120`.
+  Run Informatica tests with `env -u NS`. Snowflake is not required for this proof.
+
 Run commands from the repository root. Use an estate checkout containing the Spark baseline
 and manifest-board changes; the board targets and legacy Spark sources are supplied there.
 Requires Docker Compose, Python 3.11+, uv and Java 21 for Spark tests.

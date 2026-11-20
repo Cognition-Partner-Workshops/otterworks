@@ -18,8 +18,11 @@ import yaml
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'migration/dw-exit/tools'))
+sys.path.insert(0, str(ROOT / 'migration/dw-exit'))
 from warehouse.run_config import RunConfig
 from assess import board as wave_board
+from parity import local_content, owner_decisions
+from parity.provenance import content_provenance, content_markdown
 
 
 def quote(name):
@@ -52,7 +55,7 @@ def measure(connection, name):
     return columns, rows, profiles
 
 
-def compare(before, after, source, target, sample_size=5):
+def compare(before, after, source, target, sample_size=5, approved_decisions=False):
     bcols, brows, bp = measure(before, source)
     acols, arows, ap = measure(after, target)
     if not bcols or bcols != acols:
@@ -69,13 +72,21 @@ def compare(before, after, source, target, sample_size=5):
         samples.append({'key': json.loads(key),
                         'before': sorted((r for r in brows if canonical(r[:1]) == key), key=canonical)[:sample_size],
                         'after': sorted((r for r in arows if canonical(r[:1]) == key), key=canonical)[:sample_size]})
-    return {'row_count': {'before': len(brows), 'after': len(arows)},
+    result = {'row_count': {'before': len(brows), 'after': len(arows)},
             'column_profile': {'before': bp, 'after': ap},
             'keyed_row_hash': {'keys': bcols[:1], 'difference': sum(delta.values()),
                                'before': checksum(bh), 'after': checksum(ah),
                                'key_policy': 'first declared column; full-row digest preserves multiplicity'},
             'sampled_differences': samples,
             'passed': len(brows) == len(arows) and canonical(bp) == canonical(ap) and not delta}
+    if approved_decisions:
+        approved = owner_decisions.display_names(before, after, source, target, result, sample_size)
+        if approved is not result and approved['passed'] and not result['passed']:
+            approved.pop('raw_legacy', None)
+            result['owner_decision'] = {
+                'decision_id': 'content-display-name-200', 'scope_valid': True,
+                'approved_comparison': approved}
+    return result
 
 
 def source_snapshot(dsn, names):
@@ -184,7 +195,8 @@ def materialize(before, names, conversion_dir):
     return after, ready, errors
 
 
-def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None):
+def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None,
+                content_available=None):
     if target not in ('duckdb', 'snowflake'):
         raise ValueError('Unsupported parity target')
     objects = manifest['objects']
@@ -198,6 +210,8 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
         row.update(status='red', migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'),
                    row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
+        if obj['subject_area'] == 'content':
+            row['provenance'] = content_provenance(obj)
         if obj['system'] == 'spark':
             if obj.get('source') and (ROOT / obj['source']).is_file():
                 row.update(source=obj['source'], source_ref=obj.get('source_ref'))
@@ -210,13 +224,16 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
             row['reason'] = 'no declared output relation'
         else:
             measured = {}
+            row_available = available | set(content_available or ()) if obj['subject_area'] == 'content' else available
             for source in obj['output_relations']:
                 destination = source.removeprefix('SFX_')
-                if destination not in available:
+                if destination not in row_available:
                     row['reason'] = errors.get(destination, errors.get('*', 'output not materialized: '+destination))
                     break
                 try:
-                    measured[source] = compare(before, after, source, destination)
+                    measured[source] = compare(before, after, source, destination,
+                        sample_size=None if obj['subject_area'] == 'content' else 5,
+                        approved_decisions=obj['subject_area'] == 'content')
                 except (duckdb.Error, ValueError) as error:
                     row['reason'] = 'measurement failed: '+str(error).splitlines()[0]
                     break
@@ -227,6 +244,19 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
                 if row['status'] == 'red':
                     row['reason'] = 'measured parity mismatch'
+                if obj['subject_area'] == 'content':
+                    row['relation_results'] = measured
+                    for values in measured.values():
+                        values['decision_state'] = ('approved deviation' if values.get('owner_decision')
+                                                    else 'match' if values['passed'] else 'pending')
+                    owner_decisions.apply_deviation(row, measured, [{
+                        'decision_id': 'content-display-name-200', 'status': 'approved',
+                        'new_behaviour': 'User display names widened to 200 chars (owner approved)'}])
+                    if row['status'] == 'red':
+                        row['reason'] = 'pending owner decision: exact stored CHAR padding; see content/decisions.json'
+        if obj['subject_area'] == 'content':
+            row.update(local_duckdb=row['status'] if target == 'duckdb' else 'red',
+                       snowflake='red', snowflake_reason='Snowflake login down')
         result['rows'].append(row)
     total = sum(r['licence_dependency_count'] for r in result['rows'])
     result['summary'] = dict(rows=len(objects), red=sum(r['status']=='red' for r in result['rows']),
@@ -256,7 +286,16 @@ def main():
             before, source_ready, source_errors = source_snapshot(dsn,names)
             after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing/initial')
             errors.update(source_errors)
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters)
+            content_ready, content_errors, content_evidence = local_content.materialize(
+                before, after, dsn, ns, source_snapshot, os.environ.get('BUSINESS_DATE','20261109'))
+            errors.update(content_errors)
+        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,
+                              content_available=content_ready if before is not None else None)
+        if before is not None:
+            payload['content_evidence'] = content_evidence
+        readme = ROOT/'migration/dw-exit/board/README.md'
+        text = readme.read_text().split('\n## Content parity provenance')[0]
+        readme.write_text(text.rstrip()+'\n'+content_markdown(payload['rows']))
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
