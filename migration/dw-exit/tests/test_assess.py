@@ -63,9 +63,10 @@ def test_assessment_rejects_entities(tmp_path, relative, declaration, reference)
         assess.build(tmp_path)
 
 
+@pytest.mark.parametrize('relative', ['SFX_TEST/mappings/m_demo.XML', 'SFX_TEST/wf_demo.XML'])
 @pytest.mark.parametrize('document', ['', '<POWERMART>'])
-def test_assessment_rejects_malformed_xml(tmp_path, document):
-    path = tmp_path / 'etl/informatica/repository/SFX_TEST/wf_demo.XML'
+def test_assessment_rejects_malformed_xml(tmp_path, relative, document):
+    path = tmp_path / 'etl/informatica/repository' / relative
     path.parent.mkdir(parents=True)
     path.write_text(document)
     with pytest.raises(ET.ParseError):
