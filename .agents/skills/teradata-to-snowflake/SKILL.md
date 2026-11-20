@@ -60,6 +60,20 @@ SQL generation prints to stdout and does not open a target connection.
 `make sfx-snowflake-dbt` runs a live build and requires separately provisioned target
 credentials; it is not needed for local DuckDB checks.
 
+## Conversion rules
+
+- DBQL TablesV includes M/P catalog rows and last-access timestamps / ACCOUNT_USAGE differs / owner approved only M/P catalog omissions and last-access timestamp differences; retained T/V rows and access counts must match / `dbc/decisions.json`, `parity/dbc_retire.py`.
+- DBQL records process, client, CPU, IO and collection metadata / QUERY_HISTORY cannot project equivalent values / owner approved missing CPU/IO/client-id/ProcID as NULL and collection/access timestamp differences; compare every retained field and multiplicity through the generic deviation gate; StatementGroup is NOT approved and keeps query-log views red; QUERY_TAG as AppID remains a local assumption / `dbc/decisions.json`, `dbc/README.md`, `parity/owner_decisions.py`, `parity/dbc_retire.py`.
+- DBQL ObjectUsage includes writes and executes / ACCESS_HISTORY lacks M/P EXECUTE attribution / owner approved only missing rows satisfying EXECUTE AND M/P; retain READ/WRITE and non-M/P EXECUTE rows, never filter target extras / `dbc/decisions.json`, `dbc/10_account_usage.sql`, `parity/dbc_retire.py`.
+- Snowflake FLATTEN over an object array / sqlglot DuckDB UNNEST lowering is invalid / lower only the shipped FLATTEN table function to DuckDB json_each before transpilation / `parity/dbc_retire.py`.
+- Snowflake VARIANT scalar ::VARCHAR unquotes strings / DuckDB JSON cast retains quotes and breaks object joins / lower shipped objectName/objectDomain scalar extraction to json_extract_string for local proof / `parity/dbc_retire.py`.
+- Partial catalog equivalence / full-shape red hides correct mapped fields / add a separately labelled mapped-column ladder with explicit supported row scope, never promoting full-object status from it / `parity/dbc_retire.py`.
+
+Retire evidence: DBC setup-date COUNT(*) reads are not proof of deletion safety. Compare
+current DBQL reads with inventory and pinned BEFORE_STATE, scan services/etl callers,
+retain emulator drift separately, and require owner approval. Local ACCOUNT_USAGE
+emulation is an assumption; no live Snowflake connection is needed or implied.
+
 ## Local failure feed
 
 Set `SFX_GRAFANA_PASSWORD` and `SFX_ALERT_WEBHOOK_URL` explicitly before starting:

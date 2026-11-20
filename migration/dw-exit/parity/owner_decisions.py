@@ -1,0 +1,68 @@
+"""Explicit owner-approved comparison contracts, retaining raw legacy measurements."""
+from pathlib import Path
+from collections import Counter
+import json
+
+import duckdb
+from . import ladder
+
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def missing_fields(db, source, target, raw, decision):
+    def relation(name):
+        quoted = '.'.join(ladder.identifier(part) for part in name.split('.'))
+        # Validated, quoted local relation identifiers; row values never become SQL.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        cursor = db.execute('SELECT * FROM '+quoted)
+        return [column[0] for column in cursor.description], cursor.fetchall()
+    columns, before = relation(source)
+    target_columns, after = relation(target)
+    missing = set(decision['missing_fields']) & set(columns)
+    ignored = set(decision.get('ignored_fields', [])) & set(columns)
+    excluded = missing | ignored
+    scope = decision.get('missing_rows', {})
+    scope_columns_valid = set(scope) <= set(columns)
+    def omitted(row):
+        return bool(scope) and scope_columns_valid and all(
+            row[columns.index(column)] in values for column,values in scope.items())
+    kept = [index for index,column in enumerate(columns) if column not in excluded]
+    project = lambda rows: Counter(tuple(ladder.canonical(row[index]) for index in kept) for row in rows)
+    old, new = project(before), project(after) if columns == target_columns else Counter()
+    allowed = project([row for row in before if omitted(row)])
+    missing_rows, extra_rows = old-new, new-old
+    outside_scope = missing_rows-allowed
+    unavailable = columns == target_columns and all(
+        row[index] is None for row in after for index,column in enumerate(columns) if column in missing)
+    passed = columns == target_columns and not outside_scope and not extra_rows and unavailable and scope_columns_valid
+    return {**raw, 'owner_decision':{
+        'decision_id':decision['decision_id'], 'scope_valid':passed,
+        'missing_fields':sorted(missing), 'ignored_fields':sorted(ignored),
+        'missing_row_scope':scope, 'excluded_source_rows':sum((missing_rows & allowed).values()),
+        'unavailable_fields_are_null':unavailable,
+        'approved_comparison':{'passed':passed, 'row_count':{'before':len(before),'after':len(after)},
+                               'removed_rows':sum(outside_scope.values()), 'added_rows':sum(extra_rows.values()),
+                               'compared_columns':[columns[index] for index in kept]},
+    }}
+
+
+def apply_deviation(row, measurements, decisions):
+    failed = [value for value in measurements.values() if not value['passed']]
+    if row['status'] != 'red' or not failed:
+        return row
+    registered = {d.get('decision_id'):d for d in decisions if d.get('decision_id')}
+    proofs = [value.get('owner_decision',{}) for value in failed]
+    approvals = [registered.get(proof.get('decision_id'),{}) for proof in proofs]
+    if not all(proof.get('scope_valid') is True and
+               proof.get('approved_comparison',{}).get('passed') is True and
+               decision.get('status') in ('approved','approved-pending-confirmation')
+               for proof,decision in zip(proofs,approvals)):
+        return row
+    pending = [d for d in approvals if d['status']=='approved-pending-confirmation']
+    state = 'amber' if pending else 'approved_deviation'
+    row.update(measurement_status='red',status=state,local_duckdb=state,
+               decision_state='approved-pending-confirmation' if pending else 'approved',
+               reason='; '.join(dict.fromkeys(d['confirmation'] if pending and d in pending
+                   else d['new_behaviour'] for d in approvals)),
+               owner_decision_evidence=proofs)
+    return row
