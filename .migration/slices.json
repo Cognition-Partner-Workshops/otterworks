@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "slices": [
+    {"id": "slice-0", "name": "reference", "track": "delta", "tables": ["OW_BILLING.CODES", "OW_BILLING.TENANTS", "OW_BILLING.PLANS"],
+     "routines": [], "jobs": [], "consumers": [], "depends_on": [], "routing": "none", "auto_merge": true},
+    {"id": "slice-1", "name": "customer", "track": "delta", "tables": ["OW_BILLING.CUSTOMER_MASTER", "OW_BILLING.CUSTOMER_MASTER_HIST", "OW_BILLING.ENTITY_ATTR_VALUE"],
+     "routines": [], "jobs": [], "consumers": [], "depends_on": ["slice-0"], "routing": "none", "canary": true, "auto_merge": false},
+    {"id": "slice-2", "name": "conversion-invoices", "track": "delta", "tables": ["OW_BILLING.INVOICE_HEADER", "OW_BILLING.INVOICE_LINE"],
+     "routines": [], "jobs": [], "consumers": [], "depends_on": ["slice-1"], "routing": "none", "auto_merge": true},
+    {"id": "slice-3", "name": "transactional-core", "track": "delta",
+     "tables": ["OW_BILLING.SUBSCRIPTIONS", "OW_BILLING.SUBSCRIPTIONS_HIST", "OW_BILLING.USAGE_EVENTS", "OW_BILLING.RATING_PERIODS", "OW_BILLING.RATING_RESULTS", "OW_BILLING.INVOICES", "OW_BILLING.INVOICE_LINES", "OW_BILLING.CREDIT_NOTES", "OW_BILLING.DUNNING_ATTEMPTS", "OW_BILLING.NOTIFICATIONS", "OW_BILLING.BILLING_AUDIT_LOG"],
+     "routines": [], "jobs": [], "consumers": [], "depends_on": ["slice-0"], "routing": "none", "auto_merge": true}
+  ]
+}
