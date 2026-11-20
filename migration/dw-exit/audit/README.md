@@ -1,7 +1,7 @@
 # Audit conversion — sfg1120
 
 Ported selectively from `a11fc255f` onto
-[devin/sfg1120-audit](https://github.com/Cognition-Partner-Workshops/otterworks/tree/devin/sfg1120-audit).
+[devin/sfg1120-integration](https://github.com/Cognition-Partner-Workshops/otterworks/tree/devin/sfg1120-integration).
 Only audit conversions and their shared measurement helpers are enabled.
 No other area's conversion module is imported. Other areas retain the base
 board execution path and licence counters; migration status is still not_started.

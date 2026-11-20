@@ -144,7 +144,7 @@ def test_mapping_outputs_use_core_tables_and_retire_spark_unchanged():
         assert any(evidence['converted'].values()), obj['name']
         assert all('/' + audit_branch() + '/' in item['url'] for item in evidence['source'])
     billing = next(obj for obj in objects if obj['name'] == 'SFX_BILLING.CUSTOMER_ACCOUNT')
-    assert '/devin/sfg1120-audit/' in provenance(billing)['source'][0]['url']
+    assert '/devin/sfg1120-integration/' in provenance(billing)['source'][0]['url']
     assert columns('SFX_AUDIT.AUDIT_EVENT')
 
 

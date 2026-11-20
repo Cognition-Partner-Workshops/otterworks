@@ -46,7 +46,7 @@ The supplied `RUN_TOKEN=sfg1120` is rejected by `warehouse/run_config.py`:
 `ValueError: RUN_TOKEN must be a lowercase sfx-prefixed identifier`.
 Without broadening shared configuration, the local stack and generated board use
 `RUN_TOKEN=sfx-sfg1120`, namespace `sfx-sfg1120-before`. Provenance stays on branch
-`devin/sfg1120-dbc`; Snowflake always stays red with reason
+`devin/sfg1120-integration`; Snowflake always stays red with reason
 `Snowflake login down; no connection attempted (sfg1120)`.
 
 ```sh

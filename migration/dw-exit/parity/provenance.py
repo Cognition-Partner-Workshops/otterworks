@@ -4,11 +4,10 @@ from pathlib import Path
 import re
 import json
 from functools import lru_cache
-import subprocess
 from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[3]
-BRANCH = 'devin/sfg1120-audit'
+BRANCH = 'devin/sfg1120-integration'
 BASE = 'https://github.com/Cognition-Partner-Workshops/otterworks/blob/' + BRANCH + '/'
 SUBJECTS = json.loads((ROOT/'migration/dw-exit/parity/provenance_subjects.json').read_text())
 BRANCHES = {name:values['branch'] for name,values in SUBJECTS.items()}
@@ -25,7 +24,7 @@ def link(path, start=1, end=None, subject='audit', branch=None):
 
 @lru_cache(maxsize=1)
 def audit_branch():
-    return subprocess.check_output(['git', 'branch', '--show-current'], cwd=ROOT, text=True).strip() or 'HEAD'
+    return BRANCH
 
 
 def audit_provenance(obj):

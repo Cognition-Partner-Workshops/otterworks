@@ -78,13 +78,13 @@ def test_provenance_has_exact_ranges(database, monkeypatch):
     obj = {'name':'DBC.QRYLOGV','kind':'catalog'}
     row = {**obj, 'subject_area':'dbc', **dbc.measure(obj, database, [])}
     text = dbc.markdown([row])
-    assert 'devin/sfg1120-dbc/' in text
+    assert 'devin/sfg1120-integration/' in text
     assert '10_account_usage.sql#L' in text
     assert 'ladder.py#L' in text
     assert 'inventory.csv#L' in text
     assert 'sfx1119' not in text
     assert row['snowflake_reason'] == 'Snowflake login down; no connection attempted (sfg1120)'
-    assert all('devin/sfg1120-dbc/' in item['url'] for item in row['metric_evidence'].values())
+    assert all('devin/sfg1120-integration/' in item['url'] for item in row['metric_evidence'].values())
 
 
 @pytest.mark.parametrize('external',[False,True])
