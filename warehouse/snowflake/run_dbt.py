@@ -17,19 +17,56 @@ import tempfile
 
 from sfx_conn import ROOT, query_tag
 
+SELECTOR = re.compile(r"(?:[0-9]*\+|@)?(?:[a-z_]+(?:\.[a-z_]+)*:)?[A-Za-z0-9_*][A-Za-z0-9_.*/-]*(?:\+[0-9]*)?")
+PHASE = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]*")
+LOAD_DATE = re.compile(r"[0-9]{8}")
+
+
+def selection(value):
+    tokens = value.split()
+    if not tokens or not all(SELECTOR.fullmatch(part) for token in tokens for part in token.split(",")):
+        raise argparse.ArgumentTypeError("invalid dbt selection: %r" % value)
+    return " ".join(tokens)
+
+
+def phase(value):
+    if not PHASE.fullmatch(value):
+        raise argparse.ArgumentTypeError("invalid phase: %r" % value)
+    return value
+
+
+def load_date(value):
+    if not LOAD_DATE.fullmatch(value):
+        raise argparse.ArgumentTypeError("--load-date must be YYYYMMDD")
+    return value
+
+
+def dbt_argv(command, project, target, logs, select=None, variables=None):
+    """Build dbt argv from values already validated at the CLI boundary."""
+    if command not in ("parse", "build"):
+        raise ValueError("unsupported dbt command: %r" % command)
+    argv = [str(Path(sys.executable).with_name("dbt")), command,
+            "--project-dir", str(project), "--profiles-dir", str(project),
+            "--target-path", str(target), "--log-path", str(logs)]
+    if command == "build":
+        argv += ["--select", selection(select)]
+    return argv + ["--vars", json.dumps(variables or {})]
+
+
+def run(argv, env):
+    subprocess.run(argv, env=env, check=True)
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=["parse", "build"])
-    parser.add_argument("--phase", default="dbt")
+    parser.add_argument("--phase", type=phase, default="dbt")
     parser.add_argument("--job")
     parser.add_argument("--step")
     parser.add_argument("--mapping")
-    parser.add_argument("--select", dest="selection", default="staging.billing")
-    parser.add_argument("--load-date")
+    parser.add_argument("--select", dest="selection", type=selection, default="staging.billing")
+    parser.add_argument("--load-date", type=load_date)
     args = parser.parse_args()
-    if args.load_date is not None and not re.fullmatch(r"[0-9]{8}", args.load_date):
-        parser.error("--load-date must be YYYYMMDD")
     env = os.environ.copy()
     config = RunConfig.from_env()
     env.update(config.environment())
@@ -63,19 +100,12 @@ def main():
             destination = project / relative
             destination.parent.mkdir(parents=True,exist_ok=True)
             destination.write_text(config.render(path.read_text()))
-    command = [str(Path(sys.executable).with_name("dbt")), args.command,
-               "--project-dir", str(project), "--profiles-dir", str(project),
-               "--target-path", str(target), "--log-path", str(source_project / 'logs')]
-    if args.command == "build":
-        command += ["--select", args.selection]
     variables = {"phase": args.phase}
     if args.load_date:
         variables["load_date"] = args.load_date
-    command += ["--vars", json.dumps(variables)]
-    # Fixed adjacent dbt executable and argv; secret-bearing environment is intentionally inherited.
-    # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
+    command = dbt_argv(args.command, project, target, source_project / 'logs', args.selection, variables)
     try:
-        subprocess.run(command, env=env, check=True)
+        run(command, env)
     finally:
         rendered.cleanup()
 
