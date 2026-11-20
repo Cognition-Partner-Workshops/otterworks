@@ -1,0 +1,161 @@
+<div id="root"></div>
+<script type="text/jsx">
+const index = new Map([...data.objects, ...data.context].map(node => [node.name, node]));
+const areas = [...new Set([...index.values()].map(node => node.subject_area).filter(Boolean))].sort();
+const groups = [
+  { id: "up", label: "Inputs and writers" },
+  { id: "selected", label: "Selected object" },
+  { id: "down", label: "Readers, callers and outputs" },
+];
+const sourceBase = "https://github.com/Cognition-Partner-Workshops/otterworks/blob/" + data.source_commit + "/";
+
+function Neighborhood({ name, select }) {
+  const related = new Map();
+  const selected = index.get(name);
+  for (const edge of data.edges) {
+    if (edge.target === name) add("up", edge.source, edge.relationship);
+    if (edge.source === name) add("down", edge.target, edge.relationship);
+  }
+  function add(side, other, relationship) {
+    const key = side + ":" + other;
+    if (!related.has(key)) related.set(key, { id: key, side, other, relationships: [] });
+    related.get(key).relationships.push(relationship);
+  }
+  const nodes = [...related.values()].map(({ id, side, other, relationships }) => ({
+    id, group: side, title: other, sub: relationships.join(" / "),
+  }));
+  nodes.push({ id: "selected", group: "selected", title: name, sub: selected.kind, selected: true });
+  return (
+    <div className="space-y-3">
+      <div className="overflow-auto max-h-[500px] rounded-lg border border-primary">
+        <Diagram direction="LR" groups={groups.filter(g => nodes.some(n => n.group === g.id))}
+          nodes={nodes}
+          edges={[...related.values()].map(({ id, side }) => (
+            side === "up" ? { from: id, to: "selected" } : { from: "selected", to: id }
+          ))}
+          onNodeClick={id => { if (id !== "selected") select(related.get(id).other); }} />
+      </div>
+      {related.size > 0 && (
+        <details className="rounded-lg border border-primary bg-elevated p-4 text-sm">
+          <summary className="cursor-pointer font-medium">Relationships ({related.size})</summary>
+          {groups.filter(group => group.id !== "selected").map(group => {
+            const entries = [...related.values()].filter(entry => entry.side === group.id);
+            return entries.length > 0 && (
+              <section key={group.id} className="mt-3">
+                <h3 className="font-medium">{group.label}</h3>
+                <ul className="mt-1 space-y-1">
+                  {entries.map(({ id, other, relationships }) => (
+                    <li key={id}>
+                      <button type="button" className="text-blue underline" onClick={() => select(other)}>{other}</button>
+                      {" · " + relationships.join(" / ")}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
+        </details>
+      )}
+    </div>
+  );
+}
+
+function Evidence({ node }) {
+  return (
+    <div className="space-y-3 rounded-lg border border-primary bg-elevated p-4" aria-live="polite">
+      <h2 className="text-lg font-semibold break-words">{node.name}</h2>
+      <p className="text-sm text-secondary">
+        {[node.kind, node.subject_area, node.status, node.wave && ("Wave " + node.wave)].filter(Boolean).join(" · ")}
+      </p>
+      {node.source && <a className="text-blue underline text-sm" href={sourceBase + node.source}>Source definition</a>}
+      {node.consumer && <p className="text-sm">{node.consumer} · {node.owner}</p>}
+      {node.kind === "Spark job" && (
+        <p className="text-sm">{node.scheduled ? "Cron enabled" : "Cron disabled"} · Local submit {node.local_status}
+          {" · Historical application " + node.event_history.app_id}</p>
+      )}
+      {node.kind === "mapping" && (
+        <div className="space-y-1 text-sm">
+          {node.invocations.map(invocation => (
+            <p key={invocation.session}>{invocation.workflow} / {invocation.session}
+              {" · " + (invocation.enabled ? "enabled" : "disabled")}</p>
+          ))}
+          <p>{node.history_statuses.SUCCEEDED || 0} successful historical sessions · Last success {node.last_success || "unobserved"}
+            {" · Local " + (node.local_statuses.join(", ") || "skipped")}</p>
+        </div>
+      )}
+      {node.dbql && (
+        <details>
+          <summary className="cursor-pointer text-sm font-medium">DBQL evidence ({node.dbql.length} principal / usage groups)</summary>
+          <div className="overflow-auto">
+            <table className="w-full text-left text-sm">
+              <thead><tr>{["Principal", "Usage", "Success", "Failed", "Last success"].map(h =>
+                <th className="p-2" scope="col" key={h}>{h}</th>)}</tr></thead>
+              <tbody>{node.dbql.map(row => (
+                <tr className="border-t border-primary" key={row.principal + row.usage}>
+                  {[row.principal, row.usage, row.successful, row.failed, row.last_success || "—"].map((v, i) =>
+                    <td className="p-2" key={i}>{v}</td>)}
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        </details>
+      )}
+    </div>
+  );
+}
+
+function Lineage() {
+  const [name, setName] = useState("SFX_DOCUMENTS.DOC_SHARE");
+  const [search, setSearch] = useState("");
+  const [area, setArea] = useState("");
+  const [retire, setRetire] = useState(false);
+  const query = search.toLowerCase().trim();
+  const results = [...index.values()].filter(node =>
+    (!area || node.subject_area === area) && (!retire || node.status === "retire candidate")
+    && (!query || [node.name, node.consumer, node.kind].some(value => value?.toLowerCase().includes(query))));
+  const browseValue = results.some(node => node.name === name) ? name : "";
+  return (
+    <PageLayout title="sfg1120 warehouse lineage"
+      subtitle={data.objects.length + " inventory objects · Teradata, PowerCenter and Spark on demo-snowflake-dw-exit"} themeToggle>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-end gap-4">
+          <label className="text-sm font-medium">Search
+            <input type="search" value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Object, job or principal"
+              className="mt-1 block rounded border border-primary bg-elevated px-3 py-2 text-primary" />
+          </label>
+          <label className="text-sm font-medium">Subject area
+            <select value={area} onChange={e => setArea(e.target.value)}
+              className="mt-1 block rounded border border-primary bg-elevated px-3 py-2 text-primary">
+              <option value="">All areas</option>
+              {areas.map(a => <option key={a} value={a}>{a}</option>)}
+            </select>
+          </label>
+          <label className="flex items-center gap-2 pb-2 text-sm">
+            <input type="checkbox" checked={retire} onChange={e => setRetire(e.target.checked)} />
+            Retire candidates
+          </label>
+        </div>
+        <label className="text-sm font-medium">Browse nodes ({results.length})
+          <select size={Math.min(7, Math.max(2, results.length))} value={browseValue}
+            onChange={e => setName(e.target.value)}
+            className="mt-1 block w-full rounded border border-primary bg-elevated px-3 py-2 text-sm text-primary">
+            {!browseValue && <option disabled value="">{results.length ? "Select a matching node" : "No matching nodes"}</option>}
+            {results.map(node => <option key={node.name} value={node.name}>
+              {node.name} · {node.kind}
+            </option>)}
+          </select>
+        </label>
+        <p className="text-sm text-secondary">Select any connected node to follow its lineage. Arrows point from inputs to readers and from producers to outputs.</p>
+        <Evidence node={index.get(name)} />
+        <Neighborhood key={name} name={name} select={setName} />
+      </div>
+      <Footnote>
+        Synthetic DBQL history from {data.dbql_window.start} through {data.dbql_window.end}.
+        PowerCenter session history, branch source and local Spark submission results supply additional evidence.
+      </Footnote>
+    </PageLayout>
+  );
+}
+render(<Lineage />);
+</script>
