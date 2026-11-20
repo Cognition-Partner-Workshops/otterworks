@@ -1,8 +1,8 @@
 {
   "job": "security_alert_anomaly",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "retired",
+  "status": "retired",
   "schedule": "17 2 * * *",
   "profile": "small"
 }

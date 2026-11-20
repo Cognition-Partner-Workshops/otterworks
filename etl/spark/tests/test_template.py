@@ -39,6 +39,8 @@ class TemplateTest(unittest.TestCase):
         self.assertFalse(any("password" in arg.lower() for arg in args))
 
     def test_inactive_submission(self):
+        with self.assertRaisesRegex(ValueError, "retired jobs cannot be submitted"):
+            submit.arguments("security_alert_anomaly")
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             registry = root / "jobs/registry"

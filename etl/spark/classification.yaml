@@ -70,8 +70,10 @@
   reason: "Applies a logistic risk model to per-user activity features rather than a relational aggregation."
 - job: security_alert_anomaly
   language: python
-  target: snowpark_python
-  reason: "Computes distributed score moments and applies a z-score function through RDD transformations."
+  target: retired
+  reason: "No in-repository consumers read audit/security_alert_anomaly or sfx_audit.SPARK_ALERT_ANOMALY; the Snowpark file is a replacement producer, not a reader."
+  original_target: snowpark_python
+  change_reason: "Retire the unused anomaly output instead of migrating its repeated RDD scans to another engine."
 - job: docs_event_export_hourly
   language: python
   target: dbt
