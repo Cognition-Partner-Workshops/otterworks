@@ -250,8 +250,7 @@ def base_build_board(manifest, before=None, after=None, available=None, errors=N
                 row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
                 if row['status'] == 'red':
                     row['reason'] = 'measured parity mismatch'
-        if obj['subject_area'] == 'dbc':
-            row.update(snowflake='red', snowflake_reason='Snowflake login down; no connection attempted (sfg1120)')
+        row.update(snowflake='red', snowflake_reason=SNOWFLAKE_REASON)
         if obj['subject_area'] in ('billing', 'documents', 'users', 'content'):
             row.update(status='red', local_duckdb='red',
                        reason='held back at combine pending fixes/owner decisions')

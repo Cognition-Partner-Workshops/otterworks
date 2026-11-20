@@ -50,5 +50,7 @@ def test_held_areas_are_red_even_with_equal_outputs(area, target_type, materiali
                    target_type=target_type, output_relations=['SFX_BILLING.T'])
         row = board.build_board({'objects': [obj]}, before, after,
                                 {'BILLING.T'} if materialized else set())['rows'][0]
+        assert row['snowflake'] == 'red'
+        assert row['snowflake_reason'] == board.SNOWFLAKE_REASON
         assert row['status'] == row['local_duckdb'] == 'red'
         assert row['reason'] == 'held back at combine pending fixes/owner decisions'
