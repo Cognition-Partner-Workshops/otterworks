@@ -35,7 +35,7 @@ from audit_outputs import outputs as audit_outputs, artifacts as audit_artifacts
 TARGETS = ('duckdb', 'snowflake')
 SNOWFLAKE_REASON = 'Snowflake login down for run sfg1120; no live capture/prove'
 SNOWFLAKE_DISABLED = SNOWFLAKE_REASON
-HELD_BACK_AREAS = frozenset(('billing', 'content'))
+HELD_BACK_AREAS = frozenset(('content',))
 DOCUMENTS_DIRECTORY = ROOT/'migration/dw-exit/documents'
 DOCUMENTS_EVIDENCE = ROOT/'migration/dw-exit/board/board.json'
 DOCUMENTS_BRANCH = 'devin/sfg1120-integration'
@@ -646,22 +646,25 @@ def documents_apply_deviation(item, measurements, decisions):
 
 
 def documents_apply_storage(rows, evidence, target='duckdb'):
-    if target != 'duckdb' or not evidence:
+    if target != 'duckdb':
         return
     decision = next(d for d in decision_registry() if d.get('decision_id') == 'documents-storage-finance-confirmation')
     if decision['status'] != 'approved-pending-confirmation':
         return
-    boundary = evidence.get('shared_billing_boundary', {})
+    boundary = (evidence or {}).get('shared_billing_boundary', {})
     for row in rows:
         if row['name'] not in decision['blocks']:
             continue
         if row['subject_area'] == 'billing':
             measurement = boundary.get(row['name'].split('.')[-1])
-            if not measurement or not measurement['passed']:
+            if measurement:
+                if not measurement['passed']:
+                    continue
+                row.update(row_count=measurement['row_count'],
+                           **{key:{row['name']:measurement[key]} for key in
+                              ('column_profile','keyed_row_hash','sampled_differences')})
+            elif row['status'] != 'green':
                 continue
-            row.update(row_count=measurement['row_count'],
-                       **{key:{row['name']:measurement[key]} for key in
-                          ('column_profile','keyed_row_hash','sampled_differences')})
         elif row['status'] not in ('green', 'approved_deviation', 'amber'):
             continue
         row.update(status='amber', local_duckdb='amber', decision_state='approved-pending-confirmation',

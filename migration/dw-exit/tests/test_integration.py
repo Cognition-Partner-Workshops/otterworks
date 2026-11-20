@@ -57,7 +57,7 @@ def test_owner_registry_preserves_all_decisions():
     assert payload['owner_decisions'] == registry
 
 
-@pytest.mark.parametrize('area', ['billing', 'content'])
+@pytest.mark.parametrize('area', ['content'])
 @pytest.mark.parametrize('target_type', ['dbt_model', 'retire'])
 @pytest.mark.parametrize('materialized', [False, True])
 def test_held_areas_are_red_even_with_equal_outputs(area, target_type, materialized):
@@ -89,7 +89,7 @@ def test_full_manifest_retirements_and_dbc_contract(monkeypatch):
     assert all(row['subject_area'] in ('audit', 'users', 'documents') for row in rows if row['status'] == 'retired')
     assert all(row['snowflake'] == 'red' for row in rows)
     for row in rows:
-        if row['subject_area'] in ('billing', 'content'):
+        if row['subject_area'] == 'content':
             assert row['status'] == 'red'
         if row['subject_area'] == 'dbc':
             query_log = row['name'].split('.')[-1] in ('DBC_QRYLOG', 'QRYLOGV')

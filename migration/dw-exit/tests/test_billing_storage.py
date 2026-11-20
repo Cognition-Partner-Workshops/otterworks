@@ -40,6 +40,15 @@ def test_storage_stage_rejects_another_writer(tmp_path):
         list(local_billing.statements(path, '20261109'))
 
 
+@pytest.mark.parametrize('passed', [False, True])
+def test_billing_storage_finance_gate_does_not_hide_parity_failures(passed):
+    rows = [dict(name=name, subject_area='billing', status='green' if passed else 'red')
+            for name in ('SFX_BILLING.USAGE_DAILY', 'SFX_BILLING.INVOICE_LINE')]
+    object_board.documents_apply_storage(rows, None)
+    assert {row['status'] for row in rows} == ({'amber'} if passed else {'red'})
+    assert 'billing' not in object_board.HELD_BACK_AREAS
+
+
 @pytest.mark.parametrize('missing', [False, True])
 def test_board_materializes_documents_from_staging_not_legacy_storage(missing):
     with duckdb.connect() as before:

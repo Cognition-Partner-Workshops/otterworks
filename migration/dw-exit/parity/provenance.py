@@ -131,7 +131,10 @@ def converted_links(relation):
         return [link(path, text.count('\n',0,m.start())+1, text.count('\n',0,m.end())+1)
                 for m in re.finditer(pattern, text, re.S | re.I)]
     links = []
-    for path in sorted((ROOT / 'migration/dw-exit'/subject).glob('[0-4][0-9]_*.sql')):
+    paths = list((ROOT / 'migration/dw-exit'/subject).glob('[0-4][0-9]_*.sql'))
+    if subject == 'billing' and table in ('USAGE_DAILY', 'INVOICE_LINE'):
+        paths.append(ROOT/'migration/dw-exit/documents/12_storage_monthly.sql')
+    for path in sorted(paths):
         text = path.read_text()
         pattern = r'(?:INSERT\s+INTO|UPDATE|MERGE\s+INTO|CREATE\s+OR\s+REPLACE\s+(?:TABLE|VIEW))\s+__RUN_DATABASE__\.'+subject.upper()+r'\.'+re.escape(table)+r'\b'
         for match in re.finditer(pattern,text,re.I):
