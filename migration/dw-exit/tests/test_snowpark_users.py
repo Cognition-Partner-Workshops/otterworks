@@ -6,10 +6,11 @@ from parity.snowpark_users import execute
 
 
 @pytest.mark.parametrize('populated',[False,True])
-def test_local_snowpark_merge_empty_updates_inserts_and_retains(populated):
+@pytest.mark.parametrize('database', ['SFG1120_USERS_PROOF', 'ANOTHER_RUN_DATABASE'])
+def test_local_snowpark_merge_empty_updates_inserts_and_retains(populated, database):
     initial = [(1,'old','a','ACTIVE',date(2020,1,1)),(9,'keep',None,None,None)] if populated else []
     staging = [(1,'x'*100,'b'*130,'PENDING',date(2021,1,1)),(2,'new',None,None,None)] if populated else []
-    rows,changed = execute(initial,staging)
+    rows,changed = execute(initial,staging,database)
     assert sorted(rows,key=lambda r:r[0]) == ([(1,'x'*100,'b'*120,'PENDING',date(2021,1,1)),(2,'new',None,None,None),(9,'keep',None,None,None)] if populated else [])
     assert changed == (2 if populated else 0)
 

@@ -8,16 +8,16 @@ from . import owner_decisions, pc_users
 from .ladder import local_compare
 
 
-def execute(initial, staging):
+def execute(initial, staging, database='SFG1120_USERS_PROOF'):
     from snowflake.snowpark import Session
     from snowflake.snowpark.types import StructType, StructField, LongType, StringType, DateType
     schema = StructType([StructField('USER_ID',LongType()), StructField('DISPLAY_NAME',StringType(200)),
         StructField('EMAIL',StringType()), StructField('STATUS_CD',StringType()), StructField('CREATED_DT',DateType())])
-    with Session.builder.config('local_testing', True).create() as session:
-        session.create_dataframe(initial,schema).write.save_as_table(['SFX_USERS','APP_USER'],mode='overwrite')
-        session.create_dataframe(staging,schema).write.save_as_table(['SFX_USERS','STG_APP_USER'],mode='overwrite')
+    with Session.builder.configs({'local_testing': True, 'database': database, 'schema': 'PROOF_CONTEXT'}).create() as session:
+        session.create_dataframe(initial,schema).write.save_as_table([database,'USERS','APP_USER'],mode='overwrite')
+        session.create_dataframe(staging,schema).write.save_as_table([database,'USERS','STG_APP_USER'],mode='overwrite')
         changed = run(session)
-        return [tuple(row) for row in session.table(['SFX_USERS','APP_USER']).collect()], changed
+        return [tuple(row) for row in session.table([database,'USERS','APP_USER']).collect()], changed
 
 
 def proof(namespace, landing, day):

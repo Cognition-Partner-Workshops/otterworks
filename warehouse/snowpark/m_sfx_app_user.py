@@ -3,8 +3,9 @@ from snowflake.snowpark.functions import col, substring, when_matched, when_not_
 
 
 def run(session) -> int:
-    target = session.table(['SFX_USERS', 'APP_USER'])
-    source = session.table(['SFX_USERS', 'STG_APP_USER']).select(
+    database = session.get_current_database()
+    target = session.table([database, 'USERS', 'APP_USER'])
+    source = session.table([database, 'USERS', 'STG_APP_USER']).select(
         col('USER_ID'), col('DISPLAY_NAME').cast('varchar(200)').alias('DISPLAY_NAME'),
         substring(col('EMAIL'), 1, 120).alias('EMAIL'),
         substring(col('STATUS_CD'), 1, 12).alias('STATUS_CD'), col('CREATED_DT'))
