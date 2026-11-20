@@ -1,12 +1,12 @@
 # sfg1120 Documents warehouse exit
 
-[Local DuckDB parity board](board.md) · [machine-readable board](board.json) · [full measurements](evidence.json)
+[Shared integration board](../board/README.md) · [machine-readable board](../board/board.json) · [full measurements](evidence.json)
 
 **Snowflake: red.** No login or object creation was attempted. Local parity is not cutover approval.
 
 The board covers exactly the 59 documents manifest objects and includes raw per-relation counts, column profiles, keyed row hashes, and samples of all differing fixture keys. Approved version deviations retain raw mismatches and include an independently calculated owner-decision scope proof. The documents share fixture matched the legacy output; a separate multi-match regression proves the approved highest-privilege rule. Storage remains amber pending finance confirmation of invoice impact.
 
-## Reproduce the local board
+## Reproduce through the shared generator
 
 Run from the repository root on a fresh local fixture. Ensure the PostgreSQL and Spark images named in the Compose files are available locally.
 
@@ -26,7 +26,7 @@ warehouse/.venv/bin/python -c 'import json; print("\n".join(x["name"] for x in j
 while read -r job; do make sfx-spark-run NS="$NS" JOB="$job" || exit; done
 warehouse/.venv/bin/python "$proof/replay_spark.py" \
   --dates 2026-11-19 2026-11-20 --output "$proof/spark-replay.json"
-warehouse/.venv/bin/python migration/dw-exit/parity/documents_board.py
+warehouse/.venv/bin/python migration/dw-exit/parity/object_board.py
 warehouse/.venv/bin/python -m pytest -q migration/dw-exit/tests
 ```
 

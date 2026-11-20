@@ -179,7 +179,7 @@ def shared_storage(pre, converted, day, namespace):
         after.close()
 
 
-def prove(pre_path, landing, namespace, day):
+def prove(pre_path, landing, namespace, day, objects=None):
     config = RunConfig.from_env()
     dsn = source_dsn(namespace)
     logs = ROOT/'etl/informatica/infa_shared'/namespace/'SessLogs'
@@ -215,7 +215,7 @@ def prove(pre_path, landing, namespace, day):
         blocked = {r for d in pending if d.get('status') != 'approved-pending-confirmation' for r in d['blocks']}
         manifest = yaml.safe_load((CONVERSIONS.parent/'manifest.yaml').read_text())
         object_rows = []
-        for obj in manifest['objects']:
+        for obj in (objects if objects is not None else manifest['objects']):
             if obj['subject_area'] != 'documents' or obj['system'] == 'spark':
                 continue
             if obj['target_type'] == 'retire':

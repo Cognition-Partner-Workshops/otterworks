@@ -3,7 +3,7 @@ import pytest
 
 from parity.documents_decisions import version_scope
 from parity.ladder import local_compare
-from parity.documents_board import apply_deviation
+from parity.object_board import documents_apply_deviation as apply_deviation
 
 
 @pytest.mark.parametrize('failure',[None,'outside','inside','legacy','empty'])

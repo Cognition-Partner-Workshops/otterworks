@@ -2,6 +2,7 @@
 import argparse
 from collections import Counter
 import hashlib
+import inspect
 import json
 import os
 from pathlib import Path
@@ -21,7 +22,8 @@ sys.path.insert(0, str(ROOT / 'migration/dw-exit/tools'))
 sys.path.insert(0, str(ROOT / 'migration/dw-exit'))
 from warehouse.run_config import RunConfig
 from assess import board as wave_board
-from parity import dbc_retire, local_audit, powercenter_audit, spark_audit
+from parity import dbc_retire, local_audit, powercenter_audit, spark_audit, documents_retirement, spark_documents
+from parity import ladder
 from parity import pc_users, spark_users, retirement_users, report_outputs, owner_decisions, snowpark_users
 from parity.local_sql import execute
 from parity.semantics import columns as source_columns
@@ -34,6 +36,12 @@ TARGETS = ('duckdb', 'snowflake')
 SNOWFLAKE_REASON = 'Snowflake login down for run sfg1120; no live capture/prove'
 SNOWFLAKE_DISABLED = SNOWFLAKE_REASON
 HELD_BACK_AREAS = frozenset(('billing', 'documents', 'content'))
+DOCUMENTS_DIRECTORY = ROOT/'migration/dw-exit/documents'
+DOCUMENTS_EVIDENCE = ROOT/'migration/dw-exit/board/board.json'
+DOCUMENTS_BRANCH = 'devin/sfg1120-integration'
+DOCUMENTS_REPOSITORY = 'https://github.com/Cognition-Partner-Workshops/otterworks'
+DOCUMENTS_METRICS = {'row_count': ladder.local_measure, 'column_profile': ladder.local_measure,
+                     'keyed_row_hash': ladder.local_compare, 'sampled_differences': ladder.local_compare}
 
 
 def relation_contract(objects):
@@ -464,7 +472,7 @@ def render_readme(board):
 
 def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb',
                 counters=None, audit_before=None, audit_after=None, audit_available=None,
-                audit_errors=None, audit_pc_results=None, pc_results=None):
+                audit_errors=None, audit_pc_results=None, pc_results=None, documents_evidence=None):
     result = base_build_board(manifest, before, after, available, errors, target, counters)
     users_manifest = dict(manifest, objects=[obj for obj in manifest['objects'] if obj['subject_area'] == 'users'])
     if users_manifest['objects']:
@@ -475,6 +483,15 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         for row in result['rows']:
             if row['subject_area'] in HELD_BACK_AREAS:
                 row.update(status='red', local_duckdb='red', reason='held back at combine pending fixes/owner decisions')
+    documents = [obj for obj in relation_contract(manifest['objects']) if obj['subject_area'] == 'documents']
+    if documents:
+        evidence = dict(documents_evidence or {}, decisions=json.loads((DOCUMENTS_DIRECTORY/'decisions.json').read_text()))
+        if target == 'duckdb':
+            evidence['retirement'] = documents_retirement.measure(documents)
+        else:
+            evidence = {'objects': [], 'error': 'Snowflake target selected; execution disabled'}
+        replacements = {row['id']:row for row in documents_build_rows(documents, evidence)}
+        result['rows'] = [replacements.get(row['id'], row) for row in result['rows']]
     result['owner_decisions'] = decision_registry()
     contracts = {o['id']:o for o in relation_contract(manifest['objects'])}
     decisions = approved_retirements()
@@ -557,6 +574,198 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         for area in sorted({row['subject_area'] for row in result['rows']})}
     return result
 
+def documents_link(path, start=None, end=None, ref=DOCUMENTS_BRANCH):
+    path = Path(path)
+    if path.is_absolute():
+        path = path.relative_to(ROOT)
+    suffix = f'#L{start}-L{end or start}' if start else ''
+    return {'file': str(path), 'start_line': start, 'end_line': end or start,
+            'url': f'{DOCUMENTS_REPOSITORY}/blob/{ref}/{path}{suffix}'}
+
+
+def documents_code_link(function):
+    lines, start = inspect.getsourcelines(function)
+    return documents_link(inspect.getsourcefile(function), start, start+len(lines)-1)
+
+
+def documents_evidence_link(path, value):
+    if not value:
+        return documents_link(path)
+    text = path.read_text()
+    # Exact indentation and JSON value delimit the top-level evidence group.
+    prefix = f'  {json.dumps(value)}: '
+    start = text.index('\n'+prefix)+1
+    offset = start+len(prefix)
+    _, length = json.JSONDecoder().raw_decode(text[offset:])
+    return documents_link(path,text.count('\n',0,start)+1,text.count('\n',0,offset+length)+1)
+
+
+def documents_validated_history(path=DOCUMENTS_DIRECTORY/'spark-replay.json'):
+    replay = json.loads(path.read_text())
+    if replay['namespace'] != RunConfig.from_env().before_namespace:
+        raise ValueError('Binary history belongs to another run namespace')
+    if (not replay['passed'] or len(set(replay['dates']))<2
+            or not all(s['measurement']['passed'] for s in replay['steps'])):
+        raise ValueError('Actual two-date replay has not passed')
+    for field in ('landing_sha256','output_sha256','execution_log_sha256','conversion_sha256','legacy_code_sha256'):
+        paths = [ROOT/name for name in replay[field]]
+        if spark_documents.checksums(paths)!=replay[field]:
+            raise ValueError('Stale binary history evidence: '+field)
+    runtime = ROOT/'etl/spark/.data'/replay['namespace']
+    actual = {str(p.relative_to(ROOT)) for p in (runtime/'lake/documents/file_object_binary_extract').rglob('*.parquet')}
+    if actual!=set(replay['output_sha256']):
+        raise ValueError('Binary history partitions changed since replay')
+    return replay
+
+
+def materialize_documents(objects, namespace, business_date, pre_pc=None):
+    from documents.prove_local import prove
+    pre_pc = pre_pc or ROOT/'migration/dw-exit/.runs'/f'documents-{RunConfig.from_env().token}-pre-pc'
+    try:
+        evidence = prove(pre_pc,ROOT/'warehouse/landing',namespace,business_date, objects=objects)
+    except (OSError, ValueError, duckdb.Error) as error:
+        evidence = {'objects': [], 'error': 'Documents proof unavailable: '+str(error)}
+    evidence['decisions'] = json.loads((DOCUMENTS_DIRECTORY/'decisions.json').read_text())
+    with duckdb.connect() as before,duckdb.connect() as after:
+        _,errors,jobs = spark_documents.materialize(before,after,objects,namespace)
+    try:
+        replay = documents_validated_history()
+    except (ValueError,OSError) as error:
+        replay = {'passed':False,'error':str(error)}
+        if 'file_object_binary_extract' in jobs:
+            jobs['file_object_binary_extract']['status'] = 'red'
+            jobs['file_object_binary_extract']['error'] = str(error)
+    evidence['spark'] = {'jobs':jobs,'errors':errors,'binary_history':replay}
+    evidence['retirement'] = documents_retirement.measure(objects)
+    return evidence
+
+
+def documents_apply_deviation(item, measurements, decisions):
+    if item['status'] != 'red' or item.get('reason'):
+        return item
+    failing = [measurement for measurement in measurements.values() if not measurement['passed']]
+    proofs = [measurement.get('owner_decision', {}) for measurement in failing]
+    approvals = {d['decision_id']:d for d in decisions
+                 if 'decision_id' in d and d['status'] in ('approved','approved-pending-confirmation')}
+    if proofs and all(p.get('decision_id') in approvals and p.get('scope_valid')
+                      and p['approved_comparison']['passed'] for p in proofs):
+        entries = [approvals[p['decision_id']] for p in proofs]
+        pending = [entry['confirmation'] for entry in entries if entry['status']=='approved-pending-confirmation']
+        status = 'amber' if pending else 'approved_deviation'
+        item.update(status=status,local_duckdb=status,measurement_status='red',
+                    reason='; '.join(dict.fromkeys(pending or [d['new_behaviour'] for d in entries])),
+                    owner_decision_evidence=proofs)
+    return item
+
+
+def documents_object_measurements(objects, evidence):
+    sql = {r['name']:r for r in evidence.get('objects', [])}
+    results = {}
+    for obj in objects:
+        name = obj['name']
+        item = {'status':'red','reason':None,'measurements':{},'group':None}
+        results[name] = item
+        if obj['target_type']=='retire':
+            retire = evidence.get('retirement', {}).get(name, {})
+            item.update(status=retire.get('status', 'red'), reason=retire.get('reason', 'Retirement proof unavailable'),
+                        group='retirement', retirement=retire)
+            continue
+        if obj['system']=='spark':
+            result = evidence.get('spark', {}).get('jobs', {}).get(name, {'status':'red', 'error':'Spark proof unavailable'})
+            if 'measurement' in result:
+                item['measurements']['SFX_SPARK.'+name.upper()] = result['measurement']
+            for relation,side in result.get('side_outputs',{}).items():
+                item['measurements'][relation] = side['measurement']
+            if name=='file_object_binary_extract' and evidence['spark']['binary_history'].get('passed'):
+                item['measurements']['SFX_SPARK.'+name.upper()] = evidence['spark']['binary_history']['steps'][-1]['measurement']
+            item.update(status=result['status'],reason=result.get('error') or '; '.join(result.get('blockers',[])) or None,
+                        group='spark')
+            continue
+        result = sql.get(name)
+        if result is None:
+            item['reason'] = evidence.get('error', 'No current documents proof; retained staging/feed is not retired')
+            continue
+        group = ('shared_billing_boundary' if name=='10_storage_monthly' else 'pc_sessions' if obj['kind']=='session' else
+                 'pc_mappings' if obj['kind']=='mapping' else 'tpt_relations' if obj['kind']=='tpt' else 'sql_relations')
+        measurements = {relation:evidence[group][relation] for relation in result['relations']}
+        item.update(status=result['status'],reason='; '.join(result['blockers']) or None,group=group,measurements=measurements)
+        documents_apply_deviation(item,measurements,evidence['decisions'])
+        if item['status']=='red' and not item['reason']:
+            item['reason'] = 'Measured parity mismatch.' if measurements else 'No local measurements.'
+        if item['status']=='green' and name=='SFX_DOCUMENTS.STORAGE_USAGE_DAILY':
+            item.update(status='amber',reason='Exact duplicate removal matches Teradata; finance still needs to confirm invoice impact.')
+    return results
+
+
+def documents_build_rows(objects, evidence, evidence_path=DOCUMENTS_EVIDENCE):
+    measured = documents_object_measurements(objects,evidence)
+    specs = {s['name']:s for path in ('objects.json','spark_jobs.json')
+             for s in json.loads((DOCUMENTS_DIRECTORY/path).read_text())}
+    rows = []
+    for obj in objects:
+        item = measured[obj['name']]
+        measurements = item['measurements']
+        spec = specs.get(obj['name'],{})
+        converted = [documents_link(spec[k]) for k in ('conversion','producer','model') if k in spec]
+        if obj['system']=='spark':
+            converted.extend(documents_link(p) for p in sorted((ROOT/spec['model']).parent.glob('*_jdbc.sql')))
+        sources = [documents_link(obj['source'])]
+        retirement = item.get('retirement')
+        if retirement:
+            for query in retirement.get('baseline_queries', []):
+                sources.extend([documents_link(documents_retirement.DBQL/'qrylog.csv',query['qrylog_line'],ref=retirement['baseline_commit']),
+                                documents_link(documents_retirement.DBQL/'objectusage.csv',query['objectusage_line'],ref=retirement['baseline_commit'])])
+        row = {k:obj[k] for k in ('id','name','kind','wave','owner','subject_area','licence_dependency','target','target_type')}
+        row.update(status=item['status'],local_duckdb=item['status'],reason=item['reason'],
+                   migration_status=obj['status'],licence_dependency_count=int(obj['licence_dependency']!='none'),
+                   snowflake='red',snowflake_reason=SNOWFLAKE_REASON,
+                   row_count={side:sum(m['row_count'][side] for m in measurements.values())
+                              for side in ('before','after')} if measurements else None,
+                   relation_row_counts={relation:m['row_count'] for relation,m in measurements.items()} or None,
+                   provenance={'source':sources,'converted':converted,'metrics':{k:documents_code_link(fn) for k,fn in DOCUMENTS_METRICS.items()}},
+                   metric_evidence=documents_link(evidence_path))
+        for metric in DOCUMENTS_METRICS.keys()-{'row_count'}:
+            row[metric] = {relation:m[metric] for relation,m in measurements.items()} or None
+        for key in ('retirement','owner_decision_evidence','measurement_status'):
+            if key in item:
+                row[key] = item[key]
+        rows.append(row)
+    return rows
+
+
+def documents_markdown(rows, summary):
+    labels = ('green','approved_deviation','amber','retired','red')
+    text = ['# sfg1120 Documents — local DuckDB parity board', '',
+            ', '.join(f"{summary.get(key,0)} {key.replace('_',' ')}" for key in labels)+'. **Snowflake: red.** '+SNOWFLAKE_REASON,
+            '', 'Each metric links to its calculation; evidence includes per-relation profiles, SHA-256s and all fixture differences.',
+            '', '| Object | Local DuckDB | Snowflake | Rows (old → new) | Columns profiled | Hash delta | Differing keys | Evidence |',
+            '|---|---|---|---:|---:|---:|---:|---|']
+    def anchor(label, location):
+        return f"[{label}]({location['url']})"
+    for row in rows:
+        m = row['provenance']['metrics']
+        counts = row['row_count']
+        values = ['—']*4
+        if counts:
+            values = [
+                anchor(f"{counts['before']} → {counts['after']}",m['row_count']),
+                anchor(sum(len(r['before']) for r in row['column_profile'].values()),m['column_profile']),
+                anchor(sum(r['difference'] for r in row['keyed_row_hash'].values()),m['keyed_row_hash']),
+                anchor(sum(len(r) for r in row['sampled_differences'].values()),m['sampled_differences']),
+            ]
+        legacy = anchor(row['name'],row['provenance']['source'][0])
+        new = row['provenance']['converted']
+        evidence = [anchor('Measurements',row['metric_evidence'])]
+        if new:
+            evidence.append(anchor('Conversion',new[0]))
+        if row.get('retirement'):
+            count = row['retirement']['baseline_reads']
+            evidence = [anchor(f'DBQL: {count} reads',row['metric_evidence'])]
+            evidence += [anchor('Query',s) for s in row['provenance']['source'][1::2]]
+        text.append('| '+' | '.join([legacy,row['status'].replace('_',' '),'red',*values,', '.join(evidence)])+' |')
+    return '\n'.join(text)+'\n'
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--manifest',type=Path,default=ROOT/'migration/dw-exit/manifest.yaml')
@@ -569,6 +778,7 @@ def main():
     before = after = audit_after = None
     audit_ready, audit_errors, pc_evidence = set(), {}, {}
     audit_evidence, spark_evidence = {}, {}
+    documents_evidence = None
     ready, errors = set(), {}
     try:
         if args.target == 'duckdb' and manifest['objects']:
@@ -614,12 +824,19 @@ def main():
                     measurement=proof['measurement'], owner_decision=proof['owner_decision'], snowpark_local=proof)
             except (OSError, ValueError, duckdb.Error, ImportError) as error:
                 pc_results = {m:dict(status='red', reason='PC evidence unavailable: '+str(error), measurement=None) for m in pc_users.MAPPINGS}
+        if args.target == 'duckdb':
+            documents_evidence = materialize_documents(
+                [o for o in relation_contract(manifest['objects']) if o['subject_area'] == 'documents'],
+                os.environ.get('NS', RunConfig.from_env().before_namespace),
+                os.environ.get('BUSINESS_DATE', '20261109'))
         payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,
             audit_before=before,audit_after=audit_after,audit_available=audit_ready,
-            audit_errors=audit_errors,audit_pc_results=pc_evidence,pc_results=pc_results)
+            audit_errors=audit_errors,audit_pc_results=pc_evidence,pc_results=pc_results,
+            documents_evidence=documents_evidence)
         payload.update(audit_evidence=audit_evidence,audit_powercenter_evidence=pc_evidence,
                        audit_spark_evidence=spark_evidence,
                        powercenter_evidence=users_pc_evidence)
+        payload['documents_evidence'] = documents_evidence
         if args.target == 'duckdb' and manifest['objects']:
             payload['users_spark_evidence'] = users_spark_evidence
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')

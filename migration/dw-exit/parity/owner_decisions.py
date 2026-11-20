@@ -39,6 +39,7 @@ def decision_registry():
     return [*json.loads((ROOT/'migration/dw-exit/audit/decisions.json').read_text()),
             *json.loads((ROOT/'migration/dw-exit/dbc/decisions.json').read_text()),
             *json.loads((ROOT/'migration/dw-exit/users/decisions.json').read_text()),
+            *json.loads((ROOT/'migration/dw-exit/documents/decisions.json').read_text()),
             *SFG1120_DECISIONS]
 
 

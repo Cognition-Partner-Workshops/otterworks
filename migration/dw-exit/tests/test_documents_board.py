@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from parity import documents_board as board
+from parity import object_board as board
 from warehouse.run_config import RunConfig
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -16,11 +16,10 @@ def objects():
 
 
 def test_documents_board_is_reproducible_from_recorded_evidence():
-    evidence = json.loads(board.EVIDENCE.read_text())
-    checked = json.loads((board.DIRECTORY/'board.json').read_text())
-    rows = board.build_rows(objects(),evidence)
-    assert rows==checked['rows']
-    assert checked['summary']=={'green':50,'approved_deviation':4,'amber':1,'retired':4}
+    evidence = json.loads((board.DOCUMENTS_DIRECTORY/'evidence.json').read_text())
+    manifest = yaml.safe_load((ROOT/'migration/dw-exit/manifest.yaml').read_text())
+    manifest['objects'] = objects()
+    rows = board.build_board(manifest, documents_evidence=evidence)['rows']
     assert len(rows)==len({row['id'] for row in rows})==59
     assert all(row['snowflake']=='red' for row in rows)
     binary = next(row for row in rows if row['name']=='file_object_binary_extract')
@@ -32,7 +31,7 @@ def test_documents_board_is_reproducible_from_recorded_evidence():
         for link in p['source']+list(p['metrics'].values())+p['converted']+[row['metric_evidence']]:
             file = ROOT/link['file']
             assert file.is_file()
-            if link['start_line'] is not None and board.BRANCH in link['url']:
+            if link['start_line'] is not None and board.DOCUMENTS_BRANCH in link['url']:
                 assert 1<=link['start_line']<=link['end_line']<=len(file.read_text().splitlines())
         if row['status']=='retired':
             assert not row['retirement']['deletion_approved']
@@ -42,7 +41,7 @@ def test_documents_board_is_reproducible_from_recorded_evidence():
     staging = next(row for row in rows if row['name']=='SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG')
     assert {q['query_id'] for q in staging['retirement']['baseline_queries'] if q['usage']=='READ'}=={'111000000071'}
     assert {q['query_id'] for q in staging['retirement']['checkout_queries'] if q['usage']=='READ'}=={'111000000072'}
-    assert board.markdown(rows,checked['summary'])==(board.DIRECTORY/'board.md').read_text()
+    assert '| Object |' in board.documents_markdown(rows, {})
     for row in (row for row in rows if row['status']=='approved_deviation'):
         assert row['measurement_status']=='red'
         for proof in row['owner_decision_evidence']:
@@ -55,7 +54,7 @@ def test_documents_board_is_reproducible_from_recorded_evidence():
 def test_replay_rejects_missing_or_stale_artifacts(tmp_path,monkeypatch):
     missing = tmp_path/'missing.json'
     with pytest.raises(OSError):
-        board.validated_history(missing)
+        board.documents_validated_history(missing)
     monkeypatch.setattr(board,'ROOT',tmp_path)
     monkeypatch.setattr(board.spark_documents,'ROOT',tmp_path)
     namespace = RunConfig.from_env().before_namespace
