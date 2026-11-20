@@ -1,0 +1,9 @@
+version: 2
+sources:
+  - name: spark_documents_binary
+    schema: SPARK_RAW_DOCUMENTS
+    tables:
+      - name: FILE_OBJECT_BLOBS
+        columns:
+          - name: STORAGE_KEY
+          - name: CONTENT

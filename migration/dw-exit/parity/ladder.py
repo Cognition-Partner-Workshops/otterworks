@@ -27,9 +27,8 @@ def local_measure(connection, name, trim_columns=()):
     # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     cursor = connection.execute('SELECT * FROM '+source)
     names = [c[0] for c in cursor.description]
-    expressions = [identifier(c) for c in names]
-    expressions = ['RTRIM(' + expression + ", ' ')" if name in trim_columns else expression
-                   for name, expression in zip(names, expressions)]
+    expressions = [f"RTRIM({identifier(c)}, ' ')" if c in trim_columns else identifier(c)
+                   for c in names]
     expressions = [expression+' COLLATE "binary"' if str(info[1]) == 'VARCHAR' else expression
                    for expression, info in zip(expressions, cursor.description)]
     # Expressions contain only validated identifiers and a fixed binary collation.
@@ -117,6 +116,7 @@ class Ladder:
 
     def compare(self, name, before, after, keys):
         start = len(self.queries)
+        padded = char_columns(name)
         before, after = relation(before), relation(after)
         columns_b = self.query(f'DESC TABLE {before}')
         columns_a = self.query(f'DESC TABLE {after}')
@@ -126,6 +126,12 @@ class Ladder:
         if not keys or not set(keys) <= set(columns):
             raise ValueError(f'{name}: keys must name existing columns')
         quoted = list(map(identifier, columns))
+        projected = [((f'RTRIM({c}, \x27 \x27)' if col in padded else c)+f' COLLATE \x27\x27 AS {c}')
+                     if columns_b[i][1].startswith(('VARCHAR','TEXT','CHAR')) else c
+                     for i,(col,c) in enumerate(zip(columns,quoted))]
+        if padded or any(' COLLATE ' in value for value in projected):
+            before = f'(SELECT {", ".join(projected)} FROM {before})'
+            after = f'(SELECT {", ".join(projected)} FROM {after})'
         k = ', '.join(map(identifier, keys))
         counts = [self.query(f'SELECT COUNT(*) FROM {t}')[0][0] for t in (before, after)]
         profiles = ', '.join(expr for c in quoted for expr in (
@@ -156,13 +162,14 @@ class Ladder:
         if not sample_keys:
             sample_keys = self.query(f'SELECT DISTINCT {k} FROM {before} ORDER BY {k} LIMIT {self.sample_size}')
         samples = []
-        # Values are fetched independently; tests never trim, fold case or coerce them.
+        # Only DDL-declared CHAR trailing pads are ignored; VARCHAR remains exact.
         for key in sample_keys:
             where = ' AND '.join(f'EQUAL_NULL({identifier(column)}, ?)' for column in keys)
             b, a = [self.query(f'SELECT * FROM {t} WHERE {where} ORDER BY {digest}', key) for t in (before, after)]
             if b != a:
                 samples.append({'key': key, 'before': b, 'after': a})
         return {'name': name, 'before_count': counts[0], 'after_count': counts[1],
+                'comparison_rules': {'trailing_pad_insensitive': padded, 'other_columns': 'exact'},
                 'count_passed': counts[0] == counts[1],
                 'profile_mismatched_columns': len(profile_diffs), 'profiles': profile_diffs,
                 'hash_difference': int(hash_difference), 'sample_diffs': samples,

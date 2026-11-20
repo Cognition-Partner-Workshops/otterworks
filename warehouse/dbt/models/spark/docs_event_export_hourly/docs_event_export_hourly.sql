@@ -1,3 +1,4 @@
+{{ config(materialized='table', alias='spark__docs_event_export_hourly') }}
 -- Replaces the Spark lake output documents/docs_event_export_hourly
 -- (parquet partitioned by EXPORT_BUCKET); the bucket is now a column.
 select

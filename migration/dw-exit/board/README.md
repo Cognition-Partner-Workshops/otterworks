@@ -282,6 +282,8 @@ See [board.json](board.json) for reasons and measurement evidence.
 
 ## Waves
 
+Subject proofs: [sfg1120 documents (local DuckDB; Snowflake red)](../documents/README.md).
+
 | Count | Wave 1 | Wave 2 | Wave 3 | Wave 4 |
 |---|---:|---:|---:|---:|
 | Total | 108 | 51 | 82 | 11 |
