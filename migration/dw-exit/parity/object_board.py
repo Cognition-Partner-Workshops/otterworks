@@ -2,6 +2,7 @@
 import argparse
 from collections import Counter
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -122,17 +123,20 @@ def source_snapshot(dsn, names):
     return connection, ready, errors
 
 
-def materialize(before, names, conversion_dir):
+def materialize(before, names, conversion_dirs, schemas=('BILLING',)):
+    if isinstance(conversion_dirs, Path):
+        conversion_dirs = [conversion_dirs]
     after = duckdb.connect()
     ready, errors = set(), {}
-    after.execute('CREATE SCHEMA BILLING')
+    for schema in schemas:
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        after.execute('CREATE SCHEMA '+quote(schema))
     for name in sorted(names):
-        if not name.startswith('SFX_BILLING.'):
+        source_schema, table = name.split('.')
+        schema = source_schema.removeprefix('SFX_')
+        if not source_schema.startswith('SFX_') or schema not in schemas or table.startswith('V_'):
             continue
-        table = name.split('.')[1]
-        if table.startswith('V_'):
-            continue
-        target = 'BILLING.'+table
+        target = schema+'.'+table
         # DuckDB metadata and identifiers are local; relation()/quote() escape identifiers.
         # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         definitions = before.execute('DESCRIBE '+relation(name)).fetchall()
@@ -144,7 +148,7 @@ def materialize(before, names, conversion_dir):
             if rows:
                 after.executemany(f'INSERT INTO {relation(target)} VALUES ({", ".join("?" for _ in definitions)})', rows)
             ready.add(target)
-    for filename in ('10_load.sql', '30_views.sql'):
+    for conversion_dir, filename in conversion_files(conversion_dirs):
         text = RunConfig.from_env().render((conversion_dir / filename).read_text())
         try:
             statements = sqlglot.parse(text, read='snowflake')
@@ -181,24 +185,60 @@ def materialize(before, names, conversion_dir):
             except duckdb.Error as error:
                 ready.discard(target)
                 errors[target] = 'conversion failed: '+str(error).splitlines()[0]
+    for conversion_dir in conversion_dirs:
+        hook = conversion_dir / 'hook.py'
+        if hook.is_file():
+            spec = importlib.util.spec_from_file_location('board_hook_'+conversion_dir.name.replace('-', '_'), hook)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            module.materialize(before, after, ready, errors)
     return after, ready, errors
 
 
-def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None):
+def conversion_files(conversion_dirs):
+    for conversion_dir in conversion_dirs:
+        for filename in ('10_load.sql', '30_views.sql'):
+            if (conversion_dir / filename).is_file():
+                yield conversion_dir, filename
+
+
+def load_group(directory):
+    group = yaml.safe_load((directory / 'group.yaml').read_text())
+    ids = list(group['objects'])
+    if len(set(ids)) != len(ids):
+        raise ValueError('Duplicate object id in group '+group['name'])
+    return dict(name=group['name'], objects=ids, outputs=group.get('outputs') or {})
+
+
+def select_group(manifest, group):
+    by_id = {obj['id']: obj for obj in manifest['objects']}
+    missing = [i for i in group['objects'] if i not in by_id]
+    if missing:
+        raise ValueError('Group objects not in manifest: '+', '.join(missing))
+    return dict(manifest, objects=[by_id[i] for i in group['objects']])
+
+
+def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None,
+                conversions=None, outputs=None, snowflake_reason=None, group=None):
     if target not in ('duckdb', 'snowflake'):
         raise ValueError('Unsupported parity target')
     objects = manifest['objects']
+    outputs = outputs or {}
     result = wave_board(objects, counters or {})
     result.update(run_token=RunConfig.from_env().token, target=target, rows=[])
+    if group is not None:
+        result['group'] = group
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
-        'local_target': 'DuckDB', 'conversions': ['billing/initial/10_load.sql','billing/initial/30_views.sql'],
+        'local_target': 'DuckDB', 'conversions': ['billing/initial/10_load.sql','billing/initial/30_views.sql'] if conversions is None else conversions,
         'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
     available, errors = set(available or ()), errors or {}
     for obj in objects:
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
         row.update(status='red', migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'),
-                   row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
-        if obj['system'] == 'spark':
+                   row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None,
+                   snowflake={'status': 'red', 'reason': snowflake_reason or 'Snowflake target not run'})
+        relations = outputs.get(obj['id'], obj.get('output_relations'))
+        if obj['system'] == 'spark' and obj['id'] not in outputs:
             if obj.get('source') and (ROOT / obj['source']).is_file():
                 row.update(source=obj['source'], source_ref=obj.get('source_ref'))
                 row['reason'] = 'Spark source available; output not materialized locally'
@@ -206,11 +246,11 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
                 row['reason'] = 'source on Spark baseline PR'
         elif target == 'snowflake':
             row['reason'] = 'Snowflake target selected; execution disabled'
-        elif not obj.get('output_relations'):
+        elif not relations:
             row['reason'] = 'no declared output relation'
         else:
             measured = {}
-            for source in obj['output_relations']:
+            for source in relations:
                 destination = source.removeprefix('SFX_')
                 if destination not in available:
                     row['reason'] = errors.get(destination, errors.get('*', 'output not materialized: '+destination))
@@ -239,25 +279,42 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--manifest',type=Path,default=ROOT/'migration/dw-exit/manifest.yaml')
-    parser.add_argument('--output',type=Path,default=ROOT/'migration/dw-exit/board/board.json')
+    parser.add_argument('--output',type=Path)
     parser.add_argument('--target',choices=['duckdb','snowflake'],default=os.environ.get('PARITY_TARGET','duckdb'))
+    parser.add_argument('--group',type=Path,default=Path(os.environ['BOARD_GROUP']) if os.environ.get('BOARD_GROUP') else None,
+                        help='object group directory holding group.yaml and its conversions')
+    parser.add_argument('--snowflake-reason',default=os.environ.get('SFX_SNOWFLAKE_REASON'))
     args = parser.parse_args()
     manifest = yaml.safe_load(args.manifest.read_text())
+    group, outputs = None, {}
+    conversion_dirs = [ROOT/'migration/dw-exit/billing/initial']
+    output = args.output or ROOT/'migration/dw-exit/board/board.json'
+    if args.group is not None:
+        group_dir = (args.group if args.group.is_absolute() else Path.cwd()/args.group).resolve()
+        group = load_group(group_dir)
+        manifest = select_group(manifest, group)
+        outputs = group['outputs']
+        conversion_dirs = [group_dir]
+        output = args.output or group_dir/'board.json'
+    conversions = [str((d/f).relative_to(ROOT/'migration/dw-exit')) for d, f in conversion_files(conversion_dirs)]
     from assess import build
     counters = build()['counters']
     before = after = None
     ready, errors = set(), {}
     try:
         if args.target == 'duckdb' and manifest['objects']:
-            names = {r for obj in manifest['objects'] for r in obj.get('output_relations',[])}
+            names = {r for obj in manifest['objects'] for r in outputs.get(obj['id'], obj.get('output_relations') or [])}
+            schemas = sorted({n.split('.')[0].removeprefix('SFX_') for n in names if n.startswith('SFX_')}) if group else ('BILLING',)
             ns = os.environ.get('NS',RunConfig.from_env().before_namespace)
             port = os.environ.get('TD_PG_PORT',str(54500+zlib.crc32(ns.encode())%1000))
             dsn = os.environ.get('BOARD_SOURCE_DSN',f'host=127.0.0.1 port={port} dbname=teradata user=postgres')
             before, source_ready, source_errors = source_snapshot(dsn,names)
-            after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing/initial')
+            after, ready, errors = materialize(before,source_ready,conversion_dirs,schemas)
             errors.update(source_errors)
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters)
-        args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
+        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,
+                              conversions=conversions,outputs=outputs,snowflake_reason=args.snowflake_reason,
+                              group=group and group['name'])
+        output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
         if before is not None:
