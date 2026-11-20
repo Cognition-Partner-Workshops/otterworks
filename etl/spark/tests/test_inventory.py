@@ -136,6 +136,19 @@ class InventoryTest(unittest.TestCase):
             "original_target": "dbt", "change_reason": "The cron was already disabled.",
         })
 
+    def test_security_alert_anomaly_retired(self):
+        job = "security_alert_anomaly"
+        entry = json.loads((ROOT / "jobs/registry" / f"{job}.yaml").read_text())
+        classified = next(item for item in yaml.safe_load((ROOT / "classification.yaml").read_text())
+                          if item["job"] == job)
+        self.assertEqual(entry["status"], "retired")
+        self.assertEqual(entry["target"], classified["target"])
+        self.assertEqual(classified["target"], "retired")
+        self.assertNotIn(f"/submit/{job}.sh", (ROOT.parent / "crontab").read_text())
+        self.assertFalse((ROOT / "cron.d" / job).exists())
+        self.assertFalse((ROOT / "submit" / f"{job}.sh").exists())
+        self.assert_snowflake_kustomization(ROOT / "k8s/jobs" / job)
+
     def test_invalid_classification_provenance(self):
         for changes in (
             {"target": "unknown"}, {"target": ""}, {"reason": ""},

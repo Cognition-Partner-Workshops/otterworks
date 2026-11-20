@@ -24,7 +24,6 @@
 14 2 * * * /opt/etl/spark/submit/docs_tag_normalize.sh >> /var/log/etl/spark-docs_tag_normalize.log 2>&1
 15 2 * * * /opt/etl/spark/submit/billing_churn_score.sh >> /var/log/etl/spark-billing_churn_score.log 2>&1
 16 2 * * * /opt/etl/spark/submit/users_risk_score.sh >> /var/log/etl/spark-users_risk_score.log 2>&1
-17 2 * * * /opt/etl/spark/submit/security_alert_anomaly.sh >> /var/log/etl/spark-security_alert_anomaly.log 2>&1
 18 * * * * /opt/etl/spark/submit/docs_event_export_hourly.sh >> /var/log/etl/spark-docs_event_export_hourly.log 2>&1
 19 2 * * * /opt/etl/spark/submit/lake_compaction_documents.sh >> /var/log/etl/spark-lake_compaction_documents.log 2>&1
 20 3 * * * /opt/etl/spark/submit/lake_compaction_audit.sh >> /var/log/etl/spark-lake_compaction_audit.log 2>&1
