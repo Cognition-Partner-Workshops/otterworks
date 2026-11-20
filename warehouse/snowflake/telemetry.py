@@ -10,6 +10,21 @@ ROOT = Path(__file__).resolve().parents[2]
 EVENTS = {"load_started", "load_success", "load_failure", "row_count_drop", "null_spike"}
 
 
+class SafeLoadError(ValueError):
+    """Loader diagnostic containing only column names, counts and bounded samples."""
+
+
+def error_message(error):
+    if not isinstance(error, SafeLoadError):
+        return f"{type(error).__name__}: details withheld (untrusted exception text)"
+    message = str(error)
+    for name, value in os.environ.items():
+        if len(value) >= 4 and any(word in name.upper() for word in
+                                   ('SECRET', 'PASSWORD', 'TOKEN', 'PRIVATE_KEY', 'CREDENTIAL')):
+            message = message.replace(value, '[REDACTED]')
+    return message[:1000]
+
+
 def emit(event, **values):
     if event not in EVENTS:
         raise ValueError("Unknown operational event")
@@ -31,7 +46,7 @@ def operation(function):
         try:
             result = function(*args, **kwargs)
         except Exception as error:
-            emit("load_failure", error_type=type(error).__name__)
+            emit("load_failure", error_type=type(error).__name__, error_message=error_message(error))
             raise
         emit("load_success")
         return result

@@ -1,5 +1,41 @@
 # __RUN_TOKEN__ daily billing feed
 
+## Local DuckDB replay
+
+From the repository root (no Snowflake credentials needed):
+
+```sh
+eval "$(python3 warehouse/run_config.py env)"
+uv run --with duckdb==1.4.2 --with tomlkit --with PyYAML python warehouse/pipeline/load_daily.py --target duckdb --no-build --date 2026-11-09
+uv run --with tomlkit --with PyYAML python warehouse/pipeline/schema_drift.py --column CUSTOMER_ID
+uv run --with duckdb==1.4.2 --with tomlkit --with PyYAML python warehouse/pipeline/load_daily.py --target duckdb --no-build --date 2026-11-10
+```
+
+The ignored database defaults to `migration/dw-exit/.runs/nightly.duckdb`;
+override with `--db-path`. DuckDB requires `--no-build`: no dbt or downstream
+checks are simulated. Operational load events still go to `pipeline.jsonl`.
+The drift generator can alternatively use `--column USAGE_DATE` to emit US-style
+dates. It overwrites only the generated November 10 file, never the good day.
+Both variants add DISCOUNT_CODE and currency formatting using the existing vendor
+generator. DuckDB uses header names, TRY_CAST, and the source-file replacement
+transaction. Both targets accept only the anchored `CUST-[0-9]+` customer prefix
+in addition to numeric IDs. After loading, before commit, each required field is
+checked for nonempty raw values whose conversion produced NULL; failures report
+column/count/sample and roll back the day's replacement. Empty input values retain
+the existing nullable behavior. DuckDB does not enforce CHAR/VARCHAR length limits, and its
+date parsing is not Snowflake's automatic date parser.
+
+Replay/backfill uses the same atomic source-file replacement:
+
+```sh
+uv run --with duckdb==1.4.2 --with tomlkit --with PyYAML python warehouse/pipeline/load_daily.py --target duckdb --no-build --date 2026-11-10 --step backfill
+uv run --with duckdb==1.4.2 python warehouse/pipeline/backfill_diff.py migration/dw-exit/.runs/before-backfill.duckdb migration/dw-exit/.runs/nightly.duckdb
+```
+
+The diff compares full-row multisets per key/day, excluding only `_LOADED_AT`.
+Failure telemetry includes bounded loader diagnostics with environment secrets
+redacted; arbitrary driver exception text is withheld rather than risking credentials.
+
 Use the existing named `sfx_d1110` connection in `~/.snowflake/connections.toml`
 and its private-key file. Credentials never belong here. All operations use
 `__RUN_DATABASE__`; load/reset use `__RUN_DATABASE___LOAD_WH`, dbt uses

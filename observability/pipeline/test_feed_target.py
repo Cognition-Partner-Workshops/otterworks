@@ -78,6 +78,22 @@ def test_quality_events(tmp_path, monkeypatch):
     assert [json.loads(s)['event'] for s in path.read_text().splitlines()] == ['row_count_drop', 'null_spike']
 
 
+def test_safe_load_message_is_bounded_and_redacted(tmp_path, monkeypatch):
+    path = tmp_path / 'events.jsonl'
+    monkeypatch.setenv('SFX_LOG_PATH', str(path))
+    monkeypatch.setenv('EXAMPLE_PASSWORD', 'private-sample')
+    @telemetry.operation
+    def failure():
+        raise telemetry.SafeLoadError('CUSTOMER_ID count=1 sample=private-sample ' + 'x' * 1200)
+    with pytest.raises(telemetry.SafeLoadError):
+        failure()
+    event = json.loads(path.read_text().splitlines()[-1])
+    assert event['event'] == 'load_failure'
+    assert len(event['error_message']) == 1000
+    assert 'CUSTOMER_ID count=1 sample=[REDACTED]' in event['error_message']
+    assert 'private-sample' not in path.read_text()
+
+
 def test_logging_error_does_not_mask_load(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv('SFX_LOG_PATH', str(tmp_path))
     telemetry.emit('load_started')
