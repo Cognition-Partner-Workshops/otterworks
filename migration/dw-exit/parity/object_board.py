@@ -31,9 +31,8 @@ from parity.owner_decisions import approved_retirements, approved_summary_ids, a
 from audit_outputs import outputs as audit_outputs, artifacts as audit_artifacts
 
 TARGETS = ('duckdb', 'snowflake')
-SNOWFLAKE_DISABLED = 'Snowflake login down; execution disabled'
-
 SNOWFLAKE_REASON = 'Snowflake login down for run sfg1120; no live capture/prove'
+SNOWFLAKE_DISABLED = SNOWFLAKE_REASON
 HELD_BACK_AREAS = frozenset(('billing', 'documents', 'content'))
 
 
@@ -160,7 +159,8 @@ def materialize(before, names, conversion_dir, business_date='20261109', subject
         # DuckDB metadata and identifiers are local; relation()/quote() escape identifiers.
         # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         definitions = before.execute('DESCRIBE '+relation(name)).fetchall()
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        # Identifiers are escaped with relation()/quote(); types come from local DuckDB metadata.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query, python.lang.security.audit.formatted-sql-query.formatted-sql-query
         after.execute(f'CREATE TABLE {relation(target)} ({", ".join(quote(c[0])+" "+c[1] for c in definitions)})')
         if table.startswith('STG_'):
             # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
@@ -277,7 +277,7 @@ def materialize_users(before, names, conversion_dir, business_date='20261109', a
     after = after if after is not None else duckdb.connect()
     ready, errors = set(), {}
     schema = 'USERS'
-    after.execute('CREATE SCHEMA '+schema)
+    after.execute('CREATE SCHEMA USERS')
     for name in sorted(names):
         if not name.startswith('SFX_'+schema+'.'):
             continue
@@ -288,8 +288,9 @@ def materialize_users(before, names, conversion_dir, business_date='20261109', a
         # DuckDB metadata and identifiers are local; relation()/quote() escape identifiers.
         # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         definitions = before.execute('DESCRIBE '+relation(name)).fetchall()
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         rules = source_columns(name)
+        # Identifiers are quoted, types are local DuckDB metadata, and collation is literal SQL.
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         after.execute(f'CREATE TABLE {relation(target)} ({", ".join(quote(c[0])+" "+c[1]+(" COLLATE NOCASE" if rules.get(c[0], {}).get("case_insensitive") else "") for c in definitions)})')
         if table.startswith('STG_'):
             # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
@@ -393,8 +394,11 @@ def users_build_board(manifest, before=None, after=None, available=None, errors=
                 retirement = dict(local, name=row['name'])
                 apply_retirement(retirement, obj, approved_retirements())
                 local.update(retirement)
-                local['retirement_evidence']['dbql'] = retire_evidence
-                local['reason'] += '; ' + retirement_users.CAVEAT
+                if local['status'] == 'retired':
+                    local['retirement_evidence']['dbql'] = retire_evidence
+                    local['reason'] += '; ' + retirement_users.CAVEAT
+                else:
+                    local['reason'] = 'Retirement lacks approved owner decision; ' + retirement_users.CAVEAT
 
         row['targets'] = {'duckdb': local, 'snowflake': unavailable_cell(SNOWFLAKE_DISABLED)}
         row.update(local)

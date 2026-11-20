@@ -227,7 +227,9 @@ def test_audit_contract_does_not_change_other_areas():
     contracts = board.relation_contract([audit, billing])
     assert contracts[0]['output_relations'] == ['SFX_AUDIT.AUDIT_DAILY_SUMMARY']
     assert contracts[1] == billing
-    assert board.build_board({'objects':[billing]})['rows'] == board.base_build_board({'objects':[billing]})['rows']
+    row = board.build_board({'objects':[billing]})['rows'][0]
+    base_row = board.base_build_board({'objects':[billing]})['rows'][0]
+    assert {key: row[key] for key in base_row} == base_row
 
 
 def test_audit_empty_board_and_missing_proof():

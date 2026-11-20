@@ -7,6 +7,8 @@ import duckdb
 import sqlglot
 from sqlglot import exp
 
+from .identifiers import quote, relation
+
 ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -34,7 +36,12 @@ def render_model(text):
 
 
 def uppercase_columns(connection, table):
+    table = relation(table)
+    # relation() quotes every qualified identifier component.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     columns = [c[0] for c in connection.execute('DESCRIBE '+table).fetchall()]
     for column in columns:
         if column != column.upper():
-            connection.execute('ALTER TABLE '+table+' RENAME COLUMN "'+column+'" TO "'+column.upper()+'"')
+            # Relation and metadata column names are quoted with relation()/quote().
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+            connection.execute('ALTER TABLE '+table+' RENAME COLUMN '+quote(column)+' TO '+quote(column.upper()))

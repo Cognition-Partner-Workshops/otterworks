@@ -105,4 +105,4 @@ def test_ten_pc_rows_use_own_proof_and_app_user_stays_stopped(status):
         p = row['provenance']
         links = [entry for entries in p['converted'].values() for entry in entries]
         assert any('warehouse/dbt/models/pc/content/' in link['file'] for link in links)
-        assert all('devin/sfg1120-users' in link['url'] for link in links)
+        assert all('devin/sfg1120-integration' in link['url'] for link in links)

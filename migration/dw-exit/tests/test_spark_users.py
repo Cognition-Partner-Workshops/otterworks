@@ -82,7 +82,7 @@ def test_users_spark_declarations_and_provenance():
         assert obj['target_type'] == 'dbt_model'
         p = provenance.provenance(obj)
         assert p['converted'][obj['output_relations'][0]]
-        assert all('devin/sfg1120-users' in link['url'] for links in p['converted'].values() for link in links)
+        assert all('devin/sfg1120-integration' in link['url'] for links in p['converted'].values() for link in links)
 
 
 def test_missing_snowpark_body_fails_closed(tmp_path,monkeypatch):

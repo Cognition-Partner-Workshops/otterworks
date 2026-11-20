@@ -1,8 +1,25 @@
 from datetime import date
+from types import SimpleNamespace
+from unittest.mock import MagicMock, call
 
 import pytest
 
 from parity.snowpark_users import execute
+
+
+def test_handler_resolves_current_database_for_both_relations():
+    from warehouse.snowpark.m_sfx_app_user import run
+    session = MagicMock()
+    session.get_current_database.return_value = 'A_DIFFERENT_RUN_DB'
+    target, source = MagicMock(), MagicMock()
+    session.table.side_effect = [target, source]
+    target.merge.return_value = SimpleNamespace(rows_inserted=2, rows_updated=1)
+    assert run(session) == 3
+    session.get_current_database.assert_called_once_with()
+    assert session.table.call_args_list == [
+        call(['A_DIFFERENT_RUN_DB', 'USERS', 'APP_USER']),
+        call(['A_DIFFERENT_RUN_DB', 'USERS', 'STG_APP_USER']),
+    ]
 
 
 @pytest.mark.parametrize('populated',[False,True])

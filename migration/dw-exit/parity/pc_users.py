@@ -20,6 +20,7 @@ from sqlglot import exp
 
 from warehouse.run_config import RunConfig
 from .ladder import local_compare
+from .identifiers import quote
 from . import owner_decisions
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -40,12 +41,18 @@ def fingerprint(landing, day):
 
 
 def copy_table(pg, db, table, schema):
+    if table not in TABLES or schema not in ('INITIAL', 'SFX_USERS'):
+        raise ValueError('Unsupported users capture relation')
     with pg.cursor() as cursor:
+        # psycopg.sql.Identifier quotes the allowlisted table identifier.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         cursor.execute(sql.SQL('SELECT * FROM sfx_users.{}').format(sql.Identifier(table.lower())))
         rows = cursor.fetchall()
         kinds = {20:'BIGINT',23:'INTEGER',25:'VARCHAR',1042:'VARCHAR',1043:'VARCHAR',1082:'DATE',1114:'TIMESTAMP'}
-        columns = ['"'+c.name.upper()+'" '+kinds[c.type_code] for c in cursor.description]
+        columns = [quote(c.name.upper())+' '+kinds[c.type_code] for c in cursor.description]
         name = schema+'.'+table
+        # Relation is allowlisted; metadata column names are quoted and types are mapped constants.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute('CREATE TABLE '+name+' ('+', '.join(columns)+')')
         if rows:
             db.executemany('INSERT INTO '+name+' VALUES ('+','.join('?' for _ in columns)+')',rows)
@@ -72,6 +79,8 @@ def capture(dsn, namespace, landing, day, out=OUT):
     with psycopg.connect(dsn,autocommit=True) as pg, duckdb.connect(str(path)) as db:
         db.execute('CREATE SCHEMA INITIAL; CREATE SCHEMA SFX_USERS')
         for table in TABLES:
+            # psycopg.sql.Identifier quotes both identifiers from the fixed TABLES list.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             pg.execute(sql.SQL('CREATE TEMP TABLE {} AS SELECT * FROM sfx_users.{}').format(
                 sql.Identifier('pc_backup_'+table.lower()),sql.Identifier(table.lower())))
             copy_table(pg,db,table,'INITIAL')
@@ -92,7 +101,11 @@ def capture(dsn, namespace, landing, day, out=OUT):
         finally:
             with pg.transaction():
                 for table in TABLES:
+                    # psycopg.sql.Identifier quotes the fixed TABLES identifier.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     pg.execute(sql.SQL('DELETE FROM sfx_users.{}').format(sql.Identifier(table.lower())))
+                    # psycopg.sql.Identifier quotes both fixed TABLES identifiers.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     pg.execute(sql.SQL('INSERT INTO sfx_users.{} SELECT * FROM {}').format(
                         sql.Identifier(table.lower()),sql.Identifier('pc_backup_'+table.lower())))
     if inputs != fingerprint(landing,day):
@@ -108,6 +121,8 @@ def capture(dsn, namespace, landing, day, out=OUT):
 
 
 def model_query(table, connection, config):
+    # This renders checked-in dbt SQL, not browser HTML.
+    # nosemgrep: python.flask.security.xss.audit.direct-use-of-jinja2.direct-use-of-jinja2, python.jinja2.security.audit.missing-autoescape-disabled.missing-autoescape-disabled
     environment = Environment(undefined=StrictUndefined)
     def configure(**kwargs):
         config.update(kwargs)
@@ -155,30 +170,48 @@ def load_inputs(db, captured, landing, day):
         else:
             with (landing/'users'/table/(day+'.psv')).open() as handle:
                 rows = [tuple(v if v else None for v in row) for row in csv.reader(handle,delimiter='|')]
+            # TABLES is a fixed tuple of users mapping identifiers.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             definitions = captured.execute('DESCRIBE INITIAL.'+table).fetchall()
-        db.execute('CREATE TABLE INPUT.'+table+' ('+', '.join('"'+c[0]+'" '+c[1] for c in definitions)+')')
+        # TABLES is fixed; column names are quoted, types are local DuckDB metadata.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        db.execute('CREATE TABLE INPUT.'+table+' ('+', '.join(quote(c[0])+' '+c[1] for c in definitions)+')')
         if rows:
             db.executemany('INSERT INTO INPUT.'+table+' VALUES ('+','.join('?' for _ in definitions)+')',rows)
+        # TABLES is a fixed tuple of users mapping identifiers.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         initial = captured.execute('SELECT * FROM INITIAL.'+table).fetchall()
-        db.execute('CREATE TABLE USERS.'+table+' ('+', '.join('"'+c[0]+'" '+c[1] for c in definitions)+')')
+        # TABLES is fixed; column names are quoted, types are local DuckDB metadata.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+        db.execute('CREATE TABLE USERS.'+table+' ('+', '.join(quote(c[0])+' '+c[1] for c in definitions)+')')
         if initial:
             db.executemany('INSERT INTO USERS.'+table+' VALUES ('+','.join('?' for _ in definitions)+')',initial)
 
 
 def execute_model(db,table):
+    if table not in TABLES:
+        raise ValueError('Unsupported users mapping table')
     config = {}
     query = model_query(table,db,config)
+    # Query is rendered from checked-in dbt models/macros for an allowlisted mapping.
+    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     db.execute('CREATE OR REPLACE TABLE CANDIDATES AS '+query)
     if config['materialized'] == 'table':
+        # Table identifier is validated against TABLES.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute('DELETE FROM USERS.'+table)
+        # Table identifier is validated against TABLES.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute('INSERT INTO USERS.'+table+' SELECT * FROM CANDIDATES')
     else:
-        columns = [c[0] for c in db.execute('DESCRIBE CANDIDATES').fetchall()]
+        columns = [quote(c[0]) for c in db.execute('DESCRIBE CANDIDATES').fetchall()]
         if config['materialized'] != 'incremental' or config['incremental_strategy'] != 'merge':
             raise ValueError('Unsupported PC model materialization')
-        key = config['unique_key']
+        key = quote(config['unique_key'])
         if key not in columns:
             raise ValueError('PC merge key not in projection')
+        # Table is allowlisted; keys and columns are quoted DuckDB metadata.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         db.execute('MERGE INTO USERS.'+table+' t USING CANDIDATES s ON t.'+key+'=s.'+key+
                    ' WHEN MATCHED THEN UPDATE SET '+','.join(c+'=s.'+c for c in columns[1:])+
                    ' WHEN NOT MATCHED THEN INSERT ('+','.join(columns)+') VALUES ('+','.join('s.'+c for c in columns)+')')

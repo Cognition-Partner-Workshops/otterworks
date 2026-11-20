@@ -15,6 +15,26 @@ ROOT = Path(__file__).resolve().parents[3]
 USERS = ROOT/'migration/dw-exit/users'
 
 
+def test_local_identifiers_preserve_names_and_escape_quotes():
+    from parity.identifiers import quote, relation
+    assert quote('Mixed"Name') == '"Mixed""Name"'
+    assert relation('SCHEMA.Mixed"Name') == '"SCHEMA"."Mixed""Name"'
+
+
+@pytest.mark.parametrize('name', ['', 'SCHEMA', 'A.B.C', 'A.', '.B'])
+def test_local_relation_rejects_empty_or_wrong_qualification(name):
+    from parity.identifiers import relation
+    with pytest.raises(ValueError):
+        relation(name)
+
+
+@pytest.mark.parametrize('name', ['', None, 'A\x00B'])
+def test_local_identifier_rejects_empty_or_invalid_input(name):
+    from parity.identifiers import quote
+    with pytest.raises(ValueError):
+        quote(name)
+
+
 def tables(connection, schema='USERS'):
     connection.execute('CREATE SCHEMA '+schema)
     for statement in local_sql.statements(USERS/'00_tables.sql', '20261109'):

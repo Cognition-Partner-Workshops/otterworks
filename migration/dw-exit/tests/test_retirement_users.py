@@ -1,4 +1,5 @@
 import copy
+import json
 
 import pytest
 import yaml
@@ -97,3 +98,14 @@ def test_compact_markdown_links_numbers_and_preserves_unmeasured():
     assert '| [1](https://example.com/code#L1-L2) |' in text
     assert '| retired | retire_verified | — | — | — |' in text
     assert '| one |' not in provenance.compact_markdown([])
+
+
+def test_users_retirement_requires_owner_approval_without_circular_evidence(monkeypatch):
+    manifest = yaml.safe_load((ROOT/'migration/dw-exit/manifest.yaml').read_text())
+    manifest['objects'] = [o for o in manifest['objects'] if o['subject_area'] == 'users' and o['target_type'] == 'retire']
+    monkeypatch.setattr(object_board, 'approved_retirements', lambda: [])
+    monkeypatch.setattr(retirement_users, 'verify', lambda: dict(passed=True, reason='DBQL checked'))
+    board = object_board.build_board(manifest)
+    assert len(board['rows']) == 4
+    assert all(row['status'] == 'red' and 'lacks approved owner decision' in row['reason'] for row in board['rows'])
+    json.dumps(board)

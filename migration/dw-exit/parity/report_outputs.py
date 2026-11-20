@@ -9,6 +9,7 @@ from sqlglot import exp
 
 from warehouse.run_config import render
 from .semantics import numeric_type
+from .identifiers import quote
 
 ROOT = Path(__file__).resolve().parents[3]
 SUBJECT_OUTPUTS = {'users': {'M_TEAM_COUNTS_OUTPUT'}}
@@ -46,6 +47,8 @@ def postgres_query(query):
 
 def materialize(before, after, dsn, ready, business_date, subject='users'):
     errors = {}
+    if subject not in SUBJECT_OUTPUTS:
+        raise ValueError('Unsupported report subject')
     schema = subject.upper()
     with psycopg.connect(dsn) as source:
         for name, query in source_queries(subject).items():
@@ -61,7 +64,9 @@ def materialize(before, after, dsn, ready, business_date, subject='users'):
                             kind = numeric_type([row[i] for row in rows], None, None)
                         if not kind:
                             raise ValueError('Unsupported report result type: '+str(column.type_code))
-                        columns.append('"'+column.name.upper()+'" '+kind)
+                        columns.append(quote(column.name.upper())+' '+kind)
+                    # Subject is allowlisted; names come from repo macros, columns quoted and types mapped.
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     before.execute('CREATE TABLE SFX_'+schema+'.'+name+' ('+', '.join(columns)+')')
                     if rows:
                         before.executemany('INSERT INTO SFX_'+schema+'.'+name+' VALUES ('+','.join('?' for _ in columns)+')', rows)
@@ -71,6 +76,8 @@ def materialize(before, after, dsn, ready, business_date, subject='users'):
     for name, query in target_queries(subject).items():
         target = schema+'.'+name
         try:
+            # Query and resultset name come from checked-in SQL translated by sqlglot.
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             after.execute('CREATE TABLE '+target+' AS '+query)
             if target not in errors:
                 ready.add(target)
