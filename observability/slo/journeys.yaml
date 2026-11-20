@@ -1,0 +1,162 @@
+# Phase 0 / Sprint 1 — baseline journey fixtures and data invariants.
+#
+# Each journey is a business flow that later phases must keep identical
+# (Phase 2 parity, Phase 3 and 4 migrations). `tests` lists the existing
+# black-box API tests (tests/api) that exercise it today; `invariants` are the
+# properties every replay, parity diff and restore rehearsal must hold.
+# `fixture` is the data a run creates; every run namespaces it under a fresh
+# registered user (tests/api/conftest.py registered_user) so runs never collide
+# and never touch other users' data. Runs are read/write against a dedicated
+# tenant only, never t-main or a shared production environment.
+version: 1
+fixture_rules:
+  - "one fresh user per run: email phase0-<uuid>@otterworks.test, password from the test fixture, never a real account"
+  - "every created resource carries the run id in its name/title so leftovers are attributable and reapable"
+  - "a run cleans up what it created (delete document/file, logout); restore rehearsals use a copy of the tenant database, never t-main"
+  - "no failure injection in shared environments; degradation journeys run only in a workshop-<id> or local Compose tenant"
+
+journeys:
+  - id: J-AUTH
+    name: Account and session lifecycle
+    owner: auth
+    slis: [auth-availability, auth-latency, gw-availability]
+    tests:
+      - tests/api/test_auth_flow.py::test_register_login_profile_refresh_and_logout
+      - tests/api/test_auth_flow.py::test_auth_validation_and_protected_routes
+    fixture: "register user -> login -> GET profile -> refresh -> logout"
+    invariants:
+      - "register then login with the same credentials returns an access and refresh token for the same user id"
+      - "a refreshed token authenticates; a token after logout does not (401)"
+      - "protected routes without a token return 401, never 200 or 5xx"
+      - "email uniqueness: a second register with the same email is rejected (4xx) and creates no second row"
+    authorization_cases: ["no token -> 401", "malformed token -> 401", "expired/revoked refresh -> 401"]
+
+  - id: J-DOC
+    name: Document authoring, versions, comments and templates
+    owner: document
+    slis: [doc-availability, doc-latency, doc-db-fanout]
+    tests:
+      - tests/api/test_document_flow.py::test_document_crud_versions_export_comments_and_template_flow
+      - tests/api/test_document_flow.py::test_document_validation_and_ownership_risk_cases
+    fixture: "create document -> update twice -> list versions -> comment -> export -> create from template -> delete"
+    invariants:
+      - "each update creates exactly one new version; version numbers are contiguous and increasing"
+      - "GET after PUT returns the last written content (read-your-writes)"
+      - "a deleted document is not returned by GET (404) and not listed"
+      - "another user cannot read, update or delete the document (403/404, never 200)"
+      - "per-request DB query count does not exceed the baseline p95 for the handler (X-DB-Queries)"
+    authorization_cases: ["owner -> 2xx", "other user -> 403/404", "no token -> 401"]
+
+  - id: J-FILE
+    name: File and folder lifecycle with sharing
+    owner: file
+    slis: [file-availability, file-latency]
+    tests:
+      - tests/api/test_file_flow.py::test_file_folder_upload_lifecycle_share_and_download
+      - tests/api/test_file_flow.py::test_file_validation_and_route_gaps
+    fixture: "create folder -> upload file -> get metadata -> download -> share -> move -> delete"
+    invariants:
+      - "downloaded bytes equal uploaded bytes (sha256)"
+      - "metadata size and content type match the upload"
+      - "a file is listed in exactly one folder after a move"
+      - "S3 object key and DynamoDB metadata row exist together or not at all after delete"
+    authorization_cases: ["owner -> 2xx", "share recipient -> read only", "other user -> 403/404"]
+
+  - id: J-SEARCH
+    name: Search and discovery
+    owner: search
+    slis: [search-availability, search-latency]
+    tests:
+      - tests/api/test_search_flow.py::test_search_index_query_suggest_advanced_and_delete_flow
+      - tests/api/test_search_flow.py::test_search_validation_and_pagination_bounds
+    fixture: "index a document with a run-unique token -> search -> suggest -> advanced -> delete from index"
+    invariants:
+      - "a unique token returns exactly the indexed document"
+      - "after delete, the token returns no hits"
+      - "pagination: page size bounds are enforced and pages do not overlap"
+      - "results only include documents the caller may read (ranking is reviewed at the Phase 0 go/no-go)"
+
+  - id: J-SEARCH-FRESH
+    name: Document write reaches search (side effect)
+    owner: search
+    slis: [search-index-freshness]
+    tests:
+      - tests/api/test_side_effect_flow.py::test_document_create_update_delete_eventually_reflects_in_search
+    fixture: "create document with a unique token -> poll search until found -> update -> poll -> delete -> poll until gone"
+    invariants:
+      - "eventually consistent within the freshness SLO (time to searchable is recorded per run)"
+      - "no duplicate hits for one document id after replaying the same event"
+    retry_replay: "replaying a document.created/updated event is idempotent in the index"
+
+  - id: J-COLLAB
+    name: Real-time collaboration and presence
+    owner: collaboration
+    slis: [collab-connect-errors, collab-sync-latency, collab-persistence, collab-saturation]
+    tests:
+      - tests/api/test_collaboration_flow.py::test_collaboration_presence_endpoints
+      - tests/api/test_collaboration_flow.py::test_collaboration_invalid_document_presence_is_stable
+      - tests/api/test_websocket_collaboration_flow.py::test_socketio_rejects_missing_or_invalid_token
+      - tests/api/test_websocket_collaboration_flow.py::test_socketio_two_users_join_same_document_and_presence_updates
+    fixture: "two fresh users join the same document over Socket.IO -> edit -> leave"
+    invariants:
+      - "both users see each other in presence while connected and not after disconnect"
+      - "an edit from one user is received by the other exactly once"
+      - "a socket without a valid token is rejected and joins no room"
+
+  - id: J-NOTIFY
+    name: Notifications and preferences
+    owner: notification
+    slis: [notif-availability, notif-worker-success, notif-queue-age]
+    tests:
+      - tests/api/test_notification_admin_gateway_flow.py::test_notification_listing_read_preferences_and_route_gaps
+      - tests/api/test_side_effect_flow.py::test_file_share_eventually_creates_notification_and_audit_signal
+    fixture: "share a file to a second fresh user -> list notifications -> mark read -> update preferences"
+    invariants:
+      - "one share event produces exactly one notification for the recipient (no duplicates on redelivery)"
+      - "mark-read is idempotent"
+      - "a disabled channel in preferences sends nothing on that channel"
+    retry_replay: "SQS redelivery of the same message id does not create a second notification"
+
+  - id: J-AUDIT
+    name: Audit trail, analytics and reports
+    owner: audit
+    slis: [audit-availability, analytics-availability, report-availability]
+    tests:
+      - tests/api/test_audit_analytics_report_flow.py::test_audit_event_query_reports_export_and_archive
+      - tests/api/test_audit_analytics_report_flow.py::test_analytics_event_ingestion_queries_and_export
+      - tests/api/test_audit_analytics_report_flow.py::test_report_generation_lifecycle_and_gateway_route
+      - tests/api/test_side_effect_flow.py::test_report_generation_reaches_terminal_state
+    fixture: "write audit event -> query by user -> export; ingest analytics event -> query; request report -> poll to terminal state -> download"
+    invariants:
+      - "audit events are append-only: a written event is returned unchanged by query and export"
+      - "audit export row count equals the query count for the same filter"
+      - "a report reaches a terminal state (COMPLETED or FAILED), never stays PENDING beyond the report SLO"
+      - "analytics counts for the run's user equal the events ingested in the run"
+
+  - id: J-ADMIN
+    name: Admin and gateway health
+    owner: admin
+    slis: [admin-availability, gw-availability, gw-route-errors]
+    tests:
+      - tests/api/test_notification_admin_gateway_flow.py::test_admin_health_users_features_and_permissions
+      - tests/api/test_notification_admin_gateway_flow.py::test_gateway_health_cors_request_id_and_unavailable_route_behavior
+    fixture: "GET gateway health, CORS preflight, request id echo; admin health and user list as admin"
+    invariants:
+      - "every gateway response carries a request id"
+      - "an unknown route returns 404 with the standard error shape, never 5xx"
+      - "non-admin callers get 403 on admin routes"
+    notes: "admin-service crash-loops on the golden app by design (planted defect); this journey is expected to fail there and is recorded, not fixed"
+
+  - id: J-DEGRADE
+    name: Dependency degradation (isolated tenants only)
+    owner: platform
+    slis: [gw-route-errors, platform-recovery]
+    tests:
+      - tests/api/test_degradation_flow.py::test_search_dependency_degradation_returns_clean_error
+      - tests/api/test_degradation_flow.py::test_collab_dependency_degradation_reflected_in_health
+      - tests/api/test_degradation_flow.py::test_gateway_circuit_breaker_or_bad_gateway_error_shape
+    fixture: "in a workshop-<id> or local Compose tenant only: stop one backing dependency, run J-AUTH and J-DOC, restore"
+    invariants:
+      - "the failed dependency's routes return a clean 502/503 error shape"
+      - "unrelated routes' error rate rises by no more than 0.1 percentage point"
+      - "service recovers to Ready within the platform-recovery SLO after the dependency returns"

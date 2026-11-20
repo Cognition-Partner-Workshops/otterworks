@@ -1,0 +1,63 @@
+name: SLO telemetry baseline (Phase 0)
+
+# Daily read-only snapshot of every SLI in observability/slo/slo-catalog.yaml from the
+# otterworks-dev Prometheus (3d retention), kept as an artifact to build the 30-day
+# baseline. Only GET queries; nothing in the cluster is changed.
+
+on:
+  schedule:
+    - cron: "5 0 * * *" # daily, 00:05 UTC
+  workflow_dispatch:
+    inputs:
+      namespace:
+        description: "Tenant namespace to baseline"
+        type: string
+        default: "otterworks-main"
+
+concurrency:
+  group: slo-baseline
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  EKS_CLUSTER: otterworks-dev
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r tests/slo/requirements.txt
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: azure/setup-kubectl@3e0aec4d80787158d308d7b364cb1b702e7feb7f # v4
+      - name: Kubeconfig
+        run: aws eks update-kubeconfig --name "$EKS_CLUSTER" --region "$AWS_REGION"
+
+      - name: Collect snapshot
+        env:
+          NAMESPACE: ${{ inputs.namespace || 'otterworks-main' }}
+        run: |
+          set -euo pipefail
+          kubectl -n monitoring port-forward svc/prometheus-prometheus 9090:9090 >/tmp/pf.log 2>&1 &
+          for _ in $(seq 30); do curl -sf http://localhost:9090/-/ready >/dev/null && break; sleep 2; done
+          python scripts/slo/collect_baseline.py collect \
+            --prometheus http://localhost:9090 --namespace "$NAMESPACE" --out baseline
+
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
+        with:
+          name: slo-baseline-${{ github.run_id }}
+          path: baseline/*.json
+          retention-days: 90
