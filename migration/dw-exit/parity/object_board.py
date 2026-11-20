@@ -20,6 +20,21 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'migration/dw-exit/tools'))
 from warehouse.run_config import RunConfig
 from assess import board as wave_board
+sys.path.insert(0, str(ROOT / 'migration/dw-exit'))
+from parity import local_audit, powercenter_audit, spark_audit
+from parity.ladder import local_compare
+from parity.provenance import provenance, audit_markdown
+from parity.owner_decisions import approved_retirements, approved_summary_ids, apply_retirement
+from audit_outputs import outputs as audit_outputs, artifacts as audit_artifacts
+
+SNOWFLAKE_REASON = 'Snowflake login down for run sfg1120; no live capture/prove'
+
+
+def relation_contract(objects):
+    return [dict(obj, output_relations=audit_outputs(obj),
+                 **({'output_artifacts': audit_artifacts(obj)} if audit_artifacts(obj) else {}))
+            if obj['subject_area'] == 'audit' else dict(obj) for obj in objects]
+
 
 
 def quote(name):
@@ -184,7 +199,7 @@ def materialize(before, names, conversion_dir):
     return after, ready, errors
 
 
-def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None):
+def base_build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None):
     if target not in ('duckdb', 'snowflake'):
         raise ValueError('Unsupported parity target')
     objects = manifest['objects']
@@ -236,6 +251,83 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
     return result
 
 
+
+def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb',
+                counters=None, audit_before=None, audit_after=None, audit_available=None,
+                audit_errors=None, audit_pc_results=None):
+    result = base_build_board(manifest, before, after, available, errors, target, counters)
+    contracts = {o['id']:o for o in relation_contract(manifest['objects'])}
+    decisions = approved_retirements()
+    for row in result['rows']:
+        if row['subject_area'] != 'audit':
+            continue
+        obj = contracts[row['id']]
+        row.update(status='red', reason=None, row_count=None, column_profile=None,
+                   keyed_row_hash=None, sampled_differences=None, provenance=provenance(obj),
+                   owner_source=obj.get('owner_source'), snowflake='red',
+                   snowflake_reason=SNOWFLAKE_REASON)
+        measured = {}
+        if target != 'duckdb':
+            row['reason'] = 'Snowflake target selected; execution disabled'
+        elif obj['target_type'] == 'retire':
+            row['reason'] = 'retirement proposed; not converted or retired'
+            apply_retirement(row, obj, decisions)
+        elif obj['system'] == 'powercenter':
+            measured = {name:(audit_pc_results or {}).get('measurements',{}).get(name)
+                        for name in obj['output_relations']}
+            if not measured or not all(measured.values()):
+                measured = {}
+                row['reason'] = 'PowerCenter audit proof unavailable'
+        elif audit_before is None:
+            row['reason'] = 'Audit local proof unavailable'
+        else:
+            for source in obj['output_relations']:
+                destination = source.removeprefix('SFX_')
+                if destination not in (audit_available or set()):
+                    row['reason'] = (audit_errors or {}).get(destination, 'output not materialized: '+destination)
+                    break
+                try:
+                    measured[source] = local_compare(audit_before, audit_after, source, destination)
+                except (duckdb.Error, ValueError) as error:
+                    row['reason'] = 'measurement failed: '+str(error).splitlines()[0]
+                    break
+        if measured and row['reason'] is None:
+            row['row_count'] = {side:sum(m['row_count'][side] for m in measured.values())
+                                for side in ('before','after')}
+            for field in ('column_profile','keyed_row_hash','sampled_differences','comparison_rules'):
+                row[field] = {name:m[field] for name,m in measured.items()}
+            row['status'] = 'green' if all(m['passed'] for m in measured.values()) else 'red'
+            row['reason'] = None if row['status'] == 'green' else 'measured parity mismatch'
+            if obj['system'] == 'powercenter' and 'SFX_AUDIT.AUDIT_DAILY_SUMMARY' in measured:
+                raw = (audit_pc_results or {}).get('raw_summary_measurement')
+                row['raw_summary_measurement'] = raw
+                if raw and not raw['passed'] and row['status'] == 'green' and approved_summary_ids() and audit_pc_results.get('summary_non_identity_multiset_matches') is True:
+                    row.update(status='approved_deviation', measurement_status='red',
+                               decision_state='approved', reason='Owner-approved stable summary IDs by date, customer key NULLS FIRST; raw legacy comparison retained',
+                               owner_decision_evidence={'decision_id':'audit-summary-stable-ids',
+                                   'contract':audit_pc_results['summary_id_contract'],
+                                   'non_identity_multiset_matches':audit_pc_results['summary_non_identity_multiset_matches']})
+                elif raw and not raw['passed']:
+                    row.update(status='red', reason='Summary ID deviation lacks valid owner approval')
+        row['local_duckdb'] = row['status'] if target == 'duckdb' else 'red'
+    for state in ('red','green','retired','approved_deviation'):
+        result['summary'][state] = sum(r['status']==state for r in result['rows'])
+    result['summary']['measured'] = sum(r['row_count'] is not None for r in result['rows'])
+    audit = [r for r in result['rows'] if r['subject_area']=='audit']
+    result['summary']['audit'] = dict(total=len(audit),
+        local_green=sum(r['status']=='green' for r in audit),
+        local_red=sum(r['status']=='red' for r in audit),
+        local_retired=sum(r['status']=='retired' for r in audit),
+        local_approved_deviation=sum(r['status']=='approved_deviation' for r in audit),
+        snowflake='red', snowflake_reason=SNOWFLAKE_REASON)
+    result['measurement_contract']['audit'] = {'conversions':[
+        'audit/'+name for name in ('00_tables.sql','05_landing.sql',*local_audit.STAGES,
+                                  '20_routines.sql','50_powercenter.sql','52_sessions.sql','55_workflow.sql')],
+        'batch_source':'fresh Teradata chain snapshot',
+        'powercenter_source':'fresh isolated rollback-only legacy mappings on same landing PSVs',
+        'cross_area_inputs':'read-only source snapshots; not converted by this audit proof'}
+    return result
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--manifest',type=Path,default=ROOT/'migration/dw-exit/manifest.yaml')
@@ -245,7 +337,9 @@ def main():
     manifest = yaml.safe_load(args.manifest.read_text())
     from assess import build
     counters = build()['counters']
-    before = after = None
+    before = after = audit_after = None
+    audit_ready, audit_errors, pc_evidence = set(), {}, {}
+    audit_evidence, spark_evidence = {}, {}
     ready, errors = set(), {}
     try:
         if args.target == 'duckdb' and manifest['objects']:
@@ -256,14 +350,34 @@ def main():
             before, source_ready, source_errors = source_snapshot(dsn,names)
             after, ready, errors = materialize(before,source_ready,ROOT/'migration/dw-exit/billing/initial')
             errors.update(source_errors)
-        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters)
+            audit_after = duckdb.connect()
+            audit_errors, audit_evidence = local_audit.materialize(before,audit_after,source_ready,dsn,audit_ready,
+                os.environ.get('BUSINESS_DATE','20261109'))
+            spark_ready, spark_errors, spark_evidence = spark_audit.materialize(
+                before,audit_after,relation_contract(manifest['objects']),ns)
+            audit_ready.update(spark_ready)
+            audit_errors.update(spark_errors)
+            pc_errors, pc_evidence = powercenter_audit.materialize(
+                before,audit_after,dsn,audit_ready,os.environ.get('BUSINESS_DATE','20261109'))
+            audit_errors.update(pc_errors)
+        payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,
+            audit_before=before,audit_after=audit_after,audit_available=audit_ready,
+            audit_errors=audit_errors,audit_pc_results=pc_evidence)
+        payload.update(audit_evidence=audit_evidence,audit_powercenter_evidence=pc_evidence,
+                       audit_spark_evidence=spark_evidence)
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
+        readme = args.output.parent / 'README.md'
+        if readme.exists():
+            text = readme.read_text().split('## Audit parity provenance')[0]
+            readme.write_text(text.rstrip()+'\n\n'+audit_markdown(payload['rows']))
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
         if before is not None:
             before.close()
         if after is not None:
             after.close()
+        if audit_after is not None:
+            audit_after.close()
 
 
 if __name__ == '__main__':

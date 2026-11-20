@@ -159,3 +159,64 @@ def test_make_command_line_token_selects_namespace():
     output=subprocess.check_output(['make','-n','sfx-teradata-validate','RUN_TOKEN=sfx2220'],cwd=ROOT,text=True)
     assert 'sfx-2220-before' in output
     assert 'sfx-1119-before' not in output
+
+
+def test_audit_contract_does_not_change_other_areas():
+    audit = obj(subject_area='audit', name='10_summary_daily', kind='bteq', system='teradata')
+    billing = obj()
+    contracts = board.relation_contract([audit, billing])
+    assert contracts[0]['output_relations'] == ['SFX_AUDIT.AUDIT_DAILY_SUMMARY']
+    assert contracts[1] == billing
+    assert board.build_board({'objects':[billing]})['rows'] == board.base_build_board({'objects':[billing]})['rows']
+
+
+def test_audit_empty_board_and_missing_proof():
+    assert board.build_board({'objects':[]})['summary']['audit']['total'] == 0
+    row = board.build_board({'objects':[obj(subject_area='audit', name='10_summary_daily', kind='bteq', system='teradata')]})['rows'][0]
+    assert row['status'] == 'red' and row['row_count'] is None
+    assert row['reason'] == 'Audit local proof unavailable'
+    assert row['snowflake'] == 'red'
+    assert row['snowflake_reason'] == 'Snowflake login down for run sfg1120; no live capture/prove'
+
+
+def test_audit_retirements_keep_setup_read_evidence():
+    import yaml
+    manifest = yaml.safe_load((ROOT/'migration/dw-exit/manifest.yaml').read_text())
+    objects = [o for o in manifest['objects'] if o['subject_area']=='audit' and o['target_type']=='retire']
+    rows = board.build_board({'objects':objects})['rows']
+    assert len(rows) == 6 and all(r['status']=='retired' for r in rows)
+    for row in rows:
+        dbql = row['retirement_evidence']['dbql']
+        stage = dbql['assessment_usage']['SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE']
+        assert stage['reads'] == 1 and stage['writes'] == 0
+        assert stage['records'][0]['query']['UserName'] == 'svc_report_recon'
+        assert stage['records'][0]['query']['QueryID'] == '111000000068'
+        assert dbql['current_checkout_usage']['SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE']['records'][0]['query']['QueryID'] == '111000000069'
+        assert row['row_count'] is None
+    denied = board.build_board({'objects':objects}, target='snowflake')['rows']
+    assert all(r['status']=='red' and r['snowflake']=='red' for r in denied)
+
+
+@pytest.mark.parametrize('approved,identity_match,expected', [(True,True,'approved_deviation'),
+                                                           (False,True,'red'),(True,False,'red')])
+def test_audit_summary_approval_is_scoped_and_preserves_raw(monkeypatch, approved, identity_match, expected):
+    from parity import ladder
+    with duckdb.connect() as before, duckdb.connect() as after:
+        before.execute('CREATE SCHEMA SFX_AUDIT')
+        after.execute('CREATE SCHEMA AUDIT')
+        before.execute('CREATE TABLE SFX_AUDIT.AUDIT_DAILY_SUMMARY (SUMMARY_ID INTEGER, VALUE INTEGER)')
+        after.execute('CREATE TABLE AUDIT.AUDIT_DAILY_SUMMARY (SUMMARY_ID INTEGER, VALUE INTEGER)')
+        before.execute('INSERT INTO SFX_AUDIT.AUDIT_DAILY_SUMMARY VALUES (50001,7)')
+        after.execute('INSERT INTO AUDIT.AUDIT_DAILY_SUMMARY VALUES (50002,7)')
+        raw = ladder.local_compare(before,after,'SFX_AUDIT.AUDIT_DAILY_SUMMARY','AUDIT.AUDIT_DAILY_SUMMARY')
+        before.execute('UPDATE SFX_AUDIT.AUDIT_DAILY_SUMMARY SET SUMMARY_ID=50002')
+        normalized = ladder.local_compare(before,after,'SFX_AUDIT.AUDIT_DAILY_SUMMARY','AUDIT.AUDIT_DAILY_SUMMARY')
+    monkeypatch.setattr(board,'approved_summary_ids',lambda:approved)
+    record = obj(subject_area='audit',name='m_SFX_AUDIT_DAILY_SUMMARY')
+    result = board.build_board({'objects':[record]}, audit_pc_results={
+        'measurements':{'SFX_AUDIT.AUDIT_DAILY_SUMMARY':normalized},
+        'raw_summary_measurement':raw, 'summary_id_contract':'stable date/key',
+        'summary_non_identity_multiset_matches':identity_match})['rows'][0]
+    assert result['status'] == expected
+    assert result['raw_summary_measurement']['keyed_row_hash']['difference'] == 2
+    assert result['keyed_row_hash']['SFX_AUDIT.AUDIT_DAILY_SUMMARY']['difference'] == 0

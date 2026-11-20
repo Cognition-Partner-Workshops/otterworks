@@ -79,3 +79,29 @@ and add `--profile test` to the observability Compose command. Captures land in
 Stop the feed with `make sfx-observability-down`. Stop compute with
 `make sfx-spark-down NS="$NS"`. `make sfx-informatica-down NS="$NS"` and
 `make sfx-teradata-down NS="$NS"` remove their namespace's local data volumes.
+
+## Audit-learned rules
+
+- Derive namespaces with `warehouse/.venv/bin/python warehouse/run_config.py env`.
+  Run sfg1120 uses `RUN_TOKEN=sfx-sfg1120-audit`, not the invalid token `sfg1120`.
+- Keep batch, PowerCenter, and Spark evidence separate. Run the audit PC workflow,
+  then the batch chain before snapshotting: PC summary appends would otherwise
+  contaminate the batch baseline. PC proof executes original mappings in a fresh,
+  rollback-only PostgreSQL schema on the same PSVs.
+- Summary IDs follow the owner's explicit date/key contract: starting 50001,
+  `ORDER BY SUMMARY_DT, CUSTOMER_ID NULLS FIRST`. Retain the raw first-seen
+  sequence comparison; mismatches are approved deviations, not raw green parity.
+- Staging archive is not unused: DBQL includes a setup-day `svc_report_recon`
+  `COUNT(*)`. Attach that evidence to all six approved retirements; never remove
+  Spark archive inputs or physically delete data during local board generation.
+- Audit reconciliation reads external users, documents, and billing snapshots.
+  Label these as inputs, not proof of those areas' conversions. Preserve the
+  generic storage reconciliation write before audit BTEQ counts.
+- Spark evidence must include all five fresh audit lake outputs and both JDBC
+  outputs. Check input hashes and output freshness; compaction consumes the
+  converted daily-summary dependency. Keep duplicate multiplicity and UTF-8 byte
+  semantics. Unknown SQL/templates fail closed.
+- Regenerate the board only with `make -o sfx-teradata-up sfx-manifest-board`
+  (`BOARD_ROWS=200 PARITY_TARGET=duckdb`). Do not run a Snowflake preflight for
+  a local-only run. Use `env -u NS` for standalone Informatica tests; nested
+  make may additionally inherit its recipe's NS through MAKEFLAGS.

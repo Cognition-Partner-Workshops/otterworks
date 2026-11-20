@@ -1,3 +1,5 @@
+{{ config(materialized='table') }}
+
 with activity as (
     select
         iff(LOGIN_COUNT > 12, 0, USER_ID) as user_key,

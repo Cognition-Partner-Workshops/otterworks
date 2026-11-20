@@ -5,11 +5,69 @@ _run_sys.path.insert(0, str(_RunPath(__file__).resolve().parents[3]))
 from warehouse.run_config import render as _run_render
 
 import argparse
+from collections import Counter
+import hashlib
 import json
 import re
 from pathlib import Path
 
 from .connection import connect
+from .semantics import char_columns
+
+
+def canonical(value):
+    return json.dumps(value, default=str, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
+
+
+def local_measure(connection, name, padded):
+    schema, table = name.split('.')
+    source = identifier(schema)+'.'+identifier(table)
+    cursor = connection.execute('SELECT * FROM '+source)
+    names = [c[0] for c in cursor.description]
+    expressions = [f'RTRIM({identifier(c)}, \x27 \x27)' if c in padded else identifier(c) for c in names]
+    expressions = [expression+' COLLATE "binary"' if str(info[1]) == 'VARCHAR' else expression
+                   for expression, info in zip(expressions, cursor.description)]
+    rows = connection.execute('SELECT '+', '.join(expressions)+' FROM '+source).fetchall()
+    profiles = {}
+    for column, expression in zip(names, expressions):
+        values = connection.execute(f'SELECT COUNT(*)-COUNT({expression}), MIN({expression}), MAX({expression}), COUNT(DISTINCT {expression}) FROM {source}').fetchone()
+        profiles[column] = dict(zip(('nulls','min','max','distinct'), values))
+    return names, rows, profiles
+
+
+def local_compare(before, after, source, target, sample_size=5, keys=None, approved_decisions=True):
+    padded = char_columns(source)
+    bcols, brows, bp = local_measure(before, source, padded)
+    acols, arows, ap = local_measure(after, target, padded)
+    if not bcols or bcols != acols:
+        raise ValueError('Output column names/order differ')
+    declared_keys = keys is not None
+    keys = bcols[:1] if keys is None else keys
+    if not keys or not set(keys) <= set(bcols):
+        raise ValueError('Comparison keys must name existing columns')
+    indices = [bcols.index(key) for key in keys]
+    def row_key(row):
+        return canonical(tuple(row[index] for index in indices))
+    def digests(rows):
+        return Counter((row_key(row), hashlib.sha256(canonical(row).encode()).hexdigest()) for row in rows)
+    bh, ah = digests(brows), digests(arows)
+    def checksum(values):
+        return hashlib.sha256(canonical(sorted((key,digest,count) for (key,digest),count in values.items())).encode()).hexdigest()
+    delta = (bh-ah) + (ah-bh)
+    samples = []
+    for key in sorted({key for key, digest in delta})[:sample_size]:
+        samples.append({'key': json.loads(key),
+                        'before': sorted((r for r in brows if row_key(r) == key), key=canonical)[:sample_size],
+                        'after': sorted((r for r in arows if row_key(r) == key), key=canonical)[:sample_size]})
+    result = {'row_count': {'before': len(brows), 'after': len(arows)},
+            'comparison_rules': {'trailing_pad_insensitive': padded, 'other_columns': 'exact'},
+            'column_profile': {'before': bp, 'after': ap},
+            'keyed_row_hash': {'keys': keys, 'difference': sum(delta.values()),
+                               'before': checksum(bh), 'after': checksum(ah),
+                               'key_policy': 'contract keys; full-row digest preserves multiplicity' if declared_keys else 'first declared column; full-row digest preserves multiplicity'},
+            'sampled_differences': samples,
+            'passed': len(brows) == len(arows) and canonical(bp) == canonical(ap) and not delta}
+    return result
 
 
 def identifier(value):
