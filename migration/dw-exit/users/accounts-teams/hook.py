@@ -29,7 +29,12 @@ ROOT = GROUP.parents[3]
 INFORMATICA = ROOT / "etl/informatica"
 LANDING = ROOT / "warehouse/landing"
 TABLES = ("APP_USER", "USER_PROFILE", "TEAM", "TEAM_MEMBER", "ROLE_GRANT")
-PC_TABLES = ("STG_APP_USER", "APP_USER", "ROLE_GRANT", "TEAM_MEMBER")
+PC_SOURCE_OUTPUTS = {
+    "STG_APP_USER": "SELECT * FROM sfx_users.stg_app_user",
+    "APP_USER": "SELECT * FROM sfx_users.app_user",
+    "ROLE_GRANT": "SELECT * FROM sfx_users.role_grant",
+    "TEAM_MEMBER": "SELECT * FROM sfx_users.team_member",
+}
 CORE_OUTPUTS = {*TABLES, *("STG_" + table for table in TABLES), "V_TEAM_MEMBERS"}
 MACRO_OUTPUT = "V_M_TEAM_COUNTS_RESULT"
 
@@ -95,10 +100,11 @@ def core_target(after, business_date):
 
 
 def save_pc_result(database, schema, table, rows):
-    database.execute(f"CREATE TABLE {schema}.PC_{table} AS SELECT * FROM {schema}.{table} WHERE FALSE")
-    if rows:
-        columns = ", ".join("?" for _ in rows[0])
-        database.executemany(f"INSERT INTO {schema}.PC_{table} VALUES ({columns})", rows)
+    output = f"{schema}.PC_{table}"
+    database.table(f"{schema}.{table}").limit(0).create(output)
+    relation = database.table(output)
+    for row in rows:
+        relation.insert(row)
 
 
 def powercenter_source(before, dsn, business_date):
@@ -113,7 +119,7 @@ def powercenter_source(before, dsn, business_date):
             for directory in variables.values():
                 if directory.startswith(scratch):
                     Path(directory).mkdir(parents=True, exist_ok=True)
-            for table in PC_TABLES:
+            for table, output_query in PC_SOURCE_OUTPUTS.items():
                 name = "s_m_SFX_" + table
                 params = resolve(param_files, folder, workflow, name)
                 params.update({"$$LOAD_DATE": business_date, "__WORKFLOW__": workflow})
@@ -122,9 +128,7 @@ def powercenter_source(before, dsn, business_date):
                 stats = MappingRun(repo, session, params, variables, {"TD_SFX_EDW": connection}, log).run()
                 if stats.rows_rejected or stats.transformation_errors:
                     raise ValueError(f"{name} reported rejected rows or transformation errors")
-                rows = connection.conn.execute(
-                    sql.SQL("SELECT * FROM {}").format(sql.Identifier("sfx_users", table.lower()))
-                ).fetchall()
+                rows = connection.conn.execute(output_query).fetchall()
                 save_pc_result(before, "SFX_USERS", table, rows)
     finally:
         connection.close(commit=False)
@@ -137,7 +141,7 @@ def powercenter_target(after, business_date):
             for statement in conversion(filename, business_date):
                 if not isinstance(statement, (exp.Transaction, exp.Commit)):
                     after.execute(local_sql(statement))
-        results = {table: after.execute(f"SELECT * FROM USERS.{table}").fetchall() for table in PC_TABLES}
+        results = {table: after.table(f"USERS.{table}").fetchall() for table in PC_SOURCE_OUTPUTS}
     finally:
         after.execute("ROLLBACK")
     for table, rows in results.items():
@@ -146,24 +150,30 @@ def powercenter_target(after, business_date):
 
 def macro_source(before, dsn, business_date):
     with Runner(connection=psycopg.connect(dsn), output=StringIO()) as runner:
-        runner.execute(f"EXEC SFX_USERS.M_TEAM_COUNTS('{business_date}')")
-        if runner.errorcode:
-            raise ValueError(f"Teradata M_TEAM_COUNTS failed with code {runner.errorcode}")
+        call = sql.SQL("EXEC SFX_USERS.M_TEAM_COUNTS({});").format(sql.Literal(business_date))
+        status = runner.run(call.as_string(runner.conn))
+        if status:
+            raise ValueError(f"Teradata M_TEAM_COUNTS failed with code {status}")
         before.execute(
-            f"CREATE TABLE SFX_USERS.{MACRO_OUTPUT} (TEAM_ID BIGINT, TEAM_NAME VARCHAR, MEMBER_COUNT BIGINT)"
+            "CREATE TABLE SFX_USERS.V_M_TEAM_COUNTS_RESULT (TEAM_ID BIGINT, TEAM_NAME VARCHAR, MEMBER_COUNT BIGINT)"
         )
         if runner.rows:
-            before.executemany(f"INSERT INTO SFX_USERS.{MACRO_OUTPUT} VALUES (?, ?, ?)", runner.rows)
+            before.executemany("INSERT INTO SFX_USERS.V_M_TEAM_COUNTS_RESULT VALUES (?, ?, ?)", runner.rows)
 
 
 def macro_target(after, business_date):
     _, function = conversion("40_routines.sql", business_date)
-    body = local_sql(sqlglot.parse_one(function.expression.this, read="snowflake"))
-    name = local_sql(function.this.this)
-    args = ", ".join(arg.this.sql(dialect="duckdb") for arg in function.this.expressions)
+    body = sqlglot.parse_one(function.expression.this, read="snowflake")
+    function.this.set("expressions", [arg.this.copy() for arg in function.this.expressions])
+    function.set("kind", "MACRO")
+    function.set("properties", None)
+    function.set("expression", exp.Anonymous(this="TABLE", expressions=[body]))
     after.execute("CREATE SCHEMA IF NOT EXISTS OPS")
-    after.execute(f"CREATE MACRO {name}({args}) AS TABLE ({body})")
-    after.execute(f"CREATE TABLE USERS.{MACRO_OUTPUT} AS SELECT * FROM {name}(?)", [business_date])
+    after.execute(local_sql(function))
+    after.execute(
+        "CREATE TABLE USERS.V_M_TEAM_COUNTS_RESULT AS SELECT * FROM OPS.SFX_USERS_M_TEAM_COUNTS(?)",
+        [business_date],
+    )
 
 
 def materialize(before, after, ready, errors):
@@ -174,7 +184,7 @@ def materialize(before, after, ready, errors):
     port = os.environ.get("TD_PG_PORT", str(54500 + zlib.crc32(namespace.encode()) % 1000))
     dsn = os.environ.get("BOARD_SOURCE_DSN", f"host=127.0.0.1 port={port} dbname=teradata user=postgres")
     ready.clear()
-    pc_outputs = {"PC_" + table for table in PC_TABLES}
+    pc_outputs = {"PC_" + table for table in PC_SOURCE_OUTPUTS}
     try:
         core_target(after, business_date)
     except (duckdb.Error, sqlglot.errors.SqlglotError, ValueError) as error:
