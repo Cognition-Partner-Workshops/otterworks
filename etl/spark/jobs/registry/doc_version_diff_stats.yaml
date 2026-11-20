@@ -1,8 +1,8 @@
 {
   "job": "doc_version_diff_stats",
   "language": "python",
-  "target": "spark",
-  "status": "legacy",
+  "target": "spark_standard_template",
+  "status": "template",
   "schedule": "25 3 * * *",
   "profile": "small"
 }

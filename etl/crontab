@@ -32,7 +32,6 @@
 22 3 * * * /opt/etl/spark/submit/team_graph_components.sh >> /var/log/etl/spark-team_graph_components.log 2>&1
 23 3 * * * /opt/etl/spark/submit/doc_share_graph_reach.sh >> /var/log/etl/spark-doc_share_graph_reach.log 2>&1
 24 3 * * * /opt/etl/spark/submit/collab_session_sessionize.sh >> /var/log/etl/spark-collab_session_sessionize.log 2>&1
-25 3 * * * /opt/etl/spark/submit/doc_version_diff_stats.sh >> /var/log/etl/spark-doc_version_diff_stats.log 2>&1
 26 3 * * * /opt/etl/spark/submit/file_object_binary_extract.sh >> /var/log/etl/spark-file_object_binary_extract.log 2>&1
 27 3 * * * /opt/etl/spark/submit/audit_archive_resort.sh >> /var/log/etl/spark-audit_archive_resort.log 2>&1
 28 3 * * * /opt/etl/spark/submit/user_pref_json_flatten.sh >> /var/log/etl/spark-user_pref_json_flatten.log 2>&1
