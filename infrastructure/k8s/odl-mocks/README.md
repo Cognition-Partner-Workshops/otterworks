@@ -122,12 +122,14 @@ Local tests: `python -m unittest discover -s scripts/odl -p 'test_*.py' -v`.
 
 Requires Python 3 (standard library only), `kubectl`, Linux `setsid`/`/proc`,
 and cluster credentials authorized to read the tenant JWT Secret and execute
-read-only monitoring queries from the runtime pod. Only **t-odl**, namespace
+read-only monitoring queries from the runtime pod. Reset also requires reading
+the tenant Mongo Secret and dropping the three incident read indexes. Only **t-odl**, namespace
 `otterworks-odl`, and scenario **odl-read-latency** are accepted; tenant/URL
 overrides are deliberately unavailable.
 
 ```sh
 scripts/odl/scenario.sh status odl-read-latency
+scripts/odl/scenario.sh reset odl-read-latency     # replay only: remove responder read indexes
 scripts/odl/scenario.sh arm odl-read-latency       # bounded 1800-second default
 scripts/odl/scenario.sh status odl-read-latency
 scripts/odl/scenario.sh disarm odl-read-latency    # ALWAYS run after the demo
@@ -145,7 +147,7 @@ and drains outstanding requests. PID/readiness/log files live in gitignored
 `scripts/odl/.state/`. Logs contain numeric summaries only. Natural expiry also
 drains; disarm afterward cleans the stale PID. Do not delete state while armed.
 
-This is **load-only**: no indexes, predicates, Mongo data, API configuration,
+Arm/disarm are **load-only**: no indexes, predicates, Mongo data, API configuration,
 resources, alert thresholds or alert hold times are changed. Disarm stops load
 only; there is nothing else to restore. Status prints load identity, recorded
 p95/p99, completed request rate and both latency alert states. With no traffic,
@@ -162,8 +164,8 @@ interval for PagerDuty's resolved delivery.
 
 ### Calibration and before/after gate
 
-Only a **150-second** calibration burst has been run; the full 10-minute hold
-was intentionally not exercised. At the defaults, one burst completed **601
+Initial calibration used a **150-second** burst; the full 10-minute hold
+was intentionally not exercised during calibration. At the defaults, that burst completed **601
 HTTP 200s**, shed 299 dispatches, and drained in **151.9s**. A direct histogram
 query over the burst window measured **3.66 requests/s, p95 9.23s, p99 10s**
 (p99 reaches the top finite histogram bucket, so is not an exact tail timing).
@@ -180,6 +182,42 @@ After gate: deploy the responder's code fix and rerun **the same** load; require
 critical/warning alerts inactive after their windows clear. An idle/NaN graph,
 reduced offered load, changed resources or shortened alert hold does not pass.
 **Always disarm after either gate.**
+
+### Reset for replay
+
+After disarming and draining **all** load generators, run `reset odl-read-latency`
+before replaying the before gate. Reset refuses while a scenario worker is alive
+on this VM, including workers launched from another checkout. Workers on another
+machine cannot be detected through local PID state: stop those on their originating
+machine first. Do not start load concurrently with reset from another checkout.
+
+Reset authenticates using `otterworks-odl/operational-data-layer-mongo` Secret
+credentials in memory/stdin, never argv or logs. It removes only non-unique,
+non-partial compound indexes with exactly `(source_keys.db2_cust_no, _id)`,
+`(source_keys.oracle_account_ids, _id)` or `(source_keys.crm_contact_id, _id)`,
+both fields ascending. Selection uses key patterns and options, not names;
+partial, unique, sparse, custom-collation and all other indexes are preserved.
+Absent indexes are a no-op; ambiguous duplicate patterns are refused before any
+drop. The command prints the indexes before, what it dropped, and the observed
+after-state. It changes no documents, images, rules, monitoring or automation.
+
+If responder code such as PR #3319 is deployed, API startup can recreate these
+indexes. Reset does not disable that code or promise they will stay absent;
+inspect its after-state and deploy the approved pre-incident image separately if
+needed. Reset also does not undo a predicate-based code fix. Do not reset between
+the before and after gates: that would invalidate verification of the fix.
+
+### Frontend monitoring scope
+
+The static Nginx web-app has no Prometheus endpoint: `/metrics` returns the SPA
+HTML. The `odl/web-app.yaml` and `odl-before/web-app.yaml` overlays under
+`infrastructure/helm/tenant-values/` disable only these tenants' web-app
+ServiceMonitors. `scripts/odl/deploy-odl.sh` calls `scripts/deploy-tenant.sh`, which
+automatically passes the matching tenant overlay to Helm. `cd-tenant.yml` already
+defers this repository's `demo-odl` deployments to that wrapper; the generic
+tenant deploy path also loads these overlays. Redeploying either tenant therefore
+keeps the monitor off without changing chart defaults, main, or other tenants.
+The operational-data-layer API's real `/metrics` scrape remains enabled.
 
 The durable responder fix belongs in
 `services/operational-data-layer/odl_sync/api.py`: make the source-key query

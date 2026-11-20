@@ -1,4 +1,5 @@
 import base64
+from copy import deepcopy
 import importlib.util
 import io
 import json
@@ -13,11 +14,28 @@ from unittest.mock import patch
 SPEC = importlib.util.spec_from_file_location('scenario', Path(__file__).with_name('scenario.py'))
 scenario = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(scenario)
+RESET_SPEC = importlib.util.spec_from_file_location('reset_indexes', Path(__file__).with_name('reset_indexes.py'))
+reset_indexes = importlib.util.module_from_spec(RESET_SPEC)
+RESET_SPEC.loader.exec_module(reset_indexes)
+
+
+class IndexCollection:
+    def __init__(self, indexes):
+        self.indexes = deepcopy(indexes)
+        self.dropped = []
+
+    def list_indexes(self):
+        return deepcopy(self.indexes)
+
+    def drop_index(self, name):
+        self.dropped.append(name)
+        self.indexes = [index for index in self.indexes if index['name'] != name]
 
 
 class ScenarioTests(unittest.TestCase):
     def test_cli_refuses_other_scenarios_tenants_and_unbounded_durations(self):
         for args in ([], ['arm', 'main'], ['arm', 'odl'], ['arm', scenario.SCENARIO, 'main'],
+                     ['reset', 'main'], ['reset', 'odl'], ['reset', scenario.SCENARIO, '1'],
                      ['status', scenario.SCENARIO, 'odl'], ['disarm', scenario.SCENARIO, '1'],
                      ['arm', scenario.SCENARIO, '0'], ['arm', scenario.SCENARIO, '1801'],
                      ['arm', scenario.SCENARIO, '-1'], ['arm', scenario.SCENARIO, 'nan']):
@@ -143,6 +161,106 @@ class ScenarioTests(unittest.TestCase):
             with self.assertRaises(scenario.ScenarioError):
                 scenario.arm(150)
         popen.assert_not_called()
+
+    def test_reset_matches_patterns_not_names_and_preserves_every_other_index(self):
+        protected = [{'name': '_id_', 'key': {'_id': 1}}]
+        targets = []
+        for number, pattern in enumerate(reset_indexes.PATTERNS):
+            key = dict(pattern)
+            targets.append({'name': f'arbitrary-name-{number}', 'key': key})
+            protected.extend([
+                {'name': f'partial-{number}', 'key': key, 'partialFilterExpression': {pattern[0][0]: {'$exists': True}}},
+                {'name': f'unique-{number}', 'key': key, 'unique': True},
+                {'name': f'sparse-{number}', 'key': key, 'sparse': True},
+                {'name': f'collation-{number}', 'key': key, 'collation': {'locale': 'en'}},
+                {'name': f'loader-{number}', 'key': {pattern[0][0]: 1}, 'unique': True,
+                 'partialFilterExpression': {pattern[0][0]: {'$type': 'string'}}},
+                {'name': f'single-{number}', 'key': {pattern[0][0]: 1}},
+                {'name': f'extra-{number}', 'key': {**key, 'other': 1}},
+                {'name': f'descending-{number}', 'key': {pattern[0][0]: -1, '_id': 1}},
+                {'name': f'reversed-{number}', 'key': dict(reversed(pattern))}])
+        protected.append({'name': 'source_keys.db2_cust_no_1__id_1', 'key': {'match.status': 1, '_id': 1}})
+        collection = IndexCollection(protected + targets)
+        result = reset_indexes.reset_indexes(collection)
+        self.assertEqual(result['before'], protected + targets)
+        self.assertEqual(result['dropped'], targets)
+        self.assertEqual(result['after'], protected)
+        self.assertEqual(collection.dropped, [index['name'] for index in targets])
+        self.assertEqual(reset_indexes.reset_indexes(collection)['dropped'], [])
+        self.assertEqual(collection.indexes, protected)
+
+    def test_reset_empty_and_ambiguous_patterns(self):
+        self.assertEqual(reset_indexes.reset_indexes(IndexCollection([])),
+                         {'before': [], 'dropped': [], 'after': []})
+        collection = IndexCollection([{'name': name, 'key': dict(reset_indexes.PATTERNS[0])}
+                                      for name in ('first', 'second')])
+        with self.assertRaisesRegex(ValueError, 'Ambiguous'):
+            reset_indexes.reset_indexes(collection)
+        self.assertEqual(collection.dropped, [])
+
+    def test_reset_refuses_running_load_before_reading_credentials(self):
+        with patch.object(scenario, 'local_load_running', return_value=True), patch.object(scenario, 'kubectl') as kube:
+            with self.assertRaisesRegex(scenario.ScenarioError, 'disarm and drain'):
+                scenario.reset()
+        kube.assert_not_called()
+
+    def test_reset_uses_tenant_secret_over_stdin_and_reports_after_state(self):
+        secret = json.dumps({'data': {k: base64.b64encode(v.encode()).decode()
+                                     for k, v in {'username': 'fixture-user', 'password': 'private-value'}.items()}})
+        report = {'before': [], 'dropped': [{'key': dict(reset_indexes.PATTERNS[0])}], 'after': []}
+        with patch.object(scenario, 'local_load_running', return_value=False), \
+                patch.object(scenario, 'kubectl', side_effect=[secret, json.dumps(report)]) as kube, \
+                patch('sys.stdout', new_callable=io.StringIO) as output:
+            scenario.reset()
+        self.assertEqual(kube.call_args_list[0].args,
+                         ('get', 'secret', 'operational-data-layer-mongo', '-o', 'json'))
+        self.assertEqual(kube.call_args.args[:7],
+                         ('exec', '-i', 'deployment/operational-data-layer', '--', 'python', '-c',
+                          (scenario.HERE / 'reset_indexes.py').read_text()))
+        self.assertEqual(json.loads(kube.call_args.kwargs['input'])['password'], 'private-value')
+        self.assertNotIn('private-value', str(kube.call_args.args) + output.getvalue())
+        self.assertEqual(json.loads(output.getvalue()), report)
+        self.assertEqual(tuple(json.loads(output.getvalue())['dropped'][0]['key'].items()), reset_indexes.PATTERNS[0])
+
+    def test_reset_empty_credentials_and_cluster_failure_are_safe(self):
+        secret = {'data': {'username': '', 'password': ''}}
+        with patch.object(scenario, 'local_load_running', return_value=False), \
+                patch.object(scenario, 'kubectl', return_value=json.dumps(secret)) as kube:
+            with self.assertRaisesRegex(scenario.ScenarioError, 'credentials are empty'):
+                scenario.reset()
+        self.assertEqual(kube.call_count, 1)
+        result = subprocess.CompletedProcess([], 1, stdout='private-value', stderr='private-value')
+        with patch.object(scenario, 'local_load_running', return_value=False), \
+                patch.object(scenario.subprocess, 'run', return_value=result), \
+                patch('sys.stdout', new_callable=io.StringIO) as output:
+            with self.assertRaises(scenario.ScenarioError) as raised:
+                scenario.reset()
+        self.assertNotIn('private-value', str(raised.exception) + output.getvalue())
+
+    def test_reset_detects_workers_in_another_checkout_and_ignores_dead_workers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            proc = Path(directory) / '123'
+            proc.mkdir()
+            (proc / 'cmdline').write_bytes(b'python\0/another/scripts/odl/scenario.py\0--worker\0marker\0')
+            with patch.object(scenario, 'running', return_value=False), \
+                    patch.object(Path, 'iterdir', return_value=iter([proc])), \
+                    patch.object(scenario, 'process_start', return_value='42'):
+                self.assertTrue(scenario.local_load_running())
+            with patch.object(scenario, 'running', return_value=False), \
+                    patch.object(Path, 'iterdir', return_value=iter([proc])), \
+                    patch.object(scenario, 'process_start', side_effect=ProcessLookupError()):
+                self.assertFalse(scenario.local_load_running())
+            (proc / 'cmdline').write_bytes(b'python\0/another/unrelated.py\0--worker\0marker\0')
+            with patch.object(scenario, 'running', return_value=False), \
+                    patch.object(Path, 'iterdir', return_value=iter([proc])):
+                self.assertFalse(scenario.local_load_running())
+        with patch.object(scenario, 'running', return_value=True):
+            self.assertTrue(scenario.local_load_running())
+
+    def test_reset_cli_dispatch(self):
+        with patch.object(scenario, 'locked'), patch.object(scenario, 'reset') as reset:
+            scenario.main(['reset', scenario.SCENARIO])
+        reset.assert_called_once_with()
 
 
 if __name__ == '__main__':
