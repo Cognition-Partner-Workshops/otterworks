@@ -4,7 +4,8 @@ import hashlib
 import json
 from pathlib import Path
 
-from .ladder import canonical
+from .ladder import canonical, local_measure
+from .semantics import char_columns
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -15,9 +16,8 @@ def decision():
 
 def display_names(before, after, source, target):
     def read(db, relation):
-        quoted = '.'.join('"'+part.replace('"', '""')+'"' for part in relation.split('.'))
-        cursor = db.execute('SELECT * FROM '+quoted)
-        return [c[0] for c in cursor.description], cursor.fetchall()
+        columns, rows, _ = local_measure(db, relation, char_columns(source))
+        return columns, rows
     columns, old = read(before, source)
     new_columns, new = read(after, target)
     proof = dict(decision_id=decision()['decision_id'], scope_valid=False,
@@ -53,7 +53,9 @@ def apply(row, proofs):
     if row['name'] not in approval['board_objects'] or approval['status'] != 'approved':
         return
     row['owner_decision_evidence'] = proofs
-    if not proofs or not all(p['scope_valid'] for p in proofs):
+    if row.get('row_count') is None or not proofs or not all(p['scope_valid'] for p in proofs):
+        return
+    if not any(p.get('differing_rows', 0) for p in proofs):
         return
     row.update(measurement_status=row['status'], status='approved_deviation',
                decision_state='approved', reason=approval['new_behaviour'])

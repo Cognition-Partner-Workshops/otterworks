@@ -112,6 +112,8 @@ def test_users_ddl_matches_source_columns_widths_and_collations():
         for column, kind, width, rest in definitions:
             rendered = columns[column].sql(dialect='snowflake')
             if width:
+                if name == 'APP_USER' and column == 'DISPLAY_NAME':
+                    width = '200'
                 assert 'VARCHAR('+width+')' in rendered
                 assert ("COLLATE 'en-ci-rtrim'" in rendered) == ('NOT CASESPECIFIC' in rest)
             assert ('NOT NULL' in rendered) == ('NOT NULL' in rest)
@@ -188,8 +190,9 @@ def test_users_implicit_source_truncation_remains_a_measured_mismatch():
             rows = object_board.build_board({'objects':objects},before,after,ready)['rows']
             assert len(rows) == 4
             for row in rows:
-                assert row['local_duckdb'] == 'red'
-                assert row['reason'] == 'measured parity mismatch'
+                assert row['local_duckdb'] == ('red' if row['kind'] in ('mapping','session') else 'approved_deviation')
+                assert row['measurement_status'] == 'red'
+                assert row['decision_state'] == 'approved'
                 assert row['sampled_differences']['SFX_USERS.APP_USER']
         finally:
             after.close()

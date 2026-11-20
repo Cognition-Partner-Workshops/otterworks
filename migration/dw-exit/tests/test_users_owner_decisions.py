@@ -23,3 +23,12 @@ def test_display_scope_fails_closed(change):
             db.execute("CREATE SCHEMA USERS; CREATE TABLE USERS.APP_USER AS SELECT 1 USER_ID, repeat('x',60) DISPLAY_NAME, 'mail' EMAIL")
         after.execute(change)
         assert not owner_decisions.display_names(before,after,'USERS.APP_USER','USERS.APP_USER')['scope_valid']
+
+
+@pytest.mark.parametrize('complete,valid,expected', [(True,True,'approved_deviation'),(False,True,'red'),(True,False,'red')])
+def test_owner_application_requires_complete_scoped_measurement(complete, valid, expected):
+    row = dict(name='SFX_USERS.APP_USER',status='red',row_count={'before':1,'after':1} if complete else None)
+    owner_decisions.apply(row,[dict(scope_valid=valid,differing_rows=1)])
+    assert row['status'] == expected
+    if expected == 'approved_deviation':
+        assert row['measurement_status'] == 'red'

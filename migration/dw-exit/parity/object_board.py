@@ -293,15 +293,17 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         if target == 'duckdb' and obj['subject_area'] == 'users' and obj['kind'] in ('mapping','session') and pc_results is not None:
             proof = pc_results[mapping]
             decision_proofs = [proof['owner_decision']] if 'owner_decision' in proof else []
+            if mapping == 'm_SFX_APP_USER' and proof.get('snowpark_local'):
+                decision_proofs.append(proof['snowpark_local']['input_owner_decision'])
             local['bteq_relation_measurement'] = {k: local.get(k) for k in
                 ('status','reason','row_count','column_profile','keyed_row_hash','sampled_differences','comparison_rules')}
             local.update(status=proof['status'],reason=proof['reason'],powercenter=proof,
-                       measurement_basis='actual PowerCenter runner targets vs shipped dbt model on captured inputs')
+                       measurement_basis='actual PowerCenter runner targets vs '+('Snowpark local_testing handler' if proof.get('snowpark_local') else 'shipped dbt model')+' on captured inputs')
             measurement = proof['measurement']
             for field in ('row_count','column_profile','keyed_row_hash','sampled_differences','comparison_rules'):
                 local[field] = None if measurement is None else (measurement[field] if field == 'row_count' else
                     {'SFX_USERS.'+pc_users.MAPPINGS[mapping]:measurement[field]})
-            if mapping == 'm_SFX_APP_USER':
+            if mapping == 'm_SFX_APP_USER' and not proof.get('snowpark_local'):
                 local.update(status='red',reason='Held on APP_USER display-name truncation decision; isolated PC/dbt proof has hash_difference=0 and does not clear the escalation' if measurement and measurement['keyed_row_hash']['difference'] == 0 else 'Held on APP_USER display-name truncation decision; see independent PC/dbt proof for current measurements')
         if target == 'duckdb' and obj['subject_area'] == 'users' and obj['target_type'] == 'retire':
             approved = (obj['name'] in retirement_users.DEAD | retirement_users.DEPENDENTS
@@ -314,7 +316,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         row['targets'] = {'duckdb': local, 'snowflake': unavailable_cell(SNOWFLAKE_DISABLED)}
         row.update(local)
         owner_decisions.apply(row, decision_proofs)
-        if row.get('decision_state') == 'approved' and mapping == 'm_SFX_APP_USER':
+        if row.get('decision_state') == 'approved' and mapping == 'm_SFX_APP_USER' and not (pc_results or {}).get(mapping, {}).get('snowpark_local'):
             row.update(input_deviation_status='approved_deviation',status='red',
                        reason='Display-name input deviation approved; TRANSFORM.M_SFX_APP_USER implementation not yet proved')
         local.update({k:v for k,v in row.items() if k in ('status','reason','owner_decision_evidence','measurement_status','decision_state','input_deviation_status')})
@@ -332,6 +334,7 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
         licence_by_system=dict(Counter(r['licence_dependency'] for r in rows if r['licence_dependency']!='none')))
     users = [r for r in rows if r['subject_area'] == 'users']
     result['summary']['users'] = dict(local_green=sum(r['status'] == 'green' for r in users),
+        local_approved_deviation=sum(r['status'] == 'approved_deviation' for r in users),
         local_red=sum(r['status'] == 'red' for r in users),
         local_retire_verified=sum(r['status'] == 'retire_verified' for r in users), snowflake='red')
     return result
@@ -340,7 +343,8 @@ def build_board(manifest, before=None, after=None, available=None, errors=None, 
 def render_readme(board):
     def count_row(label, counts):
         cells = [f"{counts[target]['green']} green / {counts[target]['red']} red" +
-                 (f" / {counts[target]['retire_verified']} retire_verified" if counts[target].get('retire_verified') else '') for target in TARGETS]
+                 (f" / {counts[target]['retire_verified']} retire_verified" if counts[target].get('retire_verified') else '') +
+                 (f" / {counts[target]['approved_deviation']} approved_deviation" if counts[target].get('approved_deviation') else '') for target in TARGETS]
         return '| ' + ' | '.join([label, *cells]) + ' |'
 
     def escape(value):
@@ -411,7 +415,12 @@ def main():
         if args.target == 'duckdb' and manifest['objects'] and (pc_users.OUT/'capture.json').exists():
             try:
                 pc_results, pc_evidence = pc_users.proofs(ns, ROOT/'warehouse/landing', os.environ.get('BUSINESS_DATE','20261109'))
-            except (OSError, ValueError, duckdb.Error) as error:
+                from parity import snowpark_users
+                proof = snowpark_users.proof(ns, ROOT/'warehouse/landing', os.environ.get('BUSINESS_DATE','20261109'))
+                pc_results['m_SFX_APP_USER'] = dict(status=proof['status'],
+                    reason=None if proof['status'] == 'green' else 'Snowpark local / actual PC mismatch',
+                    measurement=proof['measurement'], owner_decision=proof['owner_decision'], snowpark_local=proof)
+            except (OSError, ValueError, duckdb.Error, ImportError) as error:
                 pc_results = {m:dict(status='red', reason='PC evidence unavailable: '+str(error), measurement=None) for m in pc_users.MAPPINGS}
         payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters,pc_results=pc_results)
         if pc_evidence is not None:

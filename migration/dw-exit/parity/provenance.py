@@ -112,7 +112,8 @@ def provenance(obj):
         result['converted'] = {'SFX_USERS.'+table:[link(p) for p in paths]}
         result['conversion_note'] = 'PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output'
         if table == 'APP_USER':
-            result['conversion_note'] += '; no TRANSFORM.M_SFX_APP_USER Snowpark implementation found; APP_USER remains stopped'
+            result['converted']['TRANSFORM.M_SFX_APP_USER'] = [link('warehouse/snowpark/m_sfx_app_user.py')]
+            result['conversion_note'] += '; Snowpark handler measured with local_testing=True, not live Snowflake'
     if obj.get('subject_area') == 'users':
         if obj['target_type'] == 'retire':
             path = Path('migration/dw-exit/manifest.yaml')
@@ -139,7 +140,8 @@ def markdown(rows, subject='billing'):
     billing = [row for row in rows if row['subject_area'] == subject]
     green = sum(row['local_duckdb'] == 'green' for row in billing)
     retired = sum(row['local_duckdb'] == 'retire_verified' for row in billing)
-    counts = (f'Local DuckDB: {green} green / {retired} retire_verified / {len(billing)-green-retired} red (retirement evidence is not green-migrated).'
+    deviations = sum(row['local_duckdb'] == 'approved_deviation' for row in billing)
+    counts = (f'Local DuckDB: {green} green / {deviations} approved_deviation / {retired} retire_verified / {len(billing)-green-retired-deviations} red (retirement evidence is not green-migrated).'
               if subject == 'users' else f'Local DuckDB: {green} green / {len(billing)-green} red (including unmeasured outputs).')
     lines = ['\n## '+subject.title()+' parity provenance', '',
              counts,
