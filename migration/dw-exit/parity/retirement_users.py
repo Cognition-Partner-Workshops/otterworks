@@ -8,7 +8,7 @@ import assess
 ROOT = Path(__file__).resolve().parents[3]
 DEAD = {'SFX_USERS.USER_PREF', 'SFX_USERS.V_USER_SETTINGS'}
 DEPENDENTS = {'SFX_USERS.STG_USER_PREF', 'users_user_pref'}
-CAVEAT = 'Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten; no deletion or cutover approval'
+CAVEAT = 'Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten; owner-approved retirement, no physical deletion by board generation'
 
 
 def verify(root=ROOT):

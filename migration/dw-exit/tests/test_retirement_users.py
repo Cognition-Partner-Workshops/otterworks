@@ -61,11 +61,14 @@ def test_retirement_board_is_not_migrated_or_live_green(monkeypatch, passed):
     monkeypatch.setattr(retirement_users, 'verify', lambda: dict(passed=passed, reason='current check'))
     board = object_board.build_board(manifest)
     assert board['summary']['users']['local_green'] == 0
-    assert board['summary']['users']['local_retire_verified'] == (4 if passed else 0)
+    assert board['summary']['users']['local_retired'] == (4 if passed else 0)
     assert board['summary']['users']['local_red'] == (0 if passed else 4)
     assert board['summary']['migrated'] == 0
     for row in board['rows']:
-        assert row['local_duckdb'] == ('retire_verified' if passed else 'red')
+        assert row['local_duckdb'] == ('retired' if passed else 'red')
+        if passed:
+            assert row['retirement_evidence']['decision_id'] == 'sfg1120-user-pref-retirement'
+            assert row['retirement_evidence']['owner_approved'] is True
         assert row['snowflake'] == 'red'
         assert row['row_count'] is None and row['keyed_row_hash'] is None
         assert row['migration_status'] == 'not_started'
@@ -75,7 +78,7 @@ def test_retirement_board_is_not_migrated_or_live_green(monkeypatch, passed):
         assert 'retirement_absence' in metrics and 'retirement_propagation' in metrics
         assert 'retirement_objectusage.csv' in metrics
     markdown = provenance.markdown(board['rows'], 'users')
-    assert 'retire_verified' in markdown and 'USER_PREF/PREF_JSON' in markdown
+    assert 'retired' in markdown and 'USER_PREF/PREF_JSON' in markdown
     if passed:
         manifest['dead'] = []
         assert all(r['status'] == 'red' for r in object_board.build_board(manifest)['rows']

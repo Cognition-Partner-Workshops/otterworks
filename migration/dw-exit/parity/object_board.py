@@ -310,7 +310,7 @@ def unavailable_cell(reason=None):
 
 def parity_counts(rows):
     return {target: {status: sum(row['targets'][target]['status'] == status for row in rows)
-                     for status in ('green', 'red', 'retire_verified', 'approved_deviation')
+                     for status in ('green', 'red', 'retired', 'approved_deviation')
                      if status in ('green','red') or any(row['targets'][target]['status'] == status for row in rows)} for target in TARGETS}
 
 
@@ -386,9 +386,14 @@ def users_build_board(manifest, before=None, after=None, available=None, errors=
             approved = (obj['name'] in retirement_users.DEAD | retirement_users.DEPENDENTS
                         and obj['name'] in manifest.get('dead' if obj['name'] in retirement_users.DEAD else 'dead_dependents', [])
                         and retire_evidence['passed'])
-            local.update(status='retire_verified' if approved else 'red', retirement_evidence=retire_evidence,
+            local.update(status='red', retirement_evidence=retire_evidence,
                        reason=(retire_evidence['reason'] if approved else 'Retirement evidence failed or manifest declaration disagrees')+'; '+retirement_users.CAVEAT,
                        row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None)
+            if approved:
+                retirement = dict(local, name=row['name'])
+                apply_retirement(retirement, obj, approved_retirements())
+                local.update(retirement)
+                local['retirement_evidence']['dbql'] = retire_evidence
 
         row['targets'] = {'duckdb': local, 'snowflake': unavailable_cell(SNOWFLAKE_DISABLED)}
         row.update(local)
@@ -413,14 +418,14 @@ def users_build_board(manifest, before=None, after=None, available=None, errors=
     result['summary']['users'] = dict(local_green=sum(r['status'] == 'green' for r in users),
         local_approved_deviation=sum(r['status'] == 'approved_deviation' for r in users),
         local_red=sum(r['status'] == 'red' for r in users),
-        local_retire_verified=sum(r['status'] == 'retire_verified' for r in users), snowflake='red')
+        local_retired=sum(r['status'] == 'retired' for r in users), snowflake='red')
     return result
 
 
 def render_readme(board):
     def count_row(label, counts):
         cells = [f"{counts[target]['green']} green / {counts[target]['red']} red" +
-                 (f" / {counts[target]['retire_verified']} retire_verified" if counts[target].get('retire_verified') else '') +
+                 (f" / {counts[target]['retired']} retired" if counts[target].get('retired') else '') +
                  (f" / {counts[target]['approved_deviation']} approved_deviation" if counts[target].get('approved_deviation') else '') for target in TARGETS]
         return '| ' + ' | '.join([label, *cells]) + ' |'
 

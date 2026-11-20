@@ -49,7 +49,10 @@ def approved_char_padding():
 
 def approved_retirements():
     return [decision for decision in json.loads((ROOT/'migration/dw-exit/audit/decisions.json').read_text())
-            if decision.get('status') == 'approved' and decision.get('action') == 'retire']
+            if decision.get('status') == 'approved' and decision.get('action') == 'retire'] + [
+                decision for decision in SFG1120_DECISIONS
+                if decision['decision_id'] == 'sfg1120-user-pref-retirement'
+                and decision['status'] == 'approved']
 
 
 def approved_summary_ids():
@@ -85,6 +88,13 @@ def retirement_dbql():
 
 def apply_retirement(row, obj, decisions):
     for decision in decisions:
+        if (obj.get('subject_area') == 'users' and obj.get('target_type') == 'retire'
+                and decision.get('decision_id') == 'sfg1120-user-pref-retirement'
+                and decision.get('status') == 'approved'
+                and row['name'] in decision.get('board_objects', [])):
+            row.update(status='retired', decision_state='approved', reason=decision['new_behaviour'],
+                       retirement_evidence={'decision_id': decision['decision_id'], 'owner_approved': True,
+                                            'manifest_target': 'retire', 'preserve': decision['preserve']})
         if (obj.get('subject_area') == 'audit' and obj.get('target_type') == 'retire'
                 and decision.get('decision_id') == 'audit-archive-retirement'
                 and decision.get('status') == 'approved'

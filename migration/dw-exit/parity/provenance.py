@@ -217,9 +217,9 @@ def users_provenance(obj):
 def markdown(rows, subject='billing'):
     billing = [row for row in rows if row['subject_area'] == subject]
     green = sum(row['local_duckdb'] == 'green' for row in billing)
-    retired = sum(row['local_duckdb'] == 'retire_verified' for row in billing)
+    retired = sum(row['local_duckdb'] == 'retired' for row in billing)
     deviations = sum(row['local_duckdb'] == 'approved_deviation' for row in billing)
-    counts = (f'Local DuckDB: {green} green / {deviations} approved_deviation / {retired} retire_verified / {len(billing)-green-retired-deviations} red (retirement evidence is not green-migrated).'
+    counts = (f'Local DuckDB: {green} green / {deviations} approved_deviation / {retired} retired / {len(billing)-green-retired-deviations} red (retirement evidence is not green-migrated).'
               if subject == 'users' else f'Local DuckDB: {green} green / {len(billing)-green} red (including unmeasured outputs).')
     lines = ['\n## '+subject.title()+' parity provenance', '',
              counts,
@@ -227,7 +227,7 @@ def markdown(rows, subject='billing'):
              'These are separate evidence legs; local green does not imply live Snowflake parity.', '',
              '| Object | Local DuckDB | Snowflake | Source | Converted producers | Metrics |', '|---|---|---|---|---|---|']
     if subject == 'users':
-        lines[6:6] = ['Retirement checks use current checked-out DBQL, 2026-08-12–2026-11-09, and dead-dependent propagation; failure returns red. Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten. No deletion/cutover approval.', '']
+        lines[6:6] = ['Retirement checks use current checked-out DBQL, 2026-08-12–2026-11-09, and dead-dependent propagation; failure returns red. Keep the independent Spark USER_PREF/PREF_JSON landing feed for user_pref_json_flatten. Owner-approved retirement; board generation performs no deletion or cutover.', '']
     def anchors(entries):
         return '<br>'.join(f"[{e['file']}:{e['start_line']}–{e['end_line']}]({e['url']})" for e in entries)
     for row in rows:
