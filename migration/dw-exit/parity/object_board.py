@@ -20,6 +20,10 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'migration/dw-exit/tools'))
 from warehouse.run_config import RunConfig
 from assess import board as wave_board
+from assess import build
+
+TARGETS = ('duckdb', 'snowflake')
+SNOWFLAKE_DISABLED = 'Snowflake login down; execution disabled'
 
 
 def quote(name):
@@ -184,66 +188,116 @@ def materialize(before, names, conversion_dir):
     return after, ready, errors
 
 
+def unavailable_cell(reason=None):
+    return dict(status='red', reason=reason, row_count=None, column_profile=None,
+                keyed_row_hash=None, sampled_differences=None)
+
+
+def parity_counts(rows):
+    return {target: {status: sum(row['targets'][target]['status'] == status for row in rows)
+                     for status in ('green', 'red')} for target in TARGETS}
+
+
 def build_board(manifest, before=None, after=None, available=None, errors=None, target='duckdb', counters=None):
-    if target not in ('duckdb', 'snowflake'):
+    if target not in TARGETS:
         raise ValueError('Unsupported parity target')
     objects = manifest['objects']
     result = wave_board(objects, counters or {})
-    result.update(run_token=RunConfig.from_env().token, target=target, rows=[])
+    result.update(run_token=RunConfig.from_env().token, rows=[])
     result['measurement_contract'] = {'source': 'PostgreSQL Teradata emulator snapshot',
         'local_target': 'DuckDB', 'conversions': ['billing/initial/10_load.sql','billing/initial/30_views.sql'],
         'non_relational_objects': 'declared output relations', 'migration_state': 'BEFORE'}
     available, errors = set(available or ()), errors or {}
     for obj in objects:
         row = {key:obj[key] for key in ('id','name','kind','wave','owner','subject_area','licence_dependency')}
-        row.update(status='red', migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'),
-                   row_count=None, column_profile=None, keyed_row_hash=None, sampled_differences=None, reason=None)
+        row.update(migration_status='not_started', licence_dependency_count=int(obj['licence_dependency'] != 'none'))
+        local = unavailable_cell()
         if obj['system'] == 'spark':
             if obj.get('source') and (ROOT / obj['source']).is_file():
                 row.update(source=obj['source'], source_ref=obj.get('source_ref'))
-                row['reason'] = 'Spark source available; output not materialized locally'
+                local['reason'] = 'Spark source available; output not materialized locally'
             else:
-                row['reason'] = 'source on Spark baseline PR'
+                local['reason'] = 'source on Spark baseline PR'
         elif target == 'snowflake':
-            row['reason'] = 'Snowflake target selected; execution disabled'
+            local['reason'] = 'Snowflake target selected; execution disabled'
         elif not obj.get('output_relations'):
-            row['reason'] = 'no declared output relation'
+            local['reason'] = 'no declared output relation'
         else:
             measured = {}
             for source in obj['output_relations']:
                 destination = source.removeprefix('SFX_')
                 if destination not in available:
-                    row['reason'] = errors.get(destination, errors.get('*', 'output not materialized: '+destination))
+                    local['reason'] = errors.get(destination, errors.get('*', 'output not materialized: '+destination))
                     break
                 try:
                     measured[source] = compare(before, after, source, destination)
                 except (duckdb.Error, ValueError) as error:
-                    row['reason'] = 'measurement failed: '+str(error).splitlines()[0]
+                    local['reason'] = 'measurement failed: '+str(error).splitlines()[0]
                     break
-            if row['reason'] is None:
-                row['row_count'] = {side:sum(r['row_count'][side] for r in measured.values()) for side in ('before','after')}
+            if local['reason'] is None:
+                local['row_count'] = {side:sum(r['row_count'][side] for r in measured.values()) for side in ('before','after')}
                 for field in ('column_profile','keyed_row_hash','sampled_differences'):
-                    row[field] = {name:values[field] for name,values in measured.items()}
-                row['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
-                if row['status'] == 'red':
-                    row['reason'] = 'measured parity mismatch'
+                    local[field] = {name:values[field] for name,values in measured.items()}
+                local['status'] = 'green' if all(r['passed'] for r in measured.values()) else 'red'
+                if local['status'] == 'red':
+                    local['reason'] = 'measured parity mismatch'
+        row['targets'] = {'duckdb': local, 'snowflake': unavailable_cell(SNOWFLAKE_DISABLED)}
+        row.update(local)
         result['rows'].append(row)
-    total = sum(r['licence_dependency_count'] for r in result['rows'])
-    result['summary'] = dict(rows=len(objects), red=sum(r['status']=='red' for r in result['rows']),
-        green=sum(r['status']=='green' for r in result['rows']), measured=sum(r['row_count'] is not None for r in result['rows']),
+    rows = result['rows']
+    targets = parity_counts(rows)
+    areas = {area: parity_counts([r for r in rows if r['subject_area'] == area])
+             for area in sorted({r['subject_area'] for r in rows})}
+    total = sum(r['licence_dependency_count'] for r in rows)
+    result['summary'] = dict(rows=len(rows), **targets['duckdb'], targets=targets, by_subject_area=areas,
+        measured=sum(r['targets']['duckdb']['row_count'] is not None for r in rows),
         migrated=0, licence_remaining=total, licence_total=total,
-        licence_by_system=dict(Counter(r['licence_dependency'] for r in result['rows'] if r['licence_dependency']!='none')))
+        licence_by_system=dict(Counter(r['licence_dependency'] for r in rows if r['licence_dependency']!='none')))
     return result
+
+
+def render_readme(board):
+    def count_row(label, counts):
+        cells = [f"{counts[target]['green']} green / {counts[target]['red']} red" for target in TARGETS]
+        return '| ' + ' | '.join([label, *cells]) + ' |'
+
+    def escape(value):
+        return str(value).replace('|', r'\|')
+
+    summary = board['summary']
+    lines = ['# Migration board', '', '## Parity by subject area', '',
+             'An object counts as green only when its DuckDB column is green.',
+             SNOWFLAKE_DISABLED + '.', '',
+             '| Subject area | DuckDB | Snowflake |', '|---|---:|---:|',
+             count_row('**Total**', summary['targets'])]
+    lines.extend(count_row(escape(area), counts) for area, counts in summary['by_subject_area'].items())
+    lines += ['', '## Object parity', '', 'See [board.json](board.json) for reasons and measurement evidence.', '',
+              '| Object | Subject area | DuckDB | Snowflake |', '|---|---|---|---|']
+    for row in board['rows']:
+        cells = [row['targets'][target]['status'] for target in TARGETS]
+        lines.append('| ' + ' | '.join([escape(row['name']), escape(row['subject_area']), *cells]) + ' |')
+    waves = list(board['waves'].values())
+    lines += ['', '## Waves', '', '| Count | Wave 1 | Wave 2 | Wave 3 | Wave 4 |',
+              '|---|---:|---:|---:|---:|', '| Total | ' + ' | '.join(str(w['total']) for w in waves) + ' |']
+    for field in ('by_kind', 'by_target'):
+        for key in sorted({k for w in waves for k in w[field]}):
+            lines.append(f'| {field}: {key} | ' + ' | '.join(str(w[field].get(key, 0)) for w in waves) + ' |')
+    lines += ['', '## Licence counters', '', '| Counter | Remaining | Target |', '|---|---:|---:|']
+    lines.extend(f"| {k} | {v['remaining']} | {v['target']} |"
+                 for k, v in board['licence_counters'].items() if 'remaining' in v)
+    lines += ['', 'All objects remain not_started. Parity measurements do not migrate or retire objects.', '']
+    return '\n'.join(lines)
 
 
 def main():
     parser = argparse.ArgumentParser()
+    default_output = ROOT/'migration/dw-exit/board/board.json'
     parser.add_argument('--manifest',type=Path,default=ROOT/'migration/dw-exit/manifest.yaml')
-    parser.add_argument('--output',type=Path,default=ROOT/'migration/dw-exit/board/board.json')
-    parser.add_argument('--target',choices=['duckdb','snowflake'],default=os.environ.get('PARITY_TARGET','duckdb'))
+    parser.add_argument('--output',type=Path,default=default_output)
+    parser.add_argument('--target',choices=TARGETS,default=os.environ.get('PARITY_TARGET','duckdb'),
+                        help='Build both columns; snowflake is a legacy offline mode that skips DuckDB measurement')
     args = parser.parse_args()
     manifest = yaml.safe_load(args.manifest.read_text())
-    from assess import build
     counters = build()['counters']
     before = after = None
     ready, errors = set(), {}
@@ -258,6 +312,8 @@ def main():
             errors.update(source_errors)
         payload = build_board(manifest,before,after,ready,errors,target=args.target,counters=counters)
         args.output.write_text(json.dumps(payload,indent=2,default=str)+'\n')
+        if args.output.resolve() == default_output:
+            default_output.with_name('README.md').write_text(render_readme(payload))
         print(json.dumps(payload['summary'],sort_keys=True))
     finally:
         if before is not None:
