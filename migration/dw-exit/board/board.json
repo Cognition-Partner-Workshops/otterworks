@@ -119,9 +119,17 @@
               "end_line": 8,
               "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfg1120-users/warehouse/dbt/models/pc/content/pc_content__app_user.sql#L1-L8"
             }
+          ],
+          "TRANSFORM.M_SFX_APP_USER": [
+            {
+              "file": "warehouse/snowpark/m_sfx_app_user.py",
+              "start_line": 1,
+              "end_line": 22,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfg1120-users/warehouse/snowpark/m_sfx_app_user.py#L1-L22"
+            }
           ]
         },
-        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output; no TRANSFORM.M_SFX_APP_USER Snowpark implementation found; APP_USER remains stopped",
+        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output; Snowpark handler measured with local_testing=True, not live Snowflake",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -145,8 +153,8 @@
       },
       "targets": {
         "duckdb": {
-          "status": "red",
-          "reason": "Held on APP_USER display-name truncation decision; isolated PC/dbt proof has hash_difference=0 and does not clear the escalation",
+          "status": "approved_deviation",
+          "reason": "User display names are widened to 200 characters.",
           "row_count": {
             "before": 120,
             "after": 120
@@ -531,9 +539,132 @@
               },
               "sampled_differences": [],
               "passed": true
+            },
+            "owner_decision": {
+              "decision_id": "users-display-name-200",
+              "scope_valid": true,
+              "before_count": 120,
+              "after_count": 120,
+              "differing_rows": 0,
+              "other_columns_hash_equal": true,
+              "legacy_prefix_valid": true
+            },
+            "snowpark_local": {
+              "status": "green",
+              "measurement": {
+                "row_count": {
+                  "before": 120,
+                  "after": 120
+                },
+                "comparison_rules": {
+                  "trailing_pad_insensitive": [
+                    "STATUS_CD"
+                  ],
+                  "other_columns": "exact"
+                },
+                "column_profile": {
+                  "before": {
+                    "USER_ID": {
+                      "nulls": 0,
+                      "min": 1,
+                      "max": 9000000100,
+                      "distinct": 120
+                    },
+                    "DISPLAY_NAME": {
+                      "nulls": 0,
+                      "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                      "max": "Tomas Wrenwell",
+                      "distinct": 116
+                    },
+                    "EMAIL": {
+                      "nulls": 0,
+                      "min": "amara.briarlund.9000000074@northwood.example",
+                      "max": "tomas.wrenwell.6@meadowridge.example",
+                      "distinct": 120
+                    },
+                    "STATUS_CD": {
+                      "nulls": 0,
+                      "min": "ACTIVE",
+                      "max": "ACTIVE",
+                      "distinct": 1
+                    },
+                    "CREATED_DT": {
+                      "nulls": 0,
+                      "min": "2024-11-09",
+                      "max": "2024-11-09",
+                      "distinct": 1
+                    }
+                  },
+                  "after": {
+                    "USER_ID": {
+                      "nulls": 0,
+                      "min": 1,
+                      "max": 9000000100,
+                      "distinct": 120
+                    },
+                    "DISPLAY_NAME": {
+                      "nulls": 0,
+                      "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                      "max": "Tomas Wrenwell",
+                      "distinct": 116
+                    },
+                    "EMAIL": {
+                      "nulls": 0,
+                      "min": "amara.briarlund.9000000074@northwood.example",
+                      "max": "tomas.wrenwell.6@meadowridge.example",
+                      "distinct": 120
+                    },
+                    "STATUS_CD": {
+                      "nulls": 0,
+                      "min": "ACTIVE",
+                      "max": "ACTIVE",
+                      "distinct": 1
+                    },
+                    "CREATED_DT": {
+                      "nulls": 0,
+                      "min": "2024-11-09",
+                      "max": "2024-11-09",
+                      "distinct": 1
+                    }
+                  }
+                },
+                "keyed_row_hash": {
+                  "keys": [
+                    "USER_ID"
+                  ],
+                  "difference": 0,
+                  "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+                  "after": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+                  "key_policy": "first declared column; full-row digest preserves multiplicity"
+                },
+                "sampled_differences": [],
+                "passed": true
+              },
+              "owner_decision": {
+                "decision_id": "users-display-name-200",
+                "scope_valid": true,
+                "before_count": 120,
+                "after_count": 120,
+                "differing_rows": 0,
+                "other_columns_hash_equal": true,
+                "legacy_prefix_valid": true
+              },
+              "input_owner_decision": {
+                "decision_id": "users-display-name-200",
+                "scope_valid": true,
+                "before_count": 120,
+                "after_count": 120,
+                "differing_rows": 100,
+                "other_columns_hash_equal": true,
+                "legacy_prefix_valid": true
+              },
+              "mode": "Session.builder.config(\"local_testing\", True).create()",
+              "changed_rows": 120,
+              "capture_sha256": "de0f985978dd0d45b08161b3b983f24404c5abd2b487730437569177c0894e18",
+              "handler_sha256": "f4f0d3fb8023aa096e5c6ed679f1f2146802050d82bdc4df3b06bf96204a2ff1"
             }
           },
-          "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
+          "measurement_basis": "actual PowerCenter runner targets vs Snowpark local_testing handler on captured inputs",
           "comparison_rules": {
             "SFX_USERS.APP_USER": {
               "trailing_pad_insensitive": [
@@ -541,7 +672,29 @@
               ],
               "other_columns": "exact"
             }
-          }
+          },
+          "owner_decision_evidence": [
+            {
+              "decision_id": "users-display-name-200",
+              "scope_valid": true,
+              "before_count": 120,
+              "after_count": 120,
+              "differing_rows": 0,
+              "other_columns_hash_equal": true,
+              "legacy_prefix_valid": true
+            },
+            {
+              "decision_id": "users-display-name-200",
+              "scope_valid": true,
+              "before_count": 120,
+              "after_count": 120,
+              "differing_rows": 100,
+              "other_columns_hash_equal": true,
+              "legacy_prefix_valid": true
+            }
+          ],
+          "measurement_status": "green",
+          "decision_state": "approved"
         },
         "snowflake": {
           "status": "red",
@@ -552,8 +705,8 @@
           "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "Held on APP_USER display-name truncation decision; isolated PC/dbt proof has hash_difference=0 and does not clear the escalation",
+      "status": "approved_deviation",
+      "reason": "User display names are widened to 200 characters.",
       "row_count": {
         "before": 120,
         "after": 120
@@ -938,9 +1091,132 @@
           },
           "sampled_differences": [],
           "passed": true
+        },
+        "owner_decision": {
+          "decision_id": "users-display-name-200",
+          "scope_valid": true,
+          "before_count": 120,
+          "after_count": 120,
+          "differing_rows": 0,
+          "other_columns_hash_equal": true,
+          "legacy_prefix_valid": true
+        },
+        "snowpark_local": {
+          "status": "green",
+          "measurement": {
+            "row_count": {
+              "before": 120,
+              "after": 120
+            },
+            "comparison_rules": {
+              "trailing_pad_insensitive": [
+                "STATUS_CD"
+              ],
+              "other_columns": "exact"
+            },
+            "column_profile": {
+              "before": {
+                "USER_ID": {
+                  "nulls": 0,
+                  "min": 1,
+                  "max": 9000000100,
+                  "distinct": 120
+                },
+                "DISPLAY_NAME": {
+                  "nulls": 0,
+                  "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                  "max": "Tomas Wrenwell",
+                  "distinct": 116
+                },
+                "EMAIL": {
+                  "nulls": 0,
+                  "min": "amara.briarlund.9000000074@northwood.example",
+                  "max": "tomas.wrenwell.6@meadowridge.example",
+                  "distinct": 120
+                },
+                "STATUS_CD": {
+                  "nulls": 0,
+                  "min": "ACTIVE",
+                  "max": "ACTIVE",
+                  "distinct": 1
+                },
+                "CREATED_DT": {
+                  "nulls": 0,
+                  "min": "2024-11-09",
+                  "max": "2024-11-09",
+                  "distinct": 1
+                }
+              },
+              "after": {
+                "USER_ID": {
+                  "nulls": 0,
+                  "min": 1,
+                  "max": 9000000100,
+                  "distinct": 120
+                },
+                "DISPLAY_NAME": {
+                  "nulls": 0,
+                  "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                  "max": "Tomas Wrenwell",
+                  "distinct": 116
+                },
+                "EMAIL": {
+                  "nulls": 0,
+                  "min": "amara.briarlund.9000000074@northwood.example",
+                  "max": "tomas.wrenwell.6@meadowridge.example",
+                  "distinct": 120
+                },
+                "STATUS_CD": {
+                  "nulls": 0,
+                  "min": "ACTIVE",
+                  "max": "ACTIVE",
+                  "distinct": 1
+                },
+                "CREATED_DT": {
+                  "nulls": 0,
+                  "min": "2024-11-09",
+                  "max": "2024-11-09",
+                  "distinct": 1
+                }
+              }
+            },
+            "keyed_row_hash": {
+              "keys": [
+                "USER_ID"
+              ],
+              "difference": 0,
+              "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+              "after": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+              "key_policy": "first declared column; full-row digest preserves multiplicity"
+            },
+            "sampled_differences": [],
+            "passed": true
+          },
+          "owner_decision": {
+            "decision_id": "users-display-name-200",
+            "scope_valid": true,
+            "before_count": 120,
+            "after_count": 120,
+            "differing_rows": 0,
+            "other_columns_hash_equal": true,
+            "legacy_prefix_valid": true
+          },
+          "input_owner_decision": {
+            "decision_id": "users-display-name-200",
+            "scope_valid": true,
+            "before_count": 120,
+            "after_count": 120,
+            "differing_rows": 100,
+            "other_columns_hash_equal": true,
+            "legacy_prefix_valid": true
+          },
+          "mode": "Session.builder.config(\"local_testing\", True).create()",
+          "changed_rows": 120,
+          "capture_sha256": "de0f985978dd0d45b08161b3b983f24404c5abd2b487730437569177c0894e18",
+          "handler_sha256": "f4f0d3fb8023aa096e5c6ed679f1f2146802050d82bdc4df3b06bf96204a2ff1"
         }
       },
-      "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
+      "measurement_basis": "actual PowerCenter runner targets vs Snowpark local_testing handler on captured inputs",
       "comparison_rules": {
         "SFX_USERS.APP_USER": {
           "trailing_pad_insensitive": [
@@ -949,7 +1225,29 @@
           "other_columns": "exact"
         }
       },
-      "local_duckdb": "red",
+      "owner_decision_evidence": [
+        {
+          "decision_id": "users-display-name-200",
+          "scope_valid": true,
+          "before_count": 120,
+          "after_count": 120,
+          "differing_rows": 0,
+          "other_columns_hash_equal": true,
+          "legacy_prefix_valid": true
+        },
+        {
+          "decision_id": "users-display-name-200",
+          "scope_valid": true,
+          "before_count": 120,
+          "after_count": 120,
+          "differing_rows": 100,
+          "other_columns_hash_equal": true,
+          "legacy_prefix_valid": true
+        }
+      ],
+      "measurement_status": "green",
+      "decision_state": "approved",
+      "local_duckdb": "approved_deviation",
       "snowflake": "red",
       "snowflake_reason": "Snowflake login down; execution disabled"
     },
@@ -5001,8 +5299,8 @@
       },
       "targets": {
         "duckdb": {
-          "status": "red",
-          "reason": "PowerCenter runner / shipped dbt parity mismatch",
+          "status": "approved_deviation",
+          "reason": "User display names are widened to 200 characters.",
           "row_count": {
             "before": 120,
             "after": 120
@@ -5501,6 +5799,15 @@
                 }
               ],
               "passed": false
+            },
+            "owner_decision": {
+              "decision_id": "users-display-name-200",
+              "scope_valid": true,
+              "before_count": 120,
+              "after_count": 120,
+              "differing_rows": 100,
+              "other_columns_hash_equal": true,
+              "legacy_prefix_valid": true
             }
           },
           "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
@@ -5509,7 +5816,20 @@
               "trailing_pad_insensitive": [],
               "other_columns": "exact"
             }
-          }
+          },
+          "owner_decision_evidence": [
+            {
+              "decision_id": "users-display-name-200",
+              "scope_valid": true,
+              "before_count": 120,
+              "after_count": 120,
+              "differing_rows": 100,
+              "other_columns_hash_equal": true,
+              "legacy_prefix_valid": true
+            }
+          ],
+          "measurement_status": "red",
+          "decision_state": "approved"
         },
         "snowflake": {
           "status": "red",
@@ -5520,8 +5840,8 @@
           "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "PowerCenter runner / shipped dbt parity mismatch",
+      "status": "approved_deviation",
+      "reason": "User display names are widened to 200 characters.",
       "row_count": {
         "before": 120,
         "after": 120
@@ -6020,6 +6340,15 @@
             }
           ],
           "passed": false
+        },
+        "owner_decision": {
+          "decision_id": "users-display-name-200",
+          "scope_valid": true,
+          "before_count": 120,
+          "after_count": 120,
+          "differing_rows": 100,
+          "other_columns_hash_equal": true,
+          "legacy_prefix_valid": true
         }
       },
       "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
@@ -6029,7 +6358,20 @@
           "other_columns": "exact"
         }
       },
-      "local_duckdb": "red",
+      "owner_decision_evidence": [
+        {
+          "decision_id": "users-display-name-200",
+          "scope_valid": true,
+          "before_count": 120,
+          "after_count": 120,
+          "differing_rows": 100,
+          "other_columns_hash_equal": true,
+          "legacy_prefix_valid": true
+        }
+      ],
+      "measurement_status": "red",
+      "decision_state": "approved",
+      "local_duckdb": "approved_deviation",
       "snowflake": "red",
       "snowflake_reason": "Snowflake login down; execution disabled"
     },
@@ -7583,9 +7925,17 @@
               "end_line": 8,
               "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfg1120-users/warehouse/dbt/models/pc/content/pc_content__app_user.sql#L1-L8"
             }
+          ],
+          "TRANSFORM.M_SFX_APP_USER": [
+            {
+              "file": "warehouse/snowpark/m_sfx_app_user.py",
+              "start_line": 1,
+              "end_line": 22,
+              "url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/devin/sfg1120-users/warehouse/snowpark/m_sfx_app_user.py#L1-L22"
+            }
           ]
         },
-        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output; no TRANSFORM.M_SFX_APP_USER Snowpark implementation found; APP_USER remains stopped",
+        "conversion_note": "PC runner proof; dbt SELECT plus configured table/merge materialization, not BTEQ output; Snowpark handler measured with local_testing=True, not live Snowflake",
         "metrics": {
           "counts": {
             "file": "migration/dw-exit/parity/ladder.py",
@@ -7609,8 +7959,8 @@
       },
       "targets": {
         "duckdb": {
-          "status": "red",
-          "reason": "Held on APP_USER display-name truncation decision; isolated PC/dbt proof has hash_difference=0 and does not clear the escalation",
+          "status": "approved_deviation",
+          "reason": "User display names are widened to 200 characters.",
           "row_count": {
             "before": 120,
             "after": 120
@@ -7995,9 +8345,132 @@
               },
               "sampled_differences": [],
               "passed": true
+            },
+            "owner_decision": {
+              "decision_id": "users-display-name-200",
+              "scope_valid": true,
+              "before_count": 120,
+              "after_count": 120,
+              "differing_rows": 0,
+              "other_columns_hash_equal": true,
+              "legacy_prefix_valid": true
+            },
+            "snowpark_local": {
+              "status": "green",
+              "measurement": {
+                "row_count": {
+                  "before": 120,
+                  "after": 120
+                },
+                "comparison_rules": {
+                  "trailing_pad_insensitive": [
+                    "STATUS_CD"
+                  ],
+                  "other_columns": "exact"
+                },
+                "column_profile": {
+                  "before": {
+                    "USER_ID": {
+                      "nulls": 0,
+                      "min": 1,
+                      "max": 9000000100,
+                      "distinct": 120
+                    },
+                    "DISPLAY_NAME": {
+                      "nulls": 0,
+                      "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                      "max": "Tomas Wrenwell",
+                      "distinct": 116
+                    },
+                    "EMAIL": {
+                      "nulls": 0,
+                      "min": "amara.briarlund.9000000074@northwood.example",
+                      "max": "tomas.wrenwell.6@meadowridge.example",
+                      "distinct": 120
+                    },
+                    "STATUS_CD": {
+                      "nulls": 0,
+                      "min": "ACTIVE",
+                      "max": "ACTIVE",
+                      "distinct": 1
+                    },
+                    "CREATED_DT": {
+                      "nulls": 0,
+                      "min": "2024-11-09",
+                      "max": "2024-11-09",
+                      "distinct": 1
+                    }
+                  },
+                  "after": {
+                    "USER_ID": {
+                      "nulls": 0,
+                      "min": 1,
+                      "max": 9000000100,
+                      "distinct": 120
+                    },
+                    "DISPLAY_NAME": {
+                      "nulls": 0,
+                      "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                      "max": "Tomas Wrenwell",
+                      "distinct": 116
+                    },
+                    "EMAIL": {
+                      "nulls": 0,
+                      "min": "amara.briarlund.9000000074@northwood.example",
+                      "max": "tomas.wrenwell.6@meadowridge.example",
+                      "distinct": 120
+                    },
+                    "STATUS_CD": {
+                      "nulls": 0,
+                      "min": "ACTIVE",
+                      "max": "ACTIVE",
+                      "distinct": 1
+                    },
+                    "CREATED_DT": {
+                      "nulls": 0,
+                      "min": "2024-11-09",
+                      "max": "2024-11-09",
+                      "distinct": 1
+                    }
+                  }
+                },
+                "keyed_row_hash": {
+                  "keys": [
+                    "USER_ID"
+                  ],
+                  "difference": 0,
+                  "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+                  "after": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+                  "key_policy": "first declared column; full-row digest preserves multiplicity"
+                },
+                "sampled_differences": [],
+                "passed": true
+              },
+              "owner_decision": {
+                "decision_id": "users-display-name-200",
+                "scope_valid": true,
+                "before_count": 120,
+                "after_count": 120,
+                "differing_rows": 0,
+                "other_columns_hash_equal": true,
+                "legacy_prefix_valid": true
+              },
+              "input_owner_decision": {
+                "decision_id": "users-display-name-200",
+                "scope_valid": true,
+                "before_count": 120,
+                "after_count": 120,
+                "differing_rows": 100,
+                "other_columns_hash_equal": true,
+                "legacy_prefix_valid": true
+              },
+              "mode": "Session.builder.config(\"local_testing\", True).create()",
+              "changed_rows": 120,
+              "capture_sha256": "de0f985978dd0d45b08161b3b983f24404c5abd2b487730437569177c0894e18",
+              "handler_sha256": "f4f0d3fb8023aa096e5c6ed679f1f2146802050d82bdc4df3b06bf96204a2ff1"
             }
           },
-          "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
+          "measurement_basis": "actual PowerCenter runner targets vs Snowpark local_testing handler on captured inputs",
           "comparison_rules": {
             "SFX_USERS.APP_USER": {
               "trailing_pad_insensitive": [
@@ -8005,7 +8478,29 @@
               ],
               "other_columns": "exact"
             }
-          }
+          },
+          "owner_decision_evidence": [
+            {
+              "decision_id": "users-display-name-200",
+              "scope_valid": true,
+              "before_count": 120,
+              "after_count": 120,
+              "differing_rows": 0,
+              "other_columns_hash_equal": true,
+              "legacy_prefix_valid": true
+            },
+            {
+              "decision_id": "users-display-name-200",
+              "scope_valid": true,
+              "before_count": 120,
+              "after_count": 120,
+              "differing_rows": 100,
+              "other_columns_hash_equal": true,
+              "legacy_prefix_valid": true
+            }
+          ],
+          "measurement_status": "green",
+          "decision_state": "approved"
         },
         "snowflake": {
           "status": "red",
@@ -8016,8 +8511,8 @@
           "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "Held on APP_USER display-name truncation decision; isolated PC/dbt proof has hash_difference=0 and does not clear the escalation",
+      "status": "approved_deviation",
+      "reason": "User display names are widened to 200 characters.",
       "row_count": {
         "before": 120,
         "after": 120
@@ -8402,9 +8897,132 @@
           },
           "sampled_differences": [],
           "passed": true
+        },
+        "owner_decision": {
+          "decision_id": "users-display-name-200",
+          "scope_valid": true,
+          "before_count": 120,
+          "after_count": 120,
+          "differing_rows": 0,
+          "other_columns_hash_equal": true,
+          "legacy_prefix_valid": true
+        },
+        "snowpark_local": {
+          "status": "green",
+          "measurement": {
+            "row_count": {
+              "before": 120,
+              "after": 120
+            },
+            "comparison_rules": {
+              "trailing_pad_insensitive": [
+                "STATUS_CD"
+              ],
+              "other_columns": "exact"
+            },
+            "column_profile": {
+              "before": {
+                "USER_ID": {
+                  "nulls": 0,
+                  "min": 1,
+                  "max": 9000000100,
+                  "distinct": 120
+                },
+                "DISPLAY_NAME": {
+                  "nulls": 0,
+                  "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                  "max": "Tomas Wrenwell",
+                  "distinct": 116
+                },
+                "EMAIL": {
+                  "nulls": 0,
+                  "min": "amara.briarlund.9000000074@northwood.example",
+                  "max": "tomas.wrenwell.6@meadowridge.example",
+                  "distinct": 120
+                },
+                "STATUS_CD": {
+                  "nulls": 0,
+                  "min": "ACTIVE",
+                  "max": "ACTIVE",
+                  "distinct": 1
+                },
+                "CREATED_DT": {
+                  "nulls": 0,
+                  "min": "2024-11-09",
+                  "max": "2024-11-09",
+                  "distinct": 1
+                }
+              },
+              "after": {
+                "USER_ID": {
+                  "nulls": 0,
+                  "min": 1,
+                  "max": 9000000100,
+                  "distinct": 120
+                },
+                "DISPLAY_NAME": {
+                  "nulls": 0,
+                  "min": "Amara Briarlund - Senior Workspace Operations and Records Go",
+                  "max": "Tomas Wrenwell",
+                  "distinct": 116
+                },
+                "EMAIL": {
+                  "nulls": 0,
+                  "min": "amara.briarlund.9000000074@northwood.example",
+                  "max": "tomas.wrenwell.6@meadowridge.example",
+                  "distinct": 120
+                },
+                "STATUS_CD": {
+                  "nulls": 0,
+                  "min": "ACTIVE",
+                  "max": "ACTIVE",
+                  "distinct": 1
+                },
+                "CREATED_DT": {
+                  "nulls": 0,
+                  "min": "2024-11-09",
+                  "max": "2024-11-09",
+                  "distinct": 1
+                }
+              }
+            },
+            "keyed_row_hash": {
+              "keys": [
+                "USER_ID"
+              ],
+              "difference": 0,
+              "before": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+              "after": "7fa7838afec01a35c83337e39cbd52a4739b9fb73ae1f1d968d08712e41d84db",
+              "key_policy": "first declared column; full-row digest preserves multiplicity"
+            },
+            "sampled_differences": [],
+            "passed": true
+          },
+          "owner_decision": {
+            "decision_id": "users-display-name-200",
+            "scope_valid": true,
+            "before_count": 120,
+            "after_count": 120,
+            "differing_rows": 0,
+            "other_columns_hash_equal": true,
+            "legacy_prefix_valid": true
+          },
+          "input_owner_decision": {
+            "decision_id": "users-display-name-200",
+            "scope_valid": true,
+            "before_count": 120,
+            "after_count": 120,
+            "differing_rows": 100,
+            "other_columns_hash_equal": true,
+            "legacy_prefix_valid": true
+          },
+          "mode": "Session.builder.config(\"local_testing\", True).create()",
+          "changed_rows": 120,
+          "capture_sha256": "de0f985978dd0d45b08161b3b983f24404c5abd2b487730437569177c0894e18",
+          "handler_sha256": "f4f0d3fb8023aa096e5c6ed679f1f2146802050d82bdc4df3b06bf96204a2ff1"
         }
       },
-      "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
+      "measurement_basis": "actual PowerCenter runner targets vs Snowpark local_testing handler on captured inputs",
       "comparison_rules": {
         "SFX_USERS.APP_USER": {
           "trailing_pad_insensitive": [
@@ -8413,7 +9031,29 @@
           "other_columns": "exact"
         }
       },
-      "local_duckdb": "red",
+      "owner_decision_evidence": [
+        {
+          "decision_id": "users-display-name-200",
+          "scope_valid": true,
+          "before_count": 120,
+          "after_count": 120,
+          "differing_rows": 0,
+          "other_columns_hash_equal": true,
+          "legacy_prefix_valid": true
+        },
+        {
+          "decision_id": "users-display-name-200",
+          "scope_valid": true,
+          "before_count": 120,
+          "after_count": 120,
+          "differing_rows": 100,
+          "other_columns_hash_equal": true,
+          "legacy_prefix_valid": true
+        }
+      ],
+      "measurement_status": "green",
+      "decision_state": "approved",
+      "local_duckdb": "approved_deviation",
       "snowflake": "red",
       "snowflake_reason": "Snowflake login down; execution disabled"
     },
@@ -12483,8 +13123,8 @@
       },
       "targets": {
         "duckdb": {
-          "status": "red",
-          "reason": "PowerCenter runner / shipped dbt parity mismatch",
+          "status": "approved_deviation",
+          "reason": "User display names are widened to 200 characters.",
           "row_count": {
             "before": 120,
             "after": 120
@@ -12983,6 +13623,15 @@
                 }
               ],
               "passed": false
+            },
+            "owner_decision": {
+              "decision_id": "users-display-name-200",
+              "scope_valid": true,
+              "before_count": 120,
+              "after_count": 120,
+              "differing_rows": 100,
+              "other_columns_hash_equal": true,
+              "legacy_prefix_valid": true
             }
           },
           "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
@@ -12991,7 +13640,20 @@
               "trailing_pad_insensitive": [],
               "other_columns": "exact"
             }
-          }
+          },
+          "owner_decision_evidence": [
+            {
+              "decision_id": "users-display-name-200",
+              "scope_valid": true,
+              "before_count": 120,
+              "after_count": 120,
+              "differing_rows": 100,
+              "other_columns_hash_equal": true,
+              "legacy_prefix_valid": true
+            }
+          ],
+          "measurement_status": "red",
+          "decision_state": "approved"
         },
         "snowflake": {
           "status": "red",
@@ -13002,8 +13664,8 @@
           "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "PowerCenter runner / shipped dbt parity mismatch",
+      "status": "approved_deviation",
+      "reason": "User display names are widened to 200 characters.",
       "row_count": {
         "before": 120,
         "after": 120
@@ -13502,6 +14164,15 @@
             }
           ],
           "passed": false
+        },
+        "owner_decision": {
+          "decision_id": "users-display-name-200",
+          "scope_valid": true,
+          "before_count": 120,
+          "after_count": 120,
+          "differing_rows": 100,
+          "other_columns_hash_equal": true,
+          "legacy_prefix_valid": true
         }
       },
       "measurement_basis": "actual PowerCenter runner targets vs shipped dbt model on captured inputs",
@@ -13511,7 +14182,20 @@
           "other_columns": "exact"
         }
       },
-      "local_duckdb": "red",
+      "owner_decision_evidence": [
+        {
+          "decision_id": "users-display-name-200",
+          "scope_valid": true,
+          "before_count": 120,
+          "after_count": 120,
+          "differing_rows": 100,
+          "other_columns_hash_equal": true,
+          "legacy_prefix_valid": true
+        }
+      ],
+      "measurement_status": "red",
+      "decision_state": "approved",
+      "local_duckdb": "approved_deviation",
       "snowflake": "red",
       "snowflake_reason": "Snowflake login down; execution disabled"
     },
@@ -18132,8 +18816,8 @@
       },
       "targets": {
         "duckdb": {
-          "status": "red",
-          "reason": "measured parity mismatch",
+          "status": "approved_deviation",
+          "reason": "User display names are widened to 200 characters.",
           "row_count": {
             "before": 140,
             "after": 140
@@ -18411,7 +19095,20 @@
               }
             ],
             "SFX_USERS.USER_PROFILE": []
-          }
+          },
+          "owner_decision_evidence": [
+            {
+              "decision_id": "users-display-name-200",
+              "scope_valid": true,
+              "before_count": 120,
+              "after_count": 120,
+              "differing_rows": 100,
+              "other_columns_hash_equal": true,
+              "legacy_prefix_valid": true
+            }
+          ],
+          "measurement_status": "red",
+          "decision_state": "approved"
         },
         "snowflake": {
           "status": "red",
@@ -18422,8 +19119,8 @@
           "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "measured parity mismatch",
+      "status": "approved_deviation",
+      "reason": "User display names are widened to 200 characters.",
       "row_count": {
         "before": 140,
         "after": 140
@@ -18702,7 +19399,20 @@
         ],
         "SFX_USERS.USER_PROFILE": []
       },
-      "local_duckdb": "red",
+      "owner_decision_evidence": [
+        {
+          "decision_id": "users-display-name-200",
+          "scope_valid": true,
+          "before_count": 120,
+          "after_count": 120,
+          "differing_rows": 100,
+          "other_columns_hash_equal": true,
+          "legacy_prefix_valid": true
+        }
+      ],
+      "measurement_status": "red",
+      "decision_state": "approved",
+      "local_duckdb": "approved_deviation",
       "snowflake": "red",
       "snowflake_reason": "Snowflake login down; execution disabled"
     },
@@ -42805,8 +43515,8 @@
       },
       "targets": {
         "duckdb": {
-          "status": "red",
-          "reason": "measured parity mismatch",
+          "status": "approved_deviation",
+          "reason": "User display names are widened to 200 characters.",
           "row_count": {
             "before": 120,
             "after": 120
@@ -43008,7 +43718,20 @@
                 ]
               }
             ]
-          }
+          },
+          "owner_decision_evidence": [
+            {
+              "decision_id": "users-display-name-200",
+              "scope_valid": true,
+              "before_count": 120,
+              "after_count": 120,
+              "differing_rows": 100,
+              "other_columns_hash_equal": true,
+              "legacy_prefix_valid": true
+            }
+          ],
+          "measurement_status": "red",
+          "decision_state": "approved"
         },
         "snowflake": {
           "status": "red",
@@ -43019,8 +43742,8 @@
           "sampled_differences": null
         }
       },
-      "status": "red",
-      "reason": "measured parity mismatch",
+      "status": "approved_deviation",
+      "reason": "User display names are widened to 200 characters.",
       "row_count": {
         "before": 120,
         "after": 120
@@ -43223,7 +43946,20 @@
           }
         ]
       },
-      "local_duckdb": "red",
+      "owner_decision_evidence": [
+        {
+          "decision_id": "users-display-name-200",
+          "scope_valid": true,
+          "before_count": 120,
+          "after_count": 120,
+          "differing_rows": 100,
+          "other_columns_hash_equal": true,
+          "legacy_prefix_valid": true
+        }
+      ],
+      "measurement_status": "red",
+      "decision_state": "approved",
+      "local_duckdb": "approved_deviation",
       "snowflake": "red",
       "snowflake_reason": "Snowflake login down; execution disabled"
     },
@@ -54257,13 +54993,15 @@
   "summary": {
     "rows": 252,
     "green": 74,
-    "red": 174,
+    "red": 168,
     "retire_verified": 4,
+    "approved_deviation": 6,
     "targets": {
       "duckdb": {
         "green": 74,
-        "red": 174,
-        "retire_verified": 4
+        "red": 168,
+        "retire_verified": 4,
+        "approved_deviation": 6
       },
       "snowflake": {
         "green": 0,
@@ -54324,8 +55062,9 @@
       "users": {
         "duckdb": {
           "green": 45,
-          "red": 6,
-          "retire_verified": 4
+          "red": 0,
+          "retire_verified": 4,
+          "approved_deviation": 6
         },
         "snowflake": {
           "green": 0,
@@ -54344,7 +55083,8 @@
     },
     "users": {
       "local_green": 45,
-      "local_red": 6,
+      "local_approved_deviation": 6,
+      "local_red": 0,
       "local_retire_verified": 4,
       "snowflake": "red"
     }
@@ -54387,7 +55127,7 @@
       "warehouse/dbt/macros/reapply_governance.sql": "771742f9e312bd8e9ecea0f4b2df042f03186f9f8c0247aa3b79f90735afa595",
       "warehouse/dbt/macros/set_table_semantics.sql": "ebf52e12bdbf1c29b1f9821215cd3fa5eb56b410fa37750364e048017932d435",
       "warehouse/dbt/macros/unt8_python_unicode.sql": "9a5ac37c135eef1c9cefc4c4ac662ff1363557a00bd512c30312bf3f0639773e",
-      "warehouse/dbt/models/pc/content/pc_content__app_user.sql": "2064f0451996c88943f62d11113e36a51d5681646174f95a559619f3460277a3",
+      "warehouse/dbt/models/pc/content/pc_content__app_user.sql": "a1e76d4c3848b79016f563dfd6aa0e8987d96da658f7a057a641b1b2160ddaa2",
       "warehouse/dbt/models/pc/content/pc_content__doc_share.sql": "1c3a1b1941c6c106da1a88319ac363885f79e354e3dad57c2a6f84edaeb30648",
       "warehouse/dbt/models/pc/content/pc_content__document.sql": "fa48a6b0c4618654e35fc79b13e932fcf7a8d44d455e7b5fe150b0d4973ade8f",
       "warehouse/dbt/models/pc/content/pc_content__login_event.sql": "08353a4aac0d45fdded3fd524d15622d5ce5ddc0932651bdf4c71987d88fe0a4",
@@ -54425,8 +55165,8 @@
     "returncode": 0,
     "input_policy": "independent mapping proofs; APP_USER reads captured actual PC STG_APP_USER, other mappings read the same landing PSVs",
     "team_member_execution": "standalone session; workflow task is disabled in source XML",
-    "capture_sha256": "acf4c06c2dfe4201b5195d64ec53e3e2065f73b7cc5fe0874e00ed03d5119631",
-    "stdout_sha256": "48675bc9ae0c20af01bd332608b62c81a27890789e441e40b6ed4c8d88dbb5ca"
+    "capture_sha256": "de0f985978dd0d45b08161b3b983f24404c5abd2b487730437569177c0894e18",
+    "stdout_sha256": "e2651f5a0200d43d6add5a652d6dc40bac0c8a1e9135eda5cd699ceaff849501"
   },
   "spark_evidence": {
     "team_graph_components": {

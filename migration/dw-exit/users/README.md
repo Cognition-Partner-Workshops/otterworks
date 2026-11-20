@@ -77,6 +77,10 @@ search from the historical run were **not repeated** for this run.
 
 ## Step 2: approved widening and local Snowpark proof
 
+Regenerated local users board: **45 green / 6 approved_deviation / 0 red /
+4 retire_verified**; all 55 users Snowflake cells (and all 252 board Snowflake cells)
+remain red. No non-users board row changed. Licence counters remain unchanged.
+
 Owner decision: **User display names are widened to 200 characters.**
 `decisions.json` records scope; the board preserves raw counts/hash differences and
 uses `approved_deviation` only after checking every key, name prefix and non-name hash.
@@ -101,6 +105,21 @@ These audit findings were **not** fixed. JDBC side tables remain unverified.
 
 Current statuses are generated in [board.json](../board/board.json) and
 [users-pr.md](../board/users-pr.md); the following Step 1 hold list is historical.
+
+Final Step 2 checks after board regeneration:
+
+```text
+RUN_TOKEN=sfx1120 warehouse/.venv/bin/python -m pytest -q migration/dw-exit/tests
+141 passed, 23 skipped, 2 warnings in 21.40s
+
+env -u NS RUN_TOKEN=sfx1120 warehouse/.venv/bin/python -m pytest -q etl/informatica/tests
+129 passed in 45.51s
+```
+
+The two warnings are Snowpark/pkg_resources deprecations, not a local-testing failure.
+All 55 owner/owner_source entries in the shared-surface report were checked against
+the manifest. The 6 decision proofs validate scope; the Snowpark comparison is
+120/120 rows, keyed hash difference 0, 120 changed rows, no sampled differences.
 
 ## Step 1 historical results and held differences
 
