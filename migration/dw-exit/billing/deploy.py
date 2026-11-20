@@ -50,9 +50,6 @@ def run(business_date, output, initial=False):
                         cursor.execute('INSERT INTO IDENTIFIER(?) SELECT * FROM IDENTIFIER(?)',
                                        (_run_render('__RUN_DATABASE__.BILLING.') + identifier(name),
                                         _run_render('__RUN_DATABASE__.TD_BASELINE.') + identifier(name)))
-                    if not initial:
-                        cursor.execute(_run_render('CREATE OR REPLACE TABLE __RUN_DATABASE__.BILLING.STORAGE_USAGE_INPUT '
-                                       'CLONE __RUN_DATABASE__.TD_BASELINE.STORAGE_USAGE_INPUT COMMENT = ?'), (COMMENT,))
             cursor.execute('BEGIN')
             try:
                 cursor.execute(_run_render("CALL __RUN_DATABASE__.BILLING.P_MONTHLY_INVOICE(?)"), (business_date,))

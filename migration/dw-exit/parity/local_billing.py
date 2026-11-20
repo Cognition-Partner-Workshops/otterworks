@@ -14,6 +14,13 @@ STAGES = ('10_load.sql', '15_storage.sql', '20_routines.sql', '30_views.sql', '4
 def statements(path, business_date):
     business_date = validate_date(business_date)
     text = render(path.read_text()).replace('${BUSINESS_DATE}', business_date)
+    if path.name == '15_storage.sql':
+        expected = render('CALL __RUN_DATABASE__.OPS."10_STORAGE_MONTHLY"(TO_DATE(\'${BUSINESS_DATE}\', \'YYYYMMDD\'));').replace('${BUSINESS_DATE}', business_date)
+        if text.strip() != expected:
+            raise ValueError('Storage stage must call the documents single writer')
+        from .local_documents import storage_statements
+        yield from storage_statements(business_date)
+        return
     if path.name == '20_routines.sql':
         bodies = re.findall(r'CREATE OR REPLACE PROCEDURE\s+\S+\.(\w+)\s*\(.*?\$\$(.*?)\$\$;', text, re.S | re.I)
         monthly = [body for name, body in bodies if name.upper() == 'P_MONTHLY_INVOICE']

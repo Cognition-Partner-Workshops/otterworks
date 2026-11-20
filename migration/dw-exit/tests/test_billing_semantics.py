@@ -67,7 +67,8 @@ def test_shipped_chain_extraction_and_empty_execution():
             for col in statement.find_all(exp.ColumnDef):
                 col.set('constraints',[])
             c.execute(statement.sql(dialect='duckdb'))
-        c.execute('CREATE TABLE BILLING.STORAGE_USAGE_INPUT (CUSTOMER_ID BIGINT,BYTES_USED BIGINT,USAGE_DT DATE)')
+        c.execute('CREATE SCHEMA DOCUMENTS')
+        c.execute('CREATE TABLE DOCUMENTS.STORAGE_USAGE_DAILY (CUSTOMER_ID BIGINT,BYTES_USED BIGINT,USAGE_DT DATE)')
         errors=local_billing.execute(c,BILLING,set(),'20261109')
         assert errors == {}
         assert c.execute('SELECT COUNT(*) FROM BILLING.INVOICE_LINE').fetchone()==(0,)

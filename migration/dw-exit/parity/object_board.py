@@ -57,7 +57,7 @@ def relation_contract(objects):
                  **({'output_artifacts': audit_artifacts(obj)} if audit_artifacts(obj) else {}))
             if obj['subject_area'] == 'audit' else dict(obj) for obj in objects]
 
-from parity import spark_billing, pc_billing
+from parity import spark_billing, pc_billing, local_documents
 from parity.ladder import local_compare as compare
 
 
@@ -123,11 +123,10 @@ def materialize(before, names, conversion_dir, business_date='20261109', subject
     ready, errors = set(), {}
     after.execute('CREATE SCHEMA BILLING')
     if (conversion_dir / '15_storage.sql').exists():
-        rows = before.execute('SELECT * FROM SFX_DOCUMENTS.STORAGE_USAGE_DAILY').fetchall()
-        definitions = before.execute('DESCRIBE SFX_DOCUMENTS.STORAGE_USAGE_DAILY').fetchall()
-        after.execute('CREATE TABLE BILLING.STORAGE_USAGE_INPUT ('+', '.join(quote(c[0])+' '+c[1] for c in definitions)+')')
-        if rows:
-            after.executemany('INSERT INTO BILLING.STORAGE_USAGE_INPUT VALUES ('+', '.join('?' for _ in definitions)+')', rows)
+        _, document_errors = local_documents.execute(after, before, business_date=business_date)
+        if document_errors:
+            errors['*'] = 'Converted documents storage input unavailable: '+str(document_errors)
+            return after, ready, errors
     for name in sorted(names):
         if not name.startswith('SFX_BILLING.'):
             continue
@@ -139,8 +138,8 @@ def materialize(before, names, conversion_dir, business_date='20261109', subject
         # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         definitions = before.execute('DESCRIBE '+relation(name)).fetchall()
         # Column rules and literal collation come from checked-in DDL; identifiers are quoted.
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         rules = source_columns(name)
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         after.execute(f'CREATE TABLE {relation(target)} ({", ".join(quote(c[0])+" "+c[1]+(" COLLATE NOCASE" if rules.get(c[0], {}).get("case_insensitive") else "") for c in definitions)})')
         if table.startswith('STG_'):
             # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
