@@ -93,7 +93,7 @@ def test_load_replaces_only_its_source_and_builds(monkeypatch, results):
     connection = MagicMock()
     cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
     cursor.description = [("rows_loaded",), ("errors_seen",)]
-    cursor.fetchall.return_value = results
+    cursor.fetchall.side_effect = [results, []]
     monkeypatch.setattr(load_daily, "connect", Mock(return_value=connection))
     build = Mock()
     monkeypatch.setattr(load_daily, "build", build)
@@ -103,7 +103,7 @@ def test_load_replaces_only_its_source_and_builds(monkeypatch, results):
     assert calls[3].args == ("DELETE FROM RAW_BILLING.USAGE_DAILY WHERE _SRC_FILE=%s",
                             ("pipeline/2026-11-09.csv",))
     assert "ON_ERROR=ABORT_STATEMENT FORCE=TRUE" in calls[4].args[0]
-    assert calls[5].args == ("COMMIT",)
+    assert calls[6].args == ("COMMIT",)
     build.assert_called_once()
 
 
@@ -139,6 +139,24 @@ def test_copy_failure_does_not_claim_success_or_build(monkeypatch):
     assert cursor.execute.call_args.args == ("ROLLBACK",)
 
 
+def test_snowflake_cast_failure_rolls_back(monkeypatch):
+    connection = MagicMock()
+    cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
+    cursor.description = [('rows_loaded',)]
+    cursor.fetchall.side_effect = [[(48,)], [('CUSTOMER_ID', 48, 'OTHER-0001')]]
+    monkeypatch.setattr(load_daily, 'connect', Mock(return_value=connection))
+    build = Mock()
+    monkeypatch.setattr(load_daily, 'build', build)
+    with pytest.raises(load_daily.SafeLoadError, match="CUSTOMER_ID: count=48, sample='OTHER-0001'"):
+        load_daily.load(load_daily.GOOD_DATE)
+    sql = cursor.execute.call_args_list[-2].args[0]
+    assert "REGEXP_LIKE($2, '^CUST-[0-9]+$')" in sql
+    assert "2026-11-09.csv (FILE_FORMAT =>" in sql
+    assert cursor.execute.call_args.args == ('ROLLBACK',)
+    assert not any(c.args == ('COMMIT',) for c in cursor.execute.call_args_list)
+    build.assert_not_called()
+
+
 @pytest.mark.parametrize("header", ["", "USAGE_DAILY_ID,CUSTOMER_ID\n"])
 def test_missing_headers_fail_before_connect(tmp_path, monkeypatch, header):
     landing = tmp_path / "landing"
@@ -172,13 +190,15 @@ def test_header_only_reordered_feed_and_clone_target(tmp_path, monkeypatch, caps
     monkeypatch.setattr(load_daily, "connect", connector)
     build = Mock()
     monkeypatch.setattr(load_daily, "build", build)
+    cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
+    cursor.fetchall.side_effect = [[], []]
     load_daily.load(load_daily.GOOD_DATE, "backfill", _run_render("RAW_BILLING___RUN_DATABASE___BACKFILL"),
                     _run_render("__RUN_DATABASE___TRANSFORM_WH"), True)
     connector.assert_called_once_with("backfill", _run_render("__RUN_DATABASE___TRANSFORM_WH"))
     cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
     sql = cursor.execute.call_args_list[4].args[0]
     assert _run_render("COPY INTO RAW_BILLING___RUN_DATABASE___BACKFILL.USAGE_DAILY") in sql
-    assert "TRY_TO_NUMBER($10),TRY_TO_NUMBER($9),TRY_TO_DATE($8)" in sql
+    assert "TRY_TO_NUMBER($10),TRY_TO_NUMBER(CASE WHEN REGEXP_LIKE($9, '^CUST-[0-9]+$')" in sql
     assert "TRY_TO_DECIMAL(REGEXP_REPLACE($5, '[^0-9.+-]', ''),12,2)" in sql
     assert "ignored extra columns: DISCOUNT_CODE" in capsys.readouterr().out
     build.assert_not_called()
@@ -313,6 +333,8 @@ def test_fixture_end_to_end_good_then_break(tmp_path, monkeypatch, capsys):
                 self.result = [(len(loaded), errors, status)]
             elif "SELECT s.USAGE_DATE" in sql:
                 self.result = sorted(self.days.values(), reverse=True)[:2]
+            elif "HAVING COUNT(*) > 0" in sql:
+                self.result = []
             elif "INFORMATION_SCHEMA.COPY_HISTORY" in sql:
                 self.result = [(name, status, errors, None)
                                for name, (status, errors) in self.files.items()]
