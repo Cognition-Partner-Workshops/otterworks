@@ -84,10 +84,22 @@ JSON strings; timestamps use UTC ISO-8601 with `Z`.
 | Relative route | Purpose |
 | --- | --- |
 | `GET /customers/{id}` | Golden customer; 404 if absent |
-| `GET /customers` | Filter by `db2_cust_no`, `oracle_account_id`, `crm_contact_id`, `match_status`; bounded `limit` and `_id` `cursor` pagination |
+| `GET /customers` | Filter by `source`, `updated_since`, `db2_cust_no`, `oracle_account_id`, `crm_contact_id`, `match_status`; bounded `limit` and `_id` `cursor` pagination |
 | `GET /exceptions`, `GET /exceptions/{id}` | Paged `reason`/`status` filtering or one exception |
 | `GET /parity`, `GET /parity/latest` | Newest-first run summaries or latest summary |
 | `GET /parity/{run_id}`, `GET /parity/{run_id}.csv` | Stored full report (large sample lists limited) or streamed CSV |
+
+`source` matches any contributing system (`db2`, `oracle`, or `postgres`). Unknown sources
+return an empty page. `updated_since` accepts an RFC 3339 timestamp with `Z` or a numeric
+offset and matches only customers with `updated_at` strictly after that instant. Invalid
+timestamps return HTTP 400. All filters are applied together; repeat them when using the
+returned `next_cursor`.
+
+`updated_at` is the UTC time MongoDB assigns when ODL sync writes a new or changed customer
+document, not a source-system modification time. Unchanged syncs preserve it. Existing customers
+are stamped on their first sync after upgrade, so a cutoff before that sync can include
+customers whose source data did not change. Until stamped, customers appear only in reads
+without `updated_since`.
 
 Internal `/health` checks MongoDB; `/metrics` emits Prometheus text. The Angular
 `/odl-parity` page uses authenticated HttpClient requests, including CSV blobs.

@@ -73,6 +73,62 @@ def test_customer_filters_and_cursor(client):
         assert client.get(PREFIX + '/customers?' + query).status_code == 422
 
 
+@pytest.fixture
+def reconciliation_customers(db):
+    db.customers.insert_many([
+        dict(_id='rec_0', match={'sources': ['db2']}, updated_at=datetime(2024, 1, 1, tzinfo=timezone.utc)),
+        dict(_id='rec_1', match={'sources': ['db2']}, updated_at=datetime(2024, 1, 2, tzinfo=timezone.utc)),
+        dict(_id='rec_2', match={'sources': ['oracle']}, updated_at=datetime(2024, 1, 3, tzinfo=timezone.utc)),
+        dict(_id='rec_3', match={'sources': ['db2', 'postgres']}, updated_at=datetime(2024, 1, 4, tzinfo=timezone.utc)),
+        dict(_id='rec_4', match={'sources': ['db2']}, updated_at=datetime(2024, 1, 4, tzinfo=timezone.utc)),
+        dict(_id='rec_5', match={'sources': ['db2']}),
+    ])
+
+
+@pytest.mark.parametrize('source,expected', [
+    ('db2', ['rec_0', 'rec_1', 'rec_3', 'rec_4', 'rec_5']), ('oracle', ['rec_2']), ('postgres', ['rec_3']),
+])
+def test_customers_filter_by_source(client, reconciliation_customers, source, expected):
+    result = client.get(PREFIX + '/customers', params={'source': source})
+    assert result.status_code == 200
+    assert [row['_id'] for row in result.json()['items']] == expected
+
+
+@pytest.mark.parametrize('cutoff', ['2024-01-02T00:00:00Z', '2024-01-01T19:00:00-05:00', '2024-01-02T05:30:00.000+05:30'])
+def test_customers_updated_since_is_exclusive_and_timezone_aware(client, reconciliation_customers, cutoff):
+    result = client.get(PREFIX + '/customers', params={'updated_since': cutoff})
+    assert result.status_code == 200
+    assert [row['_id'] for row in result.json()['items']] == ['rec_2', 'rec_3', 'rec_4']
+
+
+def test_customers_combine_filters_before_pagination(client, reconciliation_customers):
+    params = {'source': 'db2', 'updated_since': '2024-01-02T00:00:00Z', 'limit': 1}
+    first = client.get(PREFIX + '/customers', params=params)
+    assert first.status_code == 200
+    assert [row['_id'] for row in first.json()['items']] == ['rec_3']
+    assert first.json()['next_cursor'] == 'rec_3'
+    last = client.get(PREFIX + '/customers', params={**params, 'cursor': first.json()['next_cursor']})
+    assert last.status_code == 200
+    assert [row['_id'] for row in last.json()['items']] == ['rec_4']
+    assert last.json()['next_cursor'] is None
+
+
+def test_customers_unknown_source_returns_empty_page(client, reconciliation_customers):
+    result = client.get(PREFIX + '/customers', params={'source': 'unknown'})
+    assert result.status_code == 200
+    assert result.json() == {'items': [], 'next_cursor': None}
+
+
+@pytest.mark.parametrize('cutoff', ['', 'not-a-date', '2024-01-02', '2024-01-02T00:00:00',
+                                    '2024-02-30T00:00:00Z', '2024-01-02T00:00:00+00:60', '2024-01-02T00:00:00,5Z'])
+def test_customers_bad_updated_since_has_actionable_error(client, cutoff):
+    result = client.get(PREFIX + '/customers', params={'updated_since': cutoff})
+    assert result.status_code == 400
+    error = result.json()['error']
+    assert error['code'] == 'invalid_request'
+    assert 'updated_since' in error['message'] and 'RFC 3339' in error['message']
+
+
 def test_exceptions_routes_and_pagination(client):
     assert client.get(PREFIX + '/exceptions/exc_0').status_code == 200
     assert client.get(PREFIX + '/exceptions/absent').status_code == 404
