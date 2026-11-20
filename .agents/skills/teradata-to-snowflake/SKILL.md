@@ -22,7 +22,7 @@ export NS="$RUN_BEFORE_NAMESPACE"
 ```sh
 make sfx-teradata-up NS="$NS" ROWS_PER_TABLE=200
 make sfx-teradata-test NS="$NS"
-make sfx-informatica-up NS="$NS" INFA_DB=teradata
+make sfx-informatica-up NS="$NS" INFA_DB=teradata ROWS_PER_TABLE=200
 make sfx-informatica-run NS="$NS" INFA_DB=teradata MAPPINGS=all
 make sfx-informatica-test NS="$NS" INFA_DB=teradata
 ```
@@ -59,6 +59,26 @@ The dbt test target includes an offline parse. Its project and artifacts are und
 SQL generation prints to stdout and does not open a target connection.
 `make sfx-snowflake-dbt` runs a live build and requires separately provisioned target
 credentials; it is not needed for local DuckDB checks.
+
+## Conversion rules
+
+- For a Teradata SET table, deduplicate the **full projected row** after type
+  conversion, not the primary index. Replay duplicated landing rows and check
+  downstream writes at their own boundary before declaring parity.
+- Do not replace ambiguous `ROW_NUMBER` or PowerCenter first-match lookups with
+  unapproved ordering. Once approved, test tied inputs in both orders. Keep raw
+  row differences on the board and prove the approved scope independently,
+  including derived views and any out-of-scope rows.
+- Capture the post-BTEQ, pre-PowerCenter state before running the actual legacy
+  sessions. Replay staging replace, filtered upsert and lookup operations against
+  that frozen state; compare to actual post-session targets. A matched row count
+  alone does not prove merge or lookup semantics.
+- Treat binary Spark outputs as bytes, not text. Replay two date partitions and
+  compare full history using the partition date in the key; verify refreshed
+  landing, output, conversion and execution-log fingerprints.
+- No DBQL reads is not deletion approval. Check the pinned assessment window,
+  direct readers, source dependencies and landing consumers. Keep retire
+  candidates with remaining dependencies off destructive cutover plans.
 
 ## Local failure feed
 

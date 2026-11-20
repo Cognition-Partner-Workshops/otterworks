@@ -1,0 +1,552 @@
+{
+  "run_token": "sfx-sfg1120",
+  "namespace": "sfx-sfg1120-before",
+  "dates": [
+    "2026-11-19",
+    "2026-11-20"
+  ],
+  "initial_log_date": "2026-11-20",
+  "steps": [
+    {
+      "phase": "initial history",
+      "measurement": {
+        "row_count": {
+          "before": 200,
+          "after": 200
+        },
+        "comparison_rules": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        },
+        "column_profile": {
+          "before": {
+            "STORAGE_KEY": {
+              "nulls": 0,
+              "min": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+              "max": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+              "distinct": 1
+            },
+            "FILE_OBJECT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "SIZE_BYTES": {
+              "nulls": 0,
+              "min": 265628,
+              "max": 265628,
+              "distinct": 1
+            },
+            "CHECKSUM": {
+              "nulls": 0,
+              "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "distinct": 1
+            },
+            "MEDIA_TYPE": {
+              "nulls": 0,
+              "min": "application/pdf",
+              "max": "application/pdf",
+              "distinct": 1
+            },
+            "TEXT": {
+              "nulls": 0,
+              "min": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+              "max": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+              "distinct": 1
+            },
+            "PAGE_COUNT": {
+              "nulls": 0,
+              "min": 26,
+              "max": 26,
+              "distinct": 1
+            },
+            "SHA256": {
+              "nulls": 0,
+              "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "distinct": 1
+            },
+            "ERROR": {
+              "nulls": 200,
+              "min": null,
+              "max": null,
+              "distinct": 0
+            },
+            "RUN_DATE": {
+              "nulls": 0,
+              "min": "2026-11-20",
+              "max": "2026-11-20",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "STORAGE_KEY": {
+              "nulls": 0,
+              "min": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+              "max": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+              "distinct": 1
+            },
+            "FILE_OBJECT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "SIZE_BYTES": {
+              "nulls": 0,
+              "min": 265628,
+              "max": 265628,
+              "distinct": 1
+            },
+            "CHECKSUM": {
+              "nulls": 0,
+              "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "distinct": 1
+            },
+            "MEDIA_TYPE": {
+              "nulls": 0,
+              "min": "application/pdf",
+              "max": "application/pdf",
+              "distinct": 1
+            },
+            "TEXT": {
+              "nulls": 0,
+              "min": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+              "max": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+              "distinct": 1
+            },
+            "PAGE_COUNT": {
+              "nulls": 0,
+              "min": 26,
+              "max": 26,
+              "distinct": 1
+            },
+            "SHA256": {
+              "nulls": 0,
+              "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "distinct": 1
+            },
+            "ERROR": {
+              "nulls": 200,
+              "min": null,
+              "max": null,
+              "distinct": 0
+            },
+            "RUN_DATE": {
+              "nulls": 0,
+              "min": "2026-11-20",
+              "max": "2026-11-20",
+              "distinct": 1
+            }
+          }
+        },
+        "keyed_row_hash": {
+          "keys": [
+            "FILE_OBJECT_ID",
+            "RUN_DATE"
+          ],
+          "difference": 0,
+          "before": "11f4cf98a8021c1194f37d50cd050cd16dc5cabf369dd33fc6ae4693d7054403",
+          "after": "11f4cf98a8021c1194f37d50cd050cd16dc5cabf369dd33fc6ae4693d7054403",
+          "key_policy": "contract keys; full-row digest preserves multiplicity"
+        },
+        "sampled_differences": [],
+        "passed": true
+      }
+    },
+    {
+      "phase": "legacy + incremental 2026-11-19",
+      "command": [
+        "docker",
+        "compose",
+        "-f",
+        "docker-compose.spark.yml",
+        "-p",
+        "sfx-sfg1120-spark-sfx-sfg1120-before",
+        "exec",
+        "-T",
+        "-e",
+        "SFX_RUN_DATE=2026-11-19",
+        "spark-master",
+        "bash",
+        "/opt/sfx/spark/submit/file_object_binary_extract.sh"
+      ],
+      "measurement": {
+        "row_count": {
+          "before": 400,
+          "after": 400
+        },
+        "comparison_rules": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        },
+        "column_profile": {
+          "before": {
+            "STORAGE_KEY": {
+              "nulls": 0,
+              "min": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+              "max": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+              "distinct": 1
+            },
+            "FILE_OBJECT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "SIZE_BYTES": {
+              "nulls": 0,
+              "min": 265628,
+              "max": 265628,
+              "distinct": 1
+            },
+            "CHECKSUM": {
+              "nulls": 0,
+              "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "distinct": 1
+            },
+            "MEDIA_TYPE": {
+              "nulls": 0,
+              "min": "application/pdf",
+              "max": "application/pdf",
+              "distinct": 1
+            },
+            "TEXT": {
+              "nulls": 0,
+              "min": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+              "max": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+              "distinct": 1
+            },
+            "PAGE_COUNT": {
+              "nulls": 0,
+              "min": 26,
+              "max": 26,
+              "distinct": 1
+            },
+            "SHA256": {
+              "nulls": 0,
+              "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "distinct": 1
+            },
+            "ERROR": {
+              "nulls": 400,
+              "min": null,
+              "max": null,
+              "distinct": 0
+            },
+            "RUN_DATE": {
+              "nulls": 0,
+              "min": "2026-11-19",
+              "max": "2026-11-20",
+              "distinct": 2
+            }
+          },
+          "after": {
+            "STORAGE_KEY": {
+              "nulls": 0,
+              "min": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+              "max": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+              "distinct": 1
+            },
+            "FILE_OBJECT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "SIZE_BYTES": {
+              "nulls": 0,
+              "min": 265628,
+              "max": 265628,
+              "distinct": 1
+            },
+            "CHECKSUM": {
+              "nulls": 0,
+              "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "distinct": 1
+            },
+            "MEDIA_TYPE": {
+              "nulls": 0,
+              "min": "application/pdf",
+              "max": "application/pdf",
+              "distinct": 1
+            },
+            "TEXT": {
+              "nulls": 0,
+              "min": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+              "max": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+              "distinct": 1
+            },
+            "PAGE_COUNT": {
+              "nulls": 0,
+              "min": 26,
+              "max": 26,
+              "distinct": 1
+            },
+            "SHA256": {
+              "nulls": 0,
+              "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "distinct": 1
+            },
+            "ERROR": {
+              "nulls": 400,
+              "min": null,
+              "max": null,
+              "distinct": 0
+            },
+            "RUN_DATE": {
+              "nulls": 0,
+              "min": "2026-11-19",
+              "max": "2026-11-20",
+              "distinct": 2
+            }
+          }
+        },
+        "keyed_row_hash": {
+          "keys": [
+            "FILE_OBJECT_ID",
+            "RUN_DATE"
+          ],
+          "difference": 0,
+          "before": "ce7c3a3781f903fd3e5675a31f89647e0fd3919c12452dc515b3129b9e4ddda7",
+          "after": "ce7c3a3781f903fd3e5675a31f89647e0fd3919c12452dc515b3129b9e4ddda7",
+          "key_policy": "contract keys; full-row digest preserves multiplicity"
+        },
+        "sampled_differences": [],
+        "passed": true
+      }
+    },
+    {
+      "phase": "legacy + incremental 2026-11-20",
+      "command": [
+        "docker",
+        "compose",
+        "-f",
+        "docker-compose.spark.yml",
+        "-p",
+        "sfx-sfg1120-spark-sfx-sfg1120-before",
+        "exec",
+        "-T",
+        "-e",
+        "SFX_RUN_DATE=2026-11-20",
+        "spark-master",
+        "bash",
+        "/opt/sfx/spark/submit/file_object_binary_extract.sh"
+      ],
+      "measurement": {
+        "row_count": {
+          "before": 400,
+          "after": 400
+        },
+        "comparison_rules": {
+          "trailing_pad_insensitive": [],
+          "other_columns": "exact"
+        },
+        "column_profile": {
+          "before": {
+            "STORAGE_KEY": {
+              "nulls": 0,
+              "min": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+              "max": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+              "distinct": 1
+            },
+            "FILE_OBJECT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "SIZE_BYTES": {
+              "nulls": 0,
+              "min": 265628,
+              "max": 265628,
+              "distinct": 1
+            },
+            "CHECKSUM": {
+              "nulls": 0,
+              "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "distinct": 1
+            },
+            "MEDIA_TYPE": {
+              "nulls": 0,
+              "min": "application/pdf",
+              "max": "application/pdf",
+              "distinct": 1
+            },
+            "TEXT": {
+              "nulls": 0,
+              "min": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+              "max": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+              "distinct": 1
+            },
+            "PAGE_COUNT": {
+              "nulls": 0,
+              "min": 26,
+              "max": 26,
+              "distinct": 1
+            },
+            "SHA256": {
+              "nulls": 0,
+              "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "distinct": 1
+            },
+            "ERROR": {
+              "nulls": 400,
+              "min": null,
+              "max": null,
+              "distinct": 0
+            },
+            "RUN_DATE": {
+              "nulls": 0,
+              "min": "2026-11-19",
+              "max": "2026-11-20",
+              "distinct": 2
+            }
+          },
+          "after": {
+            "STORAGE_KEY": {
+              "nulls": 0,
+              "min": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+              "max": "documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf",
+              "distinct": 1
+            },
+            "FILE_OBJECT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "DOCUMENT_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 200,
+              "distinct": 200
+            },
+            "SIZE_BYTES": {
+              "nulls": 0,
+              "min": 265628,
+              "max": 265628,
+              "distinct": 1
+            },
+            "CHECKSUM": {
+              "nulls": 0,
+              "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "distinct": 1
+            },
+            "MEDIA_TYPE": {
+              "nulls": 0,
+              "min": "application/pdf",
+              "max": "application/pdf",
+              "distinct": 1
+            },
+            "TEXT": {
+              "nulls": 0,
+              "min": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+              "max": "Operating review section 1: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 2: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 3: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 4: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 5: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 6: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 7: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 8: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 9: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 10: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 11: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 12: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 13: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 14: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 15: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 16: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 17: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 18: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 19: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 20: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 21: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 22: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 23: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 24: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 25: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 26: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 27: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 28: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 29: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 30: approve the service schedule and reconcile revenue for reporting period November 2026. Reference 41000.\nOperating review section 31: approve the service schedule and reconcile revenue for reporting period November 2026.",
+              "distinct": 1
+            },
+            "PAGE_COUNT": {
+              "nulls": 0,
+              "min": 26,
+              "max": 26,
+              "distinct": 1
+            },
+            "SHA256": {
+              "nulls": 0,
+              "min": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "max": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87",
+              "distinct": 1
+            },
+            "ERROR": {
+              "nulls": 400,
+              "min": null,
+              "max": null,
+              "distinct": 0
+            },
+            "RUN_DATE": {
+              "nulls": 0,
+              "min": "2026-11-19",
+              "max": "2026-11-20",
+              "distinct": 2
+            }
+          }
+        },
+        "keyed_row_hash": {
+          "keys": [
+            "FILE_OBJECT_ID",
+            "RUN_DATE"
+          ],
+          "difference": 0,
+          "before": "ce7c3a3781f903fd3e5675a31f89647e0fd3919c12452dc515b3129b9e4ddda7",
+          "after": "ce7c3a3781f903fd3e5675a31f89647e0fd3919c12452dc515b3129b9e4ddda7",
+          "key_policy": "contract keys; full-row digest preserves multiplicity"
+        },
+        "sampled_differences": [],
+        "passed": true
+      }
+    }
+  ],
+  "passed": true,
+  "landing_sha256": {
+    "etl/spark/.data/sfx-sfg1120-before/landing/documents/FILE_OBJECT/20261109.psv": "5532b3fda692608c22e20e96635d3262df05c07828df9f5167e0544d17e71b8a",
+    "etl/spark/.data/sfx-sfg1120-before/landing/documents/FILE_OBJECT_BLOBS/review-dd840a66025ac1d38fe0.pdf": "0402649913d950c7a7562a1d30ca8059d1de9c1d2fcc6c849285cc31bbe87b87"
+  },
+  "output_sha256": {
+    "etl/spark/.data/sfx-sfg1120-before/lake/documents/file_object_binary_extract/run_date=2026-11-19/part-00000-b425890e-0d97-4ae6-9447-62ed4b97e509.c000.snappy.parquet": "0058f2d6e7fe459e338dc972f773d03e575eef98bf45d39265cf8069dc24719b",
+    "etl/spark/.data/sfx-sfg1120-before/lake/documents/file_object_binary_extract/run_date=2026-11-20/part-00000-d5f0eeb0-a06f-4730-a87e-7eb891e6e51c.c000.snappy.parquet": "b3c80cb11b22a5e15424656cdbb35f8377b69407a1022b679f2f4f57d1817732"
+  },
+  "execution_log_sha256": {
+    "etl/spark/.data/sfx-sfg1120-before/logs/file_object_binary_extract.2026-11-19.log": "6fc93883c6fb8b6c0c9a52c4039ae91148ef7868b2bf32a7ac72d5fae946fd55",
+    "etl/spark/.data/sfx-sfg1120-before/logs/file_object_binary_extract.2026-11-20.log": "02ec158bf0b3369d4f5832ce67bde9f0d3e62c4f444f113458ef877acfe32c25",
+    "etl/spark/.data/sfx-sfg1120-before/logs/file_object_binary_extract.log": "02ec158bf0b3369d4f5832ce67bde9f0d3e62c4f444f113458ef877acfe32c25"
+  },
+  "conversion_sha256": {
+    "warehouse/dbt/macros/documents_spark_udfs.sql": "febdaacec63681c09fa183b30b3a517a802bfdaa0df4cef41dbcfb1fca0be9d8",
+    "warehouse/dbt/models/spark/file_object_binary_extract/file_object_binary_extract.sql": "871bfe964c7ca89ecbb04323a4df678e2e7d6054749d56b342dff24193dde2eb"
+  },
+  "legacy_code_sha256": {
+    "etl/spark/jobs/py/common/runtime.py": "dc4f1f691f35d05905cc03bcd0aed675588b42faf18ca3b7e3910954a21f738f",
+    "etl/spark/jobs/py/file_object_binary_extract.py": "b0aa7dd444b1176ae25d4b330fdf3f90a3fd9e02dcf315488a451408ebb37fe9"
+  }
+}
