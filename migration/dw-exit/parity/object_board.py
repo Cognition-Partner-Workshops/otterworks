@@ -4,6 +4,7 @@ from collections import Counter
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import sys
 import zlib
@@ -23,7 +24,19 @@ from assess import board as wave_board
 
 
 def quote(name):
-    return '"' + name.replace('"', '""') + '"'
+    if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z_][A-Za-z_0-9$]*', name):
+        raise ValueError('Invalid identifier')
+    return sql.Identifier(name).as_string()
+
+
+def compose(template, **parts):
+    return sql.SQL(template).format(**{k: sql.SQL(v) for k, v in parts.items()}).as_string()
+
+
+def column_definition(name, kind):
+    if not re.fullmatch(r'SMALLINT|INTEGER|BIGINT|DATE|TIMESTAMP|TIMESTAMPTZ|TIMESTAMP WITH TIME ZONE|BOOLEAN|FLOAT|DOUBLE|BLOB|VARCHAR|DECIMAL\(\d+,\d+\)', kind):
+        raise ValueError('Unsupported column type')
+    return quote(name) + ' ' + kind
 
 
 def relation(name):
@@ -46,8 +59,7 @@ def measure(connection, name):
     profiles = {}
     for column in columns:
         c = quote(column)
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        values = connection.execute(f'SELECT COUNT(*)-COUNT({c}), MIN({c}), MAX({c}), COUNT(DISTINCT {c}) FROM {relation(name)}').fetchone()
+        values = connection.execute(compose('SELECT COUNT(*)-COUNT({c}), MIN({c}), MAX({c}), COUNT(DISTINCT {c}) FROM {table}', c=c, table=relation(name))).fetchone()
         profiles[column] = dict(zip(('nulls', 'min', 'max', 'distinct'), values))
     return columns, rows, profiles
 
@@ -102,19 +114,18 @@ def source_snapshot(dsn, names):
                                 'real': 'FLOAT', 'double precision': 'DOUBLE', 'bytea': 'BLOB'}.get(dtype, 'VARCHAR')
                         if dtype == 'numeric':
                             kind = f'DECIMAL({precision or 38},{scale or 0})'
-                        definitions.append(quote(column.upper())+' '+kind)
+                        definitions.append(column_definition(column.upper(), kind))
                     source_schema, source_table = name.split('.')
                     # Identifiers are quoted; column types come from the fixed mapping above.
                     # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     connection.execute('CREATE SCHEMA IF NOT EXISTS '+quote(source_schema))
-                    # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-                    connection.execute(f'CREATE TABLE {relation(name)} ({", ".join(definitions)})')
+                    connection.execute(compose('CREATE TABLE {table} ({columns})', table=relation(name), columns=', '.join(definitions)))
                     # psycopg Identifier quotes both catalog-derived identifiers.
                     # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     cursor.execute(sql.SQL('SELECT * FROM {}.{}').format(sql.Identifier(schema),sql.Identifier(table)))
                     rows = cursor.fetchall()
                     if rows:
-                        connection.executemany(f'INSERT INTO {relation(name)} VALUES ({", ".join("?" for _ in cols)})', rows)
+                        connection.executemany(compose('INSERT INTO {table} VALUES ({values})', table=relation(name), values=', '.join('?' for _ in cols)), rows)
                     ready.add(name)
                 except (duckdb.Error, psycopg.Error, ValueError) as error:
                     errors[name] = 'source snapshot: '+type(error).__name__
@@ -136,13 +147,12 @@ def materialize(before, names, conversion_dir):
         # DuckDB metadata and identifiers are local; relation()/quote() escape identifiers.
         # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         definitions = before.execute('DESCRIBE '+relation(name)).fetchall()
-        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-        after.execute(f'CREATE TABLE {relation(target)} ({", ".join(quote(c[0])+" "+c[1] for c in definitions)})')
+        after.execute(compose('CREATE TABLE {table} ({columns})', table=relation(target), columns=', '.join(column_definition(c[0], c[1]) for c in definitions)))
         if table.startswith('STG_'):
             # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             rows = before.execute('SELECT * FROM '+relation(name)).fetchall()
             if rows:
-                after.executemany(f'INSERT INTO {relation(target)} VALUES ({", ".join("?" for _ in definitions)})', rows)
+                after.executemany(compose('INSERT INTO {table} VALUES ({values})', table=relation(target), values=', '.join('?' for _ in definitions)), rows)
             ready.add(target)
     for filename in ('10_load.sql', '30_views.sql'):
         text = RunConfig.from_env().render((conversion_dir / filename).read_text())

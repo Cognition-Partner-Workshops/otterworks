@@ -20,6 +20,28 @@ def obj(**changes):
                 output_relations=['SFX_BILLING.T']),**changes)
 
 
+@pytest.mark.parametrize('name', ['', 'T', 'S.T.X', 'S.T;DROP TABLE X', 'S."T"', 'S.1T', 'S.'])
+def test_rejects_malformed_relations(name):
+    with pytest.raises(ValueError):
+        board.measure(duckdb.connect(), name)
+
+
+@pytest.mark.parametrize('name,kind', [('ID;DROP TABLE X', 'INTEGER'), ('ID', 'INTEGER); DROP TABLE X; --'), ('', 'VARCHAR')])
+def test_rejects_malformed_column_definitions(name, kind):
+    with pytest.raises(ValueError):
+        board.column_definition(name, kind)
+
+
+def test_measure_keeps_injected_values_as_data(relations):
+    before, _ = relations
+    value = "x'); DROP TABLE SFX_BILLING.T; --"
+    before.execute('INSERT INTO SFX_BILLING.T VALUES (?, ?)', (1, value))
+    columns, rows, profiles = board.measure(before, 'SFX_BILLING.T')
+    assert columns == ['ID', 'VALUE']
+    assert rows == [(1, value)]
+    assert profiles['VALUE']['min'] == value
+
+
 @pytest.fixture
 def relations():
     before,after = duckdb.connect(),duckdb.connect()

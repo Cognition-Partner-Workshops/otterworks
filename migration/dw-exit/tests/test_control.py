@@ -40,6 +40,24 @@ def test_scope_guard():
         control.connection_options({'SNOWFLAKE_DATABASE': 'OTHER'})
 
 
+@pytest.mark.parametrize('name', ['', '1id', 'id;DROP TABLE x', 'id"', 'id--x', 'id.x'])
+def test_rejects_malformed_columns(name):
+    cursor = Cursor()
+    with pytest.raises(ValueError):
+        control.create_table(cursor, 'MANIFEST', [name])
+    with pytest.raises(ValueError):
+        control.insert_rows(cursor, 'MANIFEST', [name], [])
+    assert cursor.calls == []
+
+
+def test_comment_injection_is_bound(monkeypatch):
+    value = "x'; DROP SCHEMA MIGRATION_CONTROL; --"
+    monkeypatch.setattr(control, 'COMMENT', value)
+    cursor = Cursor()
+    control.create_table(cursor, 'MANIFEST', ['id'])
+    assert all(value not in query and params == (value,) for query, params in cursor.calls)
+
+
 def test_missing_schema(capsys):
     assert not control.verify(Cursor([0]))
     assert 'MIGRATION_CONTROL missing' in capsys.readouterr().out
@@ -63,13 +81,28 @@ def test_schema_and_view_contracts():
     assert "STATUS\" VARCHAR DEFAULT 'not_started'" in ddl
     assert 'UPDATED_AT TIMESTAMP_LTZ' in ddl
     assert 'UPDATED_BY_ACT' in ddl
-    assert control.COMMENT in ddl
+    assert control.COMMENT not in ddl
+    assert cursor.calls[0][1] == (control.COMMENT,)
+    assert cursor.calls[1][1] == (control.COMMENT,)
     views = control.view_sql()
     assert set(views) == control.VIEWS
     assert 'NOT EXISTS' in views['V_DEAD_OBJECTS']
     assert '2026-11-10' in views['V_DEAD_OBJECTS']
     assert "STATUS NOT IN ('done','retired')" in views['V_LICENCE_COUNTER']
     assert 'CODE_PRINCIPALS' in views['V_HIDDEN_CONSUMERS']
+
+
+def test_view_comment_binding_preserves_literal_percent(monkeypatch):
+    monkeypatch.setattr(control, 'tag', lambda *a: None)
+    monkeypatch.setattr(control, 'create_table', lambda *a: None)
+    monkeypatch.setattr(control, 'build', lambda: {'scans': {}})
+    monkeypatch.setattr(control, 'insert_rows', lambda *a: None)
+    cursor = Cursor()
+    control.load(cursor)
+    query, params = next((q, p) for q, p in cursor.calls if q.startswith('CREATE OR REPLACE VIEW') and "LIKE 'SFX_" in q)
+    rendered = query % tuple("'" + p + "'" for p in params)
+    assert "LIKE 'SFX_%'" in rendered
+    assert control.COMMENT in rendered
 
 
 def test_dead_feeders(estate=None):

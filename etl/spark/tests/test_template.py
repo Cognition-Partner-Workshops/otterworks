@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "jobs/py"))
-from common.runtime import refresh_columns, save_jdbc_refresh, save_partition
+from common.runtime import compose, quote_identifier, refresh_columns, relation, save_jdbc_refresh, save_partition
 
 spec = importlib.util.spec_from_file_location("template_submit", ROOT / "template/submit.py")
 submit = importlib.util.module_from_spec(spec)
@@ -66,8 +66,8 @@ class TemplateTest(unittest.TestCase):
             connection.rollback.assert_not_called()
             connection.close.assert_called_once()
             sql = [call.args[0] for call in connection.createStatement.return_value.executeUpdate.call_args_list]
-            self.assertEqual(sql[0], "DELETE FROM test.result")
-            self.assertTrue(sql[1].startswith('INSERT INTO test.result ("value") SELECT "value" FROM test._sfx_stage_'))
+            self.assertEqual(sql[0], 'DELETE FROM "test"."result"')
+            self.assertTrue(sql[1].startswith('INSERT INTO "test"."result" ("value") SELECT "value" FROM "test"."_sfx_stage_'))
 
     def test_jdbc_existing_lowercase_target(self):
         frame = MagicMock()
@@ -79,7 +79,7 @@ class TemplateTest(unittest.TestCase):
         connection.prepareStatement.return_value.setString.assert_called_once_with(1, "sfx_billing.customer_account")
         sql = connection.createStatement.return_value.executeUpdate.call_args_list[1].args[0]
         self.assertTrue(sql.startswith(
-            'INSERT INTO sfx_billing.customer_account ("account_id", "region") SELECT "ACCOUNT_ID", "Region" FROM '
+            'INSERT INTO "sfx_billing"."customer_account" ("account_id", "region") SELECT "ACCOUNT_ID", "Region" FROM '
         ))
 
     def test_refresh_columns(self):
@@ -88,6 +88,28 @@ class TemplateTest(unittest.TestCase):
         for target in (["other"], ["id", "Id"]):
             with self.assertRaises(ValueError):
                 refresh_columns(["ID"], target)
+
+    def test_sql_identifiers_reject_injection(self):
+        self.assertEqual(quote_identifier('Mixed_Case'), '"Mixed_Case"')
+        self.assertEqual(relation('SCHEMA.Table'), '"schema"."table"')
+        for value in ('', 'a;DROP TABLE x', 'a"b', 'a--x', 'a.b', 'a b', '1table'):
+            with self.assertRaises(ValueError):
+                quote_identifier(value)
+        with self.assertRaises(TypeError):
+            compose('SELECT * FROM {}', 'unvalidated')
+        for value in ('', 'table', 'a.b.c', 'a.b;DROP TABLE x'):
+            with self.assertRaises(ValueError):
+                relation(value)
+
+    def test_bad_column_rolls_back_without_insert(self):
+        frame = MagicMock()
+        frame.columns = ['id; DROP TABLE x']
+        connection = frame.sparkSession.sparkContext._jvm.java.sql.DriverManager.getConnection.return_value
+        target_rows(connection, frame.columns)
+        with patch.dict('os.environ', {'TD_JDBC_PASSWORD': 'test-only'}), self.assertRaises(ValueError):
+            save_jdbc_refresh(frame, 'test.result')
+        connection.rollback.assert_called_once()
+        self.assertEqual(connection.createStatement.return_value.executeUpdate.call_count, 1)
 
     def test_jdbc_error(self):
         frame = MagicMock()
