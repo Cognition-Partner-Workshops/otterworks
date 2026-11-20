@@ -1,0 +1,10 @@
+name: users/spark-jobs
+description: Spark jobs reading the users area
+objects:
+- nc6160237cc5eb2cf  # spark_job team_graph_components
+- nadfca1251f9b6a28  # spark_job user_pref_json_flatten
+- nccade0800035b66b  # spark_job users_active_daily
+- n1d48699afd1ffdb6  # spark_job users_login_useragent_parse
+- nb8c305d5ee549186  # spark_job users_risk_score
+- nc71a4f6251d9ca10  # spark_job users_team_rollup
+outputs: {}

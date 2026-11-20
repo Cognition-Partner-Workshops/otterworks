@@ -1,0 +1,19 @@
+name: users/identity-status
+description: SSO identities and user status history (03_load_identity)
+objects:
+- n9370b20aebb2bf09  # bteq 03_load_identity
+- n7afd80efc14db228  # fastload users_sso_identity
+- n2d7643f3f42bc7df  # fastload users_user_status_hist
+- nd5ebfccac7c4864a  # table SFX_USERS.SSO_IDENTITY
+- n751362a449a58100  # table SFX_USERS.STG_SSO_IDENTITY
+- nb91c260f3263b35b  # table SFX_USERS.STG_USER_STATUS_HIST
+- n05041abb99cdd42d  # table SFX_USERS.USER_STATUS_HIST
+outputs:
+  nd5ebfccac7c4864a:
+  - SFX_USERS.SSO_IDENTITY
+  n751362a449a58100:
+  - SFX_USERS.STG_SSO_IDENTITY
+  nb91c260f3263b35b:
+  - SFX_USERS.STG_USER_STATUS_HIST
+  n05041abb99cdd42d:
+  - SFX_USERS.USER_STATUS_HIST

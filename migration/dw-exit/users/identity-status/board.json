@@ -1,0 +1,886 @@
+{
+  "waves": {
+    "1": {
+      "total": 4,
+      "by_kind": {
+        "fastload": 2,
+        "table": 2
+      },
+      "by_target": {
+        "dbt_model": 2,
+        "snowflake_scripting": 2
+      }
+    },
+    "2": {
+      "total": 3,
+      "by_kind": {
+        "bteq": 1,
+        "table": 2
+      },
+      "by_target": {
+        "dbt_model": 2,
+        "snowflake_scripting": 1
+      }
+    },
+    "3": {
+      "total": 0,
+      "by_kind": {},
+      "by_target": {}
+    },
+    "4": {
+      "total": 0,
+      "by_kind": {},
+      "by_target": {}
+    }
+  },
+  "licence_counters": {
+    "teradata_objects": {
+      "remaining": 178,
+      "target": 0
+    },
+    "powercenter_mappings": {
+      "remaining": 20,
+      "target": 0
+    },
+    "powercenter_annual_cost": {
+      "value": 412000,
+      "currency": "USD"
+    },
+    "powercenter_objects": {
+      "remaining": 44,
+      "target": 0
+    },
+    "spark_jobs": {
+      "remaining": 30,
+      "target": 0
+    },
+    "licence_dependencies": {
+      "remaining": 252,
+      "total": 252,
+      "target": 0
+    }
+  },
+  "run_token": "sfx-sfg1120",
+  "target": "duckdb",
+  "rows": [
+    {
+      "id": "n9370b20aebb2bf09",
+      "name": "03_load_identity",
+      "kind": "bteq",
+      "wave": 2,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 60,
+        "after": 60
+      },
+      "column_profile": {
+        "SFX_USERS.SSO_IDENTITY": {
+          "before": {
+            "IDENTITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "PROVIDER_CD": {
+              "nulls": 0,
+              "min": "OIDC        ",
+              "max": "SAML        ",
+              "distinct": 2
+            },
+            "SUBJECT_ID": {
+              "nulls": 0,
+              "min": "361d0b2bd71e1cf54df0034f29d6811b89e248a3",
+              "max": "fe69afa11a9d2b2c2e5148915a530e1f63aec9b2",
+              "distinct": 20
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "IDENTITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "PROVIDER_CD": {
+              "nulls": 0,
+              "min": "OIDC        ",
+              "max": "SAML        ",
+              "distinct": 2
+            },
+            "SUBJECT_ID": {
+              "nulls": 0,
+              "min": "361d0b2bd71e1cf54df0034f29d6811b89e248a3",
+              "max": "fe69afa11a9d2b2c2e5148915a530e1f63aec9b2",
+              "distinct": 20
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        },
+        "SFX_USERS.USER_STATUS_HIST": {
+          "before": {
+            "STATUS_HISTORY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "VALID_FROM": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            },
+            "VALID_TO": {
+              "nulls": 0,
+              "min": "2027-11-09",
+              "max": "2027-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "STATUS_HISTORY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "VALID_FROM": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            },
+            "VALID_TO": {
+              "nulls": 0,
+              "min": "2027-11-09",
+              "max": "2027-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.SSO_IDENTITY": {
+          "keys": [
+            "IDENTITY_ID"
+          ],
+          "difference": 0,
+          "before": "cfd8737c990d9648e43c3a3e31861af112063ab0ed4f930e034b69ca04518bdd",
+          "after": "cfd8737c990d9648e43c3a3e31861af112063ab0ed4f930e034b69ca04518bdd",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        },
+        "SFX_USERS.USER_STATUS_HIST": {
+          "keys": [
+            "STATUS_HISTORY_ID"
+          ],
+          "difference": 0,
+          "before": "fa8643f99fee489203037f5d7f1c506ccfd8cfe3b72eac722cd047130b734c9a",
+          "after": "fa8643f99fee489203037f5d7f1c506ccfd8cfe3b72eac722cd047130b734c9a",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.SSO_IDENTITY": [],
+        "SFX_USERS.USER_STATUS_HIST": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n7afd80efc14db228",
+      "name": "users_sso_identity",
+      "kind": "fastload",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.STG_SSO_IDENTITY": {
+          "before": {
+            "IDENTITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "PROVIDER_CD": {
+              "nulls": 0,
+              "min": "OIDC",
+              "max": "SAML",
+              "distinct": 2
+            },
+            "SUBJECT_ID": {
+              "nulls": 0,
+              "min": "361d0b2bd71e1cf54df0034f29d6811b89e248a3",
+              "max": "fe69afa11a9d2b2c2e5148915a530e1f63aec9b2",
+              "distinct": 20
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "IDENTITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "PROVIDER_CD": {
+              "nulls": 0,
+              "min": "OIDC",
+              "max": "SAML",
+              "distinct": 2
+            },
+            "SUBJECT_ID": {
+              "nulls": 0,
+              "min": "361d0b2bd71e1cf54df0034f29d6811b89e248a3",
+              "max": "fe69afa11a9d2b2c2e5148915a530e1f63aec9b2",
+              "distinct": 20
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_SSO_IDENTITY": {
+          "keys": [
+            "IDENTITY_ID"
+          ],
+          "difference": 0,
+          "before": "7313988654290b4eca16563fe9628a821076ceb5cbf3585d51b916c8594e074f",
+          "after": "7313988654290b4eca16563fe9628a821076ceb5cbf3585d51b916c8594e074f",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_SSO_IDENTITY": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n2d7643f3f42bc7df",
+      "name": "users_user_status_hist",
+      "kind": "fastload",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 40,
+        "after": 40
+      },
+      "column_profile": {
+        "SFX_USERS.STG_USER_STATUS_HIST": {
+          "before": {
+            "STATUS_HISTORY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE",
+              "max": "ACTIVE",
+              "distinct": 1
+            },
+            "VALID_FROM": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            },
+            "VALID_TO": {
+              "nulls": 0,
+              "min": "2027-11-09",
+              "max": "2027-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "STATUS_HISTORY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE",
+              "max": "ACTIVE",
+              "distinct": 1
+            },
+            "VALID_FROM": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            },
+            "VALID_TO": {
+              "nulls": 0,
+              "min": "2027-11-09",
+              "max": "2027-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_USER_STATUS_HIST": {
+          "keys": [
+            "STATUS_HISTORY_ID"
+          ],
+          "difference": 0,
+          "before": "35022647d92a1916fbcb002f076aecfc643d5645d8bfb53e4dd24e1d3ba5520d",
+          "after": "35022647d92a1916fbcb002f076aecfc643d5645d8bfb53e4dd24e1d3ba5520d",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_USER_STATUS_HIST": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nd5ebfccac7c4864a",
+      "name": "SFX_USERS.SSO_IDENTITY",
+      "kind": "table",
+      "wave": 2,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.SSO_IDENTITY": {
+          "before": {
+            "IDENTITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "PROVIDER_CD": {
+              "nulls": 0,
+              "min": "OIDC        ",
+              "max": "SAML        ",
+              "distinct": 2
+            },
+            "SUBJECT_ID": {
+              "nulls": 0,
+              "min": "361d0b2bd71e1cf54df0034f29d6811b89e248a3",
+              "max": "fe69afa11a9d2b2c2e5148915a530e1f63aec9b2",
+              "distinct": 20
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "IDENTITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "PROVIDER_CD": {
+              "nulls": 0,
+              "min": "OIDC        ",
+              "max": "SAML        ",
+              "distinct": 2
+            },
+            "SUBJECT_ID": {
+              "nulls": 0,
+              "min": "361d0b2bd71e1cf54df0034f29d6811b89e248a3",
+              "max": "fe69afa11a9d2b2c2e5148915a530e1f63aec9b2",
+              "distinct": 20
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.SSO_IDENTITY": {
+          "keys": [
+            "IDENTITY_ID"
+          ],
+          "difference": 0,
+          "before": "cfd8737c990d9648e43c3a3e31861af112063ab0ed4f930e034b69ca04518bdd",
+          "after": "cfd8737c990d9648e43c3a3e31861af112063ab0ed4f930e034b69ca04518bdd",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.SSO_IDENTITY": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n751362a449a58100",
+      "name": "SFX_USERS.STG_SSO_IDENTITY",
+      "kind": "table",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 20,
+        "after": 20
+      },
+      "column_profile": {
+        "SFX_USERS.STG_SSO_IDENTITY": {
+          "before": {
+            "IDENTITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "PROVIDER_CD": {
+              "nulls": 0,
+              "min": "OIDC",
+              "max": "SAML",
+              "distinct": 2
+            },
+            "SUBJECT_ID": {
+              "nulls": 0,
+              "min": "361d0b2bd71e1cf54df0034f29d6811b89e248a3",
+              "max": "fe69afa11a9d2b2c2e5148915a530e1f63aec9b2",
+              "distinct": 20
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "IDENTITY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "PROVIDER_CD": {
+              "nulls": 0,
+              "min": "OIDC",
+              "max": "SAML",
+              "distinct": 2
+            },
+            "SUBJECT_ID": {
+              "nulls": 0,
+              "min": "361d0b2bd71e1cf54df0034f29d6811b89e248a3",
+              "max": "fe69afa11a9d2b2c2e5148915a530e1f63aec9b2",
+              "distinct": 20
+            },
+            "CREATED_DT": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_SSO_IDENTITY": {
+          "keys": [
+            "IDENTITY_ID"
+          ],
+          "difference": 0,
+          "before": "7313988654290b4eca16563fe9628a821076ceb5cbf3585d51b916c8594e074f",
+          "after": "7313988654290b4eca16563fe9628a821076ceb5cbf3585d51b916c8594e074f",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_SSO_IDENTITY": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "nb91c260f3263b35b",
+      "name": "SFX_USERS.STG_USER_STATUS_HIST",
+      "kind": "table",
+      "wave": 1,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 40,
+        "after": 40
+      },
+      "column_profile": {
+        "SFX_USERS.STG_USER_STATUS_HIST": {
+          "before": {
+            "STATUS_HISTORY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE",
+              "max": "ACTIVE",
+              "distinct": 1
+            },
+            "VALID_FROM": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            },
+            "VALID_TO": {
+              "nulls": 0,
+              "min": "2027-11-09",
+              "max": "2027-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "STATUS_HISTORY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE",
+              "max": "ACTIVE",
+              "distinct": 1
+            },
+            "VALID_FROM": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            },
+            "VALID_TO": {
+              "nulls": 0,
+              "min": "2027-11-09",
+              "max": "2027-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.STG_USER_STATUS_HIST": {
+          "keys": [
+            "STATUS_HISTORY_ID"
+          ],
+          "difference": 0,
+          "before": "35022647d92a1916fbcb002f076aecfc643d5645d8bfb53e4dd24e1d3ba5520d",
+          "after": "35022647d92a1916fbcb002f076aecfc643d5645d8bfb53e4dd24e1d3ba5520d",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.STG_USER_STATUS_HIST": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    },
+    {
+      "id": "n05041abb99cdd42d",
+      "name": "SFX_USERS.USER_STATUS_HIST",
+      "kind": "table",
+      "wave": 2,
+      "owner": "@otterworks/data-platform",
+      "subject_area": "users",
+      "licence_dependency": "teradata",
+      "status": "green",
+      "migration_status": "not_started",
+      "licence_dependency_count": 1,
+      "row_count": {
+        "before": 40,
+        "after": 40
+      },
+      "column_profile": {
+        "SFX_USERS.USER_STATUS_HIST": {
+          "before": {
+            "STATUS_HISTORY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "VALID_FROM": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            },
+            "VALID_TO": {
+              "nulls": 0,
+              "min": "2027-11-09",
+              "max": "2027-11-09",
+              "distinct": 1
+            }
+          },
+          "after": {
+            "STATUS_HISTORY_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 40,
+              "distinct": 40
+            },
+            "USER_ID": {
+              "nulls": 0,
+              "min": 1,
+              "max": 20,
+              "distinct": 20
+            },
+            "STATUS_CD": {
+              "nulls": 0,
+              "min": "ACTIVE      ",
+              "max": "ACTIVE      ",
+              "distinct": 1
+            },
+            "VALID_FROM": {
+              "nulls": 0,
+              "min": "2024-11-09",
+              "max": "2024-11-09",
+              "distinct": 1
+            },
+            "VALID_TO": {
+              "nulls": 0,
+              "min": "2027-11-09",
+              "max": "2027-11-09",
+              "distinct": 1
+            }
+          }
+        }
+      },
+      "keyed_row_hash": {
+        "SFX_USERS.USER_STATUS_HIST": {
+          "keys": [
+            "STATUS_HISTORY_ID"
+          ],
+          "difference": 0,
+          "before": "fa8643f99fee489203037f5d7f1c506ccfd8cfe3b72eac722cd047130b734c9a",
+          "after": "fa8643f99fee489203037f5d7f1c506ccfd8cfe3b72eac722cd047130b734c9a",
+          "key_policy": "first declared column; full-row digest preserves multiplicity"
+        }
+      },
+      "sampled_differences": {
+        "SFX_USERS.USER_STATUS_HIST": []
+      },
+      "reason": null,
+      "snowflake": {
+        "status": "red",
+        "reason": "Snowflake login down; nothing created in Snowflake"
+      }
+    }
+  ],
+  "group": "users/identity-status",
+  "measurement_contract": {
+    "source": "PostgreSQL Teradata emulator snapshot",
+    "local_target": "DuckDB",
+    "conversions": [
+      "users/identity-status/10_load.sql"
+    ],
+    "non_relational_objects": "declared output relations",
+    "migration_state": "BEFORE"
+  },
+  "summary": {
+    "rows": 7,
+    "red": 0,
+    "green": 7,
+    "measured": 7,
+    "migrated": 0,
+    "licence_remaining": 7,
+    "licence_total": 7,
+    "licence_by_system": {
+      "teradata": 7
+    }
+  }
+}
