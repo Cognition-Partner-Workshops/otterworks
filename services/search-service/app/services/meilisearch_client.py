@@ -248,8 +248,14 @@ class MeiliSearchService:
         )
 
     def suggest(self, prefix: str, size: int = 10) -> list[str]:
-        """Autocomplete suggestions using MeiliSearch prefix matching."""
-        suggestions: list[str] = []
+        """Autocomplete suggestions ranked by relevance across both indices.
+
+        MeiliSearch only includes ``_rankingScore`` on a hit when the query
+        sets ``showRankingScore``; hits that still lack a score (older
+        servers, mocked responses) fall back to 0.0 instead of failing the
+        request, and keep their original per-index order.
+        """
+        scored: list[tuple[float, str]] = []
         seen: set[str] = set()
 
         for index_name in [self.documents_index_name, self.files_index_name]:
@@ -257,18 +263,27 @@ class MeiliSearchService:
             result = index.search(prefix, {
                 "limit": size,
                 "attributesToRetrieve": ["title", "name"],
+                "showRankingScore": True,
             })
-            for hit in result["hits"]:
+            for hit in result.get("hits", []):
                 text = hit.get("title") or hit.get("name", "")
                 if text and text not in seen:
-                    suggestions.append(text)
                     seen.add(text)
-                    if len(suggestions) >= size:
-                        break
-            if len(suggestions) >= size:
-                break
+                    scored.append((self._ranking_score(hit), text))
 
-        return suggestions
+        scored.sort(key=lambda entry: entry[0], reverse=True)
+        return [text for _, text in scored[:size]]
+
+    @staticmethod
+    def _ranking_score(hit: dict[str, Any]) -> float:
+        """Return the hit's ``_rankingScore`` or 0.0 when absent or malformed."""
+        score = hit.get("_rankingScore")
+        if score is None:
+            return 0.0
+        try:
+            return float(score)
+        except (TypeError, ValueError):
+            return 0.0
 
     def _wait_and_check(self, task_uid: int, timeout_in_ms: int = 10000) -> None:
         """Wait for a MeiliSearch task and raise on failure."""
