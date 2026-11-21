@@ -248,8 +248,14 @@ class MeiliSearchService:
         )
 
     def suggest(self, prefix: str, size: int = 10) -> list[str]:
-        """Autocomplete suggestions using MeiliSearch prefix matching."""
-        suggestions: list[str] = []
+        """Autocomplete suggestions using MeiliSearch prefix matching.
+
+        Hits from both indexes are merged and ordered by MeiliSearch's
+        ``_rankingScore``. The score is only present when ``showRankingScore``
+        is requested, so it is read defensively: a hit without a score sorts
+        last instead of raising.
+        """
+        ranked_hits: list[tuple[float, int, str]] = []
         seen: set[str] = set()
 
         for index_name in [self.documents_index_name, self.files_index_name]:
@@ -257,18 +263,18 @@ class MeiliSearchService:
             result = index.search(prefix, {
                 "limit": size,
                 "attributesToRetrieve": ["title", "name"],
+                "showRankingScore": True,
             })
-            for hit in result["hits"]:
+            for hit in result.get("hits") or []:
+                if not isinstance(hit, dict):
+                    continue
                 text = hit.get("title") or hit.get("name", "")
                 if text and text not in seen:
-                    suggestions.append(text)
                     seen.add(text)
-                    if len(suggestions) >= size:
-                        break
-            if len(suggestions) >= size:
-                break
+                    ranked_hits.append((_ranking_score(hit), len(ranked_hits), text))
 
-        return suggestions
+        ranked_hits.sort(key=lambda item: (-item[0], item[1]))
+        return [text for _, _, text in ranked_hits[:size]]
 
     def _wait_and_check(self, task_uid: int, timeout_in_ms: int = 10000) -> None:
         """Wait for a MeiliSearch task and raise on failure."""
@@ -400,3 +406,11 @@ class MeiliSearchService:
             folder_id=hit.get("folder_id"),
             size=hit.get("size"),
         )
+
+
+def _ranking_score(hit: dict) -> float:
+    """Return a hit's MeiliSearch ranking score, or 0.0 when absent/invalid."""
+    try:
+        return float(hit.get("_rankingScore") or 0.0)
+    except (TypeError, ValueError):
+        return 0.0
