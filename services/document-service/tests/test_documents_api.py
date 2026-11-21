@@ -54,13 +54,17 @@ async def test_get_document_not_found(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_list_documents(client: AsyncClient, owner_id: uuid.UUID):
+async def test_list_documents(
+    client: AsyncClient, owner_id: uuid.UUID, auth_headers: dict[str, str]
+):
     for i in range(3):
         await client.post(
             "/api/v1/documents/",
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
-    resp = await client.get("/api/v1/documents/", params={"owner_id": str(owner_id)})
+    resp = await client.get(
+        "/api/v1/documents/", params={"owner_id": str(owner_id)}, headers=auth_headers
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["total"] == 3
@@ -68,14 +72,18 @@ async def test_list_documents(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_list_documents_pagination(client: AsyncClient, owner_id: uuid.UUID):
+async def test_list_documents_pagination(
+    client: AsyncClient, owner_id: uuid.UUID, auth_headers: dict[str, str]
+):
     for i in range(5):
         await client.post(
             "/api/v1/documents/",
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
     resp = await client.get(
-        "/api/v1/documents/", params={"owner_id": str(owner_id), "page": 1, "size": 2}
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id), "page": 1, "size": 2},
+        headers=auth_headers,
     )
     data = resp.json()
     assert data["total"] == 5
@@ -182,7 +190,9 @@ async def test_restore_version(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_search_documents(client: AsyncClient, owner_id: uuid.UUID):
+async def test_search_documents(
+    client: AsyncClient, owner_id: uuid.UUID, auth_headers: dict[str, str]
+):
     await client.post(
         "/api/v1/documents/",
         json={"title": "Python Guide", "content": "Learn Python", "owner_id": str(owner_id)},
@@ -192,11 +202,81 @@ async def test_search_documents(client: AsyncClient, owner_id: uuid.UUID):
         json={"title": "Rust Guide", "content": "Learn Rust", "owner_id": str(owner_id)},
     )
 
-    resp = await client.get("/api/v1/documents/search", params={"q": "Python"})
+    resp = await client.get(
+        "/api/v1/documents/search", params={"q": "Python"}, headers=auth_headers
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["total"] == 1
     assert data["items"][0]["title"] == "Python Guide"
+
+
+async def _create_owned(client: AsyncClient, owner_id: uuid.UUID, title: str, content: str):
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": title, "content": content, "owner_id": str(owner_id)},
+    )
+    assert resp.status_code == 201
+    return resp.json()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("path", ["/api/v1/documents/", "/api/v1/documents"])
+async def test_list_documents_rejects_other_owner_id(
+    client: AsyncClient, owner_id: uuid.UUID, auth_headers: dict[str, str], path: str
+):
+    victim = uuid.uuid4()
+    await _create_owned(client, victim, "Victim Secret", "private body")
+
+    resp = await client.get(path, params={"owner_id": str(victim)}, headers=auth_headers)
+    assert resp.status_code == 403
+
+    resp = await client.get(
+        path, params={"owner_id": str(victim), "title": "Secret"}, headers=auth_headers
+    )
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_list_documents_scoped_to_caller(
+    client: AsyncClient, owner_id: uuid.UUID, auth_headers: dict[str, str]
+):
+    await _create_owned(client, owner_id, "Mine", "")
+    await _create_owned(client, uuid.uuid4(), "Theirs", "")
+
+    resp = await client.get("/api/v1/documents/", headers=auth_headers)
+    assert resp.status_code == 200
+    assert [item["title"] for item in resp.json()["items"]] == ["Mine"]
+
+    resp = await client.get("/api/v1/documents/", params={"title": "e"}, headers=auth_headers)
+    assert resp.status_code == 200
+    assert [item["title"] for item in resp.json()["items"]] == ["Mine"]
+
+
+@pytest.mark.asyncio
+async def test_list_and_search_require_auth(client: AsyncClient, owner_id: uuid.UUID):
+    await _create_owned(client, owner_id, "Python Guide", "Learn Python")
+
+    assert (await client.get("/api/v1/documents/")).status_code == 401
+    assert (await client.get("/api/v1/documents")).status_code == 401
+    resp = await client.get("/api/v1/documents/search", params={"q": "Python"})
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_search_documents_excludes_other_owners(
+    client: AsyncClient, owner_id: uuid.UUID, auth_headers: dict[str, str]
+):
+    await _create_owned(client, owner_id, "My Notes", "nothing here")
+    victim_doc = await _create_owned(client, uuid.uuid4(), "Victim Plan", "secret marker")
+
+    resp = await client.get(
+        "/api/v1/documents/search", params={"q": "secret"}, headers=auth_headers
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total"] == 0
+    assert victim_doc["id"] not in [item["id"] for item in data["items"]]
 
 
 @pytest.mark.asyncio
