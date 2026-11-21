@@ -23,12 +23,37 @@
    redis-cli EXISTS chaos:search-service:suggest_500
    ```
 
-<!-- TODO: Complete investigation steps -->
+3. Confirm the failure is isolated to `GET /api/v1/search/suggest` (the `/search/` and
+   `/search/advanced` handlers catch exceptions and the Grafana panel should show the
+   5xx rate concentrated on one route).
+
+## Root Cause
+
+The ranking-score enrichment in the `suggest()` handler (`services/search-service/app/api/search.py`)
+sorted suggestions with `s["_rankingScore"]`:
+
+- `MeiliSearchService.suggest` never requested `showRankingScore`, so MeiliSearch never
+  returned `_rankingScore` and the lookup raised (`KeyError`, or `TypeError` because
+  `suggest()` returns plain strings, not hit dicts).
+- The enrichment ran outside the handler's `try/except`, so the exception escaped
+  Flask as a 500 instead of the endpoint's empty-suggestions fallback.
 
 ## Resolution Steps
 
-<!-- TODO -->
+1. Deploy a search-service build in which `MeiliSearchService.suggest` requests
+   `showRankingScore: true`, sorts hits with a tolerant `_ranking_score()` (missing or
+   malformed score sorts last), and the `suggest()` handler has a single code path inside
+   `try/except` so backend failures return `{"suggestions": []}` with 200.
+2. Verify: `curl -s -o /dev/null -w '%{http_code}' 'http://<search-service>:8087/api/v1/search/suggest?q=te'`
+   returns `200`, and `SearchSuggestHighErrorRate` resolves within one evaluation window.
+3. If a rollback is needed instead, clear the chaos flag
+   (`redis-cli DEL chaos:search-service:suggest_500`) to take the ranking path out of
+   service until the fix ships.
 
 ## Post-Incident
 
-<!-- TODO -->
+- Regression tests in `services/search-service/tests/test_search_api.py`
+  (`TestSuggestEndpoint`) cover ordering by score, hits without `_rankingScore`, and
+  MeiliSearch failures.
+- Any future enrichment of suggestions must stay inside the handler's `try/except` and
+  request every MeiliSearch field it reads.

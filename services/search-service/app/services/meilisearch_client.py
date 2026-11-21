@@ -68,6 +68,14 @@ def get_search_analytics() -> AnalyticsData:
     )
 
 
+def _ranking_score(hit: dict) -> float:
+    """Ranking score of a MeiliSearch hit; 0.0 when absent or malformed."""
+    try:
+        return float(hit.get("_rankingScore") or 0.0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
 class MeiliSearchService:
     """Client for MeiliSearch search and indexing operations."""
 
@@ -248,25 +256,33 @@ class MeiliSearchService:
         )
 
     def suggest(self, prefix: str, size: int = 10) -> list[str]:
-        """Autocomplete suggestions using MeiliSearch prefix matching."""
-        suggestions: list[str] = []
-        seen: set[str] = set()
+        """Autocomplete suggestions using MeiliSearch prefix matching.
 
+        Hits from both indexes are merged and ordered by MeiliSearch's
+        ``_rankingScore`` (requested via ``showRankingScore``); a hit without a
+        score sorts last instead of raising.
+        """
+        hits: list[dict] = []
         for index_name in [self.documents_index_name, self.files_index_name]:
             index = self.client.index(index_name)
             result = index.search(prefix, {
                 "limit": size,
                 "attributesToRetrieve": ["title", "name"],
+                "showRankingScore": True,
             })
-            for hit in result["hits"]:
-                text = hit.get("title") or hit.get("name", "")
-                if text and text not in seen:
-                    suggestions.append(text)
-                    seen.add(text)
-                    if len(suggestions) >= size:
-                        break
-            if len(suggestions) >= size:
-                break
+            hits.extend(result.get("hits") or [])
+
+        hits.sort(key=_ranking_score, reverse=True)
+
+        suggestions: list[str] = []
+        seen: set[str] = set()
+        for hit in hits:
+            text = hit.get("title") or hit.get("name", "")
+            if text and text not in seen:
+                suggestions.append(text)
+                seen.add(text)
+                if len(suggestions) >= size:
+                    break
 
         return suggestions
 
