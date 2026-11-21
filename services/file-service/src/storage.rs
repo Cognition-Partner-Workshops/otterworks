@@ -33,6 +33,27 @@ impl S3Client {
         }
     }
 
+    /// Confirm the configured bucket is reachable. Logged, not fatal, so a
+    /// transient S3 outage does not crash-loop the service; a wrong
+    /// `S3_BUCKET` shows up in the first log lines instead of as a stream of
+    /// `NoSuchBucket` 500s on upload.
+    pub async fn verify_bucket(&self) -> bool {
+        match self.client.head_bucket().bucket(&self.bucket).send().await {
+            Ok(_) => {
+                tracing::info!(bucket = %self.bucket, "S3 bucket reachable");
+                true
+            }
+            Err(e) => {
+                tracing::error!(
+                    bucket = %self.bucket,
+                    error = %e,
+                    "Configured S3_BUCKET is not reachable; uploads will fail until this is fixed"
+                );
+                false
+            }
+        }
+    }
+
     /// Upload file content to S3.
     pub async fn upload_object(
         &self,
