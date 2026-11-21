@@ -1,4 +1,5 @@
 flask==3.0.2
+PyJWT==2.15.1
 flask-restful==0.3.10
 flask-cors==4.0.2
 marshmallow==3.21.1

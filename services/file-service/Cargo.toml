@@ -31,6 +31,7 @@ mime = "0.3"
 thiserror = "1"
 anyhow = "1"
 dotenvy = "0.15"
+jsonwebtoken = { version = "9.3", default-features = false }
 prometheus = "0.13"
 lazy_static = "1.4"
 redis = { version = "0.25", features = ["tokio-comp", "connection-manager"] }

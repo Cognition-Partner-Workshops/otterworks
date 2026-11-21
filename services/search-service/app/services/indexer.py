@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from typing import Any
+from time import time
 
+import jwt
 import requests
 import structlog
 
@@ -19,8 +21,9 @@ FETCH_TIMEOUT = 30
 class Indexer:
     """Handles document and file indexing into MeiliSearch."""
 
-    def __init__(self, search_service: MeiliSearchService) -> None:
+    def __init__(self, search_service: MeiliSearchService, jwt_secret: str = "") -> None:
         self.search = search_service
+        self.jwt_secret = jwt_secret
 
     def index_document(self, payload: dict[str, Any]) -> dict[str, str]:
         """Validate and index a document.
@@ -89,8 +92,8 @@ class Indexer:
 
         Fetches all documents from the document-service and all files
         from the file-service, then passes them to MeiliSearch for
-        bulk re-indexing.  If a source service is unreachable the
-        corresponding index is still cleared and recreated empty.
+        bulk re-indexing. If fetching files fails, abort before replacing
+        either index.
         """
         documents = self._fetch_all_documents()
         files = self._fetch_all_files()
@@ -138,21 +141,28 @@ class Indexer:
                 break
         return docs
 
-    @staticmethod
-    def _fetch_all_files() -> list[dict[str, Any]]:
+    def _fetch_all_files(self) -> list[dict[str, Any]]:
         """Paginate through the file-service to collect all file metadata."""
+        if not self.jwt_secret:
+            raise ValueError("JWT_SECRET is required for file reindexing")
+        token = jwt.encode({
+            "sub": "00000000-0000-0000-0000-000000000000", "type": "service",
+            "aud": "file-service:reindex", "exp": int(time()) + 300,
+        }, self.jwt_secret, algorithm="HS256")
         files: list[dict[str, Any]] = []
         page = 1
         while True:
             try:
                 resp = requests.get(
                     f"{FILE_SERVICE_URL}/api/v1/files",
+                    headers={"Authorization": f"Bearer {token}"},
                     params={"page": page, "page_size": 100},
                     timeout=FETCH_TIMEOUT,
                 )
                 if resp.status_code != 200:
                     logger.warning("reindex_file_fetch_failed", status=resp.status_code)
-                    break
+                    resp.raise_for_status()
+                    raise ValueError("File reindex fetch did not return 200")
                 data = resp.json()
                 items = data.get("files") or data.get("items") or data.get("data") or []
                 if not items:
@@ -173,7 +183,7 @@ class Indexer:
                 page += 1
             except requests.RequestException:
                 logger.exception("reindex_file_fetch_error")
-                break
+                raise
         return files
 
     def process_event(self, event: dict[str, Any]) -> dict[str, Any] | None:

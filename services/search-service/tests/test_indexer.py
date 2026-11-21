@@ -5,10 +5,38 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
+import jwt
+import requests
 
 from app.config import MeiliSearchConfig
 from app.services.indexer import Indexer
 from app.services.meilisearch_client import MeiliSearchService
+
+SECRET = "unit-test-service-signing-key-not-a-deployment-secret"
+
+
+def test_reindex_fetches_files_with_scoped_signed_token(mock_ms_service):
+    indexer = Indexer(mock_ms_service, SECRET)
+    with patch("app.services.indexer.requests.get") as get:
+        get.return_value.status_code = 200
+        get.return_value.json.return_value = {"files": []}
+        assert indexer._fetch_all_files() == []
+        token = get.call_args.kwargs["headers"]["Authorization"].removeprefix("Bearer ")
+        claims = jwt.decode(token, SECRET, algorithms=["HS256"], audience="file-service:reindex")
+        assert claims["type"] == "service"
+        assert "exp" in claims
+
+
+def test_reindex_preserves_indexes_when_file_fetch_fails(mock_ms_service):
+    search = MagicMock()
+    indexer = Indexer(search, SECRET)
+    with patch.object(indexer, "_fetch_all_documents", return_value=[]), \
+            patch("app.services.indexer.requests.get") as get:
+        get.return_value.status_code = 401
+        get.return_value.raise_for_status.side_effect = requests.HTTPError("unauthorized")
+        with pytest.raises(requests.HTTPError):
+            indexer.reindex()
+    search.reindex.assert_not_called()
 
 
 @pytest.fixture()

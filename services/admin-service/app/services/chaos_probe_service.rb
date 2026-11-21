@@ -1,5 +1,6 @@
 require 'net/http'
 require 'securerandom'
+require 'jwt'
 
 # Generates synthetic traffic to chaos-affected services so that Prometheus
 # metrics accumulate and Grafana alerts fire without needing real user traffic.
@@ -9,10 +10,12 @@ require 'securerandom'
 class ChaosProbeService
   PROBE_INTERVAL = 5 # seconds between probe requests
   PROBE_BATCH    = 3 # requests per interval (enough for rate() to register)
+  PROBE_USER_ID = '00000000-0000-0000-0000-000000000001'.freeze
 
   SERVICE_PROBES = {
     'search-service' => {
       url: 'http://search-service:8087/api/v1/search/suggest?q=test',
+      authenticated: true,
       headers: { 'X-User-ID' => 'chaos-probe' },
     },
     # file-service upload expects multipart/form-data with a "file" field.
@@ -20,6 +23,7 @@ class ChaosProbeService
     # X-User-ID must be a valid UUID (parsed by the handler).
     'file-service' => {
       url: 'http://file-service:8082/api/v1/files/upload',
+      authenticated: true,
       method: :multipart,
       headers: { 'X-User-ID' => '00000000-0000-0000-0000-000000000001' },
     },
@@ -93,6 +97,10 @@ class ChaosProbeService
               end
 
     config[:headers]&.each { |k, v| request[k] = v }
+    if config[:authenticated]
+      payload = { 'sub' => PROBE_USER_ID, 'type' => 'access', 'exp' => Time.now.to_i + 60 }
+      request['Authorization'] = "Bearer #{JWT.encode(payload, ENV.fetch('JWT_SECRET'), 'HS256')}"
+    end
     http.request(request)
   rescue StandardError
     nil
