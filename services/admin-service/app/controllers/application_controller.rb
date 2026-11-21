@@ -28,8 +28,8 @@ class ApplicationController < ActionController::API
     request.env['jwt.user_email']
   end
 
-  def current_user_role
-    request.env['jwt.user_role']
+  def current_user_roles
+    Array(request.env['jwt.user_roles']).map { |role| role.to_s.upcase }
   end
 
   def set_request_metadata
