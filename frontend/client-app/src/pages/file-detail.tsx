@@ -23,6 +23,8 @@ import { PageLoader } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ShareDialog } from "@/components/files/share-dialog";
 import { TextFilePreview, PdfFilePreview, ImageFilePreview } from "@/components/files/file-preview";
+import { ClassificationChip } from "@/components/files/classification-chip";
+import { classifyFileName } from "@/lib/classification";
 import { filesApi, authApi } from "@/lib/api";
 import { formatFileSize, formatRelativeTime, getInitials, generateColor } from "@/lib/utils";
 
@@ -111,6 +113,7 @@ function FileDetailContent() {
     );
   }
 
+  const classification = classifyFileName(file.name);
   const isImage = file.mimeType.startsWith("image/");
   const isVideo = file.mimeType.startsWith("video/");
   const isPdf = file.mimeType === "application/pdf";
@@ -145,10 +148,14 @@ function FileDetailContent() {
             <FileIcon mimeType={file.mimeType} />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">{file.name}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl font-bold text-gray-900">{file.name}</h1>
+              <ClassificationChip fileName={file.name} />
+            </div>
             <p className="text-sm text-gray-500">
               {formatFileSize(file.size)} &middot; {formatRelativeTime(file.updatedAt)}
             </p>
+            <p className="text-xs text-gray-600 mt-1">{classification.guidance}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
