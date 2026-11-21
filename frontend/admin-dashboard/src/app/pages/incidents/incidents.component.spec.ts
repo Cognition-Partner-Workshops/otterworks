@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { IncidentsComponent } from './incidents.component';
 import { AdminApiService } from '../../core/services/admin-api.service';
@@ -7,6 +7,7 @@ import { Incident } from '../../core/models/incident.model';
 import { of, throwError } from 'rxjs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { OverlayModule } from '@angular/cdk/overlay';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 function makeIncident(overrides: Partial<Incident> = {}): Incident {
   return {
@@ -48,13 +49,14 @@ describe('IncidentsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         IncidentsComponent,
-        HttpClientTestingModule,
         NoopAnimationsModule,
         MatDialogModule,
         OverlayModule,
       ],
       providers: [
         { provide: AdminApiService, useValue: apiSpy },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
       ],
     }).compileComponents();
 

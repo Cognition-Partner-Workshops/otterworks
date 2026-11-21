@@ -11,7 +11,6 @@ import { AnalyticsReport } from '../../core/models/analytics.model';
 
 @Component({
   selector: 'app-analytics',
-  standalone: true,
   imports: [
     CommonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule,
     MatButtonModule, NgChartsModule,

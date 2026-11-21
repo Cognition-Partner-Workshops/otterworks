@@ -13,7 +13,6 @@ interface NavItem {
 
 @Component({
   selector: 'app-sidebar',
-  standalone: true,
   imports: [CommonModule, RouterModule, MatListModule, MatIconModule, MatTooltipModule],
   template: `
     <div class="sidebar" [class.collapsed]="collapsed">

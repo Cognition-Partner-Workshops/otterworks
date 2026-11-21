@@ -23,7 +23,6 @@ const CHAOS_STATE_KEY = 'ow_admin_chaos_state';
 
 @Component({
   selector: 'app-incidents',
-  standalone: true,
   imports: [
     CommonModule, FormsModule, MatCardModule, MatIconModule, MatButtonModule,
     MatProgressSpinnerModule, MatChipsModule, MatInputModule, MatFormFieldModule,

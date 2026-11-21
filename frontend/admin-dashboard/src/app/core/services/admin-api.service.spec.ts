@@ -1,13 +1,14 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AdminApiService } from './admin-api.service';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('AdminApiService', () => {
   let service: AdminApiService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
     });
     service = TestBed.inject(AdminApiService);
   });

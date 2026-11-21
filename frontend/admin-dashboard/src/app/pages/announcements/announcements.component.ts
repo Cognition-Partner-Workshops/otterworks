@@ -17,7 +17,6 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog.c
 
 @Component({
   selector: 'app-announcements',
-  standalone: true,
   imports: [
     CommonModule, FormsModule, MatCardModule, MatIconModule, MatButtonModule,
     MatProgressSpinnerModule, MatChipsModule, MatInputModule, MatFormFieldModule,

@@ -16,7 +16,6 @@ import { AuditEvent } from '../../core/models/audit.model';
 
 @Component({
   selector: 'app-audit',
-  standalone: true,
   imports: [
     CommonModule, FormsModule, MatTableModule, MatPaginatorModule, MatSortModule,
     MatInputModule, MatFormFieldModule, MatSelectModule, MatIconModule, MatChipsModule,

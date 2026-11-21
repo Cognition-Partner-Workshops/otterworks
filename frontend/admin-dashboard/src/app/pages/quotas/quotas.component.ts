@@ -17,7 +17,6 @@ import { User } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-quotas',
-  standalone: true,
   imports: [
     CommonModule, FormsModule, MatTableModule, MatPaginatorModule, MatSortModule,
     MatInputModule, MatFormFieldModule, MatButtonModule, MatIconModule,

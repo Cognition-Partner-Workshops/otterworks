@@ -14,7 +14,6 @@ import { FeatureFlag } from '../../core/models/feature-flag.model';
 
 @Component({
   selector: 'app-features',
-  standalone: true,
   imports: [
     CommonModule, FormsModule, MatCardModule, MatIconModule, MatSlideToggleModule,
     MatProgressSpinnerModule, MatChipsModule, MatInputModule, MatFormFieldModule,

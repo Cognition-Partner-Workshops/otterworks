@@ -22,7 +22,6 @@ export const LATEST_RUN = 'latest';
 
 @Component({
   selector: 'app-migration',
-  standalone: true,
   imports: [
     CommonModule, FormsModule, RouterModule, MatCardModule, MatIconModule, MatButtonModule,
     MatInputModule, MatFormFieldModule, MatSelectModule, MatProgressSpinnerModule, MatTooltipModule,
