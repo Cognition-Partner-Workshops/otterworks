@@ -57,22 +57,34 @@ insurance-test: procs-validate ## Run the Commission Pay OLTP + OLAP test suites
 
 # --- Local Development ---
 
-infra-up: ## Start local infrastructure (Postgres, Redis, LocalStack, MeiliSearch)
+# Local-only secrets for the Compose stack. The compose files have no committed defaults
+# (a known JWT_SECRET lets anyone forge tokens), so they refuse to start without these.
+# docker compose reads ./.env automatically; it is gitignored. See .env.example.
+.env:
+	@echo "Generating local secrets in .env (gitignored; see .env.example)"
+	@{ \
+	  echo "JWT_SECRET=$$(openssl rand -hex 32)"; \
+	  echo "SECRET_KEY_BASE=$$(openssl rand -hex 64)"; \
+	  echo "ALERT_WEBHOOK_SECRET=$$(openssl rand -hex 32)"; \
+	  echo "CHAOS_SECRET=$$(openssl rand -hex 32)"; \
+	} > .env
+
+infra-up: .env ## Start local infrastructure (Postgres, Redis, LocalStack, MeiliSearch)
 	docker compose -f docker-compose.infra.yml up -d
 
-infra-down: ## Stop local infrastructure
+infra-down: .env ## Stop local infrastructure
 	docker compose -f docker-compose.infra.yml down
 
-up: ## Start all services (add seed=1 to seed after start)
+up: .env ## Start all services (add seed=1 to seed after start)
 	docker compose -f docker-compose.infra.yml -f docker-compose.yml up -d --build
  ifdef seed
 	@$(MAKE) --no-print-directory wait-for-db seed
  endif
 
-down: ## Stop all application services
+down: .env ## Stop all application services
 	docker compose -f docker-compose.infra.yml -f docker-compose.yml down
 
-build: ## Build all service images
+build: .env ## Build all service images
 	docker compose -f docker-compose.infra.yml -f docker-compose.yml build
 
 seed: ## Seed development data (services must be running)
@@ -85,7 +97,7 @@ wait-for-db: ## Wait for Postgres to accept connections
 		sleep 1; \
 	done; echo "Timed out waiting for Postgres" && exit 1
 
-logs: ## Tail logs for all services
+logs: .env ## Tail logs for all services
 	docker compose -f docker-compose.infra.yml -f docker-compose.yml logs -f
 
 # --- App Dev Targets ---
@@ -98,7 +110,7 @@ COMPOSE := docker compose -f docker-compose.infra.yml -f docker-compose.yml
 # otherwise default to :8085, which only matches the k8s dev environment.
 COLLAB_WS_URL := ws://localhost:8084
 
-dev-backend: ## Start the Dockerized backend (all services except the frontend containers)
+dev-backend: .env ## Start the Dockerized backend (all services except the frontend containers)
 	$(COMPOSE) up -d $$($(COMPOSE) config --services | grep -vE '^(web-app|admin-dashboard)$$')
 	@echo "Backend up - API gateway on http://localhost:8080 (fresh DB? run: make seed)"
 
@@ -478,10 +490,10 @@ ifdef UI
 INCIDENT_SERVICES += auth-service api-gateway web-app
 endif
 
-incident-up: ## Start document-service + observability + Alertmanager for the incident demo (UI=1 adds gateway/web-app)
+incident-up: .env ## Start document-service + observability + Alertmanager for the incident demo (UI=1 adds gateway/web-app)
 	$(INCIDENT_COMPOSE) up -d --build $(INCIDENT_SERVICES)
 
-incident-down: ## Stop the incident demo stack (keeps volumes)
+incident-down: .env ## Stop the incident demo stack (keeps volumes)
 	$(INCIDENT_COMPOSE) --profile double-run down
 
 incident-arm: ## Plant one scenario and start deterministic load (SCENARIO=n-plus-one|log-flood|cache-leak|double-run)

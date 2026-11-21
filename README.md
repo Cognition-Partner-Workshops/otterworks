@@ -17,7 +17,9 @@ Individual service development may also require the language toolchains listed i
 # Start infrastructure (Postgres, Redis, LocalStack, MeiliSearch, observability stack)
 make infra-up
 
-# Start all application services (builds images on first run)
+# Start all application services (builds images on first run). The first run also
+# generates ./.env (gitignored) with random JWT_SECRET & co. - the compose files have
+# no committed defaults and refuse to start without them. See .env.example.
 make up
 
 # Open the app
@@ -25,7 +27,8 @@ open http://localhost:3000        # Web App (React / Next.js)
 open http://localhost:4200        # Admin Dashboard (Angular)
 ```
 
-Or without Make:
+Or without Make (first `cp .env.example .env` and fill in the secrets, e.g. with
+`openssl rand -hex 32`):
 
 ```bash
 docker compose -f docker-compose.infra.yml up -d
