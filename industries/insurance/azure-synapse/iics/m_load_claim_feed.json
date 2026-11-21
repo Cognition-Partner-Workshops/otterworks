@@ -1,0 +1,39 @@
+{
+  "exportVersion": "2",
+  "objectType": "MAPPING",
+  "name": "m_load_claim_feed",
+  "description": "Claims staging to claim fact, with status description lookup",
+  "parameters": [
+    {"name": "$$DWConnection", "type": "connection", "default": "conn_synapse_dw"},
+    {"name": "$$WindowStart", "type": "string", "default": "2026-09-01"},
+    {"name": "$$WindowEnd", "type": "string", "default": "2026-09-30"}
+  ],
+  "transformations": [
+    {
+      "name": "SQ_claim_feed",
+      "type": "Source",
+      "connection": "$$DWConnection",
+      "sourceType": "QUERY",
+      "preSQL": "DELETE FROM dw.claim_fact WHERE loss_date BETWEEN '$$WindowStart' AND '$$WindowEnd'",
+      "sqlOverride": "SELECT c.claim_id, UPPER(c.policy_number) AS policy_number, c.status_code, CAST(c.reopen_date AS DATE) AS reopen_date, c.claim_amount, c.loss_date FROM stg.claim_feed c WHERE c.loss_date BETWEEN '$$WindowStart' AND '$$WindowEnd'"
+    },
+    {
+      "name": "LKP_claim_status",
+      "type": "Lookup",
+      "connection": "$$DWConnection",
+      "lookupSqlOverride": "SELECT s.status_code AS status_code, s.status_desc AS status_desc FROM dw.ClaimStatusRef s",
+      "condition": "status_code = in_status_code",
+      "returnPort": "status_desc",
+      "multipleMatchPolicy": "Return First"
+    },
+    {
+      "name": "TGT_claim_fact",
+      "type": "Target",
+      "connection": "$$DWConnection",
+      "object": "dw.claim_fact",
+      "operation": "INSERT",
+      "fieldMap": {"claim_id": "claim_id", "policy_number": "policy_number", "status_code": "status_code", "status_desc": "LKP_claim_status.status_desc", "reopen_date": "reopen_date", "claim_amount": "claim_amount", "loss_date": "loss_date"},
+      "postSQL": "INSERT INTO dw.etl_log (proc_name, step, rows_affected) SELECT 'm_load_claim_feed', 'post', COUNT(*) FROM dw.claim_fact"
+    }
+  ]
+}

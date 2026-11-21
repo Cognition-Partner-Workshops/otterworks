@@ -1,0 +1,142 @@
+# Object manifest for the claims warehouse (dedicated SQL pool) and its feeds.
+estate: claims_dw
+frozen_window: {start: 2026-09-01, end: 2026-09-30}
+report_object: qlik/producer_dashboard.qvs
+
+legacy:
+  ddl: [ddl/01_schemas.sql, ddl/02_tables.sql]
+  code: [functions/fn_holder_display_name.sql, procs/usp_build_producer_scorecard.sql,
+         procs/usp_refresh_claim_summary.sql, procs/usp_refresh_policy_contact.sql,
+         views/v_claim_audit.sql, views/v_policy_audit.sql]
+snowflake:
+  ddl: [first_pass/snowflake/00_ddl.sql]
+  code: [first_pass/snowflake/fn_holder_display_name.sql, first_pass/snowflake/usp_build_producer_scorecard.sql,
+         first_pass/snowflake/usp_refresh_claim_summary.sql, first_pass/snowflake/usp_refresh_policy_contact.sql,
+         first_pass/snowflake/v_claim_audit.sql, first_pass/snowflake/v_policy_audit.sql]
+
+load:
+  dw.dim_region: seed/dim_region.csv
+  dw.dim_producer: seed/dim_producer.csv
+  dw.producer_tier: seed/producer_tier.csv
+  dw.dim_policy: seed/dim_policy.csv
+  dw.ClaimStatusRef: seed/claim_status_ref.csv
+  stg.producer_feed: seed/producer_feed.csv
+  stg.premium_feed: seed/premium_feed.csv
+  stg.claim_feed: seed/claim_feed.csv
+  audit.claim_event: seed/claim_event.csv
+  audit.policy_event: seed/policy_event.csv
+
+objects:
+  - name: dw.usp_build_producer_scorecard
+    type: procedure
+    wave: 1
+    workstream: procedures
+    complexity: complex
+    features: [dynamic SQL, cursor, temp table, TRY/CATCH, MERGE, "@@ROWCOUNT control flow"]
+    legacy_source: procs/usp_build_producer_scorecard.sql
+    first_pass: first_pass/snowflake/usp_build_producer_scorecard.sql
+    run:
+      sqlserver:
+        - "DELETE FROM dw.producer_scorecard WHERE scorecard_date = '2026-09-30'"
+        - "EXEC dw.usp_build_producer_scorecard @scorecard_date = '2026-09-30'"
+      snowflake:
+        - "DELETE FROM dw.producer_scorecard WHERE scorecard_date = '2026-09-30'"
+        - "CALL dw.usp_build_producer_scorecard('2026-09-30'::DATE, NULL)"
+    compare: "SELECT * FROM dw.producer_scorecard WHERE scorecard_date = '2026-09-30'"
+    keys: [region_code, producer_code]
+
+  - name: dw.fn_holder_display_name
+    type: function
+    wave: 1
+    workstream: procedures
+    complexity: simple
+    legacy_source: functions/fn_holder_display_name.sql
+    first_pass: first_pass/snowflake/fn_holder_display_name.sql
+    compare: "SELECT policy_number, dw.fn_holder_display_name(holder_first, holder_middle, holder_last) AS display_name FROM dw.dim_policy"
+    keys: [policy_number]
+
+  - name: m_load_claim_feed
+    type: mapping
+    wave: 1
+    workstream: mappings
+    complexity: medium
+    legacy_source: iics/m_load_claim_feed.json
+    first_pass: null
+    run:
+      sqlserver: [{iics: iics/m_load_claim_feed.json}]
+      snowflake: [{iics: iics/snowflake/m_load_claim_feed.json}]
+    compare: "SELECT * FROM dw.claim_fact"
+    keys: [claim_id]
+
+  - name: m_load_premium_feed
+    type: mapping
+    wave: 1
+    workstream: mappings
+    complexity: medium
+    legacy_source: iics/m_load_premium_feed.json
+    first_pass: null
+    run:
+      sqlserver: [{iics: iics/m_load_premium_feed.json}]
+      snowflake: [{iics: iics/snowflake/m_load_premium_feed.json}]
+    compare: "SELECT * FROM dw.premium_fact"
+    keys: [policy_number]
+
+  - name: producer_dashboard.qvs
+    type: load_script
+    wave: 1
+    workstream: loads
+    complexity: medium
+    legacy_script: qlik/producer_dashboard.qvs
+    target_script: qlik/snowflake/producer_dashboard.qvs
+    first_pass: null
+    compare_blocks:
+      RegionClaimRate: [region_code]
+      ProductPremium: [product_code]
+      ClaimStatusMix: [status_code]
+    measures: {RegionClaimRate: [claim_count, claim_rate_pct], ProductPremium: [written_premium, avg_premium], ClaimStatusMix: [claim_amount, share_pct]}
+
+  - name: dw.usp_refresh_claim_summary
+    type: procedure
+    wave: 2
+    workstream: procedures
+    complexity: medium
+    legacy_source: procs/usp_refresh_claim_summary.sql
+    first_pass: first_pass/snowflake/usp_refresh_claim_summary.sql
+    run:
+      sqlserver: ["EXEC dw.usp_refresh_claim_summary @window_start = '2026-09-01', @window_end = '2026-09-30'"]
+      snowflake: ["CALL dw.usp_refresh_claim_summary('2026-09-01'::DATE, '2026-09-30'::DATE)"]
+    compare: "SELECT * FROM dw.claim_summary"
+    keys: [policy_number]
+
+  - name: dw.usp_refresh_policy_contact
+    type: procedure
+    wave: 2
+    workstream: procedures
+    complexity: medium
+    legacy_source: procs/usp_refresh_policy_contact.sql
+    first_pass: first_pass/snowflake/usp_refresh_policy_contact.sql
+    run:
+      sqlserver: ["EXEC dw.usp_refresh_policy_contact"]
+      snowflake: ["CALL dw.usp_refresh_policy_contact()"]
+    compare: "SELECT * FROM dw.policy_contact"
+    keys: [policy_number]
+
+  - name: dw.v_claim_audit
+    type: view
+    wave: 2
+    workstream: procedures
+    complexity: simple
+    legacy_source: views/v_claim_audit.sql
+    first_pass: first_pass/snowflake/v_claim_audit.sql
+    compare: "SELECT * FROM dw.v_claim_audit"
+    keys: [claim_id, event_type, event_date]
+
+  - name: dw.v_policy_audit
+    type: view
+    wave: 2
+    workstream: procedures
+    complexity: simple
+    legacy_source: views/v_policy_audit.sql
+    first_pass: first_pass/snowflake/v_policy_audit.sql
+    compare: "SELECT * FROM dw.v_policy_audit"
+    keys: [policy_number, event_weekday]
