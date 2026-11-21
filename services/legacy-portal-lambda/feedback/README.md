@@ -4,6 +4,9 @@ Standalone Java 21 port of the legacy portal feedback context. It uses the RDS D
 and reads `CLUSTER_ARN`, `SECRET_ARN`, `DB_NAME`, and `DB_SCHEMA` (defaults to `feedback`)
 from the Lambda environment.
 
+GET and POST `/api/feedback` require a JWT authorizer that populates the `sub` claim.
+Requests whose `userId` does not match that claim receive `403 Forbidden`.
+
 Build and test:
 
 ```bash
