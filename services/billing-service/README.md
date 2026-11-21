@@ -1,8 +1,22 @@
 # Billing Service
 
-This FastAPI service is the extraction target for the plans module. It owns a
+This FastAPI service is the extraction target for the plans and rating modules. It owns a
 separate Postgres `billing_svc` schema, keeps the HTTP layer thin, and places
-plans behavior in a plain-Python domain layer.
+plans and rating behavior in a plain-Python domain layer.
+
+Rating endpoints (approved ledger `procs/rules/rating.rules.yaml`):
+
+- `GET /api/tenants/{tenant_id}/rating?period_start=&period_end=` (`billing.fn_usage_rating`)
+- `GET /api/tenants/{tenant_id}/usage-summary?period_start=&period_end=` (`billing.fn_usage_summary`)
+- `POST /api/tenants/{tenant_id}/rating/finalize` with `period_start`/`period_end` (`billing.sp_finalize_rating`)
+
+Rating reproduces the legacy procedure exactly, quirks included (101-unit
+first tier, tail-of-period suspension proration with double rounding, stored
+rollover as unused quota). `legacy_md5_uuid` rebuilds the procedure's
+`md5(...)::uuid` ids for compatibility with legacy rows; it is not used for
+security. A finalize that the database rejects (no overlapping subscription,
+or an existing period stored under a non-md5 id) returns HTTP 400 instead of
+the procedure's raised error.
 
 ## Development
 
@@ -21,7 +35,7 @@ python scripts/generate_seed.py
 ```
 
 The generated-seed test prevents the target fixture from drifting from the
-legacy before-state. `POST /internal/reset` applies the migration, truncates
+legacy before-state. `POST /internal/reset` applies the migrations, truncates
 the `billing_svc` schema, and reseeds it so the parity harness can isolate
 every scenario.
 

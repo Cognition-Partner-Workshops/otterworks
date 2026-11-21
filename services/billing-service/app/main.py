@@ -12,8 +12,17 @@ from pydantic import BaseModel
 
 from app.config import settings
 from app.db import connect, migrate, reset
-from app.domain import catalog, change_plan, entitlement
-from app.repository import PostgresPlansRepository
+from app.domain import (
+    Rating,
+    RatingResultRow,
+    catalog,
+    change_plan,
+    entitlement,
+    finalize_rating,
+    rate_tenant,
+    summarize_usage,
+)
+from app.repository import PostgresPlansRepository, PostgresRatingRepository
 
 
 @asynccontextmanager
@@ -35,6 +44,40 @@ app.add_middleware(
 class PlanChange(BaseModel):
     plan_id: UUID
     effective_on: date
+
+
+class RatingPeriod(BaseModel):
+    period_start: date
+    period_end: date
+
+
+def _amount(value):
+    return None if value is None else f"{value:.2f}"
+
+
+def _rating_payload(rating: Rating) -> dict:
+    return {
+        "tenant_id": str(rating.tenant_id),
+        "period_start": rating.period_start.isoformat(),
+        "period_end": rating.period_end.isoformat(),
+        "used_units": rating.used_units,
+        "quota_units": rating.quota_units,
+        "rollover_units": rating.rollover_units,
+        "billable_units": rating.billable_units,
+        "first_tier_units": rating.first_tier_units,
+        "second_tier_units": rating.second_tier_units,
+        "overage_amount": _amount(rating.overage_amount),
+    }
+
+
+def _rating_result_payload(row: RatingResultRow) -> dict:
+    return {
+        "used_units": row.used_units,
+        "quota_units": row.quota_units,
+        "rollover_units": row.rollover_units,
+        "billable_units": row.billable_units,
+        "overage_amount": _amount(row.overage_amount),
+    }
 
 
 @app.get("/health")
@@ -127,3 +170,48 @@ def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) 
             status_code=409,
             detail="this plan change has already been requested",
         ) from error
+
+
+@app.get("/api/tenants/{tenant_id}/rating")
+def get_rating(
+    tenant_id: Annotated[UUID, Path()],
+    period_start: Annotated[date, Query()],
+    period_end: Annotated[date, Query()],
+) -> dict:
+    with connect() as connection:
+        rating = rate_tenant(
+            PostgresRatingRepository(connection), tenant_id, period_start, period_end
+        )
+    return _rating_payload(rating)
+
+
+@app.get("/api/tenants/{tenant_id}/usage-summary")
+def get_usage_summary(
+    tenant_id: Annotated[UUID, Path()],
+    period_start: Annotated[date, Query()],
+    period_end: Annotated[date, Query()],
+) -> list[dict]:
+    with connect() as connection:
+        events = PostgresRatingRepository(connection).list_usage_events(
+            tenant_id, period_start, period_end
+        )
+    return [
+        {"kind": row.kind, "event_count": row.event_count, "units": row.units}
+        for row in summarize_usage(events, period_start, period_end)
+    ]
+
+
+@app.post("/api/tenants/{tenant_id}/rating/finalize")
+def finalize_tenant_rating(tenant_id: Annotated[UUID, Path()], request: RatingPeriod) -> dict:
+    try:
+        with connect() as connection:
+            rows = finalize_rating(
+                PostgresRatingRepository(connection),
+                tenant_id,
+                request.period_start,
+                request.period_end,
+            )
+            results = [_rating_result_payload(row) for row in rows]
+    except psycopg.errors.IntegrityError as error:
+        raise HTTPException(status_code=400, detail="rating could not be finalized") from error
+    return {**(results[0] if results else {}), "rating_result": results}
