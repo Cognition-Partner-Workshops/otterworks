@@ -1,5 +1,6 @@
 {
   "compileOnSave": false,
+  "exclude": ["e2e/**/*.ts", "playwright.config.ts"],
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
