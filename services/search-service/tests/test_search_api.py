@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -104,6 +106,59 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert data["suggestions"] == []
+
+    def test_suggest_ranked_orders_by_ranking_score(self, client, mock_meilisearch_client):
+        """Ranked suggest sorts hits by _rankingScore and returns plain strings."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 2,
+            "hits": [
+                {"title": "Low score", "_rankingScore": 0.2},
+                {"title": "High score", "_rankingScore": 0.9},
+            ],
+        }
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data["suggestions"] == ["High score", "Low score"]
+        _, params = mock_index.search.call_args[0]
+        assert params["showRankingScore"] is True
+
+    def test_suggest_ranked_tolerates_missing_ranking_score(self, client, mock_meilisearch_client):
+        """Ranked suggest must not 500 when a hit has no _rankingScore."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 2,
+            "hits": [
+                {"title": "No score"},
+                {"title": "Scored", "_rankingScore": 0.5},
+            ],
+        }
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data["suggestions"] == ["Scored", "No score"]
+
+    def test_suggest_ranked_empty_index(self, client, mock_meilisearch_client):
+        """Ranked suggest with no hits returns an empty list, not a 500."""
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
+
+    def test_suggest_ranked_search_failure_degrades_gracefully(self, client, mock_meilisearch_client):
+        """A MeiliSearch error on the ranked path returns 200 with no suggestions."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = RuntimeError("meilisearch down")
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
 
 
 class TestAdvancedSearchEndpoint:
