@@ -3,6 +3,7 @@
 use actix_web::{middleware as actix_middleware, web, App, HttpServer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+mod auth;
 mod config;
 mod errors;
 mod events;
@@ -25,6 +26,9 @@ async fn main() -> std::io::Result<()> {
         .init();
 
     let app_config = config::AppConfig::from_env();
+    if app_config.auth.jwt_secrets.is_empty() {
+        tracing::warn!("JWT_SECRET is not set; every /api/v1 request will be rejected with 401");
+    }
     let s3_client = storage::S3Client::new(&app_config.aws).await;
     let meta_client = metadata::MetadataClient::new(&app_config.aws).await;
     let event_publisher = events::EventPublisher::new(&app_config.sns, &app_config.aws).await;

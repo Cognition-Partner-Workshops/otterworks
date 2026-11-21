@@ -127,3 +127,61 @@ def test_file_validation_and_route_gaps(api_client):
         json={"name": "route probe", "owner_id": owner.id},
     )
     api_client.assert_gateway_route_available(folder_route_response, "/api/v1/folders")
+
+
+def test_file_routes_enforce_owner_or_share(api_client):
+    owner = api_client.register_user("file-authz-owner")
+    collaborator = api_client.register_user("file-authz-collab")
+    stranger = api_client.register_user("file-authz-stranger")
+
+    upload_response = api_client.client.post(
+        "/api/v1/files/upload",
+        headers=owner.auth_headers,
+        files={"file": ("private.txt", b"owner only", "text/plain")},
+        data={"owner_id": stranger.id},
+    )
+    assert upload_response.status_code == 201, upload_response.text
+    file_id = upload_response.json()["file"]["id"]
+    api_client.created_files.append(file_id)
+    assert upload_response.json()["file"]["owner_id"] == owner.id
+
+    stranger_list = api_client.client.get(
+        "/api/v1/files",
+        headers=stranger.auth_headers,
+        params={"owner_id": owner.id},
+    )
+    assert stranger_list.status_code == 200, stranger_list.text
+    assert all(item["owner_id"] == stranger.id for item in stranger_list.json()["files"])
+
+    for method, path in [
+        ("GET", f"/api/v1/files/{file_id}"),
+        ("GET", f"/api/v1/files/{file_id}/download"),
+        ("GET", f"/api/v1/files/{file_id}/versions"),
+        ("POST", f"/api/v1/files/{file_id}/trash"),
+        ("DELETE", f"/api/v1/files/{file_id}"),
+    ]:
+        response = api_client.client.request(method, path, headers=stranger.auth_headers)
+        assert response.status_code in {403, 404}, (method, path, response.text)
+
+    stranger_share = api_client.client.post(
+        f"/api/v1/files/{file_id}/share",
+        headers=stranger.auth_headers,
+        json={"shared_with": stranger.id, "permission": "editor", "shared_by": owner.id},
+    )
+    assert stranger_share.status_code in {403, 404}, stranger_share.text
+
+    share_response = api_client.client.post(
+        f"/api/v1/files/{file_id}/share",
+        headers=owner.auth_headers,
+        json={"shared_with": collaborator.id, "permission": "viewer", "shared_by": stranger.id},
+    )
+    assert share_response.status_code == 201, share_response.text
+    assert share_response.json()["share"]["shared_by"] == owner.id
+
+    viewer_download = api_client.client.get(
+        f"/api/v1/files/{file_id}/download",
+        headers=collaborator.auth_headers,
+    )
+    assert viewer_download.status_code == 200, viewer_download.text
+    viewer_delete = api_client.client.delete(f"/api/v1/files/{file_id}", headers=collaborator.auth_headers)
+    assert viewer_delete.status_code in {403, 404}, viewer_delete.text
