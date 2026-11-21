@@ -105,6 +105,47 @@ class TestSuggestEndpoint:
         data = response.get_json()
         assert data["suggestions"] == []
 
+    def test_suggest_orders_by_ranking_score(self, client, mock_meilisearch_client):
+        """Suggestions are ordered by _rankingScore across both indexes."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = [
+            {"hits": [{"title": "Low", "_rankingScore": 0.2}, {"title": "High", "_rankingScore": 0.9}]},
+            {"hits": [{"name": "Mid", "_rankingScore": 0.5}, {"name": "High", "_rankingScore": 0.95}]},
+        ]
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["High", "Mid", "Low"]
+        for call in mock_index.search.call_args_list:
+            assert call.args[1]["showRankingScore"] is True
+
+    def test_suggest_without_ranking_score_still_succeeds(self, client, mock_meilisearch_client):
+        """Hits missing _rankingScore sort last instead of raising (was a 500)."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "hits": [{"title": "Unscored"}, {"title": "Scored", "_rankingScore": 0.4}, {}],
+        }
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Scored", "Unscored"]
+
+    def test_suggest_empty_index(self, client, mock_meilisearch_client):
+        """An empty index yields 200 with no suggestions."""
+        mock_meilisearch_client.index.return_value.search.return_value = {"hits": []}
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json() == {"suggestions": [], "query": "te"}
+
+    def test_suggest_backend_failure_degrades_to_empty(self, client, mock_meilisearch_client):
+        """A MeiliSearch error never surfaces as a 5xx from /suggest."""
+        mock_meilisearch_client.index.return_value.search.side_effect = RuntimeError("meili down")
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
+
 
 class TestAdvancedSearchEndpoint:
     """Tests for POST /api/v1/search/advanced."""
