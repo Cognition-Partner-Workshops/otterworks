@@ -51,14 +51,6 @@ scenarios:
       Evidence: the client field on api-gateway access logs in CloudWatch
       (docs/observability/mobile-latency.md).
 
-  notification-schema:
-    mechanism: chaos
-    service: notification-service
-    redis_key: "chaos:notification-service:consumer_strict_schema"
-    description: >
-      Notification consumer switches to a strict schema and rejects messages
-      with epoch-int timestamps (dead-letter / consumer-error demo).
-
   file-bad-bucket:
     mechanism: config
     service: file-service

@@ -39,6 +39,7 @@ data class SqsNotificationMessage(
     val userId: String = "",
     val actorId: String = "",
     val mentionedUserId: String = "",
+    @Serializable(with = EventTimestampSerializer::class)
     val timestamp: String,
 )
 
