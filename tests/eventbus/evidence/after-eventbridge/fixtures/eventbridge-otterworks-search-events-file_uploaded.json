@@ -1,0 +1,21 @@
+{
+  "account": "000000000000",
+  "detail": {
+    "eventType": "file_uploaded",
+    "fileId": "6f1c9d2e-0000-4000-8000-000000000002",
+    "folderId": null,
+    "mimeType": "application/pdf",
+    "name": "a.pdf",
+    "ownerId": "6f1c9d2e-0000-4000-8000-0000000000aa",
+    "sharedWithUserId": null,
+    "sizeBytes": 42,
+    "timestamp": "2026-11-11T18:00:00+00:00"
+  },
+  "detail-type": "file_uploaded",
+  "id": "3219deb3-e765-4f28-a8bc-ff5c1d85bb94",
+  "region": "us-east-1",
+  "resources": [],
+  "source": "otterworks.file-service",
+  "time": "2026-11-11T18:55:20Z",
+  "version": "0"
+}

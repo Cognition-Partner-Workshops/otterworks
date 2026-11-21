@@ -1,0 +1,11 @@
+{
+  "Message": "{\"eventType\": \"file_updated\", \"fileId\": \"6f1c9d2e-0000-4000-8000-000000000002\", \"ownerId\": \"6f1c9d2e-0000-4000-8000-0000000000aa\", \"folderId\": null, \"sharedWithUserId\": null, \"timestamp\": \"2026-11-11T18:00:00+00:00\", \"name\": \"b.pdf\"}",
+  "MessageId": "b6aba7cb-1edf-4c9e-96de-54684aefb333",
+  "Signature": "r6aLuCR/wwOMjYYoviVSk2tkuf4CKGpuL5U1bJN4mkxGtk0BoqV/mWIvsmaaOtdzwXO5mRqZfz9mV0nfqOv4KpXsNTsrufBim7HICad3liL0p5UPSZaKpsCFFmezgg7xtbcPus1UYAE/3VI9PjsYXYmJpOZX/B19/JSW9+I0BjT3GWttVXyU2dhjJ4d7//RVgaOZDYXuyA+Ysb3LnFLG2TAn3i+nZyWuGF4jgilL8tCg4tFjrxxIXqze1xgw4+DVp/Y67cOveLR1b8atfuJw/v0QUIE9wiE6EBRaWUCoyCSh558163RExr4Orf8EB1ru5650Bpwl7DvnGboUOkwUkQ==",
+  "SignatureVersion": "1",
+  "SigningCertURL": "http://localhost.localstack.cloud:4566/_aws/sns/SimpleNotificationService-6c6f63616c737461636b69736e696365.pem",
+  "Timestamp": "2026-11-11T18:41:32.710Z",
+  "TopicArn": "arn:aws:sns:us-east-1:000000000000:otterworks-events",
+  "Type": "Notification",
+  "UnsubscribeURL": "http://localhost.localstack.cloud:4566/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:000000000000:otterworks-events:5112a0ee-f7cf-407a-aae9-986a6cec54c8"
+}

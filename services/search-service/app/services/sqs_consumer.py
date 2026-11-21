@@ -159,16 +159,22 @@ class SQSConsumer:
         # Format 3: already in indexer format (action + data)
         return body
 
+    @staticmethod
+    def _unwrap_envelope(body: dict[str, Any]) -> dict[str, Any]:
+        """Strip the SNS or EventBridge delivery envelope, if any."""
+        if "Message" in body and "TopicArn" in body:
+            return json.loads(body["Message"])
+        if "detail-type" in body and isinstance(body.get("detail"), dict):
+            return body["detail"]
+        return body
+
     def _process_message(self, sqs: Any, message: dict[str, Any]) -> None:
         """Process a single SQS message."""
         receipt_handle = message.get("ReceiptHandle", "")
         try:
             body = json.loads(message.get("Body", "{}"))
 
-            # Handle SNS-wrapped messages
-            if "Message" in body and "TopicArn" in body:
-                body = json.loads(body["Message"])
-
+            body = self._unwrap_envelope(body)
             body = self._normalize_event(body)
 
             result = self.indexer.process_event(body)

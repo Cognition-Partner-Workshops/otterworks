@@ -73,6 +73,45 @@ class SqsConsumerTest {
         assertEquals("c-1", event.commentId)
     }
 
+    // Body shape captured from LocalStack EventBridge -> SQS (tests/eventbus/evidence/after-eventbridge).
+    @Test
+    fun `parseMessage parses EventBridge-delivered message`() {
+        val body = """
+            {
+                "version": "0",
+                "id": "b38867ad-144c-4de4-9ef6-2b42175e8eb8",
+                "detail-type": "file_shared",
+                "source": "otterworks.file-service",
+                "account": "000000000000",
+                "time": "2026-11-11T18:44:12Z",
+                "region": "us-east-1",
+                "resources": [],
+                "detail": {
+                    "eventType": "file_shared",
+                    "fileId": "file-123",
+                    "folderId": null,
+                    "ownerId": "owner-1",
+                    "sharedWithUserId": "user-2",
+                    "timestamp": "2026-11-11T18:00:00+00:00"
+                }
+            }
+        """.trimIndent()
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("file_shared", event.eventType)
+        assertEquals("file-123", event.fileId)
+        assertEquals("owner-1", event.ownerId)
+        assertEquals("user-2", event.sharedWithUserId)
+    }
+
+    @Test
+    fun `parseMessage returns null when EventBridge detail is not an object`() {
+        val body = """{"detail-type":"file_shared","source":"otterworks.file-service","detail":"oops"}"""
+        assertNull(consumer.parseMessage(body))
+    }
+
     @Test
     fun `parseMessage returns null for invalid JSON`() {
         val event = consumer.parseMessage("not json at all")

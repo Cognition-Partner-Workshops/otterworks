@@ -13,6 +13,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonObject
 import mu.KotlinLogging
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
@@ -120,14 +123,22 @@ class SqsConsumer(
             parser.decodeFromString<SqsNotificationMessage>(body)
         } catch (_: Exception) {
             try {
-                // Try unwrapping SNS envelope
-                val snsWrapper = parser.decodeFromString<SnsEnvelope>(body)
-                parser.decodeFromString<SqsNotificationMessage>(snsWrapper.Message)
+                parser.decodeFromString<SqsNotificationMessage>(unwrapEnvelope(parser, body))
             } catch (e: Exception) {
                 logger.error(e) { "Failed to parse message body" }
                 null
             }
         }
+    }
+
+    // EventBridge delivers {"detail-type": ..., "detail": {<event>}}; SNS delivers {"Message": "<event json>"}.
+    private fun unwrapEnvelope(parser: Json, body: String): String {
+        val root = parser.parseToJsonElement(body).jsonObject
+        val detail = root["detail"]
+        if (root.containsKey("detail-type") && detail is JsonObject) {
+            return detail.toString()
+        }
+        return parser.decodeFromJsonElement<SnsEnvelope>(root).Message
     }
 }
 

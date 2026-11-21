@@ -2,14 +2,19 @@ use chrono::Utc;
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::config::SnsConfig;
+use crate::config::{EventTransport, SnsConfig};
 use crate::errors::ServiceError;
 
-/// Publisher for file-service domain events via SNS.
+pub const EVENT_SOURCE: &str = "otterworks.file-service";
+
+/// Publisher for file-service domain events via SNS and/or EventBridge.
 #[derive(Clone)]
 pub struct EventPublisher {
     client: aws_sdk_sns::Client,
+    eventbridge: aws_sdk_eventbridge::Client,
     topic_arn: Option<String>,
+    event_bus_name: String,
+    transport: EventTransport,
 }
 
 #[derive(Debug, Serialize)]
@@ -41,14 +46,72 @@ impl EventPublisher {
 
         let aws_cfg = aws_cfg_builder.load().await;
         let client = aws_sdk_sns::Client::new(&aws_cfg);
+        let eventbridge = aws_sdk_eventbridge::Client::new(&aws_cfg);
 
         Self {
             client,
+            eventbridge,
             topic_arn: sns_config.topic_arn.clone(),
+            event_bus_name: sns_config.event_bus_name.clone(),
+            transport: sns_config.transport,
         }
     }
 
     async fn publish(&self, event: &FileEvent) -> Result<(), ServiceError> {
+        let message =
+            serde_json::to_string(event).map_err(|e| ServiceError::Internal(e.to_string()))?;
+
+        let sns = if self.transport.uses_sns() {
+            self.publish_sns(event, &message).await
+        } else {
+            Ok(())
+        };
+        let eventbridge = if self.transport.uses_eventbridge() {
+            self.publish_eventbridge(event, &message).await
+        } else {
+            Ok(())
+        };
+        sns.and(eventbridge)
+    }
+
+    async fn publish_eventbridge(
+        &self,
+        event: &FileEvent,
+        message: &str,
+    ) -> Result<(), ServiceError> {
+        let entry = eventbridge_entry(&self.event_bus_name, event, message);
+        let out = self
+            .eventbridge
+            .put_events()
+            .entries(entry)
+            .send()
+            .await
+            .map_err(|e| ServiceError::EventBridgeError(e.to_string()))?;
+
+        if out.failed_entry_count() > 0 {
+            let detail = out
+                .entries()
+                .first()
+                .map(|e| {
+                    format!(
+                        "{}: {}",
+                        e.error_code().unwrap_or("?"),
+                        e.error_message().unwrap_or("?")
+                    )
+                })
+                .unwrap_or_default();
+            return Err(ServiceError::EventBridgeError(detail));
+        }
+
+        tracing::info!(
+            event_type = %event.event_type,
+            file_id = %event.file_id,
+            "Published event to EventBridge"
+        );
+        Ok(())
+    }
+
+    async fn publish_sns(&self, event: &FileEvent, message: &str) -> Result<(), ServiceError> {
         let topic_arn = match &self.topic_arn {
             Some(arn) => arn,
             None => {
@@ -57,10 +120,7 @@ impl EventPublisher {
             }
         };
 
-        let message =
-            serde_json::to_string(event).map_err(|e| ServiceError::Internal(e.to_string()))?;
-
-        let mut req = self.client.publish().topic_arn(topic_arn).message(&message);
+        let mut req = self.client.publish().topic_arn(topic_arn).message(message);
 
         // message_group_id and message_deduplication_id are only valid for FIFO topics
         if topic_arn.ends_with(".fifo") {
@@ -222,9 +282,58 @@ impl EventPublisher {
     }
 }
 
+fn eventbridge_entry(
+    bus: &str,
+    event: &FileEvent,
+    message: &str,
+) -> aws_sdk_eventbridge::types::PutEventsRequestEntry {
+    aws_sdk_eventbridge::types::PutEventsRequestEntry::builder()
+        .event_bus_name(bus)
+        .source(EVENT_SOURCE)
+        .detail_type(&event.event_type)
+        .detail(message)
+        .build()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_eventbridge_entry_carries_sns_message_as_detail() {
+        let event = FileEvent {
+            event_type: "file_shared".into(),
+            file_id: Uuid::new_v4().to_string(),
+            owner_id: Uuid::new_v4().to_string(),
+            folder_id: None,
+            shared_with: Some(Uuid::new_v4().to_string()),
+            timestamp: Utc::now().to_rfc3339(),
+            name: None,
+            mime_type: None,
+            size_bytes: None,
+        };
+        let message = serde_json::to_string(&event).unwrap();
+        let entry = eventbridge_entry("otterworks-events", &event, &message);
+        assert_eq!(entry.event_bus_name(), Some("otterworks-events"));
+        assert_eq!(entry.source(), Some(EVENT_SOURCE));
+        assert_eq!(entry.detail_type(), Some("file_shared"));
+        assert_eq!(entry.detail(), Some(message.as_str()));
+    }
+
+    #[test]
+    fn test_event_transport_parse() {
+        assert_eq!(EventTransport::parse(""), EventTransport::Sns);
+        assert_eq!(EventTransport::parse("sns"), EventTransport::Sns);
+        assert_eq!(
+            EventTransport::parse("EventBridge"),
+            EventTransport::EventBridge
+        );
+        assert_eq!(EventTransport::parse("dual"), EventTransport::Dual);
+        assert_eq!(EventTransport::parse("kafka"), EventTransport::Sns);
+        assert!(EventTransport::Dual.uses_sns() && EventTransport::Dual.uses_eventbridge());
+        assert!(!EventTransport::Sns.uses_eventbridge());
+        assert!(!EventTransport::EventBridge.uses_sns());
+    }
 
     #[test]
     fn test_file_event_serialization() {

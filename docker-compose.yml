@@ -112,6 +112,8 @@ services:
       S3_BUCKET: otterworks-files
       DYNAMODB_TABLE: otterworks-file-metadata
       SNS_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:otterworks-events
+      EVENT_BUS_NAME: otterworks-events
+      EVENT_TRANSPORT: ${EVENT_TRANSPORT:-sns}
       SEARCH_SERVICE_URL: http://search-service:8087
       JWT_SECRET: ${JWT_SECRET:-otterworks-local-dev-jwt-secret-change-me-in-production}
     depends_on:
@@ -156,6 +158,8 @@ services:
       DOC_SVC_SNS_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:otterworks-events
       DOC_SVC_AWS_ENDPOINT_URL: http://localstack:4566
       DOC_SVC_SNS_ENABLED: 'true'
+      DOC_SVC_EVENT_BUS_NAME: otterworks-events
+      DOC_SVC_EVENT_TRANSPORT: ${EVENT_TRANSPORT:-sns}
       JWT_SECRET: ${JWT_SECRET:-otterworks-local-dev-jwt-secret-change-me-in-production}
     depends_on:
       postgres:
@@ -320,6 +324,7 @@ services:
       REDIS_PORT: 6379
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_SERVICE_NAME: analytics-service
+      SQS_ANALYTICS_QUEUE_URL: http://localstack:4566/000000000000/otterworks-analytics-events
       S3_DATA_LAKE_BUCKET: otterworks-data-lake
       JWT_SECRET: ${JWT_SECRET:-otterworks-local-dev-jwt-secret-change-me-in-production}
     depends_on:

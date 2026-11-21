@@ -27,6 +27,34 @@ pub struct AwsConfig {
 #[derive(Clone, Debug)]
 pub struct SnsConfig {
     pub topic_arn: Option<String>,
+    pub event_bus_name: String,
+    pub transport: EventTransport,
+}
+
+/// Where domain events are published: the legacy SNS topic, the EventBridge bus, or both.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum EventTransport {
+    Sns,
+    EventBridge,
+    Dual,
+}
+
+impl EventTransport {
+    pub fn parse(value: &str) -> Self {
+        match value.trim().to_ascii_lowercase().as_str() {
+            "eventbridge" => Self::EventBridge,
+            "dual" => Self::Dual,
+            _ => Self::Sns,
+        }
+    }
+
+    pub fn uses_sns(self) -> bool {
+        matches!(self, Self::Sns | Self::Dual)
+    }
+
+    pub fn uses_eventbridge(self) -> bool {
+        matches!(self, Self::EventBridge | Self::Dual)
+    }
 }
 
 impl AppConfig {
@@ -76,6 +104,9 @@ impl SnsConfig {
     pub fn from_env() -> Self {
         Self {
             topic_arn: env::var("SNS_TOPIC_ARN").ok(),
+            event_bus_name: env::var("EVENT_BUS_NAME")
+                .unwrap_or_else(|_| "otterworks-events".into()),
+            transport: EventTransport::parse(&env::var("EVENT_TRANSPORT").unwrap_or_default()),
         }
     }
 }

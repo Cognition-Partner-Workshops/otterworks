@@ -4,7 +4,7 @@ import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.{Sink, Source}
 import com.otterworks.analytics.config.{AppConfig, SqsConfig}
 import org.slf4j.LoggerFactory
-import io.circe.parser.decode
+import io.circe.parser.{decode, parse}
 import io.circe.generic.auto.*
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
 import software.amazon.awssdk.regions.Region
@@ -74,7 +74,7 @@ class EventProcessor(
       }
       .mapConcat(identity)
       .mapAsync(4) { message =>
-        decode[SqsEventPayload](message.body()) match
+        decode[SqsEventPayload](EventProcessor.unwrapEventBridge(message.body())) match
           case Right(payload) =>
             analyticsService
               .trackEvent(
@@ -114,3 +114,15 @@ class EventProcessor(
       .runWith(Sink.ignore)
 
     logger.info("SQS event processor stream started"): Unit
+
+object EventProcessor:
+
+  /** Returns the event inside an EventBridge delivery ({"detail-type", "detail": {...}}), or the body unchanged. */
+  def unwrapEventBridge(body: String): String =
+    parse(body).toOption
+      .flatMap(_.asObject)
+      .filter(_.contains("detail-type"))
+      .flatMap(_("detail"))
+      .filter(_.isObject)
+      .map(_.noSpaces)
+      .getOrElse(body)

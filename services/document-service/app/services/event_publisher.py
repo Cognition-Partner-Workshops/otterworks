@@ -1,4 +1,4 @@
-"""SNS event publishing for domain events."""
+"""Domain event publishing to SNS and/or EventBridge."""
 
 import asyncio
 import json
@@ -22,21 +22,30 @@ class _UUIDEncoder(json.JSONEncoder):
         return super().default(o)
 
 
+EVENT_SOURCE = "otterworks.document-service"
+_TRANSPORTS = {"sns", "eventbridge", "dual"}
+
+
 class EventPublisher:
-    """Publishes domain events to AWS SNS."""
+    """Publishes domain events to AWS SNS, EventBridge, or both (dual-run)."""
 
     def __init__(self) -> None:
-        self._client = None
+        self._clients: dict[str, Any] = {}
 
-    def _get_client(self):  # noqa: ANN202
-        if self._client is None:
+    def _get_client(self, service: str = "sns"):  # noqa: ANN202
+        if service not in self._clients:
             import boto3
 
             kwargs = {"region_name": settings.aws_region}
             if settings.aws_endpoint_url:
                 kwargs["endpoint_url"] = settings.aws_endpoint_url
-            self._client = boto3.client("sns", **kwargs)
-        return self._client
+            self._clients[service] = boto3.client(service, **kwargs)
+        return self._clients[service]
+
+    @staticmethod
+    def _transport() -> str:
+        transport = settings.event_transport.lower()
+        return transport if transport in _TRANSPORTS else "sns"
 
     async def publish(self, event_type: str, payload: dict[str, Any]) -> None:
         if not settings.sns_enabled:
@@ -49,12 +58,20 @@ class EventPublisher:
             "payload": payload,
         }
 
+        body = json.dumps(message, cls=_UUIDEncoder)
+        transport = self._transport()
+        if transport in ("sns", "dual"):
+            await self._publish_sns(event_type, body)
+        if transport in ("eventbridge", "dual"):
+            await self._publish_eventbridge(event_type, body)
+
+    async def _publish_sns(self, event_type: str, body: str) -> None:
         try:
-            client = self._get_client()
+            client = self._get_client("sns")
             await asyncio.to_thread(
                 client.publish,
                 TopicArn=settings.sns_topic_arn,
-                Message=json.dumps(message, cls=_UUIDEncoder),
+                Message=body,
                 MessageAttributes={
                     "event_type": {"DataType": "String", "StringValue": event_type}
                 },
@@ -62,6 +79,33 @@ class EventPublisher:
             logger.info("sns_event_published", event_type=event_type)
         except Exception:
             logger.exception("sns_publish_failed", event_type=event_type)
+
+    async def _publish_eventbridge(self, event_type: str, body: str) -> None:
+        try:
+            client = self._get_client("events")
+            response = await asyncio.to_thread(
+                client.put_events,
+                Entries=[
+                    {
+                        "EventBusName": settings.event_bus_name,
+                        "Source": EVENT_SOURCE,
+                        "DetailType": event_type,
+                        "Detail": body,
+                    }
+                ],
+            )
+            if response.get("FailedEntryCount"):
+                entry = response["Entries"][0]
+                logger.error(
+                    "eventbridge_publish_rejected",
+                    event_type=event_type,
+                    error_code=entry.get("ErrorCode"),
+                    error_message=entry.get("ErrorMessage"),
+                )
+                return
+            logger.info("eventbridge_event_published", event_type=event_type)
+        except Exception:
+            logger.exception("eventbridge_publish_failed", event_type=event_type)
 
 
 event_publisher = EventPublisher()
