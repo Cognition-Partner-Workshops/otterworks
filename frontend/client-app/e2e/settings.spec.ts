@@ -1,63 +1,112 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/signed-in";
 
-test.describe("Settings Page", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/settings");
-  });
+test.describe("Settings page (signed in)", () => {
+  test(
+    "shows the Settings heading to a signed-in customer",
+    { tag: ["@smoke", "@settings-legal"] },
+    async ({ page }) => {
+      const main = page.getByRole("main");
 
-  test("shows Settings heading or redirects to login", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: "Settings" });
-    const loginHeading = page.getByText("Sign in to your account");
-    await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
-  });
+      await test.step("Open Settings", async () => {
+        await page.goto("/settings");
+      });
+      await test.step("Confirm the Settings heading", async () => {
+        await expect(
+          main.getByRole("heading", { name: "Settings", level: 1 }),
+        ).toBeVisible();
+      });
+    },
+  );
 
-  test("displays Profile section when authenticated", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: "Settings" });
-    const loginHeading = page.getByText("Sign in to your account");
-    await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
+  test(
+    "shows the signed-in customer's name and email in the Profile section",
+    { tag: ["@smoke", "@settings-legal"] },
+    async ({ page, customer }) => {
+      const main = page.getByRole("main");
 
-    if (await heading.isVisible().catch(() => false)) {
-      await expect(page.getByText("Profile")).toBeVisible();
-      await expect(page.getByLabel("Full name")).toBeVisible();
-      await expect(page.getByLabel("Email")).toBeVisible();
-    }
-  });
+      await test.step("Open Settings", async () => {
+        await page.goto("/settings");
+      });
+      await test.step("Confirm the Profile section and customer details", async () => {
+        await expect(
+          main.getByRole("heading", { name: "Profile", level: 2 }),
+        ).toBeVisible();
+        await expect(main.getByLabel("Full name")).toHaveValue(
+          customer.displayName,
+        );
+        await expect(main.getByLabel("Email", { exact: true })).toHaveValue(
+          customer.email,
+        );
+      });
+    },
+  );
 
-  test("displays Notification preferences section when authenticated", async ({
-    page,
-  }) => {
-    const heading = page.getByRole("heading", { name: "Settings" });
-    const loginHeading = page.getByText("Sign in to your account");
-    await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
+  test(
+    "lists the email, in-app and desktop notification preferences",
+    { tag: ["@smoke", "@settings-legal"] },
+    async ({ page }) => {
+      const main = page.getByRole("main");
 
-    if (await heading.isVisible().catch(() => false)) {
-      await expect(page.getByText("Notification preferences")).toBeVisible();
-      await expect(page.getByText("Email notifications")).toBeVisible();
-      await expect(page.getByText("In-app notifications")).toBeVisible();
-      await expect(page.getByText("Desktop notifications")).toBeVisible();
-    }
-  });
+      await test.step("Open Settings", async () => {
+        await page.goto("/settings");
+      });
+      await test.step("Confirm each notification preference", async () => {
+        await expect(
+          main.getByRole("heading", { name: "Notification preferences" }),
+        ).toBeVisible();
+        await expect(
+          main.getByText("Email notifications", { exact: true }),
+        ).toBeVisible();
+        await expect(
+          main.getByText("In-app notifications", { exact: true }),
+        ).toBeVisible();
+        await expect(
+          main.getByText("Desktop notifications", { exact: true }),
+        ).toBeVisible();
+      });
+    },
+  );
 
-  test("Save changes button is disabled when form is pristine", async ({
-    page,
-  }) => {
-    const heading = page.getByRole("heading", { name: "Settings" });
-    const loginHeading = page.getByText("Sign in to your account");
-    await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
+  test(
+    "keeps Save changes disabled until the profile is edited",
+    { tag: ["@smoke", "@settings-legal"] },
+    async ({ page, customer }) => {
+      const main = page.getByRole("main");
+      const saveButton = main.getByRole("button", { name: "Save changes" });
 
-    if (await heading.isVisible().catch(() => false)) {
-      const saveButton = page.getByRole("button", { name: /Save changes/i });
-      await expect(saveButton).toBeDisabled();
-    }
-  });
+      await test.step("Open Settings and confirm the profile is unchanged", async () => {
+        await page.goto("/settings");
+        await expect(main.getByLabel("Full name")).toHaveValue(
+          customer.displayName,
+        );
+        await expect(saveButton).toBeDisabled();
+      });
+      await test.step("Edit the profile and enable saving", async () => {
+        await main
+          .getByLabel("Full name")
+          .fill(`${customer.displayName} Edited`);
+        await expect(saveButton).toBeEnabled();
+      });
+    },
+  );
+});
 
-  test("displays breadcrumb navigation", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: "Settings" });
-    const loginHeading = page.getByText("Sign in to your account");
-    await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
+test.describe("Settings page (signed out)", () => {
+  test.use({ account: "signedOut" });
 
-    if (await heading.isVisible().catch(() => false)) {
-      await expect(page.getByText("Settings").first()).toBeVisible();
-    }
-  });
+  test(
+    "redirects a signed-out visitor to sign in",
+    { tag: ["@smoke", "@settings-legal"] },
+    async ({ page }) => {
+      await test.step("Visit Settings while signed out", async () => {
+        await page.goto("/settings");
+      });
+      await test.step("Confirm the sign-in redirect", async () => {
+        await expect(page).toHaveURL(/\/login/);
+        await expect(
+          page.getByText("Sign in to your account", { exact: true }),
+        ).toBeVisible();
+      });
+    },
+  );
 });
