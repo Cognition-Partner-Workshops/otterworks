@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// NOTE: Next.js middleware runs on the Edge runtime, so it cannot use
-// node:crypto. We re-verify the HMAC session token with Web Crypto here. This
-// is the first gate; every /api route also independently calls requireSession()
+// NOTE: This proxy (formerly middleware) re-verifies the HMAC session token
+// with Web Crypto so it stays runtime-agnostic. This is the first gate; every /api route also independently calls requireSession()
 // (node:crypto) for defense in depth.
 
 const SESSION_COOKIE = "ow_ops_session";
@@ -68,7 +67,7 @@ function isPublicPath(pathname: string): boolean {
   );
 }
 
-export async function middleware(req: NextRequest): Promise<NextResponse> {
+export async function proxy(req: NextRequest): Promise<NextResponse> {
   const { pathname } = req.nextUrl;
   if (isPublicPath(pathname)) return NextResponse.next();
 
@@ -87,7 +86,7 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
   return NextResponse.redirect(url);
 }
 
-// Exclude Next.js internals + static assets from the middleware.
+// Exclude Next.js internals + static assets from the proxy.
 export const config = {
   matcher: ["/((?!_next/static|_next/image|assets|favicon.ico).*)"],
 };

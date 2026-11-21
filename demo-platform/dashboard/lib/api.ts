@@ -13,7 +13,7 @@ export function error(status: number, message: string): NextResponse {
 
 /**
  * Wrap an authenticated /api route handler. Enforces requireSession() (defense
- * in depth alongside middleware) and translates known errors to status codes.
+ * in depth alongside proxy.ts) and translates known errors to status codes.
  * The `actor` passed to the handler comes only from the signed session.
  */
 export function withSession(
