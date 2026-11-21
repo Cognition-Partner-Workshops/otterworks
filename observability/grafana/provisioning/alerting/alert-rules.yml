@@ -186,7 +186,10 @@ groups:
             The file-service is returning more than 10% server errors on upload
             requests. Errors contain 'NoSuchBucket' in the AWS SDK response —
             the S3 bucket name may be misconfigured. Check S3_BUCKET env var
-            and recent infrastructure changes.
+            and recent infrastructure changes. GET /ready on a file-service pod
+            reports the bucket it is configured for and the S3 error code;
+            file_service_s3_errors_total{operation,code} breaks the failures
+            down by AWS error code.
 
       # -----------------------------------------------------------------------
       # Notification Service: SQS consumer failing to process messages

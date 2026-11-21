@@ -16,11 +16,11 @@ use crate::events::EventPublisher;
 use crate::metadata::MetadataClient;
 use crate::middleware;
 use crate::models::{
-    ActivityItem, ActivityQuery, ActivityResponse, CreateFolderRequest, DownloadResponse,
-    FileDetailResponse, FileMetadata, FileShare, FileVersion, Folder, HealthResponse,
-    ListFilesQuery, ListFilesResponse, ListFoldersQuery, ListFoldersResponse, ListVersionsResponse,
-    MoveFileRequest, RenameFileRequest, ShareFileRequest, ShareFileResponse, UpdateFolderRequest,
-    UploadResponse,
+    ActivityItem, ActivityQuery, ActivityResponse, BucketCheck, CreateFolderRequest,
+    DownloadResponse, FileDetailResponse, FileMetadata, FileShare, FileVersion, Folder,
+    HealthResponse, ListFilesQuery, ListFilesResponse, ListFoldersQuery, ListFoldersResponse,
+    ListVersionsResponse, MoveFileRequest, ReadinessChecks, ReadinessResponse, RenameFileRequest,
+    ShareFileRequest, ShareFileResponse, UpdateFolderRequest, UploadResponse,
 };
 use crate::storage::S3Client;
 
@@ -31,6 +31,54 @@ pub async fn health() -> HttpResponse {
         status: "healthy".into(),
         service: "file-service".into(),
         version: env!("CARGO_PKG_VERSION").into(),
+    })
+}
+
+/// Readiness: 200 only when the configured S3 bucket answers `HeadBucket`.
+/// Wired to the Kubernetes readinessProbe so a pod pointed at a missing or
+/// forbidden bucket (bad `S3_BUCKET`) never takes upload traffic.
+pub async fn ready(s3: web::Data<S3Client>) -> HttpResponse {
+    let (status, bucket_check) = match s3.verify_bucket().await {
+        Ok(()) => (
+            actix_web::http::StatusCode::OK,
+            BucketCheck {
+                bucket: s3.bucket.clone(),
+                ok: true,
+                code: None,
+                http_status: None,
+                error: None,
+            },
+        ),
+        Err(failure) => {
+            tracing::warn!(
+                bucket = %failure.bucket,
+                code = failure.code.as_deref().unwrap_or("none"),
+                "readiness check failed: {failure}"
+            );
+            (
+                actix_web::http::StatusCode::SERVICE_UNAVAILABLE,
+                BucketCheck {
+                    bucket: failure.bucket,
+                    ok: false,
+                    code: failure.code,
+                    http_status: failure.http_status,
+                    error: Some(failure.detail),
+                },
+            )
+        }
+    };
+
+    HttpResponse::build(status).json(ReadinessResponse {
+        status: if status.is_success() {
+            "ready"
+        } else {
+            "not_ready"
+        }
+        .into(),
+        service: "file-service".into(),
+        checks: ReadinessChecks {
+            s3_bucket: bucket_check,
+        },
     })
 }
 
@@ -721,5 +769,125 @@ mod tests {
     async fn test_metrics_endpoint() {
         let resp = metrics().await;
         assert_eq!(resp.status(), actix_web::http::StatusCode::OK);
+    }
+
+    /// Minimal S3 stand-in: answers every request on the socket with `status`
+    /// and an empty body, which is exactly what S3 returns to `HeadBucket`.
+    async fn fake_s3(status: &'static str) -> String {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            loop {
+                let (mut sock, _) = listener.accept().await.unwrap();
+                tokio::spawn(async move {
+                    let mut buf = vec![0u8; 8192];
+                    loop {
+                        let mut req = Vec::new();
+                        loop {
+                            let n = match sock.read(&mut buf).await {
+                                Ok(0) | Err(_) => return,
+                                Ok(n) => n,
+                            };
+                            req.extend_from_slice(&buf[..n]);
+                            if req.windows(4).any(|w| w == b"\r\n\r\n") {
+                                break;
+                            }
+                        }
+                        let resp = format!(
+                            "HTTP/1.1 {status}\r\nx-amz-request-id: test-request\r\n\
+                             Content-Length: 0\r\nConnection: keep-alive\r\n\r\n"
+                        );
+                        if sock.write_all(resp.as_bytes()).await.is_err() {
+                            return;
+                        }
+                    }
+                });
+            }
+        });
+        format!("http://{addr}")
+    }
+
+    fn s3_client_for(endpoint: &str, bucket: &str) -> S3Client {
+        let config = aws_sdk_s3::Config::builder()
+            .behavior_version_latest()
+            .region(aws_sdk_s3::config::Region::new("us-east-1"))
+            .credentials_provider(aws_sdk_s3::config::Credentials::new(
+                "test", "test", None, None, "test",
+            ))
+            .endpoint_url(endpoint)
+            .force_path_style(true)
+            .build();
+        S3Client {
+            client: aws_sdk_s3::Client::from_conf(config),
+            bucket: bucket.to_string(),
+        }
+    }
+
+    async fn ready_response(s3: S3Client) -> (actix_web::http::StatusCode, serde_json::Value) {
+        let resp = ready(web::Data::new(s3)).await;
+        let status = resp.status();
+        let body = actix_web::body::to_bytes(resp.into_body()).await.unwrap();
+        (status, serde_json::from_slice(&body).unwrap())
+    }
+
+    #[actix_rt::test]
+    async fn ready_is_200_when_bucket_answers_head() {
+        let endpoint = fake_s3("200 OK").await;
+        let (status, body) = ready_response(s3_client_for(&endpoint, "otterworks-files")).await;
+        assert_eq!(status, actix_web::http::StatusCode::OK);
+        assert_eq!(body["status"], "ready");
+        assert_eq!(body["checks"]["s3_bucket"]["ok"], true);
+        assert_eq!(body["checks"]["s3_bucket"]["bucket"], "otterworks-files");
+    }
+
+    #[actix_rt::test]
+    async fn ready_is_503_and_names_the_bucket_when_it_does_not_exist() {
+        let endpoint = fake_s3("404 Not Found").await;
+        let (status, body) =
+            ready_response(s3_client_for(&endpoint, "otterworks-does-not-exist")).await;
+        assert_eq!(status, actix_web::http::StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(body["status"], "not_ready");
+        let check = &body["checks"]["s3_bucket"];
+        assert_eq!(check["ok"], false);
+        assert_eq!(check["bucket"], "otterworks-does-not-exist");
+        assert_eq!(check["http_status"], 404);
+        assert_eq!(check["code"], "NotFound");
+        assert!(check["error"].is_string(), "{check}");
+    }
+
+    #[actix_rt::test]
+    async fn ready_is_503_when_bucket_is_forbidden() {
+        let endpoint = fake_s3("403 Forbidden").await;
+        let (status, body) = ready_response(s3_client_for(&endpoint, "someone-elses-bucket")).await;
+        assert_eq!(status, actix_web::http::StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(body["checks"]["s3_bucket"]["http_status"], 403);
+    }
+
+    #[actix_rt::test]
+    async fn storage_errors_are_generic_to_clients_but_detailed_in_the_error() {
+        let endpoint = fake_s3("404 Not Found").await;
+        let s3 = s3_client_for(&endpoint, "otterworks-does-not-exist");
+        let err = s3
+            .upload_object("files/x", bytes::Bytes::from_static(b"hi"), "text/plain")
+            .await
+            .unwrap_err();
+        let detail = err.to_string();
+        assert!(detail.contains("otterworks-does-not-exist"), "{detail}");
+        assert!(detail.contains("HTTP 404"), "{detail}");
+
+        use actix_web::ResponseError;
+        let resp = err.error_response();
+        assert_eq!(
+            resp.status(),
+            actix_web::http::StatusCode::INTERNAL_SERVER_ERROR
+        );
+        let body = actix_web::body::to_bytes(resp.into_body()).await.unwrap();
+        let body: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(body["error"], "storage_error");
+        assert!(!body["message"]
+            .as_str()
+            .unwrap()
+            .contains("otterworks-does-not-exist"));
     }
 }

@@ -39,8 +39,8 @@ spec:
             failureThreshold: 6
           readinessProbe:
             httpGet:
-              path: {{ .Values.healthCheck.path }}
-              port: {{ .Values.healthCheck.port }}
+              path: {{ .Values.readinessCheck.path }}
+              port: {{ .Values.readinessCheck.port }}
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 10

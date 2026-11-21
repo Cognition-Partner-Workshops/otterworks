@@ -24,6 +24,12 @@ lazy_static! {
         vec![0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0]
     )
     .expect("metric can be created");
+    pub static ref S3_ERRORS_TOTAL: IntCounterVec = register_int_counter_vec!(
+        "file_service_s3_errors_total",
+        "Failed S3 calls by operation and AWS error code (e.g. NoSuchBucket)",
+        &["operation", "code"]
+    )
+    .expect("metric can be created");
 }
 
 pub fn render_metrics() -> String {
