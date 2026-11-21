@@ -26,6 +26,9 @@ public class JwtTokenProvider {
       @Value("${jwt.secret}") String secret,
       @Value("${jwt.access-token-expiry:3600}") long accessTokenExpiry,
       @Value("${jwt.refresh-token-expiry:2592000}") long refreshTokenExpiry) {
+    if (secret == null || secret.isBlank()) {
+      throw new IllegalArgumentException("JWT_SECRET must be set and not blank");
+    }
     this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     this.accessTokenExpiry = accessTokenExpiry;
     this.refreshTokenExpiry = refreshTokenExpiry;
