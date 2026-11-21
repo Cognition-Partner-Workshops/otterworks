@@ -33,6 +33,27 @@ impl S3Client {
         }
     }
 
+    /// Confirm the configured bucket exists and is reachable with the
+    /// current credentials. Called once at startup so a misconfigured
+    /// `S3_BUCKET` fails the boot instead of every upload.
+    pub async fn verify_bucket(&self) -> Result<(), ServiceError> {
+        self.client
+            .head_bucket()
+            .bucket(&self.bucket)
+            .send()
+            .await
+            .map_err(|e| {
+                ServiceError::S3Error(format!(
+                    "bucket '{}' is not accessible (check S3_BUCKET): {}",
+                    self.bucket,
+                    e.into_service_error()
+                ))
+            })?;
+
+        tracing::info!(bucket = %self.bucket, "S3 bucket verified");
+        Ok(())
+    }
+
     /// Upload file content to S3.
     pub async fn upload_object(
         &self,
