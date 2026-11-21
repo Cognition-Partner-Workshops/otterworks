@@ -122,3 +122,31 @@ class TestIndexer:
     def test_process_event_unknown_action(self, indexer: Indexer):
         result = indexer.process_event({"action": "unknown", "data": {}})
         assert result is None
+
+
+class TestSuggest:
+    """Tests for MeiliSearchService.suggest ranking."""
+
+    def test_suggest_requests_ranking_score(self, meilisearch_service, mock_meilisearch_client):
+        """suggest() asks MeiliSearch for _rankingScore so the ranking step has data."""
+        meilisearch_service.suggest("te")
+        mock_index = mock_meilisearch_client.index.return_value
+        _, params = mock_index.search.call_args[0]
+        assert params["showRankingScore"] is True
+
+    def test_suggest_ranks_across_indexes_and_dedupes(self, meilisearch_service, mock_meilisearch_client):
+        """Hits from both indexes are merged, ranked by score and de-duplicated."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = [
+            {"hits": [{"title": "Doc", "_rankingScore": 0.4}, {"title": "Shared", "_rankingScore": 0.3}]},
+            {"hits": [{"name": "File", "_rankingScore": 0.8}, {"name": "Shared", "_rankingScore": 0.9}]},
+        ]
+        assert meilisearch_service.suggest("te") == ["File", "Doc", "Shared"]
+
+    def test_suggest_tolerates_malformed_hits(self, meilisearch_service, mock_meilisearch_client):
+        """Non-dict hits, missing titles and non-numeric scores are skipped or scored 0."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "hits": ["not-a-dict", {}, {"title": "Bad Score", "_rankingScore": "n/a"}, {"title": "Ok", "_rankingScore": 0.1}],
+        }
+        assert meilisearch_service.suggest("te") == ["Ok", "Bad Score"]

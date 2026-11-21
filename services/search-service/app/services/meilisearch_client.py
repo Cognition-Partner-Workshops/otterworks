@@ -68,6 +68,17 @@ def get_search_analytics() -> AnalyticsData:
     )
 
 
+def _ranking_score(hit: dict) -> float:
+    """Return the hit's MeiliSearch ranking score, or 0.0 when absent/invalid."""
+    rankingScore = hit.get("_rankingScore")
+    if rankingScore is None:
+        return 0.0
+    try:
+        return float(rankingScore)
+    except (TypeError, ValueError):
+        return 0.0
+
+
 class MeiliSearchService:
     """Client for MeiliSearch search and indexing operations."""
 
@@ -248,8 +259,14 @@ class MeiliSearchService:
         )
 
     def suggest(self, prefix: str, size: int = 10) -> list[str]:
-        """Autocomplete suggestions using MeiliSearch prefix matching."""
-        suggestions: list[str] = []
+        """Autocomplete suggestions using MeiliSearch prefix matching.
+
+        Suggestions are ordered by MeiliSearch's ``_rankingScore`` (highest
+        first). MeiliSearch only emits that field when ``showRankingScore`` is
+        requested, and hits that still lack it fall back to a score of 0.0, so
+        a missing field can never break the ranking step.
+        """
+        scoredHits: list[tuple[float, str]] = []
         seen: set[str] = set()
 
         for index_name in [self.documents_index_name, self.files_index_name]:
@@ -257,18 +274,19 @@ class MeiliSearchService:
             result = index.search(prefix, {
                 "limit": size,
                 "attributesToRetrieve": ["title", "name"],
+                "showRankingScore": True,
             })
-            for hit in result["hits"]:
+            for hit in result.get("hits") or []:
+                if not isinstance(hit, dict):
+                    continue
                 text = hit.get("title") or hit.get("name", "")
-                if text and text not in seen:
-                    suggestions.append(text)
-                    seen.add(text)
-                    if len(suggestions) >= size:
-                        break
-            if len(suggestions) >= size:
-                break
+                if not text or text in seen:
+                    continue
+                seen.add(text)
+                scoredHits.append((_ranking_score(hit), text))
 
-        return suggestions
+        scoredHits.sort(key=lambda item: item[0], reverse=True)
+        return [text for _, text in scoredHits[:size]]
 
     def _wait_and_check(self, task_uid: int, timeout_in_ms: int = 10000) -> None:
         """Wait for a MeiliSearch task and raise on failure."""
