@@ -279,3 +279,34 @@ async def test_create_document_no_auth_returns_401(client: AsyncClient):
         json={"title": "No Auth Doc"},
     )
     assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_create_document_owner_id_of_another_user_is_rejected(client: AsyncClient):
+    """An authenticated caller cannot create a document in another user's account."""
+    caller, victim = uuid.uuid4(), uuid.uuid4()
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Planted", "owner_id": str(victim)},
+        headers={"Authorization": f"Bearer {_make_jwt(str(caller))}"},
+    )
+    assert resp.status_code == 403
+
+    listed = await client.get(
+        "/api/v1/documents/",
+        params={"owner_id": str(victim)},
+        headers={"Authorization": f"Bearer {_make_jwt(str(victim))}"},
+    )
+    assert listed.json()["total"] == 0
+
+
+@pytest.mark.asyncio
+async def test_create_document_owner_id_matching_caller_is_accepted(client: AsyncClient):
+    caller = uuid.uuid4()
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Mine", "owner_id": str(caller)},
+        headers={"Authorization": f"Bearer {_make_jwt(str(caller))}"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["owner_id"] == str(caller)

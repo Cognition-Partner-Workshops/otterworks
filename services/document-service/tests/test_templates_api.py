@@ -2,6 +2,7 @@
 
 import uuid
 
+import jwt
 import pytest
 from httpx import AsyncClient
 
@@ -70,3 +71,35 @@ async def test_create_from_template_not_found(client: AsyncClient, owner_id: uui
         json={"title": "Orphan", "owner_id": str(owner_id)},
     )
     assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_create_from_template_owner_id_of_another_user_is_rejected(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+):
+    secret = "test-jwt-secret-for-unit-tests-pad32"  # noqa: S105
+    monkeypatch.setenv("JWT_SECRET", secret)
+    caller, victim = uuid.uuid4(), uuid.uuid4()
+    template_resp = await client.post(
+        "/api/v1/templates/",
+        json={"name": "T", "content": "x", "content_type": "text/plain", "created_by": str(caller)},
+    )
+    template_id = template_resp.json()["id"]
+    headers = {
+        "Authorization": f"Bearer {jwt.encode({'sub': str(caller)}, secret, algorithm='HS256')}"
+    }
+
+    planted = await client.post(
+        f"/api/v1/documents/from-template/{template_id}",
+        json={"title": "Planted", "owner_id": str(victim)},
+        headers=headers,
+    )
+    assert planted.status_code == 403
+
+    own = await client.post(
+        f"/api/v1/documents/from-template/{template_id}",
+        json={"title": "Mine"},
+        headers=headers,
+    )
+    assert own.status_code == 201
+    assert own.json()["owner_id"] == str(caller)
