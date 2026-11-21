@@ -5,6 +5,9 @@ import uuid
 import pytest
 from httpx import AsyncClient
 
+from app.models.document import Document
+from app.services.document_query_repository import DocumentQueryRepository
+
 
 async def _create(client: AsyncClient, owner_id: uuid.UUID, title: str, **kwargs):
     payload = {"title": title, "content": "body", "owner_id": str(owner_id)}
@@ -57,9 +60,7 @@ async def test_filter_paginates(client: AsyncClient, owner_id: uuid.UUID):
     for index in range(3):
         await _create(client, owner_id, f"Plan {index}")
 
-    resp = await client.get(
-        "/api/v1/documents/", params={"title": "plan", "size": 2, "page": 2}
-    )
+    resp = await client.get("/api/v1/documents/", params={"title": "plan", "size": 2, "page": 2})
 
     assert resp.status_code == 200
     body = resp.json()
@@ -86,3 +87,65 @@ async def test_unfiltered_list_is_unchanged(client: AsyncClient, owner_id: uuid.
 
     assert resp.status_code == 200
     assert resp.json()["total"] == 1
+
+
+@pytest.mark.asyncio
+async def test_owner_filter_value_is_bound_not_interpolated(db_session, owner_id: uuid.UUID):
+    other_owner = uuid.uuid4()
+    db_session.add_all(
+        [
+            Document(title="Mine", content="body", owner_id=owner_id),
+            Document(title="Theirs", content="body", owner_id=other_owner),
+        ]
+    )
+    await db_session.commit()
+    repo = DocumentQueryRepository(db_session)
+
+    injected = await repo.count_documents(owner_id="x' OR '1'='1")
+    rows = await repo.search_documents(owner_id="x' OR '1'='1")
+
+    assert injected == 0
+    assert rows == []
+
+
+@pytest.mark.asyncio
+async def test_content_type_tautology_does_not_widen_results(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    await _create(client, owner_id, "Plan", content_type="text/markdown")
+
+    resp = await client.get("/api/v1/documents/", params={"content_type": "x' OR '1'='1"})
+
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+
+
+@pytest.mark.asyncio
+async def test_title_with_quote_matches_literally(client: AsyncClient, owner_id: uuid.UUID):
+    await _create(client, owner_id, "O'Brien notes")
+    await _create(client, owner_id, "Other notes")
+
+    resp = await client.get("/api/v1/documents/", params={"title": "o'brien"})
+
+    assert resp.status_code == 200
+    assert [item["title"] for item in resp.json()["items"]] == ["O'Brien notes"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("sort", "direction"),
+    [
+        ("(SELECT 1)", "desc"),
+        ("title", "desc; DROP TABLE documents"),
+        ("title --", "asc"),
+    ],
+)
+async def test_unsupported_ordering_is_rejected(
+    client: AsyncClient, owner_id: uuid.UUID, sort: str, direction: str
+):
+    await _create(client, owner_id, "Plan")
+
+    resp = await client.get("/api/v1/documents/", params={"sort": sort, "direction": direction})
+
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == "Invalid filter"
