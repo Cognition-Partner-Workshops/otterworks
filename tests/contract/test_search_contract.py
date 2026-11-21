@@ -12,6 +12,8 @@ Requirements:
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import os
 from pathlib import Path
 from typing import Any
@@ -23,6 +25,18 @@ from jsonschema import validate
 
 SPEC_PATH = Path(__file__).resolve().parents[2] / "shared" / "openapi" / "search-service.yaml"
 BASE_URL = os.environ.get("SEARCH_SERVICE_URL", "http://localhost:8087")
+# These tests call search-service directly, so they attest the identity the way
+# api-gateway does: X-User-ID plus hex HMAC-SHA256(INTERNAL_AUTH_SECRET, X-User-ID).
+INTERNAL_AUTH_SECRET = os.environ.get(
+    "INTERNAL_AUTH_SECRET", "otterworks-local-dev-internal-auth-secret-change-me-in-production"
+)
+TEST_USER_ID = "test-user-001"
+IDENTITY_HEADERS = {
+    "X-User-ID": TEST_USER_ID,
+    "X-Gateway-Signature": hmac.new(
+        INTERNAL_AUTH_SECRET.encode(), TEST_USER_ID.encode(), hashlib.sha256
+    ).hexdigest(),
+}
 
 
 @pytest.fixture(scope="session")
@@ -119,7 +133,7 @@ class TestSearchEndpoint:
         """Searching without q parameter returns 400."""
         resp = requests.get(
             f"{BASE_URL}/api/v1/search/",
-            headers={"X-User-ID": "test-user-001"},
+            headers=IDENTITY_HEADERS,
         )
         assert resp.status_code == 400
         body = resp.json()
@@ -131,7 +145,7 @@ class TestSearchEndpoint:
         resp = requests.get(
             f"{BASE_URL}/api/v1/search/",
             params={"q": "test", "page": "abc"},
-            headers={"X-User-ID": "test-user-001"},
+            headers=IDENTITY_HEADERS,
         )
         assert resp.status_code == 400
         body = resp.json()
@@ -142,7 +156,7 @@ class TestSearchEndpoint:
         resp = requests.get(
             f"{BASE_URL}/api/v1/search/",
             params={"q": "test", "page": "1", "size": "10"},
-            headers={"X-User-ID": "test-user-001"},
+            headers=IDENTITY_HEADERS,
         )
         assert resp.status_code == 200
         body = resp.json()
@@ -163,7 +177,7 @@ class TestSuggestEndpoint:
         resp = requests.get(
             f"{BASE_URL}/api/v1/search/suggest",
             params={"q": "a"},
-            headers={"X-User-ID": "test-user-001"},
+            headers=IDENTITY_HEADERS,
         )
         assert resp.status_code == 200
         body = resp.json()
@@ -176,7 +190,7 @@ class TestSuggestEndpoint:
         resp = requests.get(
             f"{BASE_URL}/api/v1/search/suggest",
             params={"q": "tes"},
-            headers={"X-User-ID": "test-user-001"},
+            headers=IDENTITY_HEADERS,
         )
         assert resp.status_code == 200
         body = resp.json()
@@ -193,7 +207,7 @@ class TestAdvancedSearchEndpoint:
         resp = requests.post(
             f"{BASE_URL}/api/v1/search/advanced",
             json={},
-            headers={"X-User-ID": "test-user-001"},
+            headers=IDENTITY_HEADERS,
         )
         assert resp.status_code == 200
         body = resp.json()
@@ -212,7 +226,7 @@ class TestAdvancedSearchEndpoint:
                 "page": 1,
                 "size": 10,
             },
-            headers={"X-User-ID": "test-user-001"},
+            headers=IDENTITY_HEADERS,
         )
         assert resp.status_code == 200
         body = resp.json()
@@ -225,7 +239,7 @@ class TestAdvancedSearchEndpoint:
         resp = requests.post(
             f"{BASE_URL}/api/v1/search/advanced",
             json={"page": "invalid"},
-            headers={"X-User-ID": "test-user-001"},
+            headers=IDENTITY_HEADERS,
         )
         assert resp.status_code == 400
         body = resp.json()
@@ -278,7 +292,7 @@ class TestAnalyticsEndpoint:
         """Analytics endpoint returns valid schema."""
         resp = requests.get(
             f"{BASE_URL}/api/v1/search/analytics",
-            headers={"X-User-ID": "test-user-001"},
+            headers=IDENTITY_HEADERS,
         )
         assert resp.status_code == 200
         body = resp.json()
@@ -298,7 +312,7 @@ class TestIndexEndpoints:
         """POST /api/v1/search/index/document without body returns 400."""
         resp = requests.post(
             f"{BASE_URL}/api/v1/search/index/document",
-            headers={"Content-Type": "application/json", "X-User-ID": "test-user-001"},
+            headers={"Content-Type": "application/json", **IDENTITY_HEADERS},
         )
         # Flask returns 400 for missing JSON body
         assert resp.status_code == 400
@@ -310,7 +324,7 @@ class TestIndexEndpoints:
         resp = requests.post(
             f"{BASE_URL}/api/v1/search/index/document",
             json={"title": "Test Doc"},
-            headers={"X-User-ID": "test-user-001"},
+            headers=IDENTITY_HEADERS,
         )
         assert resp.status_code == 400
         body = resp.json()
@@ -320,7 +334,7 @@ class TestIndexEndpoints:
         """POST /api/v1/search/index/file without body returns 400."""
         resp = requests.post(
             f"{BASE_URL}/api/v1/search/index/file",
-            headers={"Content-Type": "application/json", "X-User-ID": "test-user-001"},
+            headers={"Content-Type": "application/json", **IDENTITY_HEADERS},
         )
         assert resp.status_code == 400
         body = resp.json()
@@ -331,7 +345,7 @@ class TestIndexEndpoints:
         resp = requests.post(
             f"{BASE_URL}/api/v1/search/index/file",
             json={"id": "file-001"},
-            headers={"X-User-ID": "test-user-001"},
+            headers=IDENTITY_HEADERS,
         )
         assert resp.status_code == 400
         body = resp.json()

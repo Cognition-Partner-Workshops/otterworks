@@ -10,8 +10,10 @@ service:
   port: 8087
   targetPort: 8087
 
+# Cluster-internal: reached only through api-gateway, which attests the caller's
+# identity (X-User-ID + X-Gateway-Signature). Never publish this backend directly.
 ingress:
-  enabled: true
+  enabled: false
   className: nginx
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod

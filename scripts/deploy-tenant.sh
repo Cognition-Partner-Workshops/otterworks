@@ -163,6 +163,11 @@ if [ -z "${SECRET_KEY_BASE:-}" ]; then
     { err "Refusing to rotate SECRET_KEY_BASE; set it explicitly or retry"; exit 1; }
   [ -n "${SECRET_KEY_BASE}" ] || SECRET_KEY_BASE="$(openssl rand -hex 64)"
 fi
+if [ -z "${INTERNAL_AUTH_SECRET:-}" ]; then
+  INTERNAL_AUTH_SECRET="$(existing_tenant_secret api-gateway-secrets INTERNAL_AUTH_SECRET)" ||
+    { err "Refusing to rotate INTERNAL_AUTH_SECRET; set it explicitly or retry"; exit 1; }
+  [ -n "${INTERNAL_AUTH_SECRET}" ] || INTERNAL_AUTH_SECRET="$(openssl rand -hex 32)"
+fi
 
 # ---------- Namespace + isolation guardrails ----------
 log "Creating namespace ${NS} with quota / limits / network policy..."

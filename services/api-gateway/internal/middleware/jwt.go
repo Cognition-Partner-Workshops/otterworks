@@ -87,6 +87,11 @@ func JWTAuth(cfg JWTConfig) func(http.Handler) http.Handler {
 	}
 }
 
+// WithJWTClaims returns a context carrying claims, as JWTAuth does after validation.
+func WithJWTClaims(ctx context.Context, claims *JWTClaims) context.Context {
+	return context.WithValue(ctx, jwtClaimsKey{}, claims)
+}
+
 // GetJWTClaims retrieves JWT claims from the request context.
 func GetJWTClaims(ctx context.Context) *JWTClaims {
 	if claims, ok := ctx.Value(jwtClaimsKey{}).(*JWTClaims); ok {

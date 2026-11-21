@@ -32,6 +32,7 @@ services:
       AUDIT_SERVICE_URL: http://audit-service:8090
       REPORT_SERVICE_URL: http://report-service:8091
       JWT_SECRET: ${JWT_SECRET:-otterworks-local-dev-jwt-secret-change-me-in-production}
+      INTERNAL_AUTH_SECRET: ${INTERNAL_AUTH_SECRET:-otterworks-local-dev-internal-auth-secret-change-me-in-production}
     depends_on:
     - auth-service
     healthcheck:
@@ -94,7 +95,7 @@ services:
       dockerfile: Dockerfile
     container_name: otterworks-file-service
     ports:
-    - 8082:8082
+    - 127.0.0.1:8082:8082
     environment:
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: test
@@ -114,6 +115,7 @@ services:
       SNS_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:otterworks-events
       SEARCH_SERVICE_URL: http://search-service:8087
       JWT_SECRET: ${JWT_SECRET:-otterworks-local-dev-jwt-secret-change-me-in-production}
+      INTERNAL_AUTH_SECRET: ${INTERNAL_AUTH_SECRET:-otterworks-local-dev-internal-auth-secret-change-me-in-production}
     depends_on:
       localstack:
         condition: service_healthy
@@ -263,7 +265,7 @@ services:
       dockerfile: Dockerfile
     container_name: otterworks-search-service
     ports:
-    - 8087:8087
+    - 127.0.0.1:8087:8087
     environment:
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: test
@@ -282,6 +284,7 @@ services:
       SQS_ENABLED: 'true'
       SQS_QUEUE_URL: http://localstack:4566/000000000000/otterworks-search-events
       JWT_SECRET: ${JWT_SECRET:-otterworks-local-dev-jwt-secret-change-me-in-production}
+      INTERNAL_AUTH_SECRET: ${INTERNAL_AUTH_SECRET:-otterworks-local-dev-internal-auth-secret-change-me-in-production}
     depends_on:
       meilisearch:
         condition: service_healthy
@@ -364,6 +367,7 @@ services:
       OTEL_SERVICE_NAME: admin-service
       RAILS_ENV: development
       JWT_SECRET: ${JWT_SECRET:-otterworks-local-dev-jwt-secret-change-me-in-production}
+      INTERNAL_AUTH_SECRET: ${INTERNAL_AUTH_SECRET:-otterworks-local-dev-internal-auth-secret-change-me-in-production}
       DATABASE_URL: postgres://otterworks:otterworks_dev@postgres:5432/otterworks
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432

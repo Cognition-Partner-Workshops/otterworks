@@ -38,6 +38,11 @@ type Config struct {
 	// JWT_SECRET, so its admin dashboard can read this deployment's archive.
 	JWTPeerSecret string
 
+	// Shared secret used to sign the X-User-ID header forwarded to backends
+	// (X-Gateway-Signature), so a backend can tell a gateway-attested identity
+	// from a client-supplied header.
+	InternalAuthSecret string
+
 	// CORS
 	CORSAllowedOrigins []string
 	CORSAllowedMethods []string
@@ -48,16 +53,19 @@ type Config struct {
 	ShutdownTimeout time.Duration
 
 	// Circuit breaker
-	CBMaxRequests   uint32
-	CBInterval      time.Duration
-	CBTimeout       time.Duration
-	CBFailureRatio  float64
+	CBMaxRequests  uint32
+	CBInterval     time.Duration
+	CBTimeout      time.Duration
+	CBFailureRatio float64
 }
 
 // Validate checks that required security-sensitive configuration is present.
 func (c *Config) Validate() error {
 	if c.JWTSecret == "" {
 		return fmt.Errorf("JWT_SECRET environment variable is required but not set")
+	}
+	if c.InternalAuthSecret == "" {
+		return fmt.Errorf("INTERNAL_AUTH_SECRET environment variable is required but not set")
 	}
 	return nil
 }
@@ -86,6 +94,8 @@ func Load() *Config {
 
 		JWTSecret:     getEnv("JWT_SECRET", ""),
 		JWTPeerSecret: getEnv("JWT_PEER_SECRET", ""),
+
+		InternalAuthSecret: getEnv("INTERNAL_AUTH_SECRET", ""),
 
 		CORSAllowedOrigins: getEnvSlice("CORS_ALLOWED_ORIGINS", []string{"http://localhost:3000", "http://localhost:4200", "https://localhost", "capacitor://localhost"}),
 		CORSAllowedMethods: getEnvSlice("CORS_ALLOWED_METHODS", []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}),
