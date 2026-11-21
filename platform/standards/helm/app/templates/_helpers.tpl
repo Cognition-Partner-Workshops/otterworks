@@ -71,11 +71,11 @@ app.kubernetes.io/instance: {{ .Release.Name }}
   volumeMounts:
     {{- range $i, $p := .Values.writablePaths }}
     - name: writable-{{ $i }}
-      mountPath: {{ $p }}
+      mountPath: {{ $p | quote }}
     {{- end }}
     {{- if .Values.configFiles }}
     - name: config
-      mountPath: {{ .Values.configMountPath }}
+      mountPath: {{ .Values.configMountPath | quote }}
       readOnly: true
     {{- end }}
 {{- end -}}

@@ -114,5 +114,25 @@ run
 check "keeps tenants found beyond the first scan page" "${REAPED# }" "ghost"
 IDS_PAGE2=""
 
+echo "orphan-namespace sweep"
+
+NSES=""           # namespaces carrying the tenant managed-by label
+kubectl() { printf '%s' "${NSES}"; }
+ctl_tenant_exists() { printf '%s\n' ${IDS} | grep -qx -- "$1"; }
+eval "$(sed -n '/^sweep_orphan_namespaces()/,/^}/p' "${SCRIPT_DIR}/reaper.sh")"
+run_ns() { REAPED=""; sweep_orphan_namespaces >/dev/null 2>&1; }
+
+IDS="derek"
+NSES="otterworks-derek otterworks-ghost"
+run_ns
+check "reaps a tenant namespace with no control-table item" "${REAPED# }" "ghost"
+
+# Run-scoped namespaces (bank-w1-<run>-pr<n>) carry the label only so the
+# tenant-reaper CronJob expires them by annotation. They are not tenants, so
+# the full tenant GC must never run for them.
+NSES="bank-w1-rpl1020-pr42 otterworks-derek otterworks-system"
+run_ns
+check "leaves labelled namespaces outside otterworks-* to the expiry reaper" "${REAPED# }" ""
+
 echo "${PASS} passed, ${FAIL} failed"
 [ "${FAIL}" -eq 0 ]
