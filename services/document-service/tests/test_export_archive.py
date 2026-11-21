@@ -28,6 +28,50 @@ def test_missing_export_raises(archive):
         archive.read_export("absent.md")
 
 
+@pytest.mark.parametrize("name", ["../outside.env", "reports/../../outside.env", "/etc/hostname"])
+def test_rejects_names_outside_the_archive(tmp_path, name):
+    root = tmp_path / "archive"
+    root.mkdir()
+    (tmp_path / "outside.env").write_text("SECRET=1\n", encoding="utf-8")
+
+    with pytest.raises(FileNotFoundError):
+        ExportArchive(base_dir=str(root)).read_export(name)
+
+
+def test_rejects_symlink_escaping_the_archive(tmp_path):
+    root = tmp_path / "archive"
+    root.mkdir()
+    (tmp_path / "outside.env").write_text("SECRET=1\n", encoding="utf-8")
+    (root / "link.md").symlink_to(tmp_path / "outside.env")
+
+    with pytest.raises(FileNotFoundError):
+        ExportArchive(base_dir=str(root)).read_export("link.md")
+
+
+def test_rejects_sibling_directory_sharing_the_root_prefix(tmp_path):
+    root = tmp_path / "archive"
+    root.mkdir()
+    sibling = tmp_path / "archive-other"
+    sibling.mkdir()
+    (sibling / "leak.md").write_text("leak\n", encoding="utf-8")
+
+    with pytest.raises(FileNotFoundError):
+        ExportArchive(base_dir=str(root)).read_export("../archive-other/leak.md")
+
+
+@pytest.mark.asyncio
+async def test_export_endpoint_404s_for_traversal(client, monkeypatch, tmp_path):
+    root = tmp_path / "archive"
+    root.mkdir()
+    (tmp_path / "outside.env").write_text("SECRET=1\n", encoding="utf-8")
+    monkeypatch.setenv("EXPORT_ARCHIVE_DIR", str(root))
+
+    resp = await client.get("/api/v1/documents/exports", params={"name": "../outside.env"})
+
+    assert resp.status_code == 404
+    assert "SECRET" not in resp.text
+
+
 @pytest.mark.asyncio
 async def test_export_endpoint_serves_archived_file(client, monkeypatch, tmp_path):
     (tmp_path / "report.md").write_text("# Report\n", encoding="utf-8")
