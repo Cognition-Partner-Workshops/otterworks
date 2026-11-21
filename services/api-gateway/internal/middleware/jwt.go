@@ -65,6 +65,10 @@ func JWTAuth(cfg JWTConfig) func(http.Handler) http.Handler {
 				next.ServeHTTP(w, r)
 				return
 			}
+			if cfg.Secret == "" {
+				writeJSONError(w, http.StatusServiceUnavailable, "authentication is not configured")
+				return
+			}
 
 			tokenStr := extractBearerToken(r)
 			if tokenStr == "" {
@@ -108,6 +112,10 @@ func extractBearerToken(r *http.Request) string {
 }
 
 func validateToken(tokenStr, secret string) (*JWTClaims, error) {
+	if secret == "" {
+		return nil, fmt.Errorf("JWT secret is not configured")
+	}
+
 	claims := &JWTClaims{}
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

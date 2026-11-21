@@ -349,3 +349,61 @@ func TestGetJWTClaims_NilContext(t *testing.T) {
 	claims := GetJWTClaims(req.Context())
 	assert.Nil(t, claims)
 }
+
+func TestJWTAuth_EmptySecretFailsClosed(t *testing.T) {
+	claims := JWTClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
+			Subject:   "user-123",
+		},
+	}
+	tests := []struct {
+		name       string
+		secret     string
+		token      string
+		wantStatus int
+	}{
+		{
+			name:       "forged with empty secret",
+			secret:     "",
+			token:      generateTestToken(t, "", claims),
+			wantStatus: http.StatusServiceUnavailable,
+		},
+		{
+			name:       "no token and empty secret",
+			secret:     "",
+			wantStatus: http.StatusServiceUnavailable,
+		},
+		{
+			name:       "valid configured secret",
+			secret:     testSecret,
+			token:      generateTestToken(t, testSecret, claims),
+			wantStatus: http.StatusOK,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := JWTConfig{
+				Secret:     tt.secret,
+				PublicPath: DefaultPublicPaths(),
+				PrefixPath: DefaultPrefixPaths(),
+			}
+			handler := JWTAuth(cfg)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+			}))
+
+			req := httptest.NewRequest(http.MethodGet, "/api/v1/files/list", nil)
+			if tt.token != "" {
+				req.Header.Set("Authorization", "Bearer "+tt.token)
+			}
+			rec := httptest.NewRecorder()
+			handler.ServeHTTP(rec, req)
+
+			assert.Equal(t, tt.wantStatus, rec.Code)
+			if tt.secret == "" {
+				assert.NotEqual(t, http.StatusOK, rec.Code)
+			}
+		})
+	}
+}
