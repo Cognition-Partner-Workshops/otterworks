@@ -36,6 +36,16 @@ ctl_tenant_exists() {
   [ -n "$(ctl_get "TENANT#$1" META | jq -r '.Item.PK.S // empty' 2>/dev/null)" ]
 }
 
+# A pinned or perpetual tenant's expiry, or nothing for an ordinary one. A
+# deploy job carries the TTL it was enqueued with, so one that started before
+# a pin would otherwise hand the tenant a finite lifetime again when it ends.
+ctl_locked_expiry() {
+  ctl_get "TENANT#$1" META | jq -r '
+    .Item // {} |
+    select((.pinned.BOOL // false) or (.persistent.BOOL // false)) |
+    .expires_at.N // empty' 2>/dev/null
+}
+
 # Every tenant id in the control table, one per line. Returns non-zero (and no
 # output) if the scan itself fails, so callers can tell "no tenants" apart from
 # "we do not know" — deleting on the latter would be a mass wipe. The orphan-DB
