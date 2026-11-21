@@ -1,3 +1,4 @@
+use aws_sdk_s3::error::DisplayErrorContext;
 use aws_sdk_s3::presigning::PresigningConfig;
 use bytes::Bytes;
 use std::time::Duration;
@@ -33,6 +34,33 @@ impl S3Client {
         }
     }
 
+    /// Confirm the configured bucket exists and is reachable with the current
+    /// credentials. Run once at startup so a misconfigured `S3_BUCKET` is
+    /// reported in the service log before the first upload fails with it.
+    pub async fn verify_bucket(&self) -> Result<(), ServiceError> {
+        self.client
+            .head_bucket()
+            .bucket(&self.bucket)
+            .send()
+            .await
+            .map_err(|e| self.s3_error("bucket check failed", &e))?;
+        Ok(())
+    }
+
+    /// Build a storage error that names the bucket and carries the full SDK
+    /// error chain (service code such as `NoSuchBucket`, request id), which the
+    /// plain `Display` of an `SdkError` omits.
+    fn s3_error<E>(&self, what: &str, err: &E) -> ServiceError
+    where
+        E: std::error::Error + 'static,
+    {
+        ServiceError::S3Error(format!(
+            "{what} (bucket {:?}): {}",
+            self.bucket,
+            DisplayErrorContext(err)
+        ))
+    }
+
     /// Upload file content to S3.
     pub async fn upload_object(
         &self,
@@ -48,7 +76,7 @@ impl S3Client {
             .content_type(content_type)
             .send()
             .await
-            .map_err(|e| ServiceError::S3Error(format!("upload failed: {e}")))?;
+            .map_err(|e| self.s3_error("upload failed", &e))?;
 
         tracing::info!(key = %key, bucket = %self.bucket, "Uploaded object to S3");
         Ok(())
@@ -63,7 +91,7 @@ impl S3Client {
             .key(key)
             .send()
             .await
-            .map_err(|e| ServiceError::S3Error(format!("download failed: {e}")))?;
+            .map_err(|e| self.s3_error("download failed", &e))?;
 
         let body = resp
             .body
@@ -90,7 +118,7 @@ impl S3Client {
             .key(key)
             .presigned(presigning)
             .await
-            .map_err(|e| ServiceError::S3Error(format!("presign failed: {e}")))?;
+            .map_err(|e| self.s3_error("presign failed", &e))?;
 
         Ok(presigned.uri().to_string())
     }
@@ -103,7 +131,7 @@ impl S3Client {
             .key(key)
             .send()
             .await
-            .map_err(|e| ServiceError::S3Error(format!("delete failed: {e}")))?;
+            .map_err(|e| self.s3_error("delete failed", &e))?;
 
         tracing::info!(key = %key, "Deleted object from S3");
         Ok(())
@@ -119,7 +147,7 @@ impl S3Client {
             .key(dest_key)
             .send()
             .await
-            .map_err(|e| ServiceError::S3Error(format!("copy failed: {e}")))?;
+            .map_err(|e| self.s3_error("copy failed", &e))?;
 
         tracing::info!(source = %source_key, dest = %dest_key, "Copied object in S3");
         Ok(())

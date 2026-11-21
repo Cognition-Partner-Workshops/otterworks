@@ -25,7 +25,20 @@ async fn main() -> std::io::Result<()> {
         .init();
 
     let app_config = config::AppConfig::from_env();
+    if let Err(reason) = app_config.validate() {
+        tracing::error!(error = %reason, "Invalid configuration; refusing to start");
+        return Err(std::io::Error::other(reason));
+    }
     let s3_client = storage::S3Client::new(&app_config.aws).await;
+    match s3_client.verify_bucket().await {
+        Ok(()) => tracing::info!(bucket = %s3_client.bucket, "S3 bucket reachable"),
+        Err(e) => tracing::error!(
+            bucket = %s3_client.bucket,
+            error = %e,
+            "Configured S3 bucket is not reachable; uploads will fail with storage_error. \
+             Check S3_BUCKET against the Terraform output s3_file_bucket."
+        ),
+    }
     let meta_client = metadata::MetadataClient::new(&app_config.aws).await;
     let event_publisher = events::EventPublisher::new(&app_config.sns, &app_config.aws).await;
 
