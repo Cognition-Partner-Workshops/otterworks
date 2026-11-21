@@ -10,14 +10,14 @@
 #   docker build -f demo-platform/runner/Dockerfile \
 #     -t <registry>/otterworks/demo-runner:<tag> .
 # ------------------------------------------------------------------------------
-FROM alpine:3.20
+FROM alpine:3.24
 
 # Pinned tool versions (arch-aware). aws-cli v2 + jq + git + psql come from apk;
 # kubectl/helm/terraform are installed from upstream release binaries so the
 # versions are explicit and reproducible regardless of apk channel churn.
-ARG KUBECTL_VERSION=1.30.4
-ARG HELM_VERSION=3.15.4
-ARG TERRAFORM_VERSION=1.9.5
+ARG KUBECTL_VERSION=1.35.9
+ARG HELM_VERSION=3.22.1
+ARG TERRAFORM_VERSION=1.17.0
 ARG TARGETARCH=amd64
 
 # aws-cli in Alpine community is v2 (built for musl). bash/git/jq/postgresql-client
