@@ -20,6 +20,7 @@ import { PageLoader } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { documentsApi } from "@/lib/api";
 import { formatRelativeTime } from "@/lib/utils";
+import type { Collaborator } from "@/types";
 
 export default function DocumentEditorPage() {
   return (
@@ -41,8 +42,13 @@ function DocumentEditorContent() {
   const [shareOpen, setShareOpen] = useState(false);
   const [shareEmail, setShareEmail] = useState("");
   const [shareCopied, setShareCopied] = useState(false);
-  const [shareStatus, setShareStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [shareStatus, setShareStatus] = useState<
+    "idle" | "sending" | "sent" | "error"
+  >("idle");
   const [hasContent, setHasContent] = useState(false);
+  const [liveCollaborators, setLiveCollaborators] = useState<Collaborator[]>(
+    [],
+  );
   const latestContentRef = useRef<string | null>(null);
   const documentIdRef = useRef(documentId);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -87,7 +93,7 @@ function DocumentEditorContent() {
         updateMutation.mutate({ content });
       }, 1000);
     },
-    [updateMutation, hasContent]
+    [updateMutation, hasContent],
   );
 
   useEffect(() => {
@@ -95,7 +101,11 @@ function DocumentEditorContent() {
       if (saveTimerRef.current) {
         clearTimeout(saveTimerRef.current);
         if (latestContentRef.current !== null) {
-          documentsApi.update(documentIdRef.current, { content: latestContentRef.current }).catch(() => {});
+          documentsApi
+            .update(documentIdRef.current, {
+              content: latestContentRef.current,
+            })
+            .catch(() => {});
         }
       }
     };
@@ -106,7 +116,10 @@ function DocumentEditorContent() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
         <p className="text-gray-500">Document not found</p>
-        <Link to="/documents" className="text-otter-600 hover:underline mt-2 text-sm">
+        <Link
+          to="/documents"
+          className="text-otter-600 hover:underline mt-2 text-sm"
+        >
           Back to documents
         </Link>
       </div>
@@ -171,8 +184,8 @@ function DocumentEditorContent() {
 
         <div className="flex items-center gap-3">
           {/* Collaborators */}
-          {(document.collaborators ?? []).length > 0 && (
-            <UserPresenceAvatars collaborators={document.collaborators} />
+          {liveCollaborators.length > 0 && (
+            <UserPresenceAvatars collaborators={liveCollaborators} />
           )}
 
           <div className="flex items-center gap-2">
@@ -214,19 +227,22 @@ function DocumentEditorContent() {
         </span>
         <span className="flex items-center gap-1">
           <Users size={12} />
-          {(document.collaborators ?? []).filter((c) => c.isOnline).length} online
+          {liveCollaborators.length} online
         </span>
-        {document.wordCount > 0 && (
-          <span>{document.wordCount} words</span>
-        )}
+        {document.wordCount > 0 && <span>{document.wordCount} words</span>}
       </div>
 
       {/* Share dialog */}
       {shareOpen && (
         <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-900">Share document</h3>
-            <button onClick={() => setShareOpen(false)} className="p-1 rounded hover:bg-gray-100 text-gray-400">
+            <h3 className="text-sm font-semibold text-gray-900">
+              Share document
+            </h3>
+            <button
+              onClick={() => setShareOpen(false)}
+              className="p-1 rounded hover:bg-gray-100 text-gray-400"
+            >
               <X size={16} />
             </button>
           </div>
@@ -238,11 +254,30 @@ function DocumentEditorContent() {
               placeholder="Enter email address"
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-otter-500"
               onKeyDown={(e) => {
-                if (e.key === "Enter" && shareEmail.trim() && shareStatus !== "sending") {
+                if (
+                  e.key === "Enter" &&
+                  shareEmail.trim() &&
+                  shareStatus !== "sending"
+                ) {
                   setShareStatus("sending");
-                  documentsApi.share(documentId, [{ userId: "", name: "", email: shareEmail.trim(), permission: "edit" }])
-                    .then(() => { setShareStatus("sent"); setShareEmail(""); setTimeout(() => setShareStatus("idle"), 2000); })
-                    .catch(() => { setShareStatus("error"); setTimeout(() => setShareStatus("idle"), 3000); });
+                  documentsApi
+                    .share(documentId, [
+                      {
+                        userId: "",
+                        name: "",
+                        email: shareEmail.trim(),
+                        permission: "edit",
+                      },
+                    ])
+                    .then(() => {
+                      setShareStatus("sent");
+                      setShareEmail("");
+                      setTimeout(() => setShareStatus("idle"), 2000);
+                    })
+                    .catch(() => {
+                      setShareStatus("error");
+                      setTimeout(() => setShareStatus("idle"), 3000);
+                    });
                 }
               }}
             />
@@ -250,9 +285,24 @@ function DocumentEditorContent() {
               onClick={() => {
                 if (shareEmail.trim()) {
                   setShareStatus("sending");
-                  documentsApi.share(documentId, [{ userId: "", name: "", email: shareEmail.trim(), permission: "edit" }])
-                    .then(() => { setShareStatus("sent"); setShareEmail(""); setTimeout(() => setShareStatus("idle"), 2000); })
-                    .catch(() => { setShareStatus("error"); setTimeout(() => setShareStatus("idle"), 3000); });
+                  documentsApi
+                    .share(documentId, [
+                      {
+                        userId: "",
+                        name: "",
+                        email: shareEmail.trim(),
+                        permission: "edit",
+                      },
+                    ])
+                    .then(() => {
+                      setShareStatus("sent");
+                      setShareEmail("");
+                      setTimeout(() => setShareStatus("idle"), 2000);
+                    })
+                    .catch(() => {
+                      setShareStatus("error");
+                      setTimeout(() => setShareStatus("idle"), 3000);
+                    });
                 }
               }}
               disabled={shareStatus === "sending"}
@@ -265,7 +315,9 @@ function DocumentEditorContent() {
             <p className="text-sm text-green-600">Invite sent successfully</p>
           )}
           {shareStatus === "error" && (
-            <p className="text-sm text-red-600">Failed to send invite. Please try again.</p>
+            <p className="text-sm text-red-600">
+              Failed to send invite. Please try again.
+            </p>
           )}
           <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
             <button
@@ -289,6 +341,7 @@ function DocumentEditorContent() {
         documentId={documentId}
         initialContent={document.content}
         onUpdate={debouncedSave}
+        onPresenceChange={setLiveCollaborators}
       />
     </div>
   );
