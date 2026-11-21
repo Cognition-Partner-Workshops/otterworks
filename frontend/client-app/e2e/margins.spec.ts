@@ -170,8 +170,8 @@ test.describe("Margins rendering", () => {
     });
 
     await page.goto("/margins");
-    const firstRow = page.getByTestId("margins-grid").locator("tbody tr").first();
-    await page.waitForTimeout(600);
-    expect(await firstRow.isVisible()).toBe(true);
+    const skuRow = page.getByTestId("margins-grid").getByRole("row", { name: /SLM-001/ });
+    await expect(skuRow).toBeVisible();
+    await expect(skuRow).toContainText("Atlantic Salmon");
   });
 });
