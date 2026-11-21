@@ -12,6 +12,7 @@ import { createAuthMiddleware } from './middleware/auth';
 import { RedisAdapter } from './services/redis-adapter';
 import { DocumentStore } from './services/document-store';
 import { AwarenessService } from './services/awareness';
+import { DocumentServiceAccessChecker } from './services/document-access';
 import { PresenceHandler } from './handlers/presence';
 import { setupCollaborationHandlers } from './handlers/collaboration';
 
@@ -114,6 +115,10 @@ const documentStore = new DocumentStore(redisAdapter, logger, {
 
 const awareness = new AwarenessService(logger);
 const presenceHandler = new PresenceHandler(awareness, logger);
+const documentAccess = new DocumentServiceAccessChecker(
+  { baseUrl: config.documentService.url, timeoutMs: config.documentService.timeoutMs },
+  logger,
+);
 
 // Setup collaboration handlers
 const collabManager = setupCollaborationHandlers(
@@ -121,6 +126,7 @@ const collabManager = setupCollaborationHandlers(
   documentStore,
   awareness,
   presenceHandler,
+  documentAccess,
   metrics,
   logger,
   config.persistence.intervalMs,
@@ -154,8 +160,12 @@ httpServer.on('upgrade', (request, socket, head) => {
     return;
   }
 
+  let userId: string;
   try {
-    jwt.verify(token, config.jwt.secret);
+    const decoded = jwt.verify(token, config.jwt.secret);
+    userId =
+      typeof decoded === 'object' && typeof decoded.sub === 'string' ? decoded.sub : '';
+    if (!userId) throw new Error('token has no subject');
   } catch {
     logger.warn('y-websocket_connection_rejected: invalid token');
     socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
@@ -163,9 +173,32 @@ httpServer.on('upgrade', (request, socket, head) => {
     return;
   }
 
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
-  });
+  // Same room-name derivation as y-websocket's setupWSConnection; the editor names rooms `document-<id>`.
+  const docName = (request.url || '').slice(1).split('?')[0];
+  const documentId = docName.startsWith('document-')
+    ? docName.slice('document-'.length)
+    : '';
+
+  documentAccess
+    .canAccess(documentId, userId, token)
+    .then((allowed) => {
+      if (!allowed) {
+        logger.warn(
+          { documentId, userId },
+          'y-websocket_connection_rejected: access denied',
+        );
+        socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+        socket.destroy();
+        return;
+      }
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    })
+    .catch((err) => {
+      logger.error({ err }, 'y-websocket_access_check_failed');
+      socket.destroy();
+    });
 });
 
 // Start presence cleanup with document eviction callback

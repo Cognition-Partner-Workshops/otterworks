@@ -3,7 +3,8 @@ import type { Logger } from 'pino';
 import * as Y from 'yjs';
 import { DocumentStore } from '../services/document-store';
 import { AwarenessService, type CursorPosition } from '../services/awareness';
-import { extractUserFromSocket } from '../middleware/auth';
+import { DocumentAccessCheck, isValidDocumentId } from '../services/document-access';
+import { extractTokenFromSocket, extractUserFromSocket } from '../middleware/auth';
 import { MetricsCollector } from '../metrics';
 import { PresenceHandler } from './presence';
 
@@ -24,6 +25,7 @@ export interface CollaborationDeps {
   documentStore: DocumentStore;
   awareness: AwarenessService;
   presenceHandler: PresenceHandler;
+  documentAccess: DocumentAccessCheck;
   metrics: MetricsCollector;
   logger: Logger;
   persistIntervalMs: number;
@@ -90,15 +92,69 @@ export class CollaborationManager {
 
   private registerSocketHandlers(socket: Socket): void {
     socket.on('join-document', (data, ack) => this.handleJoinDocument(socket, data, ack));
-    socket.on('leave-document', (data) => this.handleLeaveDocument(socket, data));
-    socket.on('document-update', (data) => this.handleDocumentUpdate(socket, data));
-    socket.on('cursor-update', (data) => this.handleCursorUpdate(socket, data));
-    socket.on('typing-indicator', (data) => this.handleTypingIndicator(socket, data));
-    socket.on('comment-add', (data) => this.handleCommentAdd(socket, data));
-    socket.on('comment-update', (data) => this.handleCommentUpdate(socket, data));
-    socket.on('comment-delete', (data) => this.handleCommentDelete(socket, data));
-    socket.on('request-snapshot', (data) => this.handleRequestSnapshot(socket, data));
-    socket.on('request-history', (data) => this.handleRequestHistory(socket, data));
+
+    // Every other event is scoped to the one document this socket was authorized to join.
+    const onJoined = <T extends { documentId: string }>(
+      event: string,
+      handler: (data: T) => unknown,
+    ): void => {
+      socket.on(event, (data: T) => {
+        if (!this.isJoinedTo(socket, data?.documentId)) {
+          this.deps.logger.warn(
+            { socketId: socket.id, documentId: data?.documentId, event },
+            'collab_event_rejected_not_joined',
+          );
+          socket.emit('collab-error', {
+            event,
+            documentId: data?.documentId,
+            error: 'Not joined to document',
+          });
+          return;
+        }
+        void handler(data);
+      });
+    };
+
+    onJoined('leave-document', (data) => this.handleLeaveDocument(socket, data));
+    onJoined('document-update', (data: { documentId: string; update: unknown }) =>
+      this.handleDocumentUpdate(socket, data),
+    );
+    onJoined(
+      'cursor-update',
+      (data: {
+        documentId: string;
+        cursor: CursorPosition | null;
+        selection: CursorPosition | null;
+      }) => this.handleCursorUpdate(socket, data),
+    );
+    onJoined('typing-indicator', (data: { documentId: string; isTyping: boolean }) =>
+      this.handleTypingIndicator(socket, data),
+    );
+    onJoined(
+      'comment-add',
+      (data: {
+        documentId: string;
+        comment: Omit<CommentAnnotation, 'author' | 'createdAt'>;
+      }) => this.handleCommentAdd(socket, data),
+    );
+    onJoined(
+      'comment-update',
+      (data: { documentId: string; commentId: string; content: string }) =>
+        this.handleCommentUpdate(socket, data),
+    );
+    onJoined('comment-delete', (data: { documentId: string; commentId: string }) =>
+      this.handleCommentDelete(socket, data),
+    );
+    onJoined('request-snapshot', (data: { documentId: string; label?: string }) =>
+      this.handleRequestSnapshot(socket, data),
+    );
+    onJoined('request-history', (data: { documentId: string; limit?: number }) =>
+      this.handleRequestHistory(socket, data),
+    );
+  }
+
+  private isJoinedTo(socket: Socket, documentId: unknown): boolean {
+    return typeof documentId === 'string' && socket.data.documentId === documentId;
   }
 
   private async handleJoinDocument(
@@ -106,9 +162,29 @@ export class CollaborationManager {
     data: { documentId: string },
     ack?: (response: { success: boolean; error?: string }) => void,
   ): Promise<void> {
-    const { documentId } = data;
-    const { io, awareness, presenceHandler, metrics, logger } = this.deps;
+    const documentId = data?.documentId;
+    const { io, awareness, presenceHandler, documentAccess, metrics, logger } = this.deps;
     const user = extractUserFromSocket(socket);
+
+    if (!isValidDocumentId(documentId)) {
+      if (ack) ack({ success: false, error: 'Invalid document id' });
+      return;
+    }
+
+    const token = extractTokenFromSocket(socket);
+    const allowed = token
+      ? await documentAccess.canAccess(documentId, user.userId, token)
+      : false;
+    if (!allowed) {
+      logger.warn(
+        { documentId, userId: user.userId, socketId: socket.id },
+        'join_document_denied',
+      );
+      metrics.connectionErrors.inc({ reason: 'join_forbidden' });
+      if (ack) ack({ success: false, error: 'Access denied' });
+      return;
+    }
+
     const room = `doc:${documentId}`;
 
     try {
@@ -133,6 +209,7 @@ export class CollaborationManager {
       }
 
       await socket.join(room);
+      socket.data.documentId = documentId;
       logger.info(
         { documentId, userId: user.userId, socketId: socket.id },
         'user_joined_document',
@@ -175,6 +252,7 @@ export class CollaborationManager {
     } catch (err) {
       logger.error({ err, documentId, socketId: socket.id }, 'join_document_failed');
       socket.leave(room);
+      delete socket.data.documentId;
       metrics.connectionErrors.inc({ reason: 'join_failed' });
       if (ack) ack({ success: false, error: 'Failed to join document' });
     }
@@ -189,6 +267,7 @@ export class CollaborationManager {
     const room = `doc:${trackedDocId}`;
 
     socket.leave(room);
+    delete socket.data.documentId;
 
     if (mapping) {
       socket.to(room).emit('user-left', { socketId: socket.id, userId: mapping.userId });
@@ -572,6 +651,7 @@ export function setupCollaborationHandlers(
   documentStore: DocumentStore,
   awareness: AwarenessService,
   presenceHandler: PresenceHandler,
+  documentAccess: DocumentAccessCheck,
   metrics: MetricsCollector,
   logger: Logger,
   persistIntervalMs = 30000,
@@ -582,6 +662,7 @@ export function setupCollaborationHandlers(
     documentStore,
     awareness,
     presenceHandler,
+    documentAccess,
     metrics,
     logger,
     persistIntervalMs,
