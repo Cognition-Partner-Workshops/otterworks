@@ -4,6 +4,8 @@
 
 The OtterWorks ETL pipeline consists of five Python scripts executed via system cron on a single EC2 instance. The scripts share a `config.ini` file that contains hardcoded AWS credentials, database passwords, and service URLs in plaintext.
 
+For storage cleanup, set `file_storage_bucket_owner` in the `[s3]` section of `/opt/etl/config.ini` to the trusted 12-digit AWS account ID that owns `file_storage_bucket` if it differs from the ETL credentials' account. If unset, the script uses the account returned by STS for those credentials. S3 rejects source deletions when the expected owner does not match; the quarantine copy is not rolled back.
+
 ### Problems with the Current Implementation
 
 | Problem | Impact |

@@ -131,6 +131,17 @@ def main():
     moved_count = 0
     failed_count = 0
 
+    if orphaned:
+        fileStorageBucketOwner = config.get("s3", "file_storage_bucket_owner", fallback="")
+        if not fileStorageBucketOwner:
+            sts = boto3.client(
+                "sts",
+                aws_access_key_id=aws_access_key,
+                aws_secret_access_key=aws_secret_key,
+                region_name=aws_region,
+            )
+            fileStorageBucketOwner = sts.get_caller_identity()["Account"]
+
     for obj in orphaned:
         source_key = obj["key"]
         dest_key = "%s/%s/%s" % (quarantine_prefix, ds, source_key)
@@ -142,7 +153,11 @@ def main():
                 CopySource={"Bucket": file_storage_bucket, "Key": source_key},
                 MetadataDirective="COPY",
             )
-            s3_client.delete_object(Bucket=file_storage_bucket, Key=source_key)
+            s3_client.delete_object(
+                Bucket=file_storage_bucket,
+                Key=source_key,
+                ExpectedBucketOwner=fileStorageBucketOwner,
+            )
             moved_count += 1
         except Exception as e:
             print("[%s] WARNING: Failed to quarantine %s: %s" % (
