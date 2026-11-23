@@ -14,8 +14,9 @@ import configparser
 import importlib.util
 import json
 import os
+import socket
 import time
-import urllib.request
+import urllib.parse
 import uuid
 from pathlib import Path
 from unittest import mock
@@ -119,7 +120,8 @@ def test_hourly_breakdown_upload_pins_bucket_owner(tmp_path):
 
 def localstack_up():
     try:
-        urllib.request.urlopen(LOCALSTACK + "/_localstack/health", timeout=2)
+        url = urllib.parse.urlsplit(LOCALSTACK)
+        socket.create_connection((url.hostname, url.port or 80), timeout=2).close()
         return True
     except OSError:
         return False
