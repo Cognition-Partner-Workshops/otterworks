@@ -4,13 +4,12 @@ Compose reads ${POSTGRES_PASSWORD} from the untracked .env that
 scripts/dev-env.sh writes with a per-machine random value.
 """
 import json
-from pathlib import Path
 import re
 import shutil
 import subprocess
+from pathlib import Path
 
 import pytest
-
 
 ROOT = Path(__file__).resolve().parents[2]
 COMPOSE_FILES = [ROOT / "docker-compose.infra.yml", ROOT / "docker-compose.yml"]
@@ -40,7 +39,7 @@ def test_password_keys_take_the_password_from_the_environment():
 
 
 def test_env_file_is_not_tracked():
-    result = subprocess.run(["git", "check-ignore", "-q", ".env"], cwd=ROOT)
+    result = subprocess.run(["git", "check-ignore", "-q", ".env"], check=False, cwd=ROOT)
     assert result.returncode == 0
 
 
@@ -50,7 +49,7 @@ def _run_dev_env(workdir: Path) -> str:
     subprocess.run(["bash", "scripts/dev-env.sh"], cwd=workdir, check=True, capture_output=True)
     env = (workdir / ".env").read_text()
     assert oct((workdir / ".env").stat().st_mode & 0o777) == "0o600"
-    return re.search(r"^POSTGRES_PASSWORD=(.*)$", env, re.M).group(1)
+    return re.search(r"^POSTGRES_PASSWORD=(.*)$", env, re.MULTILINE).group(1)
 
 
 def test_dev_env_writes_a_random_password_once(tmp_path):
@@ -67,12 +66,12 @@ def _compose_config(env_file: Path):
     cmd = ["docker", "compose", "--env-file", str(env_file)]
     for path in COMPOSE_FILES:
         cmd += ["-f", str(path)]
-    return subprocess.run(cmd + ["config", "--format", "json"], cwd=ROOT, capture_output=True, text=True)
+    return subprocess.run(cmd + ["config", "--format", "json"], check=False, cwd=ROOT, capture_output=True, text=True)
 
 
 @pytest.mark.skipif(
     shutil.which("docker") is None
-    or subprocess.run(["docker", "compose", "version"], capture_output=True).returncode != 0,
+    or subprocess.run(["docker", "compose", "version"], check=False, capture_output=True).returncode != 0,
     reason="docker compose not available",
 )
 def test_compose_resolves_one_password_and_refuses_to_run_without_it(tmp_path):
