@@ -42,7 +42,6 @@ def main():
     aws_region = config.get("aws", "region")
 
     archive_bucket = config.get("s3", "archive_bucket")
-
     ds = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
     retention_days = 90
     dynamodb_table_name = "otterworks-audit-events"
@@ -110,6 +109,16 @@ def main():
     ))
 
     # ---- Upload to S3 with Glacier storage class ----
+    expected_bucket_owner = config.get("s3", "expected_bucket_owner", fallback="")
+    if not expected_bucket_owner:
+        sts_client = boto3.client(
+            "sts",
+            aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_key,
+            region_name=aws_region,
+        )
+        expected_bucket_owner = sts_client.get_caller_identity()["Account"]
+
     s3_client = boto3.client(
         "s3",
         aws_access_key_id=aws_access_key,
@@ -122,6 +131,7 @@ def main():
         Key=archive_key,
         Body=buf.getvalue(),
         StorageClass="GLACIER",
+        ExpectedBucketOwner=expected_bucket_owner,
     )
 
     print("[%s] Archived to s3://%s/%s (GLACIER)" % (
