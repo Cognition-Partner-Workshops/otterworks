@@ -11,6 +11,7 @@
 
 import configparser
 import json
+import re
 import sys
 from datetime import datetime, timezone
 
@@ -31,6 +32,9 @@ def main():
     file_storage_bucket = config.get("s3", "file_storage_bucket")
     quarantine_bucket = config.get("s3", "quarantine_bucket")
     data_lake_bucket = config.get("s3", "data_lake_bucket")
+    expectedBucketOwner = config.get("s3", "bucket_owner_account_id", fallback="").strip()
+    if not re.fullmatch(r"[0-9]{12}", expectedBucketOwner):
+        raise ValueError("[s3] bucket_owner_account_id must be the 12-digit AWS account ID of the data lake bucket owner")
 
     files_prefix = "files/"
     quarantine_prefix = "quarantined"
@@ -198,6 +202,7 @@ def main():
     )
     s3_client_report.put_object(
         Bucket=data_lake_bucket,
+        ExpectedBucketOwner=expectedBucketOwner,
         Key=report_key,
         Body=json.dumps(report, indent=2).encode("utf-8"),
     )
