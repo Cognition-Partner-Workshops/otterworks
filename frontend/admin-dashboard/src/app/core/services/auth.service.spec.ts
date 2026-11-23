@@ -104,7 +104,24 @@ describe('AuthService', () => {
     gatewayOffline();
     tick(900);
     expect(service.getToken()).toBeTruthy();
-    expect(service.getToken()!.startsWith('mock-jwt-token-')).toBeTrue();
+    expect(/^offline-[a-f0-9]{32}$/.test(service.getToken()!)).toBeTrue();
+  }));
+
+  it('should use a fresh non-JWT token for each offline login', fakeAsync(() => {
+    spyOn(router, 'navigate');
+    const loginOffline = () => {
+      service.login('admin@otterworks.io', 'admin123').subscribe();
+      gatewayOffline();
+      tick(900);
+      return service.getToken()!;
+    };
+    const firstToken = loginOffline();
+    service.logout();
+    const secondToken = loginOffline();
+    const jwtPattern = /^[\w-]+\.[\w-]+\.[\w-]+$/;
+    expect(jwtPattern.test(firstToken)).toBeFalse();
+    expect(jwtPattern.test(secondToken)).toBeFalse();
+    expect(firstToken === secondToken).toBeFalse();
   }));
 
   it('should reject login with empty password', fakeAsync(() => {
