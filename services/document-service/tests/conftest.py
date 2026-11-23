@@ -1,18 +1,21 @@
 """Shared test fixtures."""
 
+import os
 import uuid
 from collections.abc import AsyncGenerator
+from unittest.mock import patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.api import documents as documents_api
-from app.db.base import Base
-from app.db.session import get_db
-from app.main import app
-from app.middleware import request_log
-from app.models.document import Comment, Document, DocumentVersion, Template  # noqa: F401
+with patch.dict(os.environ, {"DOC_SVC_DATABASE_URL": "postgresql+asyncpg://localhost/test"}):
+    from app.api import documents as documents_api
+    from app.db.base import Base
+    from app.db.session import get_db
+    from app.main import app
+    from app.middleware import request_log
+    from app.models.document import Comment, Document, DocumentVersion, Template  # noqa: F401
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
