@@ -37,6 +37,7 @@ def main():
     db_password = config.get("database", "password")
 
     data_lake_bucket = config.get("s3", "data_lake_bucket")
+    expectedBucketOwner = config.get("s3", "expected_bucket_owner")
 
     ds = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
     lookback_days = 30
@@ -225,6 +226,7 @@ def main():
         Bucket=data_lake_bucket,
         Key=latest_key,
         Body=json.dumps(report, indent=2, default=str).encode("utf-8"),
+        ExpectedBucketOwner=expectedBucketOwner,
     )
 
     # Store per-user summaries as JSONL for individual user lookups
