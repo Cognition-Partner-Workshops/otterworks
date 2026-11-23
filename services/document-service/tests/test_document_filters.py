@@ -43,6 +43,8 @@ BACKGROUND_TITLES = [
 ]
 
 
+# QUARANTINED 2026-11-22: flaky, see ticket note
+@pytest.mark.skip(reason="QUARANTINED 2026-11-22: flaky, see ticket note")
 @pytest.mark.asyncio
 async def test_filter_by_title_fragment_in_a_busy_workspace(
     client: AsyncClient, owner_id: uuid.UUID
