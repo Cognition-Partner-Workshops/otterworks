@@ -12,6 +12,7 @@
 import configparser
 import gzip
 import json
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 
@@ -230,12 +231,17 @@ def main():
     # Store per-user summaries as JSONL for individual user lookups
     user_summaries = report.get("user_summaries", [])
     if user_summaries:
+        expectedBucketOwner = config.get("s3", "data_lake_bucket_owner", fallback="")
+        if not re.fullmatch(r"[0-9]{12}", expectedBucketOwner):
+            raise ValueError("[s3] data_lake_bucket_owner must be a 12-digit AWS account ID")
+
         users_key = "%s/%s/user_summaries.jsonl" % (s3_reports_prefix, ds)
         lines = [json.dumps(u, default=str) for u in user_summaries]
         s3_client_upload.put_object(
             Bucket=data_lake_bucket,
             Key=users_key,
             Body=("\n".join(lines) + "\n").encode("utf-8"),
+            ExpectedBucketOwner=expectedBucketOwner,
         )
 
     print("[%s] Stored activity report: %d user summaries at s3://%s/%s" % (
