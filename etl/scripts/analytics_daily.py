@@ -40,6 +40,7 @@ def main():
     db_password = config.get("database", "password")
 
     data_lake_bucket = config.get("s3", "data_lake_bucket")
+    data_lake_bucket_owner = config.get("s3", "data_lake_bucket_owner")
     analytics_prefix = config.get("s3", "analytics_prefix")
 
     # today's date for partitioning
@@ -320,6 +321,7 @@ def main():
         Bucket=data_lake_bucket,
         Key=hourly_key,
         Body=hourly_bytes,
+        ExpectedBucketOwner=data_lake_bucket_owner,
     )
 
     # Write top users as JSONL
