@@ -12,6 +12,7 @@ import configparser
 import gzip
 import io
 import json
+import re
 import sys
 import time
 from datetime import datetime, timedelta, timezone
@@ -40,6 +41,9 @@ def main():
     db_password = config.get("database", "password")
 
     data_lake_bucket = config.get("s3", "data_lake_bucket")
+    dataLakeExpectedBucketOwner = config.get("s3", "data_lake_expected_bucket_owner", fallback="")
+    if not re.fullmatch(r"[0-9]{12}", dataLakeExpectedBucketOwner):
+        raise ValueError("Configure [s3] data_lake_expected_bucket_owner with the 12-digit AWS bucket owner account ID.")
     analytics_prefix = config.get("s3", "analytics_prefix")
 
     # today's date for partitioning
@@ -333,6 +337,7 @@ def main():
         Bucket=data_lake_bucket,
         Key=users_key,
         Body=buf.getvalue(),
+        ExpectedBucketOwner=dataLakeExpectedBucketOwner,
     )
 
     print("[%s] Loaded analytics data to s3://%s/%s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), data_lake_bucket, partition_key))
