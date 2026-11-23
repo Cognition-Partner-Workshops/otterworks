@@ -31,6 +31,8 @@ The OtterWorks ETL pipeline consists of five Python scripts executed via system 
 | `storage_cleanup_daily.py` | Daily 02:30 UTC | List S3 objects, compare with DynamoDB metadata, quarantine orphaned files, generate savings report |
 | `user_activity_daily.py` | Daily 05:00 UTC | Query PostgreSQL aggregates, read per-user S3 data, generate activity reports for admin-service |
 
+Before running `user_activity_daily.py`, set `ETL_DATA_LAKE_BUCKET_OWNER` in the job environment (for cron, in `/opt/etl/.env` with `export`). Set it to the 12-digit AWS account ID that owns `[s3] data_lake_bucket`, not necessarily the account whose credentials the job uses. The job fails if this value is missing or malformed, or if S3 rejects the full report write because the bucket owner does not match.
+
 ---
 
 ## Target State

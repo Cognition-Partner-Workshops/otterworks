@@ -12,6 +12,8 @@
 import configparser
 import gzip
 import json
+import os
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 
@@ -21,6 +23,10 @@ import psycopg2
 
 def main():
     print("[%s] user_activity_daily.py starting..." % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+    expectedBucketOwner = os.environ.get("ETL_DATA_LAKE_BUCKET_OWNER", "")
+    if not re.fullmatch(r"[0-9]{12}", expectedBucketOwner):
+        raise ValueError("ETL_DATA_LAKE_BUCKET_OWNER must be the 12-digit AWS account ID that owns the data lake bucket")
 
     # ---- Load config ----
     config = configparser.ConfigParser()
@@ -217,6 +223,7 @@ def main():
         Bucket=data_lake_bucket,
         Key=report_key,
         Body=json.dumps(report, indent=2, default=str).encode("utf-8"),
+        ExpectedBucketOwner=expectedBucketOwner,
     )
 
     # Store latest pointer for admin-service
