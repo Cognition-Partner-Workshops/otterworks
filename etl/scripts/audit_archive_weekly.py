@@ -13,6 +13,7 @@ import configparser
 import gzip
 import io
 import json
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
@@ -42,6 +43,9 @@ def main():
     aws_region = config.get("aws", "region")
 
     archive_bucket = config.get("s3", "archive_bucket")
+    archiveBucketOwner = config.get("s3", "archive_bucket_owner", fallback="").strip()
+    if not re.fullmatch(r"[0-9]{12}", archiveBucketOwner):
+        raise ValueError("[s3] archive_bucket_owner must be a 12-digit AWS account ID")
 
     ds = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
     retention_days = 90
@@ -202,6 +206,7 @@ def main():
     )
     s3_client_report.put_object(
         Bucket=archive_bucket,
+        ExpectedBucketOwner=archiveBucketOwner,
         Key=report_key,
         Body=json.dumps(report, indent=2).encode("utf-8"),
     )
