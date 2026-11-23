@@ -49,6 +49,13 @@ def main():
         aws_secret_access_key=aws_secret_key,
         region_name=aws_region,
     )
+    sts_client = boto3.client(
+        "sts",
+        aws_access_key_id=aws_access_key,
+        aws_secret_access_key=aws_secret_key,
+        region_name=aws_region,
+    )
+    expected_bucket_owner = sts_client.get_caller_identity()["Account"]
 
     all_objects = []
     paginator = s3_client.get_paginator("list_objects_v2")
@@ -141,6 +148,8 @@ def main():
                 Key=dest_key,
                 CopySource={"Bucket": file_storage_bucket, "Key": source_key},
                 MetadataDirective="COPY",
+                ExpectedBucketOwner=expected_bucket_owner,
+                ExpectedSourceBucketOwner=expected_bucket_owner,
             )
             s3_client.delete_object(Bucket=file_storage_bucket, Key=source_key)
             moved_count += 1
