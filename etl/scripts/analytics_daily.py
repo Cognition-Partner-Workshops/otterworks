@@ -41,6 +41,9 @@ def main():
 
     data_lake_bucket = config.get("s3", "data_lake_bucket")
     analytics_prefix = config.get("s3", "analytics_prefix")
+    expectedBucketOwner = config.get("s3", "expected_bucket_owner", fallback="")
+    if len(expectedBucketOwner) != 12 or not expectedBucketOwner.isascii() or not expectedBucketOwner.isdecimal():
+        raise ValueError("[s3] expected_bucket_owner must be the data lake bucket's 12-digit AWS account ID")
 
     # today's date for partitioning
     ds = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
@@ -434,6 +437,7 @@ def main():
         Bucket=data_lake_bucket,
         Key=report_key,
         Body=json.dumps(report, indent=2).encode("utf-8"),
+        ExpectedBucketOwner=expectedBucketOwner,
     )
 
     print("[%s] Generated daily analytics report: %d events, %d active users" % (
