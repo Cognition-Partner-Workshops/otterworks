@@ -12,8 +12,8 @@
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <awssdk.version>2.31.63</awssdk.version>
-        <jackson.version>2.18.11</jackson.version>
+        <awssdk.version>2.31.78</awssdk.version>
+        <jackson.version>2.18.12</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -99,7 +99,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.6.2</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -128,7 +128,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>3.5.6</version>
             </plugin>
         </plugins>
     </build>
