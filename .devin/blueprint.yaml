@@ -1,6 +1,7 @@
 runs-on: default
 # One-time setup (e.g., install system tools, global CLIs).
 initialize: |
+  ./scripts/dev-env.sh
   docker compose -f docker-compose.infra.yml pull
   # Serialized with retries: parallel builds overwhelm Docker's embedded DNS (127.0.0.11)
   # and dependency fetches (e.g. cargo's static.crates.io) intermittently fail to resolve.
@@ -82,6 +83,7 @@ initialize: |
   # Seed the "RetailCo enterprise drive" (~2,445 files / 15 departments / 60 docs) through the
   # gateway so a session only runs `make up` to come up data-rich. Postgres, DynamoDB and
   # MeiliSearch land in docker volumes that persist into the snapshot. Idempotent.
+  ./scripts/dev-env.sh
   COMPOSE="docker compose -f docker-compose.infra.yml -f docker-compose.yml"
   # Start from clean volumes so Flyway migrations apply consistently at this revision.
   $COMPOSE down -v || true
