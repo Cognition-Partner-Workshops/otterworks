@@ -12,6 +12,7 @@
 import configparser
 import gzip
 import json
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 
@@ -37,6 +38,7 @@ def main():
     db_password = config.get("database", "password")
 
     data_lake_bucket = config.get("s3", "data_lake_bucket")
+    data_lake_bucket_owner = config.get("s3", "data_lake_bucket_owner", fallback="").strip()
 
     ds = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
     lookback_days = 30
@@ -135,8 +137,12 @@ def main():
 
     user_totals = {}
     execution_date = datetime.strptime(ds, "%Y-%m-%d")
+    read_days = lookback_days
+    if not re.fullmatch(r"[0-9]{12}", data_lake_bucket_owner):
+        print("WARNING: Skipping per-user S3 reads: [s3] data_lake_bucket_owner must be a 12-digit account ID")
+        read_days = 0
 
-    for day_offset in range(lookback_days):
+    for day_offset in range(read_days):
         check_date = execution_date - timedelta(days=day_offset)
         year = check_date.strftime("%Y")
         month = check_date.strftime("%m")
@@ -144,7 +150,11 @@ def main():
         key = "analytics/daily/year=%s/month=%s/day=%s/top_users.jsonl.gz" % (year, month, day)
 
         try:
-            response = s3_client.get_object(Bucket=data_lake_bucket, Key=key)
+            response = s3_client.get_object(
+                Bucket=data_lake_bucket,
+                Key=key,
+                ExpectedBucketOwner=data_lake_bucket_owner,
+            )
             body = response["Body"].read()
             decompressed = gzip.decompress(body).decode("utf-8")
 
