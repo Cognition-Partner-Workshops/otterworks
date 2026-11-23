@@ -34,6 +34,17 @@ docker compose -f docker-compose.infra.yml -f docker-compose.yml up -d --build
 
 On first run, `scripts/init-db.sql` creates the required Postgres databases and `scripts/localstack-init.sh` provisions S3 buckets, SQS queues, SNS topics, and DynamoDB tables in LocalStack automatically.
 
+Auth-service does not install a default administrator password. To provision an administrator
+or rotate an existing administrator's password, provide `OTTERWORKS_ADMIN_EMAIL` and a strong,
+unique `OTTERWORKS_ADMIN_PASSWORD` at auth-service startup. Supply the password through your local
+secret mechanism or the Helm deployment's existing auth-service Secret; do not commit it. Leave
+`OTTERWORKS_ADMIN_PASSWORD` unset after provisioning to avoid resetting a future password change on
+restart. An existing non-admin account will not be promoted.
+
+Upgrading from the version with the seeded administrator revokes that password and its refresh
+tokens if the original verifier is still installed. Do not roll back the auth-service image
+against an upgraded database: the previous image expects the original V1 migration checksum.
+
 To stop everything:
 
 ```bash

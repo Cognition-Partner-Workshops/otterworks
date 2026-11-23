@@ -70,6 +70,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/otterworks
       SPRING_DATASOURCE_USERNAME: otterworks
       SPRING_DATASOURCE_PASSWORD: otterworks_dev
+      OTTERWORKS_ADMIN_EMAIL: ${OTTERWORKS_ADMIN_EMAIL:-}
+      OTTERWORKS_ADMIN_PASSWORD: ${OTTERWORKS_ADMIN_PASSWORD:-}
       JWT_SECRET: ${JWT_SECRET:-otterworks-local-dev-jwt-secret-change-me-in-production}
     depends_on:
       postgres:
