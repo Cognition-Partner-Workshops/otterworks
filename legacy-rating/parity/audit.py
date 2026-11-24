@@ -181,8 +181,13 @@ for policy, raw in fixtures.items():
             })
 require([pair['pair'] for pair in actual_parity] == [name for name, *_ in pairs],
         'Unexpected comparison pairs or order in parity.json')
-for pair in actual_parity:
-    name = pair['pair']
+for pair, (name, left_index, _) in zip(actual_parity, pairs):
+    expected_fields = quote_fields if left_index else rating_fields
+    require(pair.get('fields') == list(expected_fields),
+            f'{name}: expected fields {list(expected_fields)} in parity.json, got {pair.get("fields")}')
+    policies = pair.get('policies')
+    require(type(policies) is int and policies == 200,
+            f'{name}: expected 200 policies in parity.json, got {policies!r}')
     grouped = groups[name]
     require(pair['mismatches'] == sorted(field_diffs[name], key=lambda row: row['policy']),
             f'{name}: mismatch records differ from parity.json')
