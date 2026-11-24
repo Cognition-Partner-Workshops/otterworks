@@ -41,6 +41,18 @@ def key_rules() -> list[dict]:
     return rules
 
 
+def citations(ref: str) -> dict[str, str]:
+    """Rows of an optional citations.md, keyed by rule ID, so split catalogs are scored whole."""
+    out = subprocess.run(["git", "show", f"{ref}:legacy-rating/catalog/citations.md"],
+                         capture_output=True, text=True).stdout
+    rows = {}
+    for line in out.splitlines():
+        m = re.match(r"\|\s*(?:<a [^>]*></a>)?\[?(R\d+)\]?(?:\([^)]*\))?\s*\|(.*)", line)
+        if m:
+            rows[m.group(1)] = rows.get(m.group(1), "") + " " + m.group(2)
+    return rows
+
+
 def catalog(ref: str) -> str:
     return subprocess.run(
         ["git", "show", f"{ref}:legacy-rating/catalog/rules.md"],
@@ -57,7 +69,7 @@ def rows(markdown: str) -> list[tuple[str, str]]:
     for line in markdown.splitlines():
         if line.startswith("#") or line.startswith("**"):
             section = (section + " " + line) if line.startswith("**") else line
-        m = re.match(r"\|\s*(R\d+)\s*\|(.*)", line)
+        m = re.match(r"\|\s*\[?(R\d+)\]?(?:\([^)]*\))?\s*\|(.*)", line)
         if m:
             out.append((m.group(1), m.group(2) + " " + section))
     return out
@@ -65,7 +77,8 @@ def rows(markdown: str) -> list[tuple[str, str]]:
 
 def main() -> int:
     ref = sys.argv[1] if len(sys.argv) > 1 else "origin/demo-insrules"
-    entries = rows(catalog(ref))
+    cites_by_rule = citations(ref)
+    entries = [(r, t + cites_by_rule.get(r, "")) for r, t in rows(catalog(ref))]
     if not entries:
         print("no catalog rows found", file=sys.stderr)
         return 2

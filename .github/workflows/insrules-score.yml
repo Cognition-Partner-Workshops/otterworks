@@ -1,0 +1,22 @@
+name: insrules-score
+on:
+  push:
+    branches: [estate-keys/insrules]
+    paths:
+      - 'legacy-rating/answer-key/**'
+      - '.github/workflows/insrules-score.yml'
+permissions:
+  contents: read
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch the catalog ref under review
+        run: git fetch origin "$(cat legacy-rating/answer-key/score-ref)":refs/remotes/origin/scored
+      - name: Score counts only
+        run: |
+          echo "ref: $(cat legacy-rating/answer-key/score-ref) at $(git rev-parse --short=9 origin/scored)" | tee -a "$GITHUB_STEP_SUMMARY"
+          python3 legacy-rating/answer-key/score_catalog.py origin/scored | tee -a "$GITHUB_STEP_SUMMARY"
