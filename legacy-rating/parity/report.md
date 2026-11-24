@@ -17,6 +17,8 @@ Each cell shows **matched / mismatched**, baseline → final. The baseline outpu
 
 As a countercheck, rerunning the widened driver on the same final outputs with only the old slice restored produced **10 matched / 190 mismatched** for COBOL ↔ Java, **195 / 5** for Pharo ↔ Java, and **10 / 190** for COBOL ↔ Pharo. This diagnostic did not change the checked-in driver.
 
+**Reset warning:** `make insrules-reset` removes the rating estate's Compose volumes, including local SonarQube data (`legacy-rating/reset.sh:9–11`; `docker-compose.insrules.yml:43–54`). Back up any local SonarQube data you want to keep before running it.
+
 To reproduce the original counts, start from a clean checkout and run these commands from the repository root. Save the baseline outputs outside the checkout before switching commits because the final reset clears `legacy-rating/build`.
 
 ```sh
