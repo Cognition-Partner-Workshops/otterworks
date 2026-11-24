@@ -35,7 +35,7 @@ class QuotePageIT {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"2.10E+1", "2.10e-1", "10000000", "210.001"})
+    @ValueSource(strings = {"2.10E+1", "2.10e-1", "0e500000000", "0E+500000000", ".", "10000000", "210.001"})
     void rejectsInvalidExposureOnTheQuotePage(String exposure) {
         var page = http.postForEntity("/", quoteForm(exposure), String.class);
         assertThat(page.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -44,7 +44,7 @@ class QuotePageIT {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"2.10E+1", "\"2.10e-1\"", "10000000", "210.001"})
+    @ValueSource(strings = {"2.10E+1", "\"2.10e-1\"", "0e500000000", "\"0E+500000000\"", "\".\"", "10000000", "210.001"})
     void rejectsInvalidExposureInTheQuoteApi(String exposure) {
         var response = http.postForEntity("/api/quotes", quoteJson(exposure), String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
