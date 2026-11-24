@@ -1,0 +1,9 @@
+*
+!Makefile
+!RATEPREM.cbl
+!run.sh
+!copybooks/
+copybooks/*
+!copybooks/POLREC.cpy
+!copybooks/RATEOUT.cpy
+!copybooks/RATETBL.cpy
