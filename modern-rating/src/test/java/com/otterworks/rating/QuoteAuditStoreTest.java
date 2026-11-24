@@ -8,6 +8,8 @@ import com.otterworks.rating.model.PolicyRecordReader;
 import com.otterworks.rating.model.Quote;
 import com.otterworks.rating.service.RatingService;
 import com.otterworks.rating.service.RatingTables;
+import java.util.Locale;
+import org.apache.commons.collections.map.LRUMap;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -41,6 +43,30 @@ class QuoteAuditStoreTest {
 
         assertThat(audit.save(quote)).isEqualTo(audit.save(quote));
         assertThat(audit.find(audit.save(quote))).hasSize(1);
+    }
+
+    @Test
+    void evictsTheLeastRecentlyUsedPolicyButKeepsItsStoredQuote() {
+        Quote first = rate("P0000100GLIL913400002026031500002100{050100500N00{00NNN");
+        Quote second = rate("P0000101GLIL913400002026031500002100{050100500N00{00NNN");
+        String firstReference = audit.save(first);
+        String secondReference = audit.save(second);
+        for (int policy = 102; policy < 150; policy++) {
+            audit.save(rate(String.format(Locale.ROOT,
+                    "P%07dGLIL913400002026031500002100{050100500N00{00NNN", policy)));
+        }
+
+        assertThat(audit.policyFor(firstReference)).isEqualTo(first.policyId());
+        audit.save(rate("P0000150GLIL913400002026031500002100{050100500N00{00NNN"));
+
+        assertThat(audit.policyFor(firstReference)).isEqualTo(first.policyId());
+        assertThat(audit.policyFor(secondReference)).isNull();
+        assertThat(audit.find(secondReference)).containsExactly(second.asLine());
+    }
+
+    @Test
+    void loadsThePatchedCommonsCollectionsVersion() {
+        assertThat(LRUMap.class.getPackage().getImplementationVersion()).isEqualTo("3.2.2");
     }
 
     @Test
