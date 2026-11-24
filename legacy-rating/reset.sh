@@ -12,7 +12,7 @@ rm -rf legacy-rating/build legacy-rating/cobol/build legacy-rating/cobol/bin leg
 git checkout -- legacy-rating/tables legacy-rating/fixtures
 mkdir -p legacy-rating/build
 python3 legacy-rating/fixtures/make_policies.py --check
-$COMPOSE --profile batch build
-$COMPOSE up -d --wait quote-screen modern-rating
+$COMPOSE --profile batch build rating-batch
+make -s insrules-up
 make -s insrules-parity || true
 echo "INSRULES RESET seconds=$(( $(date +%s) - start ))"

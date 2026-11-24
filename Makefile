@@ -633,6 +633,8 @@ lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains
 # --- Rating estate (legacy batch, quote screen, modern rating) ---------------
 INSRULES_COMPOSE = docker compose -f docker-compose.insrules.yml -p insrules
 
+insrules-up: export INSRULES_MODERN_UID := $(or $(filter-out 0,$(shell id -u)),10001)
+insrules-up: export INSRULES_MODERN_GID := $(or $(filter-out 0,$(shell id -g)),10001)
 insrules-up: ## Build and start the quote screen (:8091) and modern rating (:8092)
 	@mkdir -p legacy-rating/build
 	$(INSRULES_COMPOSE) up -d --build --wait quote-screen modern-rating
@@ -644,14 +646,14 @@ insrules-run: ## Rate all fixture policies through COBOL, Pharo and Java
 	@mkdir -p legacy-rating/build
 	$(INSRULES_COMPOSE) --profile batch run --rm rating-batch /estate/fixtures/policies.dat /estate/build/cobol.dat
 	$(INSRULES_COMPOSE) exec -T quote-screen ./run.sh quote /estate/fixtures/policies.dat /estate/build/pharo.txt
-	@set -e; output=$$(mktemp legacy-rating/build/java.XXXXXX); \
-		trap 'rm -f "$$output"' EXIT; \
+	@set -e; work=$$(mktemp -d legacy-rating/build/java.XXXXXX); \
+		trap 'rm -f "$$work/java.txt"; rmdir "$$work"' EXIT; \
 		$(INSRULES_COMPOSE) exec -T modern-rating sh -ec '\
 			output=$$(mktemp); trap "rm -f \"$$output\"" EXIT; \
 			java -jar /app/app.jar --spring.main.web-application-type=none \
 				--rating.batch.input=/estate/fixtures/policies.dat --rating.batch.output="$$output" >&2; \
-			cat "$$output"' > "$$output"; \
-		mv -f "$$output" legacy-rating/build/java.txt
+			cat "$$output"' > "$$work/java.txt"; \
+		mv -f "$$work/java.txt" legacy-rating/build/java.txt
 
 insrules-parity: insrules-run ## Compare the three outputs policy by policy (build/parity.json)
 	python3 legacy-rating/parity/driver.py --cobol legacy-rating/build/cobol.dat \

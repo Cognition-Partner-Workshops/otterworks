@@ -26,6 +26,7 @@ services:
 
   modern-rating:
     build: ./modern-rating
+    user: "${INSRULES_MODERN_UID:-10001}:${INSRULES_MODERN_GID:-10001}"
     environment:
       RATING_TABLES_DIR: /estate/tables
     volumes:
