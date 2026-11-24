@@ -19,14 +19,15 @@ As a countercheck, rerunning the widened driver on the same final outputs with o
 
 **Reset warning:** `make insrules-reset` removes the rating estate's Compose volumes, including local SonarQube data (`legacy-rating/reset.sh:9–11`; `docker-compose.insrules.yml:43–54`). Back up any local SonarQube data you want to keep before running it.
 
-To reproduce the original counts, start from a clean checkout and run these commands from the repository root. Save the baseline outputs outside the checkout before switching commits because the final reset clears `legacy-rating/build`.
+To reproduce the original counts, start from a clean checkout and run both command blocks in the same shell from the repository root. Set `BASELINE_DIR` to override the default `.parity-baseline` directory; keep it outside the build and bin directories that `legacy-rating/reset.sh:11` removes.
 
 ```sh
+BASELINE_DIR=${BASELINE_DIR:-"$PWD/.parity-baseline"}
+mkdir -p -- "$BASELINE_DIR"
 git switch --detach 1b421600226126008dd2a6a26dd47e391ad18a82
 make insrules-reset
-mkdir -p /home/ubuntu/insrules-golden-baseline
 cp legacy-rating/build/cobol.dat legacy-rating/build/pharo.txt legacy-rating/build/java.txt \
-  /home/ubuntu/insrules-golden-baseline/
+  "$BASELINE_DIR/"
 
 git switch --detach 4139296930eca59bb7667febefd6c785899d22a2
 make insrules-reset
@@ -36,10 +37,10 @@ Run the original driver against the saved baseline outputs, then against the fin
 
 ```sh
 git show 1b421600226126008dd2a6a26dd47e391ad18a82:legacy-rating/parity/driver.py | python3 - \
-  --cobol /home/ubuntu/insrules-golden-baseline/cobol.dat \
-  --pharo /home/ubuntu/insrules-golden-baseline/pharo.txt \
-  --java /home/ubuntu/insrules-golden-baseline/java.txt \
-  --out /home/ubuntu/insrules-golden-baseline/parity-original.json
+  --cobol "$BASELINE_DIR/cobol.dat" \
+  --pharo "$BASELINE_DIR/pharo.txt" \
+  --java "$BASELINE_DIR/java.txt" \
+  --out "$BASELINE_DIR/parity-original.json"
 git show 1b421600226126008dd2a6a26dd47e391ad18a82:legacy-rating/parity/driver.py | python3 - \
   --cobol legacy-rating/build/cobol.dat \
   --pharo legacy-rating/build/pharo.txt \
