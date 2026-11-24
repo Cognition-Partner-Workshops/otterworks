@@ -89,6 +89,8 @@ jobs:
               - 'services/api-gateway/internal/config/**'
               - 'docker-compose*.yml'
               - 'Makefile'
+              - 'legacy-rating/reset.sh'
+              - 'legacy-rating/parity/driver.py'
 
   # Go - API Gateway
   api-gateway:
