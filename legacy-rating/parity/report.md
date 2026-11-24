@@ -13,7 +13,20 @@ Each cell shows **matched / mismatched**, baseline → final. The baseline outpu
 | Widened billed-total comparison | 82 / 118 → 127 / 73 | 113 / 87 → 195 / 5 | 123 / 77 → 123 / 77 |
 | Original six-field comparison | 117 / 83 → 200 / 0 | 113 / 87 → 195 / 5 | 195 / 5 → 195 / 5 |
 
-To reproduce the original counts, run the original driver against the saved baseline and final outputs from those replays, respectively:
+To reproduce the original counts, start from a clean checkout and run these commands from the repository root. Save the baseline outputs outside the checkout before switching commits because the final reset clears `legacy-rating/build`.
+
+```sh
+git switch --detach 1b421600226126008dd2a6a26dd47e391ad18a82
+make insrules-reset
+mkdir -p /home/ubuntu/insrules-golden-baseline
+cp legacy-rating/build/cobol.dat legacy-rating/build/pharo.txt legacy-rating/build/java.txt \
+  /home/ubuntu/insrules-golden-baseline/
+
+git switch --detach 4139296930eca59bb7667febefd6c785899d22a2
+make insrules-reset
+```
+
+Run the original driver against the saved baseline outputs, then against the final outputs:
 
 ```sh
 git show 1b421600226126008dd2a6a26dd47e391ad18a82:legacy-rating/parity/driver.py | python3 - \
