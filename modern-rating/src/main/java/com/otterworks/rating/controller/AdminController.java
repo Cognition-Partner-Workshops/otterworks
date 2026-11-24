@@ -1,10 +1,10 @@
 package com.otterworks.rating.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.otterworks.rating.audit.QuoteAuditStore;
 import com.otterworks.rating.audit.SavedQuote;
 import com.otterworks.rating.config.RatingProperties;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -70,7 +70,7 @@ public class AdminController {
      * Java-deserialized.
      */
     @PostMapping(value = "/quotes/restore", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> restore(@RequestBody String body,
+    public ResponseEntity<String> restore(@RequestBody byte[] body,
             @RequestHeader(value = "X-Support-Key", required = false) String key) {
         if (!allowed(key)) {
             return ResponseEntity.status(403).build();
@@ -78,7 +78,7 @@ public class AdminController {
         SavedQuote parked;
         try {
             parked = json.readValue(body, SavedQuote.class);
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             return ResponseEntity.badRequest().build();
         }
         if (parked == null || parked.reference() == null || parked.reference().isBlank()) {

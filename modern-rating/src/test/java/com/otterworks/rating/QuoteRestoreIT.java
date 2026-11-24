@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,6 +60,19 @@ class QuoteRestoreIT {
     @Test
     void restoresAParkedQuoteFromJson() {
         String body = "{\"reference\":\"A1B2C3D4E5F6\",\"fields\":{\"line\":\"GL\",\"state\":\"IL\"}}";
+        var restored = http.postForEntity("/admin/quotes/restore",
+                new HttpEntity<>(body, headers(MediaType.APPLICATION_JSON)), String.class);
+        assertThat(restored.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(restored.getBody()).isEqualTo("A1B2C3D4E5F6");
+    }
+
+    @Test
+    void restoresAParkedQuoteSentWithAByteOrderMark() {
+        byte[] bom = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
+        byte[] json = "{\"reference\":\"A1B2C3D4E5F6\"}".getBytes(StandardCharsets.UTF_8);
+        byte[] body = new byte[bom.length + json.length];
+        System.arraycopy(bom, 0, body, 0, bom.length);
+        System.arraycopy(json, 0, body, bom.length, json.length);
         var restored = http.postForEntity("/admin/quotes/restore",
                 new HttpEntity<>(body, headers(MediaType.APPLICATION_JSON)), String.class);
         assertThat(restored.getStatusCode()).isEqualTo(HttpStatus.OK);
