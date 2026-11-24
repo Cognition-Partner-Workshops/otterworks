@@ -1,0 +1,40 @@
+<ns0:ClaimsSvcRq xmlns:ns0="http://schemas.thistlecombe.example/acord/claims/fnol">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000015</RqUID>
+  <TransactionRequestDt>2026-09-23T08:30:00</TransactionRequestDt>
+  <ClaimsNotificationAddRq>
+    <Producer>
+      <ProducerId>AG-0417</ProducerId>
+      <ProducerName>Harbourline Brokers</ProducerName>
+    </Producer>
+    <Policy>
+      <PolicyNumber>POL-AUTO-48205</PolicyNumber>
+      <LOBCd>AUTO</LOBCd>
+    </Policy>
+    <InsuredOrPrincipal>
+      <GivenName>Quentin</GivenName>
+      <Surname>Faraday</Surname>
+      <TaxId>115-55-7195</TaxId>
+        <EmailAddr>quentin.faraday@example.net</EmailAddr>
+        <PriorFraudFlagInd>false</PriorFraudFlagInd>
+    </InsuredOrPrincipal>
+    <ClaimsOccurrence>
+      <ClaimNumber>CLM-2026-100415</ClaimNumber>
+      <LossDt>2026-09-22</LossDt>
+      <ReportedDt>2026-09-23</ReportedDt>
+      <LossCauseCd>COLL</LossCauseCd>
+      <IncidentDesc>Rear-ended at a stop light; other driver admitted fault at the scene</IncidentDesc>
+      <EstimatedLossAmt>2000.00</EstimatedLossAmt>
+      <InjuryInd>false</InjuryInd>
+        <PoliceReportInd>false</PoliceReportInd>
+      <Addr>
+        <City>Bristol</City>
+        <StateProvCd>RI</StateProvCd>
+        <PostalCode>02809</PostalCode>
+      </Addr>
+    </ClaimsOccurrence>
+      <AutoLossInfo>
+        <VIN>1HGCM82633A113665</VIN>
+        <DriveableInd>false</DriveableInd>
+      </AutoLossInfo>
+  </ClaimsNotificationAddRq>
+</ns0:ClaimsSvcRq>

@@ -1,0 +1,30 @@
+<ns0:Root xmlns:ns0="http://schemas.microsoft.com/BizTalk/2003/aggschema">
+  <InputMessagePart_0>
+    <ns0:Claim xmlns:ns0="http://schemas.thistlecombe.example/canonical/claim"><ClaimNumber>CLM-2026-100403</ClaimNumber><SourceRqUID>6f1c3a2e-0000-4b1a-9c0d-000000000003</SourceRqUID><Agency><Id>AG-0417</Id><Name>Harbourline Brokers</Name></Agency><PolicyNumber>POL-AUTO-48121</PolicyNumber><LineOfBusiness>AUTO</LineOfBusiness><Claimant><FullName>Nadia Petrossian</FullName><TaxIdMasked>***-**-7039</TaxIdMasked><Email>nadia.petrossian@example.net</Email><PriorFraudFlag>false</PriorFraudFlag></Claimant><Loss><LossDate>2026-09-06</LossDate><ReportedDate>2026-09-07</ReportedDate><CauseCode>COLL</CauseCode><Description>Rear-ended at a stop light; other driver admitted fault at the scene</Description><EstimatedAmount>8450.00</EstimatedAmount><Injury>false</Injury><PoliceReport>true</PoliceReport><City>Camden</City><State>ME</State><PostalCode>04843</PostalCode></Loss><Vehicle><VIN>1HGCM82633A102733</VIN><Driveable>false</Driveable></Vehicle></ns0:Claim>
+  </InputMessagePart_0>
+  <InputMessagePart_1>
+    <ns0:PolicyInqRs xmlns:ns0="http://schemas.thistlecombe.example/acord/policy">
+      <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000003</RqUID>
+      <PolicyNumber>POL-AUTO-48121</PolicyNumber>
+      <PolicyStatusCd>Lapsed</PolicyStatusCd>
+      <LOBCd>AUTO</LOBCd>
+      <EffectiveDt>2025-03-01</EffectiveDt>
+      <ExpirationDt>2026-02-28</ExpirationDt>
+      <DeductibleAmt>1000.00</DeductibleAmt>
+      <CoverageLimitAmt>100000.00</CoverageLimitAmt>
+      <InsuredPartyId>PTY-070093</InsuredPartyId>
+      <Coverage>
+        <CoverageCd>COLL</CoverageCd>
+        <LimitAmt>100000.00</LimitAmt>
+      </Coverage>
+      <Coverage>
+        <CoverageCd>COMP</CoverageCd>
+        <LimitAmt>100000.00</LimitAmt>
+      </Coverage>
+      <Coverage>
+        <CoverageCd>GLAS</CoverageCd>
+        <LimitAmt>2500.00</LimitAmt>
+      </Coverage>
+    </ns0:PolicyInqRs>
+  </InputMessagePart_1>
+</ns0:Root>

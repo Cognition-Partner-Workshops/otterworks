@@ -1,0 +1,82 @@
+spring:
+  application:
+    name: claims-hub-camel
+  datasource:
+    # PostgreSQL 16 in place of the WCF-SQL ports: usp_GetPolicyAsOf and usp_InsertClaim (FnolIntake),
+    # usp_GetAdjusterRoster (AdjusterAssignment). Connections open on first use.
+    url: ${CLAIMS_DB_URL:jdbc:postgresql://localhost:5432/claimshub}
+    username: ${CLAIMS_DB_USER:claimshub}
+    password: ${CLAIMS_DB_PASSWORD:}
+  flyway:
+    # V1__claim_payment_ledger.sql owns the ledger schema only; off unless the ledger database is there to migrate,
+    # so the hub still boots (and /health answers) without a database, as the WCF-SQL ports open on first use.
+    enabled: ${CLAIMS_LEDGER_MIGRATE:false}
+    schemas: ledger
+server:
+  port: 8092
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health
+      path-mapping:
+        health: health
+  health:
+    db:
+      # The database is the legacy WCF-SQL stand-in; an outage suspends instances, it does not make the pod unhealthy.
+      enabled: false
+camel:
+  springboot:
+    name: claims-hub
+    main-run-controller: true
+claimshub:
+  triage:
+    # ClaimTriage 1.2 as data (Rules/ClaimTriagePolicy.xml): the FnolIntake Call_Rules shape evaluates this table.
+    rules-table: classpath:rules/claim-triage.csv
+  fnol:
+    # FnolIntake Delay_CorrectionWindow: new System.TimeSpan(0, 15, 0)
+    correction-window: 15m
+    fixture-dir: ${claims.fixture.dir:../biztalk-claims-intake}
+    out-dir: ${claimshub.out-dir:${CLAIMS_OUT_DIR:target/claims-hub-out}}
+    completed-uri: log:fnol.completed
+    suspended-uri: log:fnol.suspended?level=ERROR
+    assignment-uri: log:assignment.request
+  archive:
+    # sp_Compliance_AssignmentArchive_FILE
+    dir: target/assignment-archive
+  smtp:
+    # sp_Adjuster_AssignmentNotice_SMTP
+    host: localhost
+    port: 1025
+    from: claims-hub@thistlecombe.example
+claims:
+  payment:
+    inbox:
+      # rp_ClaimsSystem_PaymentInstruction_FILE (\\CLAIMS-FS01\disbursements\out\PI-*.xml)
+      enabled: true
+      directory: ${CLAIMS_PAYMENT_INBOX:disbursements/out}
+    vendor:
+      # sp_PaymentVendor_Remittance_SFTP
+      host: ${PAYVENDOR_SFTP_HOST:sftp.payvendor.example}
+      port: 22
+      username: thistlecombe-remit
+      private-key-file: ${PAYVENDOR_SFTP_KEY:keys/payvendor_ed25519}
+      known-hosts-file: ${PAYVENDOR_SFTP_KNOWN_HOSTS:keys/payvendor_known_hosts}
+      directory: inbound/thistlecombe
+      temporary-folder: tmp
+      # Loop_Deliver in ClaimPayment.odx: attempts < 3, delay new System.TimeSpan(0, 10, 0) after a failure
+      attempts: 3
+      retry-delay: 10m
+      window:
+        enabled: true
+        from: "22:00"
+        to: "05:30"
+        zone: ${CLAIMS_HUB_TIMEZONE:Europe/London}
+  ops:
+    # sp_Ops_PaymentHeld_SMTP
+    smtp:
+      host: ${CLAIMS_SMTP_HOST:smtp-relay.thistlecombe.example}
+      port: 25
+    to: claims-payments-ops@thistlecombe.example
+    from: claims-hub@thistlecombe.example

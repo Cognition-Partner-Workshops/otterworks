@@ -1,0 +1,12 @@
+<ns0:AssignmentRequest xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+  <RequestId>ASG-520106</RequestId>
+  <ClaimNumber>CLM-2026-100414</ClaimNumber>
+  <LineOfBusiness>HOME</LineOfBusiness>
+  <LossCause>WIND</LossCause>
+  <Region>COASTAL</Region>
+  <Severity>LOW</Severity>
+  <RequiredSkill>PROPERTY</RequiredSkill>
+  <RequestedDt>2026-09-30</RequestedDt>
+  <ClaimantName>Giselle Marchetti</ClaimantName>
+  <EstimatedAmount>2501.50</EstimatedAmount>
+</ns0:AssignmentRequest>

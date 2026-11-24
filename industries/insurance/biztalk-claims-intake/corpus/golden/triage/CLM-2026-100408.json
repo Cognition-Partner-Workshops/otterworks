@@ -1,0 +1,10 @@
+{
+  "ClaimNumber": "CLM-2026-100408",
+  "Outcome": "LARGE_LOSS",
+  "Reasons": [
+    "Reserve at or above large-loss threshold"
+  ],
+  "RulesFired": [
+    "LargeLoss"
+  ]
+}
