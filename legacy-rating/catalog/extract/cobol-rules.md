@@ -1,6 +1,6 @@
 # RATEPREM rule extraction
 
-Scope: phase 1, COBOL batch only, extracted from `demo-insrules` at `3d1c5662441923c6361912e088f2f9c60ae6d6e9`. Counts: **48 total, 29 proven, 11 from-table, 4 amber, 4 unproven**.
+Scope: phase 1, COBOL batch only, extracted from `demo-insrules` at `3d1c5662441923c6361912e088f2f9c60ae6d6e9`. After the [shared-table cross-check](cobol-crosscheck.md): **48 total, 29 proven, 12 from-table, 3 amber, 4 unproven**.
 
 `make insrules-reset` executed all 200 committed `fixtures/policies.dat` records: `RATEPREM READ=0000200 OK=0000190 DEC=0000007 REJ=0000003` and `QUOTE READ=200 OK=190 DEC=7 REJ=3`. Evidence below comes from `build/cobol.dat`, decoded using `cobol/copybooks/RATEOUT.cpy`, and the corresponding output from `build/pharo.txt`. Dollar values are decoded from cents. `proven` means the relevant outcome is visible in both outputs; `from-table` means the executed result demonstrates a rule derived from a specific table row. `amber` preserves observed disagreements rather than inferring a quote-side cause. Smalltalk method citations and the full shared-table cross-check belong to the parent catalog.
 
@@ -8,7 +8,7 @@ Scope: phase 1, COBOL batch only, extracted from `demo-insrules` at `3d1c5662441
 
 | ID | Rule | Citation | Executed evidence | Status |
 | --- | --- | --- | --- | --- |
-| R-COB-01 | A blank end date on a class, territory, or override row leaves it in force from its start date. | `RATEPREM.cbl:0130-OPEN-END-DATE` 223–229; callers 110–138, 172–186; `tables/class-factors.dat:3`, `tables/territory-factors.dat:4`, `tables/overrides.dat:4` | P0000015: rate 4.1500 and factor 0.950 after January 1; P0000035: factor 1.600, source O on March 1. | proven |
+| R-COB-01 | A blank end date on a class, territory, or override row leaves it in force from its start date. | `RATEPREM.cbl:0130-OPEN-END-DATE` 223–229; callers 110–138, 172–186; `tables/class-factors.dat:3`, `tables/territory-factors.dat:4`, `tables/overrides.dat:4` | P0000015: rate 4.1500 and factor 0.950 after January 1; P0000035 and P0000091: factor 1.600, source O on March 1 and December 22. | proven |
 
 ## 1000-RATE-POLICY
 
@@ -68,7 +68,7 @@ Scope: phase 1, COBOL batch only, extracted from `demo-insrules` at `3d1c5662441
 | ID | Rule | Citation | Executed evidence | Status |
 | --- | --- | --- | --- | --- |
 | R-COB-20 | The first override in force for the policy's line, class and original territory replaces, rather than multiplies, the territory factor and sets source O. | `RATEPREM.cbl:2300-LOOKUP-OVERRIDE` 368–382; `tables/overrides.dat:3`, `tables/territory-factors.dat:6` | P0000031: 1.500/O instead of the 1.200 territory factor or a stacked 1.800; base $1,399.65. | proven |
-| R-COB-21 | If no override matches all keys and dates, the previously selected territory factor and its source remain unchanged. | `RATEPREM.cbl:2300-LOOKUP-OVERRIDE` 368–382; `tables/overrides.dat:3–5`, `tables/territory-factors.dat:5,10,14` | P0000033 (wrong territory): 1.100/T; P0000034 (before start): 1.250/T; P0000038 (after end): 1.300/T; P0000018 keeps D. | proven |
+| R-COB-21 | If no override matches all keys and dates, the previously selected territory factor and its source remain unchanged. | `RATEPREM.cbl:2300-LOOKUP-OVERRIDE` 368–382; `tables/overrides.dat:3–5`, `tables/territory-factors.dat:3,5,10,14` | P0000033 (wrong territory): 1.100/T; P0000034 (before start): 1.250/T; P0000038 (after end): 1.300/T; P0000018 keeps 1.000/D. | proven |
 | R-COB-22 | GL class 91580 in territory 040 gets factor 1.500 from January 1 through December 31, 2026. | `RATEPREM.cbl:2300-LOOKUP-OVERRIDE` 368–382; `tables/overrides.dat:3` | P0000031 and P0000032 (the latter on December 31): 1.500/O. | from-table |
 | R-COB-23 | PR class 0702 in territory 030 gets factor 1.600 from March 1, 2026 onward. | `RATEPREM.cbl:2300-LOOKUP-OVERRIDE` 368–382; `tables/overrides.dat:4` | P0000035 on March 1: 1.600/O; P0000034 on February 28: 1.250/T. | from-table |
 | R-COB-24 | CA class 7219 in territory 020 gets factor 1.550 from January 1 through September 30, 2026, if it passes eligibility. | `RATEPREM.cbl:2300-LOOKUP-OVERRIDE` 368–382; `tables/overrides.dat:5` | P0000037 on September 30: 1.550/O; P0000038 on October 1: 1.300/T. | from-table |
@@ -101,9 +101,9 @@ Scope: phase 1, COBOL batch only, extracted from `demo-insrules` at `3d1c5662441
 
 | ID | Rule | Citation | Executed evidence | Status |
 | --- | --- | --- | --- | --- |
-| R-COB-34 | A requested schedule credit greater than 25% is limited to a 25% credit. | `RATEPREM.cbl:3300-SCHEDULE-MOD` 415–423 | P0000054 (−30%) and P0000055 (−25%): $730.40 → $547.80. | proven |
+| R-COB-34 | A requested schedule credit greater than 25% is limited to a 25% credit. | `RATEPREM.cbl:3300-SCHEDULE-MOD` 415–423 | P0000054 (−30%): $730.40 → $547.80. | proven |
 | R-COB-35 | A requested schedule debit greater than 25% is limited to a 25% debit. | `RATEPREM.cbl:3300-SCHEDULE-MOD` 415–423 | P0000057 (+40%): $730.40 → $913.00. | proven |
-| R-COB-36 | A schedule adjustment in the −25% to +25% range applies as requested. | `RATEPREM.cbl:3300-SCHEDULE-MOD` 415–423 | P0000056 (+15%): $730.40 → $839.96. | proven |
+| R-COB-36 | A schedule adjustment in the −25% to +25% range applies as requested. | `RATEPREM.cbl:3300-SCHEDULE-MOD` 415–423 | P0000055 (−25%): $730.40 → $547.80; P0000056 (+15%): $730.40 → $839.96. | proven |
 
 ## 3400-MULTI-POLICY
 
@@ -124,8 +124,8 @@ Scope: phase 1, COBOL batch only, extracted from `demo-insrules` at `3d1c5662441
 | ID | Rule | Citation | Executed evidence | Status |
 | --- | --- | --- | --- | --- |
 | R-COB-41 | The first minimum row matching the policy's line and state wins over the all-state minimum for the same line. | `RATEPREM.cbl:3500-MINIMUM-PREMIUM` 446–464; `tables/minimum-premium.dat:3–4,6–7` | P0000061 (GL/CA): $750.00 rather than $500.00; P0000063 (CA/TX): $1,200.00 rather than $1,000.00. | from-table |
-| R-COB-42 | If no exact state minimum matches, the first all-state minimum for the same line is used. | `RATEPREM.cbl:3500-MINIMUM-PREMIUM` 446–464; `tables/minimum-premium.dat:3,5–6` | P0000062 (GL/IL): $500.00; P0000070 (PR/IL): $350.00. P0000082's different quote amount is recorded separately below. | from-table |
-| R-COB-43 | With no CA/CA minimum row, a California commercial-auto policy uses the CA all-state minimum of $1,000.00 in the batch. | `RATEPREM.cbl:3500-MINIMUM-PREMIUM` 446–468; `tables/minimum-premium.dat:6–7` | P0000082: both flag a minimum, but COBOL emits $1,000.00 and Pharo emits $1,250.00. | amber |
+| R-COB-42 | If no exact state minimum matches, the first all-state minimum for the same line is used. | `RATEPREM.cbl:3500-MINIMUM-PREMIUM` 446–464; `tables/minimum-premium.dat:3,5–6` | P0000062 (GL/IL): $500.00; P0000070 (PR/IL): $350.00; P0000082 (CA/CA) selects the CA wildcard as shown below. | from-table |
+| R-COB-43 | With no CA/CA minimum row, a California commercial-auto policy uses the CA all-state minimum of $1,000.00. | `RATEPREM.cbl:3500-MINIMUM-PREMIUM` 446–468; `InsQuoteEngine>>applyMinimum:premium:quote:` (`InsQuoteEngine.class.st` 147–157); `tables/minimum-premium.dat:6` | P0000082: both select $1,000.00 and flag Y; COBOL floors after the +25% schedule factor and emits $1,000.00, while Pharo floors before that factor and emits $1,250.00. See R-COB-44/45 for the ordering difference. | from-table |
 | R-COB-44 | If premium after all credits and debits is below the selected minimum, the batch raises it to that minimum and sets the minimum flag to Y. | `RATEPREM.cbl:1000-RATE-POLICY` 252–261; `RATEPREM.cbl:3500-MINIMUM-PREMIUM` 465–469; `tables/minimum-premium.dat:3–5` | P0000065: COBOL $500.00/Y vs Pharo $401.07/N; P0000066: $350.00/Y vs $282.63/Y; P0000200: $750.00/Y vs $675.00/Y. The placement of the batch floor is explicit; the quote path does not produce that floor in these cases. | amber |
 | R-COB-45 | If premium after all credits and debits meets or exceeds the selected minimum, the batch leaves it unchanged and keeps the minimum flag at N. | `RATEPREM.cbl:3500-MINIMUM-PREMIUM` 465–469; initialization 238; `tables/minimum-premium.dat:3` | P0000001 agrees at $871.50/N; P0000067 crosses above the floor after a debit and differs: COBOL $554.40/N vs Pharo $600.00/Y. | amber |
 | R-COB-46 | If neither a specific state nor an all-state minimum matches, the premium is not raised and the minimum flag remains N. | `RATEPREM.cbl:3500-MINIMUM-PREMIUM` 446–469; initialization 238; `tables/minimum-premium.dat:3,5–6` (shipped defaults) | No fixture reaches this: every line that reaches this paragraph has an all-state minimum. | unproven |
