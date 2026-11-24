@@ -1,5 +1,7 @@
 package com.otterworks.rating.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.otterworks.rating.audit.QuoteAuditStore;
 import com.otterworks.rating.audit.SavedQuote;
 import com.otterworks.rating.config.RatingProperties;
@@ -26,10 +28,12 @@ public class AdminController {
 
     private final RatingProperties properties;
     private final QuoteAuditStore audit;
+    private final ObjectMapper json;
 
-    public AdminController(RatingProperties properties, QuoteAuditStore audit) {
+    public AdminController(RatingProperties properties, QuoteAuditStore audit, ObjectMapper json) {
         this.properties = properties;
         this.audit = audit;
+        this.json = json;
     }
 
     private boolean allowed(String supplied) {
@@ -62,13 +66,20 @@ public class AdminController {
 
     /**
      * Takes back a quote the browser parked, so a long session survives a reload. The parked quote
-     * arrives as plain JSON bound to {@link SavedQuote}; it is never Java-deserialized.
+     * arrives as plain JSON read into {@link SavedQuote} only after the key check; it is never
+     * Java-deserialized.
      */
     @PostMapping(value = "/quotes/restore", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> restore(@RequestBody SavedQuote parked,
+    public ResponseEntity<String> restore(@RequestBody String body,
             @RequestHeader(value = "X-Support-Key", required = false) String key) {
         if (!allowed(key)) {
             return ResponseEntity.status(403).build();
+        }
+        SavedQuote parked;
+        try {
+            parked = json.readValue(body, SavedQuote.class);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.badRequest().build();
         }
         if (parked == null || parked.reference() == null || parked.reference().isBlank()) {
             return ResponseEntity.badRequest().build();

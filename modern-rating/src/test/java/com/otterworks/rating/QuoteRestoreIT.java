@@ -82,6 +82,15 @@ class QuoteRestoreIT {
     }
 
     @Test
+    void refusesWithoutTheSupportKeyBeforeReadingTheBody() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        var restored = http.postForEntity("/admin/quotes/restore",
+                new HttpEntity<>("not json", headers), String.class);
+        assertThat(restored.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
     void neverJavaDeserializesABase64Body() throws IOException {
         String parked = serializedCanary();
 
