@@ -3,12 +3,8 @@ package com.otterworks.rating.controller;
 import com.otterworks.rating.audit.QuoteAuditStore;
 import com.otterworks.rating.audit.SavedQuote;
 import com.otterworks.rating.config.RatingProperties;
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Base64;
 import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -64,17 +60,19 @@ public class AdminController {
         return audit.find(reference);
     }
 
-    /** Takes back a quote the browser parked, so a long session survives a reload. */
-    @PostMapping("/quotes/restore")
-    public ResponseEntity<String> restore(@RequestBody String parked,
-            @RequestHeader(value = "X-Support-Key", required = false) String key) throws Exception {
+    /**
+     * Takes back a quote the browser parked, so a long session survives a reload. The parked quote
+     * arrives as plain JSON bound to {@link SavedQuote}; it is never Java-deserialized.
+     */
+    @PostMapping(value = "/quotes/restore", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> restore(@RequestBody SavedQuote parked,
+            @RequestHeader(value = "X-Support-Key", required = false) String key) {
         if (!allowed(key)) {
             return ResponseEntity.status(403).build();
         }
-        byte[] bytes = Base64.getDecoder().decode(parked.trim().getBytes(StandardCharsets.UTF_8));
-        try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
-            SavedQuote saved = (SavedQuote) in.readObject();
-            return ResponseEntity.ok(saved.reference());
+        if (parked == null || parked.reference() == null || parked.reference().isBlank()) {
+            return ResponseEntity.badRequest().build();
         }
+        return ResponseEntity.ok(parked.reference());
     }
 }
