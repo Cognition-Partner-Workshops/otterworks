@@ -1,0 +1,16 @@
+# PostgreSQL 16 for the claims privacy module. Use ./run.sh, which sets the
+# project name from NS so parallel sessions do not collide.
+services:
+  claims-pg:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: claims
+      POSTGRES_USER: claims_owner
+      POSTGRES_PASSWORD: claims_owner
+    ports:
+      - "127.0.0.1:${CLAIMS_PG_PORT:-55432}:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "claims_owner", "-d", "claims"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
