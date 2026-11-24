@@ -1,7 +1,9 @@
+import sys
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from driver import RATING_FIELDS, compare, read_cobol
 
 
