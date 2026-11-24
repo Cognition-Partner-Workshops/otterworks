@@ -170,3 +170,17 @@ No new COBOL~Pharo disagreement was found: the COBOL~Pharo pair is 195/5 before 
 make insrules-reset     # resets the estate, runs COBOL, Pharo and Java on all 200 fixtures, then parity
 make insrules-parity    # reruns all three raters (insrules-run), then compares; writes legacy-rating/build/parity.json
 ```
+
+The R84 totals table, from the build outputs those targets leave in `legacy-rating/build/` (it prints `endorsed 73 cobol~java 73 cobol~pharo 77 pharo~java 5` and `True`):
+
+```
+python3 - <<'PY'
+import sys; sys.path.insert(0, "legacy-rating/parity"); from pathlib import Path; import driver
+b = Path("legacy-rating/build"); c = driver.read_cobol(b / "cobol.dat")
+p, j = driver.read_canonical(b / "pharo.txt"), driver.read_canonical(b / "java.txt")
+endorsed = {k for k in j if j[k]["endorsements"] > 0}
+diff = lambda x, y: {k for k in x if x[k]["total"] != y[k]["total"]}
+print("endorsed", len(endorsed), "cobol~java", len(diff(c, j)), "cobol~pharo", len(diff(c, p)), "pharo~java", len(diff(p, j)))
+print("java total = cobol total + endorsements:", all(j[k]["total"] == c[k]["total"] + j[k]["endorsements"] for k in c))
+PY
+```
