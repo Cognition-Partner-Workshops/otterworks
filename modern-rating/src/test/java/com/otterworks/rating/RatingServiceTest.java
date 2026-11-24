@@ -124,6 +124,14 @@ class RatingServiceTest {
     }
 
     @Test
+    void roundsTheEquipmentChargeToCentsBeforeDollars() {
+        // R89/R90: 3% of 11583.29 = 347.4987 -> 347.50 -> $348 (whole dollars straight from 347.4987 give $347).
+        Quote q = rate("P0000159PRIL0900 0302026100700083530A030400250N02E00YNN");
+        assertThat(q.modifiedPremium()).isEqualByComparingTo("11583.29");
+        assertThat(q.endorsements()).isEqualByComparingTo("348.00");
+    }
+
+    @Test
     void capsEndorsementsAtAQuarterRoundedHalfUp() {
         // R97: 25% of 723.73 = 180.9325 -> 180.93.
         Quote q = rate("P0000170GLTX913400402026030100001610C000200500Y00N02NYY");
