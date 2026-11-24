@@ -47,4 +47,24 @@ class QuoteAuditStoreTest {
     void findsNothingForAnUnknownReference() {
         assertThat(audit.find("ABCDEF123456")).isEmpty();
     }
+
+    @Test
+    void findsOnlyTheQuoteWithTheRequestedReference() {
+        Quote first = rate("P0000001GLIL913400002026031500002100{050100500N00{00NNN");
+        Quote second = rate("P0000004GLIL185010002026031500002100{050100500N00{00NNN");
+        String firstReference = audit.save(first);
+        String secondReference = audit.save(second);
+
+        assertThat(audit.find(firstReference)).containsExactly(first.asLine());
+        assertThat(audit.find(secondReference)).containsExactly(second.asLine());
+    }
+
+    @Test
+    void treatsAnApostropheInAnUnknownReferenceAsLiteralText() {
+        Quote quote = rate("P0000001GLIL913400002026031500002100{050100500N00{00NNN");
+        String reference = audit.save(quote);
+
+        assertThat(audit.find("O'Brien")).isEmpty();
+        assertThat(audit.find(reference)).containsExactly(quote.asLine());
+    }
 }
