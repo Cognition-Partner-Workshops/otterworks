@@ -2,7 +2,12 @@ package com.otterworks.rating;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.otterworks.rating.config.RatingProperties;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -18,6 +23,9 @@ class QuotePageIT {
     @Autowired
     private TestRestTemplate http;
 
+    @Autowired
+    private RatingProperties properties;
+
     @Test
     void servesTheQuotePage() {
         var page = http.getForEntity("/", String.class);
@@ -25,17 +33,20 @@ class QuotePageIT {
         assertThat(page.getBody()).contains("Policy quote");
     }
 
-    @Test
-    void servesARatingTableToSupportAndRefusesWithoutTheKey() {
+    @ParameterizedTest
+    @ValueSource(strings = {"class-factors.dat", "line-eligibility.dat", "minimum-premium.dat",
+            "overrides.dat", "territory-factors.dat"})
+    void servesTheExactRatingTableContentsToSupport(String name) throws Exception {
+        var table = http.exchange("/admin/tables/" + name, HttpMethod.GET,
+                supportRequest(), String.class);
+        assertThat(table.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(table.getBody()).isEqualTo(Files.readString(Path.of(properties.tablesDir(), name)));
+    }
+
+    private HttpEntity<Void> supportRequest() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Support-Key", "insrules-support");
-        var table = http.exchange("/admin/tables/class-factors.dat", HttpMethod.GET,
-                new HttpEntity<>(headers), String.class);
-        assertThat(table.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(table.getBody()).contains("GL");
-
-        assertThat(http.getForEntity("/admin/tables/class-factors.dat", String.class).getStatusCode())
-                .isEqualTo(HttpStatus.FORBIDDEN);
+        return new HttpEntity<>(headers);
     }
 
     @Test
