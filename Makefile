@@ -633,7 +633,7 @@ lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains
 # --- Rating estate (legacy batch, quote screen, modern rating) ---------------
 INSRULES_COMPOSE = docker compose -f docker-compose.insrules.yml -p insrules
 
-insrules-up: ## Build and start the quote screen (:8091) and modern rating (:8092)
+insrules-up: ## Build and start quote screen (:8091) and modern rating (:8092); set RATING_SUPPORT_KEY to enable support access
 	@mkdir -p legacy-rating/build
 	$(INSRULES_COMPOSE) up -d --build --wait quote-screen modern-rating
 

@@ -7,21 +7,39 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.env.SystemEnvironmentPropertySource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ContextConfiguration(initializers = QuotePageIT.SupportKeyEnvironment.class)
 class QuotePageIT {
+
+    private static final String TEST_SUPPORT_KEY = "test-${literal}-key";
+
+    static class SupportKeyEnvironment implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+        @Override
+        public void initialize(ConfigurableApplicationContext context) {
+            String name = StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME;
+            var properties = context.getEnvironment().getPropertySources();
+            properties.replace(name, new SystemEnvironmentPropertySource(name, Map.of("RATING_SUPPORT_KEY", TEST_SUPPORT_KEY)));
+        }
+    }
 
     @Autowired
     private TestRestTemplate http;
@@ -48,7 +66,7 @@ class QuotePageIT {
 
     private HttpEntity<Void> supportRequest() {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Support-Key", "insrules-support");
+        headers.set("X-Support-Key", TEST_SUPPORT_KEY);
         return new HttpEntity<>(headers);
     }
 
@@ -57,7 +75,7 @@ class QuotePageIT {
         String quote = "{\"reference\":\"Q-123\",\"fields\":{\"line\":\"GL\"}}";
         String parked = Base64.getEncoder().encodeToString(quote.getBytes(StandardCharsets.UTF_8));
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Support-Key", "insrules-support");
+        headers.set("X-Support-Key", TEST_SUPPORT_KEY);
         ResponseEntity<String> restored = http.postForEntity("/admin/quotes/restore",
                 new HttpEntity<>(parked, headers), String.class);
         assertThat(restored.getStatusCode()).isEqualTo(HttpStatus.OK);

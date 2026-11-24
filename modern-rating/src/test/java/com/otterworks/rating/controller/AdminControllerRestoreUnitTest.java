@@ -7,19 +7,30 @@ import com.otterworks.rating.audit.QuoteAuditStore;
 import com.otterworks.rating.config.RatingProperties;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.env.SystemEnvironmentPropertySource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.env.MockEnvironment;
 
 class AdminControllerRestoreUnitTest {
 
-    private static final String SUPPORT_KEY = "insrules-support";
+    private static final String SUPPORT_KEY = "test-key";
     private static final byte[] LEGACY_FORMAT_HEADER = {(byte) 0xAC, (byte) 0xED, 0x00, 0x05};
 
-    private final AdminController controller = new AdminController(mock(RatingProperties.class),
-            mock(QuoteAuditStore.class));
+    private final AdminController controller;
+
+    AdminControllerRestoreUnitTest() {
+        var environment = new MockEnvironment();
+        String name = StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME;
+        environment.getPropertySources().addFirst(new SystemEnvironmentPropertySource(name,
+                Map.of("RATING_SUPPORT_KEY", SUPPORT_KEY)));
+        controller = new AdminController(mock(RatingProperties.class), mock(QuoteAuditStore.class), environment);
+    }
 
     @Test
     void identifiesTheLegacyHeaderButNotJson() {
