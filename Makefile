@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status insrules-up insrules-down insrules-run insrules-parity insrules-reset insrules-sonar-up
 
 SHELL := /bin/bash
 
@@ -629,3 +629,30 @@ lp-ec2-down: ## Destroy the run's legacy-portal EC2 stack (RUN=)
 
 lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
 	@$(LP_EC2) verify-clean
+
+# --- Rating estate (legacy batch, quote screen, modern rating) ---------------
+INSRULES_COMPOSE = docker compose -f docker-compose.insrules.yml -p insrules
+
+insrules-up: ## Build and start the quote screen (:8091) and modern rating (:8092)
+	@mkdir -p legacy-rating/build
+	$(INSRULES_COMPOSE) up -d --build --wait quote-screen modern-rating
+
+insrules-down: ## Stop every rating estate container, SonarQube included
+	$(INSRULES_COMPOSE) --profile batch --profile sonar down --remove-orphans
+
+insrules-run: ## Rate all fixture policies through COBOL, Pharo and Java
+	@mkdir -p legacy-rating/build
+	$(INSRULES_COMPOSE) --profile batch run --rm rating-batch /estate/fixtures/policies.dat /estate/build/cobol.dat
+	$(INSRULES_COMPOSE) exec -T quote-screen ./run.sh quote /estate/fixtures/policies.dat /estate/build/pharo.txt
+	$(INSRULES_COMPOSE) exec -T modern-rating java -jar /app/app.jar --spring.main.web-application-type=none \
+		--rating.batch.input=/estate/fixtures/policies.dat --rating.batch.output=/estate/build/java.txt
+
+insrules-parity: insrules-run ## Compare the three outputs policy by policy (build/parity.json)
+	python3 legacy-rating/parity/driver.py --cobol legacy-rating/build/cobol.dat \
+		--pharo legacy-rating/build/pharo.txt --java legacy-rating/build/java.txt --out legacy-rating/build/parity.json
+
+insrules-reset: ## Reset the rating estate and rerun all three stacks (prints elapsed seconds)
+	legacy-rating/reset.sh
+
+insrules-sonar-up: ## Start local SonarQube on :9000
+	$(INSRULES_COMPOSE) --profile sonar up -d sonarqube

@@ -1,0 +1,15 @@
+server:
+  port: ${PORT:8092}
+spring:
+  application:
+    name: modern-rating
+  threads:
+    virtual:
+      enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+rating:
+  tables-dir: ${RATING_TABLES_DIR:../legacy-rating/tables}

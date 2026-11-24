@@ -1,0 +1,8 @@
+* MINIMUM PREMIUM - state ** applies when no state row exists
+* LINE|STATE|MINIMUM
+GL|**|500.00
+GL|CA|750.00
+PR|**|350.00
+CA|**|1000.00
+CA|TX|1200.00
+WC|**|250.00
