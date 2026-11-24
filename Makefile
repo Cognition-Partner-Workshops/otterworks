@@ -641,9 +641,16 @@ insrules-down: ## Stop every rating estate container, SonarQube included
 	$(INSRULES_COMPOSE) --profile batch --profile sonar down --remove-orphans
 
 insrules-run: ## Rate all fixture policies through COBOL, Pharo and Java
-	@mkdir -p legacy-rating/build
 	@set -e; \
-	uid=$$(id -u); gid=$$(id -g); \
+	uid=$${SUDO_UID:-$$(id -u)}; gid=$${SUDO_GID:-$$(id -g)}; \
+	as_caller() { \
+		if [ "$${SUDO_UID:-0}" -ne 0 ]; then \
+			sudo -u "#$$SUDO_UID" -g "#$$SUDO_GID" -- "$$@"; \
+		else \
+			"$$@"; \
+		fi; \
+	}; \
+	as_caller mkdir -p legacy-rating/build; \
 	security_options=$$(docker info -f '{{.SecurityOptions}}'); \
 	if printf '%s\n' "$$security_options" | grep -q 'name=rootless'; then \
 		uid=0; gid=0; \
@@ -654,7 +661,7 @@ insrules-run: ## Rate all fixture policies through COBOL, Pharo and Java
 	elif [ "$$gid" -eq 0 ]; then \
 		gid=1000; \
 	fi; \
-	test -w legacy-rating/build/cobol.dat || rm -f legacy-rating/build/cobol.dat; \
+	as_caller test -w legacy-rating/build/cobol.dat || as_caller rm -f legacy-rating/build/cobol.dat; \
 	INSRULES_BATCH_UID=$$uid INSRULES_BATCH_GID=$$gid \
 		$(INSRULES_COMPOSE) --profile batch run --rm rating-batch /estate/fixtures/policies.dat /estate/build/cobol.dat
 	$(INSRULES_COMPOSE) exec -T quote-screen ./run.sh quote /estate/fixtures/policies.dat /estate/build/pharo.txt
