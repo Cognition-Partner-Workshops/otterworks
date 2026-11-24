@@ -31,7 +31,14 @@ All 40 rows were present across the extracts. Five rows are unreachable with the
 
 - Both legacy outputs contain exactly the 200 fixture IDs: 190 OK, 7 DEC (1 EX01, 1 EX02, 5 EX04), and 3 REJ (1 LN, 2 EX).
 - COBOL vs Pharo with the repository driver’s keyed hashes and six shared rating fields: 195/200 matches; 5 differences, all R94. The launcher may return success despite parity mismatches; the pair totals, not the launcher exit status, are the evidence.
-- Localhost Pharo quote screen: 200/200 fixture IDs matched the Pharo batch on all eight displayed fields. The replay mapped fixed-width fields to GET form values, supplied only checked flags, and kept the fixture ID externally because the screen uses the ID SCREEN.
+- Localhost Pharo quote screen: 200/200 fixture IDs matched the Pharo batch on all eight displayed fields. This is a separate HTTP replay, not a check performed by `parity/driver.py`. To reproduce it from the repository root with the default localhost port (8091):
+
+  ```sh
+  make insrules-reset
+  python3 legacy-rating/catalog/replay_quote_screen.py
+  ```
+
+  The reset writes `legacy-rating/build/pharo.txt` and starts the quote screen. The replay sends one GET per record in `legacy-rating/fixtures/policies.dat`, parses the rendered quote table, and compares it with the corresponding batch record. It keeps the fixture ID outside the HTTP response because the screen uses the ID `SCREEN`.
 - Pharo charges endorsements on 73/200 policies. COBOL has no endorsement field. With the corrected copybook position used only for this evidence, raw totals differ on 77/200 policies (72 endorsement alone, 4 order alone, 1 both). Those are separate from the shared-field mismatch metric.
 - Output SHA-256, COBOL: `cf852a562fea6e4b31ff63a0602e4765f9bd8bedbfa65664aad20d46eea868ad`.
 - Output SHA-256, Pharo: `adfad3afab8556a2b2307bf023dd8718a5da712107d42d7ffa96f34e327c8e96`.
