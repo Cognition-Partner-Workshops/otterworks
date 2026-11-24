@@ -167,7 +167,7 @@ See [citation and evidence conventions](citations.md) and the [score](score.md).
 
 | Rule | Statement | Scope | Specific citations | Proving fixture or evidence gap | Status |
 | --- | --- | --- | --- | --- | --- |
-| R67 | A selected multi-policy discount reduces the premium by 5% on GL or PR. | both | Section source | `P0000058` (GL): 88000 to 83600; `P0000059` (PR): 76000 to 72200 in both. | proven |
+| R67 | On GL or PR with a selected multi-policy discount, round the schedule-adjusted premium to cents before applying the 5% discount, then round again to cents. | both | [`RATEPREM.cbl:1000-RATE-POLICY`, 257–258](../cobol/RATEPREM.cbl#L257-L258); [`RATEPREM.cbl:3300-SCHEDULE-MOD`, 415–423](../cobol/RATEPREM.cbl#L415-L423); [`InsQuoteEngine>>rate:into:`, 43–56](../smalltalk/src/InsRating/InsQuoteEngine.class.st#L43-L56); [`InsQuoteEngine>>scheduleMod:premium:`, 160–164](../smalltalk/src/InsRating/InsQuoteEngine.class.st#L160-L164); [`InsQuoteEngine>>round:scale:`, 22–25](../smalltalk/src/InsRating/InsQuoteEngine.class.st#L22-L25) | `P0000058` (GL): 88000 to 83600; `P0000059` (PR): 76000 to 72200 in both. For `P0000076` (GL), the 5% schedule increase rounds 432927 to 454573 before the discount; both stacks output 431844, not the 431845 from rounding only once. | proven |
 | R68 | CA does not receive a multi-policy discount even if selected. | both | Section source | `P0000060` (selected) and `P0000012` (not selected): base and modified 156000 in both. | proven |
 | R69 | When multi-policy is not selected, GL and PR receive no package discount. | both | Section source | `P0000001` (GL) and `P0000006` (PR): base and modified stay at 87150 and 57000, respectively, in both. | proven |
 
