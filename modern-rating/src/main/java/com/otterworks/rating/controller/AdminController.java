@@ -48,7 +48,7 @@ public class AdminController {
         if (!allowed(key)) {
             return ResponseEntity.status(403).build();
         }
-        Path dir = Path.of(properties.tablesDir()).toAbsolutePath().normalize();
+        Path dir = Path.of(properties.tablesDir()).toRealPath();
         Path file = dir.resolve(name).normalize();
         if (!dir.equals(file.getParent()) || !Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
             return ResponseEntity.notFound().build();

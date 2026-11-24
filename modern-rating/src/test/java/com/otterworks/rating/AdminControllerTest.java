@@ -53,4 +53,17 @@ class AdminControllerTest {
 
         assertThat(controller(tables).table("linked.dat", KEY).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
+
+    @Test
+    void readsTheSameDirectoryAsTheRatingEngineWhenTheConfiguredPathHasALink() throws Exception {
+        Path real = Files.createDirectories(root.resolve("estate/tables"));
+        Files.writeString(real.resolve("class-factors.dat"), "GL|91340|1.25");
+        Files.createSymbolicLink(root.resolve("link"), root.resolve("estate/sub"));
+        Files.createDirectory(root.resolve("estate/sub"));
+
+        var response = controller(root.resolve("link/../tables")).table("class-factors.dat", KEY);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo("GL|91340|1.25");
+    }
 }
