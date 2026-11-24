@@ -41,7 +41,7 @@ services:
       retries: 30
 
   sonarqube:
-    image: sonarqube:10.7-community
+    image: public.ecr.aws/docker/library/sonarqube:10.7-community
     profiles: ["sonar"]
     environment:
       SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"

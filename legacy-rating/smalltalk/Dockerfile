@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim
+FROM public.ecr.aws/docker/library/debian:bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl unzip libcairo2 \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/pharo
