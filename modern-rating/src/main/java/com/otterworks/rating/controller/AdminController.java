@@ -76,6 +76,11 @@ public class AdminController {
         }
         try {
             byte[] bytes = Base64.getDecoder().decode(parked.trim());
+            if (isLegacySerializedFormat(bytes)) {
+                return ResponseEntity.badRequest().contentType(MediaType.TEXT_PLAIN)
+                        .body("Unsupported parked quote format: serialized Java objects are no longer accepted; "
+                                + "park the quote as JSON.");
+            }
             JsonNode reference = PARKED_QUOTE_READER.readTree(bytes).path("reference");
             return reference.isTextual()
                     ? ResponseEntity.ok(reference.textValue())
@@ -83,5 +88,9 @@ public class AdminController {
         } catch (IOException | IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    static boolean isLegacySerializedFormat(byte[] bytes) {
+        return bytes.length >= 2 && bytes[0] == (byte) 0xAC && bytes[1] == (byte) 0xED;
     }
 }
