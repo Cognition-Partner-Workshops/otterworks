@@ -1,10 +1,9 @@
-FROM mirror.gcr.io/library/eclipse-temurin:21-jdk AS build
+FROM mirror.gcr.io/library/maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /src
-COPY .mvn .mvn
-COPY mvnw pom.xml ./
-RUN ./mvnw -q -B dependency:go-offline
+COPY pom.xml ./
+RUN mvn -q -B dependency:go-offline
 COPY src src
-RUN ./mvnw -q -B -DskipTests package
+RUN mvn -q -B -DskipTests package
 
 FROM mirror.gcr.io/library/eclipse-temurin:21-jre-alpine
 WORKDIR /app
