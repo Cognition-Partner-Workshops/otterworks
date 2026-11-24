@@ -4,19 +4,35 @@ Run ID INSR_20261124, expires 2026-12-01. Baseline: `1b421600`. Rule IDs are fro
 
 ## Executed results
 
-`make insrules-reset` and `make insrules-parity` replayed the same 200 unique fixture IDs through the COBOL batch, the Pharo quote engine, and Java on localhost. The driver compares a keyed SHA-256 for each policy, then reports the differing canonical fields. Both runs below used the corrected total decoder: `RATEOUT.cpy:14–15` puts the five-byte fee before the eleven-byte total, so the total is `r[57:68]`. The comparison now includes total on all three pairs; endorsements are compared separately only between the quote paths because the batch does not emit that field.
+`make insrules-reset` and `make insrules-parity` replayed the same 200 unique fixture IDs through the COBOL batch, the Pharo quote engine, and Java on localhost. The driver compares a keyed SHA-256 for each policy, then reports the differing canonical fields. The original comparison uses status, reason, base, modified, minimum and factor source; it also compares endorsements separately between Pharo and Java. The widened comparison additionally includes billed total on all three pairs. For that comparison, `RATEOUT.cpy:14–15` puts the five-byte fee before the eleven-byte total, so the driver reads total at `r[57:68]`.
 
-| Pair | Baseline matched / mismatched | Final matched / mismatched |
-| --- | ---: | ---: |
-| COBOL ↔ Java | 82 / 118 | 127 / 73 |
-| Pharo ↔ Java | 113 / 87 | 195 / 5 |
-| COBOL ↔ Pharo | 123 / 77 | 123 / 77 |
+Each cell shows **matched / mismatched**, baseline → final. The baseline outputs came from rating code at `1b421600226126008dd2a6a26dd47e391ad18a82` (the widened driver was used for that run). The final outputs came from the rating code committed as `4139296930eca59bb7667febefd6c785899d22a2`.
+
+| Comparison | COBOL ↔ Java | Pharo ↔ Java | COBOL ↔ Pharo |
+| --- | ---: | ---: | ---: |
+| Widened billed-total comparison | 82 / 118 → 127 / 73 | 113 / 87 → 195 / 5 | 123 / 77 → 123 / 77 |
+| Original six-field comparison | 117 / 83 → 200 / 0 | 113 / 87 → 195 / 5 | 195 / 5 → 195 / 5 |
+
+To reproduce the original counts, run the original driver against the saved baseline and final outputs from those replays, respectively:
+
+```sh
+git show 1b421600226126008dd2a6a26dd47e391ad18a82:legacy-rating/parity/driver.py | python3 - \
+  --cobol /home/ubuntu/insrules-golden-baseline/cobol.dat \
+  --pharo /home/ubuntu/insrules-golden-baseline/pharo.txt \
+  --java /home/ubuntu/insrules-golden-baseline/java.txt \
+  --out /home/ubuntu/insrules-golden-baseline/parity-original.json
+git show 1b421600226126008dd2a6a26dd47e391ad18a82:legacy-rating/parity/driver.py | python3 - \
+  --cobol legacy-rating/build/cobol.dat \
+  --pharo legacy-rating/build/pharo.txt \
+  --java legacy-rating/build/java.txt \
+  --out legacy-rating/build/parity-original.json
+```
 
 Each final stack rated 190 policies, declined 7 and rejected 3. Java matches every compared field where the legacy outputs agree. The parity command still reports differences and exits nonzero: the pairwise outcomes below are expected under Legacy's decisions. `mvn -B verify` in the Maven 3.9.9 / Java 21 container passed 25 unit tests and 4 integration tests.
 
 ## Mismatch attribution
 
-Counts are per policy, not per field. A pair gets one primary rule per policy: lookup first, then premium rounding, then the unresolved-at-baseline differences in minimum timing or endorsement-inclusive total. P0000200 has both legacy differences and is counted under R94 for COBOL ↔ Pharo. Counts within each triple are **COBOL/Java, Pharo/Java, COBOL/Pharo**.
+Counts are per policy, not per field, and use the widened billed-total comparison. A pair gets one primary rule per policy: lookup first, then premium rounding, then the unresolved-at-baseline differences in minimum timing or endorsement-inclusive total. P0000200 has both legacy differences and is counted under R94 for COBOL ↔ Pharo. Counts within each triple are **COBOL/Java, Pharo/Java, COBOL/Pharo**.
 
 Source abbreviations: C = `legacy-rating/cobol/RATEPREM.cbl`; E = `legacy-rating/smalltalk/src/InsRating/InsQuoteEngine.class.st`; T = `legacy-rating/smalltalk/src/InsRating/InsRatingTables.class.st`. Java citations name files in `modern-rating/src/main/java/com/otterworks/rating/service/`; baseline line numbers refer to `1b421600`.
 
