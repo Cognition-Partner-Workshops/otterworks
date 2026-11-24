@@ -13,12 +13,16 @@ import org.apache.commons.collections.map.LRUMap;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @SpringBootTest
 class QuoteAuditStoreTest {
 
     @Autowired
     private QuoteAuditStore audit;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     private final RatingProperties props = new RatingProperties("../legacy-rating/tables", null);
     private final RatingService rating = new RatingService(new RatingTables(props), props);
@@ -33,8 +37,21 @@ class QuoteAuditStoreTest {
         String reference = audit.save(quote);
 
         assertThat(reference).hasSize(12);
+        assertThat(quote.asLine()).isEqualTo("P0000001|OK||87150|87150|N|0|3500|90650|T");
+        assertThat(reference).isEqualTo("1D807AA35ABC");
         assertThat(audit.find(reference)).containsExactly(quote.asLine());
         assertThat(audit.policyFor(reference)).isEqualTo("P0000001");
+    }
+
+    @Test
+    void findsAnExistingReferenceAfterSavingTheSameQuoteWithTheNewDigest() {
+        Quote quote = rate("P0000001GLIL913400002026031500002100{050100500N00{00NNN");
+        String oldReference = "347073A078DF";
+        jdbc.update("insert into quote_audit (reference, policy_id, quote_line) values (?, ?, ?)",
+                oldReference, quote.policyId(), quote.asLine());
+
+        assertThat(audit.save(quote)).isNotEqualTo(oldReference);
+        assertThat(audit.find(oldReference)).containsExactly(quote.asLine());
     }
 
     @Test
