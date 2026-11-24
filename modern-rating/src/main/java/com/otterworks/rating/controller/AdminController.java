@@ -8,8 +8,11 @@ import java.io.ObjectInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.List;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,18 +29,24 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/admin")
 public class AdminController {
 
-    private static final String ADMIN_PASSWORD = "insrules-support";
-
     private final RatingProperties properties;
     private final QuoteAuditStore audit;
+    private final byte[] supportKey;
 
-    public AdminController(RatingProperties properties, QuoteAuditStore audit) {
+    public AdminController(RatingProperties properties, QuoteAuditStore audit, ConfigurableEnvironment environment) {
         this.properties = properties;
         this.audit = audit;
+        // Read the environment value without expanding placeholders in the key.
+        var systemEnvironment = environment.getPropertySources()
+                .get(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
+        Object configuredKey = systemEnvironment == null ? null : systemEnvironment.getProperty("RATING_SUPPORT_KEY");
+        this.supportKey = configuredKey instanceof String key && !key.isBlank()
+                ? key.getBytes(StandardCharsets.UTF_8) : new byte[0];
     }
 
-    private boolean allowed(String supplied) {
-        return ADMIN_PASSWORD.equals(supplied);
+    boolean allowed(String supplied) {
+        return supportKey.length > 0 && supplied != null
+                && MessageDigest.isEqual(supportKey, supplied.getBytes(StandardCharsets.UTF_8));
     }
 
     /** Shows a rating table as the batch reads it, so a table change can be checked by eye. */
