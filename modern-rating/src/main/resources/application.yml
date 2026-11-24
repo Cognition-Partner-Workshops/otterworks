@@ -3,6 +3,10 @@ server:
 spring:
   application:
     name: modern-rating
+  datasource:
+    url: ${RATING_AUDIT_URL:jdbc:h2:mem:quote-audit;DB_CLOSE_DELAY=-1}
+    username: ${RATING_AUDIT_USER:rating}
+    password: ${RATING_AUDIT_PASSWORD:}
   threads:
     virtual:
       enabled: true
