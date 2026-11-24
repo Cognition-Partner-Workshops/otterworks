@@ -24,10 +24,14 @@ services/industry-solutions/insurance/
   db/oltp/     01_tables.sql              — agents, products, policies, rates, splits, ledger, audit
                02_seed.sql                — deterministic test data
                03_commission_pkg.sql      — COMMISSION_PKG: all business rules (PL/SQL)
+               04_rate_audit.sql          — row audit on commission_rates, V_RATE_CHANGE_HISTORY
+               05_rate_retention.sql      — RATE_RETENTION_PKG: rule RA-1 (RETENTION.md)
   db/olap/     01_star_schema.sql         — dim_agent / dim_product / dim_period / fact_commission
                02_etl_pkg.sql             — DW_ETL_PKG.LOAD_COMMISSION_FACTS + summary MV
   db/tests/    run_tests.sql              — OLTP suite (12+ cases, PASS/FAIL, non-zero exit on failure)
                run_olap_tests.sql         — ETL/star-schema suite (run after the OLTP suite)
+               run_audit_tests.sql        — every rate change, package or direct SQL, carries actor and time
+               run_retention_tests.sql    — rate audit purge: dry run, clock, open rates kept
 ```
 
 Two schemas inside the `FREEPDB1` pluggable database:
@@ -58,6 +62,24 @@ Two schemas inside the `FREEPDB1` pluggable database:
   per agent row. Re-running a period replaces its rows (idempotent). Lapsed or
   cancelled policies and policies without a split allocation are rejected.
 
+## Rate change audit
+
+Every INSERT, UPDATE or DELETE on `commission_rates` writes a row to
+`audit_row_change` through `TRG_AUD_COMMISSION_RATES`, built from the
+generic kit in `shared/compliance-kit/oracle/`. That includes a direct
+`UPDATE` run outside `COMMISSION_PKG`. Package calls are credited to
+`p_actor`; direct SQL is credited to the database user, OS user and host.
+`audit_row_change`, `rate_audit_log` and `retention_run` are append-only
+(ORA-20901); rows leave them only through the retention purge
+([RETENTION.md](RETENTION.md)).
+
+"Who changed rate X and when", one row per change:
+
+```sql
+SELECT change_id, operation, changed_at, actor, via_program, old_rate_pct, new_rate_pct
+  FROM v_rate_change_history WHERE rate_id = :x ORDER BY change_id;
+```
+
 ## Run it
 
 From the repo root (NS is any alphanumeric namespace; ports are derived from
@@ -65,7 +87,7 @@ it so concurrent namespaces never collide):
 
 ```bash
 make insurance-up NS=dev     # pulls Oracle Free, first boot takes a few minutes
-make insurance-test NS=dev   # runs the OLTP suite, then the OLAP suite
+make insurance-test NS=dev   # OLTP, OLAP, rate-audit and retention suites
 make insurance-down NS=dev   # tears down and deletes the data volume
 ```
 
@@ -75,6 +97,10 @@ Expected test output ends with:
 OLTP TESTS: ALL PASS
 ...
 OLAP TESTS: ALL PASS
+...
+AUDIT TESTS: ALL PASS
+...
+RETENTION TESTS: ALL PASS
 ```
 
 Connect ad hoc (port = `51521 + crc32(NS) % 1000`, printed by
