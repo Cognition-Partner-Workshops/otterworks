@@ -1,8 +1,34 @@
 # Three-way rating parity report
 
-All 200 policies in `legacy-rating/fixtures/policies.dat` were run through the COBOL batch (`RATEPREM`), the Pharo quote batch and the Java rating service (`modern-rating/`), then compared by `legacy-rating/parity/driver.py`: a SHA-256 keyed hash per policy over the canonical fields, then field by field on every policy whose hash differs. Rating fields are `status, reason, base, modified, minimum, source`; the Pharo~Java pair also compares `endorsements`. "Before" is the catalog branch as checked out; "after" is this branch. Rule IDs refer to `legacy-rating/catalog/rules.md`.
+All 200 policies in `legacy-rating/fixtures/policies.dat` were run through the COBOL batch (`RATEPREM`), the Pharo quote batch and the Java rating service (`modern-rating/`), then compared by `legacy-rating/parity/driver.py`: a SHA-256 keyed hash per policy over the canonical fields, then field by field on every policy whose hash differs. Rating fields are `status, reason, base, modified, minimum, source`; the Pharo~Java pair also compares `endorsements`. Rule IDs refer to `legacy-rating/catalog/rules.md`.
 
-## Counts
+## #3387 territory change on top of #3377
+
+"Before" in this section is the unmodified #3377 head (`2ecad8dcc`); "after" applies the #3387 table diff. Each run rated all 200 policies per stack: 190 OK, 7 declined, 3 rejected.
+
+| Pair | Before matched | Before mismatched | After matched | After mismatched |
+|---|---:|---:|---:|---:|
+| cobol~java | 200 | 0 | 200 | 0 |
+| pharo~java | 195 | 5 | 195 | 5 |
+| cobol~pharo | 195 | 5 | 195 | 5 |
+
+No policy changed match status in any pair. The five mismatches in each Pharo pair are still `P0000065`, `P0000066`, `P0000067`, `P0000082`, and `P0000200` (R82, minimum order; see [Left open](#left-open)).
+
+[Territory lines 10–11](../legacy-rating/tables/territory-factors.dat#L10-L11) end PR/030 at 1.250 on June 30, 2026 and start 1.300 on July 1 (R33, R43, R99). The same five outputs changed on all three stacks, with these base premiums in cents:
+
+| Policy | Before | After |
+|---|---:|---:|
+| `P0000081` | 68799 | 71551 |
+| `P0000150` | 285451 | 296869 |
+| `P0000159` | 741330 | 770983 |
+| `P0000166` | 322855 | 335769 |
+| `P0000188` | 1058825 | 1101178 |
+
+`P0000081` proves the new row on both legacy stacks: source T in both runs, with COBOL also recording 1.250 → 1.300. `P0000021` still proves the earlier row; `P0000091` and `P0000127` reach the new row but remain unchanged because the PR/0702/030 override replaces it at 1.600/O (R49, R52).
+
+## Counts for the original Java alignment
+
+In the remainder of the report, the original Java alignment compares the catalog branch before the Java fixes with #3377 after them.
 
 | Pair | Before matched | Before mismatched | After matched | After mismatched |
 |---|---|---|---|---|
@@ -160,7 +186,9 @@ This PR also fixes how `read_cobol` in `driver.py` reads the COBOL total. It sli
 
 The 5 remaining Pharo~Java differences are the same policies: Java follows COBOL by the R82 decision. On `P0000200` the endorsement amount also differs (Pharo 1400, Java 1500) because the 2% waiver is taken on the modified premium, which R82 changes; the endorsement rule itself matches.
 
-No new COBOL~Pharo disagreement was found: the COBOL~Pharo pair is 195/5 before and after, and all 5 are R82. Legacy code and tables were not changed.
+No new COBOL~Pharo disagreement was found: the COBOL~Pharo pair is 195/5 before and after, and all 5 are R82. The original Java alignment did not change legacy code or tables.
+
+**R43 — table contradicts the catalog statement.** The statement says 1.250 applies from January 1 onward without an override. #3387 closes that row on June 30, and `P0000081` shows all three stacks using 1.300 in October. The R43 statement is retained and marked amber; R99 records the new, executed condition. No PR/030 fixture is effective on June 30 or July 1. The Java end-date bug present on #3387's own head is already fixed in the #3377 base (`RatingTables.java:19–23`, inclusive end date); this follow-up changes no Java code.
 
 ## Reproduce
 
