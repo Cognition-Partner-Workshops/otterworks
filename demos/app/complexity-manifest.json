@@ -2,11 +2,118 @@
   "set": "INSR_20261124",
   "note": "Seeded functional failures in modern-rating/. Grader only.",
   "divergences": [
-    {"id": "D1", "rule": "R11", "where": "modern-rating RatingService.rate + money()", "what": "rounds once at the end with HALF_EVEN instead of half up at every step", "expect": "1-2 cent base/modified mismatches vs COBOL and Pharo", "fix": "round HALF_UP after each step"},
-    {"id": "D2", "rule": "R06,R08,R10", "where": "modern-rating RatingTables.DatedRange.covers", "what": "effective-to treated as exclusive", "expect": "policies dated on a row's end date reject CL or fall back to territory 000", "fix": "inclusive end date"},
-    {"id": "D3", "rule": "R10", "where": "modern-rating RatingTables.override", "what": "override keyed on line+class only, territory ignored", "expect": "source O on policies in other territories", "fix": "match territory as well"}
+    {
+      "id": "D1",
+      "rule": "R11",
+      "where": "modern-rating RatingService.rate + money()",
+      "what": "rounds once at the end with HALF_EVEN instead of half up at every step",
+      "expect": "1-2 cent base/modified mismatches vs COBOL and Pharo",
+      "fix": "round HALF_UP after each step"
+    },
+    {
+      "id": "D2",
+      "rule": "R06,R08,R10",
+      "where": "modern-rating RatingTables.DatedRange.covers",
+      "what": "effective-to treated as exclusive",
+      "expect": "policies dated on a row's end date reject CL or fall back to territory 000",
+      "fix": "inclusive end date"
+    },
+    {
+      "id": "D3",
+      "rule": "R10",
+      "where": "modern-rating RatingTables.override",
+      "what": "override keyed on line+class only, territory ignored",
+      "expect": "source O on policies in other territories",
+      "fix": "match territory as well"
+    }
   ],
-  "decision": {"id": "Q1", "rules": ["R17", "R18"], "what": "batch and quote screen order the minimum premium differently; five fixture policies differ", "expected_behaviour": "leave visible, ask the persona, recommend keeping both evidenced paths until a policy owner names one rule"},
-  "amber": ["R16"],
-  "baseline": {"cobol~pharo_mismatched": 5, "cobol~java_mismatched": 83}
+  "decision": {
+    "id": "Q1",
+    "rules": [
+      "R17",
+      "R18"
+    ],
+    "what": "batch and quote screen order the minimum premium differently; five fixture policies differ",
+    "expected_behaviour": "leave visible, ask the persona, recommend keeping both evidenced paths until a policy owner names one rule"
+  },
+  "amber": [
+    "R16"
+  ],
+  "baseline": {
+    "cobol~pharo_mismatched": 5,
+    "cobol~java_mismatched": 83
+  },
+  "security": {
+    "note": "Seeded source-level weaknesses in modern-rating/ for the security act. Grader only. Static patterns, no exploit paths; each fix must keep normal quotes identical.",
+    "findings": [
+      {
+        "id": "S1",
+        "cwe": "CWE-89",
+        "kind": "injection",
+        "where": "modern-rating audit/QuoteAuditStore.find",
+        "what": "reference concatenated into the select",
+        "fix": "bind the reference as a ? parameter"
+      },
+      {
+        "id": "S2",
+        "cwe": "CWE-328",
+        "kind": "weak-hashing",
+        "where": "modern-rating audit/QuoteReference.digest",
+        "what": "MD5 for the quote reference",
+        "fix": "SHA-256, same 12-char truncation",
+        "duplicate_of": null
+      },
+      {
+        "id": "S2b",
+        "cwe": "CWE-328",
+        "kind": "weak-hashing",
+        "where": "modern-rating service/RatingBatchRunner.digest",
+        "what": "same MD5 helper copied into the batch run reference",
+        "fix": "share the SHA-256 helper",
+        "duplicate_of": "S2"
+      },
+      {
+        "id": "S3",
+        "cwe": "CWE-798",
+        "kind": "hardcoded-credential",
+        "where": "modern-rating controller/AdminController.ADMIN_PASSWORD",
+        "what": "placeholder support key compiled into the class",
+        "fix": "read from configuration/env, refuse when unset"
+      },
+      {
+        "id": "S4",
+        "cwe": "CWE-22",
+        "kind": "path-traversal",
+        "where": "modern-rating controller/AdminController.table",
+        "what": "path variable resolved under tablesDir without normalising or confining",
+        "fix": "normalise and require the result to stay inside tablesDir, or allow-list the five table names"
+      },
+      {
+        "id": "S5",
+        "cwe": "CWE-502",
+        "kind": "unsafe-deserialization",
+        "where": "modern-rating controller/AdminController.restore",
+        "what": "ObjectInputStream.readObject on a request body",
+        "fix": "JSON body, or an ObjectInputFilter allowing only SavedQuote and its field types"
+      },
+      {
+        "id": "S6",
+        "cwe": "CWE-1395",
+        "kind": "vulnerable-dependency",
+        "where": "modern-rating/pom.xml commons-collections 3.2.1",
+        "what": "CVE-2015-7501 / CVE-2015-6420 gadget chain release",
+        "fix": "commons-collections4 4.4 LRUMap, or drop the dependency"
+      }
+    ],
+    "expect": {
+      "distinct": 6,
+      "locations": 7,
+      "duplicate_pairs": [
+        [
+          "S2",
+          "S2b"
+        ]
+      ]
+    }
+  }
 }
