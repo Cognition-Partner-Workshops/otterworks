@@ -52,20 +52,18 @@ public class RatingService {
             return Quote.refused(p.id(), "REJ", "TR");
         }
         BigDecimal factor = territory.get().factor();
-        Optional<RatingTables.Override> override = tables.override(p.line(), p.classCode(), p.effective());
+        Optional<RatingTables.Override> override = tables.override(p.line(), p.classCode(), p.territory(), p.effective());
         if (override.isPresent()) {
             factor = override.get().factor();
             source = "O";
         }
 
-        BigDecimal base = p.exposure().multiply(classRate.get().rate()).multiply(factor);
-        BigDecimal premium = base
-                .multiply(experienceMod(p))
-                .multiply(deductibleCredit(p))
-                .multiply(BigDecimal.ONE.add(scheduleMod(p)))
-                .multiply(multiPolicyCredit(p))
-                .multiply(windSurcharge(p));
-        premium = money(premium);
+        BigDecimal base = applyFactor(applyFactor(p.exposure(), classRate.get().rate()), factor);
+        BigDecimal premium = applyFactor(base, experienceMod(p));
+        premium = applyFactor(premium, deductibleCredit(p));
+        premium = applyFactor(premium, BigDecimal.ONE.add(scheduleMod(p)));
+        premium = applyFactor(premium, multiPolicyCredit(p));
+        premium = applyFactor(premium, windSurcharge(p));
 
         boolean minimumApplied = false;
         Optional<RatingTables.Minimum> minimum = tables.minimum(p.line(), p.state());
@@ -75,7 +73,7 @@ public class RatingService {
         }
 
         BigDecimal endorsements = endorsements(p, premium);
-        return new Quote(p.id(), "OK", "", money(base), premium, minimumApplied, endorsements,
+        return new Quote(p.id(), "OK", "", base, premium, minimumApplied, endorsements,
                 money(policyFee), premium.add(endorsements).add(policyFee), source);
     }
 
@@ -125,18 +123,22 @@ public class RatingService {
     BigDecimal endorsements(Policy p, BigDecimal premium) {
         BigDecimal total = BigDecimal.ZERO;
         if (p.line().equals("GL")) {
-            total = total.add(BigDecimal.valueOf(50L * Math.min(p.additionalInsureds(), 3)));
+            total = total.add(BigDecimal.valueOf(50L * Math.clamp(p.additionalInsureds(), 0, 3)));
         }
         if (p.equipment() && p.line().equals("PR")) {
-            total = total.add(dollars(premium.multiply(new BigDecimal("0.03")).max(new BigDecimal("75"))));
+            total = total.add(dollars(applyFactor(premium, new BigDecimal("0.03")).max(new BigDecimal("75"))));
         }
         if (p.waiver() && (p.line().equals("GL") || p.line().equals("CA"))) {
-            total = total.add(dollars(premium.multiply(new BigDecimal("0.02"))));
+            total = total.add(dollars(applyFactor(premium, new BigDecimal("0.02"))));
         }
         if (p.hiredNonOwned() && p.line().equals("GL")) {
             total = total.add(new BigDecimal("120"));
         }
-        return money(total.min(premium.multiply(ENDORSEMENT_CAP)));
+        return total.min(applyFactor(premium, ENDORSEMENT_CAP)).setScale(2);
+    }
+
+    private static BigDecimal applyFactor(BigDecimal amount, BigDecimal factor) {
+        return amount.multiply(factor).setScale(2, RoundingMode.HALF_UP);
     }
 
     private static BigDecimal money(BigDecimal amount) {

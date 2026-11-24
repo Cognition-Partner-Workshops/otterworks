@@ -19,7 +19,7 @@ POS, NEG = "{ABCDEFGHI", "}JKLMNOPQR"
 
 # Fields every channel produces. Endorsements exist only on the quote paths,
 # so the batch is compared on rating fields and the quote paths on all of them.
-RATING_FIELDS = ["status", "reason", "base", "modified", "minimum", "source"]
+RATING_FIELDS = ["status", "reason", "base", "modified", "minimum", "source", "total"]
 QUOTE_FIELDS = RATING_FIELDS + ["endorsements"]
 
 
@@ -43,7 +43,7 @@ def read_cobol(path: Path) -> dict:
             "modified": overpunch(r[40:51]),
             "minimum": r[51],
             "source": r[28].strip(),
-            "total": overpunch(r[56:67]),
+            "total": overpunch(r[57:68]),
         }
     return out
 
