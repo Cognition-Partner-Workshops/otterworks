@@ -1,0 +1,54 @@
+# Local rating estate: the nightly batch, the online quote screen and the
+# modern rating service, all reading the same flat-file tables.
+#   make insrules-up | insrules-parity | insrules-down | insrules-reset
+# SonarQube runs under the "sonar" profile: make insrules-sonar-up
+services:
+  rating-batch:
+    build: ./legacy-rating/cobol
+    profiles: ["batch"]
+    environment:
+      RATEPREM_TABLES: /estate/tables
+    volumes:
+      - ./legacy-rating/tables:/estate/tables:ro
+      - ./legacy-rating/fixtures:/estate/fixtures:ro
+      - ./legacy-rating/build:/estate/build
+
+  quote-screen:
+    build: ./legacy-rating/smalltalk
+    environment:
+      RATEPREM_TABLES: /estate/tables
+    volumes:
+      - ./legacy-rating/tables:/estate/tables:ro
+      - ./legacy-rating/fixtures:/estate/fixtures:ro
+      - ./legacy-rating/build:/estate/build
+    ports:
+      - "127.0.0.1:${INSRULES_SCREEN_PORT:-8091}:8091"
+
+  modern-rating:
+    build: ./modern-rating
+    environment:
+      RATING_TABLES_DIR: /estate/tables
+    volumes:
+      - ./legacy-rating/tables:/estate/tables:ro
+      - ./legacy-rating/fixtures:/estate/fixtures:ro
+      - ./legacy-rating/build:/estate/build
+    ports:
+      - "127.0.0.1:${INSRULES_MODERN_PORT:-8092}:8092"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8092/actuator/health | grep -q UP"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  sonarqube:
+    image: sonarqube:10.7-community
+    profiles: ["sonar"]
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    ports:
+      - "127.0.0.1:${INSRULES_SONAR_PORT:-9000}:9000"
+    volumes:
+      - insrules-sonar-data:/opt/sonarqube/data
+
+volumes:
+  insrules-sonar-data:

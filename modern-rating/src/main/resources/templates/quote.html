@@ -1,0 +1,45 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Policy quote</title>
+  <style>
+    body { font-family: monospace; margin: 2em; }
+    label { display: block; margin: .3em 0; }
+    table { border-collapse: collapse; margin-top: 1em; }
+    td { border: 1px solid #999; padding: .3em .8em; }
+    .error { color: #b00; }
+  </style>
+</head>
+<body>
+<h1>Policy quote</h1>
+<form method="post" th:action="@{/}" th:object="${form}">
+  <label>Line <input th:field="*{line}"></label>
+  <label>State <input th:field="*{state}"></label>
+  <label>Class <input th:field="*{classCode}"></label>
+  <label>Territory <input th:field="*{territory}"></label>
+  <label>Effective <input type="date" th:field="*{effective}"></label>
+  <label>Exposure <input th:field="*{exposure}"></label>
+  <label>Years in business <input th:field="*{years}"></label>
+  <label>Claims (3 years) <input th:field="*{claims}"></label>
+  <label>Deductible <input th:field="*{deductible}"></label>
+  <label>Schedule mod (hundredths) <input th:field="*{schedule}"></label>
+  <label>Additional insureds <input th:field="*{addl}"></label>
+  <label><input type="checkbox" th:field="*{multi}"> Multi-policy</label>
+  <label><input type="checkbox" th:field="*{equipment}"> Equipment breakdown</label>
+  <label><input type="checkbox" th:field="*{waiver}"> Waiver of subrogation</label>
+  <label><input type="checkbox" th:field="*{hnoa}"> Hired and non-owned auto</label>
+  <p class="error" th:if="${#fields.hasErrors('*')}" th:text="${#strings.listJoin(#fields.errors('*'), '; ')}"></p>
+  <button type="submit">Quote</button>
+</form>
+<table id="quote" th:if="${quote}">
+  <tr><td>Status</td><td th:text="${quote.status() + ' ' + quote.reason()}"></td></tr>
+  <tr><td>Factor source</td><td th:text="${quote.factorSource()}"></td></tr>
+  <tr><td>Base premium</td><td th:text="${'$' + quote.basePremium()}"></td></tr>
+  <tr><td>Minimum applied</td><td th:text="${quote.minimumApplied() ? 'yes' : 'no'}"></td></tr>
+  <tr><td>Modified premium</td><td th:text="${'$' + quote.modifiedPremium()}"></td></tr>
+  <tr><td>Endorsements</td><td th:text="${'$' + quote.endorsements()}"></td></tr>
+  <tr><td>Policy fee</td><td th:text="${'$' + quote.fee()}"></td></tr>
+  <tr><td>Total</td><td th:text="${'$' + quote.total()}"></td></tr>
+</table>
+</body>
+</html>
