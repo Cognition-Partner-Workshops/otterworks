@@ -5,7 +5,8 @@ WORKDIR /opt/pharo
 RUN curl -fsSL https://get.pharo.org/64/120+vm | bash
 ENV PHARO=/opt/pharo/pharo PHARO_IMAGE=/opt/pharo/Pharo.image PHARO_WORK=/opt/insrating
 WORKDIR /estate/smalltalk
-COPY . .
+COPY run.sh load.st ./
+COPY src/ ./src/
 RUN ./run.sh build
 EXPOSE 8091
 ENTRYPOINT ["./run.sh"]
