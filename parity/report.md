@@ -171,7 +171,7 @@ make insrules-reset     # resets the estate, runs COBOL, Pharo and Java on all 2
 make insrules-parity    # reruns all three raters (insrules-run), then compares; writes legacy-rating/build/parity.json
 ```
 
-The R84 totals table, from the build outputs those targets leave in `legacy-rating/build/` (it prints `endorsed 73 cobol~java 73 cobol~pharo 77 pharo~java 5` and `True`):
+The R84 totals table, from the build outputs those targets leave in `legacy-rating/build/` (it checks every stack total against that stack's own premium, endorsements and fee, then prints `endorsed 73 cobol~java 73 cobol~pharo 77 pharo~java 5`; every check prints `True`):
 
 ```
 python3 - <<'PY'
