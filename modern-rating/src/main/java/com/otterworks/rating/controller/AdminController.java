@@ -56,13 +56,17 @@ public class AdminController {
         try {
             Path base = Path.of(properties.tablesDir()).toRealPath();
             Path file = base.resolve(name).toRealPath();
-            if (!file.startsWith(base)) {
+            if (!withinTablesDir(base, file)) {
                 return ResponseEntity.badRequest().build();
             }
             return ResponseEntity.ok(Files.readString(file));
         } catch (NoSuchFileException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    static boolean withinTablesDir(Path base, Path file) {
+        return file.startsWith(base);
     }
 
     /** Looks a saved quote up by the reference an underwriter reads back. */
