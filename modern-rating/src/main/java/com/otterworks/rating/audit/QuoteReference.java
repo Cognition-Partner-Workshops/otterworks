@@ -17,7 +17,7 @@ public final class QuoteReference {
 
     static String digest(String line) {
         try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] sum = md.digest(line.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(sum).substring(0, 12).toUpperCase(java.util.Locale.ROOT);
         } catch (NoSuchAlgorithmException e) {
