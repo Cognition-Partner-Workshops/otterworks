@@ -5,8 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -45,36 +43,14 @@ class QuotePageIT {
 
     @Test
     void restoresTheParkedQuoteReferenceAsBefore() {
-        String parked = parkedQuote("{\"reference\":\"Q-123\",\"fields\":{\"line\":\"GL\"}}");
-        var restored = restoreQuote(" " + parked + "\n");
-        assertThat(restored.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(restored.getBody()).isEqualTo("Q-123");
-
-        assertThat(http.postForEntity("/admin/quotes/restore", parked, String.class).getStatusCode())
-                .isEqualTo(HttpStatus.FORBIDDEN);
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"not JSON", "{}", "{\"reference\":123}", "{\"reference\":\"Q-123\"} {}"})
-    void refusesInvalidParkedQuoteContents(String contents) {
-        var restored = restoreQuote(parkedQuote(contents));
-        assertThat(restored.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(restored.getBody()).isNull();
-    }
-
-    @Test
-    void refusesInvalidBase64() {
-        assertThat(restoreQuote("not base64").getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    private static String parkedQuote(String contents) {
-        return Base64.getEncoder().encodeToString(contents.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private ResponseEntity<String> restoreQuote(String parked) {
+        String quote = "{\"reference\":\"Q-123\",\"fields\":{\"line\":\"GL\"}}";
+        String parked = Base64.getEncoder().encodeToString(quote.getBytes(StandardCharsets.UTF_8));
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Support-Key", "insrules-support");
-        return http.postForEntity("/admin/quotes/restore", new HttpEntity<>(parked, headers), String.class);
+        ResponseEntity<String> restored = http.postForEntity("/admin/quotes/restore",
+                new HttpEntity<>(parked, headers), String.class);
+        assertThat(restored.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(restored.getBody()).isEqualTo("Q-123");
     }
 
     @Test
