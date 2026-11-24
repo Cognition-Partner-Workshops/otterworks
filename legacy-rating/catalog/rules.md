@@ -93,6 +93,9 @@ Each row links to its [source citations](citations.md). Statuses are mutually ex
 | [R58](citations.md#r58) | CA class 7219 has base rate 1,450.0000 from 2026-01-01 where eligible. | P0000011: 1,450.0000. P0000011 produces $4,350.00 base / T in both stacks. | from-table |
 | [R59](citations.md#r59) | CA class 7911 has base rate 520.0000 from 2026-01-01. | P0000012: 520.0000. P0000012 produces $1,560.00 base / T in both stacks. | from-table |
 | [R60](citations.md#r60) | The table lists WC class 8810 at 0.2500 from 2026-01-01, but both stacks reject WC before it looks for a class rate. | P0000013: REJ/LN; no fixture reaches this class-rate row. | unproven |
+| [R105](citations.md#r105) | The table lists GL class 18501 at 1.1500 from 2027-01-01 with no end date. | No golden fixture reaches this row. The latest GL/18501 fixture is P0000093, effective 2026-12-19. | unproven |
+
+**R51 catalog/table contradiction:** R51 describes 1.1000 from 2026-01-01 without an end date. The revised table ends the 1.1000 row on 2026-12-31 and starts the 1.1500 row the next day; the rows are mutually exclusive. R51 and the table are left unchanged by the catalog refresh. P0000004 still proves 1.1000 for its 2026 effective date, not an open-ended rate.
 
 ## Eligibility rows
 

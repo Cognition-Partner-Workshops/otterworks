@@ -1,6 +1,6 @@
 # Golden rule citations
 
-Sources and line numbers are from `1b421600` and are relative to `legacy-rating/`. COBOL paths in the table are relative to `cobol/`. A dash means no applicable row/citation. “No step” cites the complete dispatch path, not an equivalent method.
+Source code citations are from `1b421600`; data-row citations use the current tables. Paths are relative to `legacy-rating/`, except COBOL paths in the table, which are relative to `cobol/`. A dash means no applicable row/citation. “No step” cites the complete dispatch path, not an equivalent method.
 
 - E = `smalltalk/src/InsRating/InsQuoteEngine.class.st`.
 - T = `smalltalk/src/InsRating/InsRatingTables.class.st`.
@@ -27,7 +27,7 @@ The source ID is the stable join to [rules.md](rules.md).
 | <a id="r15"></a>R15 | `RATEPREM.cbl:2300-LOOKUP-OVERRIDE L367-L382` | `InsQuoteEngine>>lookupOverride:into:` (E:107–117) | `tables/overrides.dat:3`; `tables/overrides.dat:4`; `tables/overrides.dat:5`; `tables/territory-factors.dat:6`; `tables/territory-factors.dat:7` |
 | <a id="r16"></a>R16 | `RATEPREM.cbl:2300-LOOKUP-OVERRIDE L368-L382` | `InsQuoteEngine>>lookupOverride:into:` (E:107–117) | `tables/overrides.dat:3`; `tables/overrides.dat:4`; `tables/overrides.dat:5` |
 | <a id="r17"></a>R17 | `RATEPREM.cbl:0130-OPEN-END-DATE L223-L229`; `RATEPREM.cbl:0100-LOAD-TABLES L109-L189` | `InsRatingTables>>row:from:inForceOn:` (T:46–53); `InsQuoteEngine>>lookupClassRate:into:` (E:80–87), `InsQuoteEngine>>lookupTerritory:into:` (E:90–104), `InsQuoteEngine>>lookupOverride:into:` (E:107–117) | `tables/class-factors.dat:6`; `tables/territory-factors.dat:7`; `tables/overrides.dat:4` |
-| <a id="r18"></a>R18 | `RATEPREM.cbl:3000-BASE-PREMIUM L384-L387` | `InsQuoteEngine>>basePremium:quote:` (E:120–124); `InsQuoteEngine>>lookupClassRate:into:` (E:80–87), `InsQuoteEngine>>lookupTerritory:into:` (E:90–104) | `tables/class-factors.dat:10`; `tables/territory-factors.dat:11` |
+| <a id="r18"></a>R18 | `RATEPREM.cbl:3000-BASE-PREMIUM L384-L387` | `InsQuoteEngine>>basePremium:quote:` (E:120–124); `InsQuoteEngine>>lookupClassRate:into:` (E:80–87), `InsQuoteEngine>>lookupTerritory:into:` (E:90–104) | `tables/class-factors.dat:11`; `tables/territory-factors.dat:11` |
 | <a id="r19"></a>R19 | `RATEPREM.cbl:3100-EXPERIENCE-MOD L389-L398` | `InsQuoteEngine>>experienceMod:premium:` (E:127–133); `InsQuoteScreen>>pageFor:quote:` (`InsQuoteScreen>>smalltalk/src/InsRating/InsQuoteScreen.class.st:83`) | — |
 | <a id="r20"></a>R20 | `RATEPREM.cbl:3100-EXPERIENCE-MOD L389-L398` | `InsQuoteEngine>>experienceMod:premium:` (E:127–133) | — |
 | <a id="r21"></a>R21 | `RATEPREM.cbl:3100-EXPERIENCE-MOD L389-L398` | `InsQuoteEngine>>experienceMod:premium:` (E:127–133) | — |
@@ -61,15 +61,16 @@ The source ID is the stable join to [rules.md](rules.md).
 | <a id="r49"></a>R49 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:5` |
 | <a id="r50"></a>R50 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:6` |
 | <a id="r51"></a>R51 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:7` |
-| <a id="r52"></a>R52 | `RATEPREM.cbl:1000-RATE-POLICY L243-L248`; `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>quote:` (E:28–39), `InsQuoteEngine>>checkEligibility:into:` (E:69–76), `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:8`; `tables/line-eligibility.dat:3` |
-| <a id="r53"></a>R53 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:9` |
-| <a id="r54"></a>R54 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:10` |
-| <a id="r55"></a>R55 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:11` |
-| <a id="r56"></a>R56 | `RATEPREM.cbl:1000-RATE-POLICY L243-L248`; `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>quote:` (E:28–39), `InsQuoteEngine>>checkEligibility:into:` (E:69–76), `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:12`; `tables/line-eligibility.dat:4` |
-| <a id="r57"></a>R57 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:13` |
-| <a id="r58"></a>R58 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:14`; `tables/line-eligibility.dat:5` |
-| <a id="r59"></a>R59 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:15` |
-| <a id="r60"></a>R60 | `RATEPREM.cbl:1000-RATE-POLICY L239-L248`; `RATEPREM.cbl:1100-VALIDATE-LINE L276-L281`; `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>quote:` (E:28–39), `InsQuoteEngine>>validateLine:into:` (E:59–61), `InsQuoteEngine>>lookupClassRate:into:` (E:80–87); `InsQuoteEngine>>validateLine:into:` (E:59–61); `InsQuoteEngine>>quote:` (E:28–39) | `tables/class-factors.dat:16` |
+| <a id="r52"></a>R52 | `RATEPREM.cbl:1000-RATE-POLICY L243-L248`; `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>quote:` (E:28–39), `InsQuoteEngine>>checkEligibility:into:` (E:69–76), `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:9`; `tables/line-eligibility.dat:3` |
+| <a id="r53"></a>R53 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:10` |
+| <a id="r54"></a>R54 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:11` |
+| <a id="r55"></a>R55 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:12` |
+| <a id="r56"></a>R56 | `RATEPREM.cbl:1000-RATE-POLICY L243-L248`; `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>quote:` (E:28–39), `InsQuoteEngine>>checkEligibility:into:` (E:69–76), `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:13`; `tables/line-eligibility.dat:4` |
+| <a id="r57"></a>R57 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:14` |
+| <a id="r58"></a>R58 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:15`; `tables/line-eligibility.dat:5` |
+| <a id="r59"></a>R59 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87) | `tables/class-factors.dat:16` |
+| <a id="r60"></a>R60 | `RATEPREM.cbl:1000-RATE-POLICY L239-L248`; `RATEPREM.cbl:1100-VALIDATE-LINE L276-L281`; `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>quote:` (E:28–39), `InsQuoteEngine>>validateLine:into:` (E:59–61), `InsQuoteEngine>>lookupClassRate:into:` (E:80–87); `InsQuoteEngine>>validateLine:into:` (E:59–61); `InsQuoteEngine>>quote:` (E:28–39) | `tables/class-factors.dat:17` |
+| <a id="r105"></a>R105 | `RATEPREM.cbl:2100-LOOKUP-CLASS L318-L335` | `InsQuoteEngine>>lookupClassRate:into:` (E:80–87); `InsRatingTables>>row:from:inForceOn:` (T:46–53) | `tables/class-factors.dat:8` |
 | <a id="r61"></a>R61 | `RATEPREM.cbl:2000-CHECK-ELIGIBILITY L291-L310`; `RATEPREM.cbl:2010-APPLY-ELIGIBILITY L312-L316` | `InsQuoteEngine>>checkEligibility:into:` (E:69–76) | `tables/line-eligibility.dat:3` |
 | <a id="r62"></a>R62 | `RATEPREM.cbl:2000-CHECK-ELIGIBILITY L291-L310`; `RATEPREM.cbl:2010-APPLY-ELIGIBILITY L312-L316` | `InsQuoteEngine>>checkEligibility:into:` (E:69–76) | `tables/line-eligibility.dat:4` |
 | <a id="r63"></a>R63 | `RATEPREM.cbl:2000-CHECK-ELIGIBILITY L291-L310`; `RATEPREM.cbl:2010-APPLY-ELIGIBILITY L312-L316` | `InsQuoteEngine>>checkEligibility:into:` (E:69–76) | `tables/line-eligibility.dat:5` |
@@ -83,7 +84,7 @@ The source ID is the stable join to [rules.md](rules.md).
 | <a id="r71"></a>R71 | `RATEPREM.cbl:2200-LOOKUP-TERRITORY L338-L350` | `InsQuoteEngine>>lookupTerritory:into:` (E:90–104) | `tables/territory-factors.dat:9` |
 | <a id="r72"></a>R72 | `RATEPREM.cbl:2200-LOOKUP-TERRITORY L338-L350` | `InsQuoteEngine>>lookupTerritory:into:` (E:90–104) | `tables/territory-factors.dat:10` |
 | <a id="r73"></a>R73 | `RATEPREM.cbl:2200-LOOKUP-TERRITORY L338-L350` | `InsQuoteEngine>>lookupTerritory:into:` (E:90–104) | `tables/territory-factors.dat:11` |
-| <a id="r74"></a>R74 | `RATEPREM.cbl:1000-RATE-POLICY L246-L251`; `RATEPREM.cbl:2200-LOOKUP-TERRITORY L338-L361` | `InsQuoteEngine>>lookupTerritory:into:` (E:90–104); `InsRatingTables>>row:from:inForceOn:` (T:46–53) | `tables/territory-factors.dat:12`; `tables/class-factors.dat:9-12` |
+| <a id="r74"></a>R74 | `RATEPREM.cbl:1000-RATE-POLICY L246-L251`; `RATEPREM.cbl:2200-LOOKUP-TERRITORY L338-L361` | `InsQuoteEngine>>lookupTerritory:into:` (E:90–104); `InsRatingTables>>row:from:inForceOn:` (T:46–53) | `tables/territory-factors.dat:12`; `tables/class-factors.dat:10-13` |
 | <a id="r75"></a>R75 | `RATEPREM.cbl:2200-LOOKUP-TERRITORY L338-L361` | `InsQuoteEngine>>lookupTerritory:into:` (E:90–104) | `tables/territory-factors.dat:13` |
 | <a id="r76"></a>R76 | `RATEPREM.cbl:2200-LOOKUP-TERRITORY L338-L350` | `InsQuoteEngine>>lookupTerritory:into:` (E:90–104) | `tables/territory-factors.dat:14` |
 | <a id="r77"></a>R77 | `RATEPREM.cbl:2200-LOOKUP-TERRITORY L338-L350` | `InsQuoteEngine>>lookupTerritory:into:` (E:90–104) | `tables/territory-factors.dat:15` |
