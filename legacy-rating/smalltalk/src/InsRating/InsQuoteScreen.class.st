@@ -67,7 +67,7 @@ InsQuoteScreen >> pageFor: fields quote: aQuote [
 	| input |
 	input := [ :label :key :default |
 		'<label>' , label , ' <input name="' , key , '" value="' ,
-			(fields at: key ifAbsent: [ default ]) asString asHTMLString , '"></label>' ].
+			((fields at: key ifAbsent: [ default ]) asString asHTMLString copyReplaceAll: '"' with: '&quot;') , '"></label>' ].
 	^ String streamContents: [ :s |
 		s nextPutAll: '<!doctype html><html><head><title>Policy quote</title>',
 			'<style>body{font-family:monospace;margin:2em}label{display:block;margin:.3em 0}',
