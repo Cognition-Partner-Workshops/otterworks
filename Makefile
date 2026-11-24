@@ -649,7 +649,8 @@ insrules-run: ## Rate all fixture policies through COBOL, Pharo and Java
 
 insrules-parity: insrules-run ## Compare the three outputs policy by policy (build/parity.json)
 	python3 legacy-rating/parity/driver.py --cobol legacy-rating/build/cobol.dat \
-		--pharo legacy-rating/build/pharo.txt --java legacy-rating/build/java.txt --out legacy-rating/build/parity.json
+		--pharo legacy-rating/build/pharo.txt --java legacy-rating/build/java.txt \
+		--out legacy-rating/build/parity.json $(INSRULES_PARITY_FLAGS)
 
 insrules-reset: ## Reset the rating estate and rerun all three stacks (prints elapsed seconds)
 	legacy-rating/reset.sh

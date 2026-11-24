@@ -7,7 +7,8 @@ canonical fields, and compares a keyed SHA-256 per policy and per field.
 
   driver.py --cobol rated.dat --pharo quoted.txt --java modern.txt --out build/parity.json
 
-Exit 0 when every policy matches on every compared field, 1 otherwise.
+Exit 0 when every policy matches on every compared field (or mismatches are
+allowed), 1 for mismatches otherwise.
 """
 import argparse
 import hashlib
@@ -99,6 +100,7 @@ def main() -> int:
     ap.add_argument("--pharo", type=Path, required=True)
     ap.add_argument("--java", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--allow-mismatches", action="store_true", help="Report mismatches without failing")
     args = ap.parse_args()
 
     cobol, pharo, java = read_cobol(args.cobol), read_canonical(args.pharo), read_canonical(args.java)
@@ -111,7 +113,7 @@ def main() -> int:
     args.out.write_text(json.dumps({"pairs": pairs}, indent=2) + "\n")
     for p in pairs:
         print(f"PARITY {p['pair']} policies={p['policies']} matched={p['matched']} mismatched={p['mismatched']}")
-    return 0 if all(p["mismatched"] == 0 for p in pairs) else 1
+    return 0 if args.allow_mismatches or all(p["mismatched"] == 0 for p in pairs) else 1
 
 
 if __name__ == "__main__":

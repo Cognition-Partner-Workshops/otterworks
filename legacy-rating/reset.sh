@@ -14,5 +14,5 @@ mkdir -p legacy-rating/build
 python3 legacy-rating/fixtures/make_policies.py --check
 $COMPOSE --profile batch build
 $COMPOSE up -d --wait quote-screen modern-rating
-make -s insrules-parity || true
+make -s insrules-parity INSRULES_PARITY_FLAGS=--allow-mismatches
 echo "INSRULES RESET seconds=$(( $(date +%s) - start ))"
