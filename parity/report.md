@@ -164,7 +164,7 @@ No new COBOL~Pharo disagreement was found: the COBOL~Pharo pair is 195/5 before 
 
 ## Reproduce
 
-Both targets exit nonzero while any pair has a mismatch, so they currently fail on the 5 accepted R82 differences; the counts are in the `PARITY` lines and `parity.json`.
+`make insrules-parity` exits nonzero while any pair has a mismatch, so it currently fails on the 5 accepted R82 differences. `make insrules-reset` runs parity through `legacy-rating/reset.sh` and ignores that failure, so its exit status does not show parity. Read the counts from the `PARITY` lines or `parity.json`.
 
 ```
 make insrules-reset     # resets the estate, runs COBOL, Pharo and Java on all 200 fixtures, then parity
