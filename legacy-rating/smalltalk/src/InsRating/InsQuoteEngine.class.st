@@ -176,7 +176,7 @@ InsQuoteEngine >> endorsements: aPolicy premium: cents [
 	| total |
 	total := 0.
 	aPolicy line = 'GL' ifTrue: [
-		total := total + ((aPolicy additionalInsureds min: 3) * 5000) ].
+		total := total + (((aPolicy additionalInsureds max: 0) min: 3) * 5000) ].
 	(aPolicy equipment and: [ aPolicy line = 'PR' ]) ifTrue: [
 		total := total + (self wholeDollars: ((self round: cents * 3 scale: 100) max: 7500)) ].
 	(aPolicy waiver and: [ #('GL' 'CA') includes: aPolicy line ]) ifTrue: [
@@ -197,10 +197,11 @@ InsQuoteEngine >> policyFee [ ^ 3500 ]
 { #category : 'arithmetic' }
 InsQuoteEngine >> scaled: aString places: places [
 	"'1.025' with 3 places -> 1025"
-	| parts whole frac |
-	parts := aString splitOn: $..
-	whole := parts first asInteger.
+	| sign parts whole frac |
+	sign := (aString beginsWith: '-') ifTrue: [ -1 ] ifFalse: [ 1 ].
+	parts := (aString copyWithout: $-) splitOn: $..
+	whole := parts first asInteger ifNil: [ 0 ].
 	frac := parts size > 1 ifTrue: [ parts second ] ifFalse: [ '' ].
 	frac := (frac , (String new: places withAll: $0)) first: places.
-	^ whole * (10 raisedTo: places) + frac asInteger
+	^ sign * (whole * (10 raisedTo: places) + frac asInteger)
 ]
