@@ -1,6 +1,8 @@
 # Local rating estate: the nightly batch, the online quote screen and the
 # modern rating service, all reading the same flat-file tables.
 #   make insrules-up | insrules-parity | insrules-down | insrules-reset
+# Direct rating-batch runs require a writable legacy-rating/build directory first.
+# Set INSRULES_BATCH_UID and INSRULES_BATCH_GID to its owner's IDs (0:0 on rootless Docker).
 # SonarQube runs under the "sonar" profile: make insrules-sonar-up
 services:
   rating-batch:
@@ -12,7 +14,11 @@ services:
     volumes:
       - ./legacy-rating/tables:/estate/tables:ro
       - ./legacy-rating/fixtures:/estate/fixtures:ro
-      - ./legacy-rating/build:/estate/build
+      - type: bind
+        source: ./legacy-rating/build
+        target: /estate/build
+        bind:
+          create_host_path: false
 
   quote-screen:
     build: ./legacy-rating/smalltalk
