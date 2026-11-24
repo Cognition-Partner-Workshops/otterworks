@@ -44,7 +44,7 @@ public class AdminController {
                 ? key.getBytes(StandardCharsets.UTF_8) : new byte[0];
     }
 
-    private boolean allowed(String supplied) {
+    boolean allowed(String supplied) {
         return supportKey.length > 0 && supplied != null
                 && MessageDigest.isEqual(supportKey, supplied.getBytes(StandardCharsets.UTF_8));
     }

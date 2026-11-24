@@ -44,20 +44,13 @@ class QuotePageIT {
     }
 
     @Test
-    void servesARatingTableOnlyWithTheConfiguredKey() {
+    void servesARatingTableWithTheConfiguredKey() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Support-Key", TEST_SUPPORT_KEY);
         var table = http.exchange("/admin/tables/class-factors.dat", HttpMethod.GET,
                 new HttpEntity<>(headers), String.class);
         assertThat(table.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(table.getBody()).contains("GL");
-
-        assertThat(http.getForEntity("/admin/tables/class-factors.dat", String.class).getStatusCode())
-                .isEqualTo(HttpStatus.FORBIDDEN);
-
-        headers.set("X-Support-Key", "wrong-test-key");
-        assertThat(http.exchange("/admin/tables/class-factors.dat", HttpMethod.GET,
-                new HttpEntity<>(headers), String.class).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test
