@@ -28,6 +28,38 @@ def test_missing_export_raises(archive):
         archive.read_export("absent.md")
 
 
+@pytest.mark.parametrize(
+    "name",
+    [
+        "../outside.txt",
+        "reports/../../outside.txt",
+        "../../../../etc/passwd",
+        "/etc/passwd",
+        "report.md\x00.txt",
+        "",
+        ".",
+        "./",
+    ],
+)
+def test_rejects_names_outside_archive(archive, tmp_path, name):
+    (tmp_path.parent / "outside.txt").write_text("secret\n", encoding="utf-8")
+    with pytest.raises(FileNotFoundError):
+        archive.read_export(name)
+
+
+def test_rejects_symlink_pointing_outside_archive(archive, tmp_path):
+    target = tmp_path.parent / "outside.txt"
+    target.write_text("secret\n", encoding="utf-8")
+    (tmp_path / "link.md").symlink_to(target)
+    with pytest.raises(FileNotFoundError):
+        archive.read_export("link.md")
+
+
+def test_allows_dot_segments_that_stay_inside(archive):
+    assert archive.read_export("reports/../report.md") == "# Report\n"
+    assert archive.read_export("./report.md") == "# Report\n"
+
+
 @pytest.mark.asyncio
 async def test_export_endpoint_serves_archived_file(client, monkeypatch, tmp_path):
     (tmp_path / "report.md").write_text("# Report\n", encoding="utf-8")
@@ -46,6 +78,21 @@ async def test_export_endpoint_404s_for_unknown_name(client, monkeypatch, tmp_pa
     resp = await client.get("/api/v1/documents/exports", params={"name": "absent.md"})
 
     assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "name", ["../../etc/passwd", "/etc/passwd", "..%2f..%2fetc%2fpasswd", "../outside.txt"]
+)
+async def test_export_endpoint_404s_for_traversal(client, monkeypatch, tmp_path, name):
+    (tmp_path.parent / "outside.txt").write_text("secret\n", encoding="utf-8")
+    monkeypatch.setenv("EXPORT_ARCHIVE_DIR", str(tmp_path))
+
+    resp = await client.get(f"/api/v1/documents/exports?name={name}")
+
+    assert resp.status_code == 404
+    assert "secret" not in resp.text
+    assert "root:" not in resp.text
 
 
 @pytest.mark.asyncio
