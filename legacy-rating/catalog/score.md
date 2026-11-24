@@ -4,11 +4,11 @@ Baseline `1b421600`; run `INSR_20261124`.
 
 | Metric | Count | Definition |
 | --- | ---: | --- |
-| Found | 104 | Distinct rule entries in [rules.md](rules.md). |
+| Found | 105 | Distinct rule entries in [rules.md](rules.md). |
 | Proven | 24 | Executed evidence in both legacy stacks distinguishes the condition. |
 | From-table | 49 | Executed, distinguishing table-backed rule. Kept separate from Proven. |
 | Amber | 11 | Unresolved legacy behavior: minimum timing, quote-only charges or the latent wind step. |
-| Unproven | 20 | Source-backed but not distinguished by the golden outputs. |
+| Unproven | 21 | Source- or table-backed but not distinguished by the golden outputs. |
 | Missed | 0 | No unmatched data rows or known omitted rating conditions after source and table cross-check; this is not a claim of complete fixture coverage. |
 
 The four status counts sum to Found. Amber is a rule count, not a fixture mismatch count.
@@ -17,15 +17,19 @@ The four status counts sum to Found. Amber is a rule count, not a fixture mismat
 
 | File | Data rows | Dedicated rules | Row coverage limits |
 | --- | ---: | --- | --- |
-| `class-factors.dat` | 14 | R47–R60 | GL/91111 and PR/0567 are blocked by eligibility (P0000005/P0000009); WC/8810 is blocked by line validation (P0000013). |
+| `class-factors.dat` | 15 | R47–R60, R105 | 11 rows have distinguishing evidence. GL/91111 and PR/0567 are blocked by eligibility (P0000005/P0000009); WC/8810 is blocked by line validation (P0000013); the 2027 GL/18501 row has no in-force fixture. |
 | `line-eligibility.dat` | 4 | R61–R64 | CA/7911 selects a Y row by its input key (P0000042); output alone cannot distinguish the explicit Y from no row. |
 | `territory-factors.dat` | 13 | R65–R77 | PR/060 only ran as expired and fell back (P0000023); its in-force window ends before any current PR class rate starts. There is no PR/WND row, not an unused row. |
 | `minimum-premium.dat` | 6 | R78–R83 | WC minimum is blocked by line validation (P0000013). |
 | `overrides.dat` | 3 | R84–R86 | All three replacement rows are distinguished by output (P0000031/P0000035/P0000037). |
 
-All 40 rows were present across the extracts. Five rows are unreachable with the current tables/gates; 34 rows have distinguishing execution evidence, and the explicit allowance row is selected by source and input key but not observably different from no match.
+All 41 current data rows are accounted for. Of these, 34 have distinguishing execution evidence, five are unreachable with the current tables/gates, one explicit allowance row is selected but not observably different from no match, and one (R105) is reachable by date but not exercised by the golden fixtures. R51's existing `from-table` count reflects the demonstrated 2026 rate only; its date contradiction is recorded in [rules.md](rules.md).
 
-## Golden run
+## PR #3396 batch refresh
+
+`make insrules-reset` ran all three batches on the 200 golden policies at both base `aad408aa7` and head `c74073af3`. Each stack's outputs were byte-for-byte unchanged. The 2027 GL/18501 row remains unproven; the shifted citations do not change the witnesses, coverage limits or statuses of R18, R52–R60 or R74. See the [parity report](../parity/report.md) for the executed counts.
+
+## Golden catalog baseline run
 
 `make insrules-reset` rebuilt and ran the estate in 87 seconds. The script invokes the Java baseline as well; this catalog scores only legacy rules.
 
