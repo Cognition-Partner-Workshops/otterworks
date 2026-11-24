@@ -12,10 +12,15 @@ build = estate / 'build'
 rating_fields = ('status', 'reason', 'base', 'modified', 'minimum', 'source', 'total')
 quote_fields = (*rating_fields, 'endorsements')
 
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
 def zoned(raw):
     zone_byte = raw[-1].encode('cp037')[0]
     zone, final = divmod(zone_byte, 16)
-    assert zone in (12, 13, 15) and final < 10 and raw[:-1].isdigit(), raw
+    require(zone in (12, 13, 15) and final < 10 and raw[:-1].isdigit(),
+            f'Invalid zoned decimal: {raw!r}')
     return (-1 if zone == 13 else 1) * (int(raw[:-1]) * 10 + final)
 
 def cobol(raw):
@@ -28,7 +33,7 @@ def cobol(raw):
     for name, width, decode in fields:
         result[name] = decode(raw[index:index + width])
         index += width
-    assert index == 68
+    require(index == 68, f'Unexpected RATEOUT field boundary: {index}')
     return key, result
 
 def quote(raw):
@@ -40,7 +45,7 @@ def quote(raw):
 def load(path, parse):
     lines = path.read_text().splitlines()
     rows = dict(map(parse, lines))
-    assert len(rows) == len(lines) == 200, path
+    require(len(rows) == len(lines) == 200, f'{path}: expected 200 unique rows')
     return rows
 
 def table(name):
@@ -118,14 +123,15 @@ def rate(raw):
     return [c, p, j], (early - late, endorsements(late) - endorsements(early))
 
 classes, territories, overrides = [table(t) for t in ('class-factors', 'territory-factors', 'overrides')]
-assert not any(r[:2] == ['PR', 'WND'] for r in territories)
+require(not any(r[:2] == ['PR', 'WND'] for r in territories),
+        'Unexpected PR/WND row in territory-factors.dat')
 minimums = {(line, state): scaled(p, 100) for line, state, p in table('minimum-premium')}
 eligibility = {(line, klass, state): (eligible, reason)
                for line, klass, state, eligible, reason in table('line-eligibility')}
 fixtures = load(estate / 'fixtures' / 'policies.dat', lambda raw: (raw[:8], raw))
 files = [build / n for n in ('cobol.dat', 'pharo.txt', 'java.txt')]
 rows = [load(file, parser) for file, parser in zip(files, [cobol, quote, quote])]
-assert all(r.keys() == fixtures.keys() for r in rows)
+require(all(r.keys() == fixtures.keys() for r in rows), 'Output policy IDs differ from fixtures')
 actual_parity = json.loads((build / 'parity.json').read_text())['pairs']
 pairs = [('cobol~java', 0, 2), ('pharo~java', 1, 2), ('cobol~pharo', 0, 1)]
 groups = {name: collections.defaultdict(list) for name, *_ in pairs}
@@ -135,17 +141,20 @@ fees_by_status = collections.defaultdict(set)
 for digit in range(10):
     for zone, sign in ((12, 1), (13, -1), (15, 1)):
         last = bytes((zone * 16 + digit,)).decode('cp037')
-        assert driver.overpunch('123' + last) == zoned('123' + last) == sign * (1230 + digit)
+        require(driver.overpunch('123' + last) == zoned('123' + last) == sign * (1230 + digit),
+                f'Zoned sign/digit mismatch: zone {zone}, digit {digit}')
 for index, file in enumerate(files):
     decoder = driver.read_cobol if index == 0 else driver.read_canonical
     parsed = decoder(file)
-    assert parsed.keys() == fixtures.keys()
+    require(parsed.keys() == fixtures.keys(), f'{file}: driver policy IDs differ from fixtures')
     for policy, fields in parsed.items():
-        assert all(rows[index][policy][k] == v for k, v in fields.items()), (file, policy)
+        require(all(rows[index][policy][k] == v for k, v in fields.items()),
+                f'{file}: driver decoding differs for {policy}')
 for policy, raw in fixtures.items():
     expected, (early_minus_late, charge_repricing) = rate(raw)
     for stack, result, rated in zip(('COBOL', 'Pharo', 'Java'), rows, expected):
-        assert result[policy] == rated, (stack, policy, result[policy], rated)
+        require(result[policy] == rated,
+                f'{stack} {policy}: got {result[policy]}, expected {rated}')
         fees_by_status[rated['status']].add(rated['fee'])
     c, p, j = expected
     if early_minus_late:
@@ -158,23 +167,27 @@ for policy, raw in fixtures.items():
         r100 = right['endorsements'] if a == 0 else 0
         timing = 0 if b == 2 and a == 0 else early_minus_late if a == 0 else -early_minus_late + charge_repricing
         causes = tuple(rule for rule, gap in [('R94', timing), ('R100', r100)] if gap)
-        assert (diffs - r94) <= ({'total'} if r100 else set()), (name, policy, diffs)
+        require((diffs - r94) <= ({'total'} if r100 else set()),
+                f'{name} {policy}: unexplained field differences in {diffs}')
         residual = right['total'] - left['total'] - r100 - timing
-        assert residual == 0, (name, policy, residual)
+        require(residual == 0, f'{name} {policy}: unexplained total gap of {residual} cents')
         if diffs:
-            assert causes
+            require(causes, f'{name} {policy}: mismatch without a recorded cause')
             groups[name][causes].append(policy)
             left_name, right_name = name.split('~')
             field_diffs[name].append({
                 'policy': policy,
                 'fields': {k: {left_name: left[k], right_name: right[k]} for k in diffs},
             })
-assert [pair['pair'] for pair in actual_parity] == [name for name, *_ in pairs]
+require([pair['pair'] for pair in actual_parity] == [name for name, *_ in pairs],
+        'Unexpected comparison pairs or order in parity.json')
 for pair in actual_parity:
     name = pair['pair']
     grouped = groups[name]
-    assert pair['mismatches'] == sorted(field_diffs[name], key=lambda row: row['policy']), name
-    assert sum(map(len, grouped.values())) == pair['mismatched'] == 200 - pair['matched'], name
+    require(pair['mismatches'] == sorted(field_diffs[name], key=lambda row: row['policy']),
+            f'{name}: mismatch records differ from parity.json')
+    require(sum(map(len, grouped.values())) == pair['mismatched'] == 200 - pair['matched'],
+            f'{name}: mismatch counts differ from parity.json')
     print(name, 'matched', pair['matched'], 'mismatched', pair['mismatched'])
     for causes, policies in sorted(grouped.items()):
         print('+'.join(causes), len(policies), ', '.join(policies))
