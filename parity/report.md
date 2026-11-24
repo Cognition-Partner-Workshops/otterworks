@@ -178,6 +178,13 @@ python3 - <<'PY'
 import sys; sys.path.insert(0, "legacy-rating/parity"); from pathlib import Path; import driver
 b = Path("legacy-rating/build"); c = driver.read_cobol(b / "cobol.dat")
 p, j = driver.read_canonical(b / "pharo.txt"), driver.read_canonical(b / "java.txt")
+cfee = {r[0:8].strip(): int(r[52:57]) for r in (b / "cobol.dat").read_text().splitlines() if r[52:57].strip()}
+fee = lambda f: {l.split("|")[0]: int(l.split("|")[7]) for l in (b / f).read_text().splitlines() if l.strip()}
+pfee, jfee = fee("pharo.txt"), fee("java.txt")
+ok = [k for k in c if c[k]["status"] == "OK"]
+print("cobol total = modified + fee:", all(c[k]["total"] == c[k]["modified"] + cfee[k] for k in ok), len(ok))
+for name, x, xf in (("pharo", p, pfee), ("java", j, jfee)):
+    print(name, "total = modified + endorsements + fee:", all(x[k]["total"] == x[k]["modified"] + x[k]["endorsements"] + xf[k] for k in ok))
 endorsed = {k for k in j if j[k]["endorsements"] > 0}
 diff = lambda x, y: {k for k in x if x[k]["total"] != y[k]["total"]}
 print("endorsed", len(endorsed), "cobol~java", len(diff(c, j)), "cobol~pharo", len(diff(c, p)), "pharo~java", len(diff(p, j)))
