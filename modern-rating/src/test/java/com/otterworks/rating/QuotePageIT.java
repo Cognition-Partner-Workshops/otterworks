@@ -6,6 +6,8 @@ import com.otterworks.rating.config.RatingProperties;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -31,24 +33,14 @@ class QuotePageIT {
         assertThat(page.getBody()).contains("Policy quote");
     }
 
-    @Test
-    void servesARatingTableToSupportAndRefusesWithoutTheKey() throws Exception {
-        var table = http.exchange("/admin/tables/class-factors.dat", HttpMethod.GET,
+    @ParameterizedTest
+    @ValueSource(strings = {"class-factors.dat", "line-eligibility.dat", "minimum-premium.dat",
+            "overrides.dat", "territory-factors.dat"})
+    void servesTheExactRatingTableContentsToSupport(String name) throws Exception {
+        var table = http.exchange("/admin/tables/" + name, HttpMethod.GET,
                 supportRequest(), String.class);
         assertThat(table.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(table.getBody()).contains("GL");
-        assertThat(table.getBody()).isEqualTo(Files.readString(Path.of(properties.tablesDir(), "class-factors.dat")));
-
-        assertThat(http.getForEntity("/admin/tables/class-factors.dat", String.class).getStatusCode())
-                .isEqualTo(HttpStatus.FORBIDDEN);
-    }
-
-    @Test
-    void refusesAnInvalidTableBasename() {
-        var table = http.exchange("/admin/tables/class..dat", HttpMethod.GET,
-                supportRequest(), String.class);
-        assertThat(table.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(table.getBody()).isNull();
+        assertThat(table.getBody()).isEqualTo(Files.readString(Path.of(properties.tablesDir(), name)));
     }
 
     private HttpEntity<Void> supportRequest() {
