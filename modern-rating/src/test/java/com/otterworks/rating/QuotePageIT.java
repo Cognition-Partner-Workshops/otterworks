@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.otterworks.rating.model.Quote;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -62,6 +63,18 @@ class QuotePageIT {
         var response = http.postForEntity("/api/quotes", quoteJson(exposure), Quote.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody().total()).isEqualByComparingTo("819.35");
+    }
+
+    @ParameterizedTest
+    @CsvSource({".75, 3.11", "210., 871.50"})
+    void ratesExposureWithDigitsOnOnlyOneSideOfThePoint(String exposure, String basePremium) {
+        var page = http.postForEntity("/", quoteForm(exposure), String.class);
+        assertThat(page.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(page.getBody()).contains("<table id=\"quote\">", "$" + basePremium);
+
+        var response = http.postForEntity("/api/quotes", quoteJson("\"" + exposure + "\""), Quote.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().basePremium()).isEqualByComparingTo(basePremium);
     }
 
     private static LinkedMultiValueMap<String, String> quoteForm(String exposure) {

@@ -16,7 +16,7 @@ public record QuoteForm(
         @NotNull @Pattern(regexp = "[0-9]{4,5}") String classCode,
         @NotNull @Pattern(regexp = "[0-9]{3}") String territory,
         @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate effective,
-        @NotNull @Pattern(regexp = "[0-9]{1,7}(?:\\.[0-9]{1,2})?",
+        @NotNull @Pattern(regexp = "(?:[0-9]{1,7}(?:\\.[0-9]{0,2})?|\\.[0-9]{1,2})",
                 message = "Exposure must be a plain decimal with up to 7 whole digits and 2 decimal places")
         String exposure,
         @Min(0) @Max(99) int years,
