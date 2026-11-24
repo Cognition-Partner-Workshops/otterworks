@@ -84,6 +84,7 @@ jobs:
               - 'services/legacy-portal/**'
             modern-rating:
               - 'modern-rating/**'
+              - 'legacy-rating/tables/**'
             api-tests:
               - 'tests/api/**'
               - 'tests/compliance/**'
