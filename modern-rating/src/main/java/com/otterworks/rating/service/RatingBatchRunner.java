@@ -2,14 +2,10 @@ package com.otterworks.rating.service;
 
 import com.otterworks.rating.model.PolicyRecordReader;
 import com.otterworks.rating.model.Quote;
-import java.nio.charset.StandardCharsets;
+import com.otterworks.rating.util.Sha256;
 import java.nio.file.Files;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.HexFormat;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -50,19 +46,8 @@ public class RatingBatchRunner implements ApplicationRunner {
         Files.write(output, quotes.stream().map(Quote::asLine).toList());
         Map<String, Long> counts = quotes.stream()
                 .collect(Collectors.groupingBy(Quote::status, Collectors.counting()));
-        log.info("MODERN RUN={}", digest(String.join("\n", quotes.stream().map(Quote::asLine).toList())));
+        log.info("MODERN RUN={}", Sha256.hex(String.join("\n", quotes.stream().map(Quote::asLine).toList())));
         log.info("MODERN READ={} OK={} DEC={} REJ={}", quotes.size(), counts.getOrDefault("OK", 0L),
                 counts.getOrDefault("DEC", 0L), counts.getOrDefault("REJ", 0L));
-    }
-
-    /** Run reference printed with the batch counts, so two runs can be compared at a glance. */
-    static String digest(String body) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] sum = md.digest(body.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(sum).substring(0, 12).toUpperCase(Locale.ROOT);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
     }
 }
