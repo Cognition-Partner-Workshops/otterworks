@@ -6,6 +6,7 @@ services:
   rating-batch:
     build: ./legacy-rating/cobol
     profiles: ["batch"]
+    user: "${INSRULES_BATCH_UID:-1000}:${INSRULES_BATCH_GID:-1000}"
     environment:
       RATEPREM_TABLES: /estate/tables
     volumes:
