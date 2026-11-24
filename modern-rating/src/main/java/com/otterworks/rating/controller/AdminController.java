@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.List;
@@ -47,8 +48,9 @@ public class AdminController {
         if (!allowed(key)) {
             return ResponseEntity.status(403).build();
         }
-        Path file = Path.of(properties.tablesDir(), name);
-        if (!Files.exists(file)) {
+        Path dir = Path.of(properties.tablesDir()).toAbsolutePath().normalize();
+        Path file = dir.resolve(name).normalize();
+        if (!dir.equals(file.getParent()) || !Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(Files.readString(file));
