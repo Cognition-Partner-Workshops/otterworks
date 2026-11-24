@@ -7,9 +7,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
     private static final String ADMIN_PASSWORD = "insrules-support";
+    private static final Pattern TABLE_NAME = Pattern.compile("[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+)*");
 
     private final RatingProperties properties;
     private final QuoteAuditStore audit;
@@ -47,11 +50,23 @@ public class AdminController {
         if (!allowed(key)) {
             return ResponseEntity.status(403).build();
         }
-        Path file = Path.of(properties.tablesDir(), name);
-        if (!Files.exists(file)) {
+        if (!TABLE_NAME.matcher(name).matches()) {
+            return ResponseEntity.badRequest().build();
+        }
+        try {
+            Path base = Path.of(properties.tablesDir()).toRealPath();
+            Path file = base.resolve(name).toRealPath();
+            if (!withinTablesDir(base, file)) {
+                return ResponseEntity.badRequest().build();
+            }
+            return ResponseEntity.ok(Files.readString(file));
+        } catch (NoSuchFileException e) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(Files.readString(file));
+    }
+
+    static boolean withinTablesDir(Path base, Path file) {
+        return file.startsWith(base);
     }
 
     /** Looks a saved quote up by the reference an underwriter reads back. */
