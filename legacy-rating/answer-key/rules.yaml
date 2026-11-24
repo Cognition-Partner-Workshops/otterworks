@@ -1,0 +1,29 @@
+# Rating rule answer key. Builder and grader only: never on demo-insrules,
+# never in persona prompts, knowledge or memory.
+set: INSR_20261124
+rules:
+  - {id: R01, statement: "Only lines GL, PR and CA are rated; any other line is rejected with reason LN", cobol: 1100-VALIDATE-LINE, smalltalk: "InsQuoteEngine>>validateLine:into:", table: null, kind: condition}
+  - {id: R02, statement: "Exposure must be greater than zero; zero or negative (signed overpunch) is rejected with reason EX", cobol: 1200-VALIDATE-EXPOSURE, smalltalk: "InsQuoteEngine>>validateExposure:into:", table: null, kind: condition}
+  - {id: R03, statement: "Eligibility row for the policy state wins over the ** all-states row (exclusivity)", cobol: 2000-CHECK-ELIGIBILITY, smalltalk: "InsQuoteEngine>>checkEligibility:into:", table: line-eligibility.dat, kind: from-table}
+  - {id: R04, statement: "A class with no eligibility row is eligible (fallback)", cobol: 2000-CHECK-ELIGIBILITY, smalltalk: "InsQuoteEngine>>checkEligibility:into:", table: line-eligibility.dat, kind: from-table}
+  - {id: R05, statement: "Ineligible rows decline with the row's reason code", cobol: 2010-APPLY-ELIGIBILITY, smalltalk: "InsQuoteEngine>>checkEligibility:into:", table: line-eligibility.dat, kind: from-table}
+  - {id: R06, statement: "Class rate keyed on line+class (paired key) and effective date, both ends inclusive, blank end open", cobol: 2100-LOOKUP-CLASS, smalltalk: "InsQuoteEngine>>lookupClassRate:into:", table: class-factors.dat, kind: from-table}
+  - {id: R07, statement: "No class rate in force rejects with reason CL", cobol: 2100-LOOKUP-CLASS, smalltalk: "InsQuoteEngine>>lookupClassRate:into:", table: class-factors.dat, kind: condition}
+  - {id: R08, statement: "Territory factor keyed on line+territory, dates inclusive", cobol: 2200-LOOKUP-TERRITORY, smalltalk: "InsQuoteEngine>>lookupTerritory:into:", table: territory-factors.dat, kind: from-table}
+  - {id: R09, statement: "Territory with no row in force falls back to territory 000 (source D)", cobol: 2200-LOOKUP-TERRITORY, smalltalk: "InsQuoteEngine>>lookupTerritory:into:", table: territory-factors.dat, kind: from-table}
+  - {id: R10, statement: "Override keyed on line+class+territory with dates replaces the territory factor, never stacks (source O)", cobol: 2300-LOOKUP-OVERRIDE, smalltalk: "InsQuoteEngine>>lookupOverride:into:", table: overrides.dat, kind: from-table}
+  - {id: R11, statement: "Base premium = round(round(exposure x rate) x factor), half up to the cent at each step", cobol: 3000-BASE-PREMIUM, smalltalk: "InsQuoteEngine>>basePremium:quote:", table: null, kind: condition}
+  - {id: R12, statement: "Experience mod 1.25 for 3+ claims; 0.90 for 0 claims and 3+ years; else 1.00", cobol: 3100-EXPERIENCE-MOD, smalltalk: "InsQuoteEngine>>experienceMod:premium:", table: null, kind: condition}
+  - {id: R13, statement: "Deductible credit PR and CA only: >=5000 0.92, >=2500 0.95, >=1000 0.98", cobol: 3200-DEDUCTIBLE-CREDIT, smalltalk: "InsQuoteEngine>>deductibleCredit:premium:", table: null, kind: condition}
+  - {id: R14, statement: "Schedule mod clamped to +/-25%", cobol: 3300-SCHEDULE-MOD, smalltalk: "InsQuoteEngine>>scheduleMod:premium:", table: null, kind: condition}
+  - {id: R15, statement: "Multi-policy credit 0.95 for GL and PR only", cobol: 3400-MULTI-POLICY, smalltalk: "InsQuoteEngine>>multiPolicy:premium:", table: null, kind: condition}
+  - {id: R16, statement: "Wind surcharge PR+FL reads territory WND; no WND row exists so the factor is 1.000 (unused / amber)", cobol: 3450-WIND-SURCHARGE, smalltalk: null, table: territory-factors.dat, kind: amber}
+  - {id: R17, statement: "Minimum premium keyed line+state with ** fallback; batch applies it after every credit and debit", cobol: 3500-MINIMUM-PREMIUM, smalltalk: null, table: minimum-premium.dat, kind: from-table}
+  - {id: R18, statement: "Quote screen applies the minimum before schedule and multi-policy credits", cobol: null, smalltalk: "InsQuoteEngine>>applyMinimum:premium:quote:", table: minimum-premium.dat, kind: conflict}
+  - {id: R19, statement: "Policy fee 35.00 on every OK policy", cobol: 3600-POLICY-FEE, smalltalk: "InsQuoteEngine>>policyFee", table: null, kind: condition}
+  - {id: R20, statement: "GL additional insureds $50 each, at most 3", cobol: null, smalltalk: "InsQuoteEngine>>endorsements:premium:", table: null, kind: condition}
+  - {id: R21, statement: "PR equipment breakdown 3% of premium, minimum $75, whole dollars", cobol: null, smalltalk: "InsQuoteEngine>>endorsements:premium:", table: null, kind: condition}
+  - {id: R22, statement: "Waiver of subrogation GL and CA 2% of premium, whole dollars", cobol: null, smalltalk: "InsQuoteEngine>>endorsements:premium:", table: null, kind: condition}
+  - {id: R23, statement: "HNOA GL flat $120", cobol: null, smalltalk: "InsQuoteEngine>>endorsements:premium:", table: null, kind: condition}
+  - {id: R24, statement: "Endorsement total capped at 25% of the modified premium", cobol: null, smalltalk: "InsQuoteEngine>>endorsements:premium:", table: null, kind: condition}
+  - {id: R25, statement: "Table rows no fixture policy reaches are unused rows; the catalog must list them", cobol: null, smalltalk: null, table: territory-factors.dat, kind: unused}
