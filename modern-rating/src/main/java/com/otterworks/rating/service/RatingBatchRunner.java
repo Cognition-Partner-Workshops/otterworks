@@ -58,7 +58,7 @@ public class RatingBatchRunner implements ApplicationRunner {
     /** Run reference printed with the batch counts, so two runs can be compared at a glance. */
     static String digest(String body) {
         try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] sum = md.digest(body.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(sum).substring(0, 12).toUpperCase(Locale.ROOT);
         } catch (NoSuchAlgorithmException e) {

@@ -8,15 +8,21 @@ import com.otterworks.rating.model.PolicyRecordReader;
 import com.otterworks.rating.model.Quote;
 import com.otterworks.rating.service.RatingService;
 import com.otterworks.rating.service.RatingTables;
+import java.util.Locale;
+import org.apache.commons.collections.map.LRUMap;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @SpringBootTest
 class QuoteAuditStoreTest {
 
     @Autowired
     private QuoteAuditStore audit;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     private final RatingProperties props = new RatingProperties("../legacy-rating/tables", null);
     private final RatingService rating = new RatingService(new RatingTables(props), props);
@@ -31,8 +37,21 @@ class QuoteAuditStoreTest {
         String reference = audit.save(quote);
 
         assertThat(reference).hasSize(12);
+        assertThat(quote.asLine()).isEqualTo("P0000001|OK||87150|87150|N|0|3500|90650|T");
+        assertThat(reference).isEqualTo("1D807AA35ABC");
         assertThat(audit.find(reference)).containsExactly(quote.asLine());
         assertThat(audit.policyFor(reference)).isEqualTo("P0000001");
+    }
+
+    @Test
+    void findsAnExistingReferenceAfterSavingTheSameQuoteWithTheNewDigest() {
+        Quote quote = rate("P0000001GLIL913400002026031500002100{050100500N00{00NNN");
+        String oldReference = "347073A078DF";
+        jdbc.update("insert into quote_audit (reference, policy_id, quote_line) values (?, ?, ?)",
+                oldReference, quote.policyId(), quote.asLine());
+
+        assertThat(audit.save(quote)).isNotEqualTo(oldReference);
+        assertThat(audit.find(oldReference)).containsExactly(quote.asLine());
     }
 
     @Test
@@ -44,7 +63,51 @@ class QuoteAuditStoreTest {
     }
 
     @Test
+    void evictsTheLeastRecentlyUsedPolicyButKeepsItsStoredQuote() {
+        Quote first = rate("P0000100GLIL913400002026031500002100{050100500N00{00NNN");
+        Quote second = rate("P0000101GLIL913400002026031500002100{050100500N00{00NNN");
+        String firstReference = audit.save(first);
+        String secondReference = audit.save(second);
+        for (int policy = 102; policy < 150; policy++) {
+            audit.save(rate(String.format(Locale.ROOT,
+                    "P%07dGLIL913400002026031500002100{050100500N00{00NNN", policy)));
+        }
+
+        assertThat(audit.policyFor(firstReference)).isEqualTo(first.policyId());
+        audit.save(rate("P0000150GLIL913400002026031500002100{050100500N00{00NNN"));
+
+        assertThat(audit.policyFor(firstReference)).isEqualTo(first.policyId());
+        assertThat(audit.policyFor(secondReference)).isNull();
+        assertThat(audit.find(secondReference)).containsExactly(second.asLine());
+    }
+
+    @Test
+    void loadsThePatchedCommonsCollectionsVersion() {
+        assertThat(LRUMap.class.getPackage().getImplementationVersion()).isEqualTo("3.2.2");
+    }
+
+    @Test
     void findsNothingForAnUnknownReference() {
         assertThat(audit.find("ABCDEF123456")).isEmpty();
+    }
+
+    @Test
+    void findsOnlyTheQuoteWithTheRequestedReference() {
+        Quote first = rate("P0000001GLIL913400002026031500002100{050100500N00{00NNN");
+        Quote second = rate("P0000004GLIL185010002026031500002100{050100500N00{00NNN");
+        String firstReference = audit.save(first);
+        String secondReference = audit.save(second);
+
+        assertThat(audit.find(firstReference)).containsExactly(first.asLine());
+        assertThat(audit.find(secondReference)).containsExactly(second.asLine());
+    }
+
+    @Test
+    void treatsAnApostropheInAnUnknownReferenceAsLiteralText() {
+        Quote quote = rate("P0000001GLIL913400002026031500002100{050100500N00{00NNN");
+        String reference = audit.save(quote);
+
+        assertThat(audit.find("O'Brien")).isEmpty();
+        assertThat(audit.find(reference)).containsExactly(quote.asLine());
     }
 }
