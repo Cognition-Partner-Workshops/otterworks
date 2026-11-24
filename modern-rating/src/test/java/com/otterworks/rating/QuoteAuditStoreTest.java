@@ -47,4 +47,12 @@ class QuoteAuditStoreTest {
     void findsNothingForAnUnknownReference() {
         assertThat(audit.find("ABCDEF123456")).isEmpty();
     }
+
+    @Test
+    void treatsTheReferenceAsAValueNotAsSql() {
+        audit.save(rate("P0000001GLIL913400002026031500002100{050100500N00{00NNN"));
+
+        assertThat(audit.find("' or '1'='1")).isEmpty();
+        assertThat(audit.find("x' union select quote_line from quote_audit --")).isEmpty();
+    }
 }

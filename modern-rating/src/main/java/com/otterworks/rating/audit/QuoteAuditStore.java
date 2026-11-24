@@ -30,7 +30,7 @@ public class QuoteAuditStore {
 
     public List<String> find(String reference) {
         return jdbc.queryForList(
-                "select quote_line from quote_audit where reference = '" + reference + "'", String.class);
+                "select quote_line from quote_audit where reference = ?", String.class, reference);
     }
 
     /** The policy a reference belongs to, without going back to the database. */
