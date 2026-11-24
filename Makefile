@@ -643,7 +643,8 @@ insrules-down: ## Stop every rating estate container, SonarQube included
 insrules-run: ## Rate all fixture policies through COBOL, Pharo and Java
 	@mkdir -p legacy-rating/build
 	$(INSRULES_COMPOSE) --profile batch run --rm rating-batch /estate/fixtures/policies.dat /estate/build/cobol.dat
-	$(INSRULES_COMPOSE) exec -T quote-screen ./run.sh quote /estate/fixtures/policies.dat /estate/build/pharo.txt
+	$(INSRULES_COMPOSE) exec -T quote-screen ./run.sh quote /estate/fixtures/policies.dat /opt/insrating/pharo.txt
+	$(INSRULES_COMPOSE) cp quote-screen:/opt/insrating/pharo.txt legacy-rating/build/pharo.txt
 	$(INSRULES_COMPOSE) exec -T modern-rating java -jar /app/app.jar --spring.main.web-application-type=none \
 		--rating.batch.input=/estate/fixtures/policies.dat --rating.batch.output=/estate/build/java.txt
 

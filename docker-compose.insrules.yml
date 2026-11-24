@@ -20,7 +20,6 @@ services:
     volumes:
       - ./legacy-rating/tables:/estate/tables:ro
       - ./legacy-rating/fixtures:/estate/fixtures:ro
-      - ./legacy-rating/build:/estate/build
     ports:
       - "127.0.0.1:${INSRULES_SCREEN_PORT:-8091}:8091"
 
