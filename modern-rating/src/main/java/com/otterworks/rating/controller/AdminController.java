@@ -1,11 +1,12 @@
 package com.otterworks.rating.controller;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.otterworks.rating.audit.QuoteAuditStore;
-import com.otterworks.rating.audit.SavedQuote;
 import com.otterworks.rating.config.RatingProperties;
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
     private static final String ADMIN_PASSWORD = "insrules-support";
+    private static final ObjectReader PARKED_QUOTE_READER = new ObjectMapper().reader()
+            .with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
 
     private final RatingProperties properties;
     private final QuoteAuditStore audit;
@@ -67,14 +70,27 @@ public class AdminController {
     /** Takes back a quote the browser parked, so a long session survives a reload. */
     @PostMapping("/quotes/restore")
     public ResponseEntity<String> restore(@RequestBody String parked,
-            @RequestHeader(value = "X-Support-Key", required = false) String key) throws Exception {
+            @RequestHeader(value = "X-Support-Key", required = false) String key) {
         if (!allowed(key)) {
             return ResponseEntity.status(403).build();
         }
-        byte[] bytes = Base64.getDecoder().decode(parked.trim().getBytes(StandardCharsets.UTF_8));
-        try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
-            SavedQuote saved = (SavedQuote) in.readObject();
-            return ResponseEntity.ok(saved.reference());
+        try {
+            byte[] bytes = Base64.getDecoder().decode(parked.trim());
+            if (isLegacySerializedFormat(bytes)) {
+                return ResponseEntity.badRequest().contentType(MediaType.TEXT_PLAIN)
+                        .body("Unsupported parked quote format: serialized Java objects are no longer accepted; "
+                                + "park the quote as JSON.");
+            }
+            JsonNode reference = PARKED_QUOTE_READER.readTree(bytes).path("reference");
+            return reference.isTextual()
+                    ? ResponseEntity.ok(reference.textValue())
+                    : ResponseEntity.badRequest().build();
+        } catch (IOException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         }
+    }
+
+    static boolean isLegacySerializedFormat(byte[] bytes) {
+        return bytes.length >= 2 && bytes[0] == (byte) 0xAC && bytes[1] == (byte) 0xED;
     }
 }
