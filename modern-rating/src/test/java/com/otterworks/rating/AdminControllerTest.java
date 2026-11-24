@@ -66,4 +66,10 @@ class AdminControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo("GL|91340|1.25");
     }
+
+    @Test
+    void answersNotFoundWhenTheTablesDirectoryIsMissing() throws Exception {
+        assertThat(controller(root.resolve("gone")).table("class-factors.dat", KEY).getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
+    }
 }
