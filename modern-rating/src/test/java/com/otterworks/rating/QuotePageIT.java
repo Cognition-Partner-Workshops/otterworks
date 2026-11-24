@@ -3,8 +3,10 @@ package com.otterworks.rating;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.otterworks.rating.config.RatingProperties;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Base64;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -16,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class QuotePageIT {
@@ -47,6 +50,18 @@ class QuotePageIT {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Support-Key", "insrules-support");
         return new HttpEntity<>(headers);
+    }
+
+    @Test
+    void restoresTheParkedQuoteReferenceAsBefore() {
+        String quote = "{\"reference\":\"Q-123\",\"fields\":{\"line\":\"GL\"}}";
+        String parked = Base64.getEncoder().encodeToString(quote.getBytes(StandardCharsets.UTF_8));
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Support-Key", "insrules-support");
+        ResponseEntity<String> restored = http.postForEntity("/admin/quotes/restore",
+                new HttpEntity<>(parked, headers), String.class);
+        assertThat(restored.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(restored.getBody()).isEqualTo("Q-123");
     }
 
     @Test
