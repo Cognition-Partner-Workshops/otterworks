@@ -3,7 +3,7 @@
 Counts below refer to [the final rule entries](rules.md), not source entry counts or cross-check observations. The four statuses are disjoint and add up to found. Missed overlaps those statuses: the condition was absent from both phase-one extracts and found during cross-check.
 
 | Scope | Found | From-table | Proven | Amber | Unproven | Missed |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Shared legacy conditions | 82 | 35 | 34 | 2 | 11 | 24 |
 | COBOL only | 2 | 0 | 0 | 0 | 2 | 0 |
 | Pharo only | 14 | 0 | 0 | 8 | 6 | 1 |
@@ -14,7 +14,7 @@ Counts below refer to [the final rule entries](rules.md), not source entry count
 Each stack includes the shared conditions plus its own conditions; the two rows therefore cannot be added together.
 
 | Scope | Found | From-table | Proven | Amber | Unproven | Missed |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | COBOL | 84 | 35 | 34 | 2 | 13 | 24 |
 | Pharo | 96 | 35 | 34 | 10 | 17 | 25 |
 
