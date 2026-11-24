@@ -629,3 +629,7 @@ lp-ec2-down: ## Destroy the run's legacy-portal EC2 stack (RUN=)
 
 lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
 	@$(LP_EC2) verify-clean
+
+.PHONY: insrules-score
+insrules-score: ## Score the rule catalog on REF (default origin/demo-insrules) against the key on this branch
+	@python3 legacy-rating/answer-key/score_catalog.py $(or $(REF),origin/demo-insrules)
