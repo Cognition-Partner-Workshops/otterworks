@@ -265,7 +265,13 @@
                WHEN 'DEC' ADD 1 TO WS-DEC
                WHEN OTHER ADD 1 TO WS-REJ
            END-EVALUATE
-           WRITE OUT-REC.
+           WRITE OUT-REC
+           IF WS-OUT-STATUS NOT = '00'
+               DISPLAY 'RATEPREM E: cannot write output '
+                   WS-OUT-STATUS UPON SYSERR
+               MOVE 12 TO RETURN-CODE
+               STOP RUN
+           END-IF.
 
        1100-VALIDATE-LINE.
            IF POL-LINE NOT = 'GL' AND POL-LINE NOT = 'PR'
