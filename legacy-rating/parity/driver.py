@@ -43,7 +43,7 @@ def read_cobol(path: Path) -> dict:
             "modified": overpunch(r[40:51]),
             "minimum": r[51],
             "source": r[28].strip(),
-            "total": overpunch(r[56:67]),
+            "total": overpunch(r[57:68]),
         }
     return out
 
