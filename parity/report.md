@@ -146,7 +146,7 @@ The parity counts do not show R84, because `total` is not a canonical field. The
 
 So Java charges endorsements the way Pharo does, as the owner decided. On the totals, Java follows Pharo and differs from COBOL on every endorsed fixture. That difference is intended and not counted. On each of the 73 endorsed fixtures, Java total = COBOL total + endorsements. On the other 127, the two totals are equal.
 
-This PR also fixes how `read_cobol` in `driver.py` reads the COBOL total. It read columns 56-67 instead of 57-68: `OUT-FEE` in `RATEOUT.cpy` takes columns 52-56, so `OUT-TOTAL` starts at 57. The old reading gave totals a factor of 10 too small (`P0000071`: 41950 instead of 419500). No comparison used `total`, so the counts do not change. The figures above come from the corrected reader.
+This PR also fixes how `read_cobol` in `driver.py` reads the COBOL total. It sliced `r[56:67]` instead of `r[57:68]` (0-based): `OUT-FEE` in `RATEOUT.cpy` takes offsets 52-56, so `OUT-TOTAL` starts at 57. The old reading gave totals a factor of 10 too small (`P0000071`: 41950 instead of 419500). No comparison used `total`, so the counts do not change. The figures above come from the corrected reader.
 
 ## Left open
 
