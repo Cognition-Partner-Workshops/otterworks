@@ -192,13 +192,40 @@ it back; `/api/v1/files`, `/api/v1/files/shared` return `200`.
 
 **Evidence.** Two Terraform root modules with **remote S3 state**
 (`s3://otterworks-terraform-state`, keys `platform/` and `otterworks/`):
-- `platform/terraform` — VPC, EKS (`otterworks-dev`, v1.32), managed node group, core addons
+- `platform/terraform` — VPC, EKS (`otterworks-dev`, target v1.35), managed node group, core addons
   (vpc-cni/kube-proxy/coredns/ebs-csi), OIDC provider, 13 ECR repos. Modularized under
   `modules/{vpc,eks,ecr}` with `environments/dev.tfvars`.
 - `infrastructure/terraform` — RDS Postgres, ElastiCache Redis, DynamoDB, S3, SNS/SQS, Cognito,
   MeiliSearch-on-ECS, CloudWatch log groups, and **IRSA roles per service**
   (`modules/irsa`, least-privilege policies in `main.tf`). Reads platform outputs via
   `terraform_remote_state`.
+
+**OtterWorks dev EKS 1.34 → 1.35 rollout (before December 2, 2026 UTC).**
+EKS upgrades one minor version at a time. Schedule a maintenance window for the
+single managed system node: it rolls after the control plane, and ingress can
+briefly lose its ready targets. A completed EKS version upgrade cannot be rolled back.
+
+1. Confirm the current control plane and managed nodes are on 1.34, no EKS updates
+   are in progress, and the EBS CSI add-on is `ACTIVE` on
+   `v1.68.0-eksbuild.1`. If the add-on still needs updating, review and apply a
+   separate Terraform plan from `platform/terraform` with
+   `-var-file=environments/dev.tfvars -var=cluster_version=1.34 -target=module.eks.aws_eks_addon.ebs_csi_driver`.
+   The target includes dependencies; stop if the plan includes unrelated changes.
+   Wait for the 1.35 EKS Upgrade Insights to clear before the version upgrade.
+   If Karpenter is installed, confirm its controller is at least 1.9 and that
+   any existing nodes are ready before starting.
+2. Review the normal platform plan with `-var-file=environments/dev.tfvars` and
+   no version override. Expect in-place control plane and managed node-group
+   updates, not replacements of either Terraform resource. Apply the reviewed
+   plan through the normal deployment process. The installed CoreDNS, VPC CNI,
+   and 1.34 kube-proxy builds are compatible with the 1.35 control plane.
+3. Verify the control plane and managed node group are `ACTIVE` on 1.35, all
+   nodes are ready, ingress and the golden tenant respond, and existing EBS-backed
+   pods mount their volumes. Check that any Karpenter nodes have rolled onto
+   1.35 before updating kube-proxy to the recommended 1.35 build. Re-run
+   `scripts/tenant-platform-baseline.sh --no-ingress` to refresh the reaper's
+   kubectl image if it was installed by that script. Use kubectl within one
+   minor of the control plane.
 
 **Bug found & fixed during this deploy.** `platform/terraform/modules/eks/main.tf` attached
 `arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicyV2`, which is **not a real AWS managed
