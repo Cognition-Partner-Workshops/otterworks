@@ -133,7 +133,7 @@ Fields show the baseline values in cents. "Rule" is the rule whose Java implemen
 
 ## Endorsement charges (R84) and the totals
 
-The parity counts do not show R84, because `total` is not a canonical field. The driver compares COBOL with the other two stacks on the rating fields only (`status, reason, base, modified, minimum, source`), and adds `endorsements` only for Pharo~Java. No pair compares `total`. The executed output for all 200 fixtures shows:
+The parity counts do not show R84, because `total` is not a canonical field. The driver compares COBOL with the other two stacks on the rating fields only (`status, reason, base, modified, minimum, source`), and adds `endorsements` only for Pharo~Java. No pair compares `total`. The executed output for all 200 fixtures (`legacy-rating/build/`, read with `driver.py`) shows:
 
 | Check on the executed output | Result |
 |---|---|
@@ -144,7 +144,9 @@ The parity counts do not show R84, because `total` is not a canonical field. The
 | COBOL total differs from Pharo total | 77 policies: the 73 with an endorsement charge, plus 4 R82 policies without one |
 | Pharo total differs from Java total | 5 policies, all R82 |
 
-So Java charges endorsements the way Pharo does, as the owner decided. On the totals, Java follows Pharo and differs from COBOL on every endorsed fixture. That difference is intended and not counted. Separately, `read_cobol` in `driver.py` slices the COBOL total at columns 56-67 instead of 57-68 (the fee takes 52-56). That reading is wrong by a factor of 10, but the comparison never uses it. The figures above use 57-68.
+So Java charges endorsements the way Pharo does, as the owner decided. On the totals, Java follows Pharo and differs from COBOL on every endorsed fixture. That difference is intended and not counted. On each of the 73 endorsed fixtures, Java total = COBOL total + endorsements. On the other 127, the two totals are equal.
+
+This PR also fixes how `read_cobol` in `driver.py` reads the COBOL total. It read columns 56-67 instead of 57-68: `OUT-FEE` in `RATEOUT.cpy` takes columns 52-56, so `OUT-TOTAL` starts at 57. The old reading gave totals a factor of 10 too small (`P0000071`: 41950 instead of 419500). No comparison used `total`, so the counts do not change. The figures above come from the corrected reader.
 
 ## Left open
 
