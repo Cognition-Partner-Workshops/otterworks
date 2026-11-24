@@ -18,7 +18,7 @@ public class RatingTables {
 
     public record DatedRange(LocalDate from, LocalDate to) {
         boolean covers(LocalDate date) {
-            return !date.isBefore(from) && (to == null || date.isBefore(to));
+            return !date.isBefore(from) && (to == null || !date.isAfter(to));
         }
     }
 
@@ -86,9 +86,10 @@ public class RatingTables {
                 .or(() -> forLine.stream().filter(r -> r.state().equals(ALL_STATES)).findFirst());
     }
 
-    public Optional<Override> override(String line, String classCode, LocalDate on) {
+    public Optional<Override> override(String line, String classCode, String territory, LocalDate on) {
         return overrides.stream()
-                .filter(r -> r.line().equals(line) && r.classCode().equals(classCode) && r.range().covers(on))
+                .filter(r -> r.line().equals(line) && r.classCode().equals(classCode)
+                        && r.territory().equals(territory) && r.range().covers(on))
                 .findFirst();
     }
 

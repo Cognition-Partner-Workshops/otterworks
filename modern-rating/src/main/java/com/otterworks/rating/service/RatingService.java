@@ -52,20 +52,18 @@ public class RatingService {
             return Quote.refused(p.id(), "REJ", "TR");
         }
         BigDecimal factor = territory.get().factor();
-        Optional<RatingTables.Override> override = tables.override(p.line(), p.classCode(), p.effective());
+        Optional<RatingTables.Override> override = tables.override(p.line(), p.classCode(), p.territory(), p.effective());
         if (override.isPresent()) {
             factor = override.get().factor();
             source = "O";
         }
 
-        BigDecimal base = p.exposure().multiply(classRate.get().rate()).multiply(factor);
-        BigDecimal premium = base
-                .multiply(experienceMod(p))
-                .multiply(deductibleCredit(p))
-                .multiply(BigDecimal.ONE.add(scheduleMod(p)))
-                .multiply(multiPolicyCredit(p))
-                .multiply(windSurcharge(p));
-        premium = money(premium);
+        BigDecimal base = money(money(p.exposure().multiply(classRate.get().rate())).multiply(factor));
+        BigDecimal premium = money(base.multiply(experienceMod(p)));
+        premium = money(premium.multiply(deductibleCredit(p)));
+        premium = money(premium.multiply(BigDecimal.ONE.add(scheduleMod(p))));
+        premium = money(premium.multiply(multiPolicyCredit(p)));
+        premium = money(premium.multiply(windSurcharge(p)));
 
         boolean minimumApplied = false;
         Optional<RatingTables.Minimum> minimum = tables.minimum(p.line(), p.state());
@@ -128,19 +126,19 @@ public class RatingService {
             total = total.add(BigDecimal.valueOf(50L * Math.min(p.additionalInsureds(), 3)));
         }
         if (p.equipment() && p.line().equals("PR")) {
-            total = total.add(dollars(premium.multiply(new BigDecimal("0.03")).max(new BigDecimal("75"))));
+            total = total.add(dollars(money(premium.multiply(new BigDecimal("0.03"))).max(new BigDecimal("75"))));
         }
         if (p.waiver() && (p.line().equals("GL") || p.line().equals("CA"))) {
-            total = total.add(dollars(premium.multiply(new BigDecimal("0.02"))));
+            total = total.add(dollars(money(premium.multiply(new BigDecimal("0.02")))));
         }
         if (p.hiredNonOwned() && p.line().equals("GL")) {
             total = total.add(new BigDecimal("120"));
         }
-        return money(total.min(premium.multiply(ENDORSEMENT_CAP)));
+        return money(total).min(money(premium.multiply(ENDORSEMENT_CAP)));
     }
 
     private static BigDecimal money(BigDecimal amount) {
-        return amount.setScale(2, RoundingMode.HALF_EVEN);
+        return amount.setScale(2, RoundingMode.HALF_UP);
     }
 
     private static BigDecimal dollars(BigDecimal amount) {
