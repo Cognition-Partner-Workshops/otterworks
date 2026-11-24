@@ -2,7 +2,9 @@ FROM mirror.gcr.io/library/debian:bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl unzip libcairo2 \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/pharo
-RUN curl -fsSL https://get.pharo.org/64/120+vm | bash
+RUN curl -fsSL --proto '=https' --proto-redir '=https' https://get.pharo.org/64/120+vm -o /tmp/pharo-bootstrap.sh \
+    && bash /tmp/pharo-bootstrap.sh \
+    && rm /tmp/pharo-bootstrap.sh
 ENV PHARO=/opt/pharo/pharo PHARO_IMAGE=/opt/pharo/Pharo.image PHARO_WORK=/opt/insrating
 WORKDIR /estate/smalltalk
 COPY . .
