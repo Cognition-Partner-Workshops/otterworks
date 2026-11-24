@@ -198,7 +198,7 @@ InsQuoteEngine >> policyFee [ ^ 3500 ]
 InsQuoteEngine >> scaled: aString places: places [
 	"'1.025' with 3 places -> 1025"
 	| sign parts whole frac |
-	sign := (aString beginsWith: '-') ifTrue: [ -1 ] ifFalse: [ 1 ].
+	sign := (aString includes: $-) ifTrue: [ -1 ] ifFalse: [ 1 ].
 	parts := (aString copyWithout: $-) splitOn: $..
 	whole := parts first asInteger ifNil: [ 0 ].
 	frac := parts size > 1 ifTrue: [ parts second ] ifFalse: [ '' ].
