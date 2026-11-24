@@ -644,8 +644,14 @@ insrules-run: ## Rate all fixture policies through COBOL, Pharo and Java
 	@mkdir -p legacy-rating/build
 	$(INSRULES_COMPOSE) --profile batch run --rm rating-batch /estate/fixtures/policies.dat /estate/build/cobol.dat
 	$(INSRULES_COMPOSE) exec -T quote-screen ./run.sh quote /estate/fixtures/policies.dat /estate/build/pharo.txt
-	$(INSRULES_COMPOSE) exec -T modern-rating java -jar /app/app.jar --spring.main.web-application-type=none \
-		--rating.batch.input=/estate/fixtures/policies.dat --rating.batch.output=/estate/build/java.txt
+	@set -e; output=$$(mktemp legacy-rating/build/java.XXXXXX); \
+		trap 'rm -f "$$output"' EXIT; \
+		$(INSRULES_COMPOSE) exec -T modern-rating sh -ec '\
+			output=$$(mktemp); trap "rm -f \"$$output\"" EXIT; \
+			java -jar /app/app.jar --spring.main.web-application-type=none \
+				--rating.batch.input=/estate/fixtures/policies.dat --rating.batch.output="$$output" >&2; \
+			cat "$$output"' > "$$output"; \
+		mv -f "$$output" legacy-rating/build/java.txt
 
 insrules-parity: insrules-run ## Compare the three outputs policy by policy (build/parity.json)
 	python3 legacy-rating/parity/driver.py --cobol legacy-rating/build/cobol.dat \
