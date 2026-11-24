@@ -2,6 +2,9 @@ package com.otterworks.rating;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.otterworks.rating.config.RatingProperties;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +21,9 @@ class QuotePageIT {
     @Autowired
     private TestRestTemplate http;
 
+    @Autowired
+    private RatingProperties properties;
+
     @Test
     void servesTheQuotePage() {
         var page = http.getForEntity("/", String.class);
@@ -26,16 +32,29 @@ class QuotePageIT {
     }
 
     @Test
-    void servesARatingTableToSupportAndRefusesWithoutTheKey() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Support-Key", "insrules-support");
+    void servesARatingTableToSupportAndRefusesWithoutTheKey() throws Exception {
         var table = http.exchange("/admin/tables/class-factors.dat", HttpMethod.GET,
-                new HttpEntity<>(headers), String.class);
+                supportRequest(), String.class);
         assertThat(table.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(table.getBody()).contains("GL");
+        assertThat(table.getBody()).isEqualTo(Files.readString(Path.of(properties.tablesDir(), "class-factors.dat")));
 
         assertThat(http.getForEntity("/admin/tables/class-factors.dat", String.class).getStatusCode())
                 .isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void refusesAnInvalidTableBasename() {
+        var table = http.exchange("/admin/tables/class..dat", HttpMethod.GET,
+                supportRequest(), String.class);
+        assertThat(table.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(table.getBody()).isNull();
+    }
+
+    private HttpEntity<Void> supportRequest() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Support-Key", "insrules-support");
+        return new HttpEntity<>(headers);
     }
 
     @Test
