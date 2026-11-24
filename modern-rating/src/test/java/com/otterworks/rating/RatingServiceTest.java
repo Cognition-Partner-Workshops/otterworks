@@ -3,12 +3,16 @@ package com.otterworks.rating;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.otterworks.rating.config.RatingProperties;
+import com.otterworks.rating.model.Policy;
 import com.otterworks.rating.model.PolicyRecordReader;
 import com.otterworks.rating.model.Quote;
 import com.otterworks.rating.service.RatingService;
 import com.otterworks.rating.service.RatingTables;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class RatingServiceTest {
 
@@ -37,6 +41,14 @@ class RatingServiceTest {
     @Test
     void rejectsZeroExposure() {
         assertThat(rate("P0000009GLIL9134000020260315000000000050100500N00{00NNN").reason()).isEqualTo("EX");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"2E+1", "210.001", "10000000"})
+    void rejectsExposureOutsideThePolicyLayout(String exposure) {
+        Policy policy = new Policy("TEST", "GL", "IL", "91340", "001", LocalDate.of(2026, 3, 15),
+                new BigDecimal(exposure), 5, 0, 500, false, BigDecimal.ZERO, 0, false, false, false);
+        assertThat(rating.rate(policy).reason()).isEqualTo("EX");
     }
 
     @Test

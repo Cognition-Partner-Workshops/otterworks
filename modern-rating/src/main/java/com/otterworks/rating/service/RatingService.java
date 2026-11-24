@@ -29,7 +29,10 @@ public class RatingService {
         if (!LINES.contains(p.line())) {
             return Quote.refused(p.id(), "REJ", "LN");
         }
-        if (p.exposure().signum() <= 0) {
+        BigDecimal exposure = p.exposure();
+        int exposureScale = exposure.scale();
+        if (exposure.signum() <= 0 || exposureScale < 0 || exposureScale > 2
+                || exposure.precision() > 7 + exposureScale) {
             return Quote.refused(p.id(), "REJ", "EX");
         }
         Optional<RatingTables.Eligibility> eligibility = tables.eligibility(p.line(), p.classCode(), p.state());
@@ -58,7 +61,7 @@ public class RatingService {
             source = "O";
         }
 
-        BigDecimal base = p.exposure().multiply(classRate.get().rate()).multiply(factor);
+        BigDecimal base = exposure.multiply(classRate.get().rate()).multiply(factor);
         BigDecimal premium = base
                 .multiply(experienceMod(p))
                 .multiply(deductibleCredit(p))
