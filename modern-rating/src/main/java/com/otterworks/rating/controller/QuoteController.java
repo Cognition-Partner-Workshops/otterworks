@@ -1,5 +1,6 @@
 package com.otterworks.rating.controller;
 
+import com.otterworks.rating.audit.QuoteAuditStore;
 import com.otterworks.rating.dto.QuoteForm;
 import com.otterworks.rating.model.Quote;
 import com.otterworks.rating.service.RatingService;
@@ -18,9 +19,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class QuoteController {
 
     private final RatingService rating;
+    private final QuoteAuditStore audit;
 
-    public QuoteController(RatingService rating) {
+    public QuoteController(RatingService rating, QuoteAuditStore audit) {
         this.rating = rating;
+        this.audit = audit;
     }
 
     @GetMapping("/")
@@ -32,7 +35,9 @@ public class QuoteController {
     @PostMapping("/")
     public String quote(@Valid @ModelAttribute("form") QuoteForm form, BindingResult errors, Model model) {
         if (!errors.hasErrors()) {
-            model.addAttribute("quote", rating.rate(form.toPolicy()));
+            Quote quote = rating.rate(form.toPolicy());
+            model.addAttribute("quote", quote);
+            model.addAttribute("reference", audit.save(quote));
         }
         return "quote";
     }
@@ -40,6 +45,8 @@ public class QuoteController {
     @PostMapping("/api/quotes")
     @ResponseBody
     public ResponseEntity<Quote> api(@Valid @RequestBody QuoteForm form) {
-        return ResponseEntity.ok(rating.rate(form.toPolicy()));
+        Quote quote = rating.rate(form.toPolicy());
+        audit.save(quote);
+        return ResponseEntity.ok(quote);
     }
 }

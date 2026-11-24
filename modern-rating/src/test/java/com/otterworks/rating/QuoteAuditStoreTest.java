@@ -1,0 +1,50 @@
+package com.otterworks.rating;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.otterworks.rating.audit.QuoteAuditStore;
+import com.otterworks.rating.config.RatingProperties;
+import com.otterworks.rating.model.PolicyRecordReader;
+import com.otterworks.rating.model.Quote;
+import com.otterworks.rating.service.RatingService;
+import com.otterworks.rating.service.RatingTables;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class QuoteAuditStoreTest {
+
+    @Autowired
+    private QuoteAuditStore audit;
+
+    private final RatingProperties props = new RatingProperties("../legacy-rating/tables", null);
+    private final RatingService rating = new RatingService(new RatingTables(props), props);
+
+    private Quote rate(String record) {
+        return rating.rate(PolicyRecordReader.read(record));
+    }
+
+    @Test
+    void savesAQuoteAndFindsItAgainByReference() {
+        Quote quote = rate("P0000001GLIL913400002026031500002100{050100500N00{00NNN");
+        String reference = audit.save(quote);
+
+        assertThat(reference).hasSize(12);
+        assertThat(audit.find(reference)).containsExactly(quote.asLine());
+        assertThat(audit.policyFor(reference)).isEqualTo("P0000001");
+    }
+
+    @Test
+    void givesTheSameQuoteTheSameReferenceTwice() {
+        Quote quote = rate("P0000004GLIL185010002026031500002100{050100500N00{00NNN");
+
+        assertThat(audit.save(quote)).isEqualTo(audit.save(quote));
+        assertThat(audit.find(audit.save(quote))).hasSize(1);
+    }
+
+    @Test
+    void findsNothingForAnUnknownReference() {
+        assertThat(audit.find("ABCDEF123456")).isEmpty();
+    }
+}
