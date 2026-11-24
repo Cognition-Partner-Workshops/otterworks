@@ -634,6 +634,7 @@ lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains
 INSRULES_COMPOSE = docker compose -f docker-compose.insrules.yml -p insrules
 
 insrules-up: ## Build and start the quote screen (:8091) and modern rating (:8092)
+	@mkdir -p legacy-rating/build
 	$(INSRULES_COMPOSE) up -d --build --wait quote-screen modern-rating
 
 insrules-down: ## Stop every rating estate container, SonarQube included
