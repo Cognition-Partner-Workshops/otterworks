@@ -31,11 +31,11 @@ Each fix applies where COBOL and Pharo agree. The policies listed for each fix a
 | Round after deductible credit, half up (9 policies) | R59-R63 | RATEPREM.cbl:413 | InsQuoteEngine.class.st:143 | RatingService.java:62-68 (one rounding, HALF_EVEN) | `roundsEachModifierHalfUpToTheCent` |
 | Round after schedule mod, half up (4 policies) | R64-R66 | RATEPREM.cbl:423 | InsQuoteEngine.class.st:163 | RatingService.java:62-68 (one rounding, HALF_EVEN) | `roundsEachModifierHalfUpToTheCent` |
 | Round after multi-policy credit, half up (0 policies) | R67-R69 | RATEPREM.cbl:428 | InsQuoteEngine.class.st:169 | RatingService.java:62-68 (one rounding, HALF_EVEN) | `roundsEachModifierHalfUpToTheCent` |
-| Equipment charge rounded to cents before dollars (1 policy) | R89, R90 | n/a (no endorsement step; R84) | InsQuoteEngine.class.st:181 (3% rounded to cents, then whole dollars) | RatingService.java:131 (whole dollars from unrounded 3%) | `chargesEndorsementsInTheTotal` |
-| Waiver charge rounded to cents before dollars (0 policies) | R92 | n/a (R84) | InsQuoteEngine.class.st:183 | RatingService.java:134 | `chargesEndorsementsInTheTotal` |
-| Endorsement cap rounded half up (0 policies) | R97 | n/a (R84) | InsQuoteEngine.class.st:186 | RatingService.java:139 | `capsEndorsementsAtAQuarterRoundedHalfUp` |
+| Equipment charge rounded to cents before dollars (1 policy) | R89, R90 | n/a (no endorsement step; R84) | InsQuoteEngine.class.st:181 (3% rounded to cents, then whole dollars) | RatingService.java:131 (whole dollars from unrounded 3%) | `roundsTheEquipmentChargeToCentsBeforeDollars` |
+| Waiver charge rounded to cents before dollars (0 policies) | R92 | n/a (R84) | InsQuoteEngine.class.st:183 | RatingService.java:134 | `none (no distinguishing fixture)` |
+| Endorsement cap rounded half up (0 policies) | R97 | n/a (R84) | InsQuoteEngine.class.st:186 | RatingService.java:139 | `none (no distinguishing fixture)` |
 
-Rule R92, R97 and R67-R69 rounding are aligned to the legacy source as well; no baseline fixture turned on them alone (the cap and waiver cases were already equal, and multi-policy rounding was masked by an earlier step).
+R92, R97 and R67-R69 rounding follow the legacy source too, but no fixture tells them apart from the old Java: the waiver and cap cases were already equal (`P0000170` gives 18093 whether the 18093.25-cent cap is rounded half up or truncated, see R97 in the catalog), and multi-policy rounding was masked by an earlier step. `capsEndorsementsAtAQuarterRoundedHalfUp` pins the `P0000170` output but does not tell the rounding modes apart. These three rules stay unproven against Java until a fixture with a tie exists.
 
 ## Every baseline mismatch
 
@@ -131,6 +131,21 @@ Fields show the baseline values in cents. "Rule" is the rule whose Java implemen
 | `P0000198` | cobol~java, pharo~java | cobol~java: modified cobol 106154 vs java 106155 / pharo~java: modified pharo 106154 vs java 106155 | R54 | matched |
 | `P0000200` | pharo~java, cobol~pharo | pharo~java: modified pharo 67500 vs java 75000; endorsements pharo 1400 vs java 1500 / cobol~pharo: modified cobol 75000 vs pharo 67500 | R82 | open: R82 COBOL~Pharo (Java = COBOL by decision) |
 
+## Endorsement charges (R84) and the totals
+
+The parity counts do not show R84, because `total` is not a canonical field. The driver compares COBOL with the other two stacks on the rating fields only (`status, reason, base, modified, minimum, source`), and adds `endorsements` only for Pharo~Java. No pair compares `total`. The executed output for all 200 fixtures shows:
+
+| Check on the executed output | Result |
+|---|---|
+| Fixtures with an endorsement charge (Pharo and Java) | 73 (for example `P0000071`: endorsements 12500, total 432000) |
+| COBOL total = modified + fee (R83, R84) | all 190 OK policies (`P0000071`: 416000 + 3500 = 419500) |
+| Pharo and Java total = modified + endorsements + fee | all OK policies |
+| COBOL total differs from Java total | 73 policies: exactly the 73 with an endorsement charge |
+| COBOL total differs from Pharo total | 77 policies: the 73 with an endorsement charge, plus 4 R82 policies without one |
+| Pharo total differs from Java total | 5 policies, all R82 |
+
+So Java charges endorsements the way Pharo does, as the owner decided. On the totals, Java follows Pharo and differs from COBOL on every endorsed fixture. That difference is intended and not counted. Separately, `read_cobol` in `driver.py` slices the COBOL total at columns 56-67 instead of 57-68 (the fee takes 52-56). That reading is wrong by a factor of 10, but the comparison never uses it. The figures above use 57-68.
+
 ## Left open
 
 | Policy | COBOL~Pharo difference | Rule | COBOL | Pharo |
@@ -147,7 +162,9 @@ No new COBOL~Pharo disagreement was found: the COBOL~Pharo pair is 195/5 before 
 
 ## Reproduce
 
+Both targets exit nonzero while any pair has a mismatch, so they currently fail on the 5 accepted R82 differences; the counts are in the `PARITY` lines and `parity.json`.
+
 ```
 make insrules-reset     # resets the estate, runs COBOL, Pharo and Java on all 200 fixtures, then parity
-make insrules-parity    # parity only; writes legacy-rating/build/parity.json
+make insrules-parity    # reruns all three raters (insrules-run), then compares; writes legacy-rating/build/parity.json
 ```
