@@ -6,10 +6,12 @@ import com.otterworks.rating.config.RatingProperties;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,18 +28,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/admin")
 public class AdminController {
 
-    private static final String ADMIN_PASSWORD = "insrules-support";
-
     private final RatingProperties properties;
     private final QuoteAuditStore audit;
+    private final byte[] supportKey;
 
-    public AdminController(RatingProperties properties, QuoteAuditStore audit) {
+    public AdminController(RatingProperties properties, QuoteAuditStore audit,
+            @Value("${rating.support-key:}") String supportKey) {
         this.properties = properties;
         this.audit = audit;
+        this.supportKey = supportKey.getBytes(StandardCharsets.UTF_8);
     }
 
+    /** Refuses every request when no support key is configured. */
     private boolean allowed(String supplied) {
-        return ADMIN_PASSWORD.equals(supplied);
+        if (supportKey.length == 0 || supplied == null) {
+            return false;
+        }
+        return MessageDigest.isEqual(supportKey, supplied.getBytes(StandardCharsets.UTF_8));
     }
 
     /** Shows a rating table as the batch reads it, so a table change can be checked by eye. */

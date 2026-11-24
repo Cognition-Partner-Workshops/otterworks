@@ -28,6 +28,7 @@ services:
     build: ./modern-rating
     environment:
       RATING_TABLES_DIR: /estate/tables
+      RATING_SUPPORT_KEY: ${RATING_SUPPORT_KEY:-}
     volumes:
       - ./legacy-rating/tables:/estate/tables:ro
       - ./legacy-rating/fixtures:/estate/fixtures:ro

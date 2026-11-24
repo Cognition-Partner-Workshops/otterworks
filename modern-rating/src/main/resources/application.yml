@@ -17,3 +17,4 @@ management:
         include: health
 rating:
   tables-dir: ${RATING_TABLES_DIR:../legacy-rating/tables}
+  support-key: ${RATING_SUPPORT_KEY:}

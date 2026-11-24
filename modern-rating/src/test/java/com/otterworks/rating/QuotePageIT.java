@@ -12,8 +12,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "rating.support-key=" + QuotePageIT.SUPPORT_KEY)
 class QuotePageIT {
+
+    static final String SUPPORT_KEY = "it-only-support-key";
 
     @Autowired
     private TestRestTemplate http;
@@ -28,7 +31,7 @@ class QuotePageIT {
     @Test
     void servesARatingTableToSupportAndRefusesWithoutTheKey() {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Support-Key", "insrules-support");
+        headers.set("X-Support-Key", SUPPORT_KEY);
         var table = http.exchange("/admin/tables/class-factors.dat", HttpMethod.GET,
                 new HttpEntity<>(headers), String.class);
         assertThat(table.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -36,6 +39,11 @@ class QuotePageIT {
 
         assertThat(http.getForEntity("/admin/tables/class-factors.dat", String.class).getStatusCode())
                 .isEqualTo(HttpStatus.FORBIDDEN);
+
+        HttpHeaders oldKey = new HttpHeaders();
+        oldKey.set("X-Support-Key", "insrules-support");
+        assertThat(http.exchange("/admin/tables/class-factors.dat", HttpMethod.GET,
+                new HttpEntity<>(oldKey), String.class).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test
