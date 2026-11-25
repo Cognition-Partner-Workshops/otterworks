@@ -18,6 +18,7 @@ from app.middleware.request_log import (
     redact_headers,
     redact_query,
 )
+from tests.conftest import auth_header
 
 
 def test_redact_headers_masks_credentials_only() -> None:
@@ -63,14 +64,14 @@ async def test_logged_request_keeps_body_but_not_bearer_token(
     resp = await client.get(
         "/api/v1/documents/",
         params={"owner_id": str(owner_id)},
-        headers={"Authorization": "Bearer top-secret", "Cookie": "sid=1"},
+        headers={**auth_header(owner_id), "Cookie": "sid=1"},
     )
     assert resp.status_code == 200
 
     files = list(tmp_path.iterdir())
     assert len(files) == 1
     raw = files[0].read_text()
-    assert "top-secret" not in raw
+    assert auth_header(owner_id)["Authorization"].split()[1] not in raw
     assert "sid=1" not in raw
     record = json.loads(raw.splitlines()[-1])
     assert record["headers"]["authorization"] == REDACTED

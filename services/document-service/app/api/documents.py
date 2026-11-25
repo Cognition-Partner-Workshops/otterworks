@@ -85,19 +85,38 @@ def _ensure_owner(document: object, user_id: UUID) -> None:
         raise HTTPException(status_code=403, detail="Access denied")
 
 
+def _resolve_owner(requested_owner: UUID | None, caller_id: UUID | None) -> UUID | None:
+    """An authenticated caller may only act as itself; naming anyone else is denied.
+
+    A request with no caller identity can only come from inside the network (the
+    gateway rejects unauthenticated traffic), e.g. the search-service reindexer, so
+    it keeps addressing owners explicitly.
+    """
+    if caller_id is None:
+        return requested_owner
+    if requested_owner is not None and requested_owner != caller_id:
+        raise HTTPException(
+            status_code=403, detail="owner_id must match the authenticated caller"
+        )
+    return caller_id
+
+
+def _require_owner(requested_owner: UUID | None, request: Request) -> UUID:
+    owner_id = _resolve_owner(requested_owner, _extract_user_id(request))
+    if owner_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="owner_id is required: provide it in the body or authenticate via JWT",
+        )
+    return owner_id
+
+
 async def _do_create_document(
     body: DocumentCreate,
     request: Request,
     db: AsyncSession,
 ) -> DocumentResponse:
-    if not body.owner_id:
-        extracted_id = _extract_user_id(request)
-        if not extracted_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="owner_id is required: provide it in the body or authenticate via JWT",
-            )
-        body.owner_id = extracted_id
+    body.owner_id = _require_owner(body.owner_id, request)
 
     service = DocumentService(db)
     document = await service.create(body)
@@ -134,15 +153,18 @@ async def create_document_no_slash(
 
 @router.get("/search", response_model=DocumentListResponse)
 async def search_documents(
+    request: Request,
     q: str = Query(..., min_length=1),
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    """Search documents by title or content."""
+    """Search the caller's documents by title or content."""
     await _maybe_inject_latency()
     service = DocumentService(db)
-    items, total = await service.search(q, page=page, size=size)
+    items, total = await service.search(
+        q, owner_id=_extract_user_id(request), page=page, size=size
+    )
     return DocumentListResponse(
         items=items,
         total=total,
@@ -178,6 +200,7 @@ async def get_shared_document(
 
 
 async def _do_list_documents(
+    request: Request,
     owner_id: UUID | None,
     folder_id: UUID | None,
     page: int,
@@ -185,6 +208,7 @@ async def _do_list_documents(
     db: AsyncSession,
 ) -> DocumentListResponse:
     await _maybe_inject_latency()
+    owner_id = _resolve_owner(owner_id, _extract_user_id(request))
     service = DocumentService(db)
     items, total = await service.list_documents(
         owner_id=owner_id, folder_id=folder_id, page=page, size=size
@@ -199,6 +223,7 @@ async def _do_list_documents(
 
 
 async def _do_filter_documents(
+    request: Request,
     owner_id: UUID | None,
     folder_id: UUID | None,
     title: str | None,
@@ -210,6 +235,7 @@ async def _do_filter_documents(
     db: AsyncSession,
 ) -> DocumentListResponse:
     await _maybe_inject_latency()
+    owner_id = _resolve_owner(owner_id, _extract_user_id(request))
     repo = DocumentQueryRepository(db)
     filters = {
         "owner_id": str(owner_id) if owner_id else None,
@@ -267,10 +293,10 @@ async def list_documents(
     db: AsyncSession = Depends(get_db),
 ):
     """List documents with optional filtering and pagination."""
-    effective_owner = owner_id or _extract_user_id(request)
     if _is_filtered(title, content_type, sort, direction):
         return await _do_filter_documents(
-            effective_owner,
+            request,
+            owner_id,
             folder_id,
             title,
             content_type,
@@ -280,7 +306,7 @@ async def list_documents(
             size,
             db,
         )
-    return await _do_list_documents(effective_owner, folder_id, page, size, db)
+    return await _do_list_documents(request, owner_id, folder_id, page, size, db)
 
 
 @router.get(
@@ -301,10 +327,10 @@ async def list_documents_no_slash(
     db: AsyncSession = Depends(get_db),
 ):
     """List documents (no trailing slash)."""
-    effective_owner = owner_id or _extract_user_id(request)
     if _is_filtered(title, content_type, sort, direction):
         return await _do_filter_documents(
-            effective_owner,
+            request,
+            owner_id,
             folder_id,
             title,
             content_type,
@@ -314,7 +340,7 @@ async def list_documents_no_slash(
             size,
             db,
         )
-    return await _do_list_documents(effective_owner, folder_id, page, size, db)
+    return await _do_list_documents(request, owner_id, folder_id, page, size, db)
 
 
 @router.get("/{document_id}", response_model=DocumentResponse)
@@ -492,11 +518,13 @@ async def export_document(
 async def create_from_template(
     template_id: UUID,
     body: DocumentFromTemplate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ):
-    """Create a document from a template."""
+    """Create a document from a template, owned by the caller."""
+    owner_id = _require_owner(body.owner_id, request)
     service = DocumentService(db)
-    document = await service.create_from_template(template_id, body)
+    document = await service.create_from_template(template_id, body, owner_id)
     if not document:
         raise HTTPException(status_code=404, detail="Template not found")
     logger.info(

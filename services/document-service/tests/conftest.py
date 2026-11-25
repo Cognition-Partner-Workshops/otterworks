@@ -1,10 +1,13 @@
 """Shared test fixtures."""
 
+import os
 import uuid
 from collections.abc import AsyncGenerator
 
+import jwt
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import Uuid
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.api import documents as documents_api
@@ -15,6 +18,30 @@ from app.middleware import request_log
 from app.models.document import Comment, Document, DocumentVersion, Template  # noqa: F401
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+
+def _bind_uuid_hyphenated(self, dialect):  # noqa: ANN001, ANN202 - SQLAlchemy hook
+    """Store uuids the way Postgres renders them as text.
+
+    SQLite has no uuid type, so SQLAlchemy would store bare hex and the
+    owner-scoped raw SQL in DocumentQueryRepository could never match a caller.
+    """
+
+    def process(value):  # noqa: ANN001, ANN202
+        return None if value is None else str(value)
+
+    return process
+
+
+Uuid.bind_processor = _bind_uuid_hyphenated
+TEST_JWT_SECRET = "test-jwt-secret-for-unit-tests-pad32"  # noqa: S105
+os.environ.setdefault("JWT_SECRET", TEST_JWT_SECRET)
+
+
+def auth_header(user_id: uuid.UUID) -> dict[str, str]:
+    """Bearer header the app accepts for ``user_id`` under the suite's JWT secret."""
+    token = jwt.encode({"user_id": str(user_id)}, os.environ["JWT_SECRET"], algorithm="HS256")
+    return {"Authorization": f"Bearer {token}"}
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 TestingSessionLocal = async_sessionmaker(
