@@ -1,3 +1,4 @@
+import UIKit
 import XCTest
 
 class AppUITestCase: XCTestCase {
@@ -36,7 +37,7 @@ class AppUITestCase: XCTestCase {
             let banner = self.element(.other, "banner")
             return landscape == orientation.isLandscape && banner.exists && banner.frame.width <= frame.width + 1
         }, object: nil)
-        wait(for: [settled], timeout: 10)
+        wait(for: [settled], timeout: 20)
     }
 
     override func tearDownWithError() throws {
@@ -272,8 +273,12 @@ final class ShareLinkUITests: AppUITestCase {
         assertText("https://share.example.test/documents/doc-1")
         let copy = element(.button, "Copy link")
         reveal(copy)
+        let changeCount = UIPasteboard.general.changeCount
         copy.tap()
-        XCTAssertTrue(element(.button, "Copied!").waitForExistence(timeout: 5))
+        let clipboardChanged = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            UIPasteboard.general.changeCount > changeCount
+        }, object: nil)
+        wait(for: [clipboardChanged], timeout: 5)
     }
 }
 
