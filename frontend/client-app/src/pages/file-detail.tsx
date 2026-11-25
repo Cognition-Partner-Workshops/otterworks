@@ -27,10 +27,11 @@ import { filesApi, authApi } from "@/lib/api";
 import { formatFileSize, formatRelativeTime, getInitials, generateColor } from "@/lib/utils";
 
 export default function FileDetailPage() {
+  const { id } = useParams();
   return (
     <AppShell>
       <ErrorBoundary>
-        <FileDetailContent />
+        <FileDetailContent key={id} />
       </ErrorBoundary>
     </AppShell>
   );

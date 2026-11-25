@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { authApi } from "@/lib/api";
+import { isResourcePath } from "@/lib/deep-link";
 import { useAuthStore } from "@/stores/auth-store";
 import { Logo } from "@/components/ui/logo";
 
@@ -17,6 +18,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const { setUser } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -39,7 +41,11 @@ export default function LoginPage() {
       localStorage.setItem("otter_refresh_token", tokens.refreshToken);
       const user = await authApi.getProfile();
       setUser(user);
-      navigate("/dashboard");
+      if (isResourcePath(state?.deepLinkPath)) {
+        navigate(state.deepLinkPath, { replace: true });
+      } else {
+        navigate("/dashboard");
+      }
     } catch {
       setError("Invalid email or password. Please try again.");
     } finally {

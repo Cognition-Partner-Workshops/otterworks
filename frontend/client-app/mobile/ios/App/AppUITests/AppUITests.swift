@@ -276,3 +276,42 @@ final class ShareLinkUITests: AppUITestCase {
         XCTAssertTrue(element(.button, "Copied!").waitForExistence(timeout: 5))
     }
 }
+
+final class DeepLinkUITests: AppUITestCase {
+    private func signOut() {
+        openSidebar()
+        element(.button, "Sign out").tap()
+        XCTAssertTrue(app.textFields["you@example.com"].waitForExistence(timeout: 10))
+    }
+
+    func testColdFileDeepLinkContinuesAfterLogin() {
+        login()
+        signOut()
+        app.terminate()
+        XCUIDevice.shared.system.open(URL(string: "otterworks://files/file-1")!)
+        XCTAssertTrue(app.textFields["you@example.com"].waitForExistence(timeout: 20))
+
+        login()
+        XCTAssertTrue(element(.button, "Download").waitForExistence(timeout: 10))
+        assertText("Harbor report.txt")
+    }
+
+    func testWarmDocumentDeepLinkAndUnknownLink() {
+        login()
+        XCUIDevice.shared.system.open(URL(string: "otterworks://documents/doc-1")!)
+        let editor = app.webViews.textViews.firstMatch
+        XCTAssertTrue(editor.waitForExistence(timeout: 10))
+        assertText("Welcome aboard the harbor.")
+
+        XCUIDevice.shared.system.open(URL(string: "otterworks://unknown/doc-1")!)
+        let leftEditor = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: editor)
+        leftEditor.isInverted = true
+        wait(for: [leftEditor], timeout: 2)
+        assertText("Welcome aboard the harbor.")
+
+        XCUIDevice.shared.system.open(URL(string: "otterworks://documents/doc-1")!)
+        signOut()
+        login()
+        assertText("Welcome back! Here's your latest activity.")
+    }
+}

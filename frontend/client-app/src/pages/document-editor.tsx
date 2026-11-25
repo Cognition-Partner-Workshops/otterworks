@@ -24,10 +24,11 @@ import { copyShareLink, getShareLink } from "@/lib/share-link";
 import { formatRelativeTime } from "@/lib/utils";
 
 export default function DocumentEditorPage() {
+  const { id } = useParams();
   return (
     <AppShell>
       <ErrorBoundary>
-        <DocumentEditorContent />
+        <DocumentEditorContent key={id} />
       </ErrorBoundary>
     </AppShell>
   );
