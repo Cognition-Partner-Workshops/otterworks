@@ -1,6 +1,10 @@
 runs-on: default
 # One-time setup (e.g., install system tools, global CLIs).
 initialize: |
+  # Keep this password with the seeded PostgreSQL volume in the snapshot.
+  if [ ! -e .env ]; then
+    (umask 077; set -C; printf 'DB_PASSWORD=%s\n' "$(openssl rand -hex 32)" > .env)
+  fi
   docker compose -f docker-compose.infra.yml pull
   # Serialized with retries: parallel builds overwhelm Docker's embedded DNS (127.0.0.11)
   # and dependency fetches (e.g. cargo's static.crates.io) intermittently fail to resolve.

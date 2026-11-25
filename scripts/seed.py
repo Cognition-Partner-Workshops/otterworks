@@ -32,7 +32,7 @@ DB_CONFIG = {
     "port":     int(os.getenv("DB_PORT", "5432")),
     "dbname":   os.getenv("DB_NAME",     "otterworks"),
     "user":     os.getenv("DB_USER",     "otterworks"),
-    "password": os.getenv("DB_PASSWORD", "otterworks_dev"),
+    "password": os.getenv("DB_PASSWORD"),
 }
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -417,6 +417,9 @@ def seed_audit_logs(cur) -> None:
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
+    if not DB_CONFIG["password"]:
+        sys.exit("Set DB_PASSWORD in your environment or run make seed with a configured .env.")
+
     print("\nOtterWorks admin-service seed script")
     print(f"  Target: {DB_CONFIG['user']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['dbname']}\n")
 

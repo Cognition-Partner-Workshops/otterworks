@@ -13,6 +13,21 @@ Individual service development may also require the language toolchains listed i
 
 ## Quick Start (Local Development)
 
+From the repo root, create a local database password once. If you already have
+a root `.env`, add a single `DB_PASSWORD` entry to it instead. You can also set
+`DB_PASSWORD` in your shell. Use a URL-safe hexadecimal value because Compose
+also interpolates it into PostgreSQL connection URLs.
+
+```bash
+(umask 077; set -C; printf 'DB_PASSWORD=%s\n' "$(openssl rand -hex 32)" > .env)
+```
+
+For an existing local PostgreSQL volume, change the database role's password to
+the new value before restarting the stack. While the old PostgreSQL container
+is running, open `docker exec -it otterworks-postgres psql -U otterworks -d postgres`,
+run `\password otterworks`, and enter the new value at both prompts.
+Exit with `\q`, then run `make up` to recreate the clients with the new value.
+
 ```bash
 # Start infrastructure (Postgres, Redis, LocalStack, MeiliSearch, observability stack)
 make infra-up
