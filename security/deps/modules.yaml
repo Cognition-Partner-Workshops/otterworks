@@ -48,12 +48,11 @@ modules:
     path: services/notification-service
     build: gradle
     java_home:
-      - $JAVA_HOME_17_X64
-      - /usr/lib/jvm/java-17-openjdk-amd64
-    # No wrapper in this module, so the `gradle` on PATH — which both ci.yml and the
-    # dependency workflow pin to 8.6 with setup-gradle. `--rerun-tasks` because the
-    # suite counts are the evidence: an UP-TO-DATE `:test` would let the harness read
-    # the previous run's XML and present it as a fresh measurement.
+      - $JAVA_HOME_25_X64
+      - /usr/lib/jvm/java-25-openjdk-amd64
+    tool:
+      - ./gradlew
+    # Always refresh the test XML that the harness measures.
     test: test --rerun-tasks --no-daemon
     cases: cases/notification-service.json
 
