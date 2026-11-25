@@ -1,6 +1,10 @@
 runs-on: default
 # One-time setup (e.g., install system tools, global CLIs).
 initialize: |
+  pip install --user uv poetry
+  echo "PATH=$HOME/.local/bin:$PATH" >> $ENVRC
+  $HOME/.local/bin/uv python install 3.12
+
   docker compose -f docker-compose.infra.yml pull
   # Serialized with retries: parallel builds overwhelm Docker's embedded DNS (127.0.0.11)
   # and dependency fetches (e.g. cargo's static.crates.io) intermittently fail to resolve.
@@ -125,6 +129,7 @@ maintenance: |
   # The rolldown native binding is explicit: an npm optional-deps bug omits it and Vite fails.
   (cd frontend/client-app && npm install && npm install --no-save @rolldown/binding-linux-x64-gnu@1.1.5)
   (cd frontend/client-app/desktop && npm install)
+  (cd services/document-service && $HOME/.local/bin/poetry env use "$($HOME/.local/bin/uv python find 3.12)" && env -u VIRTUAL_ENV $HOME/.local/bin/poetry install --no-interaction --no-root)
 knowledge:
   - name: run backend + web
     contents: |
@@ -173,6 +178,12 @@ knowledge:
   - name: lint
     contents: |
       make lint
+  - name: equivalence-gate
+    contents: |
+      make eq-gate && make eq-exploit-refactored && make eq-tests  (FINDING=OW-SEC-40x optional)
+  - name: code-scans
+    contents: |
+      Security scans only read the code; no dependencies are installed.
 ---
 # Windows sessions for the Electron desktop shell. Windows runs blueprint commands in
 # bash (Git Bash), the same as Linux, so this document must be bash - not PowerShell.
