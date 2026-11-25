@@ -1,0 +1,187 @@
+#if __DESIGNER_DATA
+#error Do not define __DESIGNER_DATA.
+<?xml version="1.0" encoding="utf-8"?>
+<om:MetaModel MajorVersion="1" MinorVersion="3" Core="2b131234-7959-458d-834f-2dc0e1cb6d05" ScheduleModel="66366196-361d-448d-976f-cab5e87496d2" xmlns:om="http://schemas.microsoft.com/BizTalk/2003/DesignerData">
+  <om:Element Type="Module" OID="d2e7c1a0-0000-4000-8000-000000000001" LowerBound="1.1" HigherBound="140.1">
+    <om:Property Name="ReportToAnalyst" Value="True" />
+    <om:Property Name="Name" Value="ThistlecombeMutual.ClaimsHub.Orchestrations" />
+    <om:Property Name="Signal" Value="False" />
+    <om:Element Type="ServiceDeclaration" OID="d2e7c1a0-0000-4000-8000-000000000002" ParentLink="Module_ServiceDeclaration" LowerBound="12.1" HigherBound="139.1">
+      <om:Property Name="InitializedTransactionType" Value="False" />
+      <om:Property Name="IsInvokable" Value="False" />
+      <om:Property Name="TypeModifier" Value="Internal" />
+      <om:Property Name="Name" Value="FnolIntake" />
+    </om:Element>
+  </om:Element>
+</om:MetaModel>
+#endif // __DESIGNER_DATA
+[Microsoft.XLANGs.BaseTypes.BPELExportable(false)]
+module ThistlecombeMutual.ClaimsHub.Orchestrations
+{
+    // Correlation on claim number: an agency may send a corrected FNOL for the same claim within the
+    // same night. The first message activates the instance; a follow-up with the same ClaimNumber
+    // joins it inside the 15 minute window and replaces the pending facts. Anything after the window
+    // starts a new instance, which the claims system then rejects as a duplicate.
+    internal correlationtype ClaimNumberCorrelationType
+    {
+        ClaimsHub.PropertySchema.ClaimNumber
+    };
+
+    internal porttype FnolReceivePortType
+    {
+        oneway ReceiveFnol
+        {
+            ThistlecombeMutual.ClaimsHub.Schemas.ACORD_ClaimsNotificationAddRq
+        };
+    };
+
+    internal porttype PolicyLookupPortType
+    {
+        requestresponse LookupPolicy
+        {
+            ThistlecombeMutual.ClaimsHub.Schemas.ACORD_PolicyInq.PolicyInqRq,
+            ThistlecombeMutual.ClaimsHub.Schemas.ACORD_PolicyInq.PolicyInqRs
+        };
+    };
+
+    internal porttype ClaimsDbPortType
+    {
+        oneway InsertClaim
+        {
+            ThistlecombeMutual.ClaimsHub.Schemas.ClaimsDb_InsertClaim
+        };
+    };
+
+    internal porttype AssignmentPortType
+    {
+        oneway RequestAssignment
+        {
+            ThistlecombeMutual.ClaimsHub.Schemas.AdjusterAssignment.AssignmentRequest
+        };
+    };
+
+    [Microsoft.XLANGs.BaseTypes.BPELExportable(false)]
+    internal service FnolIntake
+    {
+        port implements FnolReceivePortType FnolIn;
+        port uses PolicyLookupPortType PolicyLookup;
+        port uses ClaimsDbPortType ClaimsDb;
+        port uses AssignmentPortType Assignment;
+
+        message ThistlecombeMutual.ClaimsHub.Schemas.ACORD_ClaimsNotificationAddRq msgFnol;
+        message ThistlecombeMutual.ClaimsHub.Schemas.ACORD_ClaimsNotificationAddRq msgFnolCorrection;
+        message ThistlecombeMutual.ClaimsHub.Schemas.Canonical_Claim msgClaim;
+        message ThistlecombeMutual.ClaimsHub.Schemas.ACORD_PolicyInq.PolicyInqRq msgPolicyRq;
+        message ThistlecombeMutual.ClaimsHub.Schemas.ACORD_PolicyInq.PolicyInqRs msgPolicyRs;
+        message ThistlecombeMutual.ClaimsHub.Schemas.ClaimsDb_InsertClaim msgInsertClaim;
+        message ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts msgTriageFacts;
+        message ThistlecombeMutual.ClaimsHub.Schemas.AdjusterAssignment.AssignmentRequest msgAssignment;
+
+        correlationset ClaimNumberCorrelation : ClaimNumberCorrelationType;
+
+        System.String claimNumber;
+        System.String triageOutcome;
+        System.Boolean corrected;
+        Microsoft.RuleEngine.Policy triagePolicy;
+
+        body ()
+        {
+            // Shape: Receive_Fnol (activating, initializes ClaimNumberCorrelation)
+            activate receive (FnolIn.ReceiveFnol, msgFnol, initialize ClaimNumberCorrelation);
+            claimNumber = msgFnol(ClaimsHub.PropertySchema.ClaimNumber);
+            corrected = false;
+
+            // Shape: Listen_Correction. Branch 1 waits for a correction on the same claim number;
+            // branch 2 is a 15 minute delay. Whichever fires first wins.
+            listen
+            {
+                // Shape: Receive_Correction (follows ClaimNumberCorrelation)
+                receive (FnolIn.ReceiveFnol, msgFnolCorrection, ClaimNumberCorrelation);
+                corrected = true;
+                // Shape: Construct_Canonical_From_Correction, map Fnol_to_CanonicalClaim
+                construct msgClaim
+                {
+                    transform (msgClaim) = ThistlecombeMutual.ClaimsHub.Maps.Fnol_to_CanonicalClaim (msgFnolCorrection);
+                }
+            }
+            // Shape: Delay_CorrectionWindow
+            delay new System.TimeSpan(0, 15, 0);
+            {
+                // Shape: Construct_Canonical, map Fnol_to_CanonicalClaim
+                construct msgClaim
+                {
+                    transform (msgClaim) = ThistlecombeMutual.ClaimsHub.Maps.Fnol_to_CanonicalClaim (msgFnol);
+                }
+            }
+
+            // Shape: Construct_PolicyRq, map CanonicalClaim_to_PolicyInqRq
+            construct msgPolicyRq
+            {
+                transform (msgPolicyRq) = ThistlecombeMutual.ClaimsHub.Maps.CanonicalClaim_to_PolicyInqRq (msgClaim);
+            }
+            // Shape: Send_PolicyRq / Receive_PolicyRs on the WCF-SQL solicit-response port
+            send (PolicyLookup.LookupPolicy, msgPolicyRq);
+            receive (PolicyLookup.LookupPolicy, msgPolicyRs);
+
+            // Shape: Construct_InsertClaim, two-source map Claim_PolicyInqRs_to_InsertClaim
+            construct msgInsertClaim
+            {
+                transform (msgInsertClaim) = ThistlecombeMutual.ClaimsHub.Maps.Claim_PolicyInqRs_to_InsertClaim (msgClaim, msgPolicyRs);
+            }
+
+            // Shape: Construct_TriageFacts, map InsertClaim_to_TriageFacts (scripting functoids)
+            construct msgTriageFacts
+            {
+                transform (msgTriageFacts) = ThistlecombeMutual.ClaimsHub.Maps.InsertClaim_to_TriageFacts (msgInsertClaim);
+            }
+
+            // Shape: Call_Rules ClaimTriage (atomic scope, as the designer requires). The deployed policy
+            // version is resolved by the Rule Engine; the policy writes Outcome and Reason into the facts.
+            scope atomic transaction TriageTx
+            {
+                body
+                {
+                    construct msgTriageFacts
+                    {
+                        msgTriageFacts = msgTriageFacts;
+                        triagePolicy = new Microsoft.RuleEngine.Policy("ClaimTriage");
+                        triagePolicy.Execute(msgTriageFacts);
+                    }
+                }
+            }
+            // Shape: Expression_ReadOutcome
+            triageOutcome = xpath(msgTriageFacts, "string(/*[local-name()='TriageFacts']/*[local-name()='Outcome'])");
+
+            // Shape: Decide_Outcome
+            if (triageOutcome == "DECLINE_NOT_IN_FORCE")
+            {
+                // Policy was not in force at the loss date: nothing is inserted; the FILE send port
+                // subscribed to TriageOutcome routes the facts to the declines folder.
+                terminate ("FNOL " + claimNumber + " declined: policy not in force at loss date");
+            }
+            else
+            {
+                // Shape: Construct_InsertClaim_WithOutcome (message assignment)
+                construct msgInsertClaim
+                {
+                    msgInsertClaim = msgInsertClaim;
+                    xpath(msgInsertClaim, "/*[local-name()='usp_InsertClaim']/*[local-name()='TriageOutcome']") = triageOutcome;
+                    msgInsertClaim(ClaimsHub.PropertySchema.TriageOutcome) = triageOutcome;
+                }
+                // Shape: Send_InsertClaim (WCF-SQL one-way)
+                send (ClaimsDb.InsertClaim, msgInsertClaim);
+
+                // Shape: Decide_Assignment. Fast-track claims are settled from the desk; everything
+                // else gets an adjuster through the AdjusterAssignment orchestration.
+                if (triageOutcome != "FAST_TRACK")
+                {
+                    construct msgAssignment
+                    {
+                        msgAssignment = ThistlecombeMutual.ClaimsHub.Helpers.AssignmentFactory.FromInsertClaim(msgInsertClaim, msgTriageFacts);
+                    }
+                    send (Assignment.RequestAssignment, msgAssignment);
+                }
+            }
+        }
+    }
+}

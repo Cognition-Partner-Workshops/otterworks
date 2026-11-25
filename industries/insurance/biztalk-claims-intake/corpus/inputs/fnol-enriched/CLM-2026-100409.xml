@@ -1,0 +1,26 @@
+<ns0:Root xmlns:ns0="http://schemas.microsoft.com/BizTalk/2003/aggschema">
+  <InputMessagePart_0>
+    <ns0:Claim xmlns:ns0="http://schemas.thistlecombe.example/canonical/claim"><ClaimNumber>CLM-2026-100409</ClaimNumber><SourceRqUID>6f1c3a2e-0000-4b1a-9c0d-000000000009</SourceRqUID><Agency><Id>AG-0417</Id><Name>Harbourline Brokers</Name></Agency><PolicyNumber>POL-HOME-48163</PolicyNumber><LineOfBusiness>HOME</LineOfBusiness><Claimant><FullName>Aiko Tanizaki</FullName><TaxIdMasked>***-**-7117</TaxIdMasked><Email>aiko.tanizaki@example.net</Email><PriorFraudFlag>false</PriorFraudFlag></Claimant><Loss><LossDate>2026-09-15</LossDate><ReportedDate>2026-09-29</ReportedDate><CauseCode>LIAB</CauseCode><Description>Visitor slipped on the icy front step and was taken to hospital</Description><EstimatedAmount>25000.00</EstimatedAmount><Injury>true</Injury><PoliceReport>false</PoliceReport><City>Newport</City><State>RI</State><PostalCode>02840</PostalCode></Loss></ns0:Claim>
+  </InputMessagePart_0>
+  <InputMessagePart_1>
+    <ns0:PolicyInqRs xmlns:ns0="http://schemas.thistlecombe.example/acord/policy">
+      <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000009</RqUID>
+      <PolicyNumber>POL-HOME-48163</PolicyNumber>
+      <PolicyStatusCd>Active</PolicyStatusCd>
+      <LOBCd>HOME</LOBCd>
+      <EffectiveDt>2025-11-01</EffectiveDt>
+      <ExpirationDt>2026-10-31</ExpirationDt>
+      <DeductibleAmt>500.00</DeductibleAmt>
+      <CoverageLimitAmt>100000.00</CoverageLimitAmt>
+      <InsuredPartyId>PTY-070279</InsuredPartyId>
+      <Coverage>
+        <CoverageCd>DWELL</CoverageCd>
+        <LimitAmt>100000.00</LimitAmt>
+      </Coverage>
+      <Coverage>
+        <CoverageCd>LIAB</CoverageCd>
+        <LimitAmt>300000.00</LimitAmt>
+      </Coverage>
+    </ns0:PolicyInqRs>
+  </InputMessagePart_1>
+</ns0:Root>

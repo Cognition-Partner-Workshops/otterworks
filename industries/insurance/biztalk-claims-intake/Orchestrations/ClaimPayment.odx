@@ -1,0 +1,152 @@
+#if __DESIGNER_DATA
+#error Do not define __DESIGNER_DATA.
+<?xml version="1.0" encoding="utf-8"?>
+<om:MetaModel MajorVersion="1" MinorVersion="3" Core="2b131234-7959-458d-834f-2dc0e1cb6d05" ScheduleModel="66366196-361d-448d-976f-cab5e87496d2" xmlns:om="http://schemas.microsoft.com/BizTalk/2003/DesignerData">
+  <om:Element Type="Module" OID="d2e7c1a0-0000-4000-8000-000000000011" LowerBound="1.1" HigherBound="130.1">
+    <om:Property Name="Name" Value="ThistlecombeMutual.ClaimsHub.Orchestrations" />
+    <om:Element Type="ServiceDeclaration" OID="d2e7c1a0-0000-4000-8000-000000000012" ParentLink="Module_ServiceDeclaration" LowerBound="12.1" HigherBound="129.1">
+      <om:Property Name="Name" Value="ClaimPayment" />
+    </om:Element>
+  </om:Element>
+</om:MetaModel>
+#endif // __DESIGNER_DATA
+[Microsoft.XLANGs.BaseTypes.BPELExportable(false)]
+module ThistlecombeMutual.ClaimsHub.Orchestrations
+{
+    internal porttype PaymentReceivePortType
+    {
+        oneway ReceiveInstruction
+        {
+            ThistlecombeMutual.ClaimsHub.Schemas.Canonical_PaymentInstruction
+        };
+    };
+
+    internal porttype LedgerPortType
+    {
+        oneway PostPayment
+        {
+            ThistlecombeMutual.ClaimsHub.Schemas.ClaimsDb_LedgerPost
+        };
+        oneway ReversePayment
+        {
+            ThistlecombeMutual.ClaimsHub.Schemas.ClaimsDb_LedgerPost
+        };
+    };
+
+    internal porttype VendorPortType
+    {
+        requestresponse DeliverRemittance
+        {
+            ThistlecombeMutual.ClaimsHub.Schemas.PaymentVendor_Remittance_FF,
+            System.Xml.XmlDocument
+        };
+    };
+
+    internal porttype OpsMailPortType
+    {
+        oneway Notify
+        {
+            System.Xml.XmlDocument
+        };
+    };
+
+    [Microsoft.XLANGs.BaseTypes.BPELExportable(false)]
+    internal service ClaimPayment
+    {
+        port implements PaymentReceivePortType PaymentIn;
+        port uses LedgerPortType Ledger;
+        port uses VendorPortType Vendor;
+        port uses OpsMailPortType OpsMail;
+
+        message ThistlecombeMutual.ClaimsHub.Schemas.Canonical_PaymentInstruction msgInstruction;
+        message ThistlecombeMutual.ClaimsHub.Schemas.ClaimsDb_LedgerPost msgLedgerPost;
+        message ThistlecombeMutual.ClaimsHub.Schemas.PaymentVendor_Remittance_FF msgRemittance;
+        message System.Xml.XmlDocument msgVendorAck;
+        message System.Xml.XmlDocument msgOpsNote;
+
+        System.Int32 attempts;
+        System.Boolean delivered;
+
+        body ()
+        {
+            // Shape: Receive_Instruction (activating). FILE receive port polls the claims system drop folder.
+            activate receive (PaymentIn.ReceiveInstruction, msgInstruction);
+
+            // Shape: Scope_Payment. Long running: the vendor SFTP window can take hours, and the ledger
+            // post must be undone when the remittance never reaches the vendor.
+            scope longrunning transaction PaymentTx
+            {
+                body
+                {
+                    // Shape: Scope_LedgerPost. Atomic: one post, compensated by one reversal.
+                    scope atomic transaction LedgerTx
+                    {
+                        body
+                        {
+                            // Shape: Construct_LedgerPost, map Payment_to_LedgerPost (scripting functoids)
+                            construct msgLedgerPost
+                            {
+                                transform (msgLedgerPost) = ThistlecombeMutual.ClaimsHub.Maps.Payment_to_LedgerPost (msgInstruction);
+                            }
+                            // Shape: Send_LedgerPost (WCF-SQL usp_PostClaimPayment)
+                            send (Ledger.PostPayment, msgLedgerPost);
+                        }
+                        compensation
+                        {
+                            // Shape: Send_LedgerReversal. Same document, the reversal procedure negates it.
+                            send (Ledger.ReversePayment, msgLedgerPost);
+                        }
+                    }
+
+                    // Shape: Construct_Remittance, map Payment_to_VendorRemittance (looping functoid).
+                    // The send pipeline VendorRemittanceSendPipeline assembles the positional file.
+                    construct msgRemittance
+                    {
+                        transform (msgRemittance) = ThistlecombeMutual.ClaimsHub.Maps.Payment_to_VendorRemittance (msgInstruction);
+                    }
+
+                    // Shape: Loop_Deliver. Up to three attempts, ten minutes apart, against the vendor SFTP window.
+                    attempts = 0;
+                    delivered = false;
+                    while (!delivered && attempts < 3)
+                    {
+                        attempts = attempts + 1;
+                        scope
+                        {
+                            body
+                            {
+                                send (Vendor.DeliverRemittance, msgRemittance);
+                                receive (Vendor.DeliverRemittance, msgVendorAck);
+                                delivered = true;
+                            }
+                            exceptions
+                            {
+                                catch (Microsoft.XLANGs.BaseTypes.DeliveryFailureException ex)
+                                {
+                                    delay new System.TimeSpan(0, 10, 0);
+                                }
+                            }
+                        }
+                    }
+                    if (!delivered)
+                    {
+                        throw new ThistlecombeMutual.ClaimsHub.Helpers.VendorUnreachableException(msgInstruction(ClaimsHub.PropertySchema.ClaimNumber));
+                    }
+                }
+                exceptions
+                {
+                    catch (ThistlecombeMutual.ClaimsHub.Helpers.VendorUnreachableException vex)
+                    {
+                        // Shape: Compensate_LedgerTx. Undo the ledger post, then tell operations.
+                        compensate LedgerTx;
+                        construct msgOpsNote
+                        {
+                            msgOpsNote = ThistlecombeMutual.ClaimsHub.Helpers.OpsMail.PaymentHeld(msgInstruction, attempts);
+                        }
+                        send (OpsMail.Notify, msgOpsNote);
+                    }
+                }
+            }
+        }
+    }
+}

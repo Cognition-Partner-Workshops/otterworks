@@ -1,0 +1,12 @@
+<ns0:AssignmentRequest xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+  <RequestId>ASG-520100</RequestId>
+  <ClaimNumber>CLM-2026-100400</ClaimNumber>
+  <LineOfBusiness>AUTO</LineOfBusiness>
+  <LossCause>COLL</LossCause>
+  <Region>NORTHEAST</Region>
+  <Severity>HIGH</Severity>
+  <RequiredSkill>AUTO-BI</RequiredSkill>
+  <RequestedDt>2026-09-24</RequestedDt>
+  <ClaimantName>Imogen Castellanos</ClaimantName>
+  <EstimatedAmount>17200.00</EstimatedAmount>
+</ns0:AssignmentRequest>

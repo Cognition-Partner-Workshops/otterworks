@@ -1,0 +1,12 @@
+<ns0:AssignmentRequest xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+  <RequestId>ASG-520107</RequestId>
+  <ClaimNumber>CLM-2026-100403</ClaimNumber>
+  <LineOfBusiness>AUTO</LineOfBusiness>
+  <LossCause>COLL</LossCause>
+  <Region>INLAND</Region>
+  <Severity>MED</Severity>
+  <RequiredSkill>AUTO-PD</RequiredSkill>
+  <RequestedDt>2026-10-01</RequestedDt>
+  <ClaimantName>Nadia Petrossian</ClaimantName>
+  <EstimatedAmount>5200.00</EstimatedAmount>
+</ns0:AssignmentRequest>

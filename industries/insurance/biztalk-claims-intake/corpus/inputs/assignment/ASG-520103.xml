@@ -1,0 +1,12 @@
+<ns0:AssignmentRequest xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+  <RequestId>ASG-520103</RequestId>
+  <ClaimNumber>CLM-2026-100415</ClaimNumber>
+  <LineOfBusiness>HOME</LineOfBusiness>
+  <LossCause>WATR</LossCause>
+  <Region>INLAND</Region>
+  <Severity>MED</Severity>
+  <RequiredSkill>PROPERTY</RequiredSkill>
+  <RequestedDt>2026-09-27</RequestedDt>
+  <ClaimantName>Quentin Faraday</ClaimantName>
+  <EstimatedAmount>6400.00</EstimatedAmount>
+</ns0:AssignmentRequest>
