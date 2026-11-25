@@ -211,6 +211,47 @@ final class AppUITests: AppUITestCase {
         // exercise multipart upload; native tests keep the picker entry point honest.
     }
 
+    func testFileDetailHeaderSafeArea() {
+        let uploaded = expectation(description: "Seed cargo file")
+        var request = URLRequest(url: URL(string: "http://127.0.0.1:4010/api/v1/files/upload")!)
+        request.httpMethod = "POST"
+        request.setValue("Bearer mock", forHTTPHeaderField: "Authorization")
+        request.setValue("multipart/form-data; boundary=cargo", forHTTPHeaderField: "Content-Type")
+        request.httpBody = "--cargo\r\nContent-Disposition: form-data; name=\"file\"; filename=\"Cargo manifest.txt\"\r\nContent-Type: text/plain\r\n\r\nBerth 7 cargo: 12 crates, 4 pallets\r\n--cargo--\r\n".data(using: .utf8)
+        URLSession.shared.dataTask(with: request) { _, response, error in
+            XCTAssertNil(error)
+            XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 201)
+            uploaded.fulfill()
+        }.resume()
+        wait(for: [uploaded], timeout: 10)
+        login()
+        var failures = [String]()
+        for name in ["Harbor report.txt", "Cargo manifest.txt"] {
+            navigate("Files")
+            let card = element(.staticText, name)
+            reveal(card)
+            card.doubleTap()
+            let download = element(.button, "Download")
+            if !download.waitForExistence(timeout: 3) { card.tap() }
+            XCTAssertTrue(download.waitForExistence(timeout: 10))
+            for orientation in [UIDeviceOrientation.portrait, .landscapeLeft] {
+                rotate(orientation)
+                let suffix = orientation.isLandscape ? "landscape" : "portrait"
+                saveScreenshot("file-detail-\(suffix)-\(name)")
+                let title = app.webViews.descendants(matching: .other).matching(NSPredicate(format: "label == %@ AND value == '1'", name)).firstMatch
+                let controls = [title, download, element(.button, "Share"), element(.button, "Delete"), element(.button, "Go back")]
+                let safeFrame = app.frame.insetBy(dx: orientation.isLandscape ? 40 : 0, dy: 0)
+                for control in controls {
+                    if !control.isHittable || !safeFrame.contains(control.frame) || control.frame.minY < app.frame.minY + 44 {
+                        failures.append("\(name) \(suffix): clipped or unsafe \(control.label) \(control.frame)")
+                    }
+                }
+            }
+            rotate(.portrait)
+        }
+        XCTAssertTrue(failures.isEmpty, failures.joined(separator: "\n"))
+    }
+
     func testFileDetailDownloadButton() {
         login()
         navigate("Files")
@@ -317,6 +358,7 @@ final class AppUITests: AppUITestCase {
         login()
         navigate("Settings")
         XCTAssertEqual(app.textFields["Full name"].value as? String, "Harbor Tester")
+        saveScreenshot("settings-detail")
     }
 
     func testNotifications() {
@@ -330,6 +372,10 @@ final class AppUITests: AppUITestCase {
         navigate("Margins")
         assertText("HARBOR-01")
         XCTAssertTrue(app.buttons["Export CSV"].exists)
+        XCTAssertTrue(app.frame.contains(app.buttons["Export CSV"].frame))
+        XCTAssertTrue(app.buttons["Export CSV"].isHittable)
+        XCTAssertGreaterThanOrEqual(app.buttons["Export CSV"].frame.minY, app.frame.minY + 44)
+        saveScreenshot("margins-detail")
         app.buttons["Export CSV"].tap()
         reveal(element(.staticText, "HARBOR-01"))
         assertText("HARBOR-01")
