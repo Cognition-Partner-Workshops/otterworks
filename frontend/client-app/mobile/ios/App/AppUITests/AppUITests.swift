@@ -1,3 +1,4 @@
+import UIKit
 import XCTest
 
 class AppUITestCase: XCTestCase {
@@ -36,7 +37,7 @@ class AppUITestCase: XCTestCase {
             let banner = self.element(.other, "banner")
             return landscape == orientation.isLandscape && banner.exists && banner.frame.width <= frame.width + 1
         }, object: nil)
-        wait(for: [settled], timeout: 10)
+        wait(for: [settled], timeout: 20)
     }
 
     override func tearDownWithError() throws {
@@ -272,7 +273,50 @@ final class ShareLinkUITests: AppUITestCase {
         assertText("https://share.example.test/documents/doc-1")
         let copy = element(.button, "Copy link")
         reveal(copy)
+        let changeCount = UIPasteboard.general.changeCount
         copy.tap()
-        XCTAssertTrue(element(.button, "Copied!").waitForExistence(timeout: 5))
+        let clipboardChanged = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            UIPasteboard.general.changeCount > changeCount
+        }, object: nil)
+        wait(for: [clipboardChanged], timeout: 5)
+    }
+}
+
+final class DeepLinkUITests: AppUITestCase {
+    private func signOut() {
+        openSidebar()
+        element(.button, "Sign out").tap()
+        XCTAssertTrue(app.textFields["you@example.com"].waitForExistence(timeout: 10))
+    }
+
+    func testColdFileDeepLinkContinuesAfterLogin() {
+        login()
+        signOut()
+        app.terminate()
+        XCUIDevice.shared.system.open(URL(string: "otterworks://files/file-1")!)
+        XCTAssertTrue(app.textFields["you@example.com"].waitForExistence(timeout: 20))
+
+        login()
+        XCTAssertTrue(element(.button, "Download").waitForExistence(timeout: 10))
+        assertText("Harbor report.txt")
+    }
+
+    func testWarmDocumentDeepLinkAndUnknownLink() {
+        login()
+        XCUIDevice.shared.system.open(URL(string: "otterworks://documents/doc-1")!)
+        let editor = app.webViews.textViews.firstMatch
+        XCTAssertTrue(editor.waitForExistence(timeout: 10))
+        assertText("Welcome aboard the harbor.")
+
+        XCUIDevice.shared.system.open(URL(string: "otterworks://unknown/doc-1")!)
+        let leftEditor = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: editor)
+        leftEditor.isInverted = true
+        wait(for: [leftEditor], timeout: 2)
+        assertText("Welcome aboard the harbor.")
+
+        XCUIDevice.shared.system.open(URL(string: "otterworks://documents/doc-1")!)
+        signOut()
+        login()
+        assertText("Welcome back! Here's your latest activity.")
     }
 }

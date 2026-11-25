@@ -95,6 +95,19 @@ document share links use this origin rather than the WebView's localhost address
 if it is missing or invalid, link copying is disabled but email invitations
 still work. Browser builds continue to share links from their current origin.
 
+On iOS, `otterworks://files/<id>` and `otterworks://documents/<id>` open the
+matching detail pages. The same paths work as Universal Links for the configured
+HTTPS web origin; other hosts and paths are ignored. If signed out, the app
+opens the requested page after sign-in.
+
+For a signed iOS build, enable Associated Domains on the app's App ID and set
+the Xcode build setting `OTTERWORKS_ASSOCIATED_DOMAIN` to the hostname in
+`VITE_PUBLIC_WEB_ORIGIN` (the Xcode default is `t-main.otterworks.app`). Serve
+`/.well-known/apple-app-site-association` from that HTTPS host without redirects,
+listing the signed app's application identifier and the `/files/*` and
+`/documents/*` paths. Simulator tests cover the custom scheme without signing
+or server-side association.
+
 The collab editor websocket also connects directly, with local-dev defaults of
 `ws://10.0.2.2:8085` on Android and `ws://localhost:8085` on iOS (valid on the
 simulator), so collaborative editing works on both simulators out of the box.
