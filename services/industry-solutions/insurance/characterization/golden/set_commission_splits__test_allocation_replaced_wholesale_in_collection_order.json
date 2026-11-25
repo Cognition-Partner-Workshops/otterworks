@@ -1,0 +1,79 @@
+{
+  "rules": [
+    "R19",
+    "R20"
+  ],
+  "steps": [
+    {
+      "call": "set_commission_splits",
+      "inputs": {
+        "p_actor": "char",
+        "p_policy_id": 4,
+        "p_splits": [
+          {
+            "agent_id": 3,
+            "split_pct": "35"
+          },
+          {
+            "agent_id": 2,
+            "split_pct": "65"
+          }
+        ]
+      },
+      "outputs": {},
+      "sql": "BEGIN commission_pkg.set_commission_splits(:p_policy_id, :p_splits, :p_actor); END;",
+      "writes": {
+        "commission_splits": {
+          "deleted": [
+            {
+              "agent_id": 1,
+              "policy_id": 4,
+              "split_id": 4,
+              "split_pct": "50"
+            },
+            {
+              "agent_id": 2,
+              "policy_id": 4,
+              "split_id": 5,
+              "split_pct": "30"
+            },
+            {
+              "agent_id": 3,
+              "policy_id": 4,
+              "split_id": 6,
+              "split_pct": "20"
+            }
+          ],
+          "inserted": [
+            {
+              "agent_id": 3,
+              "policy_id": 4,
+              "split_id": 7,
+              "split_pct": "35"
+            },
+            {
+              "agent_id": 2,
+              "policy_id": 4,
+              "split_id": 8,
+              "split_pct": "65"
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "SPLIT_SET",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 1,
+              "detail": "2 agents",
+              "policy_id": 4,
+              "product_code": null
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "test": "tests/test_set_commission_splits.py::test_allocation_replaced_wholesale_in_collection_order"
+}

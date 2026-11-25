@@ -1,0 +1,41 @@
+{
+  "rules": [
+    "R13"
+  ],
+  "steps": [
+    {
+      "call": "set_commission_splits",
+      "error": {
+        "code": "ORA-20005",
+        "message": "Unknown policy: 999"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_policy_id": 999,
+        "p_splits": [
+          {
+            "agent_id": 1,
+            "split_pct": "100"
+          }
+        ]
+      },
+      "sql": "BEGIN commission_pkg.set_commission_splits(:p_policy_id, :p_splits, :p_actor); END;",
+      "writes": {}
+    },
+    {
+      "call": "set_commission_splits",
+      "error": {
+        "code": "ORA-20005",
+        "message": "Unknown policy: 999"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_policy_id": 999,
+        "p_splits": []
+      },
+      "sql": "BEGIN commission_pkg.set_commission_splits(:p_policy_id, :p_splits, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_set_commission_splits.py::test_unknown_policy_rejected_before_anything_else"
+}

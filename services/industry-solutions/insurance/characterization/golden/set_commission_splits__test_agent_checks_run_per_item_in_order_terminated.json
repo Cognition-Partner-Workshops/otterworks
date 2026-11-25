@@ -1,0 +1,42 @@
+{
+  "rules": [
+    "R16",
+    "R17"
+  ],
+  "steps": [
+    {
+      "call": "setup",
+      "inputs": {
+        "note": "",
+        "params": {},
+        "sql": "INSERT INTO agents (agent_id, agent_code, full_name, license_no, status, hired_date) VALUES (5, 'AG-104', 'Terminated Agent', 'LIC-TX-55005', 'TERMINATED', DATE '2016-01-04')"
+      },
+      "outputs": {},
+      "writes": {}
+    },
+    {
+      "call": "set_commission_splits",
+      "error": {
+        "code": "ORA-20003",
+        "message": "Agent 5 is TERMINATED"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_policy_id": 1,
+        "p_splits": [
+          {
+            "agent_id": 5,
+            "split_pct": "50"
+          },
+          {
+            "agent_id": 1,
+            "split_pct": "50"
+          }
+        ]
+      },
+      "sql": "BEGIN commission_pkg.set_commission_splits(:p_policy_id, :p_splits, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_set_commission_splits.py::test_agent_checks_run_per_item_in_order[terminated]"
+}

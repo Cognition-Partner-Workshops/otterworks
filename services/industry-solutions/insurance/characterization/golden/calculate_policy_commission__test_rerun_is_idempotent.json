@@ -1,0 +1,159 @@
+{
+  "rules": [
+    "R28",
+    "R34"
+  ],
+  "steps": [
+    {
+      "call": "calculate_policy_commission",
+      "inputs": {
+        "p_actor": "char",
+        "p_period_month": "2025-06",
+        "p_policy_id": 4
+      },
+      "outputs": {},
+      "sql": "BEGIN commission_pkg.calculate_policy_commission(:p_policy_id, :p_period_month, :p_actor); END;",
+      "writes": {
+        "commission_ledger": {
+          "inserted": [
+            {
+              "agent_id": 1,
+              "base_premium": "9600",
+              "commission_amt": "38",
+              "ledger_id": 1,
+              "period_month": "2025-06",
+              "policy_id": 4,
+              "rate_id": 4,
+              "split_pct": "50"
+            },
+            {
+              "agent_id": 2,
+              "base_premium": "9600",
+              "commission_amt": "19.2",
+              "ledger_id": 2,
+              "period_month": "2025-06",
+              "policy_id": 4,
+              "rate_id": 1,
+              "split_pct": "30"
+            },
+            {
+              "agent_id": 3,
+              "base_premium": "9600",
+              "commission_amt": "12.8",
+              "ledger_id": 3,
+              "period_month": "2025-06",
+              "policy_id": 4,
+              "rate_id": 1,
+              "split_pct": "20"
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "COMMISSION_CALC",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 1,
+              "detail": "2025-06 rows=3",
+              "policy_id": 4,
+              "product_code": "AUTO-STD"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "call": "calculate_policy_commission",
+      "inputs": {
+        "p_actor": "char",
+        "p_period_month": "2025-06",
+        "p_policy_id": 4
+      },
+      "outputs": {},
+      "sql": "BEGIN commission_pkg.calculate_policy_commission(:p_policy_id, :p_period_month, :p_actor); END;",
+      "writes": {
+        "commission_ledger": {
+          "deleted": [
+            {
+              "agent_id": 1,
+              "base_premium": "9600",
+              "commission_amt": "38",
+              "ledger_id": 1,
+              "period_month": "2025-06",
+              "policy_id": 4,
+              "rate_id": 4,
+              "split_pct": "50"
+            },
+            {
+              "agent_id": 2,
+              "base_premium": "9600",
+              "commission_amt": "19.2",
+              "ledger_id": 2,
+              "period_month": "2025-06",
+              "policy_id": 4,
+              "rate_id": 1,
+              "split_pct": "30"
+            },
+            {
+              "agent_id": 3,
+              "base_premium": "9600",
+              "commission_amt": "12.8",
+              "ledger_id": 3,
+              "period_month": "2025-06",
+              "policy_id": 4,
+              "rate_id": 1,
+              "split_pct": "20"
+            }
+          ],
+          "inserted": [
+            {
+              "agent_id": 1,
+              "base_premium": "9600",
+              "commission_amt": "38",
+              "ledger_id": 4,
+              "period_month": "2025-06",
+              "policy_id": 4,
+              "rate_id": 4,
+              "split_pct": "50"
+            },
+            {
+              "agent_id": 2,
+              "base_premium": "9600",
+              "commission_amt": "19.2",
+              "ledger_id": 5,
+              "period_month": "2025-06",
+              "policy_id": 4,
+              "rate_id": 1,
+              "split_pct": "30"
+            },
+            {
+              "agent_id": 3,
+              "base_premium": "9600",
+              "commission_amt": "12.8",
+              "ledger_id": 6,
+              "period_month": "2025-06",
+              "policy_id": 4,
+              "rate_id": 1,
+              "split_pct": "20"
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "COMMISSION_CALC",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 2,
+              "detail": "2025-06 rows=3",
+              "policy_id": 4,
+              "product_code": "AUTO-STD"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "test": "tests/test_calculate_policy_commission.py::test_rerun_is_idempotent"
+}

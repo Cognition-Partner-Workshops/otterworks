@@ -1,0 +1,22 @@
+{
+  "rules": [
+    "R24"
+  ],
+  "steps": [
+    {
+      "call": "resolve_rate",
+      "error": {
+        "code": "ORA-20007",
+        "message": "No rate in force for AUTO-STD/agent 2 on 2023-01-01"
+      },
+      "inputs": {
+        "p_agent_id": 2,
+        "p_as_of": "2023-01-01",
+        "p_product_code": "AUTO-STD"
+      },
+      "sql": "BEGIN :rate_id := commission_pkg.resolve_rate(:p_product_code, :p_agent_id, :p_as_of); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_transactions.py::test_resolve_rate_failure_leaves_callers_transaction_open"
+}

@@ -1,0 +1,28 @@
+{
+  "rules": [
+    "R20",
+    "R21"
+  ],
+  "steps": [
+    {
+      "call": "set_commission_splits",
+      "error": {
+        "code": "ORA-01400",
+        "message": "cannot insert NULL into (\"COMMISSION_PAY\".\"RATE_AUDIT_LOG\".\"ACTOR\")"
+      },
+      "inputs": {
+        "p_actor": null,
+        "p_policy_id": 4,
+        "p_splits": [
+          {
+            "agent_id": 1,
+            "split_pct": "100"
+          }
+        ]
+      },
+      "sql": "BEGIN commission_pkg.set_commission_splits(:p_policy_id, :p_splits, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_set_commission_splits.py::test_null_actor_fails_at_audit_and_rolls_back"
+}

@@ -1,0 +1,27 @@
+{
+  "rules": [
+    "R16"
+  ],
+  "steps": [
+    {
+      "call": "set_commission_splits",
+      "error": {
+        "code": "ORA-20006",
+        "message": "Split pct must be in (0, 100]: agent 1"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_policy_id": 1,
+        "p_splits": [
+          {
+            "agent_id": 1,
+            "split_pct": "100.01"
+          }
+        ]
+      },
+      "sql": "BEGIN commission_pkg.set_commission_splits(:p_policy_id, :p_splits, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_set_commission_splits.py::test_split_pct_outside_bounds_rejected[over-100]"
+}

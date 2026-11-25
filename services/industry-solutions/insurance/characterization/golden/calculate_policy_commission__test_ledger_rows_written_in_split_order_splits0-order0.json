@@ -1,0 +1,107 @@
+{
+  "rules": [
+    "R29"
+  ],
+  "steps": [
+    {
+      "call": "set_commission_splits",
+      "inputs": {
+        "p_actor": "char",
+        "p_policy_id": 3,
+        "p_splits": [
+          {
+            "agent_id": 3,
+            "split_pct": "50"
+          },
+          {
+            "agent_id": 2,
+            "split_pct": "50"
+          }
+        ]
+      },
+      "outputs": {},
+      "sql": "BEGIN commission_pkg.set_commission_splits(:p_policy_id, :p_splits, :p_actor); END;",
+      "writes": {
+        "commission_splits": {
+          "inserted": [
+            {
+              "agent_id": 3,
+              "policy_id": 3,
+              "split_id": 7,
+              "split_pct": "50"
+            },
+            {
+              "agent_id": 2,
+              "policy_id": 3,
+              "split_id": 8,
+              "split_pct": "50"
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "SPLIT_SET",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 1,
+              "detail": "2 agents",
+              "policy_id": 3,
+              "product_code": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "call": "calculate_policy_commission",
+      "inputs": {
+        "p_actor": "char",
+        "p_period_month": "2025-06",
+        "p_policy_id": 3
+      },
+      "outputs": {},
+      "sql": "BEGIN commission_pkg.calculate_policy_commission(:p_policy_id, :p_period_month, :p_actor); END;",
+      "writes": {
+        "commission_ledger": {
+          "inserted": [
+            {
+              "agent_id": 2,
+              "base_premium": "1200",
+              "commission_amt": "7.5",
+              "ledger_id": 1,
+              "period_month": "2025-06",
+              "policy_id": 3,
+              "rate_id": 3,
+              "split_pct": "50"
+            },
+            {
+              "agent_id": 3,
+              "base_premium": "1200",
+              "commission_amt": "7.5",
+              "ledger_id": 2,
+              "period_month": "2025-06",
+              "policy_id": 3,
+              "rate_id": 3,
+              "split_pct": "50"
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "COMMISSION_CALC",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 2,
+              "detail": "2025-06 rows=2",
+              "policy_id": 3,
+              "product_code": "TERM-20"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "test": "tests/test_calculate_policy_commission.py::test_ledger_rows_written_in_split_order[splits0-order0]"
+}

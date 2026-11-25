@@ -1,0 +1,24 @@
+{
+  "rules": [
+    "R10",
+    "R11"
+  ],
+  "steps": [
+    {
+      "call": "end_commission_rate",
+      "error": {
+        "code": "ORA-20007",
+        "message": "No open rate for TERM-20/2"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": 2,
+        "p_effective_to": "2026-01-01",
+        "p_product_code": "TERM-20"
+      },
+      "sql": "BEGIN commission_pkg.end_commission_rate(:p_product_code, :p_agent_id, :p_effective_to, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_transactions.py::test_end_rate_rejection_discards_callers_pending_work"
+}

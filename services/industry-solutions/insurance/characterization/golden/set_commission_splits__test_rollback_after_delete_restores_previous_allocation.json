@@ -1,0 +1,32 @@
+{
+  "rules": [
+    "R21",
+    "R37"
+  ],
+  "steps": [
+    {
+      "call": "set_commission_splits",
+      "error": {
+        "code": "ORA-02290",
+        "message": "check constraint (COMMISSION_PAY.CK_SPLITS_RANGE) violated"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_policy_id": 4,
+        "p_splits": [
+          {
+            "agent_id": 1,
+            "split_pct": "99.999"
+          },
+          {
+            "agent_id": 2,
+            "split_pct": "0.001"
+          }
+        ]
+      },
+      "sql": "BEGIN commission_pkg.set_commission_splits(:p_policy_id, :p_splits, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_set_commission_splits.py::test_rollback_after_delete_restores_previous_allocation"
+}

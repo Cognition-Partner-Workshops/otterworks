@@ -1,0 +1,148 @@
+{
+  "rules": [
+    "R30",
+    "R31",
+    "R37"
+  ],
+  "steps": [
+    {
+      "call": "setup",
+      "inputs": {
+        "note": "",
+        "params": {
+          "product": "HOME-PLUS"
+        },
+        "sql": "INSERT INTO policies (policy_id, policy_no, product_code, holder_name, annual_premium, issued_date, status) VALUES (6, 'POL-2025-0006', :product, 'Rounding Case', 1000.00, DATE '2025-06-01', 'IN_FORCE')"
+      },
+      "outputs": {},
+      "writes": {}
+    },
+    {
+      "call": "set_commission_splits",
+      "inputs": {
+        "p_actor": "char",
+        "p_policy_id": 6,
+        "p_splits": [
+          {
+            "agent_id": 1,
+            "split_pct": "33.34"
+          },
+          {
+            "agent_id": 2,
+            "split_pct": "33.33"
+          },
+          {
+            "agent_id": 3,
+            "split_pct": "33.33"
+          }
+        ]
+      },
+      "outputs": {},
+      "sql": "BEGIN commission_pkg.set_commission_splits(:p_policy_id, :p_splits, :p_actor); END;",
+      "writes": {
+        "commission_splits": {
+          "inserted": [
+            {
+              "agent_id": 1,
+              "policy_id": 6,
+              "split_id": 7,
+              "split_pct": "33.34"
+            },
+            {
+              "agent_id": 2,
+              "policy_id": 6,
+              "split_id": 8,
+              "split_pct": "33.33"
+            },
+            {
+              "agent_id": 3,
+              "policy_id": 6,
+              "split_id": 9,
+              "split_pct": "33.33"
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "SPLIT_SET",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 1,
+              "detail": "3 agents",
+              "policy_id": 6,
+              "product_code": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "call": "calculate_policy_commission",
+      "inputs": {
+        "p_actor": "char",
+        "p_period_month": "2025-06",
+        "p_policy_id": 6
+      },
+      "outputs": {},
+      "sql": "BEGIN commission_pkg.calculate_policy_commission(:p_policy_id, :p_period_month, :p_actor); END;",
+      "writes": {
+        "commission_ledger": {
+          "inserted": [
+            {
+              "agent_id": 1,
+              "base_premium": "1000",
+              "commission_amt": "2.78",
+              "ledger_id": 1,
+              "period_month": "2025-06",
+              "policy_id": 6,
+              "rate_id": 2,
+              "split_pct": "33.34"
+            },
+            {
+              "agent_id": 2,
+              "base_premium": "1000",
+              "commission_amt": "2.78",
+              "ledger_id": 2,
+              "period_month": "2025-06",
+              "policy_id": 6,
+              "rate_id": 2,
+              "split_pct": "33.33"
+            },
+            {
+              "agent_id": 3,
+              "base_premium": "1000",
+              "commission_amt": "2.78",
+              "ledger_id": 3,
+              "period_month": "2025-06",
+              "policy_id": 6,
+              "rate_id": 2,
+              "split_pct": "33.33"
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "COMMISSION_CALC",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 2,
+              "detail": "2025-06 rows=3",
+              "policy_id": 6,
+              "product_code": "HOME-PLUS"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "observe": "rows_total_vs_naive",
+      "value": [
+        "8.34",
+        "8.33"
+      ]
+    }
+  ],
+  "test": "tests/test_calculate_policy_commission.py::test_rows_do_not_sum_to_naive_total[rows-over-naive]"
+}

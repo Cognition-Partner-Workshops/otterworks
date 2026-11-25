@@ -28,6 +28,7 @@ services/industry-solutions/insurance/
                02_etl_pkg.sql             — DW_ETL_PKG.LOAD_COMMISSION_FACTS + summary MV
   db/tests/    run_tests.sql              — OLTP suite (12+ cases, PASS/FAIL, non-zero exit on failure)
                run_olap_tests.sql         — ETL/star-schema suite (run after the OLTP suite)
+  characterization/                       — pytest + python-oracledb (thin) baseline pinning COMMISSION_PKG
 ```
 
 Two schemas inside the `FREEPDB1` pluggable database:
@@ -84,6 +85,31 @@ Connect ad hoc (port = `51521 + crc32(NS) % 1000`, printed by
 docker exec -it otterworks-insurance-dev-insurance-oracle-1 \
   sqlplus commission_pay/commission_pay@localhost:1521/FREEPDB1
 ```
+
+## Characterization baseline
+
+`characterization/` pins the observable behaviour of every `COMMISSION_PKG`
+entry point before any of it is moved. Each test calls a procedure through SQL
+from one session and observes from a second, recording the inputs, OUT values,
+every committed row inserted/updated/deleted in `commission_rates`,
+`commission_splits`, `commission_ledger` and `rate_audit_log`, and the exact
+`ORA-20xxx` code and message of every rejection. Rules are numbered R1–R38 as in
+the extraction branch's `RULE_LEDGER.md` (`characterization/rules.py`).
+
+```bash
+make insurance-up NS=dev
+make insurance-characterize NS=dev                        # compare against golden/*.json
+make insurance-characterize NS=dev ARGS=--update-golden   # re-pin (review the diff!)
+```
+
+Every test resets the fixture to `02_seed.sql` first. The start and end of a run
+also empty `COMMISSION_DW`, so the warehouse never holds facts for ledger rows
+the reset removed (re-run `insurance-test` to reload it). A run writes
+`characterization/out/rule_report.{md,json}` with one row per rule. A rule
+whose tests were only partly selected (`-k`, `-m`, `--deselect`) is reported
+INCOMPLETE, not PASS. The
+`Insurance commission characterization` workflow runs the same harness against
+Oracle Free in CI.
 
 ## Fixture boundary
 

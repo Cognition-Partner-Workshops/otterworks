@@ -1,0 +1,22 @@
+{
+  "rules": [
+    "R25"
+  ],
+  "steps": [
+    {
+      "call": "calculate_policy_commission",
+      "error": {
+        "code": "ORA-20005",
+        "message": "Unknown policy: 999"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_period_month": "2025-06",
+        "p_policy_id": 999
+      },
+      "sql": "BEGIN commission_pkg.calculate_policy_commission(:p_policy_id, :p_period_month, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_calculate_policy_commission.py::test_unknown_policy_rejected"
+}

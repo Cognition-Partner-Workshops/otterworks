@@ -1,0 +1,22 @@
+{
+  "rules": [
+    "R14"
+  ],
+  "steps": [
+    {
+      "call": "set_commission_splits",
+      "error": {
+        "code": "ORA-20006",
+        "message": "At least one split allocation is required"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_policy_id": 1,
+        "p_splits": []
+      },
+      "sql": "BEGIN commission_pkg.set_commission_splits(:p_policy_id, :p_splits, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_set_commission_splits.py::test_empty_or_null_allocation_rejected[empty]"
+}
