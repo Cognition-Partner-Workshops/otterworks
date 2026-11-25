@@ -133,25 +133,26 @@ function FileDetailContent() {
       />
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex items-start justify-between gap-4 max-sm:flex-col">
+        <div className="flex items-center gap-4 max-sm:w-full max-sm:min-w-0">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
+            aria-label="Go back"
+            className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 max-sm:shrink-0"
           >
             <ArrowLeft size={20} />
           </button>
-          <div className="w-12 h-12 rounded-xl bg-otter-50 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-otter-50 flex items-center justify-center max-sm:shrink-0">
             <FileIcon mimeType={file.mimeType} />
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">{file.name}</h1>
+          <div className="max-sm:min-w-0">
+            <h1 className="text-xl font-bold text-gray-900 max-sm:[overflow-wrap:anywhere]">{file.name}</h1>
             <p className="text-sm text-gray-500">
               {formatFileSize(file.size)} &middot; {formatRelativeTime(file.updatedAt)}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 max-sm:flex-wrap max-sm:max-w-full">
           <button
             disabled={isDownloading}
             onClick={async () => {
@@ -462,5 +463,4 @@ function FileIcon({ mimeType }: Readonly<{ mimeType: string }>) {
     return <FileText size={24} className="text-red-500" />;
   return <File size={24} className="text-otter-600" />;
 }
-
 

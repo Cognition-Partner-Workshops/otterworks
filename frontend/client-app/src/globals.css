@@ -2,6 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
+@media (hover: none) and (pointer: coarse) {
+  input,
+  textarea,
+  select,
+  [contenteditable="true"] {
+    font-size: 16px !important;
+  }
+}
+
+.safe-status-backdrop {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: white;
+  z-index: 60;
+}
+
+.safe-sidebar {
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+
+@media (max-width: 1023px) {
+  .safe-sidebar {
+    width: calc(16rem + env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px));
+  }
+}
+
+.safe-shell {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-header {
+  height: calc(3rem + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.editor-toolbar {
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+.editor-toolbar-keyboard {
+  position: fixed;
+  z-index: 35;
+  left: 0;
+  right: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.editor-toolbar-keyboard > * {
+  flex-shrink: 0;
+}
+
 :root {
   --primary: #1f3a5f;
   --primary-dark: #152a45;
