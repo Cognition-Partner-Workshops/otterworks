@@ -1,0 +1,3921 @@
+{
+  "total": 84,
+  "issues": [
+    {
+      "key": "dc6489e0-6d82-4bfb-aa64-40d824898e46",
+      "rule": "typescript:S6418",
+      "severity": "BLOCKER",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/auth.service.ts",
+      "project": "otterworks-core-baseline",
+      "line": 102,
+      "hash": "fde2c498070059a384ef3bf4a9f23b00",
+      "textRange": {
+        "startLine": 102,
+        "endLine": 102,
+        "startOffset": 13,
+        "endOffset": 330
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "\"token\" detected here, make sure this is not a hard-coded secret.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "cwe",
+        "secret",
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "5118df69-2d0d-4ee9-8a14-e68f51cb5d9a",
+      "rule": "typescript:S8786",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/migration-api.service.ts",
+      "project": "otterworks-core-baseline",
+      "line": 60,
+      "hash": "0031f6b26322399c1156eb22b53c215a",
+      "textRange": {
+        "startLine": 60,
+        "endLine": 60,
+        "startOffset": 58,
+        "endOffset": 64
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.",
+      "effort": "20min",
+      "debt": "20min",
+      "author": "",
+      "tags": [
+        "regex",
+        "performance"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "EFFICIENT",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "e195b7e3-f7a1-4fb7-8afc-6fe6c926d444",
+      "rule": "typescript:S8786",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/migration-api.service.ts",
+      "project": "otterworks-core-baseline",
+      "line": 61,
+      "hash": "c9cb14ae1bfbc680d458df850ac00ef2",
+      "textRange": {
+        "startLine": 61,
+        "endLine": 61,
+        "startOffset": 62,
+        "endOffset": 68
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.",
+      "effort": "20min",
+      "debt": "20min",
+      "author": "",
+      "tags": [
+        "regex",
+        "performance"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "EFFICIENT",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "9c57a184-43f8-4b14-a28d-03df8f658ea4",
+      "rule": "typescript:S6861",
+      "severity": "CRITICAL",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/analytics.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 3,
+      "hash": "380eadd0da7e02a48ff65ac6896f882e",
+      "textRange": {
+        "startLine": 3,
+        "endLine": 12,
+        "startOffset": 7,
+        "endOffset": 2
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Exporting mutable 'let' binding, use 'const' instead.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "MODULAR",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "3cb369d0-527c-49be-88bb-42bb71e97365",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 7,
+      "hash": "dc6352bc0809420dbf39d660eef9b950",
+      "textRange": {
+        "startLine": 7,
+        "endLine": 7,
+        "startOffset": 63,
+        "endOffset": 77
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 192.168.1.15 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "57fb3281-ecf1-4da4-9e64-5cd1405fb6a1",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 12,
+      "hash": "7b6d6569041603a89d3f0fb7b1ea4206",
+      "textRange": {
+        "startLine": 12,
+        "endLine": 12,
+        "startOffset": 54,
+        "endOffset": 67
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 172.16.0.12 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "ac909885-e701-4342-9519-5cc451760d2e",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 17,
+      "hash": "8da6bf75d9555461cd9447557c0ce34a",
+      "textRange": {
+        "startLine": 17,
+        "endLine": 17,
+        "startOffset": 54,
+        "endOffset": 68
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 192.168.1.10 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "3b7ca701-dec3-46eb-8d40-426a6c36f38d",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 22,
+      "hash": "5b2a3cc3c3deee226986d675b43b48df",
+      "textRange": {
+        "startLine": 22,
+        "endLine": 22,
+        "startOffset": 75,
+        "endOffset": 89
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 192.168.1.10 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "f2ffb2b6-bdc9-45e5-9986-7f2080f02fb1",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 27,
+      "hash": "051eea8d7db3b5f18ad539f3ebda3741",
+      "textRange": {
+        "startLine": 27,
+        "endLine": 27,
+        "startOffset": 46,
+        "endOffset": 57
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 10.0.0.25 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "dc6203f9-7427-4e2d-8d2d-882c2655513c",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 32,
+      "hash": "cbd54cd484a15013caa3e99e5b661bd2",
+      "textRange": {
+        "startLine": 32,
+        "endLine": 32,
+        "startOffset": 65,
+        "endOffset": 77
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 172.16.0.5 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "7cbfd917-e4fc-4522-9520-7ac67a94973b",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 37,
+      "hash": "29c70f65a27980eac840d48c786aa622",
+      "textRange": {
+        "startLine": 37,
+        "endLine": 37,
+        "startOffset": 58,
+        "endOffset": 72
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 192.168.1.10 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "5f1d6ca2-35ab-4218-b183-571b32a6c02c",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 42,
+      "hash": "5282895aebc483c33656437d577ab20a",
+      "textRange": {
+        "startLine": 42,
+        "endLine": 42,
+        "startOffset": 78,
+        "endOffset": 92
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 192.168.1.15 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "d36010b6-d533-4091-b749-b06a1fc0939f",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 47,
+      "hash": "8842eaf1cf27a8c13eef358a1201608c",
+      "textRange": {
+        "startLine": 47,
+        "endLine": 47,
+        "startOffset": 53,
+        "endOffset": 64
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 10.0.0.42 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "9421a99e-88d8-4347-8372-5a9877835a0f",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 52,
+      "hash": "b9777a6a35c55e21d89310d95a3c82d8",
+      "textRange": {
+        "startLine": 52,
+        "endLine": 52,
+        "startOffset": 56,
+        "endOffset": 70
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 192.168.1.10 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "a20efcc7-1344-42ed-9aa2-e96103dbcf5d",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 57,
+      "hash": "a8868446027c36cae529bd510436ee50",
+      "textRange": {
+        "startLine": 57,
+        "endLine": 57,
+        "startOffset": 54,
+        "endOffset": 65
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 10.0.0.25 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "a4acbc3c-bcdd-4fbe-9c34-fb960b20b41a",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 67,
+      "hash": "de68785fbc7a05cadff74ebd26595b43",
+      "textRange": {
+        "startLine": 67,
+        "endLine": 67,
+        "startOffset": 48,
+        "endOffset": 59
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 10.0.0.80 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "f4e3afe1-90de-4556-af20-de50e4747248",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 72,
+      "hash": "9077766b01ec1d406225ddda85abcab2",
+      "textRange": {
+        "startLine": 72,
+        "endLine": 72,
+        "startOffset": 48,
+        "endOffset": 62
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 192.168.1.15 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "1fb4c287-9de1-4bad-a2b9-ccb2938a9275",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/audit.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 77,
+      "hash": "a163a8b00ad2ad77818e15d093d905c8",
+      "textRange": {
+        "startLine": 77,
+        "endLine": 77,
+        "startOffset": 44,
+        "endOffset": 56
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 10.0.1.100 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "322effea-6c56-431d-b35d-90a7a1dbd0b3",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 137,
+      "hash": "6db8e956b151b419e1d3142276cf0ebb",
+      "textRange": {
+        "startLine": 137,
+        "endLine": 137,
+        "startOffset": 137,
+        "endOffset": 151
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 192.168.1.10 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "19410852-e67d-4015-9e70-ce297cdea578",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 138,
+      "hash": "f9c843b481e4649131c86453abec8378",
+      "textRange": {
+        "startLine": 138,
+        "endLine": 138,
+        "startOffset": 141,
+        "endOffset": 155
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 192.168.1.10 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "0ade6490-d061-418b-8b52-7c8d597c09e0",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 139,
+      "hash": "99cc2a6b290d877d5a4aa6c742667646",
+      "textRange": {
+        "startLine": 139,
+        "endLine": 139,
+        "startOffset": 140,
+        "endOffset": 154
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 192.168.1.10 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "1535c600-91cd-43da-bdc6-4066875ac7fb",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 140,
+      "hash": "215f34cc7b9c17890387efdcddcec350",
+      "textRange": {
+        "startLine": 140,
+        "endLine": 140,
+        "startOffset": 140,
+        "endOffset": 151
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 10.0.0.25 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "2728daa7-a97d-4174-b7bc-a6fff11eb173",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 141,
+      "hash": "402ddb7420ff3fb7cade00d4a07d86e9",
+      "textRange": {
+        "startLine": 141,
+        "endLine": 141,
+        "startOffset": 141,
+        "endOffset": 152
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 10.0.0.25 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "93348ef7-cc74-45ea-b029-5be2f030dfbc",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 142,
+      "hash": "614e5f9738e124ce5bfb8aee254b35f3",
+      "textRange": {
+        "startLine": 142,
+        "endLine": 142,
+        "startOffset": 142,
+        "endOffset": 153
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 10.0.0.42 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "d7466e84-3883-4bc8-95b8-bcbdf61da558",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 143,
+      "hash": "ec8e172875fdfe7e155df2065bbd1643",
+      "textRange": {
+        "startLine": 143,
+        "endLine": 143,
+        "startOffset": 143,
+        "endOffset": 154
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 10.0.0.42 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "daae3c70-5146-4fca-a4c2-f3da13b3df18",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 144,
+      "hash": "1b5b89530116fd07f5099ac23c957704",
+      "textRange": {
+        "startLine": 144,
+        "endLine": 144,
+        "startOffset": 145,
+        "endOffset": 157
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 172.16.0.5 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "687af059-fcb8-4315-a3c4-1d4a3ee7bbf1",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 145,
+      "hash": "21a355c8cd0142a90106900d80c18aab",
+      "textRange": {
+        "startLine": 145,
+        "endLine": 145,
+        "startOffset": 136,
+        "endOffset": 150
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 192.168.1.15 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "f61dfa8d-f5e4-4bf7-9dad-614af120b190",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 146,
+      "hash": "9fed796de6aae9ea0f65cc376a53b985",
+      "textRange": {
+        "startLine": 146,
+        "endLine": 146,
+        "startOffset": 140,
+        "endOffset": 151
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 10.0.0.80 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "6bc977ee-5dae-44a3-83ea-c7effc9dbc13",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 147,
+      "hash": "1cd51a2e19dd1f52083a56d6666a30f1",
+      "textRange": {
+        "startLine": 147,
+        "endLine": 147,
+        "startOffset": 143,
+        "endOffset": 156
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 172.16.0.12 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "f986031a-a890-430a-a7aa-5df9f1dbb8f7",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/core/services/mock-data/users.mock.ts",
+      "project": "otterworks-core-baseline",
+      "line": 148,
+      "hash": "dbdce7417b6e10f7ccd55a23d344c690",
+      "textRange": {
+        "startLine": 148,
+        "endLine": 148,
+        "startOffset": 127,
+        "endOffset": 141
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 192.168.1.10 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "40de4aa5-5959-4d42-8e76-4ec8245d2c4b",
+      "rule": "typescript:S8786",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/migration/archive-compare.component.ts",
+      "project": "otterworks-core-baseline",
+      "line": 30,
+      "hash": "6eaa6c7f0de8d422fbd4430f380586a5",
+      "textRange": {
+        "startLine": 30,
+        "endLine": 30,
+        "startOffset": 47,
+        "endOffset": 52
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.",
+      "effort": "20min",
+      "debt": "20min",
+      "author": "",
+      "tags": [
+        "regex",
+        "performance"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "EFFICIENT",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "38fb6121-ae7e-436d-9a31-1636a42d78f8",
+      "rule": "typescript:S8786",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/migration/archive-compare.component.ts",
+      "project": "otterworks-core-baseline",
+      "line": 211,
+      "hash": "34ee427c2fcfbe72702f9c80c5ae0999",
+      "textRange": {
+        "startLine": 211,
+        "endLine": 211,
+        "startOffset": 45,
+        "endOffset": 51
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.",
+      "effort": "20min",
+      "debt": "20min",
+      "author": "",
+      "tags": [
+        "regex",
+        "performance"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "EFFICIENT",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "32de7348-673a-4df1-86c3-8a11d4da2f59",
+      "rule": "typescript:S2871",
+      "severity": "CRITICAL",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/migration/migration.component.ts",
+      "project": "otterworks-core-baseline",
+      "line": 406,
+      "hash": "e8128bf58db6b2853b952585f306d803",
+      "textRange": {
+        "startLine": 406,
+        "endLine": 406,
+        "startOffset": 30,
+        "endOffset": 34
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Provide a compare function that depends on \"String.localeCompare\", to reliably sort elements alphabetically.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "",
+      "tags": [
+        "type-dependent",
+        "bad-practice"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "4196c106-8f2f-4822-a164-1e7521d02f00",
+      "rule": "typescript:S2871",
+      "severity": "CRITICAL",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/migration/migration.component.ts",
+      "project": "otterworks-core-baseline",
+      "line": 407,
+      "hash": "d619e56205b9cc9d468beef62592b38c",
+      "textRange": {
+        "startLine": 407,
+        "endLine": 407,
+        "startOffset": 32,
+        "endOffset": 36
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Provide a compare function that depends on \"String.localeCompare\", to reliably sort elements alphabetically.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "",
+      "tags": [
+        "type-dependent",
+        "bad-practice"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "02739f54-13c7-4b19-9f38-378606027df7",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/quotas/quotas.component.ts",
+      "project": "otterworks-core-baseline",
+      "line": 168,
+      "hash": "ceffd30676d1b47d6b6177b2c6dd41cc",
+      "textRange": {
+        "startLine": 168,
+        "endLine": 168,
+        "startOffset": 11,
+        "endOffset": 21
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `Number.parseFloat` over `parseFloat`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "e83b3381-b23e-4511-b081-9693e9eff12b",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/admin-dashboard/src/app/pages/user-detail/user-detail.component.ts",
+      "project": "otterworks-core-baseline",
+      "line": 253,
+      "hash": "ceffd30676d1b47d6b6177b2c6dd41cc",
+      "textRange": {
+        "startLine": 253,
+        "endLine": 253,
+        "startOffset": 11,
+        "endOffset": 21
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `Number.parseFloat` over `parseFloat`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "369e2bdc-4684-4f13-81b0-b3c3bf97b00f",
+      "rule": "typescript:S2245",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/bdd/steps/margins.steps.ts",
+      "project": "otterworks-core-baseline",
+      "line": 8,
+      "hash": "198ba152ac594548a6c9042ff286b200",
+      "textRange": {
+        "startLine": 8,
+        "endLine": 8,
+        "startOffset": 45,
+        "endOffset": 58
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure that using this pseudorandom number generator is safe here.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "",
+      "tags": [
+        "cwe",
+        "cryptography",
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "c0ec9e89-8f45-419d-8265-d33747b2f169",
+      "rule": "xml:S5332",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/debug/AndroidManifest.xml",
+      "project": "otterworks-core-baseline",
+      "line": 8,
+      "hash": "8ce0dfe777fbcaadab1c274423185f6f",
+      "textRange": {
+        "startLine": 8,
+        "endLine": 8,
+        "startOffset": 5,
+        "endOffset": 16
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "\"usesCleartextTraffic\" is implicitly enabled for older Android versions. Make sure allowing clear-text traffic is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "cwe",
+        "android",
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "e42dc202-ddbf-4b6c-b841-dc4e42b18851",
+      "rule": "xml:S6358",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/mobile/android/app/src/debug/AndroidManifest.xml",
+      "project": "otterworks-core-baseline",
+      "line": 8,
+      "hash": "8ce0dfe777fbcaadab1c274423185f6f",
+      "textRange": {
+        "startLine": 8,
+        "endLine": 8,
+        "startOffset": 5,
+        "endOffset": 16
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure backup of application data is safe here.",
+      "effort": "1h30min",
+      "debt": "1h30min",
+      "author": "",
+      "tags": [
+        "cwe",
+        "android",
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "8716aecc-8513-4993-8995-af2070bb25ba",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/documents/document-card.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 190,
+      "hash": "76b511be63d2b63a969f63ebbfaf817e",
+      "textRange": {
+        "startLine": 190,
+        "endLine": 190,
+        "startOffset": 6,
+        "endOffset": 62
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "f87b09b7-818b-41fb-9cef-6d42e91c05fc",
+      "rule": "typescript:S1313",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/editor/collaborative-editor.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 45,
+      "hash": "d72624807f2e1376f06d3a35d96d385f",
+      "textRange": {
+        "startLine": 45,
+        "endLine": 45,
+        "startOffset": 63,
+        "endOffset": 73
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure using a hardcoded IP address 10.0.2.2 is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "1e86b437-8b13-4f5d-8e59-19d7e0704406",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/files/file-card.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 125,
+      "hash": "867171a44bd79816b319f977d5b54526",
+      "textRange": {
+        "startLine": 125,
+        "endLine": 125,
+        "startOffset": 10,
+        "endOffset": 71
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "1d14a168-a3d7-4c70-9966-5952ff187d76",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/files/file-card.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 143,
+      "hash": "4fdb210deff852a789e88b155860723b",
+      "textRange": {
+        "startLine": 143,
+        "endLine": 143,
+        "startOffset": 14,
+        "endOffset": 91
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "8e06d41d-d017-4735-acf0-942477dcf28f",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/files/file-card.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 208,
+      "hash": "9bcfdb252d5596901630c3c897844724",
+      "textRange": {
+        "startLine": 208,
+        "endLine": 208,
+        "startOffset": 8,
+        "endOffset": 82
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "70dcd9ab-18fa-4195-a724-b158b0927878",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/files/file-card.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 261,
+      "hash": "55db0e7043b6e5064800413b002fd6d1",
+      "textRange": {
+        "startLine": 261,
+        "endLine": 261,
+        "startOffset": 10,
+        "endOffset": 68
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "f3dc0a22-0e41-4dbd-af26-a3a6fcdb840d",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/files/file-card.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 306,
+      "hash": "76b511be63d2b63a969f63ebbfaf817e",
+      "textRange": {
+        "startLine": 306,
+        "endLine": 306,
+        "startOffset": 6,
+        "endOffset": 62
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "070cc581-058a-4c7c-aa7e-7c0925772d13",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/files/folder-card.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 61,
+      "hash": "867171a44bd79816b319f977d5b54526",
+      "textRange": {
+        "startLine": 61,
+        "endLine": 61,
+        "startOffset": 10,
+        "endOffset": 71
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "2effce24-6a71-44ed-9d0c-1ebbf7bc9499",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/files/folder-card.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 79,
+      "hash": "4fdb210deff852a789e88b155860723b",
+      "textRange": {
+        "startLine": 79,
+        "endLine": 79,
+        "startOffset": 14,
+        "endOffset": 91
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "76891fae-2a6a-4dc1-884d-b9e93c10debf",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/files/folder-card.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 131,
+      "hash": "9bcfdb252d5596901630c3c897844724",
+      "textRange": {
+        "startLine": 131,
+        "endLine": 131,
+        "startOffset": 8,
+        "endOffset": 82
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "23dbce53-32aa-4738-b374-0f2fcfc8a1bf",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/files/folder-card.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 171,
+      "hash": "55db0e7043b6e5064800413b002fd6d1",
+      "textRange": {
+        "startLine": 171,
+        "endLine": 171,
+        "startOffset": 10,
+        "endOffset": 68
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "0f1ba5d6-4bee-4ded-b149-107854e81df0",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/files/folder-card.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 212,
+      "hash": "76b511be63d2b63a969f63ebbfaf817e",
+      "textRange": {
+        "startLine": 212,
+        "endLine": 212,
+        "startOffset": 6,
+        "endOffset": 62
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "9409df64-c336-4466-a1cb-c80710d43d0f",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/files/share-dialog.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 108,
+      "hash": "d445a9a939bd6ff993dfc507db9b162f",
+      "textRange": {
+        "startLine": 108,
+        "endLine": 108,
+        "startOffset": 6,
+        "endOffset": 74
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "ce6c395f-d158-4e76-a2ac-a4da7a1a8da4",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/files/share-dialog.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 110,
+      "hash": "7ba0be1c9de8b6f82a14337d0428fc0e",
+      "textRange": {
+        "startLine": 110,
+        "endLine": 110,
+        "startOffset": 8,
+        "endOffset": 110
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "67e2e7ac-e439-4b1d-895c-afe8da149eb1",
+      "rule": "typescript:S9383",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/files/share-dialog.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 165,
+      "hash": "6068c93f24bffdd4872df62bcdb6c6e8",
+      "textRange": {
+        "startLine": 165,
+        "endLine": 165,
+        "startOffset": 45,
+        "endOffset": 59
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "async",
+        "es2017",
+        "type-dependent",
+        "promise"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "ed45bba7-9659-42cd-b0f0-7cf7b0e4975a",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/components/layout/sidebar.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 75,
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 75,
+        "endLine": 78,
+        "startOffset": 8,
+        "endOffset": 10
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "616e20ca-da5f-477b-b790-f42171c457d6",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/lib/utils.ts",
+      "project": "otterworks-core-baseline",
+      "line": 12,
+      "hash": "fd8042f0b166c145aa0ff4ce9ff67956",
+      "textRange": {
+        "startLine": 12,
+        "endLine": 12,
+        "startOffset": 12,
+        "endOffset": 22
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `Number.parseFloat` over `parseFloat`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "4a75ea77-162c-4df5-84af-5c574a0d2984",
+      "rule": "typescript:S9379",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/pages/document-editor.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 153,
+      "hash": "00bff60b62300c6dfdf2b4fa594864cd",
+      "textRange": {
+        "startLine": 153,
+        "endLine": 153,
+        "startOffset": 14,
+        "endOffset": 23
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Remove this \"autoFocus\" attribute, as it can reduce usability and accessibility for users.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "00dfafa1-ad17-4367-b14f-3e812c6619ec",
+      "rule": "typescript:S9383",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/pages/document-editor.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 273,
+      "hash": "bb56b1976cb67c3ee65dbb780a1980bf",
+      "textRange": {
+        "startLine": 273,
+        "endLine": 273,
+        "startOffset": 16,
+        "endOffset": 68
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "async",
+        "es2017",
+        "type-dependent",
+        "promise"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "e1646c01-ae6b-4f9b-a2d1-ef2062f75c38",
+      "rule": "typescript:S9383",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/pages/file-detail.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 68,
+      "hash": "d053996e37c2f5e8c9146e8d3496e47b",
+      "textRange": {
+        "startLine": 68,
+        "endLine": 83,
+        "startOffset": 4,
+        "endOffset": 7
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "async",
+        "es2017",
+        "type-dependent",
+        "promise"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "45d9a972-d2b9-4be1-96e5-00ebc54fc87f",
+      "rule": "typescript:S9379",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/pages/files.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 394,
+      "hash": "00bff60b62300c6dfdf2b4fa594864cd",
+      "textRange": {
+        "startLine": 394,
+        "endLine": 394,
+        "startOffset": 12,
+        "endOffset": 21
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Remove this \"autoFocus\" attribute, as it can reduce usability and accessibility for users.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "815e3431-15d8-4549-b15e-3f758d60a73a",
+      "rule": "typescript:S2871",
+      "severity": "CRITICAL",
+      "component": "otterworks-core-baseline:frontend/client-app/src/pages/margins.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 84,
+      "hash": "c4f688756531a95d9e604e2aacfc4b7b",
+      "textRange": {
+        "startLine": 84,
+        "endLine": 84,
+        "startOffset": 74,
+        "endOffset": 78
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Provide a compare function to avoid sorting elements alphabetically.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "",
+      "tags": [
+        "type-dependent",
+        "bad-practice"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "ca06e272-7b8f-42b8-bc27-fdcff998595e",
+      "rule": "typescript:S9379",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:frontend/client-app/src/pages/search.tsx",
+      "project": "otterworks-core-baseline",
+      "line": 101,
+      "hash": "00bff60b62300c6dfdf2b4fa594864cd",
+      "textRange": {
+        "startLine": 101,
+        "endLine": 101,
+        "startOffset": 10,
+        "endOffset": 19
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Remove this \"autoFocus\" attribute, as it can reduce usability and accessibility for users.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "c52acbac-560d-4356-beed-61ab022decc0",
+      "rule": "docker:S6470",
+      "severity": "CRITICAL",
+      "component": "otterworks-core-baseline:services/admin-service/Dockerfile",
+      "project": "otterworks-core-baseline",
+      "line": 12,
+      "hash": "122cc0726218d54a3abd9f5829b89784",
+      "textRange": {
+        "startLine": 12,
+        "endLine": 12,
+        "startOffset": 5,
+        "endOffset": 6
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Copying recursively might inadvertently add sensitive data to the container. Make sure it is safe here.",
+      "effort": "20min",
+      "debt": "20min",
+      "author": "",
+      "tags": [
+        "cwe",
+        "dockerfile",
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "8d65f21d-d72d-48e1-b98e-c849bfb5df7a",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:services/collab-service/src/config.ts",
+      "project": "otterworks-core-baseline",
+      "line": 34,
+      "hash": "6d48c63005a8cf3498c538a657c37732",
+      "textRange": {
+        "startLine": 34,
+        "endLine": 34,
+        "startOffset": 14,
+        "endOffset": 22
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `Number.parseInt` over `parseInt`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "67779167-1549-4998-ac6e-7669e62e9f6b",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:services/collab-service/src/config.ts",
+      "project": "otterworks-core-baseline",
+      "line": 37,
+      "hash": "f3f875466c1508c12dd48a50dd446388",
+      "textRange": {
+        "startLine": 37,
+        "endLine": 37,
+        "startOffset": 12,
+        "endOffset": 20
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `Number.parseInt` over `parseInt`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "838ef7ec-f493-4fed-a79b-43af2a63bbc3",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:services/collab-service/src/config.ts",
+      "project": "otterworks-core-baseline",
+      "line": 39,
+      "hash": "c481d3d68bac33b72aefd19ee692b6ff",
+      "textRange": {
+        "startLine": 39,
+        "endLine": 39,
+        "startOffset": 10,
+        "endOffset": 18
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `Number.parseInt` over `parseInt`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "dc84fdc5-12d7-46e9-9221-a29ea0509ade",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:services/collab-service/src/config.ts",
+      "project": "otterworks-core-baseline",
+      "line": 52,
+      "hash": "c65642e46502f23cfb2bb3f03fc80d8d",
+      "textRange": {
+        "startLine": 52,
+        "endLine": 52,
+        "startOffset": 18,
+        "endOffset": 26
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `Number.parseInt` over `parseInt`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "d1d4dd5a-4d7e-470a-a1f3-737d02a8a152",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:services/collab-service/src/config.ts",
+      "project": "otterworks-core-baseline",
+      "line": 53,
+      "hash": "4d2bd9c4ce3989340475637e3f985966",
+      "textRange": {
+        "startLine": 53,
+        "endLine": 53,
+        "startOffset": 26,
+        "endOffset": 34
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `Number.parseInt` over `parseInt`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "7f359b46-bd11-458f-b345-11537fb4b352",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:services/collab-service/src/config.ts",
+      "project": "otterworks-core-baseline",
+      "line": 54,
+      "hash": "916d3e8bce36f2761ac34595f5b29595",
+      "textRange": {
+        "startLine": 54,
+        "endLine": 54,
+        "startOffset": 26,
+        "endOffset": 34
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `Number.parseInt` over `parseInt`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "9b77760a-662e-43d7-93f7-610025ce6683",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:services/collab-service/src/config.ts",
+      "project": "otterworks-core-baseline",
+      "line": 55,
+      "hash": "63f8b6c1ef667affa381551954317798",
+      "textRange": {
+        "startLine": 55,
+        "endLine": 55,
+        "startOffset": 26,
+        "endOffset": 34
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `Number.parseInt` over `parseInt`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "c3a6eabb-11a0-4e17-8f51-38f3eda35bc0",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:services/collab-service/src/config.ts",
+      "project": "otterworks-core-baseline",
+      "line": 56,
+      "hash": "649043d7c9fb11f32312085d69ab8642",
+      "textRange": {
+        "startLine": 56,
+        "endLine": 56,
+        "startOffset": 31,
+        "endOffset": 39
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `Number.parseInt` over `parseInt`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "1cfb63d5-c2c2-4d4e-aabc-1bfcbf7a4663",
+      "rule": "typescript:S9383",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:services/collab-service/src/handlers/collaboration.ts",
+      "project": "otterworks-core-baseline",
+      "line": 127,
+      "hash": "add408ef5c898000babdccb7f179dff5",
+      "textRange": {
+        "startLine": 127,
+        "endLine": 127,
+        "startOffset": 10,
+        "endOffset": 51
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "async",
+        "es2017",
+        "type-dependent",
+        "promise"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "9f5d5180-85e9-4fcf-8218-ae2976d366b5",
+      "rule": "typescript:S9383",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:services/collab-service/src/handlers/collaboration.ts",
+      "project": "otterworks-core-baseline",
+      "line": 202,
+      "hash": "ba8cceb2f970782e14910a0f4322f292",
+      "textRange": {
+        "startLine": 202,
+        "endLine": 202,
+        "startOffset": 6,
+        "endOffset": 51
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "async",
+        "es2017",
+        "type-dependent",
+        "promise"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "910dc169-9ca3-41d8-9473-a097fb1c567c",
+      "rule": "typescript:S9383",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:services/collab-service/src/handlers/collaboration.ts",
+      "project": "otterworks-core-baseline",
+      "line": 458,
+      "hash": "cf275038923fd4fe2f72f69d33b8381e",
+      "textRange": {
+        "startLine": 458,
+        "endLine": 458,
+        "startOffset": 8,
+        "endOffset": 59
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "async",
+        "es2017",
+        "type-dependent",
+        "promise"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "65422aed-6454-4b2c-9560-63fdd380d112",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "otterworks-core-baseline:services/collab-service/src/services/document-store.ts",
+      "project": "otterworks-core-baseline",
+      "line": 97,
+      "hash": "6e72e34ea9cba4e5d49bd374cb4598ee",
+      "textRange": {
+        "startLine": 97,
+        "endLine": 97,
+        "startOffset": 15,
+        "endOffset": 23
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `Number.parseInt` over `parseInt`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "f09d06c0-bc11-4579-a385-afe69f29dd84",
+      "rule": "docker:S6470",
+      "severity": "CRITICAL",
+      "component": "otterworks-core-baseline:services/document-service/Dockerfile",
+      "project": "otterworks-core-baseline",
+      "line": 12,
+      "hash": "122cc0726218d54a3abd9f5829b89784",
+      "textRange": {
+        "startLine": 12,
+        "endLine": 12,
+        "startOffset": 5,
+        "endOffset": 6
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Copying recursively might inadvertently add sensitive data to the container. Make sure it is safe here.",
+      "effort": "20min",
+      "debt": "20min",
+      "author": "",
+      "tags": [
+        "cwe",
+        "dockerfile",
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "89dbaf40-2510-44af-9794-9a9c2e098fad",
+      "rule": "secrets:S6698",
+      "severity": "BLOCKER",
+      "component": "otterworks-core-baseline:services/document-service/app/config.py",
+      "project": "otterworks-core-baseline",
+      "line": 12,
+      "hash": "215012e29544d2bf5213e6de9686a43e",
+      "textRange": {
+        "startLine": 12,
+        "endLine": 12,
+        "startOffset": 41,
+        "endOffset": 55
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure this PostgreSQL password gets changed and removed from the code.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "cwe",
+        "secret"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "b1dd1585-e145-460b-ba45-d80b9efe53cd",
+      "rule": "python:S4790",
+      "severity": "CRITICAL",
+      "component": "otterworks-core-baseline:services/document-service/app/services/share_link.py",
+      "project": "otterworks-core-baseline",
+      "line": 31,
+      "hash": "b963e52e164950f6ba736297b3b9ff60",
+      "textRange": {
+        "startLine": 31,
+        "endLine": 31,
+        "startOffset": 25,
+        "endOffset": 28
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure that hashing data is safe here.",
+      "effort": "30min",
+      "debt": "30min",
+      "author": "",
+      "tags": [
+        "cwe",
+        "cryptography",
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "f1c7d858-9ccd-48d0-bd73-10473d9c885d",
+      "rule": "python:S5863",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:services/document-service/tests/test_share_link.py",
+      "project": "otterworks-core-baseline",
+      "line": 22,
+      "hash": "73e451349fe4932962b1a118b19e4328",
+      "textRange": {
+        "startLine": 22,
+        "endLine": 22,
+        "startOffset": 41,
+        "endOffset": 67
+      },
+      "flows": [
+        {
+          "locations": [
+            {
+              "component": "otterworks-core-baseline:services/document-service/tests/test_share_link.py",
+              "textRange": {
+                "startLine": 22,
+                "endLine": 22,
+                "startOffset": 11,
+                "endOffset": 37
+              },
+              "msg": "This is the same expression as the expected argument.",
+              "msgFormattings": []
+            }
+          ]
+        }
+      ],
+      "status": "OPEN",
+      "message": "Replace this assertion to not have the same actual and expected expression.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "tests"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "BUG",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "8d87fbcb-ed11-49e1-875f-0f440147efbc",
+      "rule": "java:S2885",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/util/ReportDateUtils.java",
+      "project": "otterworks-core-baseline",
+      "line": 29,
+      "hash": "3e1ec20b07bcc3be2996533067918e06",
+      "textRange": {
+        "startLine": 29,
+        "endLine": 29,
+        "startOffset": 42,
+        "endOffset": 52
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make \"ISO_FORMAT\" an instance variable.",
+      "effort": "15min",
+      "debt": "15min",
+      "author": "",
+      "tags": [
+        "multi-threading"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "0b798743-4a26-4e1a-b1dc-4823b046667a",
+      "rule": "java:S2885",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/util/ReportDateUtils.java",
+      "project": "otterworks-core-baseline",
+      "line": 30,
+      "hash": "d4b14ad772fa8d008f7a22d03fe67376",
+      "textRange": {
+        "startLine": 30,
+        "endLine": 30,
+        "startOffset": 42,
+        "endOffset": 56
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make \"DISPLAY_FORMAT\" an instance variable.",
+      "effort": "15min",
+      "debt": "15min",
+      "author": "",
+      "tags": [
+        "multi-threading"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "294fc955-05c0-471a-82fa-ec30e613733b",
+      "rule": "java:S2885",
+      "severity": "MAJOR",
+      "component": "otterworks-core-baseline:services/report-service/src/main/java/com/otterworks/report/util/ReportDateUtils.java",
+      "project": "otterworks-core-baseline",
+      "line": 31,
+      "hash": "abbc9ae945099f8589e12e53f6166917",
+      "textRange": {
+        "startLine": 31,
+        "endLine": 31,
+        "startOffset": 42,
+        "endOffset": 58
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make \"FILE_NAME_FORMAT\" an instance variable.",
+      "effort": "15min",
+      "debt": "15min",
+      "author": "",
+      "tags": [
+        "multi-threading"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "85866ea2-a92e-4563-a7d4-e10c0afb3851",
+      "rule": "docker:S6470",
+      "severity": "CRITICAL",
+      "component": "otterworks-core-baseline:services/search-service/Dockerfile",
+      "project": "otterworks-core-baseline",
+      "line": 7,
+      "hash": "122cc0726218d54a3abd9f5829b89784",
+      "textRange": {
+        "startLine": 7,
+        "endLine": 7,
+        "startOffset": 5,
+        "endOffset": 6
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Copying recursively might inadvertently add sensitive data to the container. Make sure it is safe here.",
+      "effort": "20min",
+      "debt": "20min",
+      "author": "",
+      "tags": [
+        "cwe",
+        "dockerfile",
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "7c648832-9515-4d51-b96a-02dd55e2a3aa",
+      "rule": "python:S4502",
+      "severity": "CRITICAL",
+      "component": "otterworks-core-baseline:services/search-service/app/main.py",
+      "project": "otterworks-core-baseline",
+      "line": 58,
+      "hash": "179643042db29a9995dc460d16749c31",
+      "textRange": {
+        "startLine": 58,
+        "endLine": 58,
+        "startOffset": 10,
+        "endOffset": 25
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Make sure disabling CSRF protection is safe here.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "cwe",
+        "django",
+        "flask",
+        "former-hotspot"
+      ],
+      "creationDate": "2026-11-20T16:52:49+0000",
+      "updateDate": "2026-11-20T16:52:49+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    }
+  ]
+}
