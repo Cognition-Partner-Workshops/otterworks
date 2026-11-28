@@ -1,0 +1,3 @@
+app: document-service
+owner: content
+replicas: 2

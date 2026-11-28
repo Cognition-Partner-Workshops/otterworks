@@ -1,0 +1,11 @@
+costCenter: platform
+image:
+  repository: otterworks/devops-workload
+  tag: fixture-v1
+  pullPolicy: Never
+probes:
+  periodSeconds: 2
+  initialDelaySeconds: 1
+  failureThreshold: 4
+networkPolicy:
+  allowSameNamespace: true

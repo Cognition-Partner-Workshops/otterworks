@@ -1,0 +1,34 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: document-service
+  labels:
+    owner: content
+  annotations:
+    readiness.otterworks.app/restart-constraint: "Restart only in an approved maintenance window."
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: document-service
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: search-service
+  labels:
+    owner: search
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: search-service
+  minReplicas: 1
+  maxReplicas: 1
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
