@@ -13,8 +13,15 @@ class StartupTest(unittest.TestCase):
             mock_env = Path(tmp) / "bash-env"
             calls = Path(tmp) / "docker-calls"
             mock_env.write_text(
-                'docker() { printf "%s\\n" "$*" >> "$DOCKER_CALLS"; }\n'
+                'docker() {\n'
+                '  printf "%s\\n" "$*" >> "$DOCKER_CALLS"\n'
+                '  if [[ "$*" == *"exec -T dataapi python3"* ]] && [ ! -e "$DOCKER_CALLS.probed" ]; then\n'
+                '    touch "$DOCKER_CALLS.probed"\n'
+                '    return 1\n'
+                '  fi\n'
+                '}\n'
                 'curl() { return 0; }\n'
+                'sleep() { return 0; }\n'
             )
             subprocess.run(
                 ["bash", SCRIPT, "up"],
@@ -31,3 +38,7 @@ class StartupTest(unittest.TestCase):
         self.assertLess(command_index("up -d --build"), command_index("restart dataapi"))
         self.assertLess(command_index("restart dataapi"),
                         command_index("restart fn-announcements fn-preferences fn-feedback"))
+        first, retry = (i for i, command in enumerate(commands) if "exec -T dataapi python3" in command)
+        self.assertLess(command_index("restart dataapi"), first)
+        self.assertLess(first, retry)
+        self.assertLess(retry, command_index("restart fn-announcements fn-preferences fn-feedback"))

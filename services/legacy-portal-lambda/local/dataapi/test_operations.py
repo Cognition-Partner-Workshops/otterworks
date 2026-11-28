@@ -63,7 +63,7 @@ class ResolveTest(unittest.TestCase):
                 self.assertEqual(values, {name: samples[kind] for name, kind, _ in op.params})
                 self.assertNotIn(samples[ops.STRING], resolved.sql)
 
-    def test_sql_from_java_repositories_resolves_exactly(self):
+    def test_java_repository_sql_matches_allowlist_exactly(self):
         compose = (LAMBDA_ROOT / "local/docker-compose.yml").read_text()
         schemas = dict(re.findall(r"^  fn-(\w+):\n(?:(?:^ {4,}.*)\n)*?^      DB_SCHEMA: (\w+)$",
                                   compose, re.MULTILINE))

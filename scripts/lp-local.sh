@@ -35,13 +35,14 @@ tables_for() {
 
 psql_in() { dc exec -T "$1" psql -U legacyportal -d legacyportal -v ON_ERROR_STOP=1 -qAt -c "$2"; }
 
-wait_http() {
-  local url="$1" i
+wait_for() {
+  local target="$1" i
+  shift
   for i in $(seq 1 90); do
-    curl -fsS -o /dev/null "$url" 2>/dev/null && return 0
+    "$@" >/dev/null 2>&1 && return 0
     sleep 2
   done
-  die "timed out waiting for $url"
+  die "timed out waiting for $target"
 }
 
 cmd_up() {
@@ -51,8 +52,18 @@ cmd_up() {
   dc run --rm --no-deps -T certs
   dc up -d --build
   dc restart dataapi
-  wait_http "http://127.0.0.1:${LP_JAVA_PORT}/health"
-  wait_http "http://127.0.0.1:${LP_LAMBDA_PORT}/health"
+  wait_for "local Data API /ping" dc exec -T dataapi python3 -c '
+from ssl import create_default_context
+from urllib.request import urlopen
+
+tls = create_default_context(cafile="/certs/ca.pem")
+for url in ("http://127.0.0.1:8080/ping", "https://dataapi/ping"):
+    with urlopen(url, context=tls, timeout=2) as response:
+        if response.status != 200:
+            raise SystemExit(1)
+'
+  wait_for "Java portal /health" curl -fsS "http://127.0.0.1:${LP_JAVA_PORT}/health"
+  wait_for "Lambda gateway /health" curl -fsS "http://127.0.0.1:${LP_LAMBDA_PORT}/health"
   cmd_reset all
   cmd_identity
 }
