@@ -15,6 +15,7 @@ from pathlib import Path
 LOOPBACK = "127.0.0.1"
 ADAPTERS = ("java", "serverless")
 TARGET_HEADER = "X-Portal-Wave-Target"
+PLAN_HEADER = "X-Portal-Wave-Plan"
 HOP_HEADERS = {
     "connection", "keep-alive", "proxy-authenticate", "proxy-authorization",
     "te", "trailer", "transfer-encoding", "upgrade", "proxy-connection",
@@ -78,6 +79,9 @@ class Plan:
             data[name] = Target(**data[name])
         return cls(**data)
 
+    def digest(self):
+        return hashlib.sha256(json.dumps(asdict(self), sort_keys=True).encode()).hexdigest()
+
 
 class Route:
     def __init__(self, plan, state_root):
@@ -109,7 +113,7 @@ class Route:
 
 
 def forward_headers(headers):
-    excluded = HOP_HEADERS | {"content-length", TARGET_HEADER.lower()}
+    excluded = HOP_HEADERS | {"content-length", TARGET_HEADER.lower(), PLAN_HEADER.lower()}
     excluded = excluded.union(
         token.strip().lower()
         for name, value in headers if name.lower() == "connection"
@@ -120,6 +124,7 @@ def forward_headers(headers):
 
 def make_router(route, log):
     plan = route.plan
+    plan_digest = plan.digest()
 
     class Handler(BaseHTTPRequestHandler):
         def proxy(self):
@@ -162,6 +167,7 @@ def make_router(route, log):
             for key, value in headers:
                 self.send_header(key, value)
             self.send_header(TARGET_HEADER, target.identity)
+            self.send_header(PLAN_HEADER, plan_digest)
             if self.command == "HEAD":
                 if status != 502 and upstream.getheader("Content-Length") is not None:
                     self.send_header("Content-Length", upstream.getheader("Content-Length"))
@@ -187,22 +193,30 @@ def request(port, path, timeout):
         response = connection.getresponse()
         body = response.read()
         status, identity = response.status, response.getheader(TARGET_HEADER)
+        plan_digest = response.getheader(PLAN_HEADER)
     except (OSError, http.client.HTTPException):
-        status, identity, body = None, None, b""
+        status, identity, body, plan_digest = None, None, b"", None
     finally:
         connection.close()
-    return status, identity, body, (time.monotonic() - started) * 1000
+    return status, identity, body, (time.monotonic() - started) * 1000, plan_digest
+
+
+def verify_running_plan(plan):
+    *_, digest = request(plan.router_port, plan.health_path, plan.timeout_ms / 1000)
+    if digest != plan.digest():
+        raise ValueError("plan differs from the running router configuration")
 
 
 def verify_endpoint(route, adapter, expected_hash=None):
     plan = route.plan
     target = getattr(plan, adapter)
     direct, routed = (
-        request(port, target.identity_path, plan.timeout_ms / 1000)[:3]
+        request(port, target.identity_path, plan.timeout_ms / 1000)
         for port in (target.port, plan.router_port)
     )
     body_hash = hashlib.sha256(routed[2]).hexdigest() if routed[0] == 200 else None
-    verified = (direct[0] == routed[0] == 200 and routed[1] == target.identity and direct[2] == routed[2]
+    verified = (routed[4] == plan.digest() and direct[0] == routed[0] == 200
+                and routed[1] == target.identity and direct[2] == routed[2]
                 and (expected_hash is None or body_hash == expected_hash))
     return {
         "status": "passed" if verified else "failed",
@@ -215,26 +229,29 @@ def verify_endpoint(route, adapter, expected_hash=None):
 
 def sample(plan, adapter):
     expected = getattr(plan, adapter).identity
+    expected_plan = plan.digest()
     started = time.monotonic()
     count = plan.window_ms // plan.interval_ms
-    errors, latencies, identities = 0, [], set()
+    errors, latencies, identities, plans = 0, [], set(), set()
     for index in range(count):
         deadline = started + index * plan.interval_ms / 1000
         time.sleep(max(0, deadline - time.monotonic()))
         budget = min(plan.timeout_ms / 1000, deadline + plan.interval_ms / 1000 - time.monotonic())
-        status, identity, _, latency = (
-            request(plan.router_port, plan.health_path, budget) if budget > 0 else (None, None, b"", 0)
+        status, identity, _, latency, plan_digest = (
+            request(plan.router_port, plan.health_path, budget) if budget > 0 else (None, None, b"", 0, None)
         )
+        if plan_digest is not None:
+            plans.add(plan_digest)
         if identity is not None:
             identities.add(identity)
         if status is not None or budget > 0:
             latencies.append(latency)
-        if status != 200 or identity != expected or latency > plan.timeout_ms:
+        if status != 200 or identity != expected or latency > plan.timeout_ms or plan_digest != expected_plan:
             errors += 1
     time.sleep(max(0, started + plan.window_ms / 1000 - time.monotonic()))
     p95 = sorted(latencies)[math.ceil(len(latencies) * .95) - 1] if latencies else None
     passed = errors / count <= plan.max_error_rate and p95 is not None and p95 <= plan.max_p95_ms
-    passed = passed and identities == {expected}
+    passed = passed and identities == {expected} and plans == {expected_plan}
     return {
         "status": "passed" if passed else "failed",
         "expected_target": expected,
@@ -251,9 +268,10 @@ def sample(plan, adapter):
 def freeze(route):
     if route.frozen.exists():
         raise ValueError("already frozen for this run token")
-    prior = verify_endpoint(route, "java")
     plan = route.plan
-    status, _, body, _ = request(plan.serverless.port, plan.serverless.identity_path, plan.timeout_ms / 1000)
+    verify_running_plan(plan)
+    prior = verify_endpoint(route, "java")
+    status, _, body, _, _ = request(plan.serverless.port, plan.serverless.identity_path, plan.timeout_ms / 1000)
     candidate_identity = {
         "status": "passed" if status == 200 else "failed",
         "target_identity": plan.serverless.identity,
@@ -274,6 +292,7 @@ def verified_frozen(route):
     frozen = json.loads(raw)
     if frozen["plan"] != asdict(route.plan) or frozen["selected_adapter"] != "serverless":
         raise ValueError("plan differs from the frozen configuration")
+    verify_running_plan(route.plan)
     if any(frozen[gate]["status"] != "passed" for gate in ("prior", "candidate_identity", "baseline")):
         raise ValueError("endpoint identities and baseline must pass before a switch")
     return frozen, hashlib.sha256(raw).hexdigest()
@@ -332,10 +351,22 @@ def main():
         adapter = "serverless" if args.command == "switch" else "java"
         if adapter == "serverless":
             frozen, _ = verified_frozen(route)
-            if verify_endpoint(route, "java", frozen["prior"]["body_sha256"])["status"] != "passed":
+            if route.selected() != "java" or verify_endpoint(route, "java", frozen["prior"]["body_sha256"])["status"] != "passed":
                 raise ValueError("expected the verified prior endpoint before switching")
-        route.select(adapter)
-        result = {"run_token": route.plan.run_token, "adapter": adapter, "target_identity": getattr(route.plan, adapter).identity}
+            candidate = None
+            try:
+                route.select(adapter)
+                candidate = verify_endpoint(route, adapter, frozen["candidate_identity"]["body_sha256"])
+            finally:
+                if candidate is None or candidate["status"] != "passed":
+                    route.select("java")
+            if candidate["status"] != "passed":
+                raise ValueError("candidate identity did not match; restored java")
+            identity = candidate["target_identity"]
+        else:
+            route.select(adapter)
+            identity = route.plan.java.identity
+        result = {"run_token": route.plan.run_token, "adapter": adapter, "target_identity": identity}
     else:
         result = freeze(route) if args.command == "freeze" else rehearse(route)
     print(json.dumps(result, indent=2))

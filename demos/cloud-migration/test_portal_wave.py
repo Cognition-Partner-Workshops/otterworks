@@ -15,7 +15,7 @@ from pathlib import Path
 
 from jsonschema import Draft7Validator
 
-from portal_wave import LOOPBACK, TARGET_HEADER, Plan, Route, Target, freeze, make_router, rehearse, sample
+from portal_wave import LOOPBACK, PLAN_HEADER, TARGET_HEADER, Plan, Route, Target, freeze, make_router, rehearse, sample
 
 
 HERE = Path(__file__).resolve().parent
@@ -34,6 +34,7 @@ def fixture(run_token, adapter):
             self.send_header("Set-Cookie", "first=1")
             self.send_header("Set-Cookie", "second=2")
             self.send_header(TARGET_HEADER, "untrusted-upstream-header")
+            self.send_header(PLAN_HEADER, "untrusted-upstream-plan")
             self.end_headers()
             if self.command != "HEAD":
                 self.wfile.write(payload)
@@ -63,7 +64,7 @@ def running(server, name):
 
 class PortalWaveTest(unittest.TestCase):
     @contextmanager
-    def wave(self):
+    def wave(self, max_p95_ms=70):
         token = f"FAKE_{uuid.uuid4().hex}"
         java, candidate = fixture(token, "java"), fixture(token, "serverless")
         logs = []
@@ -74,7 +75,7 @@ class PortalWaveTest(unittest.TestCase):
                     router_port = port.getsockname()[1]
                 plan = Plan(token, router_port, Target(java_port, f"{token}:java", "/identity"),
                             Target(lambda_port, f"{token}:serverless", "/identity"), "/health",
-                            window_ms=300, interval_ms=100, timeout_ms=80, max_error_rate=0, max_p95_ms=70)
+                            window_ms=300, interval_ms=100, timeout_ms=80, max_error_rate=0, max_p95_ms=max_p95_ms)
                 root = Path(state)
                 route = Route(plan, root)
                 route.initialize()
@@ -155,8 +156,8 @@ class PortalWaveTest(unittest.TestCase):
             self.assert_rollback(route, logs, result, "gate-trip")
 
     def test_p95_threshold_and_wrong_target_trip_health_gate(self):
-        with self.wave() as (route, _, _, _):
-            result = sample(replace(route.plan, max_p95_ms=0.000001), "java")
+        with self.wave(max_p95_ms=0.000001) as (route, _, _, _):
+            result = sample(route.plan, "java")
             self.assertEqual(result["errors"], 0)
             self.assertEqual(result["status"], "failed")
             result = sample(route.plan, "serverless")
@@ -183,6 +184,7 @@ class PortalWaveTest(unittest.TestCase):
                 response = connection.getresponse()
                 self.assertEqual(response.read(), b"synthetic")
                 self.assertEqual(response.getheader(TARGET_HEADER), route.plan.serverless.identity)
+                self.assertEqual(response.getheader(PLAN_HEADER), route.plan.digest())
                 self.assertEqual([value for key, value in response.getheaders() if key == "Set-Cookie"], ["first=1", "second=2"])
                 connection.request("GET", "http://example.invalid/blocked")
                 self.assertEqual(connection.getresponse().status, 400)
@@ -194,6 +196,40 @@ class PortalWaveTest(unittest.TestCase):
                            replace(route.plan.java, identity_path="http://example.invalid/health")):
                 with self.assertRaises(ValueError):
                     replace(route.plan, java=source)
+
+    def test_stale_router_rejects_new_candidate_plan(self):
+        with self.wave() as (route, _, _, logs):
+            with running(fixture(route.plan.run_token, "new"), f"{route.plan.run_token}:new") as new_port:
+                updated = replace(route.plan, serverless=replace(route.plan.serverless, port=new_port))
+                changed = Route(updated, route.directory.parent)
+                with self.assertRaisesRegex(ValueError, "differs from the running router"):
+                    freeze(changed)
+                self.assertFalse(route.frozen.exists())
+
+                evidence = freeze(route)
+                evidence["plan"] = asdict(updated)
+                route.frozen.write_text(json.dumps(evidence))
+                plan = route.directory / "test-plan.json"
+                plan.write_text(json.dumps(asdict(updated)))
+                proc = subprocess.run([sys.executable, str(HERE / "portal_wave.py"), "switch", "--plan", str(plan),
+                                       "--state-root", str(route.directory.parent)], capture_output=True, text=True)
+                self.assertNotEqual(proc.returncode, 0)
+                self.assertIn("differs from the running router", proc.stderr)
+                self.assertEqual(route.selected(), "java")
+                self.assertEqual({entry["adapter"] for entry in logs}, {"java"})
+
+    def test_switch_restores_java_when_candidate_fingerprint_changes(self):
+        with self.wave() as (route, _, candidate, logs):
+            freeze(route)
+            candidate.identity = b"changed"
+            plan = route.directory / "test-plan.json"
+            plan.write_text(json.dumps(asdict(route.plan)))
+            proc = subprocess.run([sys.executable, str(HERE / "portal_wave.py"), "switch", "--plan", str(plan),
+                                   "--state-root", str(route.directory.parent)], capture_output=True, text=True)
+            self.assertNotEqual(proc.returncode, 0)
+            self.assertIn("candidate identity did not match; restored java", proc.stderr)
+            self.assertIn("serverless", {entry["adapter"] for entry in logs})
+            self.assertEqual(route.selected(), "java")
 
 
 class CloseoutSchemaTest(unittest.TestCase):
@@ -235,6 +271,33 @@ class CloseoutSchemaTest(unittest.TestCase):
         gates["candidate_health"] = {"status": "unrun", "observed": False, "reason": "Pending S4."}
         example["workloads"]["portal"]["disposition"] = "local-drill-complete"
         self.assertFalse(validator.is_valid(example))
+
+    def test_ready_locally_requires_a_passed_observed_rehearsal(self):
+        directory = HERE / "evidence"
+        validator = Draft7Validator(json.loads((directory / "closeout.schema.json").read_text()))
+        raw = (directory / "CMG_20261128.closeout.json").read_text()
+        for alternate in ("gate-trip", "failed-recovery", "failed-gate", "wrong-disposition"):
+            with self.subTest(alternate=alternate):
+                closeout = json.loads(raw)
+                portal = closeout["workloads"]["portal"]
+                if alternate == "gate-trip":
+                    portal["rehearsal"]["rollback_reason"] = "gate-trip"
+                elif alternate == "failed-recovery":
+                    portal["rehearsal"]["recovery_status"] = "failed"
+                    portal["rehearsal"]["recovered"]["status"] = "failed"
+                elif alternate == "failed-gate":
+                    portal["gates"]["recovered_health"]["status"] = "failed"
+                else:
+                    portal["disposition"] = "recovery-unverified"
+                self.assertFalse(validator.is_valid(closeout))
+
+        simulated = json.loads((directory / "simulated-s5.json").read_text())
+        portal = simulated["workloads"]["portal"]
+        portal["wave_one"] = "ready-locally"
+        self.assertFalse(validator.is_valid(simulated))
+        del portal["wave_one"]
+        portal["rehearsal"] = json.loads(raw)["workloads"]["portal"]["rehearsal"]
+        self.assertFalse(validator.is_valid(simulated))
 
 
 if __name__ == "__main__":

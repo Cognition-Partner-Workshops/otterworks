@@ -128,8 +128,10 @@
           "workloads": {
             "properties": {
               "portal": {
+                "not": {"required": ["rehearsal"]},
                 "properties": {
                   "disposition": {"const": "pending-s4"},
+                  "wave_one": {"const": "not-ready"},
                   "gates": {"additionalProperties": {"$ref": "#/definitions/unrun"}}
                 }
               },
@@ -168,6 +170,41 @@
               "kubernetes": {"required": ["intake_issue", "wave_one"]}
             }
           }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "workloads": {"properties": {"portal": {
+            "required": ["wave_one"],
+            "properties": {"wave_one": {"const": "ready-locally"}}
+          }}}
+        }
+      },
+      "then": {
+        "properties": {
+          "mode": {"const": "observed-local"},
+          "workloads": {"properties": {"portal": {
+            "required": ["rehearsal"],
+            "properties": {
+              "disposition": {"const": "local-drill-complete"},
+              "gates": {"additionalProperties": {"properties": {"status": {"const": "passed"}}}},
+              "rehearsal": {
+                "required": ["prior_fingerprint_matches", "final_adapter"],
+                "properties": {
+                  "rollback_reason": {"const": "planned-drill"},
+                  "candidate": {"properties": {"status": {"const": "passed"}}},
+                  "candidate_endpoint": {"properties": {"status": {"const": "passed"}}},
+                  "prior_restored": {"properties": {"status": {"const": "passed"}}},
+                  "recovered": {"properties": {"status": {"const": "passed"}}},
+                  "recovery_status": {"const": "passed"},
+                  "prior_fingerprint_matches": {"const": true},
+                  "final_adapter": {"const": "java"}
+                }
+              }
+            }
+          }}}
         }
       }
     }
