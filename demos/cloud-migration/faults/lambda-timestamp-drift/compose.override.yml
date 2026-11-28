@@ -1,0 +1,10 @@
+services:
+  dataapi:
+    volumes:
+      - type: bind
+        source: ${CMG_LAMBDA_DRIFT_DIR:?CMG_LAMBDA_DRIFT_DIR is required}/drift.py
+        target: /app/drift.py
+        read_only: true
+        bind:
+          create_host_path: false
+    command: ["python3", "/app/drift.py"]
