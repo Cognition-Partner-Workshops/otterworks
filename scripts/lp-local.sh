@@ -5,7 +5,7 @@
 #
 #   RUN_TOKEN=<token> scripts/lp-local.sh up|identity|replay|reset [ctx]|state <java|lambda> <ctx>|down|verify-clean
 #
-# RUN_TOKEN labels every container, image, network and volume (compose project = lowercased token).
+# RUN_TOKEN labels every container, image, network and volume (compose project = lp_<lowercased token>).
 # LP_JAVA_PORT (18095) and LP_LAMBDA_PORT (18096) pick the loopback ports. replay takes CTX
 # (default all), STAGE (first|full, default full) and OUT (default services/legacy-portal/parity/out-live).
 set -euo pipefail
@@ -19,7 +19,7 @@ die() { echo "lp-local: $*" >&2; exit 2; }
 [ -n "${RUN_TOKEN:-}" ] || die "RUN_TOKEN is required, e.g. RUN_TOKEN=LP_$(date -u +%Y%m%d)"
 [[ "$RUN_TOKEN" =~ ^[A-Za-z0-9_]{3,40}$ ]] || die "RUN_TOKEN must be 3-40 letters, digits or underscores"
 export RUN_TOKEN
-PROJECT="$(echo "$RUN_TOKEN" | tr '[:upper:]' '[:lower:]')"
+PROJECT="lp_$(echo "$RUN_TOKEN" | tr '[:upper:]' '[:lower:]')"
 dc() { docker compose -p "$PROJECT" -f "$COMPOSE_FILE" "$@"; }
 
 tables_for() {
