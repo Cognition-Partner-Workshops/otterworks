@@ -1,8 +1,8 @@
 {
   "summary": {
-    "closed": 2,
+    "closed": 1,
     "held": 1,
-    "amber": 2
+    "amber": 3
   },
   "checks": [
     {
@@ -55,13 +55,13 @@
       },
       "after": {
         "result": "pass",
-        "reference": "connectivity_matrix.py @ a80a13c policies.yaml: offline 4/0, kind csec-net 4/0; allowed 1/1, denied 3/3; ingress-only and egress-only isolation 4/0 each; 0 probe errors. Session devin-b4f04475c7a544c6a75e8598dae42e0e artifacts after-offline.json, live-after.json, live-after-only-ingress.json, live-after-only-egress.json"
+        "reference": "connectivity_matrix.py @ a80a13c policies.yaml: offline 4/0, kind csec-net 4/0; allowed 1/1, denied 3/3; ingress-only and egress-only isolation 4/0 each; 0 probe errors. Session devin-b4f04475c7a544c6a75e8598dae42e0e artifacts after-offline.json, live-after.json, live-after-only-ingress.json, live-after-only-egress.json; contradicted by unpruned in-place apply (old client-to-documents/documents-from-clients retained): offline passed 3, failed 1, observer->documents:8080 allowed; see https://github.com/Cognition-Partner-Workshops/otterworks/pull/3424#discussion_r4725040968"
       },
       "approved_path": {
         "result": "pass",
         "reference": "writer(fixture-access=approved)->documents TCP 8080 allowed offline and in kind under candidate (all pods Ready; no-policy baseline 4/4 reachable proves probes/destinations). Session devin-b4f04475c7a544c6a75e8598dae42e0e artifact live-run.log"
       },
-      "status": "closed",
+      "status": "amber",
       "evidence": {
         "commit": "a80a13c1089769994b5357d749d19302b8fbcd4f via PR https://github.com/Cognition-Partner-Workshops/otterworks/pull/3424 (open, not in this branch)"
       }
