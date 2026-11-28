@@ -1,0 +1,31 @@
+terraform_data.dev_settings: Refreshing state... [id=0200dd9b-f480-a678-f363-4c2a292825b4]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  ~ update in-place
+
+Terraform will perform the following actions:
+
+  # terraform_data.dev_settings will be updated in-place
+  ~ resource "terraform_data" "dev_settings" {
+        id     = "0200dd9b-f480-a678-f363-4c2a292825b4"
+      ~ input  = {
+          ~ app_retention_days   = 14 -> 7
+          ~ root_volume_gib      = 50 -> 36
+            # (1 unchanged attribute hidden)
+        }
+      ~ output = {
+          - app_retention_days   = 14
+          - audit_retention_days = 90
+          - root_volume_gib      = 50
+        } -> (known after apply)
+    }
+
+Plan: 0 to add, 1 to change, 0 to destroy.
+
+Changes to Outputs:
+  ~ dev_settings = {
+      - app_retention_days   = 14
+      - audit_retention_days = 90
+      - root_volume_gib      = 50
+    } -> (known after apply)

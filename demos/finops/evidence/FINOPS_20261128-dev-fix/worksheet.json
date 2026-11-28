@@ -1,0 +1,117 @@
+{
+  "scope": {
+    "run_tag": "FINOPS_20261128",
+    "environment": "dev",
+    "alert_date_utc": "2026-11-28",
+    "source_id": "aws.cost-anomaly:9f6305ea-bacb-486e-9157-7b3fc3b21a39",
+    "sns_message_id": "8bc7335c-522e-4e98-8226-27832cae01f1",
+    "account": "000000000000",
+    "monitor": "arn:aws:ce::000000000000:anomalymonitor/finops-fixture",
+    "spend_window_start_utc": "2026-11-21",
+    "spend_window_end_utc_inclusive": "2026-11-27",
+    "workload_owner": "platform/team: otterworks"
+  },
+  "prior_evidence": {
+    "attribution": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/3418",
+    "dev_baseline": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/3419"
+  },
+  "workload": {
+    "source": "local HTTP workload with modeled disk and latency",
+    "requests_per_run": 100,
+    "sha256": "810278341b159d70fc061efcad044a45017d270079d119587be98f2aac348d17",
+    "gates": {
+      "maximum_error_rate": 0.01,
+      "maximum_modeled_p95_ms": 20,
+      "maximum_disk_pressure_responses": 0,
+      "minimum_app_retention_days": 7,
+      "required_audit_retention_days": 90
+    },
+    "runs": [
+      {
+        "result": "1-baseline.json",
+        "disposition": "reference",
+        "settings": {"root_volume_gib": 50, "app_retention_days": 14, "audit_retention_days": 90},
+        "errors": 0, "error_rate": 0.0, "modeled_p95_ms": 15,
+        "loopback_p95_ms_informational": 0.852, "http_507s": 0, "health": "pass"
+      },
+      {
+        "result": "2-logs-only.json",
+        "disposition": "passed_independently",
+        "settings": {"root_volume_gib": 50, "app_retention_days": 7, "audit_retention_days": 90},
+        "errors": 0, "error_rate": 0.0, "modeled_p95_ms": 15,
+        "loopback_p95_ms_informational": 1.399, "http_507s": 0, "health": "pass"
+      },
+      {
+        "result": "3-disk-only.json",
+        "disposition": "passed_independently",
+        "settings": {"root_volume_gib": 36, "app_retention_days": 14, "audit_retention_days": 90},
+        "errors": 0, "error_rate": 0.0, "modeled_p95_ms": 15,
+        "loopback_p95_ms_informational": 0.456, "http_507s": 0, "health": "pass"
+      },
+      {
+        "result": "4-combined.json",
+        "disposition": "proposed",
+        "settings": {"root_volume_gib": 36, "app_retention_days": 7, "audit_retention_days": 90},
+        "errors": 0, "error_rate": 0.0, "modeled_p95_ms": 15,
+        "loopback_p95_ms_informational": 2.672, "http_507s": 0, "health": "pass"
+      },
+      {
+        "result": "5-rejected-30gib.json",
+        "disposition": "withheld",
+        "settings": {"root_volume_gib": 30, "app_retention_days": 7, "audit_retention_days": 90},
+        "errors": 48, "error_rate": 0.48, "modeled_p95_ms": 46,
+        "loopback_p95_ms_informational": 0.708, "http_507s": 48, "health": "fail"
+      }
+    ]
+  },
+  "savings": {
+    "basis": "Synthetic unblended USD: usage quantity times fixture rate; no RI/SP amortization or credits",
+    "billing_fixture": "../../fixtures/billing.csv",
+    "observed_window_days": 7,
+    "projection_month_days": 30,
+    "monthly_assumptions": {
+      "low_weekly_requests": 9100,
+      "high_weekly_requests": 10920,
+      "activity_scaling": "Both app byte-days and node-volume time scale with requests in this fixture; high assumes observed activity, low applies 9100/10920 to observed activity",
+      "cloudwatch": "Stored bytes scale by 7/14 at steady state and stable ingest; no run-in, expiry delay or ingest cost change",
+      "gp3": "GiB-days scale by 36/50 at unchanged node-volume time within each scenario; eligible dev roots at proposed size throughout the month and unchanged fixture rates"
+    },
+    "lines": [
+      {
+        "usage_type": "CloudWatch-TimedStorage", "service": "document-service",
+        "resource_id": "/otterworks/dev/document-service", "unit": "GB-day", "fixture_rate_usd": 0.001,
+        "observed_usage_7d": 218.4, "projected_usage_7d": 109.2,
+        "observed_cost_7d_usd": 0.2184, "projected_cost_7d_usd": 0.1092, "projected_savings_7d_usd": 0.1092,
+        "projected_savings_monthly_low_usd": 0.3900, "projected_savings_monthly_high_usd": 0.4680
+      },
+      {
+        "usage_type": "EBS-VolumeUsage.gp3", "service": "tenant-compute",
+        "resource_id": "ec2nodeclass/default:/dev/xvda", "unit": "GiB-day", "fixture_rate_usd": 0.0025,
+        "observed_usage_7d": 546, "projected_usage_7d": 393.12,
+        "observed_cost_7d_usd": 1.3650, "projected_cost_7d_usd": 0.9828, "projected_savings_7d_usd": 0.3822,
+        "projected_savings_monthly_low_usd": 1.3650, "projected_savings_monthly_high_usd": 1.6380
+      }
+    ],
+    "combined": {
+      "observed_cost_7d_usd": 1.5834, "projected_cost_7d_usd": 1.0920, "projected_savings_7d_usd": 0.4914,
+      "projected_savings_monthly_low_usd": 1.7550, "projected_savings_monthly_high_usd": 2.1060
+    },
+    "confirmed_billed_savings_usd": 0.0000,
+    "billed_evidence": "No post-change bill or live rollout",
+    "excluded": {
+      "audit_log_group": "/otterworks/dev/audit-service",
+      "audit_minimum_days": 90,
+      "audit_configured_days": 90,
+      "other_log_groups_and_ingest": true,
+      "unallocated_regional_transfer_cost_7d_usd": 0.1700
+    }
+  },
+  "change": {
+    "scope": "Local provider-free model only; do not apply to shared infrastructure",
+    "forward_plan": "plan-forward.txt",
+    "rollback_plan": "plan-rollback.txt",
+    "rollback_from": {"root_volume_gib": 36, "app_retention_days": 7, "audit_retention_days": 90},
+    "rollback_to": {"root_volume_gib": 50, "app_retention_days": 14, "audit_retention_days": 90},
+    "rollback_verify": "Re-run the 100-request gate; restoring retention does not recover expired logs"
+  }
+}
