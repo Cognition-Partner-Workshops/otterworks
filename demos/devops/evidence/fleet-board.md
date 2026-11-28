@@ -6,7 +6,7 @@
 `devops-fleet`, not live AWS. Live `otterworks-dev` did not have this
 namespace. A match below covers only requests, limits, Deployment spec replicas,
 image, and owner labels; it does not make a workload upgrade-ready.
-[Commands, scope and recommendations](drift.md) · [Linux output](drift-output.md)
+[Commands, scope and recommendations](drift.md) · [Linux output](drift-output.md) · [Windows output](drift-windows-output.md)
 
 | Workload | Desired owner (observed, if different) | Last known-good Git SHA | Helm revision | Restart constraint | Drift / disposition |
 | --- | --- | --- | --- | --- | --- |
@@ -17,4 +17,4 @@ image, and owner labels; it does not make a workload upgrade-ready.
 | file-service | storage | `74421355a6b2df82b2f3d984ffdfdfffa9c8aac2` | 1 | Missing | Match |
 | search-service | search | `74421355a6b2df82b2f3d984ffdfdfffa9c8aac2` | 1 | Missing | Match |
 
-Windows rerun: pending on a Windows machine.
+Windows rerun: exit 1, RED, same three collab-service differences as Linux (identical report). [Windows output](drift-windows-output.md)

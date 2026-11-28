@@ -21,16 +21,21 @@ local kind (`kind-devops-20261128-1-34`), not live AWS.
 - Linux: `python demos/devops/drift_check.py --markdown demos/devops/evidence/drift-output.md --json "$HOME/.cache/otterworks-fleet-drift.json"`.
   [Output](drift-output.md): exit **1**, six Deployments checked, three
   differences. See [fleet board](fleet-board.md) for the per-workload results.
-- Windows: check out the same PR revision and run the commands below from the
-  repository root, with Python 3 and Helm 3 on PATH. Record the actual exit
-  and attach the reports; the expected result is exit **1**, not a passing gate.
-  This run requires no Bash, kubectl, AWS credentials or cluster.
+- Windows (Windows Server 2022, PowerShell, Python 3.13.12, Helm v3.16.4,
+  revision `19a5459ec018a6081aaa52f371714995f759debb`), from the repository root:
 
 ```powershell
 python -m pip install -r platform/standards/fleet/requirements.txt
 python demos/devops/drift_check.py --markdown drift-windows.md --json drift-windows.json
 $LASTEXITCODE
 ```
+
+  [Output](drift-windows-output.md): exit **1** (RED), six Deployments checked,
+  the same three collab-service differences against the same recorded kind
+  snapshot. The Markdown report is identical to the Linux output (same Git
+  blob `2a9ad5ee0469573e2262d99204bb29bd46924e02`). The recorded replay tests
+  in `platform/standards/fleet/test_fleet.py` also pass on Windows (6 OK).
+  No Bash, kubectl, AWS credentials or cluster were used.
 
 ## Findings and recommended action
 
