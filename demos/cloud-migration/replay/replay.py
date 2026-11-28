@@ -1,5 +1,6 @@
 import argparse
 import contextlib
+import hashlib
 import http.client
 import json
 import os
@@ -7,8 +8,10 @@ from pathlib import Path
 import re
 import selectors
 import subprocess
+import tarfile
 import tempfile
 import time
+from uuid import uuid4
 
 
 HERE = Path(__file__).resolve().parent
@@ -19,15 +22,16 @@ RUN_ID = "CMG_20261128"
 APP = "sample-service"
 SANDBOX = "cmg-20261128-sandbox"
 REPOSITORY = "localhost/cmg-20261128/sample-service"
-TAG = "baseline"
-IMAGE = f"{REPOSITORY}:{TAG}"
 NODE_IMAGE = "kindest/node:v1.32.2@sha256:f226345927d7e348497136874b6d207e0b32cc52154ad8323129352923a3142f"
 CLUSTERS = {"aks-source": "simulated AKS source (kind)", "eks-target": "simulated EKS target (kind)"}
 LIMITATION = "Local kind simulation only; this does not prove live AKS parity."
 PRIVATE = {"id": "CMG-PRIVATE", "status": "unresolved", "execution": "not run"}
 CHECKS = ("setup", "readiness", "restart", "sandbox_rollback")
-VALUES = ("-f", SAMPLE / "deploy/values.yaml", "--set-string",
-          f"image.repository={REPOSITORY},image.tag={TAG},image.pullPolicy=Never")
+
+
+def values(tag):
+    return ("-f", SAMPLE / "deploy/values.yaml", "--set-string",
+            f"image.repository={REPOSITORY},image.tag={tag},image.pullPolicy=Never")
 
 
 def command(*args, env=None, timeout=300):
@@ -41,6 +45,35 @@ def command(*args, env=None, timeout=300):
 def require(condition, message):
     if not condition:
         raise RuntimeError(message)
+
+
+def local_env():
+    env = {key: value for key, value in os.environ.items()
+           if not key.upper().startswith(("HELM_", "KUBE", "KIND_"))
+           and key.upper() not in {"HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY"}}
+    return dict(env, KIND_EXPERIMENTAL_PROVIDER="docker")
+
+
+def verify_local_context(kubectl, context, cluster, env):
+    config = json.loads(command(*kubectl, "config", "view", "--minify", "-o", "json", env=env))
+    clusters = config.get("clusters", [])
+    require(len(clusters) == 1 and config.get("current-context") == context
+            and clusters[0]["name"] == context, f"Unexpected context in kind kubeconfig: {context}")
+    endpoint = clusters[0]["cluster"]
+    match = re.fullmatch(r"https://127\.0\.0\.1:([0-9]+)", endpoint.get("server", ""))
+    require(match and not endpoint.get("proxy-url"), f"Refusing non-local kind endpoint: {context}")
+    binding = command("docker", "port", f"{cluster}-control-plane", "6443/tcp", env=env)
+    require(f"127.0.0.1:{match[1]}" in binding.splitlines(),
+            f"Kubeconfig endpoint is not the docker port for {cluster}")
+
+
+def archive_digest(archive, image):
+    with tarfile.open(archive) as saved:
+        manifest = json.load(saved.extractfile("manifest.json"))
+        require(len(manifest) == 1 and image in manifest[0].get("RepoTags", []),
+                "Docker archive does not contain the unique replay image")
+        with saved.extractfile(manifest[0]["Config"]) as config:
+            return f"sha256:{hashlib.sha256(config.read()).hexdigest()}"
 
 
 def identity(cluster):
@@ -66,12 +99,14 @@ def policy():
                          "eks-target": "simulated EKS target (kind)"}, "Missing simulation labels")
     require(PRIVATE["status"] == "unresolved" and PRIVATE["execution"] == "not run",
             "A private dependency must not be replayed")
-    print(command("helm", "lint", CHART, *VALUES), end="")
+    env = local_env()
+    print(command("helm", "lint", CHART, *values("baseline"), env=env), end="")
     with tempfile.TemporaryDirectory() as tmp:
         manifest = Path(tmp) / "sandbox.yaml"
         data = Path(tmp) / "registries.json"
         data.write_text(json.dumps({"registries": {"approved": ["localhost/cmg-20261128/"]}}))
-        manifest.write_text(command("helm", "template", APP, CHART, "-n", SANDBOX, *VALUES))
+        manifest.write_text(command("helm", "template", APP, CHART, "-n", SANDBOX,
+                                    *values("baseline"), env=env))
         base = ("conftest", "test", "--no-color")
         existing = ("--policy", STANDARD / "policy/conftest")
         for args in (
@@ -85,10 +120,10 @@ def policy():
 
 
 def leftovers():
-    host = os.environ.get("DOCKER_HOST") or command(
+    host = (None if os.environ.get("DOCKER_CONTEXT") else os.environ.get("DOCKER_HOST")) or command(
         "docker", "context", "inspect", "--format", "{{.Endpoints.docker.Host}}").strip()
     require(host.startswith("unix://"), "The simulation requires a local Docker Unix socket")
-    clusters = set(command("kind", "get", "clusters").splitlines()) & CLUSTERS.keys()
+    clusters = set(command("kind", "get", "clusters", env=local_env()).splitlines()) & CLUSTERS.keys()
     names = command("docker", "ps", "-a", "--format", "{{.Names}}").splitlines()
     containers = [name for name in names if name.startswith(tuple(f"{c}-" for c in CLUSTERS))]
     return sorted(clusters), sorted(containers)
@@ -151,24 +186,39 @@ def port_forward(kubectl, pod, env):
             process.stdout.close()
 
 
-def ready_pod(kubectl, env):
-    command(*kubectl, "rollout", "status", f"deployment/{APP}", "--timeout=120s", env=env)
-    pods = json.loads(command(*kubectl, "get", "pods", "-l", f"app={APP}", "-o", "json", env=env))
+def select_ready_pod(pods, image, expected_digest, old_uid):
     ready = []
     for pod in pods["items"]:
-        if pod["metadata"].get("deletionTimestamp") or pod["status"].get("phase") != "Running":
+        if (pod["metadata"].get("deletionTimestamp") or pod["metadata"]["uid"] == old_uid or
+                pod["status"].get("phase") != "Running"):
             continue
         for container in pod["status"].get("containerStatuses", []):
             if container["name"] == APP and container["ready"]:
                 image_id = container["imageID"]
                 digest = re.search(r"sha256:[0-9a-f]{64}$", image_id)
-                require(digest and container["image"] == IMAGE,
-                        f"Unexpected running pod image: {container['image']}, imageID={image_id}")
+                require(digest and digest.group() == expected_digest and container["image"] == image,
+                        f"Unexpected running pod image: {container['image']}, imageID={image_id}; "
+                        f"expected {image}, config digest {expected_digest}")
                 ready.append({"pod": pod["metadata"]["name"], "uid": pod["metadata"]["uid"],
                               "node": pod["spec"]["nodeName"], "image": container["image"],
                               "image_id": image_id, "digest": digest.group()})
-    require(len(ready) == 1, f"Expected one Ready running pod, got {ready!r}")
-    return ready[0]
+    require(len(ready) <= 1, f"Expected one Ready running pod, got {ready!r}")
+    return ready[0] if ready else None
+
+
+def ready_pod(kubectl, env, image, expected_digest, *, old_uid=None, timeout=120):
+    if old_uid is None:
+        command(*kubectl, "rollout", "status", f"deployment/{APP}", "--timeout=120s", env=env)
+    deadline = time.monotonic() + timeout
+    while (remaining := deadline - time.monotonic()) > 0:
+        pods = json.loads(command(*kubectl, "get", "pods", "-l", f"app={APP}", "-o", "json",
+                                  env=env, timeout=min(10, remaining)))
+        ready = select_ready_pod(pods, image, expected_digest, old_uid)
+        if ready:
+            return ready
+        time.sleep(max(0, min(1, deadline - time.monotonic())))
+    qualifier = f" replacing pod UID {old_uid}" if old_uid else ""
+    raise RuntimeError(f"No Ready running {APP} pod{qualifier} within {timeout}s")
 
 
 def error_text(exc):
@@ -177,24 +227,27 @@ def error_text(exc):
     return str(exc)
 
 
-def run_cluster(cluster, result, owned, env, save):
+def run_cluster(cluster, result, owned, env, save, archive, tag, expected_digest):
     context = result["identity"]["context"]
-    kubectl = ("kubectl", "--context", context, "-n", SANDBOX)
-    helm = ("helm", "--kube-context", context, "-n", SANDBOX)
+    kubeconfig = archive.parent / f"{cluster}.kubeconfig"
+    kubectl = ("kubectl", "--kubeconfig", kubeconfig, "--context", context, "-n", SANDBOX)
+    helm = ("helm", "--kubeconfig", kubeconfig, "--kube-context", context, "-n", SANDBOX)
+    image = f"{REPOSITORY}:{tag}"
     stage = "setup"
     try:
-        owned.append(cluster)
+        owned[cluster] = kubeconfig
         command("kind", "create", "cluster", "--name", cluster, "--image", NODE_IMAGE,
-                "--wait", "120s", env=env)
-        command("kind", "load", "docker-image", IMAGE, "--name", cluster, env=env)
+                "--kubeconfig", kubeconfig, "--wait", "120s", env=env)
+        verify_local_context(kubectl, context, cluster, env)
+        command("kind", "load", "image-archive", archive, "--name", cluster, env=env)
         nodes = command(*kubectl, "get", "nodes", "-o", "name", env=env).splitlines()
         require(nodes == [f"node/{cluster}-control-plane"], f"Unexpected node identity: {nodes}")
-        command(*helm, "install", APP, CHART, "--create-namespace", *VALUES, env=env)
+        command(*helm, "install", APP, CHART, "--create-namespace", *values(tag), env=env)
         result["checks"][stage] = {"status": "pass", "nodes": nodes}
         save()
 
         stage = "readiness"
-        initial = ready_pod(kubectl, env)
+        initial = ready_pod(kubectl, env, image, expected_digest)
         result["checks"][stage] = {"status": "pass", **initial}
         save()
 
@@ -212,9 +265,8 @@ def run_cluster(cluster, result, owned, env, save):
         stage = "restart"
         result["checks"][stage] = {"status": "fail", "old_uid": initial["uid"]}
         command(*kubectl, "delete", "pod", initial["pod"], "--timeout=120s", env=env)
-        replacement = ready_pod(kubectl, env)
+        replacement = ready_pod(kubectl, env, image, expected_digest, old_uid=initial["uid"])
         result["checks"][stage].update(replacement)
-        require(initial["uid"] != replacement["uid"], "Restart did not replace the pod UID")
         with port_forward(kubectl, replacement["pod"], env) as port:
             probe = request(port, "/health", 200, {"status": "UP"})
         result["checks"][stage]["health"] = probe
@@ -225,14 +277,14 @@ def run_cluster(cluster, result, owned, env, save):
         stage = "sandbox_rollback"
         result["checks"][stage] = {"status": "fail"}
         greeting = "sandbox revision two"
-        command(*helm, "upgrade", APP, CHART, *VALUES, "--set-string", f"env.GREETING={greeting}", env=env)
-        updated = ready_pod(kubectl, env)
+        command(*helm, "upgrade", APP, CHART, *values(tag), "--set-string", f"env.GREETING={greeting}", env=env)
+        updated = ready_pod(kubectl, env, image, expected_digest)
         with port_forward(kubectl, updated["pod"], env) as port:
             changed = request(port, "/", 200, {"message": greeting})
         result["checks"][stage]["revision_2"] = {**updated, "response": changed}
         save()
         command(*helm, "rollback", APP, "1", "--wait", "--timeout", "120s", env=env)
-        restored = ready_pod(kubectl, env)
+        restored = ready_pod(kubectl, env, image, expected_digest)
         with port_forward(kubectl, restored["pod"], env) as port:
             baseline = request(port, "/", 200, next(
                 case["expected"]["body"] for case in result["requests"] if case["expected"]["path"] == "/"))
@@ -274,24 +326,29 @@ def run(output):
     for cluster in CLUSTERS:
         save_cluster(cluster)
     record(output / "summary.json", summary)
-    owned = []
+    owned = {}
     with tempfile.TemporaryDirectory() as tmp:
-        env = dict(os.environ, KUBECONFIG=str(Path(tmp) / "kubeconfig"), KIND_EXPERIMENTAL_PROVIDER="docker")
+        env = local_env()
+        archive = Path(tmp) / "image.tar"
+        tag = f"baseline-{uuid4().hex}"
+        image = f"{REPOSITORY}:{tag}"
         try:
             require(not any(leftovers()), "Refusing to change existing simulation clusters or containers")
-            command("docker", "build", "-t", IMAGE, str(SAMPLE), timeout=600)
-            summary["built_image"] = {"tag": IMAGE, "docker_image_id": command(
-                "docker", "image", "inspect", IMAGE, "--format", "{{.Id}}").strip()}
+            command("docker", "build", "-t", image, str(SAMPLE), timeout=600)
+            command("docker", "image", "save", "-o", archive, image)
+            expected_digest = archive_digest(archive, image)
+            summary["built_image"] = {"tag": image, "archive_config_digest": expected_digest}
             record(output / "summary.json", summary)
             for cluster in CLUSTERS:
-                run_cluster(cluster, results[cluster], owned, env, lambda: save_cluster(cluster))
-        except (OSError, RuntimeError, subprocess.TimeoutExpired) as exc:
+                run_cluster(cluster, results[cluster], owned, env, lambda: save_cluster(cluster),
+                            archive, tag, expected_digest)
+        except (OSError, RuntimeError, subprocess.TimeoutExpired, ValueError, tarfile.TarError) as exc:
             summary["setup_error"] = error_text(exc)
         finally:
             cleanup_errors = {}
-            for cluster in owned:
+            for cluster, kubeconfig in owned.items():
                 try:
-                    command("kind", "delete", "cluster", "--name", cluster, env=env)
+                    command("kind", "delete", "cluster", "--name", cluster, "--kubeconfig", kubeconfig, env=env)
                 except (OSError, RuntimeError, subprocess.TimeoutExpired) as exc:
                     cleanup_errors[cluster] = error_text(exc)
             try:
@@ -312,9 +369,9 @@ def run(output):
         digests[cluster] = [pod["digest"] for pod in pods if "digest" in pod]
         print(f"{cluster} ({CLUSTERS[cluster]}): {result['request_counts']}; "
               "private dependency unresolved/not run")
-    if all(digests.values()):
+    if all(len(values) == 4 for values in digests.values()):
         unique = {digest for values in digests.values() for digest in values}
-        summary["image_parity"] = {"status": "pass" if len(unique) == 1 else "fail",
+        summary["image_parity"] = {"status": "pass" if unique == {expected_digest} else "fail",
                                    "running_pod_digests": digests}
     record(output / "summary.json", summary)
     print(f"Running pod digest parity: {summary['image_parity']}")

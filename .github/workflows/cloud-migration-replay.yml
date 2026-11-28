@@ -21,13 +21,25 @@ jobs:
           persist-credentials: false
       - name: Install local simulation tools
         run: |
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          cd "$work"
           mkdir -p "$HOME/bin"
           echo "$HOME/bin" >> "$GITHUB_PATH"
-          curl -fsSL https://github.com/kubernetes-sigs/kind/releases/download/v0.27.0/kind-linux-amd64 -o "$HOME/bin/kind"
-          curl -fsSL https://dl.k8s.io/release/v1.32.2/bin/linux/amd64/kubectl -o "$HOME/bin/kubectl"
-          chmod +x "$HOME/bin/kind" "$HOME/bin/kubectl"
-          curl -fsSL https://get.helm.sh/helm-v3.17.3-linux-amd64.tar.gz | tar -xz -C "$HOME/bin" --strip-components=1 linux-amd64/helm
-          curl -fsSL https://github.com/open-policy-agent/conftest/releases/download/v0.56.0/conftest_0.56.0_Linux_x86_64.tar.gz | tar -xz -C "$HOME/bin" conftest
+          download() {
+            curl -fsSL "$1" -o "$2"
+            printf '%s  %s\n' "$3" "$2" | sha256sum -c -
+          }
+          # Digests from each version's upstream release checksum file.
+          download https://github.com/kubernetes-sigs/kind/releases/download/v0.27.0/kind-linux-amd64 kind a6875aaea358acf0ac07786b1a6755d08fd640f4c79b7a2e46681cc13f49a04b
+          download https://dl.k8s.io/release/v1.32.2/bin/linux/amd64/kubectl kubectl 4f6a959dcc5b702135f8354cc7109b542a2933c46b808b248a214c1f69f817ea
+          download https://get.helm.sh/helm-v3.17.3-linux-amd64.tar.gz helm.tar.gz ee88b3c851ae6466a3de507f7be73fe94d54cbf2987cbaa3d1a3832ea331f2cd
+          download https://github.com/open-policy-agent/conftest/releases/download/v0.56.0/conftest_0.56.0_Linux_x86_64.tar.gz conftest.tar.gz 620f41640d63bbde1646a108ce2816ba54c980466ceebb7e754dda2d508e8cd5
+          install -m 0755 kind kubectl "$HOME/bin/"
+          tar -xzf helm.tar.gz -C "$HOME/bin" --strip-components=1 linux-amd64/helm
+          tar -xzf conftest.tar.gz -C "$HOME/bin" conftest
+      - name: Test sandbox isolation, pod replacement and image identity
+        run: python3 -m unittest discover -s demos/cloud-migration/replay -v
       - name: Check request catalog and local sandbox policy
         run: python3 demos/cloud-migration/replay/replay.py policy
       - name: Replay in simulated AKS source and simulated EKS target (kind)
