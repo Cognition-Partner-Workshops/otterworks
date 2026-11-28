@@ -13,6 +13,9 @@ of this container, which also serves HTTPS with a certificate from a throwaway p
 string parameters are bound as varchar, like the Data API, so a timestamp column needs a CAST or a
 typeHint; timestamps are returned as 'YYYY-MM-DD HH:MM:SS[.ffffff]' with trailing zeros trimmed.
 
+Statements are never run as received: operations.py maps each exact statement the handlers send to
+trusted static SQL and binds only checked parameter values; anything else is refused.
+
 Every call must carry a SigV4 signature made with this run's key pair (LOCAL_CREDENTIALS_FILE, written
 by the certs service and shared only with the function containers); anything else gets a 403 before
 the body is parsed.
@@ -22,7 +25,6 @@ import datetime as dt
 import decimal
 import json
 import os
-import re
 import ssl
 import sys
 import threading
@@ -31,51 +33,21 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import psycopg
 
+import operations
 import sigv4
 
 PG_DSN = os.environ.get("PG_DSN", "host=lambda-db user=lp_dataapi password=lp_dataapi")
 CLUSTER_ARN = os.environ["LOCAL_CLUSTER_ARN"]
 SECRET_ARN = os.environ["LOCAL_SECRET_ARN"]
 KEY_ID, KEY_SECRET = sigv4.load_credentials(os.environ["LOCAL_CREDENTIALS_FILE"])
-PARAM = re.compile(r"(?<![:\w]):([A-Za-z_]\w*)")
-# Executing caller-supplied SQL is what the Data API is for. This stand-in narrows it to single DML
-# statements, and its database role (zz-dataapi-role.sql) can only touch the three context tables.
-DML = re.compile(r"^\s*(SELECT|INSERT|UPDATE|DELETE|WITH)\b", re.IGNORECASE)
-HINT_CASTS = {"TIMESTAMP": "timestamp", "DATE": "date", "TIME": "time", "DECIMAL": "numeric",
-              "UUID": "uuid", "JSON": "jsonb"}
+DB_NAME = os.environ.get("LOCAL_DB_NAME", "legacyportal")
+DSN = f"{PG_DSN} dbname={DB_NAME}"
 
 
 class DataApiError(Exception):
     def __init__(self, status, kind, message):
         super().__init__(message)
         self.status, self.kind = status, kind
-
-
-def bind(sql, parameters):
-    values, casts = {}, {}
-    for p in parameters or []:
-        name, field, hint = p["name"], p.get("value", {}), p.get("typeHint")
-        if field.get("isNull"):
-            values[name], casts[name] = None, None
-        elif "stringValue" in field:
-            values[name], casts[name] = field["stringValue"], HINT_CASTS.get(hint, "varchar")
-        elif "longValue" in field:
-            values[name], casts[name] = int(field["longValue"]), "bigint"
-        elif "doubleValue" in field:
-            values[name], casts[name] = float(field["doubleValue"]), "double precision"
-        elif "booleanValue" in field:
-            values[name], casts[name] = bool(field["booleanValue"]), "boolean"
-        elif "blobValue" in field:
-            values[name], casts[name] = base64.b64decode(field["blobValue"]), "bytea"
-        else:
-            raise DataApiError(400, "BadRequestException", f"unsupported value for parameter {name}")
-
-    def sub(match):
-        name = match.group(1)
-        if name not in values:
-            raise DataApiError(400, "BadRequestException", f"No value specified for parameter: {name}")
-        return f"%({name})s" + (f"::{casts[name]}" if casts[name] else "")
-    return PARAM.sub(sub, sql.replace("%", "%%")), values
 
 
 def field(value):
@@ -104,20 +76,21 @@ def field(value):
 def execute(req):
     if req.get("resourceArn") != CLUSTER_ARN or req.get("secretArn") != SECRET_ARN:
         raise DataApiError(403, "AccessDeniedException", "resourceArn/secretArn do not match the local cluster")
+    if req.get("database") not in (None, DB_NAME):
+        raise DataApiError(400, "BadRequestException", "unknown database")
     if req.get("transactionId"):
         raise DataApiError(400, "BadRequestException", "transactions are not supported by the local Data API")
-    statement = req.get("sql") or ""
-    if not DML.match(statement) or ";" in statement.strip().rstrip(";"):
-        raise DataApiError(400, "BadRequestException", "the local Data API accepts one SELECT/INSERT/UPDATE/DELETE")
-    sql, values = bind(statement, req.get("parameters"))
-    dsn = PG_DSN + (f" dbname={req['database']}" if req.get("database") else "")
     try:
-        with psycopg.connect(dsn, autocommit=True) as conn, conn.cursor() as cur:
-            cur.execute(sql, values)
+        op, values = operations.resolve(req.get("sql"), req.get("parameters"))
+    except operations.OperationError as e:
+        raise DataApiError(400, "BadRequestException", str(e)) from e
+    try:
+        with psycopg.connect(DSN, autocommit=True) as conn, conn.cursor() as cur:
+            cur.execute(op.sql, values)
             out = {"numberOfRecordsUpdated": max(cur.rowcount, 0) if cur.description is None else 0}
             if cur.description is not None:
                 out["records"] = [[field(v) for v in row] for row in cur.fetchall()]
-            return out
+            return op.name, out
     except psycopg.Error as e:
         raise DataApiError(400, "BadRequestException", str(e).strip()) from e
 
@@ -138,8 +111,9 @@ class Handler(BaseHTTPRequestHandler):
             if self.path.split("?")[0] != "/Execute":
                 raise DataApiError(400, "BadRequestException", f"{self.path} is not supported by the local Data API")
             req = json.loads(raw or b"{}")
-            body, status = execute(req), 200
-            print(f"Execute ok sql={req['sql'][:120]!r} rows={len(body.get('records', []))}", flush=True)
+            name, body = execute(req)
+            status = 200
+            print(f"Execute ok {name} rows={len(body.get('records', []))}", flush=True)
         except DataApiError as e:
             body, status = {"message": str(e)}, e.status
             self._reply(status, body, e.kind)
