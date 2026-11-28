@@ -1,0 +1,39 @@
+{
+  "fixture": "fixture: recorded, not live AWS",
+  "as_of": "2026-11-28T02:55:00Z",
+  "cluster": "otterworks-dev",
+  "observed_version": "1.34",
+  "target_version": "1.35",
+  "scope": "Synthetic compatibility inventory for offline evaluation",
+  "addons": [
+    {
+      "name": "vpc-cni",
+      "installed_version": "v1.20.4-eksbuild.1",
+      "compatible_minors": [
+        "1.34",
+        "1.35"
+      ],
+      "owner": "networking",
+      "change_scope": "shared"
+    },
+    {
+      "name": "coredns",
+      "installed_version": "v1.12.4-eksbuild.1",
+      "compatible_minors": [
+        "1.34"
+      ],
+      "owner": "platform-runtime",
+      "change_scope": "shared",
+      "maintenance_window": null
+    },
+    {
+      "name": "kube-proxy",
+      "installed_version": "v1.34.1-eksbuild.2",
+      "compatible_minors": [
+        "1.34"
+      ],
+      "owner": "platform-runtime",
+      "change_scope": "managed-with-control-plane"
+    }
+  ]
+}

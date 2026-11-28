@@ -2,6 +2,19 @@
   "schema_version": 1,
   "demo": "legacy-data-migration",
   "spec": "migration/source/seed/SEED-SPEC.md",
+  "variants": {
+    "devops": {
+      "run_token": "DEVOPS_20261128",
+      "fixtures": "demos/devops",
+      "classes": [
+        {"id": "DEVOPS-01", "title": "Rollout health regression"},
+        {"id": "DEVOPS-02", "title": "Desired and observed revisions diverge"},
+        {"id": "DEVOPS-03", "title": "Removed workload API and shared add-on hold"},
+        {"id": "DEVOPS-04", "title": "Unowned resource requests override"},
+        {"id": "DEVOPS-05", "title": "Workload exceeds its capacity envelope"}
+      ]
+    }
+  },
   "classes": [
     {
       "id": "MIG-01",

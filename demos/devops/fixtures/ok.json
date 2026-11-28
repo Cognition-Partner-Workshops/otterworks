@@ -1,0 +1,14 @@
+{
+  "fixture": "fixture: recorded, not live AWS",
+  "source": "cloudwatch-alarm",
+  "alarm": "otterworks-devops-api-gateway-not-ready",
+  "region": "us-east-1",
+  "account": "599083837640",
+  "namespace": "devops-fleet",
+  "branch": "demo-devops",
+  "service": "api-gateway",
+  "run_token": "DEVOPS_20261128",
+  "state": "OK",
+  "time": "2026-11-28T03:02:19Z",
+  "reason": "The active rollout revision returned to one ready replica."
+}

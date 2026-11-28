@@ -1,0 +1,15 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: file-service
+  namespace: devops-fleet
+  labels:
+    owner: storage
+  annotations:
+    readiness.otterworks.app/source: kind
+    readiness.otterworks.app/fixture: "fixture: recorded, not live AWS"
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: file-service

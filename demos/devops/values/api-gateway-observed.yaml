@@ -1,0 +1,2 @@
+probes:
+  path: /healthz
