@@ -12,8 +12,10 @@ import replay
 
 
 CONTEXT = "kind-aks-source"
+NODE = "aks-source-control-plane"
 IMAGE = f"{replay.REPOSITORY}:baseline-test"
 DIGEST = f"sha256:{'a' * 64}"
+REPO_DIGEST = f"{replay.REPOSITORY}@sha256:{'b' * 64}"
 
 
 def context_config(server, **options):
@@ -23,13 +25,13 @@ def context_config(server, **options):
     })
 
 
-def pod(uid, *, ready=True, terminating=False, digest=DIGEST):
+def pod(uid, *, ready=True, terminating=False, image_id=DIGEST):
     return {
         "metadata": {"name": f"sample-{uid}", "uid": uid,
                      **({"deletionTimestamp": "2026-11-28T00:00:00Z"} if terminating else {})},
-        "spec": {"nodeName": "aks-source-control-plane"},
+        "spec": {"nodeName": NODE},
         "status": {"phase": "Running", "containerStatuses": [
-            {"name": replay.APP, "ready": ready, "image": IMAGE, "imageID": digest}
+            {"name": replay.APP, "ready": ready, "image": IMAGE, "imageID": image_id}
         ]},
     }
 
@@ -79,8 +81,9 @@ class ReadyPodTest(unittest.TestCase):
                      [pod("new")]]
         with patch.object(replay, "command", side_effect=(
                 json.dumps({"items": items}) for items in snapshots)) as command, \
+                patch.object(replay, "running_config_digest", return_value=DIGEST), \
                 patch.object(replay.time, "sleep"):
-            selected = replay.ready_pod(("kubectl",), {}, IMAGE, DIGEST, old_uid="old")
+            selected = replay.ready_pod(("kubectl",), {}, IMAGE, DIGEST, node=NODE, old_uid="old")
         self.assertEqual(selected["uid"], "new")
         self.assertEqual(selected["pod"], "sample-new")
         self.assertEqual(selected["digest"], DIGEST)
@@ -92,12 +95,33 @@ class ReadyPodTest(unittest.TestCase):
                 patch.object(replay.time, "monotonic", side_effect=[0, 0, 1, 2]), \
                 patch.object(replay.time, "sleep"):
             with self.assertRaisesRegex(RuntimeError, "replacing pod UID old"):
-                replay.ready_pod(("kubectl",), {}, IMAGE, DIGEST, old_uid="old", timeout=2)
+                replay.ready_pod(("kubectl",), {}, IMAGE, DIGEST, node=NODE, old_uid="old", timeout=2)
+
+    def test_ready_pod_resolves_reported_repo_digest_to_config(self):
+        for image_id, ref in ((DIGEST, DIGEST), (REPO_DIGEST, REPO_DIGEST),
+                              (f"docker-pullable://{REPO_DIGEST}", REPO_DIGEST)):
+            with self.subTest(image_id=image_id), patch.object(replay, "command", side_effect=[
+                    "rollout complete", json.dumps({"items": [pod("new", image_id=image_id)]}),
+                    json.dumps({"status": {"id": DIGEST, "repoDigests": [REPO_DIGEST]}}),
+            ]) as command:
+                selected = replay.ready_pod(("kubectl",), {}, IMAGE, DIGEST, node=NODE)
+                self.assertEqual(selected["image_id"], image_id)
+                self.assertEqual(selected["digest"], DIGEST)
+                command.assert_called_with("docker", "exec", NODE, "crictl", "inspecti", ref,
+                                           env={}, timeout=10)
 
     def test_matching_tag_does_not_accept_another_image_digest(self):
-        with self.assertRaisesRegex(RuntimeError, "Unexpected running pod image"):
-            replay.select_ready_pod({"items": [pod("new", digest=f"sha256:{'b' * 64}")]},
-                                    IMAGE, DIGEST, None)
+        selected = replay.select_ready_pod({"items": [pod("new", image_id=REPO_DIGEST)]}, IMAGE, None)
+        with patch.object(replay, "command", return_value=json.dumps({"status": {"id": f"sha256:{'c' * 64}"}})):
+            with self.assertRaisesRegex(RuntimeError, "Unexpected running pod image config"):
+                replay.running_config_digest(selected, NODE, DIGEST, {})
+
+    def test_mutable_tag_is_not_a_runtime_identity(self):
+        selected = replay.select_ready_pod({"items": [pod("new", image_id=IMAGE)]}, IMAGE, None)
+        with patch.object(replay, "command") as command:
+            with self.assertRaisesRegex(RuntimeError, "Expected a digest reference"):
+                replay.running_config_digest(selected, NODE, DIGEST, {})
+        command.assert_not_called()
 
     def test_archive_digest_uses_config_bytes_and_checks_tag(self):
         config = b'{"config":{"User":"10001"}}'

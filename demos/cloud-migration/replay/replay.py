@@ -186,7 +186,7 @@ def port_forward(kubectl, pod, env):
             process.stdout.close()
 
 
-def select_ready_pod(pods, image, expected_digest, old_uid):
+def select_ready_pod(pods, image, old_uid):
     ready = []
     for pod in pods["items"]:
         if (pod["metadata"].get("deletionTimestamp") or pod["metadata"]["uid"] == old_uid or
@@ -195,26 +195,39 @@ def select_ready_pod(pods, image, expected_digest, old_uid):
         for container in pod["status"].get("containerStatuses", []):
             if container["name"] == APP and container["ready"]:
                 image_id = container["imageID"]
-                digest = re.search(r"sha256:[0-9a-f]{64}$", image_id)
-                require(digest and digest.group() == expected_digest and container["image"] == image,
-                        f"Unexpected running pod image: {container['image']}, imageID={image_id}; "
-                        f"expected {image}, config digest {expected_digest}")
+                require(container["image"] == image,
+                        f"Unexpected running pod image: {container['image']}, imageID={image_id}; expected {image}")
                 ready.append({"pod": pod["metadata"]["name"], "uid": pod["metadata"]["uid"],
                               "node": pod["spec"]["nodeName"], "image": container["image"],
-                              "image_id": image_id, "digest": digest.group()})
+                              "image_id": image_id})
     require(len(ready) <= 1, f"Expected one Ready running pod, got {ready!r}")
     return ready[0] if ready else None
 
 
-def ready_pod(kubectl, env, image, expected_digest, *, old_uid=None, timeout=120):
+def running_config_digest(pod, node, expected_digest, env):
+    require(pod["node"] == node, f"Unexpected pod node: {pod['node']}; expected {node}")
+    image_id = pod["image_id"]
+    ref = re.fullmatch(r"(?:(?:docker-pullable|containerd)://)?"
+                       r"((?:[a-z0-9][a-z0-9./:_-]*@)?sha256:[0-9a-f]{64})", image_id)
+    require(ref, f"Expected a digest reference in pod imageID, got {image_id!r}")
+    info = json.loads(command("docker", "exec", node, "crictl", "inspecti", ref[1], env=env, timeout=10))
+    digest = info.get("status", {}).get("id")
+    require(digest == expected_digest,
+            f"Unexpected running pod image config: imageID={image_id} resolved to {digest!r}; "
+            f"expected {expected_digest}")
+    return digest
+
+
+def ready_pod(kubectl, env, image, expected_digest, *, node, old_uid=None, timeout=120):
     if old_uid is None:
         command(*kubectl, "rollout", "status", f"deployment/{APP}", "--timeout=120s", env=env)
     deadline = time.monotonic() + timeout
     while (remaining := deadline - time.monotonic()) > 0:
         pods = json.loads(command(*kubectl, "get", "pods", "-l", f"app={APP}", "-o", "json",
                                   env=env, timeout=min(10, remaining)))
-        ready = select_ready_pod(pods, image, expected_digest, old_uid)
+        ready = select_ready_pod(pods, image, old_uid)
         if ready:
+            ready["digest"] = running_config_digest(ready, node, expected_digest, env)
             return ready
         time.sleep(max(0, min(1, deadline - time.monotonic())))
     qualifier = f" replacing pod UID {old_uid}" if old_uid else ""
@@ -233,6 +246,7 @@ def run_cluster(cluster, result, owned, env, save, archive, tag, expected_digest
     kubectl = ("kubectl", "--kubeconfig", kubeconfig, "--context", context, "-n", SANDBOX)
     helm = ("helm", "--kubeconfig", kubeconfig, "--kube-context", context, "-n", SANDBOX)
     image = f"{REPOSITORY}:{tag}"
+    node = f"{cluster}-control-plane"
     stage = "setup"
     try:
         owned[cluster] = kubeconfig
@@ -241,13 +255,13 @@ def run_cluster(cluster, result, owned, env, save, archive, tag, expected_digest
         verify_local_context(kubectl, context, cluster, env)
         command("kind", "load", "image-archive", archive, "--name", cluster, env=env)
         nodes = command(*kubectl, "get", "nodes", "-o", "name", env=env).splitlines()
-        require(nodes == [f"node/{cluster}-control-plane"], f"Unexpected node identity: {nodes}")
+        require(nodes == [f"node/{node}"], f"Unexpected node identity: {nodes}")
         command(*helm, "install", APP, CHART, "--create-namespace", *values(tag), env=env)
         result["checks"][stage] = {"status": "pass", "nodes": nodes}
         save()
 
         stage = "readiness"
-        initial = ready_pod(kubectl, env, image, expected_digest)
+        initial = ready_pod(kubectl, env, image, expected_digest, node=node)
         result["checks"][stage] = {"status": "pass", **initial}
         save()
 
@@ -265,7 +279,7 @@ def run_cluster(cluster, result, owned, env, save, archive, tag, expected_digest
         stage = "restart"
         result["checks"][stage] = {"status": "fail", "old_uid": initial["uid"]}
         command(*kubectl, "delete", "pod", initial["pod"], "--timeout=120s", env=env)
-        replacement = ready_pod(kubectl, env, image, expected_digest, old_uid=initial["uid"])
+        replacement = ready_pod(kubectl, env, image, expected_digest, node=node, old_uid=initial["uid"])
         result["checks"][stage].update(replacement)
         with port_forward(kubectl, replacement["pod"], env) as port:
             probe = request(port, "/health", 200, {"status": "UP"})
@@ -278,13 +292,13 @@ def run_cluster(cluster, result, owned, env, save, archive, tag, expected_digest
         result["checks"][stage] = {"status": "fail"}
         greeting = "sandbox revision two"
         command(*helm, "upgrade", APP, CHART, *values(tag), "--set-string", f"env.GREETING={greeting}", env=env)
-        updated = ready_pod(kubectl, env, image, expected_digest)
+        updated = ready_pod(kubectl, env, image, expected_digest, node=node)
         with port_forward(kubectl, updated["pod"], env) as port:
             changed = request(port, "/", 200, {"message": greeting})
         result["checks"][stage]["revision_2"] = {**updated, "response": changed}
         save()
         command(*helm, "rollback", APP, "1", "--wait", "--timeout", "120s", env=env)
-        restored = ready_pod(kubectl, env, image, expected_digest)
+        restored = ready_pod(kubectl, env, image, expected_digest, node=node)
         with port_forward(kubectl, restored["pod"], env) as port:
             baseline = request(port, "/", 200, next(
                 case["expected"]["body"] for case in result["requests"] if case["expected"]["path"] == "/"))
