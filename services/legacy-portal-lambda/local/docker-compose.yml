@@ -41,7 +41,7 @@ services:
       - java-db-data:/var/lib/postgresql/data
     networks: [java-store]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U legacyportal -d legacyportal"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U legacyportal -d legacyportal"]
       interval: 3s
       retries: 20
 
@@ -77,7 +77,7 @@ services:
       - lambda-db-data:/var/lib/postgresql/data
     networks: [lambda-store]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U legacyportal -d legacyportal"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U legacyportal -d legacyportal"]
       interval: 3s
       retries: 20
 
