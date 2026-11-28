@@ -12,6 +12,10 @@ of this container, which also serves HTTPS with a certificate from a throwaway p
 (TLS_CERT/TLS_KEY); the functions trust only that CA, so no request can reach a real endpoint. Values come back as Data API Field objects:
 string parameters are bound as varchar, like the Data API, so a timestamp column needs a CAST or a
 typeHint; timestamps are returned as 'YYYY-MM-DD HH:MM:SS[.ffffff]' with trailing zeros trimmed.
+
+Every call must carry a SigV4 signature made with this run's key pair (LOCAL_CREDENTIALS_FILE, written
+by the certs service and shared only with the function containers); anything else gets a 403 before
+the body is parsed.
 """
 import base64
 import datetime as dt
@@ -27,9 +31,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import psycopg
 
+import sigv4
+
 PG_DSN = os.environ.get("PG_DSN", "host=lambda-db user=lp_dataapi password=lp_dataapi")
 CLUSTER_ARN = os.environ["LOCAL_CLUSTER_ARN"]
 SECRET_ARN = os.environ["LOCAL_SECRET_ARN"]
+KEY_ID, KEY_SECRET = sigv4.load_credentials(os.environ["LOCAL_CREDENTIALS_FILE"])
 PARAM = re.compile(r"(?<![:\w]):([A-Za-z_]\w*)")
 # Executing caller-supplied SQL is what the Data API is for. This stand-in narrows it to single DML
 # statements, and its database role (zz-dataapi-role.sql) can only touch the three context tables.
@@ -121,6 +128,12 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         length = int(self.headers.get("Content-Length") or 0)
         raw = self.rfile.read(length)
+        try:
+            sigv4.verify("POST", self.path, self.headers, raw, KEY_ID, KEY_SECRET)
+        except sigv4.AuthError as e:
+            self._reply(403, {"message": str(e)}, e.kind)
+            print(f"Execute denied {e.kind}: {e}", flush=True)
+            return
         try:
             if self.path.split("?")[0] != "/Execute":
                 raise DataApiError(400, "BadRequestException", f"{self.path} is not supported by the local Data API")
