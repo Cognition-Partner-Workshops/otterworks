@@ -135,6 +135,52 @@
       "expected_sqlstate": null,
       "expected_count": 12,
       "headline": true
+    },
+    {
+      "id": "CLD-01",
+      "title": "Local Lambda timestamp contract drift",
+      "table": null,
+      "planted_keys": [],
+      "expected_stage": "PAIR",
+      "expected_rule": "TIMESTAMP_FORMAT_DRIFT",
+      "expected_field": "createdAt",
+      "expected_sqlstate": null,
+      "expected_count": 0,
+      "headline": false,
+      "status": "planted",
+      "fixture": "demos/cloud-migration/faults/lambda-timestamp-drift"
+    },
+    {
+      "id": "CLD-02",
+      "title": "Azure-specific target readiness setting",
+      "table": null,
+      "planted_keys": [
+        "eks-target"
+      ],
+      "expected_stage": "READINESS",
+      "expected_rule": "READINESS_PROBE_FAILED",
+      "expected_field": "probes.path",
+      "expected_sqlstate": null,
+      "expected_count": 1,
+      "headline": false,
+      "status": "planted",
+      "fixture": "demos/cloud-migration/faults/target-readiness"
+    },
+    {
+      "id": "CLD-03",
+      "title": "Unresolved private dependency",
+      "table": null,
+      "planted_keys": [
+        "CMG-PRIVATE"
+      ],
+      "expected_stage": "HELD",
+      "expected_rule": "UNRESOLVED_DEPENDENCY",
+      "expected_field": null,
+      "expected_sqlstate": null,
+      "expected_count": 1,
+      "headline": false,
+      "status": "held",
+      "fixture": "demos/cloud-migration/faults/private-dependency"
     }
   ]
 }

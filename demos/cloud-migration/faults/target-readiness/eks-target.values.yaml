@@ -1,0 +1,4 @@
+probes:
+  path: /robots933456.txt
+  periodSeconds: 2
+  failureThreshold: 2
