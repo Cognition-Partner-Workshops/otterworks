@@ -1,0 +1,44 @@
+name: Local migration replay
+
+on:
+  pull_request:
+    paths:
+      - demos/cloud-migration/replay/**
+      - platform/standards/**
+      - .github/workflows/cloud-migration-replay.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  policy-and-kind-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+      - name: Install local simulation tools
+        run: |
+          mkdir -p "$HOME/bin"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+          curl -fsSL https://github.com/kubernetes-sigs/kind/releases/download/v0.27.0/kind-linux-amd64 -o "$HOME/bin/kind"
+          curl -fsSL https://dl.k8s.io/release/v1.32.2/bin/linux/amd64/kubectl -o "$HOME/bin/kubectl"
+          chmod +x "$HOME/bin/kind" "$HOME/bin/kubectl"
+          curl -fsSL https://get.helm.sh/helm-v3.17.3-linux-amd64.tar.gz | tar -xz -C "$HOME/bin" --strip-components=1 linux-amd64/helm
+          curl -fsSL https://github.com/open-policy-agent/conftest/releases/download/v0.56.0/conftest_0.56.0_Linux_x86_64.tar.gz | tar -xz -C "$HOME/bin" conftest
+      - name: Check request catalog and local sandbox policy
+        run: python3 demos/cloud-migration/replay/replay.py policy
+      - name: Replay in simulated AKS source and simulated EKS target (kind)
+        run: python3 demos/cloud-migration/replay/replay.py run --output "$RUNNER_TEMP/CMG_20261128"
+      - name: Verify both kind simulations were removed
+        if: always()
+        run: python3 demos/cloud-migration/replay/replay.py check-teardown
+      - name: Retain simulation evidence, including failures
+        if: always()
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
+        with:
+          name: CMG_20261128-kind-simulations
+          path: ${{ runner.temp }}/CMG_20261128/*.json
+          if-no-files-found: ignore
