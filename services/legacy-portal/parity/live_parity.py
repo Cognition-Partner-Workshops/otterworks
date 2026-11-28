@@ -19,7 +19,7 @@ so two runs with the same hash started from the same data.
 
 --state-cmd prints a JSON object {"<schema.table>": [row objects]} for a store (java|lambda) and a
 context. The corpus is left as is: requests.json, java-reference.json and SHA256SUMS are only read.
-Exit status: 0 all passed, 1 any failed or unrun, 3 corpus checksum mismatch.
+Exit status: 0 all selected cases passed, 1 any failed or selected-but-unrun, 3 corpus checksum mismatch.
 """
 import argparse
 import hashlib
@@ -270,7 +270,7 @@ def main():
           f"(writes with equal state {t['stateEqual']}/{t['writesRun']}; failures by check {t['byCheck']})")
     print(f"fixture sha256: {report['fixtureSha256']}")
     print(f"evidence: {out / 'live-parity.json'}, timeline: {out / 'timeline.html'}")
-    return 0 if t["failed"] == 0 and t["unrun"] == 0 else 1
+    return 0 if t["failed"] == 0 and t["unrun"] == t["notSelected"] else 1
 
 
 if __name__ == "__main__":
