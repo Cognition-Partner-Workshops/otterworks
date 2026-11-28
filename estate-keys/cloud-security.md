@@ -1,0 +1,12 @@
+# Cloud security fixture answer key
+
+| Class | Fixture | Expected correction or decision | Expected checks |
+| --- | --- | --- | --- |
+| CSEC-01 | `demos/cloud-security/iam/offline.tfplan.json`, in the separate S1 event commit | Match the GitHub delivery to the fixture path, demo branch, and exact commit SHA. Dispatch the four control checks only after the match. | One matched delivery and four dispatched checks. The event commit changes a policy statement ID without changing the IAM assertion counts. |
+| CSEC-02 | `demos/cloud-security/iam/offline.tfplan.json`, staging role allow statement | Remove `s3:DeleteObject`. Keep the concrete `GetObject` and `PutObject` paths in the approved scope. | Seeded: 2 passed, 1 failed. Fixed: 2 passed, 0 failed. |
+| CSEC-03 | `demos/cloud-security/image/requirements.lock`, setuptools wheel | Update setuptools from 78.1.0 to 78.1.1 and pin the replacement wheel SHA-256 `c3a9c4211ff4c309edb8b8c4f1cbfa7ae324c4ba9f91ff254e3d305b9fd54561`. Scan both images against the same database and check the service health endpoint on each. | Seeded: 1 fixture finding, `CVE-2025-47273`. Fixed: 0 instances of the fixture finding. Both images boot and connect to Postgres. Unrelated scan findings remain outside this check. |
+| CSEC-04 | `demos/cloud-security/rls/seed.sql`, table `isolation.documents` | Enable RLS and add a SELECT policy for both tenant roles with `USING (tenant = current_user)`. Keep the migrator as the table owner. | Seeded: 2 own-tenant passes, 2 cross-tenant failures. Fixed: 4 passed, 0 failed. Assigning ownership to either ordinary role must stop the runner before the assertions. |
+| CSEC-05 | `demos/cloud-security/network/policies.yaml`, `documents-from-clients` ingress | Require `fixture-access: approved` alongside the existing client label. Keep default deny and the approved document egress. | Seeded: 3 passed, 1 failed. Fixed: 4 passed, 0 failed, both offline and in kind. The approved writer keeps access. |
+| CSEC-06 | `demos/cloud-security/evidence/{owners,exceptions}.yaml`, vendor dependency | Leave the unowned vendor exception amber and recommend a hold pending a named owner. Keep the exception out of approved changes. | After verification: 4 closed, 0 held, 1 amber. A request to close the unowned row must fail validation. |
+
+The IAM, row-isolation, network, and image counts come from local verification. The GitHub delivery and dispatch counts are acceptance targets for S1, which has not run.
