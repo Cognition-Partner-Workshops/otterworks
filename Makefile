@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status lp-local-up lp-local-identity lp-local-replay lp-local-reset lp-local-down lp-local-verify-clean
 
 SHELL := /bin/bash
 
@@ -610,6 +610,28 @@ lp-heal: ## Roll back the in-flight deployment or deploy the good version, then 
 
 lp-page-status: ## Alarm history, deployment history and the page rule's last API destination invocation (RUN=)
 	@$(LP) page-status
+
+# legacy-portal-local: the Java portal and the real Lambda handlers as two live local endpoints, each on
+# its own resettable PostgreSQL, compared case by case with services/legacy-portal/parity/live_parity.py.
+LP_LOCAL = RUN_TOKEN=$(RUN_TOKEN) CTX=$(CTX) STAGE=$(STAGE) scripts/lp-local.sh
+
+lp-local-up: ## Build and start both local endpoints and their stores (RUN_TOKEN=)
+	@$(LP_LOCAL) up
+
+lp-local-identity: ## Show both local endpoints and the containers labelled with the run token (RUN_TOKEN=)
+	@$(LP_LOCAL) identity
+
+lp-local-replay: ## Replay the corpus against both live endpoints with state checks (RUN_TOKEN=, CTX=<context|all>, STAGE=first|full)
+	@$(LP_LOCAL) replay
+
+lp-local-reset: ## Truncate both stores back to the empty fixture (RUN_TOKEN=, CTX=<context|all>)
+	@$(LP_LOCAL) reset $(or $(CTX),all)
+
+lp-local-down: ## Remove the run's containers, networks, volumes and images (RUN_TOKEN=)
+	@$(LP_LOCAL) down
+
+lp-local-verify-clean: ## Prove nothing labelled or named with the run token remains (RUN_TOKEN=)
+	@$(LP_LOCAL) verify-clean
 
 # legacy-portal-ec2: Terraform root infrastructure/terraform/legacy-portal-ec2, the EC2 "before" state.
 # One state per run token; transcripts go to .demo/legacy-portal/<token>/. See docs/aws-legacy-portal/README.md.
