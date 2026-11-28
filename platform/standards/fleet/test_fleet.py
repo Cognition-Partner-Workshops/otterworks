@@ -51,6 +51,20 @@ class FleetTests(unittest.TestCase):
                     report = fleet.api_compat(fleet.documents(path), target, catalog, "default")
                     self.assertEqual(dict(removed=1, deprecated=1, no_catalog_finding=1), report["counts"])
 
+    def test_file_service_pdb_is_compatible_with_135(self):
+        path = fleet.HERE.parents[2] / "demos/devops/fixtures/legacy-api.yaml"
+        pdb, = fleet.documents(path)
+        self.assertEqual({"minAvailable": 1, "selector": {"matchLabels": {"app": "file-service"}}},
+                         pdb["spec"])
+        self.assertEqual("devops-fleet", pdb["metadata"]["namespace"])
+        catalog = json.loads((fleet.HERE / "api-catalog.json").read_text(encoding="utf-8"))
+        report = fleet.api_compat([pdb], "1.35", catalog, "default")
+        self.assertEqual([{
+            "resource": "policy/PodDisruptionBudget/devops-fleet/file-service",
+            "apiVersion": "policy/v1",
+            "status": "no_catalog_finding",
+        }], report["resources"])
+
     def test_board_preserves_holds_and_requires_ready_evidence(self):
         inventory = {"workloads": [
             {"workload": "api|edge", "status": "held"},
