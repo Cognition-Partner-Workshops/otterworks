@@ -1,0 +1,14 @@
+control: network
+owner: Platform Networking
+evidence:
+  commit: "a80a13c1089769994b5357d749d19302b8fbcd4f via PR https://github.com/Cognition-Partner-Workshops/otterworks/pull/3424 (open, not in this branch)"
+before:
+  result: fail
+  reference: "connectivity_matrix.py @ b382b7a policies.yaml: offline 3 pass/1 fail, kind csec-net (Calico v3.28.2) 3 pass/1 fail; allowed 1/1 pass, denied 2/3 pass (observer->documents:8080 allowed); 0 probe errors. Session devin-b4f04475c7a544c6a75e8598dae42e0e artifacts before-offline.json, live-before.json"
+after:
+  result: pass
+  reference: "connectivity_matrix.py @ a80a13c policies.yaml: offline 4/0, kind csec-net 4/0; allowed 1/1, denied 3/3; ingress-only and egress-only isolation 4/0 each; 0 probe errors. Session devin-b4f04475c7a544c6a75e8598dae42e0e artifacts after-offline.json, live-after.json, live-after-only-ingress.json, live-after-only-egress.json"
+approved_path:
+  result: pass
+  reference: "writer(fixture-access=approved)->documents TCP 8080 allowed offline and in kind under candidate (all pods Ready; no-policy baseline 4/4 reachable proves probes/destinations). Session devin-b4f04475c7a544c6a75e8598dae42e0e artifact live-run.log"
+status: closed

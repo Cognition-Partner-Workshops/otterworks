@@ -1,0 +1,110 @@
+{
+  "summary": {
+    "closed": 2,
+    "held": 1,
+    "amber": 2
+  },
+  "checks": [
+    {
+      "control": "iam",
+      "owner": "Platform Identity",
+      "before": {
+        "result": "fail",
+        "reference": "https://partner-workshops.devinenterprise.com/attachments/bee3c368-0587-4e0d-9a11-21a12412bcf2/iam-before.md"
+      },
+      "after": {
+        "result": "pass",
+        "reference": "https://partner-workshops.devinenterprise.com/attachments/4867670e-65ac-4ddd-8472-01870b872df7/iam-after.md"
+      },
+      "approved_path": {
+        "result": "pass",
+        "reference": "https://partner-workshops.devinenterprise.com/attachments/27705f61-d349-4bbe-a838-32b40d8dd0f0/iam-proof.txt (GetObject and PutObject)"
+      },
+      "status": "held",
+      "evidence": {
+        "commit": "b382b7a4b76d75ce396f6d457fd3c1db1c246992",
+        "plan": "demos/cloud-security/iam/offline.tfplan.json (offline synthetic fixture)"
+      }
+    },
+    {
+      "control": "image",
+      "owner": "Build Security",
+      "before": {
+        "result": "fail",
+        "reference": "CSEC_20261128 before: CVE-2025-47273 reported for setuptools 78.1.0; https://partner-workshops.devinenterprise.com/attachments/08d170e2-a606-497b-8729-12078522124e/image-evidence.tar.gz#before-scan.json"
+      },
+      "after": {
+        "result": "pass",
+        "reference": "CSEC_20261128 after: CVE-2025-47273 absent and no added advisory IDs; https://partner-workshops.devinenterprise.com/attachments/08d170e2-a606-497b-8729-12078522124e/image-evidence.tar.gz#after-scan.json"
+      },
+      "approved_path": {
+        "result": "pass",
+        "reference": "CSEC_20261128: before-health.txt and after-health.txt show healthy service and database on both images; https://partner-workshops.devinenterprise.com/attachments/08d170e2-a606-497b-8729-12078522124e/image-evidence.tar.gz"
+      },
+      "status": "amber",
+      "evidence": {
+        "commit": "b382b7a4b76d75ce396f6d457fd3c1db1c246992"
+      }
+    },
+    {
+      "control": "network",
+      "owner": "Platform Networking",
+      "before": {
+        "result": "fail",
+        "reference": "connectivity_matrix.py @ b382b7a policies.yaml: offline 3 pass/1 fail, kind csec-net (Calico v3.28.2) 3 pass/1 fail; allowed 1/1 pass, denied 2/3 pass (observer->documents:8080 allowed); 0 probe errors. Session devin-b4f04475c7a544c6a75e8598dae42e0e artifacts before-offline.json, live-before.json"
+      },
+      "after": {
+        "result": "pass",
+        "reference": "connectivity_matrix.py @ a80a13c policies.yaml: offline 4/0, kind csec-net 4/0; allowed 1/1, denied 3/3; ingress-only and egress-only isolation 4/0 each; 0 probe errors. Session devin-b4f04475c7a544c6a75e8598dae42e0e artifacts after-offline.json, live-after.json, live-after-only-ingress.json, live-after-only-egress.json"
+      },
+      "approved_path": {
+        "result": "pass",
+        "reference": "writer(fixture-access=approved)->documents TCP 8080 allowed offline and in kind under candidate (all pods Ready; no-policy baseline 4/4 reachable proves probes/destinations). Session devin-b4f04475c7a544c6a75e8598dae42e0e artifact live-run.log"
+      },
+      "status": "closed",
+      "evidence": {
+        "commit": "a80a13c1089769994b5357d749d19302b8fbcd4f via PR https://github.com/Cognition-Partner-Workshops/otterworks/pull/3424 (open, not in this branch)"
+      }
+    },
+    {
+      "control": "rls",
+      "owner": "Data Isolation",
+      "before": {
+        "result": "fail",
+        "reference": "https://partner-workshops.devinenterprise.com/attachments/bb16e26d-b890-4ef3-aa59-128b3d2130ca/before.json"
+      },
+      "after": {
+        "result": "pass",
+        "reference": "https://partner-workshops.devinenterprise.com/attachments/d1e043dc-6a4e-4045-ac0a-b0a2f5f527d0/after.json"
+      },
+      "approved_path": {
+        "result": "pass",
+        "reference": "https://partner-workshops.devinenterprise.com/attachments/7e19ac5e-9ce9-4392-8029-74194b6235dc/approved_path.json"
+      },
+      "status": "closed",
+      "evidence": {
+        "commit": "d9862e43923e90c67066ccd7615efb544c1640ee"
+      }
+    },
+    {
+      "control": "vendor-dependency",
+      "owner": null,
+      "before": {
+        "result": "not-run",
+        "reference": "No owner named; exception not approved"
+      },
+      "after": {
+        "result": "not-run",
+        "reference": "No owner named; exception not approved"
+      },
+      "approved_path": {
+        "result": "not-run",
+        "reference": "No owner named; exception not approved"
+      },
+      "status": "amber",
+      "evidence": {
+        "read": "demos/cloud-security/evidence/exceptions.yaml pending: Synthetic Archive Adapter, owner null"
+      }
+    }
+  ]
+}

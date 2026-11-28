@@ -1,0 +1,14 @@
+control: vendor-dependency
+owner: null
+evidence:
+  read: "demos/cloud-security/evidence/exceptions.yaml pending: Synthetic Archive Adapter, owner null"
+before:
+  result: not-run
+  reference: "No owner named; exception not approved"
+after:
+  result: not-run
+  reference: "No owner named; exception not approved"
+approved_path:
+  result: not-run
+  reference: "No owner named; exception not approved"
+status: amber
