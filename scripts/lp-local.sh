@@ -45,15 +45,12 @@ wait_http() {
 }
 
 cmd_up() {
-  local cert_status
   dc up -d --build --wait java-db lambda-db
   dc exec -T lambda-db psql -U legacyportal -d legacyportal -v ON_ERROR_STOP=1 -q \
     -f /docker-entrypoint-initdb.d/zz-dataapi-role.sql
-  cert_status="$(dc run --rm --no-deps -T certs)"
+  dc run --rm --no-deps -T certs
   dc up -d --build
-  if [ "$cert_status" = "renewed" ]; then
-    dc restart dataapi fn-announcements fn-preferences fn-feedback
-  fi
+  dc restart dataapi
   wait_http "http://127.0.0.1:${LP_JAVA_PORT}/health"
   wait_http "http://127.0.0.1:${LP_LAMBDA_PORT}/health"
   cmd_reset all

@@ -109,7 +109,6 @@ services:
         keytool -importcert -noprompt -alias lp-local-ca -file ca.pem -keystore trust.p12 -storetype PKCS12 -storepass lp-local >/dev/null
         chmod 0644 server.key
         mv ca.pem server.pem server.key trust.p12 credentials /certs/
-        echo renewed
 
   dataapi:
     <<: *run
