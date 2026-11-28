@@ -17,15 +17,22 @@ The 1.35 cluster starts with an empty namespace for server-side validation.
 Use `kind-devops-20261128-1-34` or `kind-devops-20261128-1-35` explicitly
 with kubectl, and work in `devops-fleet`.
 
-Install the fleet runner requirements, then compare the Deployment-only render and
-the saved snapshot. The commands below use Bash for Helm rendering and Python for
-checks. Run the same Python commands in Windows PowerShell against the same files.
+## Read-only drift check
 
-```sh
-python3 -m pip install -r platform/standards/fleet/requirements.txt
-demos/devops/kind/render.sh --deployments > deployments.yaml
-python3 platform/standards/fleet/fleet.py drift deployments.yaml --observed demos/devops/fixtures/observed-deployments.json --namespace devops-fleet
+Run these commands at the repository root on Linux or in Windows PowerShell
+with Python 3 and Helm 3 on PATH. The runner renders the six Deployment
+manifests from the checked-out Helm chart and demo values, then compares them to
+`fixtures/observed-deployments.json` (recorded local kind, not live AWS).
+It needs no Bash, kubectl, running cluster, or AWS credentials.
+
+```powershell
+python -m pip install -r platform/standards/fleet/requirements.txt
+python demos/devops/drift_check.py --markdown drift.md --json drift.json
 ```
+
+The comparison checks container requests, limits, image, Deployment spec
+replicas, and ownership labels. Exit codes: 0 = match, 1 = drift (red),
+2 = input/tool error. In PowerShell, check `$LASTEXITCODE` after the runner.
 
 For an API check, append the manifest
 in `fixtures/legacy-api.yaml` to a full render and pass the combined file to
