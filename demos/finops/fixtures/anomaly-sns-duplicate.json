@@ -1,0 +1,16 @@
+{
+  "Records": [
+    {
+      "EventSource": "aws:sns",
+      "EventVersion": "1.0",
+      "Sns": {
+        "Type": "Notification",
+        "MessageId": "3c512a5b-3274-4119-b870-00f5c0120590",
+        "TopicArn": "arn:aws:sns:us-east-1:000000000000:finops-fixture",
+        "Subject": "AWS Cost Anomaly Detection Alert",
+        "Timestamp": "2026-11-28T09:21:00Z",
+        "Message": "{\"accountId\":\"000000000000\",\"anomalyId\":\"9f6305ea-bacb-486e-9157-7b3fc3b21a39\",\"anomalyStartDate\":\"2026-11-21T00:00:00Z\",\"anomalyEndDate\":\"2026-11-27T00:00:00Z\",\"monitorArn\":\"arn:aws:ce::000000000000:anomalymonitor/finops-fixture\",\"anomalyScore\":{\"maxScore\":0.91},\"impact\":{\"totalActualSpend\":1.7534},\"rootCauses\":[]}"
+      }
+    }
+  ]
+}

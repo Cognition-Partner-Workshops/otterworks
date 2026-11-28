@@ -1,0 +1,7 @@
+services:
+  workload:
+    image: python:3.12-alpine
+    volumes:
+      - ./workload:/workload:ro
+    entrypoint: ["python3", "/workload/compare.py"]
+    network_mode: none
