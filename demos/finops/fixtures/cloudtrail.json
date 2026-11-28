@@ -1,0 +1,42 @@
+{
+  "source": "synthetic CloudTrail snapshot",
+  "run_tag": "FINOPS_20261128",
+  "environment": "dev",
+  "Records": [
+    {
+      "eventID": "c29345e7-7232-4d69-816e-672e21a9eb71",
+      "eventTime": "2026-11-20T23:54:00Z",
+      "eventSource": "logs.amazonaws.com",
+      "eventName": "PutRetentionPolicy",
+      "awsRegion": "us-east-1",
+      "requestParameters": {
+        "logGroupName": "/otterworks/dev/document-service",
+        "retentionInDays": 14
+      },
+      "fixtureJoin": {
+        "resource_id": "/otterworks/dev/document-service",
+        "source_path": "infrastructure/terraform/main.tf",
+        "source_blob": "fb0f02e0bf8035880f00e9d57ef7dbe4d5123276"
+      }
+    },
+    {
+      "eventID": "620ec4b8-afba-4bda-8073-c599d118ac0d",
+      "eventTime": "2026-11-20T23:58:00Z",
+      "eventSource": "ec2.amazonaws.com",
+      "eventName": "RunInstances",
+      "awsRegion": "us-east-1",
+      "requestParameters": {
+        "blockDeviceMapping": {
+          "items": [
+            { "deviceName": "/dev/xvda", "ebs": { "volumeSize": 50, "volumeType": "gp3" } }
+          ]
+        }
+      },
+      "fixtureJoin": {
+        "resource_id": "ec2nodeclass/default:/dev/xvda",
+        "source_path": "demo-platform/k8s/karpenter/nodepool.yaml",
+        "source_blob": "ee6de0c937455be16883aae763b9874c1091f99a"
+      }
+    }
+  ]
+}

@@ -369,7 +369,7 @@ def test_unload01_fixture_records_decode_through_job_copybooks(name: str) -> Non
     del_rows = [line.split("|") for line in (UNLOAD_FIXTURES / f"{name}.del").read_text().splitlines() if line]
     assert len(del_rows) == count
     complexity = json.loads((REPO_ROOT / "demos" / "app" / "complexity-manifest.json").read_text())
-    classes = {c["id"]: c for c in complexity["classes"]}
+    classes = {c["id"]: c for c in complexity["classes"] if c["id"].startswith("MIG-")}
     # Field-level conversion rejects (MIG-01..03); MIG-06 is a LOAD reject too but only against the target.
     load_rejects = {
         key: (c["expected_rule"], c["expected_field"])

@@ -4,6 +4,8 @@
 # ------------------------------------------------------------------------------
 
 locals {
+  audit_log_retention_days = 90
+
   common_tags = {
     Module  = "monitoring"
     Project = var.project
@@ -29,7 +31,7 @@ resource "aws_cloudwatch_log_group" "services" {
   for_each = toset(local.services)
 
   name              = "/otterworks/${var.environment}/${each.value}"
-  retention_in_days = var.log_retention_days
+  retention_in_days = each.value == "audit-service" ? local.audit_log_retention_days : var.log_retention_days
   kms_key_id        = var.kms_key_arn
 
   tags = merge(local.common_tags, {

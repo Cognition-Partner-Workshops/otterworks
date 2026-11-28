@@ -135,6 +135,36 @@
       "expected_sqlstate": null,
       "expected_count": 12,
       "headline": true
+    },
+    {
+      "id": "FIN-01",
+      "title": "Budget signal repeats",
+      "session": "S1",
+      "screen_moment": "One unattended run appears for the upstream notification."
+    },
+    {
+      "id": "FIN-02",
+      "title": "Spend moves across unrelated usage lines",
+      "session": "S2",
+      "screen_moment": "The bill line traces to a settings change, and the untagged residual stays visible."
+    },
+    {
+      "id": "FIN-03",
+      "title": "Cost controls drift without a health baseline",
+      "session": "S3",
+      "screen_moment": "Dev returns a bounded settings candidate and an unchanged audit rule."
+    },
+    {
+      "id": "FIN-04",
+      "title": "A lower-cost candidate breaches a health gate",
+      "session": "S4",
+      "screen_moment": "The PR includes only the validated correction and shows why the other change was withheld."
+    },
+    {
+      "id": "FIN-05",
+      "title": "Audit log retention needs owner judgment",
+      "session": "S5",
+      "screen_moment": "A scheduled run remembers the policy and puts one decision in Needs you."
     }
   ]
 }
