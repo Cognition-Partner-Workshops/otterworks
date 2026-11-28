@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import sys
+from urllib.parse import parse_qsl, unquote, urlsplit
 
 from control_report import assertion_report, load
 
@@ -16,11 +17,34 @@ def literal(value):
     return "'" + value.replace("'", "''") + "'"
 
 
+def connection_env(dsn):
+    options = {
+        "sslmode": "PGSSLMODE", "sslrootcert": "PGSSLROOTCERT", "sslcert": "PGSSLCERT",
+        "sslkey": "PGSSLKEY", "connect_timeout": "PGCONNECT_TIMEOUT",
+    }
+    try:
+        uri = urlsplit(dsn)
+        if (uri.scheme not in ("postgresql", "postgres") or not uri.hostname or not uri.username
+                or not uri.path.strip("/") or uri.fragment):
+            raise ValueError
+        result = {
+            "PGHOST": unquote(uri.hostname), "PGPORT": str(uri.port or 5432),
+            "PGUSER": unquote(uri.username), "PGDATABASE": unquote(uri.path[1:]),
+        }
+        if uri.password is not None:
+            result["PGPASSWORD"] = unquote(uri.password)
+        for key, value in parse_qsl(uri.query, strict_parsing=True):
+            result[options[key]] = value
+        return result
+    except (KeyError, ValueError) as error:
+        raise ValueError("expected a PostgreSQL URL with host, user and database; unsupported connection option") from error
+
+
 def scalar(dsn, sql):
     result = subprocess.run(
         ["psql", "--no-psqlrc", "--csv", "--tuples-only", "--no-password", "-v", "ON_ERROR_STOP=1"],
         input="BEGIN READ ONLY;\n" + sql + ";\nROLLBACK;\n",
-        env={**os.environ, "PGDATABASE": dsn},
+        env={**os.environ, **connection_env(dsn)},
         text=True, capture_output=True, timeout=30,
     )
     if result.returncode:
@@ -76,7 +100,7 @@ def run(spec, connections, query=scalar):
 
 def main():
     parser = argparse.ArgumentParser(description="Check tenant row visibility as ordinary Postgres login roles")
-    parser.add_argument("spec", help="YAML or JSON containing table, role-to-DSN-environment-variable map, and assertions")
+    parser.add_argument("spec", help="YAML or JSON containing table, role-to-PostgreSQL-URL environment variables, and assertions")
     parser.add_argument("--output", required=True, help="Path stem for JSON and Markdown")
     args = parser.parse_args()
     try:

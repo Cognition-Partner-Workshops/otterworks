@@ -57,6 +57,12 @@ class RlsTests(unittest.TestCase):
 
         self.assertEqual([x["passed"] for x in rls_assertions.run(self.spec, {"reader": "fixture"}, query)], [True, False])
 
+    def test_connection_url_is_passed_as_separate_libpq_values(self):
+        self.assertEqual(rls_assertions.connection_env("postgresql://reader:synthetic%40local@localhost:5433/fixture?sslmode=require"), {
+            "PGHOST": "localhost", "PGPORT": "5433", "PGUSER": "reader", "PGDATABASE": "fixture",
+            "PGPASSWORD": "synthetic@local", "PGSSLMODE": "require",
+        })
+
 
 class NetworkTests(unittest.TestCase):
     def test_ingress_and_egress_allow_union_with_namespace_selector_and_named_port(self):
