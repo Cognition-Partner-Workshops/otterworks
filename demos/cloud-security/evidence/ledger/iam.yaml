@@ -1,0 +1,18 @@
+control: iam
+owner: Platform Identity
+evidence:
+  commit: b382b7a4b76d75ce396f6d457fd3c1db1c246992
+  plan: demos/cloud-security/iam/offline.tfplan.json (offline synthetic fixture)
+before:
+  result: fail
+  reference: CSEC_20261128 IAM child timeline, iam-before.md and iam-proof.txt
+after:
+  result: pass
+  reference: CSEC_20261128 IAM child timeline, iam-after.md and iam-proof.txt
+approved_path:
+  result: pass
+  reference: CSEC_20261128 IAM child timeline, iam-proof.txt (GetObject and PutObject)
+status: held
+cloudtrail_oidc_correlation:
+  result: not-run
+  reference: CSEC_20261128 IAM child timeline, iam-proof.txt (no labeled export; link unproven)
