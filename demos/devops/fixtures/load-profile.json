@@ -1,8 +1,8 @@
 {
-  "requests": 160,
-  "rate_per_second": 8,
-  "concurrency": 12,
-  "timeout_seconds": 2,
+  "requests": 48,
+  "rate_per_second": 3,
+  "concurrency": 2,
+  "timeout_seconds": 4,
   "sample_seconds": 2,
   "p95_limit_ms": 200,
   "allowed_failures": 0

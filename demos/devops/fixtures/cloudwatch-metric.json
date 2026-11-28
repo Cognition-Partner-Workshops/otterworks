@@ -1,0 +1,51 @@
+{
+  "fixture": "fixture: recorded, not live AWS",
+  "source": "synthetic CloudWatch metric export",
+  "region": "us-east-1",
+  "namespace": "OtterWorks/DevOps",
+  "metric": "LatestRevisionReadyReplicas",
+  "period_seconds": 30,
+  "workload": "api-gateway",
+  "datapoints": [
+    {
+      "time": "2026-11-28T02:58:00Z",
+      "value": 1
+    },
+    {
+      "time": "2026-11-28T02:58:30Z",
+      "value": 1
+    },
+    {
+      "time": "2026-11-28T02:59:00Z",
+      "value": 0
+    },
+    {
+      "time": "2026-11-28T02:59:30Z",
+      "value": 0
+    },
+    {
+      "time": "2026-11-28T03:00:00Z",
+      "value": 0
+    },
+    {
+      "time": "2026-11-28T03:00:30Z",
+      "value": 0
+    },
+    {
+      "time": "2026-11-28T03:01:00Z",
+      "value": 0
+    },
+    {
+      "time": "2026-11-28T03:01:30Z",
+      "value": 0
+    },
+    {
+      "time": "2026-11-28T03:02:00Z",
+      "value": 1
+    },
+    {
+      "time": "2026-11-28T03:02:30Z",
+      "value": 1
+    }
+  ]
+}

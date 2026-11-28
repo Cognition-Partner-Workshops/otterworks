@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 metrics_version=v0.8.1
-metrics_image="registry.k8s.io/metrics-server/metrics-server:$metrics_version"
-docker pull "$metrics_image"
-kind load docker-image "$metrics_image" --name "$cluster"
 kubectl --context "$context" apply -f "https://github.com/kubernetes-sigs/metrics-server/releases/download/$metrics_version/components.yaml"
 kubectl --context "$context" --namespace kube-system patch deployment metrics-server --type=json \
   -p '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
