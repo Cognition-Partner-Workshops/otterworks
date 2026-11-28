@@ -52,16 +52,7 @@ cmd_up() {
   dc run --rm --no-deps -T certs
   dc up -d --build
   dc restart dataapi
-  wait_for "local Data API /ping" dc exec -T dataapi python3 -c '
-from ssl import create_default_context
-from urllib.request import urlopen
-
-tls = create_default_context(cafile="/certs/ca.pem")
-for url in ("http://127.0.0.1:8080/ping", "https://dataapi/ping"):
-    with urlopen(url, context=tls, timeout=2) as response:
-        if response.status != 200:
-            raise SystemExit(1)
-'
+  wait_for "local Data API /ping" dc exec -T dataapi python3 /app/readiness.py
   wait_for "Java portal /health" curl -fsS "http://127.0.0.1:${LP_JAVA_PORT}/health"
   wait_for "Lambda gateway /health" curl -fsS "http://127.0.0.1:${LP_LAMBDA_PORT}/health"
   cmd_reset all
