@@ -1,0 +1,197 @@
+{
+  "mode": "observed-local",
+  "run_token": "CMG_20261128",
+  "s4": {
+    "status": "passed",
+    "observed": true,
+    "evidence": "Explicit S5 local-route authorization and user-confirmed persisted Hold for d-private-dep"
+  },
+  "provenance": {
+    "source_sha": "5551cbafd5fcbd152c6fb3935f6907e424a0e905",
+    "source_pr": 3406,
+    "parity_pr": 3416,
+    "phase_two": {
+      "session_id": "a606c0b394074446ae49307e7bdbff86",
+      "status": "passed"
+    },
+    "frozen_file": "CMG_20261128.frozen.json",
+    "availability_scope": "local-loopback-only",
+    "image_ids": {
+      "gateway": "sha256:18439fc5e79a110a0cb66df34cc59672844eec948b55d125c682303979ee25ce",
+      "fn-announcements": "sha256:4a4d8cdeb79edf239d511a38835781750093f05fafd6eeca9441b777ee980e7e",
+      "fn-preferences": "sha256:b689847c4fc08ccfb23101194f72a14783bc3b17d28abbdf10b2effcb0c1a63f",
+      "fn-feedback": "sha256:4886a24c920274be6b833f653749c78df752cc770811c8cba65b0184fd356c3d",
+      "dataapi": "sha256:d599f72db62f59fd63a45e96c754dc6df7a55313746f5a2d96a8347fed4165b7",
+      "java": "sha256:abda5516248e34ec87515cc8d398973abc93be1b7a8d48926af80db6c1ab8103",
+      "certs": "sha256:d77e090ae1f6970c047b443c6f0a6c1358b0426d44432bb5a7753408cd43de0d",
+      "java-db": "sha256:e18480a22d6e48f4d816a6696769b1ec09ac73a824c5649e49c7d8b684913f3d",
+      "lambda-db": "sha256:e18480a22d6e48f4d816a6696769b1ec09ac73a824c5649e49c7d8b684913f3d"
+    },
+    "browser_capture_sha256": "dab8c38988bb78d748e3b8423aa52b3d7f0d1fd94986192d91c78d999125025b"
+  },
+  "workloads": {
+    "portal": {
+      "owner": {
+        "role": "Portal team",
+        "source": "intake"
+      },
+      "intake_issue": 3403,
+      "disposition": "local-drill-complete",
+      "wave_one": "ready-locally",
+      "gates": {
+        "fresh_parity": {
+          "status": "passed",
+          "observed": true,
+          "evidence": "PR #3416: exact source pin before its separate repair, 95/95 cases and 46/46 equal writes; independent Phase Two cross-check passed"
+        },
+        "frozen_baseline": {
+          "status": "passed",
+          "observed": true,
+          "evidence": "CMG_20261128.frozen.json"
+        },
+        "candidate_health": {
+          "status": "passed",
+          "observed": true,
+          "evidence": "workloads.portal.rehearsal.candidate and candidate_endpoint"
+        },
+        "prior_endpoint": {
+          "status": "passed",
+          "observed": true,
+          "evidence": "workloads.portal.rehearsal.prior_restored; matches frozen direct and routed fingerprint"
+        },
+        "recovered_health": {
+          "status": "passed",
+          "observed": true,
+          "evidence": "workloads.portal.rehearsal.recovered"
+        }
+      },
+      "rehearsal": {
+        "run_token": "CMG_20261128",
+        "frozen_sha256": "8e87759019e189ffa4fa8b2f4574ea0f074badb76391ce65054c1aff03c6100c",
+        "candidate": {
+          "status": "passed",
+          "expected_target": "serverless@sha256:18439fc5e79a110a0cb66df34cc59672844eec948b55d125c682303979ee25ce",
+          "observed_targets": [
+            "serverless@sha256:18439fc5e79a110a0cb66df34cc59672844eec948b55d125c682303979ee25ce"
+          ],
+          "samples": 20,
+          "errors": 0,
+          "error_rate": 0.0,
+          "p95_ms": 33.757642000182386,
+          "estimated_downtime_ms": 0,
+          "elapsed_ms": 20000.425045000156
+        },
+        "candidate_endpoint": {
+          "status": "passed",
+          "target_identity": "serverless@sha256:18439fc5e79a110a0cb66df34cc59672844eec948b55d125c682303979ee25ce",
+          "direct_status": 200,
+          "routed_status": 200,
+          "body_sha256": "42b3dcd796de7ab2b305a7562ea3bd73eddc48ea4fb2a2d85fa3d9c648db1809"
+        },
+        "rollback_reason": "planned-drill",
+        "prior_restored": {
+          "status": "passed",
+          "target_identity": "java@sha256:abda5516248e34ec87515cc8d398973abc93be1b7a8d48926af80db6c1ab8103",
+          "direct_status": 200,
+          "routed_status": 200,
+          "body_sha256": "728510dd4f50f4f7173715d4146acec154f99b7753871a6c5f6f03109ccc0403"
+        },
+        "recovered": {
+          "status": "passed",
+          "expected_target": "java@sha256:abda5516248e34ec87515cc8d398973abc93be1b7a8d48926af80db6c1ab8103",
+          "observed_targets": [
+            "java@sha256:abda5516248e34ec87515cc8d398973abc93be1b7a8d48926af80db6c1ab8103"
+          ],
+          "samples": 20,
+          "errors": 0,
+          "error_rate": 0.0,
+          "p95_ms": 6.238711999912994,
+          "estimated_downtime_ms": 0,
+          "elapsed_ms": 20000.147291999838
+        },
+        "recovery_status": "passed",
+        "prior_fingerprint_matches": true,
+        "final_adapter": "java",
+        "switch_command_elapsed_ms": 67.81919000013659,
+        "prior_endpoint_check_elapsed_ms": 76.29931500014209,
+        "rollback_elapsed_ms": 20076.63153600015
+      }
+    },
+    "kubernetes": {
+      "owner": {
+        "role": "Platform team",
+        "source": "intake"
+      },
+      "intake_issue": 3404,
+      "disposition": "held-unverified-private-dependency",
+      "wave_one": "out",
+      "gates": {
+        "portable_replay": {
+          "status": "unrun",
+          "observed": false,
+          "reason": "The 12-case kind replay was not run for this closeout. No live or AKS parity is established."
+        },
+        "readiness": {
+          "status": "unrun",
+          "observed": false,
+          "reason": "Kubernetes workload not started."
+        },
+        "restart": {
+          "status": "unrun",
+          "observed": false,
+          "reason": "Kubernetes workload not started."
+        },
+        "rollback": {
+          "status": "unrun",
+          "observed": false,
+          "reason": "Kubernetes workload not started."
+        },
+        "private_dependency": {
+          "status": "unrun",
+          "observed": false,
+          "reason": "d-private-dep remains unverified. The authorizing user confirmed the Hold selection persisted."
+        }
+      }
+    }
+  },
+  "cleanup": {
+    "router": {
+      "status": "passed",
+      "observed": true,
+      "evidence": "cleanup_verification: No run processes or listeners on 18097 (router) and 18098 (observer); run state and detached worktree removed."
+    },
+    "java": {
+      "status": "passed",
+      "observed": true,
+      "evidence": "cleanup_verification: No token-labeled or project-named containers or images; no listener on 18095."
+    },
+    "serverless": {
+      "status": "passed",
+      "observed": true,
+      "evidence": "cleanup_verification: No token-labeled or project-named containers or images; no listener on 18096."
+    },
+    "stores": {
+      "status": "passed",
+      "observed": true,
+      "evidence": "cleanup_verification: No token-labeled or project-named containers, networks, or volumes."
+    }
+  },
+  "cleanup_verification": {
+    "run_token": "CMG_20261128",
+    "compose_project": "lp_cmg_20261128",
+    "containers": [],
+    "networks": [],
+    "volumes": [],
+    "images": [],
+    "checked_ports": [
+      18095,
+      18096,
+      18097,
+      18098
+    ],
+    "loopback_listeners": [],
+    "run_processes": [],
+    "worktree_removed": true,
+    "run_state_removed": true
+  }
+}
