@@ -1,0 +1,14 @@
+[
+  {"id":"CMG-01","path":"/","status":200,"body":{"message":"hello from the platform chart"}},
+  {"id":"CMG-02","path":"/health","status":200,"body":{"status":"UP"}},
+  {"id":"CMG-03","path":"/missing","status":404,"body":{"error":"not found"}},
+  {"id":"CMG-04","path":"/health/","status":404,"body":{"error":"not found"}},
+  {"id":"CMG-05","path":"/Health","status":404,"body":{"error":"not found"}},
+  {"id":"CMG-06","path":"/health?check=ready","status":404,"body":{"error":"not found"}},
+  {"id":"CMG-07","path":"/?check=greeting","status":404,"body":{"error":"not found"}},
+  {"id":"CMG-08","path":"/%68ealth","status":404,"body":{"error":"not found"}},
+  {"id":"CMG-09","path":"/v1/health","status":404,"body":{"error":"not found"}},
+  {"id":"CMG-10","path":"/ready","status":404,"body":{"error":"not found"}},
+  {"id":"CMG-11","path":"/metrics","status":404,"body":{"error":"not found"}},
+  {"id":"CMG-12","path":"/favicon.ico","status":404,"body":{"error":"not found"}}
+]
