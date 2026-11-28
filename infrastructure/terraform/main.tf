@@ -149,7 +149,7 @@ module "monitoring" {
   source             = "./modules/monitoring"
   environment        = var.environment
   project            = "otterworks"
-  log_retention_days = var.log_retention_days
+  log_retention_days = var.environment == "dev" ? max(var.log_retention_days, 14) : var.log_retention_days
 }
 
 # --- MeiliSearch is deployed via ECS; no domain access policy needed. ---
