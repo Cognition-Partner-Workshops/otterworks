@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - demos/cloud-migration/replay/**
+      - infrastructure/terraform/migration-desk-aks/**
       - platform/standards/**
       - .github/workflows/cloud-migration-replay.yml
   workflow_dispatch:
@@ -12,6 +13,23 @@ permissions:
   contents: read
 
 jobs:
+  mock-aks-plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: infrastructure/terraform/migration-desk-aks
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.7.0
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false -input=false
+      - run: terraform test -filter=tests/draft.tftest.hcl
+
   policy-and-kind-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 25
