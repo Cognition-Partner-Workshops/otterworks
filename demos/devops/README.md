@@ -27,9 +27,10 @@ demos/devops/kind/render.sh --deployments > deployments.yaml
 python3 platform/standards/fleet/fleet.py drift deployments.yaml --observed demos/devops/fixtures/observed-deployments.json --namespace devops-fleet
 ```
 
-For an API check, append the manifest
-in `fixtures/legacy-api.yaml` to a full render and pass the combined file to
-`fleet.py api --target 1.35`. The API catalog reports the actual removal version.
+For the 1.35 API check, include `kind/controls.yaml` and the standalone file-service
+PDB at `fixtures/legacy-api.yaml` (the sweep's existing path) in the combined render.
+See [the 1.35 rerun](evidence/file-service-pdb-policy-v1.md) for the commands and
+the historical `policy/v1beta1` negative control.
 
 The alarm payloads, metric export and EKS inventory carry the label
 `fixture: recorded, not live AWS`. The observed Deployment snapshot comes
