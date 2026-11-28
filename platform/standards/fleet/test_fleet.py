@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import runpy
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 import unittest
@@ -18,6 +19,41 @@ def workload(cpu="100m", owner="edge"):
 
 
 class FleetTests(unittest.TestCase):
+    def test_demo_replays_recorded_drift_without_a_cluster(self):
+        demo = fleet.HERE.parents[2] / "demos" / "devops"
+        runner = runpy.run_path(str(demo / "drift_check.py"))
+        fixture = json.loads((demo / "fixtures" / "observed-deployments.json").read_text(encoding="utf-8"))
+        desired = {item["metadata"]["name"]: item for item in fixture["items"]}
+        collab = desired["collab-service"]
+        collab["metadata"]["labels"]["owner"] = "collaboration"
+        collab["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"] = {"cpu": "100m"}
+        collab["spec"]["template"]["spec"]["containers"][0]["readinessProbe"]["httpGet"]["path"] = "/ignored"
+
+        def render(command, **kwargs):
+            self.assertEqual(["helm", "template"], command[:2])
+            self.assertEqual("templates/deployment.yaml", command[-1])
+            self.assertFalse(kwargs.get("shell"))
+            return SimpleNamespace(stdout=json.dumps(desired[command[2]]))
+
+        with TemporaryDirectory() as root:
+            markdown = Path(root) / "drift.md"
+            report = Path(root) / "drift.json"
+            with patch("sys.argv", ["drift_check.py", "--markdown", str(markdown), "--json", str(report)]):
+                with patch("subprocess.run", side_effect=render) as helm:
+                    self.assertEqual(1, runner["main"]())
+            data = json.loads(report.read_text(encoding="utf-8"))
+            self.assertEqual(6, helm.call_count)
+            self.assertEqual(6, data["resources_checked"])
+            self.assertEqual("RED", data["result"])
+            self.assertEqual("fixture: recorded, not live AWS", data["observed"]["label"])
+            self.assertEqual(
+                [("/metadata/labels/owner", "collaboration", None),
+                 ("/spec/template/spec/containers/collab-service/resources/requests",
+                  {"cpu": "100m"}, {"cpu": "320m", "memory": "128Mi"})],
+                [(row["field"], row["desired"], row["observed"]) for row in data["changes"]],
+            )
+            self.assertIn("**RED**", markdown.read_text(encoding="utf-8"))
+
     def test_drift_preserves_declared_request_and_owner_changes(self):
         current = workload("300m")
         current["metadata"]["labels"] = {"managed-by": "helm"}
