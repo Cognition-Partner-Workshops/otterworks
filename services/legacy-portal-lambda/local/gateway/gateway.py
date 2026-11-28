@@ -113,7 +113,10 @@ def invoke(function, event):
     try:
         conn.request("POST", INVOKE_PATH, body=json.dumps(event).encode(),
                      headers={"Content-Type": "application/json"})
-        return json.loads(conn.getresponse().read() or b"null")
+        response = conn.getresponse()
+        if response.status != 200:
+            raise http.client.HTTPException(f"Lambda Runtime Interface Emulator returned HTTP {response.status}")
+        return json.loads(response.read() or b"null")
     finally:
         conn.close()
 

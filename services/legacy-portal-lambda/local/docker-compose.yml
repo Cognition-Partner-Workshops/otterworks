@@ -91,7 +91,14 @@ services:
     command:
       - |
         cd /certs
-        [ -s trust.p12 ] && [ -s credentials ] && exit 0
+        if [ -s trust.p12 ] && [ -s credentials ] && [ -s server.key ] &&
+           openssl x509 -in ca.pem -noout -checkend 0 >/dev/null 2>&1 &&
+           openssl x509 -in server.pem -noout -checkend 0 >/dev/null 2>&1; then
+          exit 0
+        fi
+        stage="$$(mktemp -d /certs/renew.XXXXXX)"
+        trap 'rm -rf "$$stage"' EXIT
+        cd "$$stage"
         umask 022
         printf '[default]\naws_access_key_id=LPLOCAL%s\naws_secret_access_key=%s\n' \
           "$$(openssl rand -hex 7 | cut -c1-13 | tr a-f A-F)" "$$(openssl rand -base64 30)" > credentials
@@ -100,8 +107,9 @@ services:
         printf 'subjectAltName=DNS:rds-data.us-east-1.amazonaws.com,DNS:dataapi\n' > san.ext
         openssl x509 -req -in server.csr -CA ca.pem -CAkey ca.key -CAcreateserial -days 7 -extfile san.ext -out server.pem 2>/dev/null
         keytool -importcert -noprompt -alias lp-local-ca -file ca.pem -keystore trust.p12 -storetype PKCS12 -storepass lp-local >/dev/null
-        rm -f ca.key server.csr san.ext ca.srl
         chmod 0644 server.key
+        mv ca.pem server.pem server.key trust.p12 credentials /certs/
+        echo renewed
 
   dataapi:
     <<: *run

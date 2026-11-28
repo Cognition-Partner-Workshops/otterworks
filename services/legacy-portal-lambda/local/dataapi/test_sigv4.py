@@ -45,6 +45,17 @@ class VerifyTest(unittest.TestCase):
     def test_valid_request_is_accepted(self):
         self.check(signed_headers())
 
+    def test_botocore_signed_request_is_accepted(self):
+        # Botocore SigV4Auth for POST http://dataapi:8080/Execute with BODY and NOW.
+        self.check({
+            "host": "dataapi:8080",
+            "content-type": "application/json",
+            "x-amz-date": "20260102T030405Z",
+            "authorization": "AWS4-HMAC-SHA256 Credential=LPLOCALTESTKEY000001/20260102/us-east-1/"
+                             "rds-data/aws4_request, SignedHeaders=content-type;host;x-amz-date, "
+                             "Signature=5a1e62f8caf21688855cd5ad578415b958193cb86e7052039c944429925ebc0b",
+        })
+
     def test_missing_credentials_are_denied(self):
         headers = signed_headers()
         del headers["authorization"]

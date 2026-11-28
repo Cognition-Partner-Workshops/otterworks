@@ -26,6 +26,7 @@ import hashlib
 import html
 import http.client
 import json
+import re
 import shlex
 import subprocess
 import sys
@@ -35,12 +36,14 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
-from replay import ANY_DATETIME, canonical, compare, parse_contexts, render_body, verify_checksums
+from replay import canonical, compare, parse_contexts, render_body, verify_checksums
 
 HERE = Path(__file__).resolve().parent
 WRITES = {"POST", "PUT", "PATCH", "DELETE"}
 STORES = ("java", "lambda")
 IDENTITY_HEADERS = ("server", "x-lp-local-function", "apigw-requestid")
+STATE_TIMESTAMPS = {("announcements.announcement", "created_at"), ("feedback.feedback", "created_at")}
+PG_TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?")
 
 
 def now():
@@ -81,11 +84,13 @@ def run_cmd(template, **fields):
 
 def normalized_state(raw):
     """Rows sorted by content, wall-clock columns replaced by a placeholder (they differ per store)."""
-    def norm(v):
-        return "<datetime>" if isinstance(v, str) and ANY_DATETIME.match(v) else v
     state = {}
     for table, rows in sorted(json.loads(raw or "{}").items()):
-        rows = [{k: norm(v) for k, v in sorted(r.items())} for r in rows or []]
+        rows = [
+            {key: "<datetime>" if (table, key) in STATE_TIMESTAMPS and isinstance(value, str)
+             and PG_TIMESTAMP.fullmatch(value) else value for key, value in sorted(row.items())}
+            for row in rows or []
+        ]
         state[table] = sorted(rows, key=lambda r: json.dumps(r, sort_keys=True))
     return state
 
@@ -106,11 +111,16 @@ def run_context(ctx, cases, java_rec, args):
     if fixture["java"] != fixture["lambda"]:
         raise RuntimeError(f"[{ctx}] stores differ after reset: {json.dumps(fixture)[:400]}")
     results = []
+    error = None
     for case in cases:
-        with ThreadPoolExecutor(2) as pool:
-            fj = pool.submit(send, args.java_base, case, args.timeout)
-            fl = pool.submit(send, args.lambda_base, case, args.timeout)
-            live = {"java": fj.result(), "lambda": fl.result()}
+        try:
+            with ThreadPoolExecutor(2) as pool:
+                fj = pool.submit(send, args.java_base, case, args.timeout)
+                fl = pool.submit(send, args.lambda_base, case, args.timeout)
+                live = {"java": fj.result(), "lambda": fl.result()}
+        except (OSError, http.client.HTTPException) as exc:
+            error = f"{case['id']}: {exc}"
+            break
         problems = {}
         jc, lc, pair = compare(live["java"], live["lambda"], args.strict_media_type)
         if pair:
@@ -124,28 +134,37 @@ def run_context(ctx, cases, java_rec, args):
                 if p:
                     problems[f"{store}-rec"] = p
         state = None
-        if case["method"].upper() in WRITES:
-            state = snapshots(args.state_cmd, ctx)
-            if state["java"] != state["lambda"]:
-                problems["state"] = ["persistent state differs"]
+        is_write = case["method"].upper() in WRITES
+        if is_write:
+            try:
+                state = snapshots(args.state_cmd, ctx)
+            except (OSError, RuntimeError, ValueError) as exc:
+                error = f"{case['id']}: {exc}"
+                problems["state"] = ["persistent state could not be checked"]
+            else:
+                if state["java"] != state["lambda"]:
+                    problems["state"] = ["persistent state differs"]
         results.append({
-            "id": case["id"], "method": case["method"], "path": case["path"], "write": state is not None,
+            "id": case["id"], "method": case["method"], "path": case["path"], "write": is_write,
             "passed": not problems, "problems": problems,
             "java": {**jc, **{k: live["java"][k] for k in ("sentUtc", "elapsedMs", "identity")}},
             "lambda": {**lc, **{k: live["lambda"][k] for k in ("sentUtc", "elapsedMs", "identity")}},
             "recording": canonical(rec) if rec else None,
             "state": state,
         })
-        if problems and args.stage == "first":
+        if error or (problems and args.stage == "first"):
             break
-    return {"context": ctx, "casesInCorpus": len(cases), "fixtureState": fixture["java"], "cases": results}
+    result = {"context": ctx, "casesInCorpus": len(cases), "fixtureState": fixture["java"], "cases": results}
+    if error:
+        result["error"] = error
+    return result
 
 
 def identity(base, path, timeout):
     try:
         r = send(base, {"method": "GET", "path": path}, timeout)
         return {"status": r["status"], "body": r["body"][:400], **r["identity"]}
-    except OSError as e:
+    except (OSError, http.client.HTTPException) as e:
         return {"error": str(e)}
 
 
@@ -155,13 +174,17 @@ def timeline_html(report):
         for c in ctx["cases"]:
             cls = "ok" if c["passed"] else "bad"
             probs = "; ".join(f"{k}: {', '.join(v)}" for k, v in c["problems"].items()) or "identical"
+            state = ""
+            if c["write"]:
+                state = "state unavailable" if c["state"] is None else (
+                    "state &ne;" if "state" in c["problems"] else "state =")
             rows.append(
                 f"<tr class={cls}><td>{html.escape(c['java']['sentUtc'][11:])}</td><td>{c['id']}</td>"
                 f"<td>{c['method']} {html.escape(c['path'][:60])}</td>"
                 f"<td>{c['java']['status']} {c['java']['mediaType'] or ''}</td>"
                 f"<td>{c['lambda']['status']} {c['lambda']['mediaType'] or ''}"
                 f" <small>{html.escape(c['lambda']['identity'].get('x-lp-local-function', ''))}</small></td>"
-                f"<td>{'state ' + ('=' if 'state' not in c['problems'] else '&ne;') if c['write'] else ''}</td>"
+                f"<td>{state}</td>"
                 f"<td>{html.escape(probs)}</td></tr>")
         for c in ctx["unrun"]:
             rows.append(f"<tr class=unrun><td></td><td>{c}</td><td colspan=5>unrun</td></tr>")
@@ -224,10 +247,11 @@ def main():
         cases = [c for c in corpus if c["context"] == ctx]
         try:
             result = run_context(ctx, cases, java_rec, args)
-        except (RuntimeError, OSError) as e:
-            print(f"[{ctx}] aborted: {e}", file=sys.stderr)
+        except (RuntimeError, OSError, ValueError) as e:
             result = {"context": ctx, "casesInCorpus": len(cases), "fixtureState": None, "cases": [],
                       "error": str(e)}
+        if "error" in result:
+            print(f"[{ctx}] aborted: {result['error']}", file=sys.stderr)
         done = {c["id"] for c in result["cases"]}
         result["unrun"] = [c["id"] for c in cases if c["id"] not in done]
         report["contexts"].append(result)

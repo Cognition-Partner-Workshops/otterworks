@@ -21,6 +21,17 @@ class ResolveTest(unittest.TestCase):
     def test_handler_statements_are_unique(self):
         self.assertEqual(len({op.handler_sql for op in ops.OPERATIONS}), len(ops.OPERATIONS))
 
+    def test_every_statement_resolves_and_keeps_values_separate(self):
+        samples = {ops.STRING: "text with ' and %", ops.LONG: 7, ops.BOOLEAN: True}
+        for op in ops.OPERATIONS:
+            with self.subTest(operation=op.name):
+                params = [{"name": name, "value": {kind: samples[kind]},
+                           **({"typeHint": hint} if hint else {})} for name, kind, hint in op.params]
+                resolved, values = ops.resolve(op.handler_sql, params)
+                self.assertIs(resolved, op)
+                self.assertEqual(values, {name: samples[kind] for name, kind, _ in op.params})
+                self.assertNotIn(samples[ops.STRING], resolved.sql)
+
     def test_known_statement_resolves_to_static_sql(self):
         op, values = ops.resolve(
             "SELECT user_id, theme, locale, email_notifications FROM user_preferences.user_preference"
