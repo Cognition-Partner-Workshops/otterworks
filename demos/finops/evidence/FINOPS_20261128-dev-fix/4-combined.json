@@ -1,0 +1,23 @@
+{
+  "source": "local HTTP workload with modeled disk and latency",
+  "settings": {
+    "root_volume_gib": 36,
+    "app_retention_days": 7,
+    "audit_retention_days": 90
+  },
+  "requests": 100,
+  "workload_sha256": "810278341b159d70fc061efcad044a45017d270079d119587be98f2aac348d17",
+  "errors": 0,
+  "error_rate": 0.0,
+  "modeled_p95_ms": 15,
+  "loopback_p95_ms_informational": 2.672,
+  "disk_pressure_responses": 0,
+  "gates": {
+    "error_rate_at_most_1_percent": true,
+    "modeled_p95_at_most_20_ms": true,
+    "no_disk_pressure": true,
+    "minimum_app_retention_preserved": true,
+    "audit_policy_unchanged": true
+  },
+  "health": "pass"
+}
