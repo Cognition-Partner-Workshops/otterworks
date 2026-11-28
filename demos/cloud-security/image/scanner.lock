@@ -1,0 +1,2 @@
+TRIVY_VERSION=0.69.3
+TRIVY_DB_IMAGE=ghcr.io/aquasecurity/trivy-db@sha256:3bf9e0a16bdd9ee51eb04f02f8f90ada46e9e3f82b517d224d3dcfcf098fec06

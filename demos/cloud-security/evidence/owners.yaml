@@ -1,0 +1,6 @@
+owners:
+  iam: Platform Identity
+  image: Build Security
+  rls: Data Isolation
+  network: Platform Networking
+  vendor-dependency: null

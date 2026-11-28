@@ -136,5 +136,18 @@
       "expected_count": 12,
       "headline": true
     }
-  ]
+  ],
+  "variants": {
+    "cloud-security": {
+      "fixture_root": "demos/cloud-security",
+      "classes": [
+        {"id": "CSEC-01", "control": "intake", "title": "Policy change event"},
+        {"id": "CSEC-02", "control": "iam", "title": "IAM policy scope deviation"},
+        {"id": "CSEC-03", "control": "image", "title": "Image advisory with a fix available"},
+        {"id": "CSEC-04", "control": "rls", "title": "Synthetic row isolation failure"},
+        {"id": "CSEC-05", "control": "network", "title": "Connectivity differs from the approved matrix"},
+        {"id": "CSEC-06", "control": "vendor-dependency", "title": "Vendor dependency pending an owner"}
+      ]
+    }
+  }
 }

@@ -1,0 +1,24 @@
+namespaces:
+  cloud-control: {}
+pods:
+  writer:
+    namespace: cloud-control
+    pod: writer
+    labels: {fixture-role: client, fixture-access: approved}
+  observer:
+    namespace: cloud-control
+    pod: observer
+    labels: {fixture-role: client}
+  documents:
+    namespace: cloud-control
+    pod: documents
+    labels: {fixture-app: documents}
+  audit:
+    namespace: cloud-control
+    pod: audit
+    labels: {fixture-app: audit}
+checks:
+  - {source: writer, destination: documents, port: 8080, expected: allow}
+  - {source: observer, destination: documents, port: 8080, expected: deny}
+  - {source: writer, destination: audit, port: 8080, expected: deny}
+  - {source: observer, destination: audit, port: 8080, expected: deny}
