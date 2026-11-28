@@ -101,7 +101,8 @@ def test_cost_anomaly_replay_releases_only_auth_rejections(tmp_path, failure, st
     assert opener.open.call_count == posts
 
 
-def test_lambda_releases_unauthorized_claim_before_raising(monkeypatch):
+@pytest.mark.parametrize("delete_retried", [False, True])
+def test_lambda_releases_only_its_claim_before_raising(monkeypatch, delete_retried):
     monkeypatch.setenv("FINOPS_DEDUPE_TABLE", "test-ledger")
     monkeypatch.setenv("DEVIN_WEBHOOK_URL", "https://example.invalid/automation")
     monkeypatch.setenv("DEVIN_WEBHOOK_SECRET", "test-secret")
@@ -115,14 +116,37 @@ def test_lambda_releases_unauthorized_claim_before_raising(monkeypatch):
     event = json.loads((FIXTURES / "anomaly-sns.json").read_text())
     key = "aws.cost-anomaly:" + json.loads(event["Records"][0]["Sns"]["Message"])["anomalyId"]
 
+    class ConditionalCheckFailed(Exception):
+        pass
+
+    table.meta.client.exceptions.ConditionalCheckFailedException = ConditionalCheckFailed
+    replacement = {}
+
+    def delete_item(**kwargs):
+        if delete_retried:
+            replacement[key] = "new-owner"
+            if kwargs.get("ExpressionAttributeValues", {}).get(":token") != replacement[key]:
+                if kwargs.get("ConditionExpression") == "claim_token = :token":
+                    raise ConditionalCheckFailed
+            del replacement[key]
+
+    table.delete_item.side_effect = delete_item
+
     with patch("demos.finops.signals.forwarder.build_opener", return_value=opener):
         with pytest.raises(RuntimeError, match="Webhook delivery unconfirmed"):
             lambda_handler(event, None)
 
+    token = table.put_item.call_args.kwargs["Item"]["claim_token"]
     table.put_item.assert_called_once_with(
-        Item={"dedupe_key": key}, ConditionExpression="attribute_not_exists(dedupe_key)",
+        Item={"dedupe_key": key, "claim_token": token},
+        ConditionExpression="attribute_not_exists(dedupe_key)",
     )
-    table.delete_item.assert_called_once_with(Key={"dedupe_key": key})
+    table.delete_item.assert_called_once_with(
+        Key={"dedupe_key": key},
+        ConditionExpression="claim_token = :token",
+        ExpressionAttributeValues={":token": token},
+    )
+    assert replacement == ({key: "new-owner"} if delete_retried else {})
 
 
 def test_dev_settings_gate_checks_capacity_and_audit_on_the_same_workload():

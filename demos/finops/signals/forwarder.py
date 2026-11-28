@@ -5,6 +5,7 @@ import os
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
+from uuid import uuid4
 
 
 class NoRedirects(HTTPRedirectHandler):
@@ -81,19 +82,30 @@ def lambda_handler(event, context):
     import boto3
 
     ledger = boto3.resource("dynamodb").Table(os.environ["FINOPS_DEDUPE_TABLE"])
+    claim_tokens = {}
 
     def claim(key):
+        token = uuid4().hex
         try:
             ledger.put_item(
-                Item={"dedupe_key": key},
+                Item={"dedupe_key": key, "claim_token": token},
                 ConditionExpression="attribute_not_exists(dedupe_key)",
             )
         except ledger.meta.client.exceptions.ConditionalCheckFailedException:
             return False
+        claim_tokens[key] = token
         return True
 
     def release(key):
-        ledger.delete_item(Key={"dedupe_key": key})
+        token = claim_tokens.pop(key)
+        try:
+            ledger.delete_item(
+                Key={"dedupe_key": key},
+                ConditionExpression="claim_token = :token",
+                ExpressionAttributeValues={":token": token},
+            )
+        except ledger.meta.client.exceptions.ConditionalCheckFailedException:
+            pass
 
     receipts = forward(
         event, claim, webhook_sender(os.environ["DEVIN_WEBHOOK_URL"], os.environ["DEVIN_WEBHOOK_SECRET"]),
