@@ -15,6 +15,11 @@ def covers(pattern, target):
     return all(fnmatch.fnmatchcase(value, selector) for selector, value in zip(pattern, target))
 
 
+def complete_arn(value):
+    parts = value.split(":", 5)
+    return len(parts) == 6 and parts[0] == "arn" and all(parts[i] for i in (1, 2, 5))
+
+
 def plan_policy(plan, address):
     matches = [c for c in plan["resource_changes"] if c["address"] == address]
     if len(matches) != 1 or matches[0]["type"] not in ("aws_iam_role_policy", "aws_iam_policy"):
@@ -30,6 +35,8 @@ def evaluate(plan, scope):
     approved = set(pairs(scope["allow"]))
     if not approved or any(any(c in value for c in "*?[${") for pair in approved for value in pair):
         raise ValueError("approved scope must enumerate concrete actions and resources")
+    if any(not complete_arn(resource) for _, resource in approved):
+        raise ValueError("approved scope resources must be complete ARNs")
     statements = policy["Statement"]
     if isinstance(statements, dict):
         statements = [statements]
@@ -45,6 +52,8 @@ def evaluate(plan, scope):
         resources = [resources] if isinstance(resources, str) else resources
         if any("${" in value or "[" in value for value in (*actions, *resources)):
             raise ValueError("checker does not support policy variables or bracket patterns")
+        if any(resource != "*" and not complete_arn(resource) for resource in resources):
+            raise ValueError("checker does not support incomplete or non-ARN policy resources")
         target = allowed if statement["Effect"] == "Allow" else denied
         target.update((action.lower(), resource) for action in actions for resource in resources)
 

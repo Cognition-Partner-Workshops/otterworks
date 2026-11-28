@@ -1,14 +1,18 @@
+import io
 import json
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stderr
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import connectivity_matrix as network
 import control_ledger
+import control_report
 import iam_plan
 import rls_assertions
 
@@ -33,6 +37,18 @@ class IamPlanTests(unittest.TestCase):
             statement("s3:GetObject", resource, "Deny"),
         ]})
         self.assertEqual([x["passed"] for x in iam_plan.evaluate(plan, scope)], [False])
+
+    def test_rejects_incomplete_arns_in_approvals_and_policies(self):
+        action, incomplete = "sqs:ReceiveMessage", "arn:aws:sqs"
+        scope = {"address": "aws_iam_role_policy.fixture", "allow": [{"action": action, "resource": incomplete}]}
+        plan = {"resource_changes": [{"address": scope["address"], "type": "aws_iam_role_policy", "change": {
+            "after": {"policy": json.dumps({"Statement": statement(action, incomplete)})},
+        }}]}
+        with self.assertRaisesRegex(ValueError, "scope resources must be complete ARNs"):
+            iam_plan.evaluate(plan, scope)
+        scope["allow"][0]["resource"] = "arn:aws:sqs:us-east-1:123456789012:synthetic-queue"
+        with self.assertRaisesRegex(ValueError, "incomplete or non-ARN policy resources"):
+            iam_plan.evaluate(plan, scope)
 
 
 class RlsTests(unittest.TestCase):
@@ -65,6 +81,55 @@ class RlsTests(unittest.TestCase):
 
 
 class NetworkTests(unittest.TestCase):
+    def test_namespace_less_helm_policies_use_release_namespace_only_when_given(self):
+        policy = {"kind": "NetworkPolicy", "metadata": {"name": "document-service"},
+                  "spec": {"podSelector": {"matchLabels": {"app": "docs"}}, "ingress": [
+                      {"from": [{"podSelector": {}}]},
+                  ]}}
+        explicit = {**policy, "metadata": {"name": "explicit-policy", "namespace": "explicit"},
+                    "spec": {"podSelector": {}, "ingress": [{}]}}
+        source = {"namespace": "unrelated"}
+        dest = {"namespace": "otterworks-demo", "labels": {"app": "docs"}}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "policies.json"
+            path.write_text(json.dumps({"kind": "List", "items": [policy, explicit]}))
+            with self.assertRaisesRegex(ValueError, "document-service has no namespace; pass --policy-namespace"):
+                network.policies_from([path])
+            rules = network.policies_from([path], "otterworks-demo")
+        self.assertEqual([rule["metadata"]["namespace"] for rule in rules], ["otterworks-demo", "explicit"])
+        self.assertFalse(network.offline_allowed(rules, {}, source, dest, "TCP", 8080))
+
+    def test_live_runtime_failure_is_reported_and_selected_container_is_used(self):
+        gateway = {"namespace": "demo", "pod": "gateway"}
+        matrix = {"pods": {"default": gateway, "sidecar": {**gateway, "probe_container": "probe"},
+                           "docs": {"namespace": "demo", "pod": "docs"}}, "checks": [
+            {"source": "default", "destination": "docs", "port": 80, "expected": "deny"},
+            {"source": "default", "destination": "docs", "port": 81, "expected": "allow"},
+            {"source": "sidecar", "destination": "docs", "port": 80, "expected": "allow"},
+        ]}
+        kubectl = ["kubectl", "--context", "kind-demo", "-n", "demo"]
+        default_exec = [*kubectl, "exec", "gateway", "--", "python3", "-c"]
+        sidecar_exec = [*kubectl, "exec", "gateway", "-c", "probe", "--", "python3", "-c"]
+        commands = []
+
+        def execute(command, **kwargs):
+            commands.append(command)
+            if command == [*default_exec, "import socket"]:
+                raise subprocess.CalledProcessError(126, command)
+            return {tuple([*sidecar_exec, "import socket"]): "",
+                    tuple([*kubectl, "get", "pod", "docs", "-o", "json"]): '{"status": {"podIP": "10.0.0.2"}}',
+                    tuple([*sidecar_exec, network.PROBE, "10.0.0.2", "80"]): "allowed\n"}[tuple(command)]
+
+        stderr = io.StringIO()
+        with patch.object(network.subprocess, "check_output", side_effect=execute), redirect_stderr(stderr):
+            probe = network.live_runner("kind-demo", matrix)
+            self.assertIn("Probe runtime unavailable in demo/gateway (container: default)", stderr.getvalue())
+            rows = network.run(matrix, probe)
+        self.assertEqual(commands[:2], [[*default_exec, "import socket"], [*sidecar_exec, "import socket"]])
+        self.assertEqual(len(commands), 4)
+        self.assertEqual([(row["actual"], row["passed"]) for row in rows],
+                         [("error", False), ("error", False), ("allowed", True)])
+
     def test_ingress_and_egress_allow_union_with_namespace_selector_and_named_port(self):
         source = {"namespace": "client", "labels": {"role": "trusted"}}
         dest = {"namespace": "server", "labels": {"app": "docs"}, "ports": [{"name": "http", "port": 8080}]}
@@ -116,3 +181,15 @@ class LedgerTests(unittest.TestCase):
                             "--output", str(output)], check=True)
             self.assertEqual(json.loads(output.with_suffix(".json").read_text())["checks"], [row])
             self.assertIn("| control-a | team |", output.with_suffix(".md").read_text())
+
+
+class ReportTests(unittest.TestCase):
+    def test_dotted_stems_keep_before_and_after_reports(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for phase, passed in (("before", False), ("after", True)):
+                control_report.assertion_report(Path(tmp) / f"review.{phase}", phase, [{"passed": passed}],
+                                                [("passed", "Passed")])
+            for phase, passed in (("before", False), ("after", True)):
+                output = Path(tmp) / f"review.{phase}"
+                self.assertEqual(json.loads(Path(f"{output}.json").read_text())["checks"], [{"passed": passed}])
+                self.assertIn(f"# {phase}\n", Path(f"{output}.md").read_text())

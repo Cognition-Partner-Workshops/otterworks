@@ -72,7 +72,7 @@ def offline_allowed(policies, namespaces, source, destination, protocol, port):
     def direction(key, subject, other, peers):
         selected = []
         for policy in policies:
-            namespace = policy["metadata"].get("namespace", "default")
+            namespace = policy["metadata"]["namespace"]
             spec = policy["spec"]
             defaults = ["Ingress", "Egress"] if spec.get("egress") else ["Ingress"]
             if (namespace == subject["namespace"] and key.title() in spec.get("policyTypes", defaults)
@@ -89,7 +89,7 @@ def offline_allowed(policies, namespaces, source, destination, protocol, port):
     return direction("egress", source, destination, "to") and direction("ingress", destination, source, "from")
 
 
-def policies_from(paths):
+def policies_from(paths, namespace=None):
     def extract(doc):
         if doc and doc.get("kind") in ("List", "NetworkPolicyList"):
             return [policy for item in doc["items"] for policy in extract(item)]
@@ -101,7 +101,49 @@ def policies_from(paths):
             output.extend(policy for doc in yaml.safe_load_all(source) for policy in extract(doc))
     if not output:
         raise ValueError("no NetworkPolicy objects found")
+    for policy in output:
+        metadata = policy["metadata"]
+        if not metadata.get("namespace"):
+            if not namespace:
+                raise ValueError(f"NetworkPolicy {metadata.get('name', '<unnamed>')} has no namespace; pass --policy-namespace")
+            metadata["namespace"] = namespace
     return output
+
+
+def probe_exec(context, source, *args):
+    command = ["kubectl", "--context", context, "-n", source["namespace"], "exec", source["pod"]]
+    if source.get("probe_container"):
+        command.extend(["-c", source["probe_container"]])
+    return subprocess.check_output([*command, "--", "python3", "-c", *args], text=True, timeout=15).strip()
+
+
+def live_runner(context, matrix):
+    unavailable = set()
+
+    def probe_target(source):
+        return source["namespace"], source["pod"], source.get("probe_container")
+
+    checked = set()
+    for check in matrix["checks"]:
+        source = matrix["pods"][check["source"]]
+        target = probe_target(source)
+        if target in checked:
+            continue
+        checked.add(target)
+        try:
+            probe_exec(context, source, "import socket")
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            namespace, pod, container = target
+            print(f"Probe runtime unavailable in {namespace}/{pod} (container: {container or 'default'}); "
+                  "requires an executable python3 with socket", file=sys.stderr)
+            unavailable.add(target)
+
+    def probe(source, destination, protocol, port):
+        if probe_target(source) in unavailable:
+            return "error"
+        return live_probe(context, source, destination, protocol, port)
+
+    return probe
 
 
 def live_probe(context, source, destination, protocol, port):
@@ -112,10 +154,7 @@ def live_probe(context, source, destination, protocol, port):
         "get", "pod", destination["pod"], "-o", "json",
     ], text=True, timeout=15)
     address = json.loads(dest)["status"]["podIP"]
-    result = subprocess.check_output([
-        "kubectl", "--context", context, "-n", source["namespace"], "exec", source["pod"],
-        "--", "python3", "-c", PROBE, address, str(port),
-    ], text=True, timeout=15).strip()
+    result = probe_exec(context, source, PROBE, address, str(port))
     if result not in ("allowed", "denied", "error"):
         raise ValueError("unexpected probe output")
     return result
@@ -143,13 +182,17 @@ def main():
     parser.add_argument("matrix")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--policy", nargs="+", help="Offline mode: rendered NetworkPolicy files")
-    mode.add_argument("--kind", metavar="NAME", help="Live mode: name of a kind cluster")
+    mode.add_argument("--kind", metavar="NAME", help="Live mode: local kind cluster; set probe_container "
+                      "on source pods to select a container with python3 (otherwise uses kubectl's default)")
+    parser.add_argument("--policy-namespace", help="Offline mode: release namespace for policies without one")
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
+    if args.policy_namespace is not None and not args.policy:
+        parser.error("--policy-namespace requires --policy")
     try:
         matrix = load(args.matrix)
         if args.policy:
-            policies = policies_from(args.policy)
+            policies = policies_from(args.policy, args.policy_namespace)
             namespaces = {ns: {**labels, "kubernetes.io/metadata.name": ns}
                           for ns, labels in matrix["namespaces"].items()}
 
@@ -160,8 +203,7 @@ def main():
             if args.kind not in clusters:
                 raise ValueError("requested local kind cluster does not exist")
 
-            def probe(src, dst, protocol, port):
-                return live_probe("kind-" + args.kind, src, dst, protocol, port)
+            probe = live_runner("kind-" + args.kind, matrix)
 
         rows = run(matrix, probe)
         return assertion_report(args.output, "Connectivity matrix", rows, [

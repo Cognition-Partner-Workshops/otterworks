@@ -25,9 +25,9 @@ def markdown_table(rows, columns):
 def report(output, title, rows, columns, totals):
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.with_suffix(".json").write_text(json.dumps({"summary": totals, "checks": rows}, indent=2) + "\n")
+    output.with_name(output.name + ".json").write_text(json.dumps({"summary": totals, "checks": rows}, indent=2) + "\n")
     counts = ", ".join(f"{key}: {value}" for key, value in totals.items())
-    output.with_suffix(".md").write_text(f"# {title}\n\n{counts}\n\n{markdown_table(rows, columns)}\n")
+    output.with_name(output.name + ".md").write_text(f"# {title}\n\n{counts}\n\n{markdown_table(rows, columns)}\n")
 
 
 def assertion_report(output, title, rows, columns):
