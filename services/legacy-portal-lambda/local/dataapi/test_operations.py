@@ -1,13 +1,44 @@
+import json
 import re
 import unittest
+from pathlib import Path
 
 import operations as ops
 
 PARAM = re.compile(r"(?<![:\w]):([A-Za-z_]\w*)")
+LAMBDA_ROOT = Path(__file__).resolve().parents[2]
+JAVA_STRING = r'"(?:[^"\\\r\n]|\\.)*"'
 
 
 def s(v):
     return {"stringValue": v}
+
+
+def java_sql(source, schema, inline):
+    def evaluate(expression, variables):
+        atom = rf"(?:{JAVA_STRING}|{'|'.join(variables)})"
+        if not re.fullmatch(rf"\s*{atom}(?:\s*\+\s*{atom})*\s*", expression):
+            raise AssertionError(f"Unsupported Java SQL expression: {expression!r}")
+        return "".join(json.loads(part) if part.startswith('"') else variables[part]
+                       for part in re.findall(atom, expression))
+
+    tables = re.findall(r"\bthis\.table\s*=\s*([^;]+);", source)
+    if len(tables) != 1:
+        raise AssertionError("Expected exactly one table assignment")
+    table = evaluate(tables[0], {"schema": schema})
+    if inline:
+        expressions = []
+        for call in re.finditer(r"\bexecute\s*\(\s*", source):
+            tail = source[call.end():]
+            if re.match(r"String\s+sql\b|sql\s*,\s*List\.of\(\)\)", tail):
+                continue
+            first_arg = re.match(rf'((?:{JAVA_STRING}|[^",);])*)[,)]', tail)
+            if first_arg is None:
+                raise AssertionError(f"Cannot read Java execute SQL argument: {tail[:80]!r}")
+            expressions.append(first_arg[1])
+    else:
+        expressions = re.findall(rf'\bString\s+sql\s*=\s*((?:{JAVA_STRING}|[^";])*);', source)
+    return [evaluate(expression, {"table": table}) for expression in expressions]
 
 
 class ResolveTest(unittest.TestCase):
@@ -31,6 +62,26 @@ class ResolveTest(unittest.TestCase):
                 self.assertIs(resolved, op)
                 self.assertEqual(values, {name: samples[kind] for name, kind, _ in op.params})
                 self.assertNotIn(samples[ops.STRING], resolved.sql)
+
+    def test_sql_from_java_repositories_resolves_exactly(self):
+        compose = (LAMBDA_ROOT / "local/docker-compose.yml").read_text()
+        schemas = dict(re.findall(r"^  fn-(\w+):\n(?:(?:^ {4,}.*)\n)*?^      DB_SCHEMA: (\w+)$",
+                                  compose, re.MULTILINE))
+        self.assertEqual(set(schemas), {"announcements", "preferences", "feedback"})
+        operations = {op.handler_sql: op for op in ops.OPERATIONS}
+        emitted = []
+        for module, schema in schemas.items():
+            sources = list((LAMBDA_ROOT / module / "src/main/java").rglob("DataApi*Repository.java"))
+            self.assertEqual(len(sources), 1, module)
+            for sql in java_sql(sources[0].read_text(), schema, inline=module == "announcements"):
+                emitted.append(sql)
+                with self.subTest(repository=sources[0].name, sql=sql):
+                    op = operations.get(sql)
+                    params = [{"name": name, "value": {"isNull": True},
+                               **({"typeHint": hint} if hint else {})}
+                              for name, _, hint in op.params] if op else []
+                    self.assertIs(ops.resolve(sql, params)[0], op)
+        self.assertCountEqual(emitted, operations.keys())
 
     def test_known_statement_resolves_to_static_sql(self):
         op, values = ops.resolve(
