@@ -16,7 +16,7 @@
         "after": {
           "name": "synthetic-staging-policy",
           "role": "synthetic-staging-reader",
-          "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:PutObject\",\"s3:DeleteObject\"],\"Resource\":\"arn:aws:s3:::synthetic-control-bucket/staging/sample.json\"}]}"
+          "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"SyntheticStagingSample\",\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:PutObject\",\"s3:DeleteObject\"],\"Resource\":\"arn:aws:s3:::synthetic-control-bucket/staging/sample.json\"}]}"
         },
         "after_unknown": {"id": true}
       }
