@@ -46,8 +46,8 @@ resource "azurerm_kubernetes_cluster" "draft" {
 
   default_node_pool {
     name           = "system"
-    node_count     = 1
-    vm_size        = "Standard_D2s_v5"
+    node_count     = 2
+    vm_size        = "Standard_D4s_v5"
     vnet_subnet_id = var.node_subnet_id
   }
 

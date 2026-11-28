@@ -18,4 +18,12 @@ run "private_cluster_draft" {
     )
     error_message = "The draft must use a private API and must not request provider-managed load-balancer egress."
   }
+
+  assert {
+    condition = (
+      azurerm_kubernetes_cluster.draft.default_node_pool[0].node_count == 2 &&
+      azurerm_kubernetes_cluster.draft.default_node_pool[0].vm_size == "Standard_D4s_v5"
+    )
+    error_message = "The draft system pool must use two Standard_D4s_v5 nodes."
+  }
 }
