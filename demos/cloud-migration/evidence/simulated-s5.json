@@ -1,0 +1,35 @@
+{
+  "mode": "simulated",
+  "run_token": "S5_SCHEMA_EXAMPLE",
+  "s4": {"status": "unrun", "observed": false, "reason": "This simulation does not claim authorization to switch the portal route."},
+  "workloads": {
+    "portal": {
+      "owner": {"role": "Portal team", "source": "intake"},
+      "disposition": "pending-s4",
+      "gates": {
+        "fresh_parity": {"status": "unrun", "observed": false, "reason": "This simulation does not claim a portal parity observation."},
+        "frozen_baseline": {"status": "unrun", "observed": false, "reason": "The real route was not sampled."},
+        "candidate_health": {"status": "unrun", "observed": false, "reason": "The real route was not switched."},
+        "prior_endpoint": {"status": "unrun", "observed": false, "reason": "No actual rollback was run."},
+        "recovered_health": {"status": "unrun", "observed": false, "reason": "No actual post-rollback window was sampled."}
+      }
+    },
+    "kubernetes": {
+      "owner": {"role": "Platform team", "source": "intake"},
+      "disposition": "held-unverified-private-dependency",
+      "gates": {
+        "portable_replay": {"status": "unrun", "observed": false, "reason": "No portable replay evidence was checked in staging."},
+        "readiness": {"status": "unrun", "observed": false, "reason": "No workload was started in staging."},
+        "restart": {"status": "unrun", "observed": false, "reason": "No workload was started in staging."},
+        "rollback": {"status": "unrun", "observed": false, "reason": "No workload was started in staging."},
+        "private_dependency": {"status": "unrun", "observed": false, "reason": "Private dependency remains unverified."}
+      }
+    }
+  },
+  "cleanup": {
+    "router": {"status": "unrun", "observed": false, "reason": "No rehearsal router was started."},
+    "java": {"status": "unrun", "observed": false, "reason": "No Java containers were started."},
+    "serverless": {"status": "unrun", "observed": false, "reason": "No Lambda containers were started."},
+    "stores": {"status": "unrun", "observed": false, "reason": "No rehearsal stores were started."}
+  }
+}

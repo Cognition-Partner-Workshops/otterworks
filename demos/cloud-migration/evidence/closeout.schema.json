@@ -1,0 +1,299 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cloud migration wave closeout evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mode", "run_token", "s4", "workloads", "cleanup"],
+  "properties": {
+    "mode": {"enum": ["simulated", "observed-local"]},
+    "run_token": {"type": "string", "pattern": "^[A-Za-z0-9_]{3,40}$"},
+    "s4": {"$ref": "#/definitions/gate"},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_sha", "source_pr", "parity_pr", "phase_two", "frozen_file", "image_ids", "availability_scope", "browser_capture_sha256"],
+      "properties": {
+        "source_sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+        "source_pr": {"type": "integer", "minimum": 1},
+        "parity_pr": {"type": "integer", "minimum": 1},
+        "phase_two": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["session_id", "status"],
+          "properties": {
+            "session_id": {"type": "string", "pattern": "^[a-f0-9]{32}$"},
+            "status": {"const": "passed"}
+          }
+        },
+        "frozen_file": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+[.]json$"},
+        "image_ids": {
+          "type": "object",
+          "required": ["java", "gateway", "fn-announcements", "fn-preferences", "fn-feedback", "dataapi", "java-db", "lambda-db"],
+          "additionalProperties": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}
+        },
+        "availability_scope": {"const": "local-loopback-only"},
+        "browser_capture_sha256": {"$ref": "#/definitions/sha256"}
+      }
+    },
+    "workloads": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["portal", "kubernetes"],
+      "properties": {
+        "portal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["owner", "disposition", "gates"],
+          "properties": {
+            "owner": {"$ref": "#/definitions/owner"},
+            "intake_issue": {"type": "integer", "minimum": 1},
+            "disposition": {"enum": ["pending-s4", "local-drill-complete", "restored-after-gate-trip", "recovery-unverified"]},
+            "wave_one": {"enum": ["ready-locally", "not-ready"]},
+            "gates": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["fresh_parity", "frozen_baseline", "candidate_health", "prior_endpoint", "recovered_health"],
+              "properties": {
+                "fresh_parity": {"$ref": "#/definitions/gate"},
+                "frozen_baseline": {"$ref": "#/definitions/gate"},
+                "candidate_health": {"$ref": "#/definitions/gate"},
+                "prior_endpoint": {"$ref": "#/definitions/gate"},
+                "recovered_health": {"$ref": "#/definitions/gate"}
+              }
+            },
+            "rehearsal": {"$ref": "#/definitions/rehearsal"}
+          }
+        },
+        "kubernetes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["owner", "disposition", "gates"],
+          "properties": {
+            "owner": {"$ref": "#/definitions/owner"},
+            "intake_issue": {"type": "integer", "minimum": 1},
+            "disposition": {"const": "held-unverified-private-dependency"},
+            "wave_one": {"const": "out"},
+            "gates": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["portable_replay", "readiness", "restart", "rollback", "private_dependency"],
+              "properties": {
+                "portable_replay": {"$ref": "#/definitions/gate"},
+                "readiness": {"$ref": "#/definitions/gate"},
+                "restart": {"$ref": "#/definitions/gate"},
+                "rollback": {"$ref": "#/definitions/gate"},
+                "private_dependency": {"$ref": "#/definitions/unrun"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "cleanup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["router", "java", "serverless", "stores"],
+      "properties": {
+        "router": {"$ref": "#/definitions/gate"},
+        "java": {"$ref": "#/definitions/gate"},
+        "serverless": {"$ref": "#/definitions/gate"},
+        "stores": {"$ref": "#/definitions/gate"}
+      }
+    },
+    "cleanup_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_token", "compose_project", "containers", "networks", "volumes", "images", "checked_ports", "loopback_listeners", "run_processes", "worktree_removed", "run_state_removed"],
+      "properties": {
+        "run_token": {"type": "string", "pattern": "^[A-Za-z0-9_]{3,40}$"},
+        "compose_project": {"type": "string", "pattern": "^lp_[a-z0-9_]+$"},
+        "containers": {"const": []},
+        "networks": {"const": []},
+        "volumes": {"const": []},
+        "images": {"const": []},
+        "checked_ports": {"const": [18095, 18096, 18097, 18098]},
+        "loopback_listeners": {"const": []},
+        "run_processes": {"const": []},
+        "worktree_removed": {"const": true},
+        "run_state_removed": {"const": true}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"mode": {"const": "simulated"}}},
+      "then": {
+        "properties": {
+          "s4": {"$ref": "#/definitions/unrun"},
+          "workloads": {
+            "properties": {
+              "portal": {
+                "not": {"required": ["rehearsal"]},
+                "properties": {
+                  "disposition": {"const": "pending-s4"},
+                  "wave_one": {"const": "not-ready"},
+                  "gates": {"additionalProperties": {"$ref": "#/definitions/unrun"}}
+                }
+              },
+              "kubernetes": {"properties": {"gates": {"additionalProperties": {"$ref": "#/definitions/unrun"}}}}
+            }
+          },
+          "cleanup": {"additionalProperties": {"$ref": "#/definitions/unrun"}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"s4": {"properties": {"status": {"enum": ["failed", "unrun"]}}}}},
+      "then": {
+        "properties": {
+          "workloads": {"properties": {"portal": {"properties": {"disposition": {"const": "pending-s4"}}}}}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "workloads": {"properties": {"portal": {"properties": {"disposition": {"not": {"const": "pending-s4"}}}}}}
+        }
+      },
+      "then": {
+        "required": ["provenance", "cleanup_verification"],
+        "properties": {
+          "workloads": {
+            "properties": {
+              "portal": {
+                "required": ["intake_issue", "wave_one", "rehearsal"],
+                "properties": {
+                  "gates": {"properties": {"fresh_parity": {"properties": {"status": {"const": "passed"}}}}}
+                }
+              },
+              "kubernetes": {"required": ["intake_issue", "wave_one"]}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "workloads": {"properties": {"portal": {
+            "required": ["wave_one"],
+            "properties": {"wave_one": {"const": "ready-locally"}}
+          }}}
+        }
+      },
+      "then": {
+        "properties": {
+          "mode": {"const": "observed-local"},
+          "workloads": {"properties": {"portal": {
+            "required": ["rehearsal"],
+            "properties": {
+              "disposition": {"const": "local-drill-complete"},
+              "gates": {"additionalProperties": {"properties": {"status": {"const": "passed"}}}},
+              "rehearsal": {
+                "required": ["prior_fingerprint_matches", "final_adapter"],
+                "properties": {
+                  "rollback_reason": {"const": "planned-drill"},
+                  "candidate": {"properties": {"status": {"const": "passed"}}},
+                  "candidate_endpoint": {"properties": {"status": {"const": "passed"}}},
+                  "prior_restored": {"properties": {"status": {"const": "passed"}}},
+                  "recovered": {"properties": {"status": {"const": "passed"}}},
+                  "recovery_status": {"const": "passed"},
+                  "prior_fingerprint_matches": {"const": true},
+                  "final_adapter": {"const": "java"}
+                }
+              }
+            }
+          }}}
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "source"],
+      "properties": {
+        "role": {"type": "string", "minLength": 1},
+        "source": {"enum": ["placeholder", "intake"]}
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "observed"],
+      "properties": {
+        "status": {"enum": ["passed", "failed", "unrun"]},
+        "observed": {"type": "boolean"},
+        "evidence": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1}
+      },
+      "if": {"properties": {"status": {"const": "unrun"}}},
+      "then": {"required": ["reason"], "properties": {"observed": {"const": false}}, "not": {"required": ["evidence"]}},
+      "else": {"required": ["evidence"], "properties": {"observed": {"const": true}}}
+    },
+    "unrun": {"allOf": [{"$ref": "#/definitions/gate"}, {"properties": {"status": {"const": "unrun"}}}]},
+    "status": {"enum": ["passed", "failed"]},
+    "duration": {"type": "number", "minimum": 0},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "target_identity", "direct_status", "routed_status", "body_sha256"],
+      "properties": {
+        "status": {"$ref": "#/definitions/status"},
+        "target_identity": {"type": ["string", "null"]},
+        "direct_status": {"type": ["integer", "null"]},
+        "routed_status": {"type": ["integer", "null"]},
+        "body_sha256": {"anyOf": [{"$ref": "#/definitions/sha256"}, {"type": "null"}]}
+      },
+      "if": {"properties": {"status": {"const": "passed"}}},
+      "then": {
+        "properties": {
+          "target_identity": {"type": "string", "minLength": 1},
+          "direct_status": {"const": 200},
+          "routed_status": {"const": 200},
+          "body_sha256": {"$ref": "#/definitions/sha256"}
+        }
+      }
+    },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "expected_target", "observed_targets", "samples", "errors", "error_rate", "p95_ms", "estimated_downtime_ms", "elapsed_ms"],
+      "properties": {
+        "status": {"$ref": "#/definitions/status"},
+        "expected_target": {"type": "string", "minLength": 1},
+        "observed_targets": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "samples": {"type": "integer", "minimum": 1},
+        "errors": {"type": "integer", "minimum": 0},
+        "error_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "p95_ms": {"anyOf": [{"$ref": "#/definitions/duration"}, {"type": "null"}]},
+        "estimated_downtime_ms": {"$ref": "#/definitions/duration"},
+        "elapsed_ms": {"$ref": "#/definitions/duration"}
+      }
+    },
+    "rehearsal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_token", "frozen_sha256", "candidate", "candidate_endpoint", "rollback_reason", "prior_restored", "recovered", "recovery_status", "prior_endpoint_check_elapsed_ms", "rollback_elapsed_ms"],
+      "properties": {
+        "run_token": {"type": "string", "pattern": "^[A-Za-z0-9_]{3,40}$"},
+        "frozen_sha256": {"$ref": "#/definitions/sha256"},
+        "candidate": {"$ref": "#/definitions/window"},
+        "candidate_endpoint": {"$ref": "#/definitions/endpoint"},
+        "rollback_reason": {"enum": ["planned-drill", "gate-trip"]},
+        "prior_restored": {"$ref": "#/definitions/endpoint"},
+        "recovered": {"$ref": "#/definitions/window"},
+        "recovery_status": {"$ref": "#/definitions/status"},
+        "prior_endpoint_check_elapsed_ms": {"$ref": "#/definitions/duration"},
+        "rollback_elapsed_ms": {"$ref": "#/definitions/duration"},
+        "switch_command_elapsed_ms": {"$ref": "#/definitions/duration"},
+        "prior_fingerprint_matches": {"type": "boolean"},
+        "final_adapter": {"enum": ["java", "serverless"]},
+        "elapsed_ms": {"$ref": "#/definitions/duration"}
+      }
+    }
+  }
+}

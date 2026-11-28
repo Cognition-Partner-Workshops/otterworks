@@ -1,0 +1,48 @@
+{
+  "plan": {
+    "run_token": "CMG_20261128",
+    "router_port": 18097,
+    "java": {
+      "port": 18095,
+      "identity": "java@sha256:abda5516248e34ec87515cc8d398973abc93be1b7a8d48926af80db6c1ab8103",
+      "identity_path": "/health"
+    },
+    "serverless": {
+      "port": 18096,
+      "identity": "serverless@sha256:18439fc5e79a110a0cb66df34cc59672844eec948b55d125c682303979ee25ce",
+      "identity_path": "/__lp_local/identity"
+    },
+    "health_path": "/health",
+    "window_ms": 20000,
+    "interval_ms": 1000,
+    "timeout_ms": 800,
+    "max_error_rate": 0,
+    "max_p95_ms": 500
+  },
+  "selected_adapter": "serverless",
+  "prior": {
+    "status": "passed",
+    "target_identity": "java@sha256:abda5516248e34ec87515cc8d398973abc93be1b7a8d48926af80db6c1ab8103",
+    "direct_status": 200,
+    "routed_status": 200,
+    "body_sha256": "728510dd4f50f4f7173715d4146acec154f99b7753871a6c5f6f03109ccc0403"
+  },
+  "candidate_identity": {
+    "status": "passed",
+    "target_identity": "serverless@sha256:18439fc5e79a110a0cb66df34cc59672844eec948b55d125c682303979ee25ce",
+    "body_sha256": "42b3dcd796de7ab2b305a7562ea3bd73eddc48ea4fb2a2d85fa3d9c648db1809"
+  },
+  "baseline": {
+    "status": "passed",
+    "expected_target": "java@sha256:abda5516248e34ec87515cc8d398973abc93be1b7a8d48926af80db6c1ab8103",
+    "observed_targets": [
+      "java@sha256:abda5516248e34ec87515cc8d398973abc93be1b7a8d48926af80db6c1ab8103"
+    ],
+    "samples": 20,
+    "errors": 0,
+    "error_rate": 0.0,
+    "p95_ms": 6.004944000096657,
+    "estimated_downtime_ms": 0,
+    "elapsed_ms": 20005.156446
+  }
+}
