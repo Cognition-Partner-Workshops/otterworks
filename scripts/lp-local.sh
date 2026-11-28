@@ -60,7 +60,11 @@ cmd_reset() {
   tables="$(tables_for "$ctx")"
   [ -n "$tables" ] || { echo "reset ${ctx}: no tables"; return 0; }
   sql="TRUNCATE ${tables// /, } RESTART IDENTITY"
-  psql_in java-db "$sql" & psql_in lambda-db "$sql" & wait
+  local java_pid lambda_pid
+  psql_in java-db "$sql" & java_pid=$!
+  psql_in lambda-db "$sql" & lambda_pid=$!
+  wait "$java_pid" || die "reset ${ctx}: truncate failed in java-db"
+  wait "$lambda_pid" || die "reset ${ctx}: truncate failed in lambda-db"
   local fns
   case "$ctx" in
     all) fns="fn-announcements fn-preferences fn-feedback" ;;
