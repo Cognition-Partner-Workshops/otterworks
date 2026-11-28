@@ -1,0 +1,25 @@
+table: isolation.documents
+roles:
+  tenant_a: CSEC_TENANT_A_DSN
+  tenant_b: CSEC_TENANT_B_DSN
+assertions:
+  - role: tenant_a
+    name: Tenant A can read its rows
+    access: allow
+    expected_count: 10
+    sql: SELECT count(*) FROM isolation.documents WHERE tenant = 'tenant_a'
+  - role: tenant_a
+    name: Tenant A cannot read tenant B rows
+    access: deny
+    expected_count: 0
+    sql: SELECT count(*) FROM isolation.documents WHERE tenant = 'tenant_b'
+  - role: tenant_b
+    name: Tenant B can read its rows
+    access: allow
+    expected_count: 10
+    sql: SELECT count(*) FROM isolation.documents WHERE tenant = 'tenant_b'
+  - role: tenant_b
+    name: Tenant B cannot read tenant A rows
+    access: deny
+    expected_count: 0
+    sql: SELECT count(*) FROM isolation.documents WHERE tenant = 'tenant_a'

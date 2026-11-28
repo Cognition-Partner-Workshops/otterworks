@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Cloud control evidence",
+  "type": "object",
+  "required": ["control", "owner", "evidence", "before", "after", "approved_path", "status"],
+  "properties": {
+    "control": {"type": "string", "minLength": 1},
+    "owner": {"type": ["string", "null"]},
+    "evidence": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "commit": {"type": "string", "minLength": 1},
+        "plan": {"type": "string", "minLength": 1},
+        "read": {"type": "string", "minLength": 1}
+      }
+    },
+    "before": {"$ref": "#/$defs/check"},
+    "after": {"$ref": "#/$defs/check"},
+    "approved_path": {"$ref": "#/$defs/check"},
+    "status": {"enum": ["closed", "held", "amber"]}
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "required": ["result", "reference"],
+      "properties": {
+        "result": {"enum": ["pass", "fail", "not-run"]},
+        "reference": {"type": "string", "minLength": 1}
+      }
+    },
+    "passing": {"properties": {"result": {"const": "pass"}}}
+  },
+  "if": {"properties": {"status": {"const": "closed"}}},
+  "then": {
+    "properties": {
+      "owner": {"type": "string", "minLength": 1},
+      "after": {"$ref": "#/$defs/passing"},
+      "approved_path": {"$ref": "#/$defs/passing"}
+    }
+  }
+}

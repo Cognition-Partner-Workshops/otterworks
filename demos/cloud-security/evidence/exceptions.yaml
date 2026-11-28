@@ -1,0 +1,10 @@
+approved:
+  - control: image
+    owner: Build Security
+    scope: Loopback-only exposure for the disposable container health check
+    max_hours: 72
+pending:
+  - control: vendor-dependency
+    dependency: Synthetic Archive Adapter
+    owner: null
+    status: amber

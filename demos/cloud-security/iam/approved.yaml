@@ -1,0 +1,9 @@
+address: 'module.irsa.aws_iam_role_policy.service_account["staging-reader"]'
+sources:
+  - infrastructure/terraform/modules/irsa/main.tf
+  - infrastructure/terraform/demo-aws/main.tf
+allow:
+  - action: s3:GetObject
+    resource: arn:aws:s3:::synthetic-control-bucket/staging/sample.json
+  - action: s3:PutObject
+    resource: arn:aws:s3:::synthetic-control-bucket/staging/sample.json

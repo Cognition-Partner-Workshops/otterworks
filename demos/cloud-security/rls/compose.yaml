@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:17.9-alpine@sha256:c7526c0f6c3f30260a563d7bcf8ad778effac59a44f8ffa86678c35418338609
+    environment:
+      POSTGRES_DB: cloud_control
+      POSTGRES_USER: fixture_admin
+      POSTGRES_PASSWORD: synthetic-local-fixture-admin
+    ports:
+      - "127.0.0.1::5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    volumes:
+      - ./seed.sql:/docker-entrypoint-initdb.d/010-seed.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "fixture_admin", "-d", "cloud_control"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
