@@ -79,8 +79,9 @@ cmd_state() {
     parts+=("'${t}', coalesce((select json_agg(r) from ${t} r), '[]'::json)")
   done
   [ ${#parts[@]} -gt 0 ] || { echo '{}'; return 0; }
-  local IFS=,
-  psql_in "$store" "select json_build_object(${parts[*]})"
+  local args
+  args="$(printf '%s,' "${parts[@]}")"
+  psql_in "$store" "select json_build_object(${args%,})"
 }
 
 cmd_identity() {

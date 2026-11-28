@@ -11,13 +11,12 @@ HTTP the way API Gateway does it. x-lp-local-function names the function that an
   LP_DEFAULT_ROUTE=announcements
 """
 import base64
+import http.client
 import json
 import os
 import sys
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 import uuid
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -32,7 +31,10 @@ def load_routes():
     routes = []
     for item in filter(None, os.environ["LP_ROUTES"].split(";")):
         name, prefix, url = item.split("=", 2)
-        routes.append((name.strip(), prefix.strip().rstrip("/"), url.strip().rstrip("/")))
+        target = urllib.parse.urlsplit(url.strip())
+        if target.scheme != "http" or not target.hostname:
+            raise SystemExit(f"LP_ROUTES: function URL must be http://host:port, got {url!r}")
+        routes.append((name.strip(), prefix.strip().rstrip("/"), (target.hostname, target.port or 80)))
     return routes
 
 
@@ -106,10 +108,14 @@ def build_event(method, target, headers, body, route_key, path_params, source_ip
 
 
 def invoke(function, event):
-    req = urllib.request.Request(FUNCTIONS[function] + INVOKE_PATH, data=json.dumps(event).encode(),
-                                 headers={"Content-Type": "application/json"}, method="POST")
-    with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
-        return json.loads(resp.read() or b"null")
+    host, port = FUNCTIONS[function]
+    conn = http.client.HTTPConnection(host, port, timeout=TIMEOUT)
+    try:
+        conn.request("POST", INVOKE_PATH, body=json.dumps(event).encode(),
+                     headers={"Content-Type": "application/json"})
+        return json.loads(conn.getresponse().read() or b"null")
+    finally:
+        conn.close()
 
 
 def to_http(output):
@@ -142,7 +148,7 @@ class Handler(BaseHTTPRequestHandler):
         started = time.monotonic()
         try:
             status, headers, data, cookies = to_http(invoke(function, event))
-        except (urllib.error.URLError, TimeoutError, ValueError) as e:
+        except (OSError, http.client.HTTPException, ValueError) as e:
             print(f"integration error {function}: {e}", file=sys.stderr, flush=True)
             status, headers, data, cookies = 500, {"Content-Type": "application/json"}, \
                 b'{"message":"Internal Server Error"}', []

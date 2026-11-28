@@ -74,6 +74,7 @@ services:
       POSTGRES_PASSWORD: legacyportal
     volumes:
       - ../../../infrastructure/terraform/legacy-portal-serverless/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - ./dataapi/zz-dataapi-role.sql:/docker-entrypoint-initdb.d/zz-dataapi-role.sql:ro
       - lambda-db-data:/var/lib/postgresql/data
     networks: [lambda-store]
     healthcheck:
@@ -119,7 +120,7 @@ services:
     environment:
       TLS_CERT: /certs/server.pem
       TLS_KEY: /certs/server.key
-      PG_DSN: host=lambda-db user=legacyportal password=legacyportal
+      PG_DSN: host=lambda-db user=lp_dataapi password=lp_dataapi
       LOCAL_CLUSTER_ARN: arn:aws:rds:us-east-1:000000000000:cluster:lp-local
       LOCAL_SECRET_ARN: arn:aws:secretsmanager:us-east-1:000000000000:secret:lp-local
     networks:

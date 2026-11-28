@@ -27,10 +27,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import psycopg
 
-PG_DSN = os.environ.get("PG_DSN", "host=lambda-db user=legacyportal password=legacyportal")
+PG_DSN = os.environ.get("PG_DSN", "host=lambda-db user=lp_dataapi password=lp_dataapi")
 CLUSTER_ARN = os.environ["LOCAL_CLUSTER_ARN"]
 SECRET_ARN = os.environ["LOCAL_SECRET_ARN"]
 PARAM = re.compile(r"(?<![:\w]):([A-Za-z_]\w*)")
+# Executing caller-supplied SQL is what the Data API is for. This stand-in narrows it to single DML
+# statements, and its database role (zz-dataapi-role.sql) can only touch the three context tables.
+DML = re.compile(r"^\s*(SELECT|INSERT|UPDATE|DELETE|WITH)\b", re.IGNORECASE)
 HINT_CASTS = {"TIMESTAMP": "timestamp", "DATE": "date", "TIME": "time", "DECIMAL": "numeric",
               "UUID": "uuid", "JSON": "jsonb"}
 
@@ -96,7 +99,10 @@ def execute(req):
         raise DataApiError(403, "AccessDeniedException", "resourceArn/secretArn do not match the local cluster")
     if req.get("transactionId"):
         raise DataApiError(400, "BadRequestException", "transactions are not supported by the local Data API")
-    sql, values = bind(req["sql"], req.get("parameters"))
+    statement = req.get("sql") or ""
+    if not DML.match(statement) or ";" in statement.strip().rstrip(";"):
+        raise DataApiError(400, "BadRequestException", "the local Data API accepts one SELECT/INSERT/UPDATE/DELETE")
+    sql, values = bind(statement, req.get("parameters"))
     dsn = PG_DSN + (f" dbname={req['database']}" if req.get("database") else "")
     try:
         with psycopg.connect(dsn, autocommit=True) as conn, conn.cursor() as cur:
@@ -149,6 +155,7 @@ class Handler(BaseHTTPRequestHandler):
 def serve_tls(port, cert, key):
     server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
     ctx.load_cert_chain(cert, key)
     server.socket = ctx.wrap_socket(server.socket, server_side=True)
     print(f"local Data API (TLS) on :{port}", file=sys.stderr, flush=True)
