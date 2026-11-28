@@ -1,0 +1,4 @@
+usage_type,fixture_workload_attribution,usage_unit,fixture_unit_rate_usd,observed_usage,projected_usage,observed_cost_usd,projected_cost_usd,projected_savings_usd,confirmed_billed_savings_usd
+CloudWatch-TimedStorage,document-service,GB-day,0.001,218.4,109.2,0.2184,0.1092,0.1092,0.0000
+EBS-VolumeUsage.gp3,tenant-compute,GiB-day,0.0025,546,393.12,1.3650,0.9828,0.3822,0.0000
+Attributed total,,,,,,1.5834,1.0920,0.4914,0.0000
