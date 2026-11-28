@@ -94,13 +94,24 @@ cmd_identity() {
   docker ps --filter "label=run_token=${RUN_TOKEN}" --format '{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
 }
 
+# The endpoints replayed must be the ones this run published, or resets and snapshots (by project)
+# would check stores other than the ones the requests changed.
+check_ports() {
+  local java lambda
+  java="$(dc port java 8095 2>/dev/null || true)" lambda="$(dc port gateway 8080 2>/dev/null || true)"
+  [ "$java" = "127.0.0.1:${LP_JAVA_PORT}" ] && [ "$lambda" = "127.0.0.1:${LP_LAMBDA_PORT}" ] || \
+    die "run ${RUN_TOKEN} publishes java='${java:-none}' lambda='${lambda:-none}', not 127.0.0.1:${LP_JAVA_PORT}/${LP_LAMBDA_PORT}; set LP_JAVA_PORT/LP_LAMBDA_PORT to match"
+}
+
 cmd_replay() {
-  local ctx="${CTX:-all}" ctx_args=() c
+  local ctx="${CTX:-all}" ctx_args=() c self
   for c in ${ctx//,/ }; do ctx_args+=(--context "$c"); done
+  check_ports
+  self="$(printf '%q' "${ROOT}/scripts/lp-local.sh")"
   python3 "${PARITY}/live_parity.py" \
     --java-base "http://127.0.0.1:${LP_JAVA_PORT}" --lambda-base "http://127.0.0.1:${LP_LAMBDA_PORT}" \
-    --reset-cmd "${ROOT}/scripts/lp-local.sh reset {context}" \
-    --state-cmd "${ROOT}/scripts/lp-local.sh state {store} {context}" \
+    --reset-cmd "${self} reset {context}" \
+    --state-cmd "${self} state {store} {context}" \
     --fixture-file "${ROOT}/services/legacy-portal/scripts/initdb.sql" \
     --fixture-file "${ROOT}/infrastructure/terraform/legacy-portal-serverless/schema.sql" \
     --run-token "$RUN_TOKEN" --stage "${STAGE:-full}" --out "${OUT:-${PARITY}/out-live}" "${ctx_args[@]}"
