@@ -1,0 +1,59 @@
+{
+  "run_tag": "FINOPS_20261128",
+  "environment": "dev",
+  "settings": {
+    "historical": { "app_retention_days": 7, "root_volume_gib": 30, "eks_control_plane_retention_days": 7 },
+    "observed": { "app_retention_days": 14, "root_volume_gib": 50, "eks_control_plane_retention_days": 7 },
+    "protected_audit_retention_days": 90
+  },
+  "baseline_window": ["2026-11-14", "2026-11-20"],
+  "observed_window": ["2026-11-21", "2026-11-27"],
+  "attribution": {
+    "method": "Scale baseline service costs by the observed-to-baseline request ratio for the demand-only counterfactual; use the remaining tagged difference for the settings change and report the unallocated line separately.",
+    "baseline_requests": 9100,
+    "observed_requests": 10920,
+    "baseline_cost_usd": "0.7735",
+    "observed_cost_usd": "1.7534",
+    "variance_usd": "0.9799",
+    "explained_usd": "0.8099",
+    "demand_growth_usd": "0.1547",
+    "settings_attributable_usd": "0.6552",
+    "app_log_settings_usd": "0.1092",
+    "root_volume_settings_usd": "0.5460",
+    "unallocated_residual_usd": "0.1700",
+    "unallocated_savings_usd": "0.00",
+    "audit_savings_usd": "0.00",
+    "baseline_usd_per_1000_requests": "0.0850",
+    "observed_usd_per_1000_requests": "0.160568"
+  },
+  "local_workload": {
+    "requests_per_run": 100,
+    "baseline": { "errors": 0, "modeled_p95_ms": 15, "disk_pressure_responses": 0, "health": "pass" },
+    "accept": {
+      "app_retention_days": 7,
+      "root_volume_gib": 50,
+      "errors": 0,
+      "modeled_p95_ms": 15,
+      "disk_pressure_responses": 0,
+      "health": "pass"
+    },
+    "withhold": {
+      "app_retention_days": 14,
+      "root_volume_gib": 30,
+      "errors": 48,
+      "modeled_p95_ms": 46,
+      "disk_pressure_responses": 48,
+      "health": "fail"
+    }
+  },
+  "verified_candidate_projection": {
+    "daily_stored_gb_day_avoided": "15.6",
+    "usd_per_gb_day": "0.001",
+    "active_days_per_month_low": 22,
+    "active_days_per_month_high": 30,
+    "monthly_usd_low": "0.3432",
+    "monthly_usd_high": "0.4680",
+    "billing_status": "pending",
+    "assumption": "Synthetic steady-state stored-byte rate and representative observed load; excludes ingest and run-in."
+  }
+}
