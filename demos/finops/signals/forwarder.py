@@ -61,7 +61,7 @@ def webhook_sender(url, secret, signing_key=None):
     return send
 
 
-def forward(event, claim, send, *, run_tag, environment, source):
+def forward(event, claim, send, *, release, run_tag, environment, source):
     receipts = []
     payloads = [normalize(record, run_tag, environment, source) for record in event["Records"]]
     for payload in payloads:
@@ -69,6 +69,8 @@ def forward(event, claim, send, *, run_tag, environment, source):
         receipt = {**payload, "dedupe_key": key, "result": "duplicate_suppressed"}
         if claim(key):
             status = send(payload)
+            if status == 401:
+                release(key)
             receipt["webhook_status"] = status
             receipt["result"] = "accepted" if status is not None and 200 <= status < 300 else "delivery_unconfirmed"
         receipts.append(receipt)
@@ -90,8 +92,12 @@ def lambda_handler(event, context):
             return False
         return True
 
+    def release(key):
+        ledger.delete_item(Key={"dedupe_key": key})
+
     receipts = forward(
         event, claim, webhook_sender(os.environ["DEVIN_WEBHOOK_URL"], os.environ["DEVIN_WEBHOOK_SECRET"]),
+        release=release,
         run_tag=os.environ["FINOPS_RUN_TAG"], environment=os.environ["FINOPS_ENVIRONMENT"], source="aws:sns",
     )
     print(json.dumps(receipts))

@@ -9,7 +9,7 @@ from contextlib import closing
 from .forwarder import forward, webhook_sender
 
 
-def sqlite_claimer(ledger):
+def sqlite_claims(ledger):
     ledger.execute("CREATE TABLE IF NOT EXISTS deliveries (dedupe_key TEXT PRIMARY KEY)")
 
     def claim(key):
@@ -17,7 +17,11 @@ def sqlite_claimer(ledger):
             result = ledger.execute("INSERT OR IGNORE INTO deliveries VALUES (?)", (key,))
         return result.rowcount == 1
 
-    return claim
+    def release(key):
+        with ledger:
+            ledger.execute("DELETE FROM deliveries WHERE dedupe_key = ?", (key,))
+
+    return claim, release
 
 
 def main():
@@ -36,10 +40,10 @@ def main():
     send = webhook_sender(url, secret, key.encode())
     failed = False
     with closing(sqlite3.connect(args.state)) as ledger:
-        claim = sqlite_claimer(ledger)
+        claim, release = sqlite_claims(ledger)
         for path in args.fixture:
             receipts = forward(
-                json.loads(path.read_text()), claim, send,
+                json.loads(path.read_text()), claim, send, release=release,
                 run_tag=args.run_tag, environment=args.environment, source="signed-sns-replay",
             )
             for receipt in receipts:
