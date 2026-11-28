@@ -46,6 +46,8 @@ wait_http() {
 
 cmd_up() {
   dc up -d --build --wait java-db lambda-db
+  dc exec -T lambda-db psql -U legacyportal -d legacyportal -v ON_ERROR_STOP=1 -q \
+    -f /docker-entrypoint-initdb.d/zz-dataapi-role.sql
   dc up -d --build
   wait_http "http://127.0.0.1:${LP_JAVA_PORT}/health"
   wait_http "http://127.0.0.1:${LP_LAMBDA_PORT}/health"
