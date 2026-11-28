@@ -69,7 +69,7 @@ def forward(event, claim, send, *, release, run_tag, environment, source):
         receipt = {**payload, "dedupe_key": key, "result": "duplicate_suppressed"}
         if claim(key):
             status = send(payload)
-            if status == 401:
+            if status in (401, 403):
                 release(key)
             receipt["webhook_status"] = status
             receipt["result"] = "accepted" if status is not None and 200 <= status < 300 else "delivery_unconfirmed"

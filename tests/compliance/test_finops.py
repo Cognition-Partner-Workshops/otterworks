@@ -70,11 +70,12 @@ def test_cost_anomaly_replay_signs_payload_and_suppresses_duplicate_across_conne
     ("failure", "status", "replayed_result", "posts"),
     [
         (HTTPError("https://example.invalid", 401, "Unauthorized", {}, None), 401, "accepted", 2),
+        (HTTPError("https://example.invalid", 403, "Invalid webhook secret", {}, None), 403, "accepted", 2),
         (HTTPError("https://example.invalid", 500, "Server error", {}, None), 500, "duplicate_suppressed", 1),
         (URLError("Connection error"), None, "duplicate_suppressed", 1),
     ],
 )
-def test_cost_anomaly_replay_releases_only_unauthorized_claim(tmp_path, failure, status, replayed_result, posts):
+def test_cost_anomaly_replay_releases_only_auth_rejections(tmp_path, failure, status, replayed_result, posts):
     state = tmp_path / "ledger.sqlite"
     opener = MagicMock()
     opener.open.return_value.__enter__.return_value.status = 202
