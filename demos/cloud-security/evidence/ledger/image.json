@@ -1,0 +1,20 @@
+{
+  "control": "image",
+  "owner": "Build Security",
+  "evidence": {
+    "commit": "b382b7a4b76d75ce396f6d457fd3c1db1c246992"
+  },
+  "before": {
+    "result": "fail",
+    "reference": "CSEC_20261128 before: CVE-2025-47273 reported for setuptools 78.1.0; https://partner-workshops.devinenterprise.com/attachments/16ea39ba-b6e1-4171-965c-ab5a21d5d536/before-scan.json"
+  },
+  "after": {
+    "result": "pass",
+    "reference": "CSEC_20261128 after: CVE-2025-47273 absent and no added advisory IDs; https://partner-workshops.devinenterprise.com/attachments/c32b9f47-abe9-4267-be8a-94411f4961d4/after-scan.json"
+  },
+  "approved_path": {
+    "result": "pass",
+    "reference": "CSEC_20261128: before-health.txt and after-health.txt show healthy service and database on both images; https://partner-workshops.devinenterprise.com/attachments/08d170e2-a606-497b-8729-12078522124e/image-evidence.tar.gz"
+  },
+  "status": "closed"
+}
