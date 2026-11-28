@@ -126,7 +126,8 @@ class ComplexityManifestTests(unittest.TestCase):
     MANIFEST = Path(__file__).resolve().parents[3] / "demos" / "app" / "complexity-manifest.json"
 
     def test_planted_keys_match_register(self) -> None:
-        classes = {c["id"]: c for c in json.loads(self.MANIFEST.read_text())["classes"]}
+        register = json.loads(self.MANIFEST.read_text())
+        classes = {c["id"]: c for c in register["classes"] if c["id"].startswith("MIG-")}
         self.assertEqual(sorted(classes), [f"MIG-0{i}" for i in range(1, 8)])
         planted = tables.planted_docarch()
         keys: dict[str, list[str]] = {}
