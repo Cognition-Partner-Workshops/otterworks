@@ -60,7 +60,8 @@ def field(value):
     if isinstance(value, float):
         return {"doubleValue": value}
     if isinstance(value, dt.datetime):
-        text = value.strftime("%Y-%m-%d %H:%M:%S")
+        # %Y does not zero-pad years before 1000 on glibc; the Data API format is YYYY-MM-DD.
+        text = f"{value.year:04d}-" + value.strftime("%m-%d %H:%M:%S")
         if value.microsecond:
             text += ("." + f"{value.microsecond:06d}").rstrip("0")
         return {"stringValue": text}
